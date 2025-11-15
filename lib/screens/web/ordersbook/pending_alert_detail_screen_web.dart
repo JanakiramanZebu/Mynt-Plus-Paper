@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,7 +11,6 @@ import '../../../res/res.dart';
 import '../../../res/web_colors.dart';
 import '../../../res/global_font_web.dart';
 import '../../../sharedWidget/cust_text_formfield.dart';
-import '../../../sharedWidget/custom_exch_badge.dart';
 import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/snack_bar.dart';
 
@@ -98,84 +95,84 @@ class _PendingAlertDetailScreenWebState
   Widget build(BuildContext context) {
     final theme = ref.read(themeProvider);
     return Dialog(
-     backgroundColor: WebColors.surface,
+      backgroundColor: Colors.transparent,
       child: Container(
-        width: 500,
-            constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(context).size.height * 0.90,
-            ),
-            decoration: BoxDecoration(
-              // color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-              borderRadius: BorderRadius.circular(5),
-              // border: Border.all(
-              //   color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-              // ),
-            ),
+        width: 700,
+        decoration: BoxDecoration(
+          color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+          borderRadius: BorderRadius.circular(5),
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-
-             Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  margin: const EdgeInsets.only(bottom: 8),
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(
-                        color: theme.isDarkMode
-                            ? WebDarkColors.divider
-                            : WebColors.divider,
+            // Header with close button
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              margin: const EdgeInsets.only(bottom: 8),
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(
+                    color: theme.isDarkMode
+                        ? WebDarkColors.divider
+                        : WebColors.divider,
+                  ),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Symbol and Price Section
+                  _buildSymbolSection(theme),
+                  Material(
+                    color: Colors.transparent,
+                    shape: const CircleBorder(),
+                    child: InkWell(
+                      customBorder: const CircleBorder(),
+                      splashColor: theme.isDarkMode
+                          ? Colors.white.withOpacity(.15)
+                          : Colors.black.withOpacity(.15),
+                      highlightColor: theme.isDarkMode
+                          ? Colors.white.withOpacity(.08)
+                          : Colors.black.withOpacity(.08),
+                      onTap: () => Navigator.of(context).pop(),
+                      child: Padding(
+                        padding: const EdgeInsets.all(6),
+                        child: Icon(
+                          Icons.close,
+                          size: 20,
+                          color: theme.isDarkMode
+                              ? WebDarkColors.iconSecondary
+                              : WebColors.iconSecondary,
+                        ),
                       ),
                     ),
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                       // Symbol and Price Section
-                    _buildSymbolSection(theme),
-                      Material(
-                        color: Colors.transparent,
-                        shape: const CircleBorder(),
-                        child: InkWell(
-                          customBorder: const CircleBorder(),
-                          splashColor: theme.isDarkMode
-                              ? Colors.white.withOpacity(.15)
-                              : Colors.black.withOpacity(.15),
-                          highlightColor: theme.isDarkMode
-                              ? Colors.white.withOpacity(.08)
-                              : Colors.black.withOpacity(.08),
-                          onTap: () => Navigator.of(context).pop(),
-                          child: Padding(
-                            padding: const EdgeInsets.all(6),
-                            child: Icon(
-                              Icons.close,
-                              size: 20,
-                              color: theme.isDarkMode
-                                  ? WebDarkColors.iconSecondary
-                                  : WebColors.iconSecondary,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                ],
+              ),
+            ),
             
             // Content
             Flexible(
+              fit: FlexFit.loose,
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(15),
+                padding: const EdgeInsets.only(top: 0, bottom: 20, left: 20, right: 20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
                   children: [
-                  
+                    // Alert Details Section
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      child: _buildAlertDetailsSection(theme),
+                    ),
+                    
+                    const SizedBox(height: 16),
+                    
+                    // Modify Value Field
+                    _buildModifyValueField(theme),
+                    
+                    const SizedBox(height: 16),
                     
                     // Action Buttons
-                    // const SizedBox(height: 24),
-                    
-                    // Alert Details Section
-                    _buildAlertDetailsSection(theme),
-                    const SizedBox(height: 16),
                     _buildActionButtons(theme),
                   ],
                 ),
@@ -222,82 +219,78 @@ class _PendingAlertDetailScreenWebState
   }
 
   Widget _buildSymbolSection(ThemesProvider theme) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Symbol and Exchange
-        Row(
+    return Material(
+      color: Colors.transparent,
+      shape: RoundedRectangleBorder(),
+      child: InkWell(
+        customBorder: RoundedRectangleBorder(),
+        borderRadius: BorderRadius.circular(0),
+        splashColor: theme.isDarkMode ? colors.primaryDark.withOpacity(0.1) : colors.primaryLight.withOpacity(0.1),
+        highlightColor: theme.isDarkMode ? colors.primaryDark.withOpacity(0.2) : colors.primaryLight.withOpacity(0.2),
+        onTap: () {
+          // Can add chart navigation here if needed
+        },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              "${widget.alert.tsym?.replaceAll("-EQ", "")}",
-              style: TextWidget.textStyle(
-                fontSize: 16,
-                theme: theme.isDarkMode,
-                color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                fw: 1,
-              ),
-            ),
-
-              const SizedBox(width: 4),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: theme.isDarkMode ? colors.primaryDark.withOpacity(0.7) : colors.primaryLight.withOpacity(0.7),
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  child: Text(
-                    "${widget.alert.exch ?? ''}",
-                    style: TextWidget.textStyle(
-                      fontSize: 12,
-                      theme: false,
-                     color: colors.textPrimaryDark,
-                  fw: 1,
-                    ),
+            // Symbol and Exchange
+            Row(
+              children: [
+                Text(
+                  "${widget.alert.tsym?.replaceAll("-EQ", "") ?? ''}",
+                  style: WebTextStyles.dialogTitle(
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
                   ),
                 ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        
-        // Price and Change
-        Row(
-          children: [
-            Text(
-              "${widget.alert.ltp ?? widget.alert.close ?? 0.00}",
-              style: TextWidget.textStyle(
-                fontSize: 16,
-                theme: false,
-                color: widget.alert.change == null
-                    ? theme.isDarkMode
-                        ? colors.textSecondaryDark
-                        : colors.textSecondaryLight
-                    : widget.alert.change!.startsWith("-")
+                const SizedBox(width: 4),
+                Text(
+                  "${widget.alert.exch}",
+                  style: WebTextStyles.dialogTitle(
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            
+            // Price and Change
+            Row(
+              children: [
+                Text(
+                  "${widget.alert.ltp != "null" ? widget.alert.ltp ?? widget.alert.close ?? 0.00 : '0.00'}",
+                  style: WebTextStyles.title(
+                    isDarkTheme: theme.isDarkMode,
+                    color: (widget.alert.change == "null" || widget.alert.change == null) ||
+                            widget.alert.change == "0.00"
                         ? theme.isDarkMode
-                            ? colors.lossDark
-                            : colors.lossLight
-                        : widget.alert.change == "0.00"
+                            ? colors.textSecondaryDark
+                            : colors.textSecondaryLight
+                        : (widget.alert.change?.startsWith("-") == true || widget.alert.perChange?.startsWith("-") == true)
                             ? theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : colors.textSecondaryLight
+                                ? colors.lossDark
+                                : colors.lossLight
                             : theme.isDarkMode
                                 ? colors.profitDark
                                 : colors.profitLight,
-                fw: 1,
-              ),
-            ),
-            const SizedBox(width: 4),
-            Text(
-              "${widget.alert.perChange ?? 0.00}%",
-              style: TextWidget.textStyle(
-                fontSize: 16,
-                theme: false,
-                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                fw: 1,
-              ),
+                    fontWeight: WebFonts.medium,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  "${(double.tryParse(widget.alert.change ?? '0.00') ?? 0.00).toStringAsFixed(2)} (${(double.tryParse(widget.alert.perChange ?? '0.00') ?? 0.00).toStringAsFixed(2)}%)",
+                  style: WebTextStyles.sub(
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
+                    fontWeight: WebFonts.medium,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
-      ],
+      ),
     );
   }
 
@@ -467,23 +460,136 @@ class _PendingAlertDetailScreenWebState
   }
 
   Widget _buildAlertDetailsSection(ThemesProvider theme) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return IntrinsicHeight(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Left column
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildInfoRow(
+                    "Type",
+                    widget.alert.aiT == "LTP_A"
+                        ? "LTP"
+                        : widget.alert.aiT == "LTP_B"
+                            ? "LTP"
+                            : widget.alert.aiT == "CH_PER_A"
+                                ? "Perc.Change"
+                                : "Perc.Change",
+                    theme,
+                  ),
+                  _buildInfoRow(
+                    "Condition",
+                    _buildConditionWidget(theme),
+                    theme,
+                  ),
+                  _buildInfoRow(
+                    "Date & Time",
+                    formatDateTime(value: "${widget.alert.norentm}"),
+                    theme,
+                  ),
+                ],
+              ),
+            ),
+            // Vertical divider
+            Container(
+              width: 0.5,
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              color: theme.isDarkMode
+                  ? WebDarkColors.divider
+                  : WebColors.divider,
+            ),
+            // Right column
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildInfoRow(
+                    "Target",
+                    widget.alert.aiT == "CH_PER_A" || widget.alert.aiT == "CH_PER_B"
+                        ? "%${widget.alert.d}"
+                        : "${widget.alert.d}",
+                    theme,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildConditionWidget(ThemesProvider theme) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        _alertData("Type", widget.alert.aiT == "LTP_A"
-            ? "LTP"
-            : widget.alert.aiT == "LTP_B"
-                ? "LTP"
-                : widget.alert.aiT == "CH_PER_A"
-                    ? "Perc.Change"
-                    : "Perc.Change", theme),
-        const SizedBox(height: 8),
-        _alertDataCondition(theme),
-        const SizedBox(height: 8),
-        _alertData("Date&Time", formatDateTime(value: "${widget.alert.norentm}"), theme),
-        const SizedBox(height: 16),
-        _buildModifyValueField(theme),
+        Text(
+          widget.alert.aiT == "LTP_A"
+              ? "Above"
+              : widget.alert.aiT == "LTP_B"
+                  ? "Below"
+                  : widget.alert.aiT == "CH_PER_A"
+                      ? "above"
+                      : "Below",
+          style: WebTextStyles.dialogContent(
+            isDarkTheme: theme.isDarkMode,
+            color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          ),
+        ),
+        const SizedBox(width: 4),
+        Transform.rotate(
+          angle: 55 * (3.14159 / 180),
+          child: Icon(
+            widget.alert.aiT == "LTP_A"
+                ? Icons.arrow_upward
+                : widget.alert.aiT == "LTP_B"
+                    ? Icons.arrow_downward
+                    : widget.alert.aiT == "CH_PER_A"
+                        ? Icons.arrow_upward
+                        : Icons.arrow_downward,
+            size: 18,
+            color: widget.alert.aiT == "LTP_A"
+                ? colors.ltpgreen
+                : widget.alert.aiT == "LTP_B"
+                    ? colors.darkred
+                    : widget.alert.aiT == "CH_PER_A"
+                        ? colors.ltpgreen
+                        : colors.darkred,
+          ),
+        ),
       ],
+    );
+  }
+
+  Widget _buildInfoRow(String title, dynamic value, ThemesProvider theme) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            title,
+            style: WebTextStyles.dialogContent(
+              isDarkTheme: theme.isDarkMode,
+              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+            ),
+          ),
+          value is Widget
+              ? value
+              : Text(
+                  value.toString(),
+                  style: WebTextStyles.dialogContent(
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                  ),
+                ),
+        ],
+      ),
     );
   }
 
@@ -491,15 +597,16 @@ class _PendingAlertDetailScreenWebState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        TextWidget.subText(
-          text: "Modify Alert value",
-          theme: theme.isDarkMode,
-          color: theme.isDarkMode
-              ? WebDarkColors.textSecondary
-              : WebColors.textSecondary,
-          fw: 1,
+        Text(
+          "Modify Alert value",
+          style: WebTextStyles.formLabel(
+            isDarkTheme: theme.isDarkMode,
+            color: theme.isDarkMode
+                ? WebDarkColors.textPrimary
+                : WebColors.textPrimary,
+          ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 10),
         SizedBox(
           height: 40,
           child: CustomTextFormField(
@@ -511,27 +618,23 @@ class _PendingAlertDetailScreenWebState
             inputFormate: [
               FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
             ],
-            style: WebTextStyles.custom(
-              fontSize: 13,
+            style: WebTextStyles.formInput(
               isDarkTheme: theme.isDarkMode,
               color: theme.isDarkMode
                   ? WebDarkColors.textPrimary
                   : WebColors.textPrimary,
-              fontWeight: FontWeight.w600,
             ),
             keyboardType: TextInputType.number,
             hintText: "0",
-            hintStyle: WebTextStyles.custom(
-              fontSize: 13,
+            hintStyle: WebTextStyles.helperText(
               isDarkTheme: theme.isDarkMode,
               color: theme.isDarkMode
                   ? WebDarkColors.textSecondary
                   : WebColors.textSecondary,
-              fontWeight: FontWeight.w600,
             ),
             prefixIcon: widget.alert.aiT == "CH_PER_A" ||
                     widget.alert.aiT == "CH_PER_B"
-                ?                     Icon(
+                ? Icon(
                       Icons.percent_outlined,
                       color: theme.isDarkMode
                           ? WebDarkColors.textSecondary
@@ -559,97 +662,18 @@ class _PendingAlertDetailScreenWebState
           ),
         ),
         if (errorText.isNotEmpty) ...[
-          Padding(
-            padding: const EdgeInsets.only(left: 16, right: 16, top: 4),
-            child: TextWidget.captionText(
-              text: errorText,
-              theme: false,
-              color: colors.lossDark,
-              fw: 0),
+          const SizedBox(height: 8),
+          Text(
+            errorText,
+            style: WebTextStyles.helperText(
+              isDarkTheme: theme.isDarkMode,
+              color: WebDarkColors.error,
+            ),
           ),
         ],
       ],
     );
   }
 
-  Widget _alertDataCondition(ThemesProvider theme) {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            TextWidget.subText(
-              text: "Condition",
-              theme: theme.isDarkMode,
-              color: theme.isDarkMode
-                  ? colors.textSecondaryDark
-                  : colors.textSecondaryLight,
-              fw: 1),
-            Row(
-              children: [
-                TextWidget.subText(
-                  text: widget.alert.aiT == "LTP_A"
-                      ? "Above"
-                      : widget.alert.aiT == "LTP_B"
-                          ? "Below"
-                          : widget.alert.aiT == "CH_PER_A"
-                              ? "above"
-                              : "Below",
-                  theme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? colors.textPrimaryDark
-                      : colors.textPrimaryLight,
-                  fw: 1),
-                Transform.rotate(
-                  angle: 55 * (pi / 180),
-                  child: Icon(
-                      widget.alert.aiT == "LTP_A"
-                          ? Icons.arrow_upward
-                          : widget.alert.aiT == "LTP_B"
-                              ? Icons.arrow_downward
-                              : widget.alert.aiT == "CH_PER_A"
-                                  ? Icons.arrow_upward
-                                  : Icons.arrow_downward,
-                      size: 18,
-                      color: widget.alert.aiT == "LTP_A"
-                          ? colors.ltpgreen
-                          : widget.alert.aiT == "LTP_B"
-                              ? colors.darkred
-                              : widget.alert.aiT == "CH_PER_A"
-                                  ? colors.ltpgreen
-                                  : colors.darkred),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _alertData(String title1, String value, ThemesProvider theme) {
-    return Padding(
-      padding: const EdgeInsets.only( bottom: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          TextWidget.subText(
-            text: title1,
-            theme: theme.isDarkMode,
-            fw: 1,
-            color: theme.isDarkMode
-                ? colors.textSecondaryDark
-                : colors.textSecondaryLight),
-          TextWidget.subText(
-            text: value,
-            theme: theme.isDarkMode,
-            fw: 1,
-            color: theme.isDarkMode
-                ? colors.textPrimaryDark
-                : colors.textPrimaryLight),
-        ],
-      ),
-    );
-  }
 }
 

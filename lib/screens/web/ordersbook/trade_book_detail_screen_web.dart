@@ -10,6 +10,7 @@ import '../../../provider/websocket_provider.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../res/web_colors.dart';
+import '../../../res/global_font_web.dart';
 import '../../../utils/responsive_navigation.dart';
 import '../../../models/order_book_model/order_book_model.dart';
 
@@ -140,95 +141,84 @@ class _TradeBookDetailScreenWebState extends ConsumerState<TradeBookDetailScreen
             }
 
         return Dialog(
-          backgroundColor: WebColors.surface,
+          backgroundColor: Colors.transparent,
           child: Container(
-            width: 500,
-            height: MediaQuery.of(context).size.height * 0.60,
-            constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(context).size.height * 0.60,
-            ),
+            width: 700,
             decoration: BoxDecoration(
-              // color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+              color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
               borderRadius: BorderRadius.circular(5),
-              // border: Border.all(
-              //   color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-              // ),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Fixed Header
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  margin: const EdgeInsets.only(bottom: 8),
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(
-                        color: theme.isDarkMode
-                            ? WebDarkColors.divider
-                            : WebColors.divider,
-                      ),
+              // Fixed Header
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                margin: const EdgeInsets.only(bottom: 8),
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
+                      color: theme.isDarkMode
+                          ? WebDarkColors.divider
+                          : WebColors.divider,
                     ),
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _buildSymbolSection(theme, marketwatch, updatedTradeData),
-                      Material(
-                        color: Colors.transparent,
-                        shape: const CircleBorder(),
-                        child: InkWell(
-                          customBorder: const CircleBorder(),
-                          splashColor: theme.isDarkMode
-                              ? Colors.white.withOpacity(.15)
-                              : Colors.black.withOpacity(.15),
-                          highlightColor: theme.isDarkMode
-                              ? Colors.white.withOpacity(.08)
-                              : Colors.black.withOpacity(.08),
-                          onTap: () => Navigator.of(context).pop(),
-                          child: Padding(
-                            padding: const EdgeInsets.all(6),
-                            child: Icon(
-                              Icons.close,
-                              size: 20,
-                              color: theme.isDarkMode
-                                  ? WebDarkColors.iconSecondary
-                                  : WebColors.iconSecondary,
-                            ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _buildSymbolSection(theme, marketwatch, updatedTradeData),
+                    Material(
+                      color: Colors.transparent,
+                      shape: const CircleBorder(),
+                      child: InkWell(
+                        customBorder: const CircleBorder(),
+                        splashColor: theme.isDarkMode
+                            ? Colors.white.withOpacity(.15)
+                            : Colors.black.withOpacity(.15),
+                        highlightColor: theme.isDarkMode
+                            ? Colors.white.withOpacity(.08)
+                            : Colors.black.withOpacity(.08),
+                        onTap: () => Navigator.of(context).pop(),
+                        child: Padding(
+                          padding: const EdgeInsets.all(6),
+                          child: Icon(
+                            Icons.close,
+                            size: 20,
+                            color: theme.isDarkMode
+                                ? WebDarkColors.iconSecondary
+                                : WebColors.iconSecondary,
                           ),
                         ),
                       ),
+                    ),
+                  ],
+                ),
+              ),
+              
+              // Content
+              Flexible(
+                fit: FlexFit.loose,
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.only(top: 0, bottom: 20, left: 20, right: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Trade Value Section
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        child: _buildTradeValueSection(theme, updatedTradeData),
+                      ),
+                      
+                      // Trade Details Section
+                      _buildTradeDetailsSection(theme, updatedTradeData),
                     ],
                   ),
                 ),
-                
-                // Scrollable Content
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.only(top: 0, bottom: 16, left: 16, right: 16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Symbol and Price Section
-                        // const SizedBox(height: 24),
-                        
-                        // Action Buttons
-                        // _buildActionButtons(theme, marketwatch, updatedTradeData),
-                        // const SizedBox(height: 24),
-                        
-                        // Trade Value Section
-                        _buildTradeValueSection(theme, updatedTradeData),
-                        const SizedBox(height: 24),
-                        
-                        // Trade Details Section
-                        _buildTradeDetailsSection(theme, updatedTradeData),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
+                    ),
         );
           },
         );
@@ -301,31 +291,20 @@ class _TradeBookDetailScreenWebState extends ConsumerState<TradeBookDetailScreen
             Row(
               children: [
                 Text(
-                  "${displayData.symbol?.replaceAll("-EQ", "").toUpperCase() ?? ''} ${displayData.expDate ?? ''} ${displayData.option ?? ''} ",
-                  style: TextWidget.textStyle(
-                    fontSize: 16,
-                    theme: theme.isDarkMode,
-                    color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                    fw: 1,
+                  "${displayData.symbol?.replaceAll("-EQ", "") ?? ''} ${displayData.expDate ?? ''} ${displayData.option ?? ''} ",
+                  style: WebTextStyles.dialogTitle(
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
                   ),
                 ),
-                 const SizedBox(width: 4),
-                 Container(
-                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: theme.isDarkMode ? colors.primaryDark.withOpacity(0.7) : colors.primaryLight.withOpacity(0.7),
-                    borderRadius: BorderRadius.circular(5),
+                const SizedBox(width: 4),
+                Text(
+                  "${displayData.exch}",
+                  style: WebTextStyles.dialogTitle(
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
                   ),
-                   child: Text(
-                                 "${displayData.exch}",
-                                 style: TextWidget.textStyle(
-                                   fontSize: 12,
-                                   theme: theme.isDarkMode,
-                   color:  colors.textPrimaryDark,
-                                   fw: 1,
-                                 ),
-                               ),
-                 ),
+                ),
               ],
             ),
             const SizedBox(height: 8),
@@ -335,10 +314,10 @@ class _TradeBookDetailScreenWebState extends ConsumerState<TradeBookDetailScreen
               children: [
                 Text(
                   "${displayData.ltp ?? displayData.prc ?? '0.00'}",
-                  style: TextWidget.textStyle(
-                    fontSize: 16,
-                    theme: false,
-                    color: (displayData.change == "null" || displayData.change == null) || displayData.change == "0.00"
+                  style: WebTextStyles.title(
+                    isDarkTheme: theme.isDarkMode,
+                    color: (displayData.change == "null" || displayData.change == null) ||
+                            displayData.change == "0.00"
                         ? theme.isDarkMode
                             ? colors.textSecondaryDark
                             : colors.textSecondaryLight
@@ -349,17 +328,16 @@ class _TradeBookDetailScreenWebState extends ConsumerState<TradeBookDetailScreen
                             : theme.isDarkMode
                                 ? colors.profitDark
                                 : colors.profitLight,
-                    fw: 1,
+                    fontWeight: WebFonts.medium,
                   ),
                 ),
-                const SizedBox(width: 4),
+                const SizedBox(width: 8),
                 Text(
                   "${(double.tryParse(displayData.change ?? '0.00') ?? 0.00).toStringAsFixed(2)} (${displayData.perChange ?? '0.00'}%)",
-                  style: TextWidget.textStyle(
-                    fontSize: 16,
-                    theme: false,
-                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                    fw: 1,
+                  style: WebTextStyles.sub(
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
+                    fontWeight: WebFonts.medium,
                   ),
                 ),
               ],
@@ -455,91 +433,100 @@ class _TradeBookDetailScreenWebState extends ConsumerState<TradeBookDetailScreen
           children: [
             Text(
               "Trade Value",
-              style: TextWidget.textStyle(
-                fontSize: 16,
-                theme: theme.isDarkMode,
-                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                fw: 1,
+              style: WebTextStyles.title(
+                isDarkTheme: theme.isDarkMode,
+                color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
+                fontWeight: WebFonts.medium,
               ),
             ),
-
-             FadeTransition(
-          opacity: _animationController,
-          child: Text(
-            "₹${tradeValue.toStringAsFixed(2)}",
-            style: TextWidget.textStyle(
-              fontSize: 18,
-              theme: false,
-              color: isProfit
-                  ? theme.isDarkMode
-                      ? colors.profitDark
-                      : colors.profitLight
-                  : theme.isDarkMode
-                      ? colors.lossDark
-                      : colors.lossLight,
-              fw: 1,
+            const SizedBox(height: 6),
+            Text(
+              "₹${tradeValue.toStringAsFixed(2)}",
+              style: WebTextStyles.head(
+                isDarkTheme: theme.isDarkMode,
+                color: isProfit
+                    ? theme.isDarkMode
+                        ? colors.profitDark
+                        : colors.profitLight
+                    : theme.isDarkMode
+                        ? colors.lossDark
+                        : colors.lossLight,
+                fontWeight: WebFonts.medium,
+              ),
             ),
-          ),
-        ),
           ],
         ),
-       
       ],
     );
   }
 
   Widget _buildTradeDetailsSection(ThemesProvider theme, TradeBookModel displayData) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Trade Details',
-          style: TextWidget.textStyle(
-            fontSize: 15,
-            theme: theme.isDarkMode,
-            color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-            fw: 1,
-          ),
+    return IntrinsicHeight(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Left column
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildInfoRow("Transaction Type", displayData.trantype == "B" ? "Buy" : "Sell", theme),
+                  _buildInfoRow("Quantity", "${displayData.qty ?? '0'}", theme),
+                  _buildInfoRow("Price", "${displayData.avgprc ?? '0.00'}", theme),
+                  _buildInfoRow("Product", "${displayData.sPrdtAli ?? '-'}", theme),
+                  _buildInfoRow("Order Number", "${displayData.norenordno ?? '-'}", theme),
+                  _buildInfoRow("Trade Time", displayData.norentm ?? "-", theme),
+                ],
+              ),
+            ),
+            // Vertical divider
+            Container(
+              width: 0.5,
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              color: theme.isDarkMode
+                  ? WebDarkColors.divider
+                  : WebColors.divider,
+            ),
+            // Right column
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildInfoRow("Fill Quantity", "${displayData.flqty ?? '0'}", theme),
+                  _buildInfoRow("Fill Price", "${displayData.flprc ?? '0.00'}", theme),
+                  _buildInfoRow("Fill ID", "${displayData.flid ?? '-'}", theme),
+                  _buildInfoRow("Fill Time", displayData.fltm ?? "-", theme),
+                  _buildInfoRow("Fill Shares", "${displayData.fillshares ?? '0'}", theme),
+                  _buildInfoRow("Product Type", "${displayData.prctyp ?? '-'}", theme),
+                ],
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 8),
-        _buildInfoRow("Transaction Type", displayData.trantype == "B" ? "Buy" : "Sell", theme),
-        _buildInfoRow("Quantity", "${displayData.qty ?? '0'}", theme),
-        _buildInfoRow("Price", "${displayData.avgprc ?? '0.00'}", theme),
-        _buildInfoRow("Product", "${displayData.sPrdtAli ?? '-'}", theme),
-        _buildInfoRow("Order Number", "${displayData.norenordno ?? '-'}", theme),
-        _buildInfoRow("Trade Time", displayData.norentm ?? "-", theme),
-        _buildInfoRow("Fill Quantity", "${displayData.flqty ?? '0'}", theme),
-        _buildInfoRow("Fill Price", "${displayData.flprc ?? '0.00'}", theme),
-        _buildInfoRow("Fill ID", "${displayData.flid ?? '-'}", theme),
-        _buildInfoRow("Fill Time", displayData.fltm ?? "-", theme),
-        _buildInfoRow("Fill Shares", "${displayData.fillshares ?? '0'}", theme),
-        _buildInfoRow("Product Type", "${displayData.prctyp ?? '-'}", theme),
-      ],
+      ),
     );
   }
 
   Widget _buildInfoRow(String title, String value, ThemesProvider theme, [Color? valueColor]) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             title,
-            style: TextWidget.textStyle(
-              fontSize: 14,
-              theme: false,
-              color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-              fw: 1,
+            style: WebTextStyles.dialogContent(
+              isDarkTheme: theme.isDarkMode,
+              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
             ),
           ),
           Text(
             value,
-            style: TextWidget.textStyle(
-              fontSize: 14,
-              theme: false,
-              color: valueColor ?? (theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight),
-              fw: 1,
+            style: WebTextStyles.dialogContent(
+              isDarkTheme: theme.isDarkMode,
+              color: valueColor ?? (theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary),
             ),
           ),
         ],

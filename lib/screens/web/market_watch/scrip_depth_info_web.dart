@@ -95,7 +95,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
       () => WebTextStyles.para(
         isDarkTheme: true,
         color: color,
-        fontWeight: WebFonts.semiBold,
+        fontWeight: WebFonts.medium,
       ),
     );
   }
@@ -107,7 +107,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
       () => WebTextStyles.sub(
         isDarkTheme: true,
         color: color,
-        fontWeight: WebFonts.semiBold,
+        fontWeight: WebFonts.medium,
       ),
     );
   }
@@ -542,7 +542,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                               Container(
                                 width: double.infinity,
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 8),
+                                    horizontal: 10, vertical: 10),
                                 decoration: BoxDecoration(
                                     // color:
                                     //     const Color(0xffa3a3a3).withOpacity(0.2),
@@ -658,7 +658,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
 
                                           const Padding(
                                             padding: EdgeInsets.symmetric(
-                                                horizontal: 16),
+                                                horizontal: 10),
                                             child: Column(children: [
                                               // Row(
                                               //     mainAxisAlignment:
@@ -1290,8 +1290,8 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                   Padding(
                                                     padding: const EdgeInsets
                                                         .symmetric(
-                                                        horizontal: 16,
-                                                        vertical: 8),
+                                                        horizontal: 10,
+                                                        vertical: 10),
                                                     child: Column(children: [
                                                       // Old 2-column layout - commented out
                                                       // _buildInfoRow(
@@ -1432,7 +1432,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                               ? WebDarkColors.textSecondary
                                                                               : WebColors.textSecondary,
                                                                           fontWeight:
-                                                                              WebFonts.semiBold,
+                                                                              WebFonts.medium,
                                                                         ),
                                                                       ),
                                                                       Text(
@@ -1444,7 +1444,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                           color:
                                                                               WebDarkColors.secondary,
                                                                           fontWeight:
-                                                                              WebFonts.semiBold,
+                                                                              WebFonts.medium,
                                                                         ),
                                                                       )
                                                                     ]),
@@ -1510,7 +1510,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                               ? WebDarkColors.error
                                                                               : WebColors.error,
                                                                           fontWeight:
-                                                                              WebFonts.semiBold,
+                                                                              WebFonts.medium,
                                                                         ),
                                                                       ),
                                                                       Text(
@@ -1523,7 +1523,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                               ? WebDarkColors.textSecondary
                                                                               : WebColors.textSecondary,
                                                                           fontWeight:
-                                                                              WebFonts.semiBold,
+                                                                              WebFonts.medium,
                                                                         ),
                                                                       )
                                                                     ]),
@@ -1588,7 +1588,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                               .textSecondary,
                                                                       fontWeight:
                                                                           WebFonts
-                                                                              .semiBold,
+                                                                              .medium,
                                                                     ),
                                                                   ),
                                                                   const SizedBox(
@@ -1609,7 +1609,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                               .textSecondary,
                                                                       fontWeight:
                                                                           WebFonts
-                                                                              .semiBold,
+                                                                              .medium,
                                                                     ),
                                                                   ),
                                                                 ],
@@ -1631,7 +1631,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                               .textSecondary,
                                                                       fontWeight:
                                                                           WebFonts
-                                                                              .semiBold,
+                                                                              .medium,
                                                                     ),
                                                                   ),
                                                                   SizedBox(
@@ -1652,7 +1652,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                               .textSecondary,
                                                                       fontWeight:
                                                                           WebFonts
-                                                                              .semiBold,
+                                                                              .medium,
                                                                     ),
                                                                   ),
                                                                 ],
@@ -1929,11 +1929,11 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                                   : theme.isDarkMode
                                                                                       ? WebDarkColors.success
                                                                                       : WebColors.success,
-                                                                              fontWeight: WebFonts.semiBold,
+                                                                              fontWeight: WebFonts.medium,
                                                                             ),
                                                                           ),
                                                                           const SizedBox(
-                                                                              height: 4),
+                                                                              height: 6),
                                                                           Center(
                                                                               child: Text(
                                                                             "${scripInfo.returnsGridview[index]['duration']}",
@@ -1943,7 +1943,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                                 WebTextStyles.para(
                                                                               isDarkTheme: theme.isDarkMode,
                                                                               color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
-                                                                              fontWeight: WebFonts.semiBold,
+                                                                              fontWeight: WebFonts.medium,
                                                                             ),
                                                                           ))
                                                                         ]));
@@ -2022,33 +2022,30 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                           (BuildContext
                                                                               dialogContext) {
                                                                         return Dialog(
-                                                                          backgroundColor: theme.isDarkMode
-                                                                              ? WebDarkColors.surface
-                                                                              : WebColors.surface,
-                                                                          shape:
-                                                                              RoundedRectangleBorder(
-                                                                            borderRadius:
-                                                                                BorderRadius.circular(5),
-                                                                          ),
-                                                                          child:
-                                                                              Container(
-                                                                            width:
-                                                                                600,
-                                                                            constraints:
-                                                                                BoxConstraints(
-                                                                              maxHeight: MediaQuery.of(context).size.height * 0.4,
+                                                                          backgroundColor: Colors.transparent,
+                                                                          child: Container(
+                                                                            width: 500,
+                                                                            height: 520,
+                                                                            decoration: BoxDecoration(
+                                                                              color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
+                                                                              borderRadius: BorderRadius.circular(5),
+                                                                              border: Border.all(
+                                                                                color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
+                                                                              ),
                                                                             ),
-                                                                            child:
-                                                                                Column(
+                                                                            child: Column(
                                                                               mainAxisSize: MainAxisSize.min,
                                                                               children: [
                                                                                 // Header
                                                                                 Container(
-                                                                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                                                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                                                                  margin: const EdgeInsets.only(bottom: 8),
                                                                                   decoration: BoxDecoration(
                                                                                     border: Border(
                                                                                       bottom: BorderSide(
-                                                                                        color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
+                                                                                        color: theme.isDarkMode
+                                                                                            ? WebDarkColors.divider
+                                                                                            : WebColors.divider,
                                                                                       ),
                                                                                     ),
                                                                                   ),
@@ -2057,32 +2054,35 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                                     children: [
                                                                                       Text(
                                                                                         'Futures',
-                                                                                        style: WebTextStyles.sub(
-                          isDarkTheme: theme.isDarkMode,
-                          color: theme.isDarkMode
-                              ? WebDarkColors.textPrimary
-                              : WebColors.textPrimary,
-                          fontWeight: FontWeight.w700,
-                        ),
+                                                                                        style: WebTextStyles.dialogTitle(
+                                                                                          isDarkTheme: theme.isDarkMode,
+                                                                                          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                                                                                        ),
                                                                                       ),
                                                                                       Material(
                                                                                         color: Colors.transparent,
                                                                                         shape: const CircleBorder(),
                                                                                         child: InkWell(
                                                                                           customBorder: const CircleBorder(),
-                                                                                          splashColor: theme.isDarkMode ? Colors.white.withOpacity(.15) : Colors.black.withOpacity(.15),
-                                                                                          highlightColor: theme.isDarkMode ? Colors.white.withOpacity(.08) : Colors.black.withOpacity(.08),
+                                                                                          splashColor: theme.isDarkMode
+                                                                                              ? Colors.white.withOpacity(.15)
+                                                                                              : Colors.black.withOpacity(.15),
+                                                                                          highlightColor: theme.isDarkMode
+                                                                                              ? Colors.white.withOpacity(.08)
+                                                                                              : Colors.black.withOpacity(.08),
                                                                                           onTap: () {
                                                                                             // Unsubscribe from futures WebSocket
                                                                                             scripInfo.requestWSFut(context: context, isSubscribe: false);
                                                                                             Navigator.of(context).pop();
                                                                                           },
                                                                                           child: Padding(
-                                                                                            padding: const EdgeInsets.all(5),
+                                                                                            padding: const EdgeInsets.all(6),
                                                                                             child: Icon(
                                                                                               Icons.close,
-                                                                                              size: 18,
-                                                                                              color: theme.isDarkMode ? WebDarkColors.iconSecondary : WebColors.iconSecondary,
+                                                                                              size: 20,
+                                                                                              color: theme.isDarkMode
+                                                                                                  ? WebDarkColors.iconSecondary
+                                                                                                  : WebColors.iconSecondary,
                                                                                             ),
                                                                                           ),
                                                                                         ),
@@ -2090,45 +2090,13 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                                     ],
                                                                                   ),
                                                                                 ),
-                                                                                // Info message
-                                                                                // Container(
-                                                                                //   padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                                                                                //   decoration: BoxDecoration(
-                                                                                //     color: theme.isDarkMode
-                                                                                //         ? WebDarkColors.primary.withOpacity(0.1)
-                                                                                //         : WebColors.primary.withOpacity(0.1),
-                                                                                //     borderRadius: BorderRadius.circular(6),
-                                                                                //   ),
-                                                                                //   child: Row(
-                                                                                //     mainAxisAlignment: MainAxisAlignment.center,
-                                                                                //     children: [
-                                                                                //       Icon(
-                                                                                //         Icons.info_outline,
-                                                                                //         size: 16,
-                                                                                //         color: theme.isDarkMode
-                                                                                //             ? WebDarkColors.primary
-                                                                                //             : WebColors.primary,
-                                                                                //       ),
-                                                                                //       const SizedBox(width: 8),
-                                                                                //       Text(
-                                                                                //         'Long press to add ${marketWatch.wlName}\'s Watchlist',
-                                                                                //         style: WebTextStyles.para(
-                                                                                //           isDarkTheme: theme.isDarkMode,
-                                                                                //           color: theme.isDarkMode
-                                                                                //               ? WebDarkColors.primary
-                                                                                //               : WebColors.primary,
-                                                                                //           fontWeight: FontWeight.w500,
-                                                                                //         ),
-                                                                                //       ),
-                                                                                //     ],
-                                                                                //   ),
-                                                                                // ),
-                                                                                // const SizedBox(height: 8),
-                                                                                // Futures content - Use IntrinsicHeight to size to content
-                                                                                Consumer(
-                                                                                  builder: (context, ref, _) {
-                                                                                    return const FutureScreenWeb();
-                                                                                  },
+                                                                                // Content
+                                                                                Expanded(
+                                                                                  child: Consumer(
+                                                                                    builder: (context, ref, _) {
+                                                                                      return const FutureScreenWeb();
+                                                                                    },
+                                                                                  ),
                                                                                 ),
                                                                               ],
                                                                             ),
@@ -2158,12 +2126,19 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                   "Set Alert",
                                                               onTap: () {
                                                                 showDialog(
-                                                                  context: context,
-                                                                  barrierDismissible: true,
-                                                                  builder: (BuildContext dialogContext) {
+                                                                  context:
+                                                                      context,
+                                                                  barrierDismissible:
+                                                                      true,
+                                                                  builder:
+                                                                      (BuildContext
+                                                                          dialogContext) {
                                                                     return SetAlertWeb(
-                                                                      depthdata: depthData,
-                                                                      wlvalue: widget.wlValue,
+                                                                      depthdata:
+                                                                          depthData,
+                                                                      wlvalue:
+                                                                          widget
+                                                                              .wlValue,
                                                                     );
                                                                   },
                                                                 );
@@ -2490,8 +2465,6 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
     );
   }
 
- 
-
   Future<void> placeOrderInput(MarketWatchProvider scripInfo, BuildContext ctx,
       GetQuotes depthData, bool transType) async {
     await ref.read(marketWatchProvider).fetchScripInfo(
@@ -2638,7 +2611,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
               style: WebTextStyles.sub(
                 isDarkTheme: theme.isDarkMode,
                 color: theme.isDarkMode ? WebDarkColors.error : WebColors.error,
-                fontWeight: WebFonts.semiBold,
+                fontWeight: WebFonts.medium,
               ),
             ),
             Text(
@@ -2648,7 +2621,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                 color: theme.isDarkMode
                     ? WebDarkColors.textSecondary
                     : WebColors.textSecondary,
-                fontWeight: WebFonts.semiBold,
+                fontWeight: WebFonts.medium,
               ),
             ),
           ],
@@ -2682,7 +2655,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                 color: theme.isDarkMode
                     ? WebDarkColors.textSecondary
                     : WebColors.textSecondary,
-                fontWeight: WebFonts.semiBold,
+                fontWeight: WebFonts.medium,
               ),
             ),
             Text(
@@ -2692,7 +2665,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                 color: theme.isDarkMode
                     ? WebDarkColors.secondary
                     : WebColors.secondary,
-                fontWeight: WebFonts.semiBold,
+                fontWeight: WebFonts.medium,
               ),
             ),
           ],
@@ -2931,11 +2904,10 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
               color: theme.isDarkMode
                   ? WebDarkColors.textSecondary
                   : WebColors.textSecondary,
-              fontWeight: WebFonts.regular,
-              letterSpacing: 0.0,
+              fontWeight: WebFonts.medium,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 6),
           Text(
             value,
             style: WebTextStyles.sub(
@@ -2943,8 +2915,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
               color: theme.isDarkMode
                   ? WebDarkColors.textPrimary
                   : WebColors.textPrimary,
-              fontWeight: WebFonts.semiBold,
-              letterSpacing: 0.0,
+              fontWeight: WebFonts.medium,
             ),
           ),
           const SizedBox(height: 4),

@@ -131,7 +131,7 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
                   children: [
                     // Header: Left 50% scrip title, Right 50% tabs (when available)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                       decoration: BoxDecoration(
                         color: theme.isDarkMode ? WebDarkColors.navBackground : WebColors.navBackground,
                         border: Border(
@@ -151,10 +151,10 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
                                 Text(
                                   "${(depthData?.symname ?? depthData?.symbol ?? depthData?.tsym ?? widget.wlValue.symbol).replaceAll('-EQ', '').toUpperCase()}${depthData?.expDate ?? widget.wlValue.expDate} ${depthData?.option ?? widget.wlValue.option} ${depthData?.exch ?? widget.wlValue.exch}",
                                   overflow: TextOverflow.ellipsis,
-                                  style: WebTextStyles.title(
+                                  style: WebTextStyles.sub(
                                     isDarkTheme: theme.isDarkMode,
                                     color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
-                                    fontWeight: WebFonts.bold,
+                                    fontWeight: WebFonts.medium,
                                   ),
                                 ),
                                 const SizedBox(height: 4),
@@ -186,20 +186,18 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
                                           style: WebTextStyles.sub(
                                             isDarkTheme: theme.isDarkMode,
                                             color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
-                                            fontWeight: WebFonts.bold,
-                                            letterSpacing: 0.0,
+                                            fontWeight: WebFonts.medium,
                                           ),
                                         ),
                                         const SizedBox(width: 8),
                                         Text(
                                           "$chStr (${pcStr}%)",
-                                          style: WebTextStyles.para(
+                                          style: WebTextStyles.sub(
                                             isDarkTheme: theme.isDarkMode,
                                             color: isUp
                                                 ? (theme.isDarkMode ? WebDarkColors.success : WebColors.success)
                                                 : (theme.isDarkMode ? WebDarkColors.error : WebColors.error),
-                                            fontWeight: WebFonts.bold,
-                                            letterSpacing: 0.0,
+                                            fontWeight: WebFonts.medium,
                                           ),
                                         ),
                                       ],
@@ -239,8 +237,8 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
                                   padding: const EdgeInsets.all(8.0),
                                   child: SvgPicture.asset(
                                     assets.searchIcon1,
-                                    width: 20,
-                                    height: 20,
+                                    width: 16,
+                                    height: 16,
                                     color: theme.isDarkMode
                                         ? WebDarkColors.iconSecondary
                                         : WebColors.iconSecondary,
@@ -255,89 +253,64 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
                             // Symbol Name and Expiry Dropdown
                             Row(
                               children: [
-                                Text(
-                                  (depthData?.tsym ?? widget.wlValue.tsym).toUpperCase(),
-                                  style: WebTextStyles.custom(
-                                    fontSize: 13,
-                                    isDarkTheme: theme.isDarkMode,
-                                    color: theme.isDarkMode
-                                        ? WebDarkColors.textPrimary
-                                        : WebColors.textPrimary,
-                                    fontWeight: WebFonts.bold,
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Theme(
-                                  data: Theme.of(context).copyWith(
-                                    popupMenuTheme: PopupMenuThemeData(
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                    ),
-                                  ),
-                                  child: DropdownButtonHideUnderline(
-                                    child: DropdownButton<String>(
-                                      value: mw.selectedExpDate,
-                                      isExpanded: false,
-                                      isDense: true,
-                                      dropdownColor: theme.isDarkMode 
-                                          ? WebDarkColors.surface
-                                          : WebColors.surface,
-                                      icon: Icon(
-                                        Icons.arrow_drop_down,
-                                        color: theme.isDarkMode 
-                                            ? WebDarkColors.textPrimary 
-                                            : WebColors.textPrimary,
-                                        size: 20,
-                                      ),
-                                      style: WebTextStyles.custom(
-                                        fontSize: 13,
-                                        isDarkTheme: theme.isDarkMode,
-                                        color: theme.isDarkMode
-                                            ? WebDarkColors.textPrimary
-                                            : WebColors.textPrimary,
-                                        fontWeight: WebFonts.bold,
-                                      ),
-                                      items: mw.sortDate.map((String date) {
-                                        return DropdownMenuItem<String>(
-                                          value: date,
-                                          child: Text(
-                                            date.replaceAll("-", " "),
-                                            style: WebTextStyles.custom(
-                                              fontSize: 13,
-                                              isDarkTheme: theme.isDarkMode,
-                                              color: theme.isDarkMode
-                                                  ? WebDarkColors.textPrimary
-                                                  : WebColors.textPrimary,
-                                              fontWeight: WebFonts.bold,
-                                            ),
+                                // Text(
+                                //   (depthData?.tsym ?? widget.wlValue.tsym).toUpperCase(),
+                                //   style: WebTextStyles.sub(
+                                //     isDarkTheme: theme.isDarkMode,
+                                //     color: theme.isDarkMode
+                                //         ? WebDarkColors.textPrimary
+                                //         : WebColors.textPrimary,
+                                //     fontWeight: WebFonts.medium,
+                                //   ),
+                                // ),
+                                // const SizedBox(width: 8),
+                                Builder(
+                                  builder: (context) => Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                      onTap: () => _showExpiryDropdown(context, mw, theme),
+                                      borderRadius: BorderRadius.circular(5),
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                        decoration: BoxDecoration(
+                                          border: Border.all(
+                                            color: theme.isDarkMode
+                                                ? WebDarkColors.divider
+                                                : WebColors.divider,
+                                            // width: 1,
                                           ),
-                                        );
-                                      }).toList(),
-                                      onChanged: (String? newValue) async {
-                                        if (newValue != null) {
-                                          for (var i = 0; i < (mw.optExp?.length ?? 0); i++) {
-                                            if (newValue == mw.optExp![i].exd) {
-                                              mw.selecTradSym("${mw.optExp![i].tsym}");
-                                              mw.optExch("${mw.optExp![i].exch}");
-                                            }
-                                          }
-                                          mw.selecexpDate(newValue);
-
-                                          await mw.fetchOPtionChain(
-                                            context: context,
-                                            exchange: mw.optionExch!,
-                                            numofStrike: mw.numStrike,
-                                            strPrc: mw.optionStrPrc,
-                                            tradeSym: mw.selectedTradeSym!,
-                                          );
-                                        }
-                                      },
+                                          borderRadius: BorderRadius.circular(5),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Text(
+                                              mw.selectedExpDate?.replaceAll("-", " ") ?? '',
+                                              style: WebTextStyles.bodySmall(
+                                                isDarkTheme: theme.isDarkMode,
+                                                color: theme.isDarkMode
+                                                    ? WebDarkColors.textPrimary
+                                                    : WebColors.textPrimary,
+                                                fontWeight: WebFonts.medium,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Icon(
+                                              Icons.arrow_drop_down,
+                                              size: 20,
+                                              color: theme.isDarkMode
+                                                  ? WebDarkColors.iconSecondary
+                                                  : WebColors.iconSecondary,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ),
                               ],
                             ),
+                            const SizedBox(width: 4),
                             // const Spacer(),
                             // Basket Toggle Icon
                             Material(
@@ -398,8 +371,8 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
                                   padding: const EdgeInsets.all(8.0),
                                   child: SvgPicture.asset(
                                     assets.searchIcon1,
-                                    width: 20,
-                                    height: 20,
+                                    width: 16,
+                                    height: 16,
                                     color: theme.isDarkMode
                                         ? WebDarkColors.iconSecondary
                                         : WebColors.iconSecondary,
@@ -550,15 +523,13 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
           }
         },
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
           decoration: BoxDecoration(
             color: isSelected
                 ? (theme.isDarkMode
                     ? WebDarkColors.backgroundTertiary
                     : WebColors.backgroundTertiary)
-                : (theme.isDarkMode
-                    ? WebDarkColors.surface
-                    : WebColors.surface),
+                : Colors.white,
             border: Border.all(
               color: isSelected
                   ? (theme.isDarkMode
@@ -567,14 +538,14 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
                   : (theme.isDarkMode
                       ? WebDarkColors.textSecondary
                       : WebColors.textSecondary),
-              width: 1.5,
+              width: isSelected ? 1.5 : 1,
             ),
             borderRadius: BorderRadius.circular(50),
           ),
           child: Text(
             title,
             overflow: TextOverflow.ellipsis,
-            style: WebTextStyles.sub(
+            style: WebTextStyles.tab(
               isDarkTheme: theme.isDarkMode,
               color: isSelected
                   ? (theme.isDarkMode
@@ -583,12 +554,82 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
                   : (theme.isDarkMode
                       ? WebDarkColors.navItem
                       : WebColors.navItem),
-              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
             ),
           ),
         ),
       ),
     );
+  }
+
+  void _showExpiryDropdown(BuildContext context, MarketWatchProvider mw, ThemesProvider theme) {
+    final RenderBox button = context.findRenderObject() as RenderBox;
+    final RenderBox overlay =
+        Overlay.of(context).context.findRenderObject() as RenderBox;
+
+    final RelativeRect position = RelativeRect.fromRect(
+      Rect.fromPoints(
+        button.localToGlobal(Offset.zero, ancestor: overlay),
+        button.localToGlobal(button.size.bottomRight(Offset.zero),
+            ancestor: overlay),
+      ),
+      Offset.zero & overlay.size,
+    );
+
+    showMenu<String>(
+      context: context,
+      position: position,
+      color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
+      elevation: 8,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.zero,
+      ),
+      items: mw.sortDate.map((String date) {
+        final isSelected = date == mw.selectedExpDate;
+        return PopupMenuItem<String>(
+          value: date,
+          padding: EdgeInsets.zero,
+          child: SizedBox(
+            width: 200, // Fixed width
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Text(
+                date.replaceAll("-", " "),
+                style: WebTextStyles.bodySmall(
+                  isDarkTheme: theme.isDarkMode,
+                  color: isSelected
+                      ? (theme.isDarkMode
+                          ? WebDarkColors.primary
+                          : WebColors.primary)
+                      : (theme.isDarkMode
+                          ? WebDarkColors.textPrimary
+                          : WebColors.textPrimary),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ),
+        );
+      }).toList(),
+    ).then((value) async {
+      if (value != null) {
+        for (var i = 0; i < (mw.optExp?.length ?? 0); i++) {
+          if (value == mw.optExp![i].exd) {
+            mw.selecTradSym("${mw.optExp![i].tsym}");
+            mw.optExch("${mw.optExp![i].exch}");
+          }
+        }
+        mw.selecexpDate(value);
+
+        await mw.fetchOPtionChain(
+          context: context,
+          exchange: mw.optionExch!,
+          numofStrike: mw.numStrike,
+          strPrc: mw.optionStrPrc,
+          tradeSym: mw.selectedTradeSym!,
+        );
+      }
+    });
   }
 }
 

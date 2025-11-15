@@ -875,51 +875,61 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
                 ),
                 columns: [
                   DataColumn(
+                    numeric: false, // Left-align text column
                     label: _buildSortableColumnHeader('Instrument', theme, 0),
                     onSort: (columnIndex, ascending) =>
                         _onSortTable(columnIndex, ascending),
                   ),
                   DataColumn(
+                    numeric: true, // Right-align numeric column
                     label: _buildSortableColumnHeader('Net Qty', theme, 1),
                     onSort: (columnIndex, ascending) =>
                         _onSortTable(columnIndex, ascending),
                   ),
                   DataColumn(
+                    numeric: true, // Right-align numeric column
                     label: _buildSortableColumnHeader('Avg Price', theme, 2),
                     onSort: (columnIndex, ascending) =>
                         _onSortTable(columnIndex, ascending),
                   ),
                   DataColumn(
+                    numeric: true, // Right-align numeric column
                     label: _buildSortableColumnHeader('LTP', theme, 3),
                     onSort: (columnIndex, ascending) =>
                         _onSortTable(columnIndex, ascending),
                   ),
                   DataColumn(
+                    numeric: true, // Right-align numeric column
                     label: _buildSortableColumnHeader('Invested', theme, 4),
                     onSort: (columnIndex, ascending) =>
                         _onSortTable(columnIndex, ascending),
                   ),
                   DataColumn(
+                    numeric: true, // Right-align numeric column
                     label: _buildSortableColumnHeader('Current Value', theme, 5),
                     onSort: (columnIndex, ascending) =>
                         _onSortTable(columnIndex, ascending),
                   ),
                   DataColumn(
+                    numeric: true, // Right-align numeric column
                     label: _buildSortableColumnHeader('Day P&L', theme, 6),
                     onSort: (columnIndex, ascending) =>
                         _onSortTable(columnIndex, ascending),
                   ),
                   DataColumn(
+                    numeric: true, // Right-align numeric column
                     label: _buildSortableColumnHeader('Day %', theme, 7),
                     onSort: (columnIndex, ascending) =>
                         _onSortTable(columnIndex, ascending),
                   ),
                   DataColumn(
+                    numeric: true, // Right-align numeric column
                     label: _buildSortableColumnHeader('Overall P&L', theme, 8),
                     onSort: (columnIndex, ascending) =>
                         _onSortTable(columnIndex, ascending),
                   ),
                   DataColumn(
+                    numeric: true, // Right-align numeric column
                     label: _buildSortableColumnHeader('Overall %', theme, 9),
                     onSort: (columnIndex, ascending) =>
                         _onSortTable(columnIndex, ascending),
@@ -1609,6 +1619,7 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
     
     return Row(
       mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Text(
           label,

@@ -48,55 +48,172 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
       stream: ref.watch(websocketProvider).socketDataStream,
       builder: (context, snapshot) {
         final socketDatas = snapshot.data ?? {};
-        
-     
 
         return Padding(
-          padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 6, bottom: 16),
-          child: Container(
-            decoration: BoxDecoration(
-              color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: theme.isDarkMode
-                    ? WebDarkColors.divider.withOpacity(0.6)
-                    : WebColors.divider.withOpacity(0.6),
-                width: 1,
-              ),
-            ),
-            child: Column(
-              children: [
-                // Table Header
-                _buildTableHeader(theme),
-                // Divider
-                Divider(
-                  height: 1,
-                  thickness: 1,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.divider.withOpacity(0.6)
-                      : WebColors.divider.withOpacity(0.6),
+          padding: const EdgeInsets.only(left: 16, right: 16, top: 0, bottom: 16),
+          child: SingleChildScrollView(
+            child: SizedBox(
+              width: double.infinity,
+              child: DataTable(
+                columnSpacing: 10,
+                horizontalMargin: 0,
+                showCheckboxColumn: false,
+                headingRowHeight: 44,
+                headingRowColor: WidgetStateProperty.all(Colors.transparent),
+                dataRowColor: WidgetStateProperty.resolveWith<Color?>(
+                  (Set<WidgetState> states) {
+                    if (states.contains(WidgetState.hovered)) {
+                      return (theme.isDarkMode
+                              ? WebDarkColors.primary
+                              : WebColors.primary)
+                          .withOpacity(0.15);
+                    }
+                    if (states.contains(WidgetState.selected)) {
+                      return (theme.isDarkMode
+                              ? WebDarkColors.primary
+                              : WebColors.primary)
+                          .withOpacity(0.1);
+                    }
+                    return null;
+                  },
                 ),
-                // Table Body - No Expanded, just content-sized
-                SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: List.generate(
-                      future.fut!.length,
-                      (int index) {
-                        return _buildTableRow(
-                          context,
-                          future.fut![index],
-                          socketDatas,
-                          theme,
-                          future,
-                          index,
-                          future.fut!.length,
-                        );
-                      },
+                columns: [
+                  DataColumn(
+                    label: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Symbol',
+                        style: WebTextStyles.tableHeader(
+                          isDarkTheme: theme.isDarkMode,
+                          color: theme.isDarkMode
+                              ? WebDarkColors.textPrimary
+                              : WebColors.textPrimary,
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ],
+                  DataColumn(
+                    label: Align(
+                      alignment: Alignment.centerRight,
+                      child: Text(
+                        'LTP',
+                        style: WebTextStyles.tableHeader(
+                          isDarkTheme: theme.isDarkMode,
+                          color: theme.isDarkMode
+                              ? WebDarkColors.textPrimary
+                              : WebColors.textPrimary,
+                        ),
+                      ),
+                    ),
+                  ),
+                  DataColumn(
+                    label: Align(
+                      alignment: Alignment.centerRight,
+                      child: Text(
+                        '%Change',
+                        style: WebTextStyles.tableHeader(
+                          isDarkTheme: theme.isDarkMode,
+                          color: theme.isDarkMode
+                              ? WebDarkColors.textPrimary
+                              : WebColors.textPrimary,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+                rows: future.fut!.map((displayData) {
+                  // Update with socket data if available
+                  var updatedData = displayData;
+                  final tokenKey = displayData.token?.toString();
+                  
+                  if (tokenKey != null && socketDatas.containsKey(tokenKey)) {
+                    final socketData = socketDatas[tokenKey];
+                    
+                    // Try multiple possible keys for LTP
+                    final lp = socketData['lp']?.toString() ?? 
+                               socketData['ltp']?.toString() ?? 
+                               socketData['last_price']?.toString();
+                    if (lp != null && lp != "null" && lp != "0" && lp != "0.00" && lp.isNotEmpty) {
+                      try {
+                        final ltpValue = double.parse(lp);
+                        if (ltpValue > 0) {
+                          updatedData.ltp = lp;
+                        }
+                      } catch (e) {
+                        // Keep original value if parsing fails
+                      }
+                    }
+
+                    // Try multiple possible keys for change
+                    final chng = socketData['chng']?.toString() ?? 
+                                 socketData['change']?.toString() ?? 
+                                 socketData['net_change']?.toString();
+                    if (chng != null && chng != "null" && chng.isNotEmpty) {
+                      try {
+                        updatedData.change = chng;
+                      } catch (e) {
+                        // Property might be read-only, ignore
+                      }
+                    }
+
+                    // Try multiple possible keys for percentage change
+                    final pc = socketData['pc']?.toString() ?? 
+                               socketData['per_change']?.toString() ?? 
+                               socketData['percentage_change']?.toString() ??
+                               socketData['pchange']?.toString();
+                    if (pc != null && pc != "null" && pc.isNotEmpty) {
+                      try {
+                        updatedData.perChange = pc;
+                      } catch (e) {
+                        // Property might be read-only, ignore
+                      }
+                    }
+                  }
+
+                  final token = updatedData.token?.toString() ?? '';
+                  
+                  return DataRow(
+                    onSelectChanged: (bool? selected) {
+                      // Enable hover detection
+                    },
+                    cells: [
+                      // Symbol cell with hover actions
+                      _buildSymbolCellWithHover(updatedData, theme, future),
+                      // LTP cell with hover
+                      _buildCellWithHover(updatedData, theme, token, DataCell(
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: Text(
+                            updatedData.ltp != null && updatedData.ltp != "null" 
+                                ? "${updatedData.ltp}" 
+                                : updatedData.close != null && updatedData.close != "null" 
+                                    ? "${updatedData.close}" 
+                                    : '0.00',
+                            style: WebTextStyles.tableDataCompact(
+                              isDarkTheme: theme.isDarkMode,
+                              color: _getPriceColor(updatedData, theme),
+                            ),
+                          ),
+                        ),
+                      )),
+                      // Change cell with hover
+                      _buildCellWithHover(updatedData, theme, token, DataCell(
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: Text(
+                            "${(_getChangeValue(updatedData))} "
+                            "(${_getPerChangeValue(updatedData)}%)",
+                            style: WebTextStyles.tableDataCompact(
+                              isDarkTheme: theme.isDarkMode,
+                              color: _getChangeColor(updatedData, theme),
+                            ),
+                          ),
+                        ),
+                      )),
+                    ],
+                  );
+                }).toList(),
+              ),
             ),
           ),
         );
@@ -104,337 +221,86 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
     );
   }
 
-  Widget _buildTableHeader(ThemesProvider theme) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-     decoration: BoxDecoration(
-  color: WebColors.textSecondary.withOpacity(0.1),
-  // borderRadius: const BorderRadius.only(
-  //   topLeft: Radius.circular(8),
-  //   topRight: Radius.circular(8),
-  //   // bottomRight: Radius.circular(8),
-  // ),
-),
-
-      child: Row(
-        children: [
-          // Symbol Column (30%)
-          Expanded(
-            flex: 3,
-            child: Text(
-              "SYMBOL",
-              style: WebTextStyles.para(
-                isDarkTheme: theme.isDarkMode,
-                color: theme.isDarkMode
-                    ? WebDarkColors.textSecondary
-                    : WebColors.textSecondary,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-          // Exchange/Expiry Column
-          // Expanded(
-          //   flex: 2,
-          //   child: Text(
-          //     "Exchange/Expiry",
-          //     style: WebTextStyles.sub(
-          //       isDarkTheme: theme.isDarkMode,
-          //       color: theme.isDarkMode
-          //           ? WebDarkColors.textPrimary
-          //           : WebColors.textPrimary,
-          //       fontWeight: FontWeight.w600,
-          //     ),
-          //   ),
-          // ),
-          // LTP & Change Column
-          Expanded(
-            flex: 3,
-            child: Text(
-              "LTP",
-              textAlign: TextAlign.start,
-              style: WebTextStyles.para(
-                isDarkTheme: theme.isDarkMode,
-                color: theme.isDarkMode
-                    ? WebDarkColors.textSecondary
-                    : WebColors.textSecondary,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-          // Actions Column
-          // const SizedBox(width: 120), // Fixed width for actions
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTableRow(
-    BuildContext context,
-    dynamic displayData,
-    Map socketDatas,
-    ThemesProvider theme,
-    MarketWatchProvider future,
-    int index,
-    int totalRows,
-  ) {
-    // Update with socket data if available
-    var updatedData = displayData;
-    final tokenKey = displayData.token?.toString();
-    
-    if (tokenKey != null && socketDatas.containsKey(tokenKey)) {
-      final socketData = socketDatas[tokenKey];
-      
-      // Try multiple possible keys for LTP
-      final lp = socketData['lp']?.toString() ?? 
-                 socketData['ltp']?.toString() ?? 
-                 socketData['last_price']?.toString();
-      if (lp != null && lp != "null" && lp != "0" && lp != "0.00" && lp.isNotEmpty) {
-        try {
-          final ltpValue = double.parse(lp);
-          if (ltpValue > 0) {
-            updatedData.ltp = lp;
-          }
-        } catch (e) {
-          // Keep original value if parsing fails
-        }
-      }
-
-      // Try multiple possible keys for change
-      final chng = socketData['chng']?.toString() ?? 
-                   socketData['change']?.toString() ?? 
-                   socketData['net_change']?.toString();
-      if (chng != null && chng != "null" && chng.isNotEmpty) {
-        updatedData.change = chng;
-      }
-
-      // Try multiple possible keys for percentage change
-      final pc = socketData['pc']?.toString() ?? 
-                 socketData['per_change']?.toString() ?? 
-                 socketData['percentage_change']?.toString() ??
-                 socketData['pchange']?.toString();
-      if (pc != null && pc != "null" && pc.isNotEmpty) {
-        updatedData.perChange = pc;
-      }
-    }
-
-    final isHovered = _hoveredToken == updatedData.token;
-    
-    return MouseRegion(
-      onEnter: (_) => setState(() => _hoveredToken = updatedData.token),
-      onExit: (_) => setState(() => _hoveredToken = null),
-      child: Material(
-        color: isHovered
-            ?  WebColors.backgroundSecondary.withOpacity(0.01)
-            : Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.zero,
-          splashColor: theme.isDarkMode
-              ? Colors.white.withOpacity(0.15)
-              : Colors.black.withOpacity(0.15),
-          highlightColor: theme.isDarkMode
-              ? Colors.white.withOpacity(0.08)
-              : Colors.black.withOpacity(0.08),
-          onTap: () async {
-            if (_isNavigating) return;
-
-            try {
-              setState(() => _isNavigating = true);
-
-              // Add delay for visual feedback
-              await Future.delayed(const Duration(milliseconds: 150));
-
-              Navigator.pop(context);
-              await ref
-                  .watch(marketWatchProvider)
-                  .calldepthApis(context, updatedData, "");
-            } finally {
-              if (mounted) {
-                Future.delayed(const Duration(milliseconds: 500), () {
-                  if (mounted) {
-                    setState(() => _isNavigating = false);
-                  }
-                });
-              }
-            }
-          },
-          child: Column(
-            children: [
-              Stack(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                    child: Row(
-                      children: [
-                        // Symbol Column
-                        Expanded(
-                          flex: 3,
-                          child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Text(
-                                "${updatedData.tsym}",
-                                style: WebTextStyles.custom(
-                                  fontSize: 13,
-                                  isDarkTheme: theme.isDarkMode,
-                                  color: theme.isDarkMode
-                                      ? WebDarkColors.textPrimary
-                                      : WebColors.textPrimary,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              // if (updatedData.option != null &&
-                              //     updatedData.option!.isNotEmpty)
-                              //   Padding(
-                              //     padding: const EdgeInsets.only(left: 4),
-                              //     child: Text(
-                              //       "${updatedData.option}",
-                              //       style: WebTextStyles.custom(
-                              //         fontSize: 13,
-                              //         isDarkTheme: theme.isDarkMode,
-                              //         color: theme.isDarkMode
-                              //             ? WebDarkColors.textPrimary
-                              //             : WebColors.textPrimary,
-                              //         fontWeight: FontWeight.w700,
-                              //       ),
-                              //     ),
-                              //   ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    // Exchange/Expiry Column
-                    // Expanded(
-                    //   flex: 2,
-                    //   child: Column(
-                    //     crossAxisAlignment: CrossAxisAlignment.start,
-                    //     children: [
-                    //       Row(
-                    //         children: [
-                    //           Text(
-                    //             '${updatedData.exch}',
-                    //             style: WebTextStyles.caption(
-                    //               isDarkTheme: theme.isDarkMode,
-                    //               color: theme.isDarkMode
-                    //                   ? WebDarkColors.textSecondary
-                    //                   : WebColors.textSecondary,
-                    //               fontWeight: FontWeight.w600,
-                    //             ),
-                    //             maxLines: 1,
-                    //             overflow: TextOverflow.ellipsis,
-                    //           ),
-                    //           // if (updatedData.expDate != null &&
-                    //           //     updatedData.expDate!.isNotEmpty)
-                    //           //   Padding(
-                    //           //     padding: const EdgeInsets.only(left: 8),
-                    //           //     child: Text(
-                    //           //       " ${updatedData.expDate}",
-                    //           //       style: WebTextStyles.custom(
-                    //           //         fontSize: 10,
-                    //           //         isDarkTheme: theme.isDarkMode,
-                    //           //         color: theme.isDarkMode
-                    //           //             ? WebDarkColors.textSecondary
-                    //           //             : WebColors.textSecondary,
-                    //           //         fontWeight: FontWeight.w600,
-                    //           //       ),
-                    //           //       maxLines: 1,
-                    //           //       overflow: TextOverflow.ellipsis,
-                    //           //     ),
-                    //           //   ),
-                    //         ],
-                    //       ),
-                    //     ],
-                    //   ),
-                    // ),
-                    // LTP & Change Column
-                    Expanded(
-                      flex: 3,
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            updatedData.ltp != null && updatedData.ltp != "null" 
-                                ? "${updatedData.ltp}" 
-                                : updatedData.close != null && updatedData.close != "null" 
-                                    ? "${updatedData.close}" 
-                                    : '0.00',
-                            style: WebTextStyles.custom(
-                              fontSize: 13,
-                              isDarkTheme: theme.isDarkMode,
-                              color: _getPriceColor(updatedData, theme),
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            "${(updatedData.change != null && updatedData.change != "null" && updatedData.change.isNotEmpty) ? (double.tryParse(updatedData.change)?.toStringAsFixed(2) ?? "0.00") : "0.00"} "
-                            "(${(updatedData.perChange != null && updatedData.perChange != "null" && updatedData.perChange.isNotEmpty) ? (double.tryParse(updatedData.perChange)?.toStringAsFixed(2) ?? "0.00") : "0.00"}%)",
-                            style: WebTextStyles.custom(
-                              fontSize: 13,
-                              isDarkTheme: theme.isDarkMode,
-                              color: _getChangeColor(updatedData, theme),
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              // Overlay Action Buttons - Centered
-              Positioned.fill(
-                child: Center(
-                  child: AnimatedOpacity(
-                    duration: const Duration(milliseconds: 150),
-                    opacity: isHovered ? 1.0 : 0.0,
-                    child: IgnorePointer(
-                      ignoring: !isHovered,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        // Remove border radius on hover overlay container
-                        decoration: const BoxDecoration(
-                          borderRadius: BorderRadius.zero,
-                        ),
-                        child: _buildActionButtons(
-                          context,
-                          updatedData,
-                          future,
-                          theme,
-                          isHovered,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-                ],
-              ),
-              // Bottom border for each table row (except last row)
-              if (index < totalRows - 1)
-                Divider(
-                  height: 1,
-                  thickness: 1,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.divider.withOpacity(0.6)
-                      : WebColors.divider.withOpacity(0.6),
-                ),
-            ],
+  DataCell _buildCellWithHover(dynamic displayData, ThemesProvider theme, String token, DataCell cell) {
+    // Wrap the cell's child with MouseRegion to detect hover anywhere on the row
+    return DataCell(
+      MouseRegion(
+        onEnter: (_) => setState(() => _hoveredToken = token),
+        onExit: (_) => setState(() => _hoveredToken = null),
+        child: SizedBox.expand(
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: cell.child,
           ),
         ),
       ),
     );
   }
 
+  DataCell _buildSymbolCellWithHover(dynamic displayData, ThemesProvider theme, MarketWatchProvider future) {
+    final token = displayData.token?.toString() ?? '';
+    final isHovered = _hoveredToken == token;
+    final displayText = displayData.tsym?.toString() ?? '';
+
+    return DataCell(
+      Builder(
+        builder: (context) => MouseRegion(
+          onEnter: (_) => setState(() => _hoveredToken = token),
+          onExit: (_) => setState(() => _hoveredToken = null),
+          child: SizedBox.expand(
+            child: Row(
+              children: [
+                // Text that takes space, leaves room for buttons
+                Expanded(
+                  flex: isHovered ? 1 : 2,
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Tooltip(
+                      message: displayText,
+                      child: Text(
+                        displayText,
+                        style: WebTextStyles.tableDataCompact(
+                          isDarkTheme: theme.isDarkMode,
+                          color: theme.isDarkMode
+                              ? WebDarkColors.textPrimary
+                              : WebColors.textPrimary,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
+                    ),
+                  ),
+                ),
+                // Buttons on the right side - fade in/out
+                IgnorePointer(
+                  ignoring: !isHovered,
+                  child: AnimatedOpacity(
+                    opacity: isHovered ? 1.0 : 0.0,
+                    duration: const Duration(milliseconds: 150),
+                    child: _buildActionButtons(
+                      context,
+                      displayData,
+                      future,
+                      theme,
+                      isHovered,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+
   Widget _buildActionButtons(
     BuildContext context,
     dynamic displayData,
     MarketWatchProvider future,
     ThemesProvider theme,
-    bool isCentered,
+    bool isHovered,
   ) {
     // Determine if scrip already exists in current watchlist
     final String key = "${displayData.exch}|${displayData.token}";
@@ -460,6 +326,7 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
               print('Buy button error: $e');
             }
           },
+          theme: theme,
         ),
         const SizedBox(width: 6),
         // Sell Button
@@ -476,20 +343,21 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
               print('Sell button error: $e');
             }
           },
+          theme: theme,
         ),
         const SizedBox(width: 6),
         // Chart Button
         _buildHoverButton(
           icon: Icons.bar_chart,
-          color: Colors.white,
-          backgroundColor: theme.isDarkMode
-              ? WebDarkColors.textSecondary
-              : WebColors.textSecondary,
+          color: Colors.black,
+          backgroundColor: Colors.white,
+          borderRadius: 5.0,
           onPressed: () {
             // Navigate to chart screen - same logic as watchlist_card_web
             Navigator.pop(context);
             ref.read(marketWatchProvider).calldepthApis(context, displayData, "");
           },
+          theme: theme,
         ),
         const SizedBox(width: 6),
         // Save Button (Add to watchlist)
@@ -498,10 +366,8 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
           color: isInWatchlist 
               ? (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary)
               : (theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary),
-          backgroundColor: Colors.transparent,
-          borderColor: isInWatchlist 
-              ? (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary)
-              : (theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary),
+          backgroundColor: Colors.white,
+          borderRadius: 5.0,
           onPressed: () async {
             final bool add = !isInWatchlist;
             final success = await future.addDelMarketScrip(
@@ -511,10 +377,10 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
               add,
               true,
               false,
-              true,
+              false, // Set isOptionStike to false to prevent provider's Fluttertoast
             );
             if (success && mounted) {
-              // Web toast using ResponsiveSnackBar
+              // Show toast message (provider only shows Fluttertoast for add case)
               if (add) {
                 ResponsiveSnackBar.showSuccess(context, 'Added to ${future.wlName}');
               } else {
@@ -524,6 +390,7 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
               setState(() {});
             }
           },
+          theme: theme,
         ),
       ],
     );
@@ -536,24 +403,33 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
     required Color color,
     Color? backgroundColor,
     Color? borderColor,
+    double? borderRadius,
     required VoidCallback? onPressed,
+    required ThemesProvider theme,
   }) {
-    final theme = ref.read(themeProvider);
+    final isLongLabel = label != null && label.length > 1;
+    final borderRadiusValue = borderRadius ?? 5.0;
     return SizedBox(
-      width: 28,
-      height: 28,
+      width: isLongLabel ? null : 25,
+      height: 25,
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(5),
+          borderRadius: BorderRadius.circular(borderRadiusValue),
           splashColor: color.withOpacity(0.15),
           highlightColor: color.withOpacity(0.08),
           onTap: onPressed,
           child: Container(
+            padding: isLongLabel ? const EdgeInsets.symmetric(horizontal: 8) : null,
             decoration: BoxDecoration(
               color: backgroundColor ?? Colors.transparent,
-              border: borderColor != null ? Border.all(color: borderColor, width: 1.5) : null,
-              borderRadius: BorderRadius.circular(5),
+              borderRadius: BorderRadius.circular(borderRadiusValue),
+              border: borderColor != null
+                  ? Border.all(
+                      color: borderColor,
+                      width: 1.3,
+                    )
+                  : null,
             ),
             child: Center(
               child: svgIcon != null
@@ -566,16 +442,15 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
                   : icon != null
                       ? Icon(
                           icon,
-                          size: 14,
+                          size: 16,
                           color: color,
+                          weight: 400,
                         )
                       : Text(
                           label ?? "",
-                          style: WebTextStyles.custom(
-                            fontSize: 11,
+                          style: WebTextStyles.buttonXs(
                             isDarkTheme: theme.isDarkMode,
                             color: color,
-                            fontWeight: FontWeight.w600,
                           ),
                         ),
             ),
@@ -583,6 +458,22 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
         ),
       ),
     );
+  }
+
+  String _getChangeValue(dynamic displayData) {
+    final change = displayData.change?.toString();
+    if (change != null && change != "null" && change.isNotEmpty) {
+      return (double.tryParse(change)?.toStringAsFixed(2) ?? "0.00");
+    }
+    return "0.00";
+  }
+
+  String _getPerChangeValue(dynamic displayData) {
+    final perChange = displayData.perChange?.toString();
+    if (perChange != null && perChange != "null" && perChange.isNotEmpty) {
+      return (double.tryParse(perChange)?.toStringAsFixed(2) ?? "0.00");
+    }
+    return "0.00";
   }
 
   Color _getPriceColor(dynamic displayData, ThemesProvider theme) {

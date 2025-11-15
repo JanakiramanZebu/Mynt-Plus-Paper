@@ -317,24 +317,42 @@ class OrderProvider extends DefaultChangeNotifier {
   }
 
   changeTabIndex(int index, BuildContext context) {
+    // Skip if already on this tab (prevents unnecessary operations)
+    if (_selectedTab == index) return;
+    
     // Unfocus any active text fields when switching tabs
     FocusScope.of(context).unfocus();
 
     _selectedTab = index;
-    tabSize();
+    
+    // Only update tab sizes when necessary (defer to avoid blocking)
+    Future.microtask(() => tabSize());
+    
+    // Hide search for all tabs
     showOrderSearch(false);
     showGTTOrderSearch(false);
     ref.read(marketWatchProvider).showAlertPendingSearch(false);
     showSipSearch(false);
     ref.read(marketWatchProvider).clearAlertSearch();
-    clearOrderSearch();
-    clearGttOrderSearch();
-    clearSipSearch();
-    orderSearch(orderSearchCtrl.text, context);
+    
+    // Clear search only if switching away from search-enabled tabs
+    if (index > 3) {
+      clearOrderSearch();
+      clearGttOrderSearch();
+      clearSipSearch();
+    }
+    
+    // Only perform search if there's text and we're on a searchable tab
+    if (orderSearchCtrl.text.isNotEmpty && index <= 3) {
+      orderSearch(orderSearchCtrl.text, context);
+    }
+    
+    // Only subscribe to WebSocket for tabs that need it (0-3)
     if (index <= 3) {
       requestWSOrderBook(isSubscribe: true, context: context);
     }
 
+    // Only fetch basket data when switching to basket tab
     if (kIsWeb ? index == 5 : index == 4) {
       print("=== TAB SWITCH TO BASKET ===");
       print("Calling getBasketName()...");

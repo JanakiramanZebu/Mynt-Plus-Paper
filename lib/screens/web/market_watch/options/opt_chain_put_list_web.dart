@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_swipe_action_cell/flutter_swipe_action_cell.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import '../../../../models/marketwatch_model/get_quotes.dart';
 import '../../../../models/marketwatch_model/opt_chain_model.dart';
@@ -11,13 +12,13 @@ import '../../../../provider/market_watch_provider.dart';
 import '../../../../provider/order_provider.dart';
 import '../../../../provider/thems.dart';
 import '../../../../provider/websocket_provider.dart';
-import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
 import '../../../../res/web_colors.dart';
 import '../../../../res/global_font_web.dart';
 import '../../../../sharedWidget/list_divider.dart';
 import '../../../../utils/responsive_navigation.dart';
 import '../../../../sharedWidget/snack_bar.dart';
+import '../../../../utils/responsive_snackbar.dart';
 // import 'basket_selection_bottom_sheet.dart';
 
 class OptChainPutList extends StatelessWidget {
@@ -317,11 +318,12 @@ class _OptionChainPutRowState extends State<_OptionChainPutRow> {
           onEnter: (_) => setState(() => _isHovered = true),
           onExit: (_) => setState(() => _isHovered = false),
         child: InkWell(
-          onLongPress: () => {
-            widget.option.tsym!.contains("|||")
-                ? _symbolenotFound(context)
-                : _handleLongPress(context, widget.option)
-          },
+          // Long press disabled - using hover icon for add to watchlist instead
+          // onLongPress: () => {
+          //   widget.option.tsym!.contains("|||")
+          //       ? _symbolenotFound(context)
+          //       : _handleLongPress(context, widget.option)
+          // },
           onTap: () => {
             widget.option.tsym!.contains("|||")
                 ? _symbolenotFound(context)
@@ -331,9 +333,15 @@ class _OptionChainPutRowState extends State<_OptionChainPutRow> {
           },
           child: Container(
             height: 40,
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-              child: _buildCompleteDataRow(theme),
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+            color: _isHovered
+                ? (theme.isDarkMode
+                    ? WebDarkColors.primary
+                    : WebColors.primary)
+                    .withOpacity(0.15)
+                : Colors.transparent,
+            child: _buildCompleteDataRow(theme),
+          ),
           ),
         ),
       ),
@@ -362,11 +370,9 @@ class _OptionChainPutRowState extends State<_OptionChainPutRow> {
                       Expanded(
                         child: Text(
                               _lp,
-                              style: WebTextStyles.custom(
-                                fontSize: 13,
+                              style: WebTextStyles.tableDataCompact(
                                 isDarkTheme: theme.isDarkMode,
                                 color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
-                                fontWeight: FontWeight.w700,
                               ),
                               textAlign: TextAlign.end,
                             ),
@@ -374,11 +380,9 @@ class _OptionChainPutRowState extends State<_OptionChainPutRow> {
                       Expanded(
                         child: Text(
                           "${_perChange}%",
-                          style: WebTextStyles.custom(
-                            fontSize: 13,
+                          style: WebTextStyles.tableDataCompact(
                             isDarkTheme: theme.isDarkMode,
                             color: changeColor,
-                            fontWeight: FontWeight.w700,
                           ),
                           textAlign: TextAlign.end,
                         ),
@@ -388,7 +392,7 @@ class _OptionChainPutRowState extends State<_OptionChainPutRow> {
                 ],
               ),
             ),
-            const SizedBox(width: 4),
+                  const SizedBox(width: 6),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
@@ -399,11 +403,10 @@ class _OptionChainPutRowState extends State<_OptionChainPutRow> {
                       Expanded(
                         child: Text(
                           _oiLack,
-                          style: WebTextStyles.custom(
-                            fontSize: 13,
+                          style: WebTextStyles.tableDataCompact(
                             isDarkTheme: theme.isDarkMode,
                             color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
-                            fontWeight: FontWeight.w700,
+                           
                           ),
                           textAlign: TextAlign.end,
                         ),
@@ -411,13 +414,12 @@ class _OptionChainPutRowState extends State<_OptionChainPutRow> {
                       Expanded(
                         child: Text(
                           "${_oiPerChng == "NaN" ? "0.00" : _oiPerChng}%",
-                          style: WebTextStyles.custom(
-                            fontSize: 13,
+                          style: WebTextStyles.tableDataCompact(
                             isDarkTheme: theme.isDarkMode,
                             color: (_oiPerChng.startsWith("-"))
                                 ? (theme.isDarkMode ? WebDarkColors.loss : WebColors.loss)
                                 : (theme.isDarkMode ? WebDarkColors.profit : WebColors.profit),
-                            fontWeight: FontWeight.w700,
+                          
                           ),
                           textAlign: TextAlign.end,
                         ),
@@ -445,11 +447,11 @@ class _OptionChainPutRowState extends State<_OptionChainPutRow> {
             ),
           ],
         ),
-        // Buttons positioned on top (left side for puts)
+        // Buttons positioned on top - aligned to left edge of PUTS column
         if (_isHovered)
           Positioned(
             top: 0,
-            left: 0,
+            left: 8,
             child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -462,7 +464,7 @@ class _OptionChainPutRowState extends State<_OptionChainPutRow> {
                     },
                     theme: theme,
                   ),
-                  const SizedBox(width: 4),
+                  const SizedBox(width: 6),
                   _buildHoverButton(
                     label: 'B',
                     color: Colors.white,
@@ -472,21 +474,25 @@ class _OptionChainPutRowState extends State<_OptionChainPutRow> {
                     },
                     theme: theme,
                   ),
-                  const SizedBox(width: 4),
+                  const SizedBox(width: 6),
                   _buildHoverButton(
                     icon: Icons.bar_chart,
-                    color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
+                    color: Colors.black,
+                    backgroundColor: Colors.white,
+                    borderRadius: 5.0,
                     onPressed: () async {
                       await _handleChartTap(context, widget.option);
                     },
                     theme: theme,
                   ),
-                  const SizedBox(width: 4),
+                  const SizedBox(width: 6),
                   _buildHoverButton(
-                    icon: _isInWatchlist ? Icons.bookmark : Icons.bookmark_border,
+                    svgIcon: _isInWatchlist ? assets.bookmarkIcon : assets.bookmarkedIcon,
                     color: _isInWatchlist 
                         ? (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary)
                         : (theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary),
+                    backgroundColor: Colors.white,
+                    borderRadius: 5.0,
                     onPressed: () async {
                       await _handleSaveToWatchlist(context, widget.option);
                     },
@@ -507,12 +513,17 @@ class _OptionChainPutRowState extends State<_OptionChainPutRow> {
 
     return Text(
       displayValue,
-      style: WebTextStyles.custom(
-        fontSize: isPrimary ? 13 : 12,
-        isDarkTheme: theme.isDarkMode,
-        color: textColor,
-        fontWeight: isPrimary ? FontWeight.w700 : FontWeight.w500,
-      ),
+      style: isPrimary 
+          ? WebTextStyles.tableDataCompact(
+              isDarkTheme: theme.isDarkMode,
+              color: textColor,
+           
+            )
+          : WebTextStyles.tableDataCompact(
+              isDarkTheme: theme.isDarkMode,
+              color: textColor,
+            
+            ),
       textAlign: alignEnd ? TextAlign.end : TextAlign.start,
     );
   }
@@ -520,42 +531,60 @@ class _OptionChainPutRowState extends State<_OptionChainPutRow> {
   Widget _buildHoverButton({
     String? label,
     IconData? icon,
+    String? svgIcon,
     required Color color,
     Color? backgroundColor,
+    Color? borderColor,
+    double? borderRadius,
     required VoidCallback? onPressed,
     required ThemesProvider theme,
   }) {
+    final isLongLabel = label != null && label.length > 1;
+    final borderRadiusValue = borderRadius ?? 5.0;
     return SizedBox(
-      width: 24,
-      height: 24,
+      width: isLongLabel ? null : 25,
+      height: 25,
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(4),
+          borderRadius: BorderRadius.circular(borderRadiusValue),
           splashColor: color.withOpacity(0.15),
           highlightColor: color.withOpacity(0.08),
           onTap: onPressed,
           child: Container(
+            padding: isLongLabel ? const EdgeInsets.symmetric(horizontal: 8) : null,
             decoration: BoxDecoration(
               color: backgroundColor ?? Colors.transparent,
-              borderRadius: BorderRadius.circular(4),
+              borderRadius: BorderRadius.circular(borderRadiusValue),
+              border: borderColor != null
+                  ? Border.all(
+                      color: borderColor,
+                      width: 1.3,
+                    )
+                  : null,
             ),
             child: Center(
-              child: icon != null
-                  ? Icon(
-                      icon,
-                      size: 14,
+              child: svgIcon != null
+                  ? SvgPicture.asset(
+                      svgIcon,
+                      height: 16,
+                      width: 16,
                       color: color,
                     )
-                  : Text(
-                      label ?? "",
-                      style: WebTextStyles.custom(
-                        fontSize: 10,
-                        isDarkTheme: theme.isDarkMode,
-                        color: color,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                  : icon != null
+                      ? Icon(
+                          icon,
+                          size: 16,
+                          color: color,
+                          weight: 400,
+                        )
+                      : Text(
+                          label ?? "",
+                          style: WebTextStyles.buttonXs(
+                            isDarkTheme: theme.isDarkMode,
+                            color: color,
+                          ),
+                        ),
             ),
           ),
         ),
@@ -622,15 +651,19 @@ class _OptionChainPutRowState extends State<_OptionChainPutRow> {
 
     if (isCurrentlyInWatchlist) {
       // Delete from watchlist
-      scripData.addDelMarketScrip(
+      final success = await scripData.addDelMarketScrip(
         scripData.wlName,
         scripToken,
         context,
         false, // delete
         true,
         false,
-        true,
+        false, // Set isOptionStike to false to prevent provider's Fluttertoast
       );
+      if (success && mounted) {
+        ResponsiveSnackBar.showInfo(context, 'Removed from ${scripData.wlName}');
+        setState(() {});
+      }
     } else {
       // Add to watchlist
       provider.read(websocketProvider).establishConnection(
@@ -639,15 +672,19 @@ class _OptionChainPutRowState extends State<_OptionChainPutRow> {
         context: context,
       );
       
-      scripData.addDelMarketScrip(
+      final success = await scripData.addDelMarketScrip(
         scripData.wlName,
         scripToken,
         context,
         true, // add
         true,
         false,
-        true,
+        false, // Set isOptionStike to prevent provider's Fluttertoast
       );
+      if (success && mounted) {
+        ResponsiveSnackBar.showSuccess(context, 'Added to ${scripData.wlName}');
+        setState(() {});
+      }
     }
     
     // Update watchlist status after a brief delay to allow for API response
@@ -736,7 +773,7 @@ Widget _buildOIData(ThemesProvider theme) {
             height: 1.5,
             width: MediaQuery.of(context).size.width * 0.25 * lineWidthPercentage,
             decoration: BoxDecoration(
-              color: theme.isDarkMode ? colors.lossDark : colors.lossLight,
+              color: theme.isDarkMode ? WebDarkColors.loss : WebColors.loss,
               borderRadius: BorderRadius.circular(1),
             ),
           ),
@@ -847,28 +884,36 @@ Widget _buildOIData(ThemesProvider theme) {
   static TextStyle _getActionStyle(Color color) {
     return _actionStyleCache.putIfAbsent(
       color,
-      () =>
-          TextWidget.textStyle(fontSize: 18, color: color, theme: false, fw: 1),
+      () => WebTextStyles.head(
+        isDarkTheme: false,
+        color: color,
+        fontWeight: WebFonts.regular,
+      ),
     );
   }
 
   static TextStyle _getTextStyle(Color color, String perChange, ThemesProvider theme) {
-    Color textColor = theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight;
+    Color textColor = theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary;
     if (perChange != "0.00" && perChange.isNotEmpty) {
       textColor = perChange.startsWith("-") 
-          ? (theme.isDarkMode ? colors.lossDark : colors.lossLight) 
-          : (theme.isDarkMode ? colors.profitDark : colors.profitLight);
+          ? (theme.isDarkMode ? WebDarkColors.loss : WebColors.loss) 
+          : (theme.isDarkMode ? WebDarkColors.profit : WebColors.profit);
     }
-    return TextWidget.textStyle(fontSize: 14, color: textColor, theme: false);
+    return WebTextStyles.sub(
+      isDarkTheme: theme.isDarkMode,
+      color: textColor,
+    );
   }
 
   static TextStyle _getPercentageStyle(String? value, ThemesProvider theme) {
-        Color color = theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight;
+        Color color = theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary;
         // if (value != null && value != "0.00") {
         //   color = value.startsWith("-") ? colors.darkred : colors.ltpgreen;
         // }
-        return TextWidget.textStyle(
-            fontSize: 12, color: color, theme: false,);
+        return WebTextStyles.para(
+            isDarkTheme: theme.isDarkMode, 
+            color: color,
+        );
   }
 }
 

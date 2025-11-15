@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:ui';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
@@ -33,6 +34,7 @@ import '../../../res/global_font_web.dart';
 import '../../../res/web_colors.dart';
 import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/internet_widget.dart';
+import '../../../sharedWidget/splash_loader.dart';
 import 'market_watch/index/default_index_list_web.dart';
 import 'splitter_widget.dart';
 // import '../Mobile/market_watch/tv_chart/webview_chart.dart';
@@ -71,6 +73,8 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
   int _panelCount = 2; // Fixed to 2 panels
   bool _isInitialLoad = true; // Track if this is the initial load
   
+  // Track loading states for each screen type
+  final Map<ScreenType, bool> _screenLoadingStates = {};
 
   @override
   void initState() {
@@ -427,37 +431,74 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
 
   _buildAppBar(bool isDarkMode) {
     return PreferredSize(
-      preferredSize: Size.fromHeight(54), // Increased height for better visibility
-      child: AppBar(
-        shadowColor: Colors.transparent,
-        elevation: 0,
-        backgroundColor: WebDarkColors.background, // Web dark background
-        automaticallyImplyLeading: false,
-        title: Row(
-          children: [
-            // Logo section
-            SvgPicture.asset(
-              assets.appLogoIcon,
-              width: 100,
-              height: 38,
-              fit: BoxFit.contain,
+      preferredSize: const Size.fromHeight(58), // Reduced height for compact design
+      child: RepaintBoundary(
+        child: Container(
+          decoration: BoxDecoration(
+            // Clean minimal - white background
+            color: isDarkMode
+                ? WebDarkColors.surface
+                : Colors.white,
+            // Subtle border at bottom
+            border: Border(
+              bottom: BorderSide(
+                color: isDarkMode
+                    ? WebDarkColors.divider.withOpacity(0.3)
+                    : WebColors.divider.withOpacity(0.2),
+                width: 1,
+              ),
             ),
-            const SizedBox(width: 16),
-            // Top indices section
-            const Expanded(
-              child: SingleChildScrollView(
-                child: DefaultIndexListWeb(src: true)),
+            // Soft shadow for depth
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+                spreadRadius: 0,
+              ),
+            ],
+          ),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+            child: Row(
+              children: [
+                // Logo section
+                RepaintBoundary(
+                  child: SvgPicture.asset(
+                    assets.appLogoIcon,
+                    width: 100,
+                    height: 38,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+                const SizedBox(width: 20),
+                // Top indices section
+                Expanded(
+                  child: Container(
+                    height: 48, // Fixed height to prevent overflow
+                    color: isDarkMode ? WebDarkColors.surface : Colors.white, // White background for indices in light mode
+                    child: const SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: DefaultIndexListWeb(src: true),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 20),
+                // Navigation screens
+                _buildNavigationScreens(isDarkMode),
+                const SizedBox(width: 12),
+                // Swap button
+                RepaintBoundary(
+                  child: _buildSwapButton(isDarkMode),
+                ),
+                const SizedBox(width: 12),
+                // Profile section
+                RepaintBoundary(
+                  child: _buildProfileSection(isDarkMode),
+                ),
+              ],
             ),
-            // const Spacer(),
-            // Navigation screens
-            _buildNavigationScreens(isDarkMode),
-            const SizedBox(width: 16),
-            // Swap button
-            _buildSwapButton(isDarkMode),
-            const SizedBox(width: 16),
-            // Profile section
-            _buildProfileSection(isDarkMode),
-          ],
+          ),
         ),
       ),
     );
@@ -626,11 +667,17 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
               // Add single border based on panel position
               border: Border(
                 right: index == 0 ? BorderSide(
-                  color: theme.isDarkMode ? colors.colorGrey.withOpacity(0.3) : colors.colorGrey.withOpacity(0.2),
+                color: theme.isDarkMode
+                        ? WebDarkColors.divider.withOpacity(0.5)
+                        : WebColors.divider,
+                    width: 1,
                   // width: 1,
                 ) : BorderSide.none,
                 left: index == 1 ? BorderSide(
-                  color: theme.isDarkMode ? colors.colorGrey.withOpacity(0.3) : colors.colorGrey.withOpacity(0.2),
+                color: theme.isDarkMode
+                        ? WebDarkColors.divider.withOpacity(0.5)
+                        : WebColors.divider,
+                    width: 1,
                   // width: 1,
                 ) : BorderSide.none,
               ),
@@ -1013,10 +1060,48 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
             left: 0,
             right: 0,
             child: Container(
-              height: 40,
+              height: 45,
               decoration: BoxDecoration(
-                color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary.withOpacity(0.2),
-               
+                // Window top bar - slight grey to indicate it's a window top bar
+                color: theme.isDarkMode
+                    ? WebDarkColors.surface
+                    : WebColors.surface, // Subtle grey for window top bar
+                // Window borders - all sides to make it look like a distinct window
+                border: Border(
+                  top: BorderSide(
+                    color: theme.isDarkMode
+                        ? WebDarkColors.divider.withOpacity(0.5)
+                        : WebColors.divider,
+                    width: 1,
+                  ),
+                  bottom: BorderSide(
+                    color: theme.isDarkMode
+                        ? WebDarkColors.divider.withOpacity(0.5)
+                        : WebColors.divider,
+                    width: 1,
+                  ),
+                  left: BorderSide(
+                    color: theme.isDarkMode
+                        ? WebDarkColors.divider.withOpacity(0.5)
+                        : WebColors.divider,
+                    width: 1,
+                  ),
+                  right: BorderSide(
+                    color: theme.isDarkMode
+                        ? WebDarkColors.divider.withOpacity(0.5)
+                        : WebColors.divider,
+                    width: 1,
+                  ),
+                ),
+                // Shadow to make it look elevated like a window
+                // boxShadow: [
+                //   BoxShadow(
+                //     color: Colors.black.withOpacity(0.05),
+                //     blurRadius: 4,
+                //     offset: const Offset(0, 2),
+                //     spreadRadius: 0,
+                //   ),
+                // ],
               ),
               child: Row(
                 children: [
@@ -1233,23 +1318,23 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
       title: title,
       isActive: isActive,
       onTap: onTap,
+      isDarkMode: isDarkMode,
     );
   }
 
-  // Build swap button for app bar
+  // Build swap button for app bar with glassmorphism
   Widget _buildSwapButton(bool isDarkMode) {
-    return InkWell(
-      onTap: _handleSwapPanels,
-      borderRadius: BorderRadius.circular(20),
-      splashColor: Colors.white.withOpacity(0.2),
-      highlightColor: Colors.white.withOpacity(0.1),
-      hoverColor: Colors.white.withOpacity(0.1),
-      child: Container(
-        padding: const EdgeInsets.all(8),
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: InkWell(
+        onTap: _handleSwapPanels,
+        borderRadius: BorderRadius.circular(10),
+        splashColor: (isDarkMode ? WebDarkColors.primary : WebColors.primary).withOpacity(0.2),
+        highlightColor: (isDarkMode ? WebDarkColors.primary : WebColors.primary).withOpacity(0.1),
         child: Icon(
           Icons.swap_horiz,
-          color: WebDarkColors.textPrimary, // Always white on dark background
-          size: 24,
+          color: isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          size: 22,
         ),
       ),
     );
@@ -1286,6 +1371,19 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
         return Consumer(
           builder: (context, ref, _) {
             final portfolio = ref.watch(portfolioProvider);
+            final theme = ref.watch(themeProvider);
+            final isLoading = _screenLoadingStates[ScreenType.holdings] ?? false;
+            final hasData = portfolio.holdingsModel != null && portfolio.holdingsModel!.isNotEmpty;
+            
+            // Show loader if local loading state is true, provider loading is true, or no data yet
+            if (isLoading || portfolio.holdloader || !hasData) {
+              return Container(
+                width: double.infinity,
+                height: double.infinity,
+                color: theme.isDarkMode ? WebDarkColors.background : Colors.white,
+                child: const CircularLoaderImage(),
+              );
+            }
             return HoldingScreenWeb(listofHolding: portfolio.holdingsModel ?? []);
           },
         );
@@ -1293,13 +1391,29 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
         return Consumer(
           builder: (context, ref, _) {
             final portfolio = ref.watch(portfolioProvider);
+            final theme = ref.watch(themeProvider);
+            final isLoading = _screenLoadingStates[ScreenType.positions] ?? false;
+            final hasData = portfolio.allPostionList.isNotEmpty;
+            
+            // Show loader if local loading state is true, provider loading is true, or no data yet
+            if (isLoading || portfolio.posloader || !hasData) {
+              return Container(
+                width: double.infinity,
+                height: double.infinity,
+                color: theme.isDarkMode ? WebDarkColors.background : Colors.white,
+                child: const CircularLoaderImage(),
+              );
+            }
             return PositionScreenWeb(listofPosition: portfolio.allPostionList);
           },
         );
       case ScreenType.orderBook:
-        return const OrderBookScreenWeb();
+        // Use lazy loading to prevent blocking UI
+        return _LazyOrderBookScreen(
+          isLoading: _screenLoadingStates[ScreenType.orderBook] ?? false,
+        );
       case ScreenType.funds:
-        return const SecureFundWeb();
+        return _LazyFundScreen();
       case ScreenType.mutualFund:
         return const MfmainScreen();
       case ScreenType.ipo:
@@ -2114,7 +2228,8 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
       _panels[targetPanelIndex].activeScreenIndex = 0;
     });
     
-    _saveLayout();
+    // Save layout in background (non-blocking)
+    Future.microtask(() => _saveLayout());
   }
 
   // Add screen as a panel tab (only for profile screens)
@@ -2149,27 +2264,49 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
   }
 
   void _handleOrderBookTap() async {
-    // Replace screen instead of adding as tab
+    // Set loading state immediately
+    setState(() {
+      _screenLoadingStates[ScreenType.orderBook] = true;
+    });
+    
+    // Replace screen immediately for instant UI response - this triggers setState synchronously
     _replaceScreenInPanel(ScreenType.orderBook);
     
-    final portfolio = ref.read(portfolioProvider);
-    final orderProviderRef = ref.read(orderProvider);
+    // Allow UI to update first, then do background work
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.microtask(() async {
+        if (!mounted) return;
+        
+        final portfolio = ref.read(portfolioProvider);
+        final orderProviderRef = ref.read(orderProvider);
 
-    portfolio.cancelTimer();
+        portfolio.cancelTimer();
 
-    // Unsubscribe from other real-time data
-    // await ref.read(marketWatchProvider).requestMWScrip(context: context, isSubscribe: false);
-    await portfolio.requestWSHoldings(context: context, isSubscribe: false);
-    await portfolio.requestWSPosition(context: context, isSubscribe: false);
-    await orderProviderRef.requestWSOrderBook(context: context, isSubscribe: true);
+        // Unsubscribe from other real-time data (non-blocking, fire and forget)
+        portfolio.requestWSHoldings(context: context, isSubscribe: false);
+        portfolio.requestWSPosition(context: context, isSubscribe: false);
+        
+        // Subscribe to order book websocket (non-blocking)
+        orderProviderRef.requestWSOrderBook(context: context, isSubscribe: true);
 
-    // Fetch order data in the background
-    Future.microtask(() {
-      if (mounted) {
-        orderProviderRef.fetchOrderBook(context, false);
-        orderProviderRef.fetchTradeBook(context);
-        orderProviderRef.fetchSipOrderHistory(context);
-      }
+        // Fetch order data in the background (non-blocking)
+        // Don't wait for API - screen will show immediately and handle its own loading state
+        if (mounted) {
+          // Clear loading state after widget loads (screen will show)
+          Future.delayed(const Duration(milliseconds: 100), () {
+            if (mounted) {
+              setState(() {
+                _screenLoadingStates[ScreenType.orderBook] = false;
+              });
+            }
+          });
+          
+          // Fetch data in background - screen will update when data arrives
+          orderProviderRef.fetchOrderBook(context, false);
+          orderProviderRef.fetchTradeBook(context);
+          orderProviderRef.fetchSipOrderHistory(context);
+        }
+      });
     });
   }
 
@@ -2216,71 +2353,120 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
 
   // New handler methods for separate portfolio screens
   void _handleHoldingsTap() async {
-    // Replace screen instead of adding as tab
+    // Set loading state immediately
+    setState(() {
+      _screenLoadingStates[ScreenType.holdings] = true;
+    });
+    
+    // Replace screen immediately for instant UI response
     _replaceScreenInPanel(ScreenType.holdings);
     
-    final portfolio = ref.read(portfolioProvider);
-    final orderProviderRef = ref.read(orderProvider);
+    // Move all async operations to background to prevent blocking UI
+    Future.microtask(() async {
+      if (!mounted) return;
+      
+      final portfolio = ref.read(portfolioProvider);
+      final orderProviderRef = ref.read(orderProvider);
 
-    portfolio.cancelTimer();
+      portfolio.cancelTimer();
 
-    // Unsubscribe from other real-time data
-    await orderProviderRef.requestWSOrderBook(context: context, isSubscribe: false);
-    await portfolio.requestWSPosition(context: context, isSubscribe: false);
-    await portfolio.requestWSHoldings(context: context, isSubscribe: true);
+      // Unsubscribe from other real-time data (non-blocking, fire and forget)
+      orderProviderRef.requestWSOrderBook(context: context, isSubscribe: false);
+      portfolio.requestWSPosition(context: context, isSubscribe: false);
+      
+      // Subscribe to holdings websocket (non-blocking)
+      portfolio.requestWSHoldings(context: context, isSubscribe: true);
     
-    Future.microtask(() {
+      // Fetch holdings data in the background (non-blocking)
       if (mounted) {
-        portfolio.fetchHoldings(context, "");
+        await portfolio.fetchHoldings(context, "");
+        // Clear loading state after data is fetched
+        if (mounted) {
+          setState(() {
+            _screenLoadingStates[ScreenType.holdings] = false;
+          });
+        }
       }
     });
-    // Subscribe to holdings data
-
   }
 
   void _handlePositionsTap() async {
-    // Replace screen instead of adding as tab
+    // Set loading state immediately
+    setState(() {
+      _screenLoadingStates[ScreenType.positions] = true;
+    });
+    
+    // Replace screen immediately for instant UI response
     _replaceScreenInPanel(ScreenType.positions);
     
-    final portfolio = ref.read(portfolioProvider);
-    final orderProviderRef = ref.read(orderProvider);
+    // Move all async operations to background to prevent blocking UI
+    Future.microtask(() async {
+      if (!mounted) return;
+      
+      final portfolio = ref.read(portfolioProvider);
+      final orderProviderRef = ref.read(orderProvider);
 
-    portfolio.cancelTimer();
+      portfolio.cancelTimer();
 
-    // Unsubscribe from other real-time data
-    await orderProviderRef.requestWSOrderBook(context: context, isSubscribe: false);
-    await portfolio.requestWSHoldings(context: context, isSubscribe: false);
+      // Unsubscribe from other real-time data (non-blocking, fire and forget)
+      orderProviderRef.requestWSOrderBook(context: context, isSubscribe: false);
+      portfolio.requestWSHoldings(context: context, isSubscribe: false);
     
-    // Fetch positions data first to ensure we have tokens to subscribe to
-    await portfolio.fetchPositionBook(context, false);
-    
-    // Subscribe to positions data after fetching (now we have tokens)
-    await portfolio.requestWSPosition(context: context, isSubscribe: true);
-    
-    // Start position update timer
-    portfolio.timerfunc();
+      // Fetch positions data in background (non-blocking)
+      await portfolio.fetchPositionBook(context, false);
+      
+      // Subscribe to positions data after fetching (now we have tokens)
+      if (mounted) {
+        portfolio.requestWSPosition(context: context, isSubscribe: true);
+        
+        // Start position update timer
+        portfolio.timerfunc();
+        
+        // Clear loading state after data is fetched
+        setState(() {
+          _screenLoadingStates[ScreenType.positions] = false;
+        });
+      }
+    });
   }
 
   void _handleFundsTap() async {
-    // Replace screen instead of adding as tab
+    // Set loading state immediately
+    setState(() {
+      _screenLoadingStates[ScreenType.funds] = true;
+    });
+    
+    // Replace screen immediately for instant UI response - this triggers setState synchronously
     _replaceScreenInPanel(ScreenType.funds);
     
-    final portfolio = ref.read(portfolioProvider);
-    final orderProviderRef = ref.read(orderProvider);
-    final fundProviderRef = ref.read(fundProvider);
+    // Allow UI to update first, then do background work
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.microtask(() async {
+        if (!mounted) return;
+        
+        final portfolio = ref.read(portfolioProvider);
+        final orderProviderRef = ref.read(orderProvider);
+        final fundProviderRef = ref.read(fundProvider);
 
-    portfolio.cancelTimer();
+        portfolio.cancelTimer();
 
-    // Unsubscribe from other real-time data
-    await orderProviderRef.requestWSOrderBook(context: context, isSubscribe: false);
-    await portfolio.requestWSHoldings(context: context, isSubscribe: false);
-    await portfolio.requestWSPosition(context: context, isSubscribe: false);
+        // Unsubscribe from other real-time data (non-blocking)
+        orderProviderRef.requestWSOrderBook(context: context, isSubscribe: false);
+        portfolio.requestWSHoldings(context: context, isSubscribe: false);
+        portfolio.requestWSPosition(context: context, isSubscribe: false);
 
-    // Fetch funds data in the background
-    Future.microtask(() {
-      if (mounted) {
-        fundProviderRef.fetchFunds(context);
-      }
+        // Fetch funds data in the background (non-blocking)
+        if (mounted) {
+          await fundProviderRef.fetchFunds(context);
+          
+          // Clear loading state after data is fetched
+          if (mounted) {
+            setState(() {
+              _screenLoadingStates[ScreenType.funds] = false;
+            });
+          }
+        }
+      });
     });
   }
 
@@ -2942,29 +3128,37 @@ class _ProfileDropdownState extends State<_ProfileDropdown> {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: _toggleDropdown,
-      borderRadius: BorderRadius.circular(5),
-      splashColor: Colors.white.withOpacity(0.2),
-      highlightColor: Colors.white.withOpacity(0.1),
-      hoverColor: Colors.white.withOpacity(0.1),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        // decoration: BoxDecoration(
-        //   color: WebDarkColors.surfaceVariant, // Subtle overlay on dark background
-        //   borderRadius: BorderRadius.circular(5),
-        //   border: Border.all(
-        //     color: WebDarkColors.border, // Subtle border
-        //     width: 1,
-        //   ),
-        // ),
-        child: Text(
-          widget.clientId,
-          style: WebTextStyles.sub(
-            isDarkTheme: true,
-            color: WebDarkColors.textPrimary, // Always white on dark background
-            fontWeight: WebFonts.semiBold,
-          ),
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: InkWell(
+        onTap: _toggleDropdown,
+        borderRadius: BorderRadius.circular(10),
+        splashColor: (widget.isDarkMode ? WebDarkColors.primary : WebColors.primary)
+            .withOpacity(0.2),
+        highlightColor: (widget.isDarkMode ? WebDarkColors.primary : WebColors.primary)
+            .withOpacity(0.1),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              widget.clientId,
+              style: WebTextStyles.sub(
+                isDarkTheme: widget.isDarkMode,
+                color: widget.isDarkMode
+                    ? WebDarkColors.textPrimary
+                    : WebColors.textPrimary,
+                fontWeight: WebFonts.semiBold,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Icon(
+              _isDropdownOpen ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+              size: 20,
+              color: widget.isDarkMode
+                  ? WebDarkColors.textPrimary
+                  : WebColors.textPrimary,
+            ),
+          ],
         ),
       ),
     );
@@ -3175,11 +3369,13 @@ class _HoverableNavItem extends StatefulWidget {
   final String title;
   final bool isActive;
   final VoidCallback onTap;
+  final bool isDarkMode;
 
   const _HoverableNavItem({
     required this.title,
     required this.isActive,
     required this.onTap,
+    required this.isDarkMode,
   });
 
   @override
@@ -3187,26 +3383,146 @@ class _HoverableNavItem extends StatefulWidget {
 }
 
 class _HoverableNavItemState extends State<_HoverableNavItem> {
+  bool _isHovered = false;
+
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: widget.onTap,
-      borderRadius: BorderRadius.circular(6),
-      splashColor: Colors.transparent,
-      highlightColor: Colors.transparent,
-      hoverColor: Colors.transparent,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      child: Text(
-        widget.title,
-        style: WebTextStyles.sub(
-          isDarkTheme: true,
-          color: WebDarkColors.textPrimary,
-          fontWeight: widget.isActive ? WebFonts.bold : WebFonts.semiBold,
+    final theme = widget.isDarkMode;
+    
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      cursor: SystemMouseCursors.click,
+      child: InkWell(
+        onTap: widget.onTap,
+        splashColor: Colors.transparent,
+        highlightColor: Colors.transparent,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: Text(
+            widget.title,
+            style: WebTextStyles.sub(
+              isDarkTheme: theme,
+              color: widget.isActive
+                  ? (theme ? WebDarkColors.primary : WebColors.primary)
+                  : (_isHovered
+                      ? (theme ? WebDarkColors.primary : WebColors.primary).withOpacity(0.8)
+                      : (theme ? WebDarkColors.textPrimary : WebColors.textPrimary)),
+              fontWeight: widget.isActive ? WebFonts.bold : WebFonts.semiBold,
+            ),
+          ),
         ),
       ),
+    );
+  }
+
+  // Loading indicator widget (static helper)
+  static Widget _buildLoadingIndicatorWidget(bool isDarkMode) {
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      color: isDarkMode ? WebDarkColors.background : Colors.white,
+      child: Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(
+            isDarkMode ? WebDarkColors.primary : WebColors.primary,
+          ),
+        ),
       ),
     );
   }
 }
 
+// Lazy loading wrapper for OrderBookScreenWeb to prevent blocking UI
+class _LazyOrderBookScreen extends ConsumerStatefulWidget {
+  final bool isLoading;
+  const _LazyOrderBookScreen({this.isLoading = false});
+
+  @override
+  ConsumerState<_LazyOrderBookScreen> createState() => _LazyOrderBookScreenState();
+}
+
+class _LazyOrderBookScreenState extends ConsumerState<_LazyOrderBookScreen> {
+  bool _shouldLoad = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Defer widget creation using microtask to allow UI to render first
+    Future.microtask(() {
+      if (mounted) {
+        setState(() {
+          _shouldLoad = true;
+        });
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = ref.watch(themeProvider);
+    
+    // Show loader only during initial widget load phase (first 300ms)
+    // After that, show the screen immediately - it can handle empty/loading states internally
+    if (!_shouldLoad) {
+      return _buildOrderBookLoadingIndicator(theme.isDarkMode);
+    }
+    // Show screen immediately - OrderBookScreenWeb has its own loading handling
+    return const OrderBookScreenWeb();
+  }
+
+  Widget _buildOrderBookLoadingIndicator(bool isDarkMode) {
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      color: isDarkMode ? WebDarkColors.background : Colors.white,
+      child: const CircularLoaderImage(),
+    );
+  }
+}
+
+// Lazy loading wrapper for SecureFundWeb to prevent blocking UI
+class _LazyFundScreen extends ConsumerStatefulWidget {
+  const _LazyFundScreen();
+
+  @override
+  ConsumerState<_LazyFundScreen> createState() => _LazyFundScreenState();
+}
+
+class _LazyFundScreenState extends ConsumerState<_LazyFundScreen> {
+  bool _shouldLoad = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Defer widget creation using microtask to allow UI to render first
+    Future.microtask(() {
+      if (mounted) {
+        setState(() {
+          _shouldLoad = true;
+        });
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = ref.watch(themeProvider);
+    final fund = ref.watch(fundProvider);
+    
+    // Show loader if widget not loaded yet or if fund data is not available
+    if (!_shouldLoad || fund.fundDetailModel == null) {
+      return _buildFundLoadingIndicator(theme.isDarkMode);
+    }
+    return const SecureFundWeb();
+  }
+
+  Widget _buildFundLoadingIndicator(bool isDarkMode) {
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      color: isDarkMode ? WebDarkColors.background : Colors.white,
+      child: const CircularLoaderImage(),
+    );
+  }
+}

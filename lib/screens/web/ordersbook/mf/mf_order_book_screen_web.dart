@@ -5,7 +5,6 @@ import '../../../../provider/mf_provider.dart';
 import '../../../../provider/thems.dart';
 import '../../../../sharedWidget/no_data_found.dart';
 import '../../../../res/res.dart';
-import '../../../../res/global_state_text.dart';
 import '../../../../res/web_colors.dart';
 import '../../../../res/global_font_web.dart';
 import 'mf_order_detail_screen_web.dart';
@@ -18,18 +17,29 @@ class MfOrderBookScreenWeb extends ConsumerStatefulWidget {
       _MfOrderBookScreenWebState();
 }
 
-class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb> {
+class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb> 
+    with AutomaticKeepAliveClientMixin {
   int? _mfSortColumnIndex;
   bool _mfSortAscending = true;
   final ScrollController _horizontalScrollController = ScrollController();
   final ScrollController _verticalScrollController = ScrollController();
+  bool _hasInitialized = false;
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
     super.initState();
-    Future.microtask(() {
-      ref.read(mfProvider).fetchMfOrderbook(context);
-    });
+    // Only fetch data once when widget is first created
+    if (!_hasInitialized) {
+      Future.microtask(() {
+        if (mounted && !_hasInitialized) {
+          _hasInitialized = true;
+          ref.read(mfProvider).fetchMfOrderbook(context);
+        }
+      });
+    }
   }
 
   @override
@@ -41,6 +51,7 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context); // Required for AutomaticKeepAliveClientMixin
     final theme = ref.watch(themeProvider);
     final mf = ref.watch(mfProvider);
 
@@ -53,15 +64,10 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb> {
       );
     }
 
-    // Calculate table height based on screen size (60% of available height)
-    final screenHeight = MediaQuery.of(context).size.height;
-    final tableHeight = screenHeight * 0.6;
-    
-    return SizedBox(
-      height: tableHeight,
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          return Scrollbar(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Container(
+          child: Scrollbar(
             controller: _verticalScrollController,
             thumbVisibility: true,
             radius: Radius.zero,
@@ -77,6 +83,7 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb> {
                     padding: const EdgeInsets.only(bottom: 16),
                     child: DataTable(
                       columnSpacing: 10,
+                      horizontalMargin: 0,
                       showCheckboxColumn: false,
                       sortColumnIndex: _mfSortColumnIndex,
                       sortAscending: _mfSortAscending,
@@ -88,7 +95,7 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb> {
                             return (theme.isDarkMode
                                     ? WebDarkColors.primary
                                     : WebColors.primary)
-                                .withOpacity(0.05);
+                                .withOpacity(0.15);
                           }
                           if (states.contains(WidgetState.selected)) {
                             return (theme.isDarkMode
@@ -101,26 +108,31 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb> {
                       ),
                       columns: [
                         DataColumn(
+                          numeric: false, // Left-align text column
                           label: _buildSortableColumnHeader('Scheme', theme, 0),
                           onSort: (columnIndex, ascending) =>
                               _onSortMfTable(columnIndex, ascending),
                         ),
                         DataColumn(
+                          numeric: false, // Left-align text column
                           label: _buildSortableColumnHeader('Type', theme, 1),
                           onSort: (columnIndex, ascending) =>
                               _onSortMfTable(columnIndex, ascending),
                         ),
                         DataColumn(
+                          numeric: true, // Right-align numeric column
                           label: _buildSortableColumnHeader('Amount', theme, 2),
                           onSort: (columnIndex, ascending) =>
                               _onSortMfTable(columnIndex, ascending),
                         ),
                         DataColumn(
+                          numeric: true, // Right-align numeric column
                           label: _buildSortableColumnHeader('Time', theme, 3),
                           onSort: (columnIndex, ascending) =>
                               _onSortMfTable(columnIndex, ascending),
                         ),
                         DataColumn(
+                          numeric: false, // Left-align text column
                           label: _buildSortableColumnHeader('Status', theme, 4),
                           onSort: (columnIndex, ascending) =>
                               _onSortMfTable(columnIndex, ascending),
@@ -132,8 +144,8 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb> {
                         final type = (o.orderType == 'NRM' ? 'ONE-TIME' : 'SIP');
                         final amount = o.orderVal ?? o.amount ?? '0';
                         final status = (o.status ?? '').toUpperCase();
-
                         final statusColor = _statusColor(status, theme);
+                        final uniqueId = o.orderId?.toString() ?? scheme;
 
                         return DataRow(
                           onSelectChanged: (bool? selected) {
@@ -141,21 +153,19 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb> {
                           },
                           cells: [
                             // Scheme
-                            DataCell(
+                            _buildCellWithHover(o, theme, uniqueId, DataCell(
                               Text(
                                 scheme,
-                                style: WebTextStyles.custom(
-                                  fontSize: 13,
+                                style: WebTextStyles.tableDataCompact(
                                   isDarkTheme: theme.isDarkMode,
                                   color: theme.isDarkMode
                                       ? WebDarkColors.textPrimary
                                       : WebColors.textPrimary,
-                                  fontWeight: WebFonts.medium,
                                 ),
                               ),
-                            ),
+                            ), alignment: Alignment.centerLeft),
                             // Type
-                            DataCell(
+                            _buildCellWithHover(o, theme, uniqueId, DataCell(
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                 decoration: BoxDecoration(
@@ -172,60 +182,49 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb> {
                                 ),
                                 child: Text(
                                   type,
-                                  style: WebTextStyles.custom(
-                                    fontSize: 13,
+                                  style: WebTextStyles.tableDataCompact(
                                     isDarkTheme: theme.isDarkMode,
                                     color: type == 'ONE-TIME'
                                         ? Color.fromARGB(255, 88, 69, 147)
                                         : Color(0xff016B61),
-                                    fontWeight: WebFonts.medium,
                                   ),
                                 ),
                               ),
-                            ),
+                            ), alignment: Alignment.centerLeft),
                             // Amount
-                            DataCell(
+                            _buildCellWithHover(o, theme, uniqueId, DataCell(
                               Text(
-                                double.parse(amount).toStringAsFixed(2),
-                                style: WebTextStyles.custom(
-                                  fontSize: 13,
+                                double.tryParse(amount)?.toStringAsFixed(2) ?? amount,
+                                style: WebTextStyles.tableDataCompact(
                                   isDarkTheme: theme.isDarkMode,
                                   color: theme.isDarkMode
                                       ? WebDarkColors.textPrimary
                                       : WebColors.textPrimary,
-                                  fontWeight: WebFonts.medium,
                                 ),
                               ),
-                            ),
+                            ), alignment: Alignment.centerRight),
                             // Time
-                            DataCell(
+                            _buildCellWithHover(o, theme, uniqueId, DataCell(
                               Text(
                                 time,
-                                style: WebTextStyles.custom(
-                                  fontSize: 13,
+                                style: WebTextStyles.tableDataCompact(
                                   isDarkTheme: theme.isDarkMode,
                                   color: theme.isDarkMode
                                       ? WebDarkColors.textPrimary
                                       : WebColors.textPrimary,
-                                  fontWeight: WebFonts.medium,
                                 ),
                               ),
-                            ),
+                            ), alignment: Alignment.centerRight),
                             // Status
-                            DataCell(
-                              InkWell(
-                                onTap: () => _openMfOrderDetail(o),
-                                child: Text(
-                                  status,
-                                  style: WebTextStyles.custom(
-                                    fontSize: 13,
-                                    isDarkTheme: theme.isDarkMode,
-                                    color: statusColor,
-                                    fontWeight: WebFonts.medium,
-                                  ),
+                            _buildCellWithHover(o, theme, uniqueId, DataCell(
+                              Text(
+                                status,
+                                style: WebTextStyles.tableDataCompact(
+                                  isDarkTheme: theme.isDarkMode,
+                                  color: statusColor,
                                 ),
                               ),
-                            ),
+                            ), alignment: Alignment.centerLeft),
                           ],
                         );
                       }).toList(),
@@ -234,34 +233,35 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb> {
                 ),
               ),
             ),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 
   Widget _buildSortableColumnHeader(String label, ThemesProvider theme, int columnIndex) {
     final isSorted = _mfSortColumnIndex == columnIndex;
+    // Check if this is a numeric column (Time column index is 3)
+    final isNumeric = columnIndex == 2 || columnIndex == 3; // Amount (2) or Time (3)
     
     return Row(
       mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: isNumeric ? MainAxisAlignment.end : MainAxisAlignment.start,
       children: [
         Text(
           label,
-          style: WebTextStyles.custom(
-            fontSize: 14,
+          style: WebTextStyles.tableHeader(
             isDarkTheme: theme.isDarkMode,
             color: theme.isDarkMode
                 ? WebDarkColors.textPrimary
                 : WebColors.textPrimary,
-            fontWeight: WebFonts.bold,
           ),
         ),
         const SizedBox(width: 4),
         // Reserve fixed space for sort indicator
-        // Show custom icon when not sorted, DataTable will show its icon when sorted
         SizedBox(
-          width: 20, // Fixed width to prevent layout shift
+          width: 20,
           height: 16,
           child: !isSorted 
               ? Icon(
@@ -269,9 +269,24 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb> {
                   size: 16,
                   color: theme.isDarkMode ? WebDarkColors.iconSecondary : WebColors.iconSecondary,
                 )
-              : const SizedBox.shrink(), // Hide when sorted, DataTable will show its indicator
+              : const SizedBox.shrink(),
         ),
       ],
+    );
+  }
+
+  DataCell _buildCellWithHover(dynamic order, ThemesProvider theme, String token, DataCell cell, {Alignment alignment = Alignment.centerRight}) {
+    return DataCell(
+      MouseRegion(
+        onEnter: (_) => setState(() {}),
+        onExit: (_) => setState(() {}),
+        child: SizedBox.expand(
+          child: Align(
+            alignment: alignment,
+            child: cell.child,
+          ),
+        ),
+      ),
     );
   }
 

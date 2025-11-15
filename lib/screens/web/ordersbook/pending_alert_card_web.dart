@@ -23,7 +23,8 @@ class PendingAlertWeb extends ConsumerStatefulWidget {
   ConsumerState<PendingAlertWeb> createState() => _PendingAlertWebState();
 }
 
-class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
+class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> 
+    with AutomaticKeepAliveClientMixin {
   List<BrokerMessage>? triggeredAlerts;
   final Set<int> _selectedAlerts = <int>{};
   
@@ -49,19 +50,27 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
   // Scroll controllers
   final ScrollController _horizontalScrollController = ScrollController();
   final ScrollController _verticalScrollController = ScrollController();
+  
+  // Track if data has been initialized
+  bool _hasInitialized = false;
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
     super.initState();
-    // Fetch initial data when widget is created
-    _refreshData();
-
-    // Add post-frame callback to ensure context is available
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _refreshData();
-      // Setup WebSocket subscription after data is loaded
-      _setupSocketSubscription();
-    });
+    // Only fetch data once when widget is first created
+    if (!_hasInitialized) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && !_hasInitialized) {
+          _hasInitialized = true;
+          _refreshData();
+          // Setup WebSocket subscription after data is loaded
+          _setupSocketSubscription();
+        }
+      });
+    }
   }
 
   @override
@@ -200,6 +209,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context); // Required for AutomaticKeepAliveClientMixin
     final manage = ref.watch(marketWatchProvider);
     final notification = ref.watch(notificationprovider);
     final order = ref.watch(orderProvider);
@@ -354,14 +364,10 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
       );
     }
 
-    final screenHeight = MediaQuery.of(context).size.height;
-    final tableHeight = screenHeight * 0.6;
-
-    return SizedBox(
-      height: tableHeight,
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          return Scrollbar(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Container(
+          child: Scrollbar(
             controller: _verticalScrollController,
             thumbVisibility: true,
             radius: Radius.zero,
@@ -377,6 +383,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
                     padding: const EdgeInsets.only(bottom: 16),
                     child: DataTable(
                       columnSpacing: 10,
+                      horizontalMargin: 0,
                       showCheckboxColumn: false,
                       sortColumnIndex: _alertSortColumnIndex,
                       sortAscending: _alertSortAscending,
@@ -385,7 +392,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
                       dataRowColor: WidgetStateProperty.resolveWith<Color?>(
                         (Set<WidgetState> states) {
                           if (states.contains(WidgetState.hovered)) {
-                            return (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary).withOpacity(0.05);
+                            return (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary).withOpacity(0.15);
                           }
                           if (states.contains(WidgetState.selected)) {
                             return (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary).withOpacity(0.1);
@@ -395,26 +402,32 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
                       ),
                       columns: [
                         DataColumn(
+                          numeric: false, // Left-align text column
                           label: _buildSortableColumnHeader('Instrument', theme, 0),
                           onSort: (i, asc) => _onSortAlertTable(0),
                         ),
                         DataColumn(
+                          numeric: false, // Left-align text column
                           label: _buildSortableColumnHeader('Exchange', theme, 1),
                           onSort: (i, asc) => _onSortAlertTable(1),
                         ),
                         DataColumn(
+                          numeric: false, // Left-align text column
                           label: _buildSortableColumnHeader('Alert Type', theme, 2),
                           onSort: (i, asc) => _onSortAlertTable(2),
                         ),
                         DataColumn(
+                          numeric: true, // Right-align numeric column
                           label: _buildSortableColumnHeader('Target', theme, 3),
                           onSort: (i, asc) => _onSortAlertTable(3),
                         ),
                         DataColumn(
+                          numeric: true, // Right-align numeric column
                           label: _buildSortableColumnHeader('LTP', theme, 4),
                           onSort: (i, asc) => _onSortAlertTable(4),
                         ),
                         DataColumn(
+                          numeric: false, // Left-align text column
                           label: _buildSortableColumnHeader('Status', theme, 5),
                           onSort: (i, asc) => _onSortAlertTable(5),
                         ),
@@ -460,15 +473,14 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
                 ),
               ),
             ),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 
   Widget _buildSortableColumnHeader(String label, ThemesProvider theme, int columnIndex) {
-    final isActive = _alertSortColumnIndex == columnIndex;
-    final ascending = _alertSortAscending;
+    final isSorted = _alertSortColumnIndex == columnIndex;
     
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -480,14 +492,18 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
             color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
           ),
         ),
-        if (isActive) ...[
-          const SizedBox(width: 4),
-          Icon(
-            ascending ? Icons.arrow_upward : Icons.arrow_downward,
-            size: 16,
-            color: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
-          ),
-        ],
+        const SizedBox(width: 4),
+        SizedBox(
+          width: 20,
+          height: 16,
+          child: !isSorted 
+              ? Icon(
+                  Icons.unfold_more,
+                  size: 16,
+                  color: theme.isDarkMode ? WebDarkColors.iconSecondary : WebColors.iconSecondary,
+                )
+              : const SizedBox.shrink(),
+        ),
       ],
     );
   }
@@ -601,7 +617,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
     return DataCell(
       Text(
         symbol,
-        style: WebTextStyles.tableData(
+        style: WebTextStyles.tableDataCompact(
           isDarkTheme: theme.isDarkMode,
           color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
         ),
@@ -638,7 +654,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
                     message: displayText,
                     child: Text(
                       displayText,
-                      style: WebTextStyles.tableData(
+                      style: WebTextStyles.tableDataCompact(
                         isDarkTheme: theme.isDarkMode,
                         color: theme.isDarkMode
                             ? WebDarkColors.textPrimary
@@ -725,7 +741,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
     return DataCell(
       Text(
         exchange,
-        style: WebTextStyles.tableData(
+        style: WebTextStyles.tableDataCompact(
           isDarkTheme: theme.isDarkMode,
           color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
         ),
@@ -766,7 +782,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
     return DataCell(
       Text(
         alertType,
-        style: WebTextStyles.tableData(
+        style: WebTextStyles.tableDataCompact(
           isDarkTheme: theme.isDarkMode,
           color: alertColor,
         ),
@@ -794,7 +810,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
     return DataCell(
       Text(
         target,
-        style: WebTextStyles.tableData(
+        style: WebTextStyles.tableDataCompact(
           isDarkTheme: theme.isDarkMode,
           color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
         ),
@@ -823,7 +839,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
         children: [
           Text(
             ltp,
-            style: WebTextStyles.tableData(
+            style: WebTextStyles.tableDataCompact(
               isDarkTheme: theme.isDarkMode,
               color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
             ),
@@ -831,7 +847,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
           if (change.isNotEmpty)
             Text(
               change,
-              style: WebTextStyles.tableData(
+              style: WebTextStyles.tableDataCompact(
                 isDarkTheme: theme.isDarkMode,
                 color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
               ),
@@ -854,22 +870,11 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
     }
     
     return DataCell(
-      Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(
-          color: statusColor.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(4),
-          border: Border.all(
-            color: statusColor,
-            width: 1,
-          ),
-        ),
-        child: Text(
-          status,
-          style: WebTextStyles.statusBadge(
-            isDarkTheme: theme.isDarkMode,
-            color: statusColor,
-          ),
+      Text(
+        status,
+        style: WebTextStyles.tableDataCompact(
+          isDarkTheme: theme.isDarkMode,
+          color: statusColor,
         ),
       ),
     );

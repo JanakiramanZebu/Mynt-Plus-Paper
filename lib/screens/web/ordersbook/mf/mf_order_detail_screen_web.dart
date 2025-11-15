@@ -10,6 +10,7 @@ import '../../../../provider/transcation_provider.dart';
 import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
 import '../../../../res/web_colors.dart';
+import '../../../../res/global_font_web.dart';
 
 class MFOrderDetailScreenWeb extends ConsumerStatefulWidget {
   final Data mfOrderData;
@@ -43,24 +44,17 @@ class _MFOrderDetailScreenWebState
     final theme = ref.watch(themeProvider);
 
     return Dialog(
-      backgroundColor: WebColors.surface,
+      backgroundColor: Colors.transparent,
       child: Container(
-        width: 500,
-        height: MediaQuery.of(context).size.height * 0.60,
-        constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.60,
-        ),
+        width: 700,
         decoration: BoxDecoration(
-          // color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+          color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
           borderRadius: BorderRadius.circular(5),
-          // border: Border.all(
-          //   color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-          // ),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Header
+            // Header with close button
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               margin: const EdgeInsets.only(bottom: 8),
@@ -104,35 +98,23 @@ class _MFOrderDetailScreenWebState
                 ],
               ),
             ),
-
+            
             // Content
-            Expanded(
+            Flexible(
+              fit: FlexFit.loose,
               child: SingleChildScrollView(
-                padding: const EdgeInsets.only(
-                    top: 0, bottom: 16, left: 16, right: 16),
+                padding: const EdgeInsets.only(top: 0, bottom: 20, left: 20, right: 20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // // Re-Initiate Payment Button (if applicable)
-                    // if (_shouldShowReinitiate())
-                    //   _buildReinitiateButton(theme, mfdata),
-
-                    // if (_shouldShowReinitiate())
-                    //   const SizedBox(height: 24),
-
-                    // // Cancel Order Button (if applicable)
-                    // if (_shouldShowCancel())
-                    //   _buildCancelOrderButton(theme, mfdata),
-
-                    // if (_shouldShowCancel())
-                    //   const SizedBox(height: 24),
-
                     // Order Details Section
-                    _buildOrderDetailsSection(theme),
-
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      child: _buildOrderDetailsSection(theme),
+                    ),
+                    
                     // Reason/Remarks Section
                     if (_shouldShowReason()) ...[
-                      const SizedBox(height: 10),
                       _buildReasonSection(theme),
                     ],
                   ],
@@ -148,15 +130,11 @@ class _MFOrderDetailScreenWebState
   Widget _buildHeader(ThemesProvider theme) {
     return Text(
       widget.mfOrderData.name ?? "Unknown Scheme",
-      style: TextWidget.textStyle(
-        fontSize: 16,
-        theme: theme.isDarkMode,
-        color:
-            theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-        fw: 1,
+      style: WebTextStyles.dialogTitle(
+        isDarkTheme: theme.isDarkMode,
+        color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
       ),
       overflow: TextOverflow.ellipsis,
-      maxLines: 2,
     );
   }
 
@@ -345,140 +323,123 @@ class _MFOrderDetailScreenWebState
   }
 
   Widget _buildOrderDetailsSection(ThemesProvider theme) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          "Order Details",
-          style: TextWidget.textStyle(
-            fontSize: 15,
-            theme: theme.isDarkMode,
-            color: theme.isDarkMode
-                ? colors.textPrimaryDark
-                : colors.textPrimaryLight,
-            fw: 2,
-          ),
-        ),
-        const SizedBox(height: 8),
-        _buildInfoRowWithDivider(
-          "Transaction Type",
-          widget.mfOrderData.buySell == "P" ? "Purchase" : "Redemption",
-          theme,
-        ),
-        _buildInfoRowWithDivider(
-          "Order Type",
-          widget.mfOrderData.orderType == "NRM" ? "Lumpsum" : "SIP",
-          theme,
-        ),
-        _buildInfoRowWithDivider(
-          "Amount",
-          "${widget.mfOrderData.orderVal ?? "0.00"}",
-          theme,
-        ),
-        _buildInfoRowWithDivider(
-          "Date & Time",
-          widget.mfOrderData.datetime ?? "N/A",
-          theme,
-        ),
-        _buildInfoRowWithDivider(
-          "Order No",
-          widget.mfOrderData.orderId ?? "N/A",
-          theme,
-        ),
-        _buildInfoRowWithDivider(
-          "Folio No",
-          (widget.mfOrderData.folioNo?.isEmpty ?? true)
-              ? "---"
-              : widget.mfOrderData.folioNo ?? "---",
-          theme,
-        ),
-        _buildInfoRowWithDivider(
-          "Status",
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: _getStatusBadgeColor(theme),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Text(
-              _getStatusText(),
-              style: TextWidget.textStyle(
-                fontSize: 12,
-                theme: false,
-                color: _getStatusTextColor(theme),
-                fw: 2,
+    return IntrinsicHeight(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Left column
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildInfoRow(
+                    "Transaction Type",
+                    widget.mfOrderData.buySell == "P" ? "Purchase" : "Redemption",
+                    theme,
+                  ),
+                  _buildInfoRow(
+                    "Order Type",
+                    widget.mfOrderData.orderType == "NRM" ? "Lumpsum" : "SIP",
+                    theme,
+                  ),
+                  _buildInfoRow(
+                    "Amount",
+                    "${widget.mfOrderData.orderVal ?? "0.00"}",
+                    theme,
+                  ),
+                  _buildInfoRow(
+                    "Date & Time",
+                    widget.mfOrderData.datetime ?? "N/A",
+                    theme,
+                  ),
+                ],
               ),
             ),
-          ),
-          theme,
+            // Vertical divider
+            Container(
+              width: 0.5,
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              color: theme.isDarkMode
+                  ? WebDarkColors.divider
+                  : WebColors.divider,
+            ),
+            // Right column
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildInfoRow(
+                    "Order No",
+                    widget.mfOrderData.orderId ?? "N/A",
+                    theme,
+                  ),
+                  _buildInfoRow(
+                    "Folio No",
+                    (widget.mfOrderData.folioNo?.isEmpty ?? true)
+                        ? "---"
+                        : widget.mfOrderData.folioNo ?? "---",
+                    theme,
+                  ),
+                  _buildInfoRow(
+                    "Status",
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: _getStatusBadgeColor(theme),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        _getStatusText(),
+                        style: WebTextStyles.tableDataCompact(
+                          isDarkTheme: theme.isDarkMode,
+                          color: _getStatusTextColor(theme),
+                        ),
+                      ),
+                    ),
+                    theme,
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 
   Widget _buildReasonSection(ThemesProvider theme) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            "Reason",
-            style: TextWidget.textStyle(
-              fontSize: 14,
-              theme: theme.isDarkMode,
-              color: theme.isDarkMode
-                  ? colors.textSecondaryDark
-                  : colors.textSecondaryLight,
-              fw: 1,
-            ),
-          ),
-          Text(
-            widget.mfOrderData.remarks ?? "No remarks available",
-            style: TextWidget.textStyle(
-              fontSize: 14,
-              theme: theme.isDarkMode,
-              color: theme.isDarkMode ? colors.lossDark : colors.lossLight,
-              fw: 1,
-            ),
-            maxLines: 3,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: _buildInfoRow(
+        "Reason",
+        widget.mfOrderData.remarks ?? "No remarks available",
+        theme,
       ),
     );
   }
 
-  Widget _buildInfoRowWithDivider(
-      String title, dynamic value, ThemesProvider theme) {
+  Widget _buildInfoRow(String title, dynamic value, ThemesProvider theme) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             title,
-            style: TextWidget.textStyle(
-              fontSize: 14,
-              theme: false,
-              color: theme.isDarkMode
-                  ? colors.textSecondaryDark
-                  : colors.textSecondaryLight,
-              fw: 1,
+            style: WebTextStyles.dialogContent(
+              isDarkTheme: theme.isDarkMode,
+              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
             ),
           ),
           value is Widget
               ? value
               : Text(
                   value.toString(),
-                  textAlign: TextAlign.end,
-                  style: TextWidget.textStyle(
-                    fontSize: 14,
-                    theme: false,
-                    color: theme.isDarkMode
-                        ? colors.textPrimaryDark
-                        : colors.textPrimaryLight,
-                    fw: 1,
+                  style: WebTextStyles.dialogContent(
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
                   ),
                 ),
         ],

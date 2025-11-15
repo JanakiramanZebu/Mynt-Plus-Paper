@@ -49,9 +49,6 @@ class _DefaultIndexListWebState extends ConsumerState<DefaultIndexListWeb>
       return const SizedBox.shrink();
     }
 
-    // Width calculation for items
-    final itemWidth = 160.0;
-
     // Create a unique key based on the indices to force rebuild when they change
     final indexKey =
         ValueKey(indexValues.map((i) => "${i.exch}|${i.token}").join("-"));
@@ -59,26 +56,26 @@ class _DefaultIndexListWebState extends ConsumerState<DefaultIndexListWeb>
     return widget.src
         ? Container(
             key: indexKey, // Add key here to force rebuild when indices change
-            margin: const EdgeInsets.only(top: 10),
-            padding: const EdgeInsets.only(left: 12, right: 12),
-            height: 55,
+            margin: EdgeInsets.zero, // Remove top margin to prevent overflow
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            height: 48, // Fixed height to fit in appbar
             child: RepaintBoundary(
               child: SingleChildScrollView(
                 controller: _scrollController,
                 scrollDirection: Axis.horizontal,
                 physics: const BouncingScrollPhysics(),
                 child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: List.generate(indexValues.length, (index) {
                     return Container(
-                      width: itemWidth,
                       margin: EdgeInsets.only(
-                        right: index < indexValues.length - 1 ? 1 : 0,
+                        right: index < indexValues.length - 1 ? 8 : 0,
                       ),
                       child: OptimizedIndexItemWeb(
                         key: ValueKey(
                             'index-${indexValues[index].token}-${indexValues[index].exch}'),
                         indexItem: indexValues[index],
-                        itemWidth: itemWidth,
+                        itemWidth: null, // Let content determine width
                       ),
                     );
                   }),
@@ -204,12 +201,12 @@ class _DefaultIndexListWebState extends ConsumerState<DefaultIndexListWeb>
 // A completely static wrapper to prevent rebuilds
 class OptimizedIndexItemWeb extends ConsumerWidget {
   final dynamic indexItem;
-  final double itemWidth;
+  final double? itemWidth; // Make nullable to allow flexible width
 
   const OptimizedIndexItemWeb({
     Key? key,
     required this.indexItem,
-    required this.itemWidth,
+    this.itemWidth, // Optional - if null, content determines width
   }) : super(key: key);
 
   @override
@@ -232,7 +229,6 @@ class OptimizedIndexItemWeb extends ConsumerWidget {
           onTap: () => _handleTap(context, marketWatch, token, exch),
           onLongPress: () =>
               _handleLongPress(context, indexProvider, marketWatch),
-          borderRadius: BorderRadius.circular(8),
           highlightColor: theme.isDarkMode
               ? WebDarkColors.primary.withOpacity(0.1)
               : WebColors.primary.withOpacity(0.1),
@@ -240,48 +236,51 @@ class OptimizedIndexItemWeb extends ConsumerWidget {
               ? WebDarkColors.primary.withOpacity(0.2)
               : WebColors.primary.withOpacity(0.2),
           child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+            padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
             decoration: BoxDecoration(
-              color: WebDarkColors.background, // Use web color system
+              color: Colors.transparent, // Transparent to match glassmorphism appbar
             ),
-            width: itemWidth,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Static part that never changes
-                Row(
-                  children: [
-                    RepaintBoundary(
-                      child: _StaticIndexNameWeb(
-                        name: indexItem.idxname?.toUpperCase() ?? "",
-                        isDarkMode: theme.isDarkMode,
-                      ),
+            constraints: BoxConstraints(
+              maxHeight: 48, // Constrain height to prevent overflow
+              minWidth: itemWidth ?? 0, // Use itemWidth if provided, else no min width
+            ),
+            child: IntrinsicWidth(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Static part that never changes
+                  RepaintBoundary(
+                    child: _StaticIndexNameWeb(
+                      name: indexItem.idxname?.toUpperCase() ?? "",
+                      isDarkMode: theme.isDarkMode,
                     ),
-                  ],
-                ),
+                  ),
 
-                // Add spacing between static and dynamic parts
-                const SizedBox(height: 6),
+                  // Add spacing between static and dynamic parts
+                  const SizedBox(height: 4),
 
-                // Dynamic part that updates with WebSocket data
-                _LivePriceWidgetWeb(
-                  key: ValueKey('price_$token'),
-                  token: token ?? "",
-                  initialLtp: indexItem.ltp == null || indexItem.ltp == "null"
-                      ? "0.00"
-                      : indexItem.ltp,
-                  initialChange:
-                      indexItem.change == null || indexItem.change == "null"
-                          ? "0.00"
-                          : indexItem.change,
-                  initialPerChange: indexItem.perChange == null ||
-                          indexItem.perChange == "null"
-                      ? "0.00"
-                      : indexItem.perChange,
-                  isDarkMode: theme.isDarkMode,
-                  src: true,
-                ),
-              ],
+                  // Dynamic part that updates with WebSocket data
+                  _LivePriceWidgetWeb(
+                    key: ValueKey('price_$token'),
+                    token: token ?? "",
+                    initialLtp: indexItem.ltp == null || indexItem.ltp == "null"
+                        ? "0.00"
+                        : indexItem.ltp,
+                    initialChange:
+                        indexItem.change == null || indexItem.change == "null"
+                            ? "0.00"
+                            : indexItem.change,
+                    initialPerChange: indexItem.perChange == null ||
+                            indexItem.perChange == "null"
+                        ? "0.00"
+                        : indexItem.perChange,
+                    isDarkMode: theme.isDarkMode,
+                    src: true,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -512,22 +511,24 @@ class _LivePriceWidgetWebState extends State<_LivePriceWidgetWeb> {
         ? RepaintBoundary(
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   "$_ltp ",
-                  style: _getTextStyle(changeColor, 13, 2),
+                  style: _getTextStyle(changeColor, 13, 2), // Original font size
                 ),
                 Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Text("${_change.toString()} ",
                         style: _getTextStyle(
                             widget.isDarkMode ? WebDarkColors.textSecondary : WebDarkColors.textSecondary,
-                            13,
+                            13, // Original font size
                             2)),
                     Text("($_perChange%)",
                         style: _getTextStyle(
                             widget.isDarkMode ? WebDarkColors.textSecondary : WebDarkColors.textSecondary,
-                            13,
+                            13, // Original font size
                             2)),
                   ],
                 )
@@ -578,15 +579,9 @@ class _LivePriceWidgetWebState extends State<_LivePriceWidgetWeb> {
     final key = '${color.value}|$size|${fw ?? "null"}';
     return _textStyleCache.putIfAbsent(
       key,
-      () => WebTextStyles.custom(
-          fontSize: size, 
+      () => WebTextStyles.priceWatch(
           isDarkTheme: true, 
           color: color, 
-          fontWeight: fw == 0 ? WebFonts.regular : 
-                     fw == 1 ? WebFonts.medium :
-                     fw == 2 ? WebFonts.semiBold :
-                     fw == 3 ? WebFonts.bold : WebFonts.regular,
-          letterSpacing: 0.0,
       ),
     );
   }
@@ -629,11 +624,9 @@ class _StaticIndexNameWeb extends StatelessWidget {
   TextStyle _getNameStyle() {
     final key = 'name|${isDarkMode ? 1 : 0}';
     if (!_styleCache.containsKey(key)) {
-      _styleCache[key] = WebTextStyles.custom(
-        fontSize: 13,
+      _styleCache[key] = WebTextStyles.symbolList(
         isDarkTheme: true,
-        color: isDarkMode ? WebColors.textPrimary : WebDarkColors.textPrimary,
-        fontWeight: WebFonts.bold,
+        color: isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
       );
     }
     return _styleCache[key]!;
@@ -641,15 +634,9 @@ class _StaticIndexNameWeb extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          name,
-          style: _getNameStyle(),
-        ),
-      ],
+    return Text(
+      name,
+      style: _getNameStyle(),
     );
   }
 }

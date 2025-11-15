@@ -417,7 +417,7 @@ class WebTextStyles {
     Color? color,
   }) {
     return _baseStyle(
-      fontSize: WebFonts.subSize,
+      fontSize: WebFonts.bodySmallSize,
       isDarkTheme: isDarkTheme,
       color: color,
       fontWeight: WebFonts.medium,
@@ -505,6 +505,65 @@ class WebTextStyles {
       isDarkTheme: isDarkTheme,
       color: color,
       fontWeight: WebFonts.medium,
+    );
+  }
+  static TextStyle symbolList({
+    required bool isDarkTheme,
+    Color? color,
+  }) {
+    return _baseStyle(
+      fontSize: WebFonts.bodySmallSize,
+      isDarkTheme: isDarkTheme,
+      color: color,
+      fontWeight: WebFonts.medium,
+    );
+  }
+  static TextStyle priceWatch({
+    required bool isDarkTheme,
+    Color? color,
+  }) {
+    return _baseStyle(
+      fontSize: WebFonts.bodySmallSize,
+      isDarkTheme: isDarkTheme,
+      color: color,
+      fontWeight: WebFonts.medium,
+    );
+  }
+  static TextStyle pricePercent({
+    required bool isDarkTheme,
+    Color? color,
+  }) {
+    return _baseStyle(
+      fontSize: WebFonts.bodySmallSize,
+      isDarkTheme: isDarkTheme,
+      color: color,
+      fontWeight: WebFonts.medium,
+    );
+  }
+  static TextStyle exchText({
+    required bool isDarkTheme,
+    Color? color,
+  }) {
+    return _baseStyle(
+      fontSize: WebFonts.captionSize,
+      isDarkTheme: isDarkTheme,
+      color: color,
+      fontWeight: WebFonts.regular,
+    );
+  }
+
+  /// Tab text style (12px, medium)
+  /// Use for tab labels, navigation tabs, filter tabs
+  static TextStyle tab({
+    required bool isDarkTheme, 
+    Color? color,
+    FontWeight? fontWeight,
+  }) {
+    return _baseStyle(
+      fontSize: WebFonts.bodySmallSize,
+      isDarkTheme: isDarkTheme,
+      color: color,
+      fontWeight: fontWeight ?? WebFonts.semiBold,
     );
   }
 

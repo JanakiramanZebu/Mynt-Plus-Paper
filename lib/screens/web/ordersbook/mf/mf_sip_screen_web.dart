@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../../../../provider/mf_provider.dart';
 import '../../../../provider/thems.dart';
 import '../../../../sharedWidget/no_data_found.dart';
 import '../../../../res/res.dart';
 import '../../../../res/web_colors.dart';
 import '../../../../res/global_font_web.dart';
-import '../../../../res/global_state_text.dart';
 import 'mf_sip_detail_screen_web.dart';
 import 'sip_pause_dialogue_web.dart';
 import 'sip_cancel_dialogue_web.dart';
@@ -20,12 +18,16 @@ class MFSipdetScreenWeb extends ConsumerStatefulWidget {
   ConsumerState<MFSipdetScreenWeb> createState() => _MFSipdetScreenWebState();
 }
 
-class _MFSipdetScreenWebState extends ConsumerState<MFSipdetScreenWeb> {
+class _MFSipdetScreenWebState extends ConsumerState<MFSipdetScreenWeb> 
+    with AutomaticKeepAliveClientMixin {
   int? _sipSortColumnIndex;
   bool _sipSortAscending = true;
   final ScrollController _horizontalScrollController = ScrollController();
   final ScrollController _verticalScrollController = ScrollController();
   String? _hoveredRowSipRegNo; // Track which row is being hovered
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void dispose() {
@@ -36,6 +38,7 @@ class _MFSipdetScreenWebState extends ConsumerState<MFSipdetScreenWeb> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context); // Required for AutomaticKeepAliveClientMixin
     final theme = ref.watch(themeProvider);
     final mf = ref.watch(mfProvider);
 
@@ -68,6 +71,7 @@ class _MFSipdetScreenWebState extends ConsumerState<MFSipdetScreenWeb> {
                     padding: const EdgeInsets.only(bottom: 16),
                     child: DataTable(
                       columnSpacing: 10,
+                      horizontalMargin: 0,
                       showCheckboxColumn: false,
                       sortColumnIndex: _sipSortColumnIndex,
                       sortAscending: _sipSortAscending,
@@ -79,7 +83,7 @@ class _MFSipdetScreenWebState extends ConsumerState<MFSipdetScreenWeb> {
                             return (theme.isDarkMode
                                     ? WebDarkColors.primary
                                     : WebColors.primary)
-                                .withOpacity(0.05);
+                                .withOpacity(0.15);
                           }
                           if (states.contains(WidgetState.selected)) {
                             return (theme.isDarkMode
@@ -92,31 +96,37 @@ class _MFSipdetScreenWebState extends ConsumerState<MFSipdetScreenWeb> {
                       ),
                       columns: [
                         DataColumn(
+                          numeric: false, // Left-align text column
                           label: _buildSortableColumnHeader('Scheme', theme, 0),
                           onSort: (columnIndex, ascending) =>
                               _onSortSipTable(columnIndex, ascending),
                         ),
                         DataColumn(
+                          numeric: true, // Right-align numeric column
                           label: _buildSortableColumnHeader('SIP Reg No', theme, 1),
                           onSort: (columnIndex, ascending) =>
                               _onSortSipTable(columnIndex, ascending),
                         ),
                         DataColumn(
+                          numeric: true, // Right-align numeric column
                           label: _buildSortableColumnHeader('Amount', theme, 2),
                           onSort: (columnIndex, ascending) =>
                               _onSortSipTable(columnIndex, ascending),
                         ),
                         DataColumn(
+                          numeric: false, // Left-align text column
                           label: _buildSortableColumnHeader('Frequency', theme, 3),
                           onSort: (columnIndex, ascending) =>
                               _onSortSipTable(columnIndex, ascending),
                         ),
                         DataColumn(
+                          numeric: false, // Left-align text column
                           label: _buildSortableColumnHeader('Next Installment', theme, 4),
                           onSort: (columnIndex, ascending) =>
                               _onSortSipTable(columnIndex, ascending),
                         ),
                         DataColumn(
+                          numeric: false, // Left-align text column
                           label: _buildSortableColumnHeader('Status', theme, 5),
                           onSort: (columnIndex, ascending) =>
                               _onSortSipTable(columnIndex, ascending),
@@ -143,73 +153,60 @@ class _MFSipdetScreenWebState extends ConsumerState<MFSipdetScreenWeb> {
                             _buildCellWithHover(s, sipRegNo, theme, DataCell(
                               Text(
                                 reg,
-                                style: WebTextStyles.custom(
-                                  fontSize: 13,
+                                style: WebTextStyles.tableDataCompact(
                                   isDarkTheme: theme.isDarkMode,
                                   color: theme.isDarkMode
                                       ? WebDarkColors.textPrimary
                                       : WebColors.textPrimary,
-                                  fontWeight: WebFonts.medium,
                                 ),
                               ),
-                            )),
+                            ), alignment: Alignment.centerRight),
                             // Amount
                             _buildCellWithHover(s, sipRegNo, theme, DataCell(
                               Text(
                                 double.tryParse(amount)?.toStringAsFixed(2) ?? amount,
-                                style: WebTextStyles.custom(
-                                  fontSize: 13,
+                                style: WebTextStyles.tableDataCompact(
                                   isDarkTheme: theme.isDarkMode,
                                   color: theme.isDarkMode
                                       ? WebDarkColors.textPrimary
                                       : WebColors.textPrimary,
-                                  fontWeight: WebFonts.medium,
                                 ),
                               ),
-                            )),
+                            ), alignment: Alignment.centerRight),
                             // Frequency
                             _buildCellWithHover(s, sipRegNo, theme, DataCell(
                               Text(
                                 freq,
-                                style: WebTextStyles.custom(
-                                  fontSize: 13,
+                                style: WebTextStyles.tableDataCompact(
                                   isDarkTheme: theme.isDarkMode,
                                   color: theme.isDarkMode
                                       ? WebDarkColors.textPrimary
                                       : WebColors.textPrimary,
-                                  fontWeight: WebFonts.medium,
                                 ),
                               ),
-                            )),
+                            ), alignment: Alignment.centerLeft),
                             // Next Installment
                             _buildCellWithHover(s, sipRegNo, theme, DataCell(
                               Text(
                                 nextInst,
-                                style: WebTextStyles.custom(
-                                  fontSize: 13,
+                                style: WebTextStyles.tableDataCompact(
                                   isDarkTheme: theme.isDarkMode,
                                   color: theme.isDarkMode
                                       ? WebDarkColors.textPrimary
                                       : WebColors.textPrimary,
-                                  fontWeight: WebFonts.medium,
                                 ),
                               ),
-                            )),
+                            ), alignment: Alignment.centerLeft),
                             // Status
                             _buildCellWithHover(s, sipRegNo, theme, DataCell(
-                              InkWell(
-                                onTap: () => _openSipDetail(s),
-                                child: Text(
-                                  status,
-                                  style: WebTextStyles.custom(
-                                    fontSize: 13,
-                                    isDarkTheme: theme.isDarkMode,
-                                    color: statusColor,
-                                    fontWeight: WebFonts.medium,
-                                  ),
+                              Text(
+                                status,
+                                style: WebTextStyles.tableDataCompact(
+                                  isDarkTheme: theme.isDarkMode,
+                                  color: statusColor,
                                 ),
                               ),
-                            )),
+                            ), alignment: Alignment.centerLeft),
                           ],
                         );
                       }).toList(),
@@ -226,26 +223,26 @@ class _MFSipdetScreenWebState extends ConsumerState<MFSipdetScreenWeb> {
 
   Widget _buildSortableColumnHeader(String label, ThemesProvider theme, int columnIndex) {
     final isSorted = _sipSortColumnIndex == columnIndex;
+    // Check if this is a numeric column (SIP Reg No index is 1, Amount index is 2)
+    final isNumeric = columnIndex == 1 || columnIndex == 2; // SIP Reg No (1) or Amount (2)
     
     return Row(
       mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: isNumeric ? MainAxisAlignment.end : MainAxisAlignment.start,
       children: [
         Text(
           label,
-          style: WebTextStyles.custom(
-            fontSize: 14,
+          style: WebTextStyles.tableHeader(
             isDarkTheme: theme.isDarkMode,
             color: theme.isDarkMode
                 ? WebDarkColors.textPrimary
                 : WebColors.textPrimary,
-            fontWeight: WebFonts.bold,
           ),
         ),
         const SizedBox(width: 4),
-        // Reserve fixed space for sort indicator
-        // Show custom icon when not sorted, DataTable will show its icon when sorted
         SizedBox(
-          width: 20, // Fixed width to prevent layout shift
+          width: 20,
           height: 16,
           child: !isSorted 
               ? Icon(
@@ -253,7 +250,7 @@ class _MFSipdetScreenWebState extends ConsumerState<MFSipdetScreenWeb> {
                   size: 16,
                   color: theme.isDarkMode ? WebDarkColors.iconSecondary : WebColors.iconSecondary,
                 )
-              : const SizedBox.shrink(), // Hide when sorted, DataTable will show its indicator
+              : const SizedBox.shrink(),
         ),
       ],
     );
@@ -350,42 +347,44 @@ class _MFSipdetScreenWebState extends ConsumerState<MFSipdetScreenWeb> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 // Text that shows half when hovered
-                Flexible(
-                  child: Tooltip(
-                    message: scheme,
-                    child: AnimatedOpacity(
-                      opacity: isHovered ? 0.7 : 1.0,
-                      duration: const Duration(milliseconds: 120),
+                Expanded(
+                  flex: isHovered ? 1 : 2,
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Tooltip(
+                      message: scheme,
                       child: Text(
                         scheme,
-                        style: WebTextStyles.custom(
-                          fontSize: 13,
+                        style: WebTextStyles.tableDataCompact(
                           isDarkTheme: theme.isDarkMode,
                           color: theme.isDarkMode
                               ? WebDarkColors.textPrimary
                               : WebColors.textPrimary,
-                          fontWeight: WebFonts.medium,
                         ),
                         overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                       ),
                     ),
                   ),
                 ),
                 // Buttons that appear on hover - Only show when status is ACTIVE
-                if (_shouldShowSipActions(sipDetail))
-                  AnimatedOpacity(
+                IgnorePointer(
+                  ignoring: !isHovered,
+                  child: AnimatedOpacity(
                     opacity: isHovered ? 1.0 : 0.0,
-                    duration: const Duration(milliseconds: 120),
+                    duration: const Duration(milliseconds: 150),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const SizedBox(width: 6),
-                        _buildPauseButton(sipDetail, theme),
-                        const SizedBox(width: 6),
-                        _buildCancelSipButton(sipDetail, theme),
+                        if (_shouldShowSipActions(sipDetail)) ...[
+                          _buildPauseButton(sipDetail, theme),
+                          const SizedBox(width: 6),
+                          _buildCancelSipButton(sipDetail, theme),
+                        ],
                       ],
                     ),
                   ),
+                ),
               ],
             ),
           ),
@@ -399,14 +398,14 @@ class _MFSipdetScreenWebState extends ConsumerState<MFSipdetScreenWeb> {
     return status == "ACTIVE" || status == "RUNNING";
   }
 
-  DataCell _buildCellWithHover(dynamic sipDetail, String sipRegNo, ThemesProvider theme, DataCell cell) {
+  DataCell _buildCellWithHover(dynamic sipDetail, String sipRegNo, ThemesProvider theme, DataCell cell, {Alignment alignment = Alignment.centerRight}) {
     return DataCell(
       MouseRegion(
         onEnter: (_) => setState(() => _hoveredRowSipRegNo = sipRegNo),
         onExit: (_) => setState(() => _hoveredRowSipRegNo = null),
         child: SizedBox.expand(
           child: Align(
-            alignment: Alignment.centerRight,
+            alignment: alignment,
             child: cell.child,
           ),
         ),
@@ -417,53 +416,36 @@ class _MFSipdetScreenWebState extends ConsumerState<MFSipdetScreenWeb> {
   Widget _buildPauseButton(dynamic sipDetail, ThemesProvider theme) {
     return SizedBox(
       height: 28,
-      child: Container(
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: theme.isDarkMode 
-                ? colors.textSecondaryDark.withOpacity(0.6) 
-                : colors.primaryLight,
-            width: 1,
-          ),
-          color: theme.isDarkMode 
-              ? colors.textSecondaryDark.withOpacity(0.6) 
-              : colors.btnBg,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
           borderRadius: BorderRadius.circular(5),
-        ),
-        child: Material(
-          color: Colors.transparent,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(5),
-          ),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(5),
-            splashColor: theme.isDarkMode 
-                ? colors.splashColorDark 
-                : colors.splashColorLight,
-            highlightColor: theme.isDarkMode 
-                ? colors.highlightDark 
-                : colors.highlightLight,
-            onTap: () {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return SipPauseDialogueWeb(sipData: sipDetail);
-                },
-              );
-            },
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: Center(
-                child: Text(
-                  "Pause",
-                  style: TextWidget.textStyle(
-                    fontSize: 11,
-                    theme: theme.isDarkMode,
-                    color: theme.isDarkMode 
-                        ? colors.colorWhite 
-                        : colors.primaryLight,
-                    fw: 2,
-                  ),
+          splashColor: Colors.white.withOpacity(0.15),
+          highlightColor: Colors.white.withOpacity(0.08),
+          onTap: () {
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return SipPauseDialogueWeb(sipData: sipDetail);
+              },
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            decoration: BoxDecoration(
+              color: theme.isDarkMode
+                  ? WebDarkColors.tertiary
+                  : WebColors.tertiary,
+              borderRadius: BorderRadius.circular(5),
+            ),
+            child: Center(
+              child: Text(
+                "Pause",
+                style: WebTextStyles.custom(
+                  fontSize: 11,
+                  isDarkTheme: theme.isDarkMode,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
@@ -476,53 +458,36 @@ class _MFSipdetScreenWebState extends ConsumerState<MFSipdetScreenWeb> {
   Widget _buildCancelSipButton(dynamic sipDetail, ThemesProvider theme) {
     return SizedBox(
       height: 28,
-      child: Container(
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: theme.isDarkMode 
-                ? colors.textSecondaryDark.withOpacity(0.6) 
-                : colors.primaryLight,
-            width: 1,
-          ),
-          color: theme.isDarkMode 
-              ? colors.textSecondaryDark.withOpacity(0.6) 
-              : colors.btnBg,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
           borderRadius: BorderRadius.circular(5),
-        ),
-        child: Material(
-          color: Colors.transparent,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(5),
-          ),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(5),
-            splashColor: theme.isDarkMode 
-                ? colors.splashColorDark 
-                : colors.splashColorLight,
-            highlightColor: theme.isDarkMode 
-                ? colors.highlightDark 
-                : colors.highlightLight,
-            onTap: () {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return SipCancelDialogueWeb(sipData: sipDetail);
-                },
-              );
-            },
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: Center(
-                child: Text(
-                  "Cancel SIP",
-                  style: TextWidget.textStyle(
-                    fontSize: 11,
-                    theme: theme.isDarkMode,
-                    color: theme.isDarkMode 
-                        ? colors.colorWhite 
-                        : colors.primaryLight,
-                    fw: 2,
-                  ),
+          splashColor: Colors.white.withOpacity(0.15),
+          highlightColor: Colors.white.withOpacity(0.08),
+          onTap: () {
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return SipCancelDialogueWeb(sipData: sipDetail);
+              },
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            decoration: BoxDecoration(
+              color: theme.isDarkMode
+                  ? WebDarkColors.error
+                  : WebColors.error,
+              borderRadius: BorderRadius.circular(5),
+            ),
+            child: Center(
+              child: Text(
+                "Cancel SIP",
+                style: WebTextStyles.custom(
+                  fontSize: 11,
+                  isDarkTheme: theme.isDarkMode,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),

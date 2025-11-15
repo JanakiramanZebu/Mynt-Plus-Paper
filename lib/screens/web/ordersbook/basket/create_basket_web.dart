@@ -106,10 +106,11 @@ class _CreateBasketState extends ConsumerState<CreateBasket> {
 
     return Column(
       mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Header with close button
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          margin: const EdgeInsets.only(bottom: 8),
           decoration: BoxDecoration(
             border: Border(
               bottom: BorderSide(
@@ -124,13 +125,13 @@ class _CreateBasketState extends ConsumerState<CreateBasket> {
             children: [
               Text(
                 'New Basket',
-                style: WebTextStyles.sub(
+                style: WebTextStyles.dialogTitle(
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? WebDarkColors.textPrimary
                       : WebColors.textPrimary,
-                  fontWeight: FontWeight.w700,
                 ),
+                overflow: TextOverflow.ellipsis,
               ),
               Material(
                 color: Colors.transparent,
@@ -145,10 +146,10 @@ class _CreateBasketState extends ConsumerState<CreateBasket> {
                       : Colors.black.withOpacity(.08),
                   onTap: () => Navigator.of(context).pop(),
                   child: Padding(
-                    padding: const EdgeInsets.all(5),
+                    padding: const EdgeInsets.all(6.0),
                     child: Icon(
                       Icons.close,
-                      size: 18,
+                      size: 20,
                       color: theme.isDarkMode
                           ? WebDarkColors.iconSecondary
                           : WebColors.iconSecondary,
@@ -159,105 +160,124 @@ class _CreateBasketState extends ConsumerState<CreateBasket> {
             ],
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(
-                height: 40,
-                child: CustomTextFormField(
-                  fillColor: theme.isDarkMode
-                      ? WebDarkColors.backgroundTertiary
-                      : WebColors.backgroundTertiary,
-                  onChanged: (value) {
-                    setState(() {
-                      if (textCtrl.text.trim().isNotEmpty) {
-                        errorText = null;
-                      } else {
-                        errorText = "Please enter basket name";
-                      }
-                    });
-                  },
-                  hintText: "Enter basket name",
-                  hintStyle: WebTextStyles.custom(
-                    fontSize: 13,
-                    isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode
-                        ? WebDarkColors.textSecondary
-                        : WebColors.textSecondary,
-                    fontWeight: FontWeight.w600,
+        Flexible(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Basket Name Label
+                  Text(
+                    "Basket Name",
+                    style: WebTextStyles.formLabel(
+                      isDarkTheme: theme.isDarkMode,
+                      color: theme.isDarkMode
+                          ? WebDarkColors.textPrimary
+                          : WebColors.textPrimary,
+                    ),
                   ),
-                  keyboardType: TextInputType.text,
-                  style: WebTextStyles.custom(
-                    fontSize: 13,
-                    isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode
-                        ? WebDarkColors.textPrimary
-                        : WebColors.textPrimary,
-                    fontWeight: FontWeight.w600,
+                  const SizedBox(height: 10),
+                  // Basket Name Input
+                  SizedBox(
+                    height: 40,
+                    child: CustomTextFormField(
+                      fillColor: theme.isDarkMode
+                          ? WebDarkColors.backgroundTertiary
+                          : WebColors.backgroundTertiary,
+                      onChanged: (value) {
+                        setState(() {
+                          if (textCtrl.text.trim().isNotEmpty) {
+                            errorText = null;
+                          } else {
+                            errorText = "Please enter basket name";
+                          }
+                        });
+                      },
+                      hintText: "Enter basket name",
+                      hintStyle: WebTextStyles.helperText(
+                        isDarkTheme: theme.isDarkMode,
+                        color: theme.isDarkMode
+                            ? WebDarkColors.textSecondary
+                            : WebColors.textSecondary,
+                      ),
+                      keyboardType: TextInputType.text,
+                      style: WebTextStyles.formInput(
+                        isDarkTheme: theme.isDarkMode,
+                        color: theme.isDarkMode
+                            ? WebDarkColors.textPrimary
+                            : WebColors.textPrimary,
+                      ),
+                      textCtrl: textCtrl,
+                      textAlign: TextAlign.start,
+                      autofocus: true,
+                      inputFormate: [
+                        FilteringTextInputFormatter.allow(
+                          RegExp(r'[a-zA-Z0-9 ]'),
+                        ),
+                      ],
+                    ),
                   ),
-                  textCtrl: textCtrl,
-                  textAlign: TextAlign.start,
-                  autofocus: true,
-                  inputFormate: [
-                    FilteringTextInputFormatter.allow(
-                      RegExp(r'[a-zA-Z0-9 ]'),
+                  // Error Text
+                  if (errorText != null) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      errorText!,
+                      style: WebTextStyles.helperText(
+                        isDarkTheme: theme.isDarkMode,
+                        color: WebDarkColors.error,
+                      ),
                     ),
                   ],
-                ),
-              ),
-              if (errorText != null) ...[
-                const SizedBox(height: 8),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    errorText!,
-                    style: WebTextStyles.custom(
-                      fontSize: 12,
-                      isDarkTheme: theme.isDarkMode,
-                      color: WebDarkColors.loss,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                height: 40,
-                child: ElevatedButton(
-                  onPressed: _isProcessing ? null : _handleButton,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: theme.isDarkMode
-                        ? WebDarkColors.primary
-                        : WebColors.primary,
-                    minimumSize: const Size(0, 40),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                  ),
-                  child: _isProcessing
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : Text(
-                          'Create',
-                          style: WebTextStyles.custom(
-                            fontSize: 13,
-                            isDarkTheme: theme.isDarkMode,
-                            color: WebColors.surface,
-                            fontWeight: FontWeight.w700,
+                  const SizedBox(height: 24),
+                  // Create Button
+                  SizedBox(
+                    width: double.infinity,
+                    child: Container(
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: theme.isDarkMode
+                            ? WebDarkColors.primary
+                            : WebColors.primary,
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(5),
+                          splashColor: Colors.white.withOpacity(0.2),
+                          highlightColor: Colors.white.withOpacity(0.1),
+                          onTap: _isProcessing ? null : _handleButton,
+                          child: Center(
+                            child: _isProcessing
+                                ? const SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : Text(
+                                    'Create Basket',
+                                    style: WebTextStyles.buttonMd(
+                                      isDarkTheme: theme.isDarkMode,
+                                      color: Colors.white,
+                                    ),
+                                  ),
                           ),
                         ),
-                ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ],

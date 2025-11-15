@@ -218,7 +218,7 @@ class _RedemptionBottomSheetWebState extends ConsumerState<RedemptionBottomSheet
             ),
             child: Text(
               'Redeem',
-              style: WebTextStyles.buttonXs(
+              style: WebTextStyles.buttonMd(
                 isDarkTheme: theme.isDarkMode,
                 color: WebColors.surface,
                 fontWeight: WebFonts.bold,

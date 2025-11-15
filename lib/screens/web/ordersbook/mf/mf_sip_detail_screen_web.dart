@@ -5,6 +5,7 @@ import '../../../../provider/thems.dart';
 import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
 import '../../../../res/web_colors.dart';
+import '../../../../res/global_font_web.dart';
 import '../../../../sharedWidget/functions.dart';
 import 'sip_pause_dialogue_web.dart';
 import 'sip_cancel_dialogue_web.dart';
@@ -27,24 +28,17 @@ class MFSipDetailScreenWeb extends ConsumerWidget {
     final theme = ref.watch(themeProvider);
 
     return Dialog(
-     backgroundColor: WebColors.surface,
+      backgroundColor: Colors.transparent,
       child: Container(
-         width: 500,
-        height: MediaQuery.of(context).size.height * 0.60,
-        constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.60,
-        ),
+        width: 700,
         decoration: BoxDecoration(
-          // color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+          color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
           borderRadius: BorderRadius.circular(5),
-          // border: Border.all(
-          //   color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-          // ),
         ),
         child: Column(
-           mainAxisSize: MainAxisSize.min,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            // Header
+            // Header with close button
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               margin: const EdgeInsets.only(bottom: 8),
@@ -90,33 +84,18 @@ class MFSipDetailScreenWeb extends ConsumerWidget {
             ),
             
             // Content
-            Expanded(
+            Flexible(
+              fit: FlexFit.loose,
               child: SingleChildScrollView(
-                padding: const EdgeInsets.only(
-                    top: 0, bottom: 16, left: 16, right: 16),
+                padding: const EdgeInsets.only(top: 0, bottom: 20, left: 20, right: 20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Action Buttons - Only show when status is ACTIVE
-                    // if (sipData.status?.toUpperCase() == "ACTIVE" || 
-                    //     sipData.status?.toUpperCase() == "RUNNING")
-                    //   Row(
-                    //     children: [
-                    //       Expanded(
-                    //         child: _buildPauseButton(context, theme),
-                    //       ),
-                    //       const SizedBox(width: 12),
-                    //       Expanded(
-                    //         child: _buildCancelSipButton(context, theme),
-                    //       ),
-                    //     ],
-                    //   ),
-                    // if (sipData.status?.toUpperCase() == "ACTIVE" || 
-                    //     sipData.status?.toUpperCase() == "RUNNING")
-                    //   const SizedBox(height: 24),
-                    
                     // SIP Details Section
-                    _buildSipDetailsSection(context, theme),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      child: _buildSipDetailsSection(context, theme),
+                    ),
                   ],
                 ),
               ),
@@ -130,131 +109,132 @@ class MFSipDetailScreenWeb extends ConsumerWidget {
   Widget _buildHeader(BuildContext context, ThemesProvider theme) {
     return Text(
       sipData.name ?? "",
-      style: TextWidget.textStyle(
-        fontSize: 16,
-        theme: theme.isDarkMode,
-        color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-        fw: 1,
+      style: WebTextStyles.dialogTitle(
+        isDarkTheme: theme.isDarkMode,
+        color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
       ),
       overflow: TextOverflow.ellipsis,
     );
   }
 
   Widget _buildSipDetailsSection(BuildContext context, ThemesProvider theme) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          "SIP Details",
-          style: TextWidget.textStyle(
-            fontSize: 15,
-            theme: theme.isDarkMode,
-            color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-            fw: 2,
-          ),
-        ),
-        const SizedBox(height: 8),
-
-
-        _buildInfoRowWithDivider(
-          "Status",
-          _isActive
-              ? Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF4CAF50),
-                    borderRadius: BorderRadius.circular(4),
+    return IntrinsicHeight(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Left column
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildInfoRow(
+                    "Status",
+                    _isActive
+                        ? Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: theme.isDarkMode ? colors.profitDark : colors.profitLight,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              "LIVE",
+                              style: WebTextStyles.tableDataCompact(
+                                isDarkTheme: theme.isDarkMode,
+                                color: Colors.white,
+                              ),
+                            ),
+                          )
+                        : (sipData.status ?? '').toUpperCase(),
+                    theme,
                   ),
-                  child: Text(
-                    "LIVE",
-                    style: TextWidget.textStyle(
-                      fontSize: 12,
-                      theme: false,
-                      color: colors.colorWhite,
-                      fw: 2,
-                    ),
+                  _buildInfoRow(
+                    "Amount",
+                    "${sipData.installmentAmount ?? '0.0'}",
+                    theme,
                   ),
-                )
-              : (sipData.status ?? '').toUpperCase(),
-          theme,
+                  _buildInfoRow(
+                    "Next Due Date",
+                    sipData.NextSIPDate != null && sipData.NextSIPDate!.isNotEmpty
+                        ? sipformatDateTime(value: sipData.NextSIPDate!)
+                        : "-",
+                    theme,
+                  ),
+                  _buildInfoRow(
+                    "Start Date",
+                    sipData.startDate != null && sipData.startDate!.isNotEmpty
+                        ? sipformatDateTime(value: sipData.startDate!)
+                        : "-",
+                    theme,
+                  ),
+                ],
+              ),
+            ),
+            // Vertical divider
+            Container(
+              width: 0.5,
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              color: theme.isDarkMode
+                  ? WebDarkColors.divider
+                  : WebColors.divider,
+            ),
+            // Right column
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildInfoRow(
+                    "End Date",
+                    sipData.endDate != null && sipData.endDate!.isNotEmpty
+                        ? sipformatDateTime(value: sipData.endDate!)
+                        : "-",
+                    theme,
+                  ),
+                  _buildInfoRow(
+                    "Sip Reg No",
+                    sipData.sIPRegnNo ?? "-",
+                    theme,
+                  ),
+                  _buildInfoRow(
+                    "Settlement Type",
+                    sipData.settType ?? "-",
+                    theme,
+                  ),
+                  _buildInfoRow(
+                    "Frequency Type",
+                    sipData.frequencyType ?? "-",
+                    theme,
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
-        
-        // SIP Details with dividers
-        _buildInfoRowWithDivider(
-          "Amount",
-          "${sipData.installmentAmount ?? '0.0'}",
-          theme,
-        ),
-        _buildInfoRowWithDivider(
-          "Next Due Date",
-          sipData.NextSIPDate != null && sipData.NextSIPDate!.isNotEmpty
-              ? sipformatDateTime(value: sipData.NextSIPDate!)
-              : "-",
-          theme,
-        ),
-        _buildInfoRowWithDivider(
-          "Start Date",
-          sipData.startDate != null && sipData.startDate!.isNotEmpty
-              ? sipformatDateTime(value: sipData.startDate!)
-              : "-",
-          theme,
-        ),
-        _buildInfoRowWithDivider(
-          "End Date",
-          sipData.endDate != null && sipData.endDate!.isNotEmpty
-              ? sipformatDateTime(value: sipData.endDate!)
-              : "-",
-          theme,
-        ),
-        _buildInfoRowWithDivider(
-          "Sip Reg No",
-          sipData.sIPRegnNo ?? "-",
-          theme,
-        ),
-        _buildInfoRowWithDivider(
-          "Settlement Type",
-          sipData.settType ?? "-",
-          theme,
-        ),
-        _buildInfoRowWithDivider(
-          "Frequency Type",
-          sipData.frequencyType ?? "-",
-          theme,
-        ),
-      ],
+      ),
     );
   }
 
-  Widget _buildInfoRowWithDivider(
-      String title, dynamic value, ThemesProvider theme) {
+  Widget _buildInfoRow(String title, dynamic value, ThemesProvider theme) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             title,
-            style: TextWidget.textStyle(
-              fontSize: 14,
-              theme: false,
-              color: theme.isDarkMode
-                  ? colors.textSecondaryDark
-                  : colors.textSecondaryLight,
-              fw: 1,
+            style: WebTextStyles.dialogContent(
+              isDarkTheme: theme.isDarkMode,
+              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
             ),
           ),
           value is Widget
               ? value
               : Text(
                   value.toString(),
-                  textAlign: TextAlign.end,
-                  style: TextWidget.textStyle(
-                    fontSize: 14,
-                    theme: false,
-                    color: theme.isDarkMode
-                        ? colors.textPrimaryDark
-                        : colors.textPrimaryLight,
-                    fw: 1,
+                  style: WebTextStyles.dialogContent(
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
                   ),
                 ),
         ],

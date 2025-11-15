@@ -19,21 +19,413 @@ import 'create_basket_web.dart';
 import '../../../web/market_watch/search_dialog_web.dart';
 import '../../../web/order/place_order_screen_web.dart';
 
-class BasketList extends ConsumerWidget {
+class BasketList extends ConsumerStatefulWidget {
   const BasketList({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<BasketList> createState() => _BasketListState();
+}
+
+class _BasketListState extends ConsumerState<BasketList> {
+  String? _hoveredRowIndex;
+  int? _sortColumnIndex;
+  bool _sortAscending = true;
+  final ScrollController _verticalScrollController = ScrollController();
+  bool _isDeleting = false;
+
+  @override
+  void dispose() {
+    _verticalScrollController.dispose();
+    super.dispose();
+  }
+
+  void _onSortTable(int columnIndex, bool ascending) {
+    setState(() {
+      _sortColumnIndex = columnIndex;
+      _sortAscending = ascending;
+    });
+  }
+
+  List<dynamic> _getSortedBaskets(List<dynamic> baskets) {
+    if (_sortColumnIndex == null) return baskets;
+    final sorted = [...baskets];
+    int c = _sortColumnIndex!;
+    bool asc = _sortAscending;
+    
+    sorted.sort((a, b) {
+      int comparison = 0;
+      switch (c) {
+        case 0: // Basket Name
+          comparison = ((a as Map)['bsketName'] ?? '').toString().compareTo(((b as Map)['bsketName'] ?? '').toString());
+          break;
+        case 1: // Created Date
+          comparison = ((a as Map)['createdDate'] ?? '').toString().compareTo(((b as Map)['createdDate'] ?? '').toString());
+          break;
+        case 2: // Items
+          final aItems = int.tryParse(((a as Map)['curLength'] ?? 0).toString()) ?? 0;
+          final bItems = int.tryParse(((b as Map)['curLength'] ?? 0).toString()) ?? 0;
+          comparison = aItems.compareTo(bItems);
+          break;
+      }
+      return asc ? comparison : -comparison;
+    });
+    return sorted;
+  }
+
+  Widget _buildSortableColumnHeader(String label, ThemesProvider theme, int columnIndex) {
+    final isSorted = _sortColumnIndex == columnIndex;
+    // Check if this is a numeric column (Created Date index is 1, Items index is 2)
+    final isNumeric = columnIndex == 1 || columnIndex == 2; // Created Date (1) or Items (2)
+    
+    return InkWell(
+      onTap: () => _onSortTable(columnIndex, !(isSorted && _sortAscending)),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: isNumeric ? MainAxisAlignment.end : MainAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: WebTextStyles.tableHeader(
+                isDarkTheme: theme.isDarkMode,
+                color: theme.isDarkMode
+                    ? WebDarkColors.textPrimary
+                    : WebColors.textPrimary,
+              ),
+            ),
+            const SizedBox(width: 4),
+            SizedBox(
+              width: 20,
+              height: 16,
+              child: !isSorted 
+                  ? Icon(
+                      Icons.unfold_more,
+                      size: 16,
+                      color: theme.isDarkMode ? WebDarkColors.iconSecondary : WebColors.iconSecondary,
+                    )
+                  : Icon(
+                      _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
+                      size: 16,
+                      color: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBasketNameCellContent(Map<String, dynamic> basket, int index, ThemesProvider theme, bool isHovered) {
+    final bsktName = basket['bsketName'] ?? '';
+
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SvgPicture.asset(
+            assets.basketdashboard,
+            width: 18,
+            height: 18,
+            color: theme.isDarkMode
+                ? WebDarkColors.iconSecondary
+                : WebColors.iconSecondary,
+          ),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Text(
+              bsktName,
+              style: WebTextStyles.tableDataCompact(
+                isDarkTheme: theme.isDarkMode,
+                color: theme.isDarkMode
+                    ? WebDarkColors.textPrimary
+                    : WebColors.textPrimary,
+              ),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+            ),
+          ),
+          if (isHovered) ...[
+            const SizedBox(width: 8),
+            _buildHoverButton(
+              label: 'Delete',
+              color: Colors.white,
+              backgroundColor: theme.isDarkMode
+                  ? WebDarkColors.error
+                  : WebColors.error,
+              onPressed: () => _handleDeleteBasket(context, basket, index),
+              theme: theme,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  DataCell _buildCellWithHover(Map<String, dynamic> basket, int index, DataCell cell, {Alignment alignment = Alignment.centerLeft}) {
+    final uniqueId = '$index';
+    return DataCell(
+      MouseRegion(
+        onEnter: (_) => setState(() => _hoveredRowIndex = uniqueId),
+        onExit: (_) => setState(() => _hoveredRowIndex = null),
+        child: SizedBox.expand(
+          child: Align(
+            alignment: alignment,
+            child: cell.child,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHoverButton({
+    String? label,
+    required Color color,
+    Color? backgroundColor,
+    Color? borderColor,
+    double? borderRadius,
+    required VoidCallback? onPressed,
+    required ThemesProvider theme,
+  }) {
+    final borderRadiusValue = borderRadius ?? 5.0;
+    return SizedBox(
+      height: 28,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(borderRadiusValue),
+          splashColor: color.withOpacity(0.15),
+          highlightColor: color.withOpacity(0.08),
+          onTap: onPressed,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            decoration: BoxDecoration(
+              color: backgroundColor ?? Colors.transparent,
+              borderRadius: BorderRadius.circular(borderRadiusValue),
+              border: borderColor != null
+                  ? Border.all(
+                      color: borderColor,
+                      width: 1,
+                    )
+                  : null,
+            ),
+            child: Center(
+              child: Text(
+                label ?? "",
+                style: WebTextStyles.buttonXs(
+                  isDarkTheme: theme.isDarkMode,
+                  color: color,
+                  fontWeight: WebFonts.semiBold,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _handleDeleteBasket(BuildContext context, Map<String, dynamic> basket, int index) async {
+    final bsktName = basket['bsketName'] ?? '';
+    final basketProvider = ref.read(orderProvider);
+    
+    final shouldDelete = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        final theme = ref.read(themeProvider);
+        return Dialog(
+          backgroundColor: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(5),
+          ),
+          child: Container(
+            width: 400,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  margin: const EdgeInsets.only(bottom: 8),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
+                        color: theme.isDarkMode
+                            ? WebDarkColors.divider
+                            : WebColors.divider,
+                      ),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Delete Basket',
+                        style: WebTextStyles.dialogTitle(
+                          isDarkTheme: theme.isDarkMode,
+                          color: theme.isDarkMode
+                              ? WebDarkColors.textPrimary
+                              : WebColors.textPrimary,
+                        ),
+                      ),
+                      Material(
+                        color: Colors.transparent,
+                        shape: const CircleBorder(),
+                        child: InkWell(
+                          customBorder: const CircleBorder(),
+                          splashColor: theme.isDarkMode
+                              ? Colors.white.withOpacity(.15)
+                              : Colors.black.withOpacity(.15),
+                          highlightColor: theme.isDarkMode
+                              ? Colors.white.withOpacity(.08)
+                              : Colors.black.withOpacity(.08),
+                          onTap: () => Navigator.of(dialogContext).pop(false),
+                          child: Padding(
+                            padding: const EdgeInsets.all(6.0),
+                            child: Icon(
+                              Icons.close,
+                              size: 20,
+                              color: theme.isDarkMode
+                                  ? WebDarkColors.iconSecondary
+                                  : WebColors.iconSecondary,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Flexible(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.only(top: 0, bottom: 20, left: 20, right: 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          child: Center(
+                            child: Text(
+                              'Are you sure you want to delete this basket ${bsktName.toString().toUpperCase()}?',
+                              textAlign: TextAlign.center,
+                              style: WebTextStyles.dialogContent(
+                                isDarkTheme: theme.isDarkMode,
+                                color: theme.isDarkMode
+                                    ? WebDarkColors.textPrimary
+                                    : WebColors.textPrimary,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 40,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: theme.isDarkMode
+                                  ? WebDarkColors.error
+                                  : WebColors.error,
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                            child: Material(
+                              color: Colors.transparent,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(5),
+                                splashColor: Colors.white.withOpacity(0.2),
+                                highlightColor: Colors.white.withOpacity(0.1),
+                                onTap: () => Navigator.of(dialogContext).pop(true),
+                                child: Center(
+                                  child: _isDeleting
+                                      ? const SizedBox(
+                                          width: 18,
+                                          height: 18,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            color: Colors.white,
+                                          ),
+                                        )
+                                      : Text(
+                                          'Delete',
+                                          style: WebTextStyles.buttonMd(
+                                            isDarkTheme: theme.isDarkMode,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    if (shouldDelete == true) {
+      setState(() => _isDeleting = true);
+      await basketProvider.removeBasket(index);
+      if (mounted) {
+        setState(() => _isDeleting = false);
+      }
+    }
+  }
+
+  Future<void> _handleBasketTap(BuildContext context, Map<String, dynamic> basket) async {
+    final bsktName = basket['bsketName'] ?? '';
+    final basketProvider = ref.read(orderProvider);
+    
+    await basketProvider.fetchBasketMargin();
+    await basketProvider.chngBsktName(bsktName, context, true);
+    
+    if (context.mounted) {
+      showDialog(
+        context: context,
+        barrierDismissible: true,
+        barrierColor: Colors.transparent,
+        builder: (BuildContext context) {
+          return Dialog(
+            backgroundColor: Colors.transparent,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(5),
+              child: Container(
+                constraints: BoxConstraints(
+                  maxWidth: MediaQuery.of(context).size.width * 0.3,
+                  maxHeight: MediaQuery.of(context).size.height * 0.7,
+                ),
+                decoration: BoxDecoration(
+                  color: ref.read(themeProvider).isDarkMode
+                      ? WebDarkColors.surface
+                      : WebColors.surface,
+                  borderRadius: BorderRadius.circular(5),
+                ),
+                child: BasketScripList(
+                  bsktName: bsktName,
+                ),
+              ),
+            ),
+          );
+        },
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final basket = ref.watch(orderProvider);
     final theme = ref.watch(themeProvider);
-    bool _isDeleting = false;
-
-    print("=== BASKET LIST BUILD ===");
-    print("isBasketLoading: ${basket.isBasketLoading}");
-    print("bsktList.length: ${basket.bsktList.length}");
-    print("bsktList.isEmpty: ${basket.bsktList.isEmpty}");
-    print("bsktList content: ${basket.bsktList}");
-    print("========================");
 
     return Column(
       children: [
@@ -46,346 +438,187 @@ class BasketList extends ConsumerWidget {
               Container(
                 decoration: BoxDecoration(
                   color: theme.isDarkMode
-                      ? colors.textSecondaryDark.withOpacity(0.6)
-                      : colors.btnBg,
+                      ? WebDarkColors.primary
+                      : WebColors.primary,
                   borderRadius: BorderRadius.circular(5),
-                  border: theme.isDarkMode
-                      ? null
-                      : Border.all(color: colors.btnOutlinedBorder, width: 1),
                 ),
                 child: Material(
                   color: Colors.transparent,
-                  shape: const BeveledRectangleBorder(),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5),
+                  ),
                   child: InkWell(
-                      customBorder: const BeveledRectangleBorder(),
-                      splashColor: theme.isDarkMode
-                          ? colors.splashColorDark
-                          : colors.splashColorLight,
-                      highlightColor: theme.isDarkMode
-                          ? colors.highlightDark
-                          : colors.highlightLight,
-                      onTap: () {
-                        Future.delayed(const Duration(milliseconds: 150), () {
-                          showDialog(
-                              context: context,
-                              barrierDismissible: true,
-                              builder: (BuildContext context) {
-                                final theme = ref.read(themeProvider);
-                                return Dialog(
-                                  backgroundColor: theme.isDarkMode
-                                      ? WebDarkColors.surface
-                                      : WebColors.surface,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(5),
-                                  ),
-                                  child: Container(
-                                    width: 400,
-                                    child: const CreateBasket(),
-                                  ),
-                                );
-                              });
-                        });
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 8),
-                        child: TextWidget.subText(
-                            text: "Create Basket",
-                            theme: theme.isDarkMode,
-                            color: theme.isDarkMode
-                                ? colors.colorWhite
-                                : colors.primaryLight,
-                            fw: 2),
-                      )),
+                    borderRadius: BorderRadius.circular(5),
+                    splashColor: Colors.white.withOpacity(0.2),
+                    highlightColor: Colors.white.withOpacity(0.1),
+                    onTap: () {
+                      Future.delayed(const Duration(milliseconds: 150), () {
+                        showDialog(
+                          context: context,
+                          barrierDismissible: true,
+                          builder: (BuildContext context) {
+                            final theme = ref.read(themeProvider);
+                            return Dialog(
+                              backgroundColor: theme.isDarkMode
+                                  ? WebDarkColors.surface
+                                  : WebColors.surface,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                              child: Container(
+                                width: 400,
+                                child: const CreateBasket(),
+                              ),
+                            );
+                          },
+                        );
+                      });
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      child: Text(
+                        "Create Basket",
+                        style: WebTextStyles.buttonMd(
+                          isDarkTheme: theme.isDarkMode,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ],
           ),
         ),
+        const SizedBox(height: 16),
         basket.isBasketLoading
             ? const SizedBox(
                 height: 400, child: Center(child: CircularProgressIndicator()))
             : basket.bsktList.isEmpty
                 ? const SizedBox(height: 400, child: NoDataFound())
                 : Expanded(
-                    child: ListView.separated(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      shrinkWrap: true,
-                      itemCount: basket.bsktList.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        final bsktName = basket.bsktList[index]['bsketName'];
-
-                        return ListTile(
-                          dense: false,
-                          contentPadding:
-                              const EdgeInsets.symmetric(horizontal: 16),
-                          onLongPress: () {
-                            showDialog(
-                              context: context,
-                              barrierDismissible: false,
-                              builder: (BuildContext context) {
-                                return StatefulBuilder(
-                                  builder: (BuildContext context,
-                                      StateSetter setDialogState) {
-                                    return AlertDialog(
-                                      backgroundColor: colors.colorWhite,
-                                      titlePadding: const EdgeInsets.symmetric(
-                                          horizontal: 8, vertical: 8),
-                                      shape: const RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.all(
-                                              Radius.circular(8))),
-                                      scrollable: true,
-                                      contentPadding:
-                                          const EdgeInsets.symmetric(
-                                              horizontal: 12, vertical: 12),
-                                      actionsPadding: const EdgeInsets.only(
-                                          bottom: 16,
-                                          right: 16,
-                                          left: 16,
-                                          top: 8),
-                                      insetPadding: const EdgeInsets.symmetric(
-                                          horizontal: 30, vertical: 12),
-                                      title: Column(
-                                        children: [
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.end,
-                                            children: [
-                                              Material(
-                                                color: Colors.transparent,
-                                                shape: const CircleBorder(),
-                                                child: InkWell(
-                                                  onTap: () =>
-                                                      Navigator.pop(context),
-                                                  borderRadius:
-                                                      BorderRadius.circular(20),
-                                                  splashColor: theme.isDarkMode
-                                                      ? colors.splashColorDark
-                                                      : colors.splashColorLight,
-                                                  highlightColor: theme
-                                                          .isDarkMode
-                                                      ? colors.splashColorDark
-                                                      : colors.splashColorLight,
-                                                  child: Padding(
-                                                    padding:
-                                                        const EdgeInsets.all(
-                                                            6.0),
-                                                    child: Icon(
-                                                      Icons.close_rounded,
-                                                      size: 22,
-                                                      color: theme.isDarkMode
-                                                          ? const Color(
-                                                              0xffBDBDBD)
-                                                          : colors.colorGrey,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 12),
-                                          SizedBox(
-                                            width: MediaQuery.of(context)
-                                                .size
-                                                .width,
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.center,
-                                              children: [
-                                                const SizedBox(height: 5),
-                                                TextWidget.subText(
-                                                  text:
-                                                      "Are you sure you want to delete this basket ${bsktName.toString().toUpperCase()}?",
-                                                  theme: theme.isDarkMode,
-                                                  color: theme.isDarkMode
-                                                      ? colors.textPrimaryDark
-                                                      : colors.textPrimaryLight,
-                                                  fw: 3,
-                                                  align: TextAlign.center,
-                                                ),
-                                              ],
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        return Scrollbar(
+                          controller: _verticalScrollController,
+                          thumbVisibility: true,
+                          radius: Radius.zero,
+                          child: SingleChildScrollView(
+                            controller: _verticalScrollController,
+                            scrollDirection: Axis.vertical,
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            child: Padding(
+                              padding: const EdgeInsets.only(right: 16),
+                              child: SizedBox(
+                                width: constraints.maxWidth,
+                                child: Padding(
+                                  padding: const EdgeInsets.only(bottom: 16),
+                                  child: Table(
+                                    columnWidths: const {
+                                      0: FractionColumnWidth(1 / 3),
+                                      1: FractionColumnWidth(1 / 3),
+                                      2: FractionColumnWidth(1 / 3),
+                                    },
+                                    children: [
+                                      // Header row
+                                      TableRow(
+                                        decoration: BoxDecoration(
+                                          border: Border(
+                                            bottom: BorderSide(
+                                              color: theme.isDarkMode
+                                                  ? WebDarkColors.divider
+                                                  : WebColors.divider,
                                             ),
                                           ),
+                                        ),
+                                        children: [
+                                          _buildSortableColumnHeader('Basket Name', theme, 0),
+                                          _buildSortableColumnHeader('Created Date', theme, 1),
+                                          _buildSortableColumnHeader('Items', theme, 2),
                                         ],
                                       ),
-                                      actions: [
-                                        SizedBox(
-                                          width: double.infinity,
-                                          child: OutlinedButton(
-                                            onPressed: _isDeleting
-                                                ? null
-                                                : () async {
-                                                    setDialogState(() {
-                                                      _isDeleting = true;
-                                                    });
-                                                    Navigator.pop(context);
-                                                    await basket
-                                                        .removeBasket(index);
-                                                    if (context.mounted) {
-                                                      setDialogState(() {
-                                                        _isDeleting = false;
-                                                      });
-                                                    }
-                                                  },
-                                            style: OutlinedButton.styleFrom(
-                                              minimumSize: const Size(0, 40),
-                                              side: BorderSide(
-                                                  color:
-                                                      colors.btnOutlinedBorder),
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(5),
-                                              ),
-                                              backgroundColor:
-                                                  colors.primaryDark,
-                                            ),
-                                            child: _isDeleting
-                                                ? SizedBox(
-                                                    width: 18,
-                                                    height: 20,
-                                                    child:
-                                                        CircularProgressIndicator(
-                                                      strokeWidth: 2,
-                                                      color: theme.isDarkMode
-                                                          ? colors
-                                                              .textSecondaryDark
-                                                          : colors
-                                                              .textSecondaryLight,
-                                                    ),
-                                                  )
-                                                : TextWidget.titleText(
-                                                    text: "Delete",
-                                                    theme: theme.isDarkMode,
-                                                    color: !theme.isDarkMode
-                                                        ? colors.colorWhite
-                                                        : colors.colorBlack,
-                                                    fw: 0,
-                                                  ),
+                                      // Data rows
+                                      ..._getSortedBaskets(basket.bsktList).asMap().entries.map((entry) {
+                                        final index = entry.key;
+                                        final basketItem = entry.value as Map<String, dynamic>;
+                                        final uniqueId = '$index';
+                                        final isHovered = _hoveredRowIndex == uniqueId;
+                                        
+                                        return TableRow(
+                                          decoration: BoxDecoration(
+                                            color: isHovered
+                                                ? (theme.isDarkMode
+                                                        ? WebDarkColors.primary
+                                                        : WebColors.primary)
+                                                    .withOpacity(0.15)
+                                                : null,
                                           ),
-                                        ),
-                                      ],
-                                    );
-                                  },
-                                );
-                              },
-                            );
-                          },
-                          onTap: () async {
-                            final bsktName = basket.bsktList[index]['bsketName'];
-                            
-                            // Fetch basket margin first
-                            await basket.fetchBasketMargin();
-                            
-                            // Change basket name with isOpt: true to prevent navigation (for mobile)
-                            await basket.chngBsktName(bsktName, context, true);
-                            
-                            // Show basket detail as dialog (web-specific)
-                            if (context.mounted) {
-                              showDialog(
-                                context: context,
-                                barrierDismissible: true,
-                                barrierColor: Colors.transparent,
-                                builder: (BuildContext context) {
-                                  return Dialog(
-                                    backgroundColor: Colors.transparent,
-                                    // insetPadding: const EdgeInsets.all(16),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(5),
-                                      child: Container(
-                                        constraints: BoxConstraints(
-                                          maxWidth: MediaQuery.of(context).size.width * 0.3,
-                                          maxHeight: MediaQuery.of(context).size.height * 0.7,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: theme.isDarkMode
-                                              ? WebDarkColors.surface
-                                              : WebColors.surface,
-                                          borderRadius: BorderRadius.circular(5),
-                                        ),
-                                        child: BasketScripList(
-                                          bsktName: bsktName,
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                },
-                              );
-                            }
-                          },
-                          minLeadingWidth: 25,
-                          leading: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              SvgPicture.asset(
-                                assets.basketdashboard,
-                                color: theme.isDarkMode
-                                    ? colors.textSecondaryDark
-                                    : colors.textSecondaryLight,
-                              ),
-                            ],
-                          ),
-                          title: Padding(
-                            padding: const EdgeInsets.only(bottom: 4),
-                            child: TextWidget.subText(
-                              text: bsktName,
-                              theme: false,
-                              color: theme.isDarkMode
-                                  ? colors.textPrimaryDark
-                                  : colors.textPrimaryLight,
-                              fw: 0,
-                            ),
-                          ),
-                          subtitle: Padding(
-                            padding: const EdgeInsets.only(top: 4),
-                            child: Row(
-                              children: [
-                                TextWidget.paraText(
-                                  text:
-                                      "${basket.bsktList[index]['createdDate']}",
-                                  theme: false,
-                                  color: theme.isDarkMode
-                                      ? colors.textSecondaryDark
-                                      : colors.textSecondaryLight,
-                                  fw: 0,
+                                          children: [
+                                            GestureDetector(
+                                              onTap: () => _handleBasketTap(context, basketItem),
+                                              child: MouseRegion(
+                                                onEnter: (_) => setState(() => _hoveredRowIndex = uniqueId),
+                                                onExit: (_) => setState(() => _hoveredRowIndex = null),
+                                                child: Padding(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+                                                  child: _buildBasketNameCellContent(basketItem, index, theme, isHovered),
+                                                ),
+                                              ),
+                                            ),
+                                            GestureDetector(
+                                              onTap: () => _handleBasketTap(context, basketItem),
+                                              child: MouseRegion(
+                                                onEnter: (_) => setState(() => _hoveredRowIndex = uniqueId),
+                                                onExit: (_) => setState(() => _hoveredRowIndex = null),
+                                                child: Padding(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+                                                  child: Align(
+                                                    alignment: Alignment.centerRight,
+                                                    child: Text(
+                                                      basketItem['createdDate']?.toString() ?? '',
+                                                      style: WebTextStyles.tableDataCompact(
+                                                        isDarkTheme: theme.isDarkMode,
+                                                        color: theme.isDarkMode
+                                                            ? WebDarkColors.textPrimary
+                                                            : WebColors.textPrimary,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            GestureDetector(
+                                              onTap: () => _handleBasketTap(context, basketItem),
+                                              child: MouseRegion(
+                                                onEnter: (_) => setState(() => _hoveredRowIndex = uniqueId),
+                                                onExit: (_) => setState(() => _hoveredRowIndex = null),
+                                                child: Padding(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+                                                  child: Align(
+                                                    alignment: Alignment.centerRight,
+                                                    child: Text(
+                                                      (basketItem['curLength'] ?? 0).toString(),
+                                                      style: WebTextStyles.tableDataCompact(
+                                                        isDarkTheme: theme.isDarkMode,
+                                                        color: theme.isDarkMode
+                                                            ? WebDarkColors.textPrimary
+                                                            : WebColors.textPrimary,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        );
+                                      }).toList(),
+                                    ],
+                                  ),
                                 ),
-                                // const SizedBox(width: 4),
-                                // TextWidget.paraText(
-                                //   text:
-                                //       " - ${basket.bsktList[index]['curLength']} items",
-                                //   theme: false,
-                                //   color: colors.textPrimary,
-                                // ),
-                              ],
-                            ),
-                          ),
-                          trailing: Container(
-                            width: 20,
-                            height: 20,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: theme.isDarkMode
-                                    ? colors.textSecondaryDark
-                                    : colors.textPrimaryLight,
                               ),
-                            ),
-                            alignment: Alignment.center,
-                            child: TextWidget.paraText(
-                              text: "${basket.bsktList[index]['curLength']}",
-                              theme: false,
-                              color: theme.isDarkMode
-                                  ? colors.textSecondaryDark
-                                  : colors.textPrimaryLight,
-                              fw: 0,
                             ),
                           ),
                         );
-                      },
-                      separatorBuilder: (BuildContext context, int index) {
-                        return const ListDivider();
                       },
                     ),
                   ),

@@ -148,7 +148,7 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
       children: [
         Padding(
           padding:
-              const EdgeInsets.only(left: 12, right: 12, top: 20, bottom: 12),
+              const EdgeInsets.only(left: 10, right: 10, top: 10, bottom: 10),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,

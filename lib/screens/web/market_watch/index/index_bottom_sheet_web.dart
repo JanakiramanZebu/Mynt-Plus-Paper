@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import '../../../../models/marketwatch_model/get_quotes.dart';
 import '../../../../provider/index_list_provider.dart';
 import '../../../../provider/market_watch_provider.dart';
@@ -12,6 +11,7 @@ import '../../../../res/res.dart';
 import '../../../../res/web_colors.dart';
 import '../../../../res/global_font_web.dart';
 import '../../../../sharedWidget/list_divider.dart';
+import '../../../../utils/responsive_snackbar.dart';
 
 class IndexBottomSheetWeb extends ConsumerStatefulWidget {
   final dynamic defaultIndex;
@@ -57,6 +57,67 @@ class _IndexBottomSheetWebState extends ConsumerState<IndexBottomSheetWeb> {
     super.dispose();
   }
 
+  Widget _buildExchangeTab(
+    String exchange,
+    int index,
+    bool isSelected,
+    ThemesProvider theme,
+    dynamic indexProvide,
+  ) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: InkWell(
+        onTap: () async {
+          setState(() {
+            _currentPageIndex = index;
+          });
+          // Use jumpToPage to avoid animation through intermediate tabs
+          _pageController.jumpToPage(index);
+          // Call the existing function to update the list
+          await indexProvide.fetchIndexList(exchange, context);
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? (theme.isDarkMode
+                    ? WebDarkColors.backgroundTertiary
+                    : WebColors.backgroundTertiary)
+                : (theme.isDarkMode
+                    ? WebDarkColors.surface
+                    : WebColors.surface),
+            border: Border.all(
+              color: isSelected
+                  ? (theme.isDarkMode
+                      ? WebDarkColors.primary
+                      : WebColors.primary)
+                  : (theme.isDarkMode
+                      ? WebDarkColors.textSecondary
+                      : WebColors.textSecondary),
+              width: isSelected ? 1.5 : 1,
+            ),
+            borderRadius: BorderRadius.circular(50),
+          ),
+          child: Text(
+            exchange,
+            overflow: TextOverflow.ellipsis,
+            style: WebTextStyles.tab(
+              isDarkTheme: theme.isDarkMode,
+              color: isSelected
+                  ? (theme.isDarkMode
+                      ? WebDarkColors.textPrimary
+                      : WebColors.textPrimary)
+                  : (theme.isDarkMode
+                      ? WebDarkColors.navItem
+                      : WebColors.navItem),
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = ref.read(themeProvider);
@@ -90,12 +151,11 @@ class _IndexBottomSheetWebState extends ConsumerState<IndexBottomSheetWeb> {
                 children: [
                   Text(
                     "Indices",
-                    style: WebTextStyles.sub(
+                    style: WebTextStyles.dialogTitle(
                           isDarkTheme: theme.isDarkMode,
                           color: theme.isDarkMode
                               ? WebDarkColors.textPrimary
                               : WebColors.textPrimary,
-                          fontWeight: FontWeight.w700,
                         ),
                   ),
                  Material(
@@ -129,87 +189,34 @@ class _IndexBottomSheetWebState extends ConsumerState<IndexBottomSheetWeb> {
             // Tabs section - full width
             Container(
               width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
               decoration: BoxDecoration(
                 color: theme.isDarkMode
-                    ? WebDarkColors.background
-                    : WebColors.background,
+                    ? WebDarkColors.surface
+                    : WebColors.surface,
+                border: Border(
+                  bottom: BorderSide(
+                    color: theme.isDarkMode
+                        ? WebDarkColors.inputBorder
+                        : WebColors.inputBorder,
+                    width: 1,
+                  ),
+                ),
               ),
-              child: Column(
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Tabs content
-                  Container(
-                    height: 40,
-                    child: Row(
-                      children: [
-                        // Exchange tabs - each taking equal width
-                        ..._exchanges.asMap().entries.map((entry) {
-                          final index = entry.key;
-                          final exchange = entry.value;
-                          final isSelected = _currentPageIndex == index;
-
-                          return Container(
-                            width: 95.0, // Fixed width to match watchlist tabs
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                onTap: () async {
-                                  setState(() {
-                                    _currentPageIndex = index;
-                                  });
-                                  // Use jumpToPage to avoid animation through intermediate tabs
-                                  _pageController.jumpToPage(index);
-                                  // Call the existing function to update the list
-                                  await indexProvide.fetchIndexList(
-                                      exchange, context);
-                                },
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Container(
-                                      width: double.infinity,
-                                      alignment: Alignment.center,
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 10, vertical: 6),
-                                      child: Text(
-                                        exchange,
-                                        style: WebTextStyles.custom(
-                                          fontSize: 13,
-                                          isDarkTheme: theme.isDarkMode,
-                                          color: isSelected
-                                              ? theme.isDarkMode
-                                                  ? WebDarkColors.primary
-                                                  : WebColors.primary
-                                              : theme.isDarkMode
-                                                  ? WebDarkColors.textSecondary
-                                                  : WebColors.textSecondary,
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                        overflow: TextOverflow.ellipsis,
-                                        maxLines: 1,
-                                      ),
-                                    ),
-                                    // Animated underline indicator
-                                    AnimatedContainer(
-                                      duration: const Duration(milliseconds: 250),
-                                      curve: Curves.easeInOut,
-                                      height: 2,
-                                      width: isSelected ? 77 : 0,
-                                      margin: const EdgeInsets.only(top: 1),
-                                      decoration: BoxDecoration(
-                                        color: WebColors.primary,
-                                        borderRadius: BorderRadius.circular(2),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          );
-                        }).toList(),
-                      ],
+                  for (int index = 0; index < _exchanges.length; index++)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 6),
+                      child: _buildExchangeTab(
+                        _exchanges[index],
+                        index,
+                        _currentPageIndex == index,
+                        theme,
+                        indexProvide,
+                      ),
                     ),
-                  ),
                 ],
               ),
             ),
@@ -241,7 +248,7 @@ class _IndexBottomSheetWebState extends ConsumerState<IndexBottomSheetWeb> {
                       color: theme.isDarkMode
                           ? WebDarkColors.primary
                           : WebColors.primary,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],
@@ -551,48 +558,65 @@ class _IndexListItemWithStreamWebState
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () => _handleTap(context),
-      child: Container(
-        padding: const EdgeInsets.only(left: 10, right: 10, top: 10, bottom: 10),
-        color: widget.ischeck
-            ? (widget.isDarkMode
-                ? WebDarkColors.surfaceVariant
-                : WebColors.surfaceVariant)
-            : Colors.transparent,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            // Fix hierarchy: Expanded outside RepaintBoundary
-            Expanded(
-              child: RepaintBoundary(
-                child: _StaticIndexContentWeb(
-                  itemData: widget.itemData,
-                  exch: widget.indexProvider.slectedExch,
-                  isDarkMode: widget.isDarkMode,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        splashColor: widget.isDarkMode
+            ? Colors.white.withOpacity(0.15)
+            : Colors.black.withOpacity(0.15),
+        highlightColor: widget.isDarkMode
+            ? Colors.white.withOpacity(0.08)
+            : Colors.black.withOpacity(0.08),
+        onTap: () => _handleTap(context),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+          color: widget.ischeck
+              ? (widget.isDarkMode
+                  ? WebDarkColors.surfaceVariant
+                  : WebColors.surfaceVariant)
+              : Colors.transparent,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // Left side - Index info
+              Expanded(
+                flex: 3,
+                child: RepaintBoundary(
+                  child: _StaticIndexContentWeb(
+                    itemData: widget.itemData,
+                    exch: widget.indexProvider.slectedExch,
+                    isDarkMode: widget.isDarkMode,
+                  ),
                 ),
               ),
-            ),
 
-            // Dynamic content that needs to update
-            _DynamicPriceContentWeb(
-              ltp: _ltp,
-              ch: _ch,
-              chp: _chp,
-              isDarkMode: widget.isDarkMode,
-            ),
-
-            // Action button to replace the symbol
-            RepaintBoundary(
-              child: _ActionButtonWeb(
-                ischeck: widget.ischeck,
-                itemData: widget.itemData,
-                indexProvider: widget.indexProvider,
-                isDarkMode: widget.isDarkMode,
-                indexPosition: widget.indexPosition,
+              // Right side - Price data and action button
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Dynamic content that needs to update
+                  RepaintBoundary(
+                    child: _DynamicPriceContentWeb(
+                      ltp: _ltp,
+                      ch: _ch,
+                      chp: _chp,
+                      isDarkMode: widget.isDarkMode,
+                    ),
+                  ),
+                  // Action button to replace the symbol
+                  RepaintBoundary(
+                    child: _ActionButtonWeb(
+                      ischeck: widget.ischeck,
+                      itemData: widget.itemData,
+                      indexProvider: widget.indexProvider,
+                      isDarkMode: widget.isDarkMode,
+                      indexPosition: widget.indexPosition,
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -611,9 +635,7 @@ class _IndexListItemWithStreamWebState
       // Make sure we have valid quote data before proceeding
       if (quots == null) {
         Navigator.pop(context);
-        Fluttertoast.showToast(
-            msg: "Could not fetch details for this index",
-            backgroundColor: Colors.red);
+        ResponsiveSnackBar.showError(context, "Could not fetch details for this index");
         return;
       }
 
@@ -637,8 +659,7 @@ class _IndexListItemWithStreamWebState
     } catch (e) {
       // Handle any exceptions
       Navigator.pop(context);
-      Fluttertoast.showToast(
-          msg: "Error loading index details", backgroundColor: Colors.red);
+      ResponsiveSnackBar.showError(context, "Error loading index details");
       debugPrint("Error in index onTap: $e");
     }
   }
@@ -663,34 +684,47 @@ class _StaticIndexContentWeb extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(bottom: 10),
-          child: Text(
-            itemData.idxname!.toUpperCase(),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: WebTextStyles.custom(
-              fontSize: 13,
-              isDarkTheme: isDarkMode,
-              color: isDarkMode
-                  ? WebDarkColors.textPrimary
-                  : WebColors.textPrimary,
-              fontWeight: FontWeight.w700,
+        // Index name
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(
+              itemData.idxname!.toUpperCase(),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: WebTextStyles.symbolList(
+                isDarkTheme: isDarkMode,
+                color: isDarkMode
+                    ? WebDarkColors.textPrimary
+                    : WebColors.textPrimary,
+              ),
             ),
-          ),
+          ],
         ),
-
-         Text(
-           exch ?? "",
-            style: WebTextStyles.custom(
-              fontSize: 10,
-              isDarkTheme: isDarkMode,
-              color: isDarkMode
-                  ? WebDarkColors.textPrimary
-                  : WebColors.textPrimary,
-              fontWeight: FontWeight.w700,
+        const SizedBox(height: 8),
+        // Exchange badge
+        Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+              margin: const EdgeInsets.only(right: 8),
+              decoration: BoxDecoration(
+                color: isDarkMode
+                    ? WebDarkColors.primary
+                    : WebColors.primary.withOpacity(0.9),
+                borderRadius: BorderRadius.circular(5),
+              ),
+              child: Text(
+                exch ?? "",
+                style: WebTextStyles.exchText(
+                  isDarkTheme: isDarkMode,
+                  color: WebDarkColors.textPrimary,
+                ),
+              ),
             ),
-          ),
+          ],
+        ),
       ],
     );
   }
@@ -703,12 +737,6 @@ class _DynamicPriceContentWeb extends StatelessWidget {
   final String chp;
   final bool isDarkMode;
 
-  // Cache for text styles to avoid recreation
-  static final Map<String, TextStyle> _styleCache = {};
-
-  // Cache for color calculations
-  static final Map<String, Color> _colorCache = {};
-
   const _DynamicPriceContentWeb({
     Key? key,
     required this.ltp,
@@ -717,77 +745,61 @@ class _DynamicPriceContentWeb extends StatelessWidget {
     required this.isDarkMode,
   }) : super(key: key);
 
-  // Get cached text style
-  TextStyle _getCachedStyle(Color color, double size, FontWeight? fw) {
-    final key = '${color.value}|$size|${fw?.toString() ?? "null"}';
-    if (!_styleCache.containsKey(key)) {
-      _styleCache[key] = WebTextStyles.custom(
-        fontSize: size,
-        isDarkTheme: isDarkMode,
-        color: color,
-        fontWeight: fw ?? WebFonts.regular,
-        letterSpacing: 0.0,
-      );
+  // Helper method to safely format price values
+  String _safeFormatPrice(String value) {
+    if (value == 'null' ||
+        value.isEmpty ||
+        value == '0.0' ||
+        value == 'NaN' ||
+        value == 'Infinity') {
+      return '0.00';
     }
-    return _styleCache[key]!;
-  }
-
-  // Get cached color based on change value
-  Color _getCachedChangeColor(String value, String percentValue) {
-    final key = '$value|$percentValue';
-    if (!_colorCache.containsKey(key)) {
-      if (value.toString().startsWith("-") ||
-          percentValue.toString().startsWith('-')) {
-        _colorCache[key] = isDarkMode
-            ? WebDarkColors.error
-            : WebColors.error;
-      } else if ((value.toString() == "null" ||
-              percentValue.toString() == "null") ||
-          (value.toString() == "0.00" || percentValue.toString() == "0.00")) {
-        _colorCache[key] = isDarkMode
-            ? WebDarkColors.textSecondary
-            : WebColors.textSecondary;
-      } else {
-        _colorCache[key] = isDarkMode
-            ? WebDarkColors.success
-            : WebColors.success;
-      }
-    }
-    return _colorCache[key]!;
+    return value;
   }
 
   @override
   Widget build(BuildContext context) {
-    // Pre-calculate all styles at once to avoid repeated calculations
-    final priceStyle = _getCachedStyle(
-      isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
-      13,
-      FontWeight.w700,
-    );
+    // Format price values and handle invalid data
+    final displayLtp = _safeFormatPrice(ltp);
+    final displayChange = _safeFormatPrice(ch);
+    final displayPerChange = _safeFormatPrice(chp);
 
-    final changeColor = _getCachedChangeColor(ch, chp);
-    final changeStyle = _getCachedStyle(
-      changeColor,
-      13,
-      FontWeight.w700,
-    );
+    // Calculate change color based on watchlist_card_web.dart logic
+    final changeColor =
+        displayChange.startsWith("-") || displayPerChange.startsWith('-')
+            ? isDarkMode
+                ? WebDarkColors.loss
+                : WebColors.loss
+            : (displayChange == "0.00" || displayPerChange == "0.00")
+                ? isDarkMode
+                    ? WebDarkColors.textSecondary
+                    : WebColors.textSecondary
+                : isDarkMode
+                    ? WebDarkColors.profit
+                    : WebColors.profit;
 
-    // Create the price text once with proper formatting
-    final String formattedChange =
-        "${ch == "null" ? 0.00 : ch} (${chp == "null" ? 0.00 : chp}%)";
-
-    // Avoid unnecessary nested widgets when possible
+    // Build the UI with web-optimized text styles matching watchlist_card_web.dart
     return RepaintBoundary(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.end,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Padding(
-            padding: const EdgeInsets.only(bottom: 5),
-            child: Text("$ltp", style: changeStyle),
+          Text(
+            displayLtp,
+            style: WebTextStyles.priceWatch(
+              isDarkTheme: isDarkMode,
+              color: isDarkMode
+                  ? WebDarkColors.textPrimary
+                  : WebColors.textPrimary,
+            ),
           ),
-          Padding(
-            padding: const EdgeInsets.only(top: 5),
-            child: Text(formattedChange, style: priceStyle),
+          const SizedBox(height: 8), // Adjusted spacing to match watchlist
+          Text(
+            "$displayChange ($displayPerChange%)",
+            style: WebTextStyles.pricePercent(
+              isDarkTheme: isDarkMode,
+              color: changeColor,
+            ),
           ),
         ],
       ),
@@ -831,10 +843,7 @@ class _ActionButtonWeb extends StatelessWidget {
               .withOpacity(0.2),
           onTap: () async {
             if (ischeck) {
-              Fluttertoast.showToast(
-                msg: "Scrip Already Exist!!",
-                backgroundColor: Colors.amber,
-              );
+              ResponsiveSnackBar.showWarning(context, "Scrip Already Exist!!");
             } else {
               await indexProvider.changeIndex(
                   itemData, context, indexPosition);

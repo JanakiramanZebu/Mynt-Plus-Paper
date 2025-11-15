@@ -150,55 +150,35 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          children: [
-                            Text(
-                              widget.wlvalue.symbol.toUpperCase(),
-                              style: WebTextStyles.custom(
-                                fontSize: 13,
-                                isDarkTheme: theme.isDarkMode,
-                                color: theme.isDarkMode
-                                    ? WebDarkColors.textPrimary
-                                    : WebColors.textPrimary,
-                                    fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              widget.wlvalue.option,
-                              style: WebTextStyles.custom(
-                                fontSize: 13,
-                                isDarkTheme: theme.isDarkMode,
-                                color: theme.isDarkMode
-                                    ? WebDarkColors.textPrimary
-                                    : WebColors.textPrimary,
-                                    fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ],
+                        Text(
+                          "${widget.wlvalue.symbol.toUpperCase()} ${widget.wlvalue.option}",
+                          style: WebTextStyles.dialogTitle(
+                            isDarkTheme: theme.isDarkMode,
+                            color: theme.isDarkMode
+                                ? WebDarkColors.textPrimary
+                                : WebColors.textPrimary,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 8),
                         Row(
                           children: [
                             Text(
                               "${depthdata.lp != "null" ? depthdata.lp ?? depthdata.c ?? 0.00 : '0.00'}",
-                              style: WebTextStyles.custom(
-                                fontSize: 13,
+                              style: WebTextStyles.bodySmall(
                                 isDarkTheme: theme.isDarkMode,
-                                 color: theme.isDarkMode
+                                color: theme.isDarkMode
                                     ? WebDarkColors.textPrimary
                                     : WebColors.textPrimary,
-                               
-                                    fontWeight: FontWeight.w700,
+                                fontWeight: WebFonts.semiBold,
                               ),
                             ),
                             const SizedBox(width: 8),
                             Text(
                               "${(double.tryParse(depthdata.chng ?? '0.00') ?? 0.00).toStringAsFixed(2)} (${(double.tryParse(depthdata.pc ?? '0.00') ?? 0.00).toStringAsFixed(2)}%)",
-                              style: WebTextStyles.custom(
-                                fontSize: 13,
+                              style: WebTextStyles.bodySmall(
                                 isDarkTheme: theme.isDarkMode,
-                                 color: (depthdata.chng == "null" ||
+                                color: (depthdata.chng == "null" ||
                                         depthdata.chng == null) ||
                                     depthdata.chng == "0.00"
                                     ? theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary
@@ -206,8 +186,7 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                                         depthdata.pc!.startsWith("-")
                                         ? theme.isDarkMode ? WebDarkColors.loss : WebColors.loss
                                         : theme.isDarkMode ? WebDarkColors.profit : WebColors.profit,
-                               
-                                    fontWeight: FontWeight.w700,
+                                fontWeight: WebFonts.semiBold,
                               ),
                             ),
                           ],
@@ -259,13 +238,11 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                 children: [
                   Text(
                     'Type',
-                    style: WebTextStyles.custom(
-                      fontSize: 13,
+                    style: WebTextStyles.formLabel(
                       isDarkTheme: theme.isDarkMode,
                       color: theme.isDarkMode
                           ? WebDarkColors.textPrimary
                           : WebColors.textPrimary,
-                          fontWeight: FontWeight.w700,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -303,23 +280,19 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                           padding: EdgeInsets.symmetric(
                               horizontal: 8, vertical: 0),
                         ),
-                        style: WebTextStyles.custom(
-                          fontSize: 13,
+                        style: WebTextStyles.formInput(
                           isDarkTheme: theme.isDarkMode,
                           color: theme.isDarkMode
                               ? WebDarkColors.textPrimary
                               : WebColors.textPrimary,
-                              fontWeight: FontWeight.w600,
                         ),
                         hint: Text(
                           alertTypeVal,
-                          style: WebTextStyles.custom(
-                            fontSize: 13,
+                          style: WebTextStyles.helperText(
                             isDarkTheme: theme.isDarkMode,
                             color: theme.isDarkMode
                                 ? WebDarkColors.textSecondary
                                 : WebColors.textSecondary,
-                            fontWeight: FontWeight.w600,
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -332,13 +305,11 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                                         left: 6),
                                     child: Text(
                                       item,
-                                      style: WebTextStyles.custom(
-                                        fontSize: 13,
+                                      style: WebTextStyles.formInput(
                                         isDarkTheme: theme.isDarkMode,
                                         color: theme.isDarkMode
                                             ? WebDarkColors.textPrimary
                                             : WebColors.textPrimary,
-                                        fontWeight: FontWeight.w600,
                                       ),
                                       overflow: TextOverflow.ellipsis,
                                     ),
@@ -365,13 +336,11 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                 children: [
                   Text(
                     'Alert me',
-                    style: WebTextStyles.custom(
-                      fontSize: 13,
+                    style: WebTextStyles.formLabel(
                       isDarkTheme: theme.isDarkMode,
                       color: theme.isDarkMode
                           ? WebDarkColors.textPrimary
                           : WebColors.textPrimary,
-                          fontWeight: FontWeight.w700,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -405,13 +374,11 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                                 padding: const EdgeInsets.only(left: 12),
                                 child: Text(
                                   alertValue,
-                                  style: WebTextStyles.custom(
-                                    fontSize: 13,
+                                  style: WebTextStyles.formInput(
                                     isDarkTheme: theme.isDarkMode,
                                     color: theme.isDarkMode
                                         ? WebDarkColors.textPrimary
                                         : WebColors.textPrimary,
-                                        fontWeight: FontWeight.w600,
                                   ),
                                 ),
                               ),
@@ -441,13 +408,11 @@ class _SetAlertWebState extends State<SetAlertWeb> {
               // ENTER VALUE FIELD
               Text(
                 'Enter Value',
-                style: WebTextStyles.custom(
-                  fontSize: 13,
+                style: WebTextStyles.formLabel(
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? WebDarkColors.textPrimary
                       : WebColors.textPrimary,
-                      fontWeight: FontWeight.w700,
                 ),
               ),
               const SizedBox(height: 8),
@@ -467,22 +432,18 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                     });
                   },
                   hintText: "0",
-                  hintStyle: WebTextStyles.custom(
-                    fontSize: 13,
+                  hintStyle: WebTextStyles.helperText(
                     isDarkTheme: theme.isDarkMode,
                     color: theme.isDarkMode
                         ? WebDarkColors.textSecondary
                         : WebColors.textSecondary,
-                        fontWeight: FontWeight.w600,
                   ),
                   keyboardType: TextInputType.number,
-                  style: WebTextStyles.custom(
-                    fontSize: 13,
+                  style: WebTextStyles.formInput(
                     isDarkTheme: theme.isDarkMode,
                     color: theme.isDarkMode
                         ? WebDarkColors.textPrimary
                         : WebColors.textPrimary,
-                        fontWeight: FontWeight.w600,
                   ),
                   textCtrl: valueCtrl,
                   textAlign: TextAlign.start,
@@ -497,11 +458,9 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                 const SizedBox(height: 4),
                 Text(
                   errorText,
-                  style: WebTextStyles.custom(
-                    fontSize: 12,
+                  style: WebTextStyles.helperText(
                     isDarkTheme: theme.isDarkMode,
                     color: theme.isDarkMode ? WebDarkColors.error : WebColors.error,
-                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
@@ -509,13 +468,11 @@ class _SetAlertWebState extends State<SetAlertWeb> {
               // REMARK FIELD
               Text(
                 'Remarks',
-                style: WebTextStyles.custom(
-                  fontSize: 13,
+                style: WebTextStyles.formLabel(
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? WebDarkColors.textPrimary
                       : WebColors.textPrimary,
-                      fontWeight: FontWeight.w700,
                 ),
               ),
               const SizedBox(height: 8),
@@ -526,21 +483,17 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                       ? WebDarkColors.backgroundTertiary
                       : WebColors.backgroundTertiary,
                   hintText: "Remarks",
-                  hintStyle: WebTextStyles.custom(
-                    fontSize: 13,
+                  hintStyle: WebTextStyles.helperText(
                     isDarkTheme: theme.isDarkMode,
                     color: theme.isDarkMode
                         ? WebDarkColors.textSecondary
-                        : WebColors.textSecondary,  
-                        fontWeight: FontWeight.w600,
+                        : WebColors.textSecondary,
                   ),
-                  style: WebTextStyles.custom(
-                    fontSize: 13,
+                  style: WebTextStyles.formInput(
                     isDarkTheme: theme.isDarkMode,
                     color: theme.isDarkMode
                         ? WebDarkColors.textPrimary
                         : WebColors.textPrimary,
-                        fontWeight: FontWeight.w600,
                   ),
                   textCtrl: remark,
                   textAlign: TextAlign.start,
@@ -625,13 +578,11 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                         )
                     : Text(
                         'Set alert',
-                        style: WebTextStyles.custom(
-                          fontSize: 14,
+                        style: WebTextStyles.buttonMd(
                           isDarkTheme: theme.isDarkMode,
                           color: errorText.isNotEmpty
                               ? Colors.white.withOpacity(0.5)
                               : Colors.white,
-                          fontWeight: FontWeight.w700,
                         ),
                       ),
                 ),

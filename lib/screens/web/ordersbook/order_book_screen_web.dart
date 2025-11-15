@@ -74,8 +74,10 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     );
 
     _tabController.addListener(() {
-      // Just call the provider method like mobile does
-      ref.read(orderProvider).changeTabIndex(_tabController.index, context);
+      if (!_tabController.indexIsChanging) {
+        // Only call when tab change is complete, not during animation
+        ref.read(orderProvider).changeTabIndex(_tabController.index, context);
+      }
     });
 
     // Set up WebSocket subscription for real-time LTP updates
@@ -389,12 +391,13 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
           child: Container(
             height: 40,
             decoration: BoxDecoration(
-              color: theme.isDarkMode ? colors.searchBgDark : colors.searchBg,
-              borderRadius: BorderRadius.circular(5),
-              border: Border.all(
-                color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+                color: theme.isDarkMode ? WebDarkColors.inputBackground : WebColors.inputBackground,
+                borderRadius: BorderRadius.circular(5),
+                border: Border.all(
+                  color: theme.isDarkMode ? WebDarkColors.inputBorder : WebColors.inputBorder,
+                  width: 1,
+                ),
               ),
-            ),
             child: Row(
               children: [
                 const SizedBox(width: 12),
@@ -412,24 +415,20 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                     autofocus: false,
                     textCapitalization: TextCapitalization.characters,
                     inputFormatters: [UpperCaseTextFormatter()],
-                    style: TextWidget.textStyle(
-                      fontSize: 16,
-                      theme: theme.isDarkMode,
-                      color: theme.isDarkMode
-                          ? colors.textPrimaryDark
-                          : colors.textPrimaryLight,
-                      fw: 3,
-                    ),
+                    style: WebTextStyles.formInput(
+                  isDarkTheme: theme.isDarkMode,
+                  color: theme.isDarkMode
+                      ? WebDarkColors.textPrimary
+                      : WebColors.textPrimary,
+                ),
                     decoration: InputDecoration(
-                      hintText: 'Search orders...',
-                      hintStyle: TextWidget.textStyle(
-                        fontSize: 14,
-                        theme: false,
-                        color: theme.isDarkMode
-                            ? colors.textSecondaryDark
-                            : colors.textSecondaryLight,
-                        fw: 3,
-                      ),
+                      hintText: 'Search orders',
+                     hintStyle: WebTextStyles.formInput(
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode
+                        ? WebDarkColors.textSecondary
+                        : WebColors.textSecondary,
+                  ),
                       border: InputBorder.none,
                       isDense: true,
                       contentPadding: const EdgeInsets.symmetric(vertical: 12),
@@ -632,85 +631,56 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
         
         return SizedBox(
           height: calculatedHeight.toDouble(),
-          child: TabBarView(
-        controller: _tabController,
-        children: [
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 200),
-            child: Align(
-              alignment: Alignment.topLeft,
-              child: _buildOrderBookTable(
-                theme,
-                (orderBook.orderSearchCtrl.text.isNotEmpty
-                        ? (orderBook.orderSearchItem ?? [])
-                        : (orderBook.openOrder ?? [])),
-                'Open Orders',
+          child: IndexedStack(
+            index: _tabController.index,
+            children: [
+              Align(
+                alignment: Alignment.topLeft,
+                child: _buildOrderBookTable(
+                  theme,
+                  (orderBook.orderSearchCtrl.text.isNotEmpty
+                          ? (orderBook.orderSearchItem ?? [])
+                          : (orderBook.openOrder ?? [])),
+                  'Open Orders',
+                ),
               ),
-            ),
-          ),
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 200),
-            child: Align(
-              alignment: Alignment.topLeft,
-              child: _buildOrderBookTable(
-                theme,
-                (orderBook.orderSearchCtrl.text.isNotEmpty
-                        ? (orderBook.orderSearchItem ?? [])
-                        : (orderBook.executedOrder ?? [])),
-                'Executed Orders',
+              Align(
+                alignment: Alignment.topLeft,
+                child: _buildOrderBookTable(
+                  theme,
+                  (orderBook.orderSearchCtrl.text.isNotEmpty
+                          ? (orderBook.orderSearchItem ?? [])
+                          : (orderBook.executedOrder ?? [])),
+                  'Executed Orders',
+                ),
               ),
-            ),
-          ),
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 200),
-            child: Align(
-              alignment: Alignment.topLeft,
-              child: _buildTradeBookTable(
-                theme,
-                (orderBook.orderSearchCtrl.text.isNotEmpty
-                        ? (orderBook.tradeBooksearch ?? [])
-                        : (orderBook.tradeBook ?? [])),
+              Align(
+                alignment: Alignment.topLeft,
+                child: _buildTradeBookTable(
+                  theme,
+                  (orderBook.orderSearchCtrl.text.isNotEmpty
+                          ? (orderBook.tradeBooksearch ?? [])
+                          : (orderBook.tradeBook ?? [])),
+                ),
               ),
-            ),
-          ),
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 200),
-            child: Align(
-              alignment: Alignment.topLeft,
-              child: _buildGttOrderBookTable(
-                theme,
-                (orderBook.orderSearchCtrl.text.isNotEmpty
-                        ? (orderBook.gttOrderBookSearch ?? [])
-                        : (orderBook.gttOrderBookModel ?? [])),
+              Align(
+                alignment: Alignment.topLeft,
+                child: _buildGttOrderBookTable(
+                  theme,
+                  (orderBook.orderSearchCtrl.text.isNotEmpty
+                          ? (orderBook.gttOrderBookSearch ?? [])
+                          : (orderBook.gttOrderBookModel ?? [])),
+                ),
               ),
-            ),
-          ),
-          // MF tab with sub tabs: Orders and SIP
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 200),
-            child: _buildMFSubTabs(theme),
-          ),
-          // IPO Orders placeholder
-          // AnimatedSwitcher(
-          //   duration: const Duration(milliseconds: 200),
-          //   child: const IpoOrderBookScreenWeb(),
-          // ),
-          // // Bonds Orders placeholder
-          // AnimatedSwitcher(
-          //   duration: const Duration(milliseconds: 200),
-          //   child: const BondsOrderBookScreenWeb(),
-          // ),
-          const AnimatedSwitcher(
-            duration: Duration(milliseconds: 200),
-            child: BasketList(),
-          ),
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 200),
-            child: Align(
-              alignment: Alignment.topLeft,
-              child: const PendingAlertWeb()),
-          ),
-        ],
+              // MF tab with sub tabs: Orders and SIP
+              _buildMFSubTabs(theme),
+              // IPO Orders placeholder
+              // const IpoOrderBookScreenWeb(),
+              // Bonds Orders placeholder
+              // const BondsOrderBookScreenWeb(),
+              const BasketList(),
+              const PendingAlertWeb(),
+            ],
           ),
         );
       },
@@ -724,11 +694,15 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
         // Segmented Control Tabs
         _buildMFSegmentedControl(theme),
         const SizedBox(height: 16),
-        // Content Area
+        // Content Area - Use IndexedStack to keep both widgets alive
         Expanded(
-          child: _mfTabIndex == 0
-              ? const MfOrderBookScreenWeb()
-              : const MFSipdetScreenWeb(),
+          child: IndexedStack(
+            index: _mfTabIndex,
+            children: const [
+              MfOrderBookScreenWeb(),
+              MFSipdetScreenWeb(),
+            ],
+          ),
         ),
       ],
     );
@@ -894,46 +868,57 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                     ),
                     columns: [
                       DataColumn(
+                        numeric: false, // Left-align text column
                         label: _buildSortableColumnHeader('Instrument', theme, 0),
                         onSort: (columnIndex, ascending) => _onSortOrderTable(columnIndex, ascending),
                       ),
                       DataColumn(
+                        numeric: false, // Left-align text column
                         label: _buildSortableColumnHeader('Product', theme, 1),
                         onSort: (columnIndex, ascending) => _onSortOrderTable(columnIndex, ascending),
                       ),
                       DataColumn(
+                        numeric: false, // Left-align text column
                         label: _buildSortableColumnHeader('Type', theme, 2),
                         onSort: (columnIndex, ascending) => _onSortOrderTable(columnIndex, ascending),
                       ),
                       DataColumn(
+                        numeric: true, // Right-align numeric column
                         label: _buildSortableColumnHeader('Qty', theme, 3),
                         onSort: (columnIndex, ascending) => _onSortOrderTable(columnIndex, ascending),
                       ),
                       DataColumn(
+                        numeric: true, // Right-align numeric column
                         label: _buildSortableColumnHeader('Avg price', theme, 4),
                         onSort: (columnIndex, ascending) => _onSortOrderTable(columnIndex, ascending),
                       ),
                       DataColumn(
+                        numeric: true, // Right-align numeric column
                         label: _buildSortableColumnHeader('LTP', theme, 5),
                         onSort: (columnIndex, ascending) => _onSortOrderTable(columnIndex, ascending),
                       ),
                       DataColumn(
+                        numeric: true, // Right-align numeric column
                         label: _buildSortableColumnHeader('Price', theme, 6),
                         onSort: (columnIndex, ascending) => _onSortOrderTable(columnIndex, ascending),
                       ),
                       DataColumn(
+                        numeric: true, // Right-align numeric column
                         label: _buildSortableColumnHeader('Trigger price', theme, 7),
                         onSort: (columnIndex, ascending) => _onSortOrderTable(columnIndex, ascending),
                       ),
                       DataColumn(
+                        numeric: true, // Right-align numeric column
                         label: _buildSortableColumnHeader('Order value', theme, 8),
                         onSort: (columnIndex, ascending) => _onSortOrderTable(columnIndex, ascending),
                       ),
                       DataColumn(
+                        numeric: false, // Left-align text column
                         label: _buildSortableColumnHeader('Status', theme, 9),
                         onSort: (columnIndex, ascending) => _onSortOrderTable(columnIndex, ascending),
                       ),
                       DataColumn(
+                        numeric: false, // Left-align text column
                         label: _buildSortableColumnHeader('Time', theme, 10),
                         onSort: (columnIndex, ascending) => _onSortOrderTable(columnIndex, ascending),
                       ),
@@ -1013,7 +998,8 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                 child: Padding(
                   padding: const EdgeInsets.only(bottom: 16),
                   child: DataTable(
-                    columnSpacing: 15,
+                    columnSpacing: 10,
+                    horizontalMargin: 0,
                     showCheckboxColumn: false,
                     sortColumnIndex: _tradeSortColumnIndex,
                     sortAscending: _tradeSortAscending,
@@ -1025,7 +1011,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                           return (theme.isDarkMode
                                   ? WebDarkColors.primary
                                   : WebColors.primary)
-                              .withOpacity(0.05);
+                              .withOpacity(0.15);
                         }
                         if (states.contains(WidgetState.selected)) {
                           return (theme.isDarkMode
@@ -1038,34 +1024,42 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                     ),
                     columns: [
                       DataColumn(
+                        numeric: false, // Left-align text column
                         label: _buildTradeSortableColumnHeader('Instrument', theme, 0),
                         onSort: (columnIndex, ascending) => _onSortTradeTable(columnIndex, ascending),
                       ),
                       DataColumn(
+                        numeric: false, // Left-align text column
                         label: _buildTradeSortableColumnHeader('Product', theme, 1),
                         onSort: (columnIndex, ascending) => _onSortTradeTable(columnIndex, ascending),
                       ),
                       DataColumn(
+                        numeric: false, // Left-align text column
                         label: _buildTradeSortableColumnHeader('Type', theme, 2),
                         onSort: (columnIndex, ascending) => _onSortTradeTable(columnIndex, ascending),
                       ),
                       DataColumn(
+                        numeric: true, // Right-align numeric column
                         label: _buildTradeSortableColumnHeader('Qty', theme, 3),
                         onSort: (columnIndex, ascending) => _onSortTradeTable(columnIndex, ascending),
                       ),
                       DataColumn(
+                        numeric: true, // Right-align numeric column
                         label: _buildTradeSortableColumnHeader('Price', theme, 4),
                         onSort: (columnIndex, ascending) => _onSortTradeTable(columnIndex, ascending),
                       ),
                       DataColumn(
+                        numeric: true, // Right-align numeric column
                         label: _buildTradeSortableColumnHeader('Trade value', theme, 5),
                         onSort: (columnIndex, ascending) => _onSortTradeTable(columnIndex, ascending),
                       ),
                       DataColumn(
+                        numeric: false, // Left-align text column
                         label: _buildTradeSortableColumnHeader('Order no', theme, 6),
                         onSort: (columnIndex, ascending) => _onSortTradeTable(columnIndex, ascending),
                       ),
                       DataColumn(
+                        numeric: false, // Left-align text column
                         label: _buildTradeSortableColumnHeader('Time', theme, 7),
                         onSort: (columnIndex, ascending) => _onSortTradeTable(columnIndex, ascending),
                       ),
@@ -1139,6 +1133,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                   padding: const EdgeInsets.only(bottom: 16),
                   child: DataTable(
                     columnSpacing: 10,
+                    horizontalMargin: 0,
                     showCheckboxColumn: false,
                     sortColumnIndex: _gttSortColumnIndex,
                     sortAscending: _gttSortAscending,
@@ -1150,7 +1145,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                           return (theme.isDarkMode
                                   ? WebDarkColors.primary
                                   : WebColors.primary)
-                              .withOpacity(0.05);
+                              .withOpacity(0.15);
                         }
                         if (states.contains(WidgetState.selected)) {
                           return (theme.isDarkMode
@@ -1164,34 +1159,42 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                     columns: [
                       // Reordered to match order book: Instrument, Product, Type, Qty, LTP, Trigger price, Status, Time
                       DataColumn(
+                        numeric: false, // Left-align text column
                         label: _buildGttSortableColumnHeader('Instrument', theme, 0),
                         onSort: (columnIndex, ascending) => _onSortGttTable(columnIndex, ascending),
                       ),
                       DataColumn(
+                        numeric: false, // Left-align text column
                         label: _buildGttSortableColumnHeader('Product', theme, 1),
                         onSort: (columnIndex, ascending) => _onSortGttTable(columnIndex, ascending),
                       ),
                       DataColumn(
+                        numeric: false, // Left-align text column
                         label: _buildGttSortableColumnHeader('Type', theme, 2),
                         onSort: (columnIndex, ascending) => _onSortGttTable(columnIndex, ascending),
                       ),
                       DataColumn(
+                        numeric: true, // Right-align numeric column
                         label: _buildGttSortableColumnHeader('Qty', theme, 3),
                         onSort: (columnIndex, ascending) => _onSortGttTable(columnIndex, ascending),
                       ),
                       DataColumn(
+                        numeric: true, // Right-align numeric column
                         label: _buildGttSortableColumnHeader('LTP', theme, 4),
                         onSort: (columnIndex, ascending) => _onSortGttTable(columnIndex, ascending),
                       ),
                       DataColumn(
+                        numeric: true, // Right-align numeric column
                         label: _buildGttSortableColumnHeader('Trigger price', theme, 5),
                         onSort: (columnIndex, ascending) => _onSortGttTable(columnIndex, ascending),
                       ),
                       DataColumn(
+                        numeric: false, // Left-align text column
                         label: _buildGttSortableColumnHeader('Status', theme, 6),
                         onSort: (columnIndex, ascending) => _onSortGttTable(columnIndex, ascending),
                       ),
                       DataColumn(
+                        numeric: false, // Left-align text column
                         label: _buildGttSortableColumnHeader('Time', theme, 7),
                         onSort: (columnIndex, ascending) => _onSortGttTable(columnIndex, ascending),
                       ),
@@ -1758,19 +1761,20 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
           final displayText = '$symbol $exchange'.trim();
           
           return Dialog(
-            backgroundColor: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(5),
-            ),
+            backgroundColor: Colors.transparent,
             child: Container(
               width: 400,
+              decoration: BoxDecoration(
+                color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                borderRadius: BorderRadius.circular(5),
+              ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Header with close button
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    margin: const EdgeInsets.only(bottom: 8),
                     decoration: BoxDecoration(
                       border: Border(
                         bottom: BorderSide(
@@ -1785,12 +1789,11 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                       children: [
                         Text(
                           'Cancel GTT Order',
-                          style: WebTextStyles.sub(
+                          style: WebTextStyles.dialogTitle(
                             isDarkTheme: theme.isDarkMode,
                             color: theme.isDarkMode
                                 ? WebDarkColors.textPrimary
                                 : WebColors.textPrimary,
-                            fontWeight: FontWeight.w700,
                           ),
                         ),
                         Material(
@@ -1806,10 +1809,10 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                                 : Colors.black.withOpacity(.08),
                             onTap: () => Navigator.of(dialogContext).pop(false),
                             child: Padding(
-                              padding: const EdgeInsets.all(5),
+                              padding: const EdgeInsets.all(6.0),
                               child: Icon(
                                 Icons.close,
-                                size: 18,
+                                size: 20,
                                 color: theme.isDarkMode
                                     ? WebDarkColors.iconSecondary
                                     : WebColors.iconSecondary,
@@ -1821,55 +1824,77 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                     ),
                   ),
                   // Content area
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              'Are you sure you want to cancel this GTT order?\n\n$displayText',
-                              textAlign: TextAlign.center,
-                              style: WebTextStyles.custom(
-                                fontSize: 13,
-                                isDarkTheme: theme.isDarkMode,
-                                color: theme.isDarkMode
-                                    ? WebDarkColors.textPrimary
-                                    : WebColors.textPrimary,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        SizedBox(
-                          width: double.infinity,
-                          height: 40,
-                          child: ElevatedButton(
-                            onPressed: () => Navigator.of(dialogContext).pop(true),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: theme.isDarkMode
-                                  ? WebDarkColors.primary
-                                  : WebColors.primary,
-                              minimumSize: const Size(0, 40),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(5),
-                              ),
-                            ),
-                            child: Text(
-                              'Cancel Order',
-                              style: WebTextStyles.custom(
-                                fontSize: 13,
-                                isDarkTheme: theme.isDarkMode,
-                                color: WebColors.surface,
-                                fontWeight: FontWeight.w700,
+                  Flexible(
+                    fit: FlexFit.loose,
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.only(top: 0, bottom: 20, left: 20, right: 20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            child: Center(
+                              child: Text(
+                                'Are you sure you want to cancel this GTT order?',
+                                textAlign: TextAlign.center,
+                                style: WebTextStyles.dialogContent(
+                                  isDarkTheme: theme.isDarkMode,
+                                  color: theme.isDarkMode
+                                      ? WebDarkColors.textPrimary
+                                      : WebColors.textPrimary,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 8),
+                          Center(
+                            child: Text(
+                              displayText,
+                              textAlign: TextAlign.center,
+                              style: WebTextStyles.dialogContent(
+                                isDarkTheme: theme.isDarkMode,
+                                color: theme.isDarkMode
+                                    ? WebDarkColors.textSecondary
+                                    : WebColors.textSecondary,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 40,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: theme.isDarkMode
+                                    ? WebDarkColors.primary
+                                    : WebColors.primary,
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                              child: Material(
+                                color: Colors.transparent,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(5),
+                                ),
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(5),
+                                  splashColor: Colors.white.withOpacity(0.2),
+                                  highlightColor: Colors.white.withOpacity(0.1),
+                                  onTap: () => Navigator.of(dialogContext).pop(true),
+                                  child: Center(
+                                    child: Text(
+                                      'Cancel Order',
+                                      style: WebTextStyles.buttonMd(
+                                        isDarkTheme: theme.isDarkMode,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
@@ -1880,6 +1905,13 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
       );
 
       if (shouldCancel != true) {
+        // User cancelled the confirmation dialog, reset processing state
+        if (mounted) {
+          setState(() {
+            _isProcessingCancel = false;
+            _processingOrderToken = null;
+          });
+        }
         return;
       }
 
@@ -2284,18 +2316,11 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     Color statusColor = _getStatusColor(statusText, theme);
     
     return DataCell(
-      Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(
-          color: statusColor.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(4),
-        ),
-        child: Text(
-          statusText,
-          style: WebTextStyles.tableDataCompact(
-            isDarkTheme: theme.isDarkMode,
-            color: statusColor,
-          ),
+      Text(
+        statusText,
+        style: WebTextStyles.tableDataCompact(
+          isDarkTheme: theme.isDarkMode,
+          color: statusColor,
         ),
       ),
     );
@@ -2775,20 +2800,13 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
   DataCell _buildStatusCellForGtt(GttOrderBookModel item, ThemesProvider theme) {
     final status = item.gttOrderCurrentStatus?.toUpperCase() ?? '';
     return DataCell(
-      Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(
-          color: _getGttStatusColor(status, theme).withOpacity(0.1),
-          borderRadius: BorderRadius.circular(4),
-        ),
-        child: Text(
-          _getGttStatusText(status),
-          style: WebTextStyles.custom(
-            fontSize: 13,
-            isDarkTheme: theme.isDarkMode,
-            color: _getGttStatusColor(status, theme),
-            fontWeight: WebFonts.medium,
-          ),
+      Text(
+        _getGttStatusText(status),
+        style: WebTextStyles.custom(
+          fontSize: 13,
+          isDarkTheme: theme.isDarkMode,
+          color: _getGttStatusColor(status, theme),
+          fontWeight: WebFonts.medium,
         ),
       ),
     );

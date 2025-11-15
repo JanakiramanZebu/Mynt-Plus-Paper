@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/screens/web/ordersbook/modify_gtt_web.dart';
+import '../../../res/global_font_web.dart';
 import '../../../res/web_colors.dart';
 import '../../../sharedWidget/custom_exch_badge.dart';
 import '../../../models/order_book_model/gtt_order_book.dart';
@@ -123,20 +124,13 @@ class _GttOrderBookDetailScreenWebState extends ConsumerState<GttOrderBookDetail
             }
 
             return Dialog(
-               backgroundColor: WebColors.surface,
+               backgroundColor: Colors.transparent,
               child: Container(
-               width: 500,
-            height: MediaQuery.of(context).size.height * 0.60,
-            constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(context).size.height * 0.60,
-            ),
+               width: 500,           
                 decoration: BoxDecoration(
-                  // color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                  borderRadius: BorderRadius.circular(5),
-                    // border: Border.all(
-                      // color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-                    ),
-                // ),
+          color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+          borderRadius: BorderRadius.circular(5),
+        ),
                 child: Column(
                     mainAxisSize: MainAxisSize.min,
                   children: [
@@ -187,9 +181,10 @@ class _GttOrderBookDetailScreenWebState extends ConsumerState<GttOrderBookDetail
                 ),
                     
                     // Content
-                    Expanded(
+                    Flexible(
+                      fit: FlexFit.loose,
                       child: SingleChildScrollView(
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.only(top: 0, bottom: 20, left: 20, right: 20),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -282,29 +277,18 @@ class _GttOrderBookDetailScreenWebState extends ConsumerState<GttOrderBookDetail
               children: [
                 Text(
                   "${displayData.symbol?.replaceAll("-EQ", "").toUpperCase() ?? ''} ${displayData.expDate ?? ''} ${displayData.option ?? ''} ",
-                  style: TextWidget.textStyle(
-                    fontSize: 16,
-                    theme: theme.isDarkMode,
-                    color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                    fw: 1,
+                 style: WebTextStyles.dialogTitle(
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
                   ),
                 ),
 
                  const SizedBox(width: 4),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: theme.isDarkMode ? colors.primaryDark.withOpacity(0.7) : colors.primaryLight.withOpacity(0.7),
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  child: Text(
-                    "${displayData.exch ?? ''}",
-                    style: TextWidget.textStyle(
-                      fontSize: 12,
-                      theme: false,
-                     color: colors.textPrimaryDark,
-                  fw: 1,
-                    ),
+                Text(
+                  "${displayData.exch ?? ''}",
+                 style: WebTextStyles.dialogTitle(
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
                   ),
                 ),
               ],
@@ -333,14 +317,13 @@ class _GttOrderBookDetailScreenWebState extends ConsumerState<GttOrderBookDetail
                     fw: 1,
                   ),
                 ),
-                const SizedBox(width: 4),
+                const SizedBox(width: 8),
                 Text(
                   "${(double.tryParse(displayData.change ?? '0.00') ?? 0.00).toStringAsFixed(2)} (${displayData.perChange ?? '0.00'}%)",
-                  style: TextWidget.textStyle(
-                    fontSize: 16,
-                    theme: false,
-                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                    fw: 1,
+                  style: WebTextStyles.sub(
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
+                    fontWeight: WebFonts.medium,
                   ),
                 ),
               ],
@@ -367,7 +350,7 @@ class _GttOrderBookDetailScreenWebState extends ConsumerState<GttOrderBookDetail
 
   Widget _buildCancelOrderButton(ThemesProvider theme, GttOrderBookModel gttOrder) {
     return SizedBox(
-      height: 50,
+      height: 40,
       child: Container(
         decoration: BoxDecoration(
           border: Border.all(
@@ -669,26 +652,22 @@ class _GttOrderBookDetailScreenWebState extends ConsumerState<GttOrderBookDetail
 
    Widget _buildInfoRow(String title, String value, ThemesProvider theme, [Color? valueColor]) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             title,
-            style: TextWidget.textStyle(
-              fontSize: 14,
-              theme: false,
-              color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-              fw: 1,
+            style: WebTextStyles.dialogContent(
+              isDarkTheme: theme.isDarkMode,
+              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
             ),
           ),
           Text(
             value,
-            style: TextWidget.textStyle(
-              fontSize: 14,
-              theme: false,
-              color: valueColor ?? (theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight),
-              fw: 1,
+            style: WebTextStyles.dialogContent(
+              isDarkTheme: theme.isDarkMode,
+              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
             ),
           ),
         ],

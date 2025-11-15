@@ -11,6 +11,8 @@ import '../../../provider/thems.dart';
 import '../../../provider/websocket_provider.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
+import '../../../res/web_colors.dart';
+import '../../../res/global_font_web.dart';
 import '../../../sharedWidget/no_data_found.dart';
 import '../../Mobile/market_watch/over_view/financial.dart';
 import '../../Mobile/market_watch/over_view/price_comparision.dart';
@@ -97,12 +99,11 @@ class ShareholdersDonutChartPainter extends CustomPainter {
         final textPainter = TextPainter(
           text: TextSpan(
             text: '${percentage.toStringAsFixed(1)}%',
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w400,
+            style: WebTextStyles.caption(
+              isDarkTheme: theme.isDarkMode,
               color: theme.isDarkMode
-                  ? colors.textPrimaryDark
-                  : colors.textPrimaryLight,
+                  ? WebDarkColors.textPrimary
+                  : WebColors.textPrimary,
             ),
           ),
           textDirection: TextDirection.ltr,
@@ -657,16 +658,20 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                   child: Icon(
                     Icons.arrow_back_ios_outlined,
                     size: 18,
-                    color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                    color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
                   ),
                 ),
               ),
             ),
-            title: TextWidget.titleText(
-              text: "${widget.wlValue.symbol.toUpperCase()} Fundamental",
-              color: Color(theme.isDarkMode ? 0xffffffff : 0xff000000),
-              theme: theme.isDarkMode,
-              fw: 1,
+            title: Text(
+              "${widget.wlValue.symbol.toUpperCase()} Fundamental",
+              style: WebTextStyles.head(
+                isDarkTheme: theme.isDarkMode,
+                color: theme.isDarkMode
+                    ? WebDarkColors.textPrimary
+                    : WebColors.textPrimary,
+                fontWeight: WebFonts.bold,
+              ),
             ),
           ),
           body: _buildLoadingIndicator(theme),
@@ -699,16 +704,20 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                   child: Icon(
                     Icons.arrow_back_ios_outlined,
                     size: 18,
-                    color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                    color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
                   ),
                 ),
               ),
             ),
-            title: TextWidget.titleText(
-              text: "${widget.wlValue.symbol.toUpperCase()} Fundamental",
-              color: Color(theme.isDarkMode ? 0xffffffff : 0xff000000),
-              theme: theme.isDarkMode,
-              fw: 1,
+            title: Text(
+              "${widget.wlValue.symbol.toUpperCase()} Fundamental",
+              style: WebTextStyles.head(
+                isDarkTheme: theme.isDarkMode,
+                color: theme.isDarkMode
+                    ? WebDarkColors.textPrimary
+                    : WebColors.textPrimary,
+                fontWeight: WebFonts.bold,
+              ),
             ),
           ),
           body: const Center(
@@ -721,49 +730,49 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
       // No need to calculate it separately
 
       return Scaffold(
-        appBar: AppBar(
-          centerTitle: false,
-          elevation: _hasScrolled ? 2 : 1,
-          leadingWidth: 48,
-          titleSpacing: 0,
-          leading: Material(
-            color: Colors.transparent,
-            shape: const CircleBorder(),
-            clipBehavior: Clip.hardEdge,
-            child: InkWell(
-              customBorder: const CircleBorder(),
-              splashColor: Colors.grey.withOpacity(0.4),
-              highlightColor: Colors.grey.withOpacity(0.2),
-              onTap: () {
-                Navigator.pop(context);
-              },
-              child: Container(
-                width: 44,
-                height: 44,
-                alignment: Alignment.center,
-                child: Icon(
-                  Icons.arrow_back_ios_outlined,
-                  size: 18,
-                  color:
-                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                ),
-              ),
-            ),
-          ),
-          shadowColor:
-              theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
-          title: TextWidget.headText(
-            text: " ${widget.wlValue.symbol.replaceAll("-EQ", "").toUpperCase()}${widget.wlValue.expDate} ${widget.wlValue.option} Stock Report",
-            color: Color(theme.isDarkMode ? 0xffffffff : 0xff000000),
-            theme: theme.isDarkMode,
-            fw: 1,
-          ),
-        ),
+        // appBar: AppBar(
+        //   centerTitle: false,
+        //   elevation: _hasScrolled ? 2 : 1,
+        //   leadingWidth: 48,
+        //   titleSpacing: 0,
+        //   leading: Material(
+        //     color: Colors.transparent,
+        //     shape: const CircleBorder(),
+        //     clipBehavior: Clip.hardEdge,
+        //     child: InkWell(
+        //       customBorder: const CircleBorder(),
+        //       splashColor: Colors.grey.withOpacity(0.4),
+        //       highlightColor: Colors.grey.withOpacity(0.2),
+        //       onTap: () {
+        //         Navigator.pop(context);
+        //       },
+        //       child: Container(
+        //         width: 44,
+        //         height: 44,
+        //         alignment: Alignment.center,
+        //         child: Icon(
+        //           Icons.arrow_back_ios_outlined,
+        //           size: 18,
+        //           color:
+        //               theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+        //         ),
+        //       ),
+        //     ),
+        //   ),
+        //   shadowColor:
+        //       theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+        //   title: TextWidget.headText(
+        //     text: " ${widget.wlValue.symbol.replaceAll("-EQ", "").toUpperCase()}${widget.wlValue.expDate} ${widget.wlValue.option} Stock Report",
+        //     color: Color(theme.isDarkMode ? 0xffffffff : 0xff000000),
+        //     theme: theme.isDarkMode,
+        //     fw: 1,
+        //   ),
+        // ),
         body: SafeArea(
           child: Container(
             width: double.infinity,
             height: double.infinity,
-            color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+            color: theme.isDarkMode ? WebDarkColors.background : WebColors.background,
             child: Consumer(
               builder: (context, ref, child) {
                 final marketWatch = ref.watch(marketWatchProvider);
@@ -841,18 +850,18 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  TextWidget.titleText(
-                    text:
-                        "${widget.wlValue.symbol.replaceAll("-EQ", "").toUpperCase()}${widget.wlValue.expDate} ${widget.wlValue.option}",
-                    color: theme.isDarkMode
-                        ? colors.textPrimaryDark
-                        : colors.textPrimaryLight,
-                    theme: theme.isDarkMode,
-                    fw: 0,
+                  Text(
+                    "${widget.wlValue.symbol.replaceAll("-EQ", "").toUpperCase()}${widget.wlValue.expDate} ${widget.wlValue.option}",
+                    style: WebTextStyles.head(
+                      isDarkTheme: theme.isDarkMode,
+                      color: theme.isDarkMode
+                          ? WebDarkColors.textPrimary
+                          : WebColors.textPrimary,
+                    ),
                   ),
                   const SizedBox(height: 8),
-                  TextWidget.paraText(
-                    text: marketWatch.fundamentalData?.fundamental?.isNotEmpty ==
+                  Text(
+                    marketWatch.fundamentalData?.fundamental?.isNotEmpty ==
                             true
                         ? marketWatch.fundamentalData!.fundamental!.first
                                 .companyName ??
@@ -860,11 +869,12 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                             widget.wlValue.symbol.toUpperCase()
                         : marketWatch.scripInfoModel?.cname ??
                             widget.wlValue.symbol.toUpperCase(),
-                    theme: theme.isDarkMode,
-                    fw: 0,
-                    color: theme.isDarkMode
-                        ? colors.textPrimaryDark
-                        : colors.textPrimaryLight,
+                    style: WebTextStyles.sub(
+                      isDarkTheme: theme.isDarkMode,
+                      color: theme.isDarkMode
+                          ? WebDarkColors.textPrimary
+                          : WebColors.textPrimary,
+                    ),
                   ),
                 ],
               ),
@@ -872,37 +882,37 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    TextWidget.titleText(
-                      text:
-                          "${widget.depthData.lp != "null" ? widget.depthData.lp ?? widget.depthData.c ?? 0.00 : '0.00'}",
-                      color: (widget.depthData.chng == "null" ||
-                                  widget.depthData.chng == null) ||
-                              widget.depthData.chng == "0.00"
-                          ? theme.isDarkMode
-                              ? colors.textSecondaryDark
-                              : colors.textSecondaryLight
-                          : widget.depthData.chng!.startsWith("-") ||
-                                  widget.depthData.pc!.startsWith("-")
-                              ? theme.isDarkMode
-                                  ? colors.lossDark
-                                  : colors.lossLight
-                              : theme.isDarkMode
-                                  ? colors.profitDark
-                                  : colors.profitLight,
-                      theme: theme.isDarkMode,
-                      fw: 0,
+                    Text(
+                      "${widget.depthData.lp != "null" ? widget.depthData.lp ?? widget.depthData.c ?? 0.00 : '0.00'}",
+                      style: WebTextStyles.head(
+                        isDarkTheme: theme.isDarkMode,
+                        color: (widget.depthData.chng == "null" ||
+                                    widget.depthData.chng == null) ||
+                                widget.depthData.chng == "0.00"
+                            ? theme.isDarkMode
+                                ? WebDarkColors.textSecondary
+                                : WebColors.textSecondary
+                            : widget.depthData.chng!.startsWith("-") ||
+                                    widget.depthData.pc!.startsWith("-")
+                                ? theme.isDarkMode
+                                    ? WebDarkColors.loss
+                                    : WebColors.loss
+                                : theme.isDarkMode
+                                    ? WebDarkColors.profit
+                                    : WebColors.profit,
+                      ),
                     ),
                     const SizedBox(height: 8),
             
                     // Price Change and Percentage
-                    TextWidget.paraText(
-                      text:
-                          "${(double.tryParse(widget.depthData.chng ?? '0.00') ?? 0.00).toStringAsFixed(2)} (${(double.tryParse(widget.depthData.pc ?? '0.00') ?? 0.00).toStringAsFixed(2)}%)",
-                      color: theme.isDarkMode
-                          ? colors.textSecondaryDark
-                          : colors.textSecondaryLight,
-                      theme: theme.isDarkMode,
-                      fw: 0,
+                    Text(
+                      "${(double.tryParse(widget.depthData.chng ?? '0.00') ?? 0.00).toStringAsFixed(2)} (${(double.tryParse(widget.depthData.pc ?? '0.00') ?? 0.00).toStringAsFixed(2)}%)",
+                      style: WebTextStyles.sub(
+                        isDarkTheme: theme.isDarkMode,
+                        color: theme.isDarkMode
+                            ? WebDarkColors.textSecondary
+                            : WebColors.textSecondary,
+                      ),
                     ),
                     // const SizedBox(height: 8),
                   ],
@@ -930,17 +940,19 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        border: Border.all(color: colors.textSecondaryLight.withOpacity(0.1)),
-        color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+        border: Border.all(color: WebColors.textSecondary.withOpacity(0.1)),
+        color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
         borderRadius: BorderRadius.circular(4),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          TextWidget.titleText(
-            text: "Key indicators",
-            theme: theme.isDarkMode,
-            fw: 1,
+          Text(
+            "Key indicators",
+            style: WebTextStyles.head(
+              isDarkTheme: theme.isDarkMode,
+              fontWeight: WebFonts.bold,
+            ),
           ),
           const SizedBox(height: 16),
           // Show data if available, otherwise show "No Data Found"
@@ -957,14 +969,16 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
         // const SizedBox(height: 2),
         SizedBox(
           width: 250,
-          child: TextWidget.subText(
-              text: "Data not available",
+          child: Text(
+            "Data not available",
+            textAlign: TextAlign.center,
+            style: WebTextStyles.sub(
+              isDarkTheme: theme.isDarkMode,
               color: theme.isDarkMode
-                  ? colors.textSecondaryDark
-                  : colors.textSecondaryLight,
-                  fw:0,
-                  align: TextAlign.center,
-              theme: theme.isDarkMode),
+                  ? WebDarkColors.textSecondary
+                  : WebColors.textSecondary,
+            ),
+          ),
         )
       ]
     ))),
@@ -1058,13 +1072,14 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
   Widget _buildSectionHeader(String title, ThemesProvider theme) {
     return Row(
       children: [
-        TextWidget.subText(
-          text: title,
-          theme: theme.isDarkMode,
-          fw: 0,
-          color: theme.isDarkMode
-              ? colors.textPrimaryDark
-              : colors.textPrimaryLight,
+        Text(
+          title,
+          style: WebTextStyles.sub(
+            isDarkTheme: theme.isDarkMode,
+            color: theme.isDarkMode
+                ? WebDarkColors.textPrimary
+                : WebColors.textPrimary,
+          ),
         ),
         if (title == "Value" || title == "Growth" || title == "Quality") ...[
           const SizedBox(width: 4),
@@ -1080,11 +1095,9 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
               onTap: () {}, // required for splash
               child: TooltipTheme(
                 data: TooltipThemeData(
-                  textStyle: TextWidget.textStyle(
-                    fontSize: 12,
-                    theme: false,
+                  textStyle: WebTextStyles.caption(
+                    isDarkTheme: false,
                     color: Colors.white,
-                    fw: 0,
                   ),
                   decoration: BoxDecoration(
                     color: Colors.black,
@@ -1150,23 +1163,28 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              TextWidget.captionText(
-                text: title1,
-                color: const Color(0xff666666),
-                theme: theme.isDarkMode,
-                fw: 0,
+              Text(
+                title1,
+                style: WebTextStyles.caption(
+                  isDarkTheme: theme.isDarkMode,
+                  color: theme.isDarkMode
+                      ? WebDarkColors.textSecondary
+                      : WebColors.textSecondary,
+                ),
               ),
               const SizedBox(height: 4),
-              TextWidget.subText(
-                text: _formatNumber(value1, title1),
-                theme: theme.isDarkMode,
-                fw: 1,
+              Text(
+                _formatNumber(value1, title1),
+                style: WebTextStyles.sub(
+                  isDarkTheme: theme.isDarkMode,
+                  fontWeight: WebFonts.bold,
+                ),
               ),
               const SizedBox(height: 2),
               Divider(
                 color: theme.isDarkMode
-                    ? colors.darkColorDivider
-                    : colors.colorDivider,
+                    ? WebDarkColors.divider
+                    : WebColors.divider,
               ),
             ],
           ),
@@ -1377,13 +1395,15 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          TextWidget.titleText(
-            text: "Peers Comparison",
-            theme: theme.isDarkMode,
-            fw: 1,
-            color: theme.isDarkMode
-                ? colors.textPrimaryDark
-                : colors.textPrimaryLight,
+          Text(
+            "Peers Comparison",
+            style: WebTextStyles.head(
+              isDarkTheme: theme.isDarkMode,
+              fontWeight: WebFonts.bold,
+              color: theme.isDarkMode
+                  ? WebDarkColors.textPrimary
+                  : WebColors.textPrimary,
+            ),
           ),
           const SizedBox(height: 16),
            SizedBox(height: 250, child:  Center(child: Column(
@@ -1396,14 +1416,16 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
         // const SizedBox(height: 2),
         SizedBox(
           width: 250,
-          child: TextWidget.subText(
-              text: "Data not available",
+          child: Text(
+            "Data not available",
+            textAlign: TextAlign.center,
+            style: WebTextStyles.sub(
+              isDarkTheme: theme.isDarkMode,
               color: theme.isDarkMode
-                  ? colors.textSecondaryDark
-                  : colors.textSecondaryLight,
-                  fw:0,
-                  align: TextAlign.center,
-              theme: theme.isDarkMode),
+                  ? WebDarkColors.textSecondary
+                  : WebColors.textSecondary,
+            ),
+          ),
         )
       ]
     )))
@@ -1423,20 +1445,22 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             border:
-                Border.all(color: colors.textSecondaryLight.withOpacity(0.1)),
-            color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                Border.all(color: WebColors.textSecondary.withOpacity(0.1)),
+            color: theme.isDarkMode ? WebDarkColors.background : WebColors.background,
             borderRadius: BorderRadius.circular(4),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              TextWidget.titleText(
-                text: "Holdings Trend",
-                theme: theme.isDarkMode,
-                fw: 1,
-                color: theme.isDarkMode
-                    ? colors.textPrimaryDark
-                    : colors.textPrimaryLight,
+              Text(
+                "Holdings Trend",
+                style: WebTextStyles.head(
+                  isDarkTheme: theme.isDarkMode,
+                  fontWeight: WebFonts.bold,
+                  color: theme.isDarkMode
+                      ? WebDarkColors.textPrimary
+                      : WebColors.textPrimary,
+                ),
               ),
               const SizedBox(height: 24),
     
@@ -1461,14 +1485,16 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
         // const SizedBox(height: 2),
         SizedBox(
           width: 250,
-          child: TextWidget.subText(
-              text: "Data not available",
+          child: Text(
+            "Data not available",
+            textAlign: TextAlign.center,
+            style: WebTextStyles.sub(
+              isDarkTheme: theme.isDarkMode,
               color: theme.isDarkMode
-                  ? colors.textSecondaryDark
-                  : colors.textSecondaryLight,
-                  fw:0,
-                  align: TextAlign.center,
-              theme: theme.isDarkMode),
+                  ? WebDarkColors.textSecondary
+                  : WebColors.textSecondary,
+            ),
+          ),
         )
       ]
     ))),
@@ -1562,13 +1588,15 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
       children: [
         Row(
           children: [
-            TextWidget.titleText(
-              text: title,
-              theme: theme.isDarkMode,
-              fw: 1,
-              color: theme.isDarkMode
-                  ? colors.textPrimaryDark
-                  : colors.textPrimaryLight,
+            Text(
+              title,
+              style: WebTextStyles.head(
+                isDarkTheme: theme.isDarkMode,
+                fontWeight: WebFonts.bold,
+                color: theme.isDarkMode
+                    ? WebDarkColors.textPrimary
+                    : WebColors.textPrimary,
+              ),
             ),
           ],
         ),
@@ -1584,22 +1612,25 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        TextWidget.subText(
-          text: title,
-          theme: theme.isDarkMode,
-          fw: 1,
-          color: theme.isDarkMode
-              ? colors.textPrimaryDark
-              : colors.textPrimaryLight,
+        Text(
+          title,
+          style: WebTextStyles.sub(
+            isDarkTheme: theme.isDarkMode,
+            fontWeight: WebFonts.bold,
+            color: theme.isDarkMode
+                ? WebDarkColors.textPrimary
+                : WebColors.textPrimary,
+          ),
         ),
         const SizedBox(height: 6),
-        TextWidget.paraText(
-          text: description,
-          theme: theme.isDarkMode,
-          fw: 0,
-          color: theme.isDarkMode
-              ? colors.textSecondaryDark
-              : colors.textSecondaryLight,
+        Text(
+          description,
+          style: WebTextStyles.para(
+            isDarkTheme: theme.isDarkMode,
+            color: theme.isDarkMode
+                ? WebDarkColors.textSecondary
+                : WebColors.textSecondary,
+          ),
         ),
       ],
     );
@@ -1616,7 +1647,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
           height: 6,
           margin: const EdgeInsets.only(top: 6, right: 12),
           decoration: BoxDecoration(
-            color: theme.isDarkMode ? colors.profitDark : colors.profitLight,
+            color: theme.isDarkMode ? WebDarkColors.profit : WebColors.profit,
             shape: BoxShape.circle,
           ),
         ),
@@ -1624,22 +1655,25 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              TextWidget.subText(
-                text: title,
-                theme: theme.isDarkMode,
-                fw: 1,
-                color: theme.isDarkMode
-                    ? colors.textPrimaryDark
-                    : colors.textPrimaryLight,
+              Text(
+                title,
+                style: WebTextStyles.sub(
+                  isDarkTheme: theme.isDarkMode,
+                  fontWeight: WebFonts.bold,
+                  color: theme.isDarkMode
+                      ? WebDarkColors.textPrimary
+                      : WebColors.textPrimary,
+                ),
               ),
               const SizedBox(height: 4),
-              TextWidget.paraText(
-                text: description,
-                theme: theme.isDarkMode,
-                fw: 0,
-                color: theme.isDarkMode
-                    ? colors.textSecondaryDark
-                    : colors.textSecondaryLight,
+              Text(
+                description,
+                style: WebTextStyles.para(
+                  isDarkTheme: theme.isDarkMode,
+                  color: theme.isDarkMode
+                      ? WebDarkColors.textSecondary
+                      : WebColors.textSecondary,
+                ),
               ),
             ],
           ),
@@ -1676,18 +1710,19 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
           height: 6,
           margin: const EdgeInsets.only(top: 6, right: 12),
           decoration: BoxDecoration(
-            color: theme.isDarkMode ? colors.lossDark : colors.lossLight,
+            color: theme.isDarkMode ? WebDarkColors.loss : WebColors.loss,
             shape: BoxShape.circle,
           ),
         ),
         Expanded(
-          child: TextWidget.paraText(
-            text: description,
-            theme: theme.isDarkMode,
-            fw: 0,
-            color: theme.isDarkMode
-                ? colors.textSecondaryDark
-                : colors.textSecondaryLight,
+          child: Text(
+            description,
+            style: WebTextStyles.para(
+              isDarkTheme: theme.isDarkMode,
+              color: theme.isDarkMode
+                  ? WebDarkColors.textSecondary
+                  : WebColors.textSecondary,
+            ),
           ),
         ),
       ],
@@ -1701,7 +1736,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
       decoration: BoxDecoration(
         // border: Border.all(color: colors.textSecondaryLight.withOpacity(0.1)),
-        color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+        color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
         borderRadius: BorderRadius.circular(4),
       ),
       child: Column(
@@ -1731,19 +1766,20 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                     ? Center(
                         child: CircularProgressIndicator(
                           color: theme.isDarkMode
-                              ? colors.primaryDark
-                              : colors.primaryLight,
+                              ? WebDarkColors.primary
+                              : WebColors.primary,
                         ),
                       )
                     : priceData.isEmpty
                         ? Center(
-                            child: TextWidget.paraText(
-                              text: "No Data Available",
-                              theme: theme.isDarkMode,
-                              fw: 0,
-                              color: theme.isDarkMode
-                                  ? colors.textSecondaryDark
-                                  : colors.textSecondaryLight,
+                            child: Text(
+                              "No Data Available",
+                              style: WebTextStyles.para(
+                                isDarkTheme: theme.isDarkMode,
+                                color: theme.isDarkMode
+                                    ? WebDarkColors.textSecondary
+                                    : WebColors.textSecondary,
+                              ),
                             ),
                           )
                         : _buildScrollablePriceChart(theme, marketWatch),
@@ -1795,28 +1831,31 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             // Timeframe text
-                            TextWidget.paraText(
-                              text: timeframe,
-                              theme: theme.isDarkMode,
-                              color: theme.isDarkMode
-                                  ? colors.textPrimaryDark
-                                  : colors.textPrimaryLight,
-                              fw: isSelected ? 2 : 0,
+                            Text(
+                              timeframe,
+                              style: WebTextStyles.para(
+                                isDarkTheme: theme.isDarkMode,
+                                color: theme.isDarkMode
+                                    ? WebDarkColors.textPrimary
+                                    : WebColors.textPrimary,
+                                fontWeight: isSelected ? WebFonts.bold : WebFonts.regular,
+                              ),
                             ),
-                            const SizedBox(height: 4
-                            ),
+                            const SizedBox(height: 4),
                             // Return percentage
-                            TextWidget.paraText(
-                              text: returnPercentage,
-                              theme: theme.isDarkMode,
-                              color: isPositive
-                                  ? (theme.isDarkMode
-                                      ? colors.profitDark
-                                      : colors.profitLight)
-                                  : (theme.isDarkMode
-                                      ? colors.lossDark
-                                      : colors.lossLight),
-                              fw: isSelected ? 1 : 0,
+                            Text(
+                              returnPercentage,
+                              style: WebTextStyles.para(
+                                isDarkTheme: theme.isDarkMode,
+                                color: isPositive
+                                    ? (theme.isDarkMode
+                                        ? WebDarkColors.profit
+                                        : WebColors.profit)
+                                    : (theme.isDarkMode
+                                        ? WebDarkColors.loss
+                                        : WebColors.loss),
+                                fontWeight: isSelected ? WebFonts.semiBold : WebFonts.regular,
+                              ),
                             ),
                           ],
                         ),
@@ -1898,48 +1937,52 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                               
                               final monthName = months[date.month - 1];
                               final year = date.year.toString().substring(2);
-                              return TextWidget.captionText(
-                                text: '$monthName $year',
-                                theme: theme.isDarkMode,
-                                fw: 0,
-                                color: theme.isDarkMode
-                                    ? colors.textSecondaryDark
-                                    : colors.textSecondaryLight,
+                              return Text(
+                                '$monthName $year',
+                                style: WebTextStyles.caption(
+                                  isDarkTheme: theme.isDarkMode,
+                                  color: theme.isDarkMode
+                                      ? WebDarkColors.textSecondary
+                                      : WebColors.textSecondary,
+                                ),
                               );
                             case "3M":
                               // For 3M view, show month and day
                               final monthName = months[date.month - 1];
                               final day = date.day;
-                              return TextWidget.captionText(
-                                text: '$monthName $day',
-                                theme: theme.isDarkMode,
-                                fw: 0,
-                                color: theme.isDarkMode
-                                    ? colors.textSecondaryDark
-                                    : colors.textSecondaryLight,
+                              return Text(
+                                '$monthName $day',
+                                style: WebTextStyles.caption(
+                                  isDarkTheme: theme.isDarkMode,
+                                  color: theme.isDarkMode
+                                      ? WebDarkColors.textSecondary
+                                      : WebColors.textSecondary,
+                                ),
                               );
                             case "1M":
                               // For 1M view, show day only
                               final day = date.day;
-                              return TextWidget.captionText(
-                                text: '$day',
-                                theme: theme.isDarkMode,
-                                fw: 0,
-                                color: theme.isDarkMode
-                                    ? colors.textSecondaryDark
-                                    : colors.textSecondaryLight,
+                              return Text(
+                                '$day',
+                                style: WebTextStyles.caption(
+                                  isDarkTheme: theme.isDarkMode,
+                                  color: theme.isDarkMode
+                                      ? WebDarkColors.textSecondary
+                                      : WebColors.textSecondary,
+                                ),
                               );
                             case "1W":
                               // For 1W view, show day and month
                               final monthName = months[date.month - 1];
                               final day = date.day;
-                              return TextWidget.captionText(
-                                text: '$day $monthName',
-                                theme: theme.isDarkMode,
-                                fw: 0,
-                                color: theme.isDarkMode
-                                    ? colors.textSecondaryDark
-                                    : colors.textSecondaryLight,
+                              return Text(
+                                '$day $monthName',
+                                style: WebTextStyles.caption(
+                                  isDarkTheme: theme.isDarkMode,
+                                  color: theme.isDarkMode
+                                      ? WebDarkColors.textSecondary
+                                      : WebColors.textSecondary,
+                                ),
                               );
                             default:
                               return const SizedBox();
@@ -1998,8 +2041,8 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                       return TouchedSpotIndicatorData(
                         FlLine(
                           color: theme.isDarkMode
-                              ? colors.primaryDark
-                              : colors.primaryLight,
+                              ? WebDarkColors.primary
+                              : WebColors.primary,
                           strokeWidth: 1, // Thin vertical line
                           dashArray: [3, 3], // Dashed line for cleaner look
                         ),
@@ -2344,8 +2387,8 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                 fw: 1,
                 color: isPositive
                     ? (theme.isDarkMode
-                        ? colors.profitDark
-                        : colors.profitLight)
+                  ? WebDarkColors.profit
+                  : WebColors.profit)
                     : (theme.isDarkMode ? colors.lossDark : colors.lossLight),
               ),
             ],

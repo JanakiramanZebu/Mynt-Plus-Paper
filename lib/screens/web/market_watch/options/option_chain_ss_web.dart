@@ -692,6 +692,80 @@ void _showStrikeCountSelector(
       ));
 }
 
+// Helper function to show strikes dropdown using showMenu (matching expiry dropdown style)
+void _showStrikesDropdown(
+    BuildContext context,
+    MarketWatchProvider scripInfo,
+    ThemesProvider theme,
+    VoidCallback scrollToStrikePrice) {
+  final RenderBox button = context.findRenderObject() as RenderBox;
+  final RenderBox overlay =
+      Overlay.of(context).context.findRenderObject() as RenderBox;
+
+  final RelativeRect position = RelativeRect.fromRect(
+    Rect.fromPoints(
+      button.localToGlobal(Offset.zero, ancestor: overlay),
+      button.localToGlobal(button.size.bottomRight(Offset.zero),
+          ancestor: overlay),
+    ),
+    Offset.zero & overlay.size,
+  );
+
+  showMenu<String>(
+    context: context,
+    position: position,
+    color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
+    elevation: 8,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.zero,
+    ),
+    items: scripInfo.numStrikes.map((String value) {
+      final isSelected = value == scripInfo.numStrike;
+      return PopupMenuItem<String>(
+        value: value,
+        padding: EdgeInsets.zero,
+        child: SizedBox(
+          width: 150, // Fixed width
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Text(
+              value,
+              style: WebTextStyles.bodySmall(
+                isDarkTheme: theme.isDarkMode,
+                color: isSelected
+                    ? (theme.isDarkMode
+                        ? WebDarkColors.primary
+                        : WebColors.primary)
+                    : (theme.isDarkMode
+                        ? WebDarkColors.textPrimary
+                        : WebColors.textPrimary),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ),
+      );
+    }).toList(),
+  ).then((value) async {
+    if (value != null) {
+      scripInfo.selecNumStrike(value);
+      await scripInfo.fetchOPtionChain(
+        context: context,
+        exchange: scripInfo.optionExch!,
+        numofStrike: value,
+        strPrc: scripInfo.optionStrPrc,
+        tradeSym: scripInfo.selectedTradeSym!,
+      );
+      
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (context.mounted) {
+          scrollToStrikePrice();
+        }
+      });
+    }
+  });
+}
+
 // Widget for column headers - updated to ConsumerWidget
 class _ColumnHeaders extends ConsumerWidget {
   final VoidCallback scrollToStrikePrice;
@@ -727,13 +801,12 @@ class _ColumnHeaders extends ConsumerWidget {
                     children: [
                       Text(
                         "CALLS",
-                        style: WebTextStyles.custom(
-                          fontSize: 14,
+                        style: WebTextStyles.sub(
                           isDarkTheme: theme.isDarkMode,
                           color: theme.isDarkMode
                               ? WebDarkColors.textPrimary
                               : WebColors.textPrimary,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: WebFonts.medium,
                         ),
                       ),
                     ],
@@ -742,109 +815,38 @@ class _ColumnHeaders extends ConsumerWidget {
                 // STRIKES header
                 SizedBox(
                   width: 150,
-                  child: PopupMenuButton<String>(
-                    tooltip: 'Select number of strikes',
-                    color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
-                    elevation: 8,
-                    surfaceTintColor: Colors.transparent,
-                    shadowColor: theme.isDarkMode ? WebDarkColors.shadowMedium : const Color(0x33000000),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.zero,
-                    ),
-                    clipBehavior: Clip.antiAlias,
-                    constraints: const BoxConstraints(minWidth: 150),
-                    position: PopupMenuPosition.under,
-                    offset: const Offset(0, 8),
-                    onSelected: (value) async {
-                      scripInfo.selecNumStrike(value);
-                      await ref
-                          .read(marketWatchProvider)
-                          .fetchOPtionChain(
-                              context: context,
-                              exchange: scripInfo.optionExch!,
-                              numofStrike: value,
-                              strPrc: scripInfo.optionStrPrc,
-                              tradeSym: scripInfo.selectedTradeSym!);
-                      Future.delayed(const Duration(milliseconds: 500), () {
-                        if (context.mounted) {
-                          scrollToStrikePrice();
-                        }
-                      });
-                    },
-                    itemBuilder: (ctx) => [
-                      for (final value in scripInfo.numStrikes)
-                        PopupMenuItem<String>(
-                          value: value,
-                          padding: EdgeInsets.zero,
-                          child: SizedBox(
-                            width: 100, // Fixed width to prevent resizing
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                              child: Row(
-                                children: [
-                                  // Text on the left
-                                  Expanded(
-                                    child: Text(
-                                      value,
-                                      style: WebTextStyles.custom(
-                                        fontSize: 13,
-                                        isDarkTheme: theme.isDarkMode,
-                                        color: scripInfo.numStrike == value
-                                            ? (theme.isDarkMode
-                                                ? WebDarkColors.primary
-                                                : WebColors.primary)
-                                            : (theme.isDarkMode
-                                                ? WebDarkColors.textPrimary
-                                                : WebColors.textPrimary),
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                  ),
-                                  // Reserve space for icon on the right (always 18px + 8px spacing)
-                                  // SizedBox(
-                                  //   width: 28, // 18px icon + 8px spacing
-                                  //   child: scripInfo.numStrike == value
-                                  //       ? Row(
-                                  //           mainAxisSize: MainAxisSize.min,
-                                  //           mainAxisAlignment: MainAxisAlignment.end,
-                                  //           children: [
-                                  //             const SizedBox(width: 8),
-                                  //             Icon(
-                                  //               Icons.check,
-                                  //               size: 20,
-                                  //               color: theme.isDarkMode
-                                  //                   ? WebDarkColors.primary
-                                  //                   : WebColors.primary,
-                                  //             ),
-                                  //           ],
-                                  //         )
-                                  //       : const SizedBox.shrink(),
-                                  // ),
-                                ],
+                  child: Builder(
+                    builder: (context) => Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () => _showStrikesDropdown(context, scripInfo, theme, scrollToStrikePrice),
+                        borderRadius: BorderRadius.circular(5),
+                        child: Padding(
+                          padding: const EdgeInsets.all(6.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                "STRIKES",
+                                style: WebTextStyles.sub(
+                                  isDarkTheme: theme.isDarkMode,
+                                  color: theme.isDarkMode
+                                      ? WebDarkColors.textPrimary
+                                      : WebColors.textPrimary,
+                                  fontWeight: WebFonts.medium,
+                                ),
                               ),
-                            ),
+                              const SizedBox(width: 6),
+                              Icon(
+                                Icons.arrow_drop_down,
+                                size: 20,
+                                color: theme.isDarkMode
+                                    ? WebDarkColors.iconSecondary
+                                    : WebColors.iconSecondary,
+                              ),
+                            ],
                           ),
                         ),
-                    ],
-                    child: Padding(
-                      padding: const EdgeInsets.all(6.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            "STRIKES",
-                            style: WebTextStyles.custom(
-                              fontSize: 14,
-                              isDarkTheme: theme.isDarkMode,
-                              color: theme.isDarkMode
-                                  ? WebDarkColors.textPrimary
-                                  : WebColors.textPrimary,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          Icon(Icons.arrow_drop_down, color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary),
-                        ],
                       ),
                     ),
                   ),
@@ -857,13 +859,12 @@ class _ColumnHeaders extends ConsumerWidget {
                     children: [
                       Text(
                         "PUTS",
-                        style: WebTextStyles.custom(
-                          fontSize: 14,
+                        style: WebTextStyles.sub(
                           isDarkTheme: theme.isDarkMode,
                           color: theme.isDarkMode
                               ? WebDarkColors.textPrimary
                               : WebColors.textPrimary,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: WebFonts.medium,
                         ),
                       ),
                     ],
@@ -907,7 +908,7 @@ class _ColumnHeaders extends ConsumerWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                // CALLS sub-headers: match row structure (Price group + OI group)
+                // CALLS sub-headers: OI(ch), OI, CH, LTP (reversed from PUTS)
                 Expanded(
                   // flex: 6,
                   child: Row(
@@ -917,8 +918,8 @@ class _ColumnHeaders extends ConsumerWidget {
                         child: Row(
                           children: [
                             SizedBox(width: 20),
-                            _buildSubHeader(context, ref, "LTP", theme),
-                            Expanded(child: _buildSubHeader(context, ref, "CH", theme)),
+                            _buildSubHeader(context, ref, "OI(ch)", theme),
+                            Expanded(child: _buildSubHeader(context, ref, "OI", theme)),
                           ],
                         ),
                       ),
@@ -926,8 +927,8 @@ class _ColumnHeaders extends ConsumerWidget {
                         child: Row(
                           children: [
                             SizedBox(width: 15),
-                            _buildSubHeader(context, ref, "OI", theme),
-                            Expanded(child: _buildSubHeader(context, ref, "OI(ch)", theme)),
+                            _buildSubHeader(context, ref, "CH", theme),
+                            Expanded(child: _buildSubHeader(context, ref, "LTP", theme)),
                           ],
                         ),
                       ),
@@ -974,13 +975,11 @@ class _ColumnHeaders extends ConsumerWidget {
     return Center(
       child: Text(
         text,
-        style: WebTextStyles.custom(
-          fontSize: 13,
+        style: WebTextStyles.tableHeader(
           isDarkTheme: theme.isDarkMode,
           color: theme.isDarkMode
               ? WebDarkColors.textSecondary
               : WebColors.textSecondary,
-          fontWeight: FontWeight.w700,
         ),
         textAlign: TextAlign.center,
       ),
@@ -1042,10 +1041,12 @@ class _OptionChainContent extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final scripInfo = ref.watch(marketWatchProvider);
     final depthData = scripInfo.getQuotes!;
+    final theme = ref.read(themeProvider);
 
     // Determine if data is fully loaded
+    // Note: scripDepthloader is excluded because it's set when updating depth panel,
+    // not when reloading option chain data
     final bool isLoading = scripInfo.isLoad ||
-        scripInfo.scripDepthloader ||
         scripInfo.optChainCallUP.isEmpty ||
         scripInfo.optChainPutUp.isEmpty ||
         scripInfo.optChainCallDown.isEmpty ||
@@ -1105,10 +1106,15 @@ class _OptionChainContent extends ConsumerWidget {
           });
     }
 
-    return SingleChildScrollView(
-      physics: const AlwaysScrollableScrollPhysics(),
+    return Scrollbar(
       controller: mainScrollController,
-      child: Column(children: [
+      thickness: 8,
+      radius: const Radius.circular(0),
+      thumbVisibility: false,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        controller: mainScrollController,
+          child: Column(children: [
         RepaintBoundary(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 0),
@@ -1194,6 +1200,7 @@ class _OptionChainContent extends ConsumerWidget {
           ),
         )
       ]),
+      ),
     );
   }
 }
@@ -1708,8 +1715,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                   color: Color(0xff777777)),
               const SizedBox(height: 2),
               Text("No Data Found",
-                  style: WebTextStyles.custom(
-                    fontSize: 15,
+                  style: WebTextStyles.bodySmall(
                     isDarkTheme: theme.isDarkMode,
                     color: theme.isDarkMode ? WebDarkColors.iconSecondary : WebColors.iconSecondary,
                     fontWeight: WebFonts.medium,
