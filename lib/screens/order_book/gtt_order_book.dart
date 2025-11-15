@@ -482,10 +482,12 @@ class GttOrderBook extends ConsumerWidget {
             }
 
             return ListView(
+              padding: EdgeInsets.only(bottom: 80),
               children: [
                 if (order.gttOrderBookSearch!.isEmpty)
                   gttOrderBook.isNotEmpty
                       ? ListView.separated(
+                          padding: EdgeInsets.only(bottom: 80),
                           primary: true,
                           physics: const NeverScrollableScrollPhysics(),
                           shrinkWrap: true,
@@ -908,6 +910,7 @@ class GttOrderBook extends ConsumerWidget {
                       : const SizedBox(height: 500, child: NoDataFound()),
                 if (order.gttOrderBookSearch!.isNotEmpty)
                   ListView.separated(
+                    padding: EdgeInsets.only(bottom: 80),
                     primary: true,
                     physics: const NeverScrollableScrollPhysics(),
                     shrinkWrap: true,

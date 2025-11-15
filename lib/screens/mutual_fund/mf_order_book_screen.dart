@@ -176,6 +176,7 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
   Widget _buildOrderList(
       MFProvider mforderbook, ThemesProvider theme, BuildContext context) {
     return ListView.separated(
+      padding: EdgeInsets.zero,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       separatorBuilder: (_, __) => const ListDivider(),

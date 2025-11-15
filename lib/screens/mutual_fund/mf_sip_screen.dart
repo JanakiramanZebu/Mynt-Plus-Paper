@@ -24,41 +24,40 @@ class MFSipdetScreen extends ConsumerWidget {
     final theme = ref.watch(themeProvider);
     final mfData = ref.watch(mfProvider);
 
-    return SafeArea(
-      child: Scaffold(
-        body: Stack(
-          children: [
-            TransparentLoaderScreen(
-              isLoading: mfData.bestmfloader ?? false,
-              child: mfData.mfsiporderlist?.data?.isEmpty ?? true
-                  ? const Center(child: NoDataFound())
-                  : RefreshIndicator(
-                      onRefresh: () async {
-                        await mfData.fetchmfsipnotlivelist();
-                        await mfData.fetchmfsiplist();
-                      },
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: _buildSipOrderList(context, mfData, theme),
-                          ),
-                        ],
+    return Scaffold(
+    body: Stack(
+      children: [
+        TransparentLoaderScreen(
+          isLoading: mfData.bestmfloader ?? false,
+          child: mfData.mfsiporderlist?.data?.isEmpty ?? true
+              ? const Center(child: NoDataFound())
+              : RefreshIndicator(
+                  onRefresh: () async {
+                    await mfData.fetchmfsipnotlivelist();
+                    await mfData.fetchmfsiplist();
+                  },
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: _buildSipOrderList(context, mfData, theme),
                       ),
-                    ),
-            ),
-          ],
+                    ],
+                  ),
+                ),
         ),
-      ),
+      ],
+    ),
     );
   }
 
   Widget _buildSipOrderList(
       BuildContext context, dynamic mfData, dynamic theme) {
     return ListView.separated(
+      // padding: EdgeInsets.only(bottom: 80),
       shrinkWrap: true,
       separatorBuilder: (context, index) => const ListDivider(),
-      // padding: const EdgeInsets.all(0),
+      padding: EdgeInsets.zero,
       itemCount: (mfData.mfsiporderlist?.data?.length ?? 0) + 1,
       itemBuilder: (BuildContext context, int index) {
         if (index == mfData.mfsiporderlist?.data?.length) {

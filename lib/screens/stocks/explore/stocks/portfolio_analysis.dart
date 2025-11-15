@@ -1,19 +1,27 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/res/global_state_text.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/sharedWidget/splash_loader.dart';
 import 'package:mynt_plus/sharedWidget/snack_bar.dart';
+import 'dart:ui' as ui;
+import 'package:share_plus/share_plus.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as path;
+import 'package:cross_file/cross_file.dart';
 import '../../../../provider/dashboard_provider.dart';
 import '../../../../models/explore_model/portfolioanalisys_models.dart';
 import '../../../../provider/market_watch_provider.dart';
 import '../../../../sharedWidget/list_divider.dart';
 import '../../../../sharedWidget/no_data_found.dart';
+import '../../../../locator/preference.dart';
 
 class PortfolioDashboardScreen extends ConsumerStatefulWidget {
   const PortfolioDashboardScreen({super.key});
@@ -42,6 +50,15 @@ class _PortfolioDashboardScreenState
   bool _hasScrolled = false;
   final ScrollController _scrollController = ScrollController();
   final GlobalKey _contentKey = GlobalKey();
+  
+  // RepaintBoundary for share capture - each section
+  final GlobalKey _shareBoundaryKey = GlobalKey(); // For body wrapper
+  final GlobalKey _portfolioSummaryKey = GlobalKey();
+  final GlobalKey _marketCapSectionKey = GlobalKey();
+  final GlobalKey _heatmapSectionKey = GlobalKey();
+  
+  // Key for summary screen capture
+  final GlobalKey _summaryScreenKey = GlobalKey();
 
   @override
   void initState() {
@@ -143,28 +160,204 @@ class _PortfolioDashboardScreenState
                   ? colors.textPrimaryDark
                   : colors.textPrimaryLight,
               fw: 1),
+          // actions: [
+          //   Material(
+          //     color: Colors.transparent,
+          //     shape: const CircleBorder(),
+          //     clipBehavior: Clip.hardEdge,
+          //     child: InkWell(
+          //       customBorder: const CircleBorder(),
+          //       splashColor: theme.isDarkMode
+          //           ? colors.splashColorDark
+          //           : colors.splashColorLight,
+          //       highlightColor: theme.isDarkMode
+          //           ? colors.highlightDark
+          //           : colors.highlightLight,
+          //       onTap: () => _captureAndShareScreenshot(context),
+          //       child: Container(
+          //         width: 44,
+          //         height: 44,
+          //         alignment: Alignment.center,
+          //         padding: const EdgeInsets.all(8),
+          //         child: Icon(
+          //           Icons.share_outlined,
+          //           size: 20,
+          //           color: theme.isDarkMode
+          //               ? colors.textSecondaryDark
+          //               : colors.textSecondaryLight,
+          //         ),
+          //       ),
+          //     ),
+          //   ),
+          //   const SizedBox(width: 8),
+          // ],
         ),
         body: SafeArea(
-          child: Consumer(
-            builder: (context, ref, child) {
-              if (portfolio.isPortfolioLoading == true) {
-                return Center(
-                  child: Container(
-                    color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                    child: CircularLoaderImage(),
-                  ),
-                );
-              }
-              if (portfolio.portfolioAnalysis == null &&
-                  portfolio.isPortfolioLoading == false) {
-                return const Center(
-                  child: NoDataFound(),
-                );
-              }
+          child: RepaintBoundary(
+            key: _shareBoundaryKey,
+            child: Consumer(
+              builder: (context, ref, child) {
+                if (portfolio.isPortfolioLoading == true) {
+                  return Center(
+                    child: Container(
+                      color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                      child: CircularLoaderImage(),
+                    ),
+                  );
+                }
+                if (portfolio.portfolioAnalysis == null &&
+                    portfolio.isPortfolioLoading == false) {
+                  return const Center(
+                    child: NoDataFound(),
+                  );
+                }
 
-              return _buildDashboardContentWithStickyHeader(
-                  ref.watch(dashboardProvider).portfolioAnalysis!);
-            },
+                return _buildDashboardContentWithStickyHeader(
+                    ref.watch(dashboardProvider).portfolioAnalysis!);
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _captureAndShareScreenshot(BuildContext context) async {
+    try {
+      // Get portfolio data
+      final portfolio = ref.read(dashboardProvider);
+      final portfolioData = portfolio.portfolioAnalysis;
+      if (portfolioData == null) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('No portfolio data available')),
+          );
+        }
+        return;
+      }
+
+      // Show summary screen in dialog
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (dialogContext) => Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: EdgeInsets.zero,
+          child: RepaintBoundary(
+            key: _summaryScreenKey,
+            child: _buildSummaryScreen(portfolioData),
+          ),
+        ),
+      );
+
+      // Wait for the summary screen to render
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      // Capture the summary screen
+      final summaryBoundary = _summaryScreenKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+      if (summaryBoundary == null) {
+        Navigator.pop(context);
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to capture summary screen')),
+          );
+        }
+        return;
+      }
+
+      final uiImage = await summaryBoundary.toImage(pixelRatio: 3.0);
+      final byteData = await uiImage.toByteData(format: ui.ImageByteFormat.png);
+      
+      // Close dialog
+      Navigator.pop(context);
+
+      if (byteData == null) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to process screenshot')),
+          );
+        }
+        return;
+      }
+
+      // Save image
+      final directory = await getTemporaryDirectory();
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final fileName = 'portfolio_summary_$timestamp.png';
+      final filePath = path.join(directory.path, fileName);
+      final imageFile = File(filePath);
+      await imageFile.writeAsBytes(byteData.buffer.asUint8List());
+
+      // Share the image
+      if (context.mounted) {
+        final pref = Preferences();
+        final clientId = pref.clientId ?? '';
+        final currentDate = DateTime.now().toString().split(' ')[0];
+        final shareText = "My Holdings Portfolio Summary - $currentDate \n\nDownload Full PDF Report: https://rekycbe.mynt.in/report/portfolio_pdf?cc=$clientId ";
+        await Share.shareXFiles(
+          [XFile(filePath)],
+          text: shareText,
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        Navigator.pop(context); // Close dialog if still open
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error sharing screenshot: $e')),
+        );
+      }
+    }
+  }
+
+  Widget _buildSummaryScreen(PortfolioResponse data) {
+    final theme = ref.watch(themeProvider);
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height * 0.5;
+    final pref = Preferences();
+    final clientName = pref.clientName ?? '';
+    
+    return Container(
+      width: screenWidth,
+      height: screenHeight,
+      color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+               Align(
+                alignment: Alignment.topRight,
+                 child: SvgPicture.asset(
+                          "assets/icon/Mynt New logo.svg",
+                          color: const Color(0xff0037B7),
+                          width: 80,
+                          fit: BoxFit.contain,
+                        ),
+               ),
+              // Header
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (clientName.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    TextWidget.titleText(
+                      text: '$clientName',
+                      theme: theme.isDarkMode,
+                      color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                      fw: 1,
+                    ),
+                  ],
+                ],
+              ),
+              const SizedBox(height: 20),
+              // XIRR Chart
+              if (data.chartData != null) ...[
+                _buildInvestmentChart(data.chartData!, data),
+                const SizedBox(height: 40),
+              ],
+              // const SizedBox(height: 20),
+            ],
           ),
         ),
       ),
@@ -214,12 +407,26 @@ class _PortfolioDashboardScreenState
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Portfolio Summary Section
                   if (data.chartData != null)
-                    _buildInvestmentChart(data.chartData!, data),
+                    RepaintBoundary(
+                      key: _portfolioSummaryKey,
+                      child: Container(
+                        color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                        child: _buildInvestmentChart(data.chartData!, data),
+                      ),
+                    ),
                     const SizedBox(height: 20),
-                    SizedBox(
-                    height: 30,
-                    child: TabBar(
+                    // Market Cap/Sector/Asset Allocation Section
+                    RepaintBoundary(
+                      key: _marketCapSectionKey,
+                      child: Container(
+                        color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                        child: Column(
+                          children: [
+                          SizedBox(
+                            height: 30,
+                            child: TabBar(
                             controller: tabCtrl,
                             tabAlignment: TabAlignment.start,
                             isScrollable: true,
@@ -252,31 +459,41 @@ class _PortfolioDashboardScreenState
                               Tab(text: "Sector"),
                               Tab(text: "Asset Allocation"),
                             ],
+                            ),
                           ),
-                  ),
-                 const SizedBox(height: 10),
-                  SizedBox(
-                    height: 250,
-                    child: TabBarView(
-                      controller: tabCtrl,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
-                          child: _buildChartsSection(data),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
-                          child: _buildSectorAllocationTable(data.sectorAllocation),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
-                          child: _buildAccountAllocation(data.accountAllocation , theme.isDarkMode),
-                        ),
-                      ],
+                          const SizedBox(height: 10),
+                          SizedBox(
+                            height: 250,
+                            child: TabBarView(
+                              controller: tabCtrl,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                                  child: _buildChartsSection(data),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                                  child: _buildSectorAllocationTable(data.sectorAllocation),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                                  child: _buildAccountAllocation(data.accountAllocation , theme.isDarkMode),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      ),
+                    ),
+                  // Heatmap Section
+                  RepaintBoundary(
+                    key: _heatmapSectionKey,
+                    child: Container(
+                      color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                      child: _buildHeatMap(data.topStocks),
                     ),
                   ),
-                  // const SizedBox(height: 16),
-                  _buildHeatMap(data.topStocks),
                   const SizedBox(height: 16),
                   
                   // SizedBox(height: 16),

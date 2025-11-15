@@ -493,6 +493,7 @@ class _OrderBookState extends ConsumerState<OrderBook> {
       );
     }
     return ListView.separated(
+      padding: EdgeInsets.only(bottom: 80),
       physics: const AlwaysScrollableScrollPhysics(),
       shrinkWrap: false,
       itemBuilder: (context, index) {

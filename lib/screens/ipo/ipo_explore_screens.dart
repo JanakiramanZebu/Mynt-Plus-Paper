@@ -81,6 +81,7 @@ class _ExploreScreensState extends ConsumerState<IpoExploreScreens>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          const SizedBox(height: 150),
           Container(
             width: MediaQuery.of(context).size.width,
             padding: const EdgeInsets.only(top: 8),

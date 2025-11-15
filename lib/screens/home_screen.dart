@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 import 'package:connectivity_plus/connectivity_plus.dart';
 // import 'package:firebase_analytics/firebase_analytics.dart';
 // import 'package:firebase_analytics/firebase_analytics.dart';
@@ -382,6 +383,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           bottomNavigationBar: ref.watch(userProfileProvider).profileloader
               ? const SizedBox.shrink()
               : buildBottomNav(selectedBtmIndx, theme),
+              extendBody: selectedBtmIndx == 0 && ref.watch(stocksProvide).exploreIndex == 0 ? true : false,
+              backgroundColor: selectedBtmIndx == 0 && ref.watch(stocksProvide).exploreIndex == 0 ? Colors.transparent : theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+              extendBodyBehindAppBar: true,
           // Pass only the selected index and theme to the Body builder
           body: _buildBody(selectedBtmIndx, theme),
         );
@@ -431,12 +435,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     if (selectedTab == 1) {
       return AppBar(
         shadowColor: isDarkMode ? colors.darkColorDivider : colors.colorDivider,
-        elevation: 0,
+                elevation: 0,
         backgroundColor:
             isDarkMode ? colors.colorBlack : colors.colorWhite,
-        automaticallyImplyLeading: false,
-        title: null,
-        bottom: _buildAppBarBottom(selectedTab),
+                automaticallyImplyLeading: false,
+                title: null,
+                bottom: _buildAppBarBottom(selectedTab),
       );
     }
 
@@ -653,24 +657,67 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     Preferences pref = Preferences();
 
     final uid = pref.clientId!;
-    return BottomAppBar(
-      height: 64,
-      shadowColor:
-          theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
-      padding: EdgeInsets.zero,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: <Widget>[
-          _buildBottomNavItem(0, assets.home, "Home", selectedTab, theme),
-          _buildBottomNavItem(
-              1, assets.watchlistIcon, "Watchlists", selectedTab, theme),
-          _buildBottomNavItem(
-              2, assets.portfolioIcon, "Portfolio", selectedTab, theme),
-          // _buildBottomNavItem(
-          //     3, assets.mfIcon, "Mutual Fund", selectedTab, theme),
-          _buildBottomNavItem(4, assets.profileIcon, uid, selectedTab, theme,
-              useHeight: true, height: 18),
-        ],
+    return ClipRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+        child: Container(
+          decoration: BoxDecoration(
+            color: theme.isDarkMode
+                ? Colors.black.withOpacity(0.30)
+                : Colors.white.withOpacity(0.45),
+            border: Border(
+              top: BorderSide(
+                color: theme.isDarkMode
+                    ? Colors.white.withOpacity(0.18)
+                    : Colors.black.withOpacity(0.12),
+                width: 0.5,
+              ),
+            ),
+            gradient: selectedTab == 0 ? LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  theme.isDarkMode
+                      ? Colors.white.withOpacity(0.03)
+                      : Colors.white.withOpacity(0.08),
+                  theme.isDarkMode
+                      ? Colors.white.withOpacity(0.01)
+                      : Colors.white.withOpacity(0.04),
+                ],
+              ) : null,
+            // boxShadow: [
+            //   BoxShadow(
+            //     color: theme.isDarkMode
+            //         ? Colors.black.withOpacity(0.4)
+            //         : Colors.black.withOpacity(0.12),
+            //     blurRadius: 25,
+            //     offset: Offset(0, -6),
+            //     spreadRadius: 0,
+            //   ),
+            // ],
+          ),
+          child: SafeArea(
+            top: false,
+            child: Container(
+              height: 64,
+              padding: EdgeInsets.zero,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  _buildBottomNavItem(0, assets.home, "Home", selectedTab, theme),
+                  _buildBottomNavItem(
+                      1, assets.watchlistIcon, "Watchlists", selectedTab, theme),
+                  _buildBottomNavItem(
+                      2, assets.portfolioIcon, "Portfolio", selectedTab, theme),
+                  // _buildBottomNavItem(
+                  //     3, assets.mfIcon, "Mutual Fund", selectedTab, theme),
+                  _buildBottomNavItem(4, assets.profileIcon, uid, selectedTab, theme,
+                      useHeight: true, height: 18),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

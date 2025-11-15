@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:ui';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -35,21 +37,75 @@ class PositionScreen extends ConsumerStatefulWidget {
   ConsumerState<PositionScreen> createState() => _PositionScreenState();
 }
 
-class _PositionScreenState extends ConsumerState<PositionScreen> {
+class _PositionScreenState extends ConsumerState<PositionScreen> with TickerProviderStateMixin {
   // Cache SVG icons to avoid rebuilds
   final Map<String, Widget> _cachedIcons = {};
   StreamSubscription? _socketSubscription;
+  
+  // Scroll controller and animation controller for scroll-based animations
+  late ScrollController _scrollController;
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+  bool _isScrollingUp = false;
 
   @override
   void initState() {
     super.initState();
+    
+    // Initialize scroll controller
+    _scrollController = ScrollController();
+    _scrollController.addListener(_onScroll);
+    
+    // Initialize animation controller
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+    
+    // Initialize fade animation
+    _fadeAnimation = Tween<double>(begin: 1.0, end: 0.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
+    
     _setupSocketSubscription();
   }
 
   @override
   void dispose() {
     _socketSubscription?.cancel();
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    _animationController.dispose();
     super.dispose();
+  }
+
+  // Scroll listener to detect scroll direction and animate
+  void _onScroll() {
+    final currentOffset = _scrollController.offset;
+    // Keep Total PNL card visible when scrolled past initial position, never hide when scrolling down
+    bool shouldShowTotalPnlCard = false;
+    
+    if (currentOffset > 10) {
+      // Once scrolled past initial position, always show Total PNL card
+      // It stays visible whether scrolling up or down
+      shouldShowTotalPnlCard = true;
+    } else {
+      // At top (offset <= 10), show normal stats (hide Total PNL card)
+      shouldShowTotalPnlCard = false;
+    }
+    
+    if (shouldShowTotalPnlCard != _isScrollingUp) {
+      _isScrollingUp = shouldShowTotalPnlCard;
+      if (_isScrollingUp) {
+        _animationController.forward();
+      } else {
+        _animationController.reverse();
+      }
+      // Trigger rebuild to show/hide Total PNL card and summary section
+      if (mounted) {
+        setState(() {});
+      }
+    }
   }
 
   void _setupSocketSubscription() {
@@ -125,40 +181,156 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
             onRefresh: () async {
               await positionBook.fetchPositionBook(context, false);
             },
-            child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(
-                  // parent: BouncingScrollPhysics(),
+            child: Stack(
+              children: [
+                // Scrollable content
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    return SingleChildScrollView(
+                      controller: _scrollController,
+                      physics: const AlwaysScrollableScrollPhysics(
+                          // parent: BouncingScrollPhysics(),
+                          ),
+                      child: GestureDetector(
+                        onTap: () => FocusScope.of(context).unfocus(),
+                        behavior: HitTestBehavior.opaque,
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            minHeight: constraints.maxHeight > 0 
+                                ? constraints.maxHeight + 1 
+                                : double.infinity,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // Header with P&L info - hide when scrolling up
+                              if (!_isScrollingUp)
+                                _PositionHeaderSection(
+                                  theme: theme,
+                                  positionBook: positionBook,
+                                  listofPosition: widget.listofPosition,
+                                ),
+
+                              // Filter options section
+                              // if (positionBook.postionBookModel!.isNotEmpty &&
+                              //     widget.listofPosition.length > 1)
+                              //   _buildFilterSection(context, theme, positionBook),
+
+                              // Search section if enabled
+                              // if (positionBook.showSearchPosition)
+                              if (positionBook.postionBookModel!.isNotEmpty) ...[
+                                _buildSearchSection(context, theme, positionBook, funds),
+                                _buildSearchBar(),
+                              ],
+                              _buildPositionList(context, theme, positionBook),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                
+                // Fixed Total PNL card overlaying the content
+                if (_isScrollingUp && positionBook.postionBookModel!.isNotEmpty)
+                  Positioned(
+                    top: -1,
+                    left: 0,
+                    right: 0,
+                    child: _buildTotalPnlCard(theme, positionBook),
                   ),
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Header with P&L info
-                    _PositionHeaderSection(
-                      theme: theme,
-                      positionBook: positionBook,
-                      listofPosition: widget.listofPosition,
-                    ),
-
-                    // Filter options section
-                    // if (positionBook.postionBookModel!.isNotEmpty &&
-                    //     widget.listofPosition.length > 1)
-                    //   _buildFilterSection(context, theme, positionBook),
-
-                    // Search section if enabled
-                    // if (positionBook.showSearchPosition)
-                    if (positionBook.postionBookModel!.isNotEmpty) ...[
-                      _buildSearchSection(context, theme, positionBook, funds),
-                      _buildSearchBar(),
-                    ],
-                    _buildPositionList(context, theme, positionBook),
-
-                    // Position list section
-                  ]),
+              ],
             ),
           ),
         );
       },
+        );
+  }
+
+   
+
+  // Total PNL card - fixed at the top with glassy UI
+  Widget _buildTotalPnlCard(ThemesProvider theme, PortfolioProvider positionBook) {
+    final isNetPnl = positionBook.isNetPnl;
+    final isDay = positionBook.isDay;
+    final totUnRealMtm = positionBook.totUnRealMtm;
+    final totMtM = positionBook.totMtM;
+    final totBookedPnL = positionBook.totBookedPnL;
+    final totPnL = positionBook.totPnL;
+    
+    // Get the value and color based on current settings
+    final value = !isNetPnl
+        ? (isDay ? totUnRealMtm : totMtM)
+        : (isDay ? totBookedPnL : totPnL);
+    final color = !isNetPnl
+        ? _getValueColor(isDay ? totUnRealMtm : totMtM, theme)
+        : _getValueColor(isDay ? totBookedPnL : totPnL, theme);
+    
+    return AnimatedBuilder(
+      animation: _fadeAnimation,
+      builder: (context, child) {
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            // Translucent background to give glassy feel (same as watchlist)
+            color: theme.isDarkMode
+                ? colors.colorBlack
+                : colors.colorWhite,
+            // Subtle gradient to enhance the frosted look (same as watchlist)
+            // gradient: LinearGradient(
+            //   begin: Alignment.topLeft,
+            //   end: Alignment.bottomRight,
+            //   colors: [
+            //     theme.isDarkMode
+            //         ? Colors.white.withOpacity(0.02)
+            //         : Colors.white.withOpacity(0.06),
+            //     theme.isDarkMode
+            //         ? Colors.white.withOpacity(0.01)
+            //         : Colors.white.withOpacity(0.03),
+            //   ],
+            // ),
+            // Keep the bottom border as before (same as watchlist)
+            border: Border(
+              bottom: BorderSide(
+                color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+              ),
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // Total PNL/MTM label on the left
+              TextWidget.subText(
+                text: !isNetPnl ? "Total MTM" : "Total P&L",
+                theme: false,
+                color: theme.isDarkMode
+                    ? colors.textSecondaryDark
+                    : colors.textSecondaryLight,
+                fw: 0,
+              ),
+              // Total PNL/MTM value on the right with animation
+              Opacity(
+                opacity: 1.0 - _fadeAnimation.value * 0.3,
+                child: TextWidget.headText(
+                  text: value,
+                  theme: false,
+                  color: color,
+                  fw: 0,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
+  }
+
+  Color _getValueColor(String value, ThemesProvider theme) {
+    final numValue = double.tryParse(value.replaceAll(',', '')) ?? 0.0;
+    return numValue >= 0
+        ? (theme.isDarkMode ? colors.profitDark : colors.profitLight)
+        : (theme.isDarkMode ? colors.lossDark : colors.lossLight);
   }
 
   // Widget _buildFilterSection(BuildContext context, ThemesProvider theme,
@@ -604,6 +776,7 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
     }
 
     return ListView.builder(
+      padding: EdgeInsets.only(bottom: 0),
       physics: const NeverScrollableScrollPhysics(),
       shrinkWrap: true,
       itemBuilder: (context, idx) {

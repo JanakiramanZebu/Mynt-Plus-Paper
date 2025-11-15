@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -71,10 +72,31 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> with TickerProvid
   Widget? _cachedDarkDivider;
   Widget? _cachedLightDivider;
 
+  // Scroll controller and animation controller for scroll-based animations
+  late ScrollController _scrollController;
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+  bool _isScrollingUp = false;
 
   @override
   void initState() {
     super.initState();
+    
+    // Initialize scroll controller
+    _scrollController = ScrollController();
+    _scrollController.addListener(_onScroll);
+    
+    // Initialize animation controller
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+    
+    // Initialize fade animation
+    _fadeAnimation = Tween<double>(begin: 1.0, end: 0.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
+    
     ref.read(portfolioProvider).holdingsTabController.addListener(() {
       if (mounted) {
         setState(() {});
@@ -90,13 +112,43 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> with TickerProvid
       }
     });
   }
+  
+  // Scroll listener to detect scroll direction and animate
+  void _onScroll() {
+    final currentOffset = _scrollController.offset;
+    // Scrolling up means offset is increasing (user scrolling up, content moves up)
+    // Scrolling down means offset is decreasing (user scrolling down, content moves down)
+    // Keep Total PNL card visible when scrolled past initial position, never hide when scrolling down
+    bool shouldShowTotalPnlCard = false;
+    
+    if (currentOffset > 10) {
+      // Once scrolled past initial position, always show Total PNL card
+      // It stays visible whether scrolling up or down
+      shouldShowTotalPnlCard = true;
+    } else {
+      // At top (offset <= 10), show normal stats (hide Total PNL card)
+      shouldShowTotalPnlCard = false;
+    }
+    
+    if (shouldShowTotalPnlCard != _isScrollingUp) {
+      _isScrollingUp = shouldShowTotalPnlCard;
+      if (_isScrollingUp) {
+        _animationController.forward();
+      } else {
+        _animationController.reverse();
+      }
+      // Trigger rebuild to show/hide Total PNL card and summary section
+      if (mounted) {
+        setState(() {});
+      }
+    }
+  }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
 
     // Listen for theme changes here instead of in build
-    final theme = ref.read(themeProvider);
     ref.listenManual(themeProvider, (previous, next) {
       if (previous?.isDarkMode != next.isDarkMode) {
         // Theme changed, clear caches
@@ -119,6 +171,9 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> with TickerProvid
   @override
   void dispose() {
     _socketSubscription?.cancel();
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    _animationController.dispose();
     super.dispose();
   }
 
@@ -328,7 +383,6 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> with TickerProvid
   void _calculateInitialValues() {
     if (_isInitialized) return; // Prevent duplicate initialization
 
-    final holdingProvider = ref.read(portfolioProvider);
     final websocket = ref.read(websocketProvider);
 
     // Process initial socket data
@@ -466,7 +520,6 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> with TickerProvid
   @override
   Widget build(BuildContext context) {
     // Read providers only once for static data
-    final theme = ref.read(themeProvider);
     final holdingProvider = ref.read(portfolioProvider);
 
     // Use a focused Consumer only for the loading status
@@ -502,29 +555,57 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> with TickerProvid
           // Recalculate all summaries with the new data
           _calculateSummaryValues();
         },
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: GestureDetector(
-            onTap: () => FocusScope.of(context).unfocus(),
-            behavior: HitTestBehavior.opaque,
-            child:
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              // Summary section with investment and P&L information
-              holdingProvider.holdingsModel!.isEmpty
-                  ? const SizedBox.shrink()
-                  : _buildSummarySection(),
+        child: Stack(
+          children: [
+            // Scrollable content
+            LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  controller: _scrollController,
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: GestureDetector(
+                    onTap: () => FocusScope.of(context).unfocus(),
+                    behavior: HitTestBehavior.opaque,
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: constraints.maxHeight > 0 
+                            ? constraints.maxHeight + 1 
+                            : double.infinity,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Summary section with all stats (original UI) - hide when scrolling up
+                          if (!_isScrollingUp && !holdingProvider.holdingsModel!.isEmpty)
+                            _buildSummarySection(),
 
-              // Action buttons section - using cached buttons when possible
-              holdingProvider.holdingsModel!.isEmpty
-                  ? const SizedBox.shrink()
-                  : _getActionButtons(),
-              _buildSearchBar(),
-              // Search bar (conditional)
+                          // Action buttons section - using cached buttons when possible
+                          holdingProvider.holdingsModel!.isEmpty
+                              ? const SizedBox.shrink()
+                              : _getActionButtons(),
+                          _buildSearchBar(),
+                          // Search bar (conditional)
 
-              // Holdings list with selective rebuilding
-              _buildHoldingsList()
-            ]),
-          ),
+                          // Holdings list with selective rebuilding
+                          _buildHoldingsList(),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+            
+            // Fixed Total PNL card overlaying the content - show until search bar becomes visible
+            if (_isScrollingUp && !holdingProvider.holdingsModel!.isEmpty)
+              Positioned(
+                top: -1,
+                left: 0,
+                right: 0,
+                child: _buildTotalPnlCard(),
+              ),
+          ],
         ),
       );
     });
@@ -578,7 +659,104 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> with TickerProvid
     _cachedSummarySection = null;
   }
 
-  // Summary section with investment and P&L information
+  // Total PNL card - fixed at the top
+  Widget _buildTotalPnlCard() {
+    final theme = ref.read(themeProvider);
+
+    return Consumer(builder: (context, watch, _) {
+      // Watch holdings data to rebuild when it changes
+      ref.watch(portfolioProvider);
+      
+      // Recalculate summary values when provider updates
+      _calculateSummaryValues();
+
+      return AnimatedBuilder(
+        animation: _fadeAnimation,
+        builder: (context, child) {
+          return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              // Translucent background to give glassy feel (same as watchlist)
+              color: theme.isDarkMode
+                  ? colors.colorBlack
+                  : colors.colorWhite,
+              // Subtle gradient to enhance the frosted look (same as watchlist)
+              // gradient: LinearGradient(
+              //   begin: Alignment.topLeft,
+              //   end: Alignment.bottomRight,
+              //   colors: [
+              //     theme.isDarkMode
+              //         ? Colors.white.withOpacity(0.02)
+              //         : Colors.white.withOpacity(0.06),
+              //     theme.isDarkMode
+              //         ? Colors.white.withOpacity(0.01)
+              //         : Colors.white.withOpacity(0.03),
+              //   ],
+              // ),
+              // Keep the bottom border as before (same as watchlist)
+              border: Border(
+                bottom: BorderSide(
+                  color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+                ),
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Total PNL label on the left
+                TextWidget.subText(
+                  text: "Total PNL",
+                  theme: false,
+                  color: theme.isDarkMode
+                      ? colors.textSecondaryDark
+                      : colors.textSecondaryLight,
+                  fw: 0,
+                ),
+                // Total PNL value on the right with animation
+                Opacity(
+                  opacity: 1.0 - _fadeAnimation.value * 0.3,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      TextWidget.subText(
+                        text:
+                            "(${_totPnlPercHolding == "NaN" ? 0.00 : _totPnlPercHolding}%)",
+                        theme: false,
+                        color: _totPnlPercHolding.startsWith("-")
+                            ? theme.isDarkMode
+                                ? colors.lossDark
+                                : colors.lossLight
+                            : theme.isDarkMode
+                                ? colors.profitDark
+                                : colors.profitLight,
+                        fw: 0,
+                      ),
+                      const SizedBox(width: 4),
+                      TextWidget.headText(
+                        text:
+                            "${getFormatter(value: _totalPnlHolding, v4d: false, noDecimal: false)}",
+                        theme: false,
+                        color: _totalPnlHolding.toString().startsWith("-")
+                            ? theme.isDarkMode
+                                ? colors.lossDark
+                                : colors.lossLight
+                            : theme.isDarkMode
+                                ? colors.profitDark
+                                : colors.profitLight,
+                        fw: 0,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      );
+    });
+  }
+
+  // Summary section with investment and P&L information (original UI with Total P&L)
   Widget _buildSummarySection() {
     final theme = ref.read(themeProvider);
 
@@ -810,7 +988,6 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> with TickerProvid
       required bool showEdis,
       required bool showSearch}) {
     final holdingProvider = ref.read(portfolioProvider);
-    final mf = ref.read(mfProvider);
     final theme = ref.read(themeProvider);
     final ledgerdate = ref.watch(ledgerProvider);
     final showSearch = ref.watch(portfolioProvider).showSearchHold;
@@ -1274,6 +1451,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> with TickerProvid
       // Wrap in RepaintBoundary to isolate the whole list
       return RepaintBoundary(
         child: ListView.builder(
+          padding: EdgeInsets.only(bottom: 0),
           // Use a key that only changes when the list fundamentally changes
           key: ValueKey('holdings-list-${items.length}'),
           physics: const NeverScrollableScrollPhysics(),

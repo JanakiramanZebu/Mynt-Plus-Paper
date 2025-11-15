@@ -168,6 +168,7 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen>
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const SizedBox(height: 100),
             SizedBox(
               width: MediaQuery.of(context).size.width,
               height: 40,

@@ -66,6 +66,7 @@ class _IpoOrderbookMainScreenState extends ConsumerState<IpoOrderbookMainScreen>
             _buildSectionHeader("Closed Orders", theme),
             IpoCloseOrder(filteredOrders: filteredCloseOrders),
           ],
+          // const SizedBox(height: 80),
         ],
       ),
     );

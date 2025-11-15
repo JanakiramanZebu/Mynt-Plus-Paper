@@ -65,6 +65,7 @@ class MFSipOrderHistoryScreen extends ConsumerWidget {
   Widget _buildSipOrderList(
       BuildContext context, dynamic mfData, dynamic theme) {
     return ListView.separated(
+      padding: EdgeInsets.zero,
       shrinkWrap: true,
       separatorBuilder: (context, index) => const ListDivider(),
       // padding: const EdgeInsets.all(0),

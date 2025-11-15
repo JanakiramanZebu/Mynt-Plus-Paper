@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -18,11 +20,78 @@ import '../portfolio_screens/holdings/filter_scrip_bottom_sheet.dart';
 import 'mf_filter_bottom_sheet.dart';
 import 'mf_hold_singlepage.dart';
 
-class MfHoldNewScreen extends ConsumerWidget {
+class MfHoldNewScreen extends ConsumerStatefulWidget {
   const MfHoldNewScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MfHoldNewScreen> createState() => _MfHoldNewScreenState();
+}
+
+class _MfHoldNewScreenState extends ConsumerState<MfHoldNewScreen> with TickerProviderStateMixin {
+  late ScrollController _scrollController;
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+  bool _isScrollingUp = false;
+
+  @override
+  void initState() {
+    super.initState();
+    
+    // Initialize scroll controller
+    _scrollController = ScrollController();
+    _scrollController.addListener(_onScroll);
+    
+    // Initialize animation controller
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+    
+    // Initialize fade animation
+    _fadeAnimation = Tween<double>(begin: 1.0, end: 0.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  // Scroll listener to detect scroll direction and animate
+  void _onScroll() {
+    final currentOffset = _scrollController.offset;
+    // Keep Returns card visible when scrolled past initial position, never hide when scrolling down
+    bool shouldShowReturnsCard = false;
+    
+    if (currentOffset > 10) {
+      // Once scrolled past initial position, always show Returns card
+      // It stays visible whether scrolling up or down
+      shouldShowReturnsCard = true;
+    } else {
+      // At top (offset <= 10), show normal stats (hide Returns card)
+      shouldShowReturnsCard = false;
+    }
+    
+    if (shouldShowReturnsCard != _isScrollingUp) {
+      _isScrollingUp = shouldShowReturnsCard;
+      if (_isScrollingUp) {
+        _animationController.forward();
+      } else {
+        _animationController.reverse();
+      }
+      // Trigger rebuild to show/hide Returns card and summary section
+      if (mounted) {
+        setState(() {});
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final theme = ref.watch(themeProvider);
     final mfData = ref.watch(mfProvider);
     final showSearch = mfData.showMfHoldingSearch;
@@ -48,17 +117,31 @@ class MfHoldNewScreen extends ConsumerWidget {
                   onRefresh: () async {
                     // Refresh logic here if needed
                   },
-                  child: SingleChildScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    child: GestureDetector(
-                      onTap: () => FocusScope.of(context).unfocus(),
-                      behavior: HitTestBehavior.opaque,
-                      child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                
-                                // Summary container
-                                Container(
+                  child: Stack(
+                    children: [
+                      // Scrollable content
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          return SingleChildScrollView(
+                            controller: _scrollController,
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            child: GestureDetector(
+                              onTap: () => FocusScope.of(context).unfocus(),
+                              behavior: HitTestBehavior.opaque,
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  minHeight: constraints.maxHeight > 0 
+                                      ? constraints.maxHeight + 1 
+                                      : double.infinity,
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    
+                                    // Summary container - hide when scrolling up
+                                    if (!_isScrollingUp)
+                                      Container(
                             padding: const EdgeInsets.only(left: 16, right: 16, top: 0, bottom: 16),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -387,15 +470,108 @@ class MfHoldNewScreen extends ConsumerWidget {
                               ),
                             ),
                 
-                                // Show appropriate UI based on data state
-                                _buildListContent(context, theme.isDarkMode, mfData, showSearch, searchText, items, theme),
-                              ],
-                            )
-                        
-                    ),
+                                    // Show appropriate UI based on data state
+                                    _buildListContent(context, theme.isDarkMode, mfData, showSearch, searchText, items, theme),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                      
+                      // Fixed Returns card overlaying the content
+                      if (_isScrollingUp && hasHoldingsData)
+                        Positioned(
+                          top: -1,
+                          left: 0,
+                          right: 0,
+                          child: _buildReturnsCard(theme, mfData),
+                        ),
+                    ],
                   ),
                 ),
       ),
+    );
+  }
+
+  // Returns card - fixed at the top with glassy UI
+  Widget _buildReturnsCard(ThemesProvider theme, MFProvider mfData) {
+    return AnimatedBuilder(
+      animation: _fadeAnimation,
+      builder: (context, child) {
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            // Translucent background to give glassy feel (same as watchlist)
+            color: theme.isDarkMode
+                ? colors.colorBlack
+                : colors.colorWhite,
+            // Subtle gradient to enhance the frosted look (same as watchlist)
+            // gradient: LinearGradient(
+            //   begin: Alignment.topLeft,
+            //   end: Alignment.bottomRight,
+            //   colors: [
+            //     theme.isDarkMode
+            //         ? Colors.white.withOpacity(0.02)
+            //         : Colors.white.withOpacity(0.06),
+            //     theme.isDarkMode
+            //         ? Colors.white.withOpacity(0.01)
+            //         : Colors.white.withOpacity(0.03),
+            //   ],
+            // ),
+            // Keep the bottom border as before (same as watchlist)
+            border: Border(
+              bottom: BorderSide(
+                color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+              ),
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // Returns label on the left
+              TextWidget.subText(
+                text: "Returns",
+                theme: false,
+                color: theme.isDarkMode
+                    ? colors.textSecondaryDark
+                    : colors.textSecondaryLight,
+                fw: 0,
+              ),
+              // Returns value on the right with animation
+              Opacity(
+                opacity: 1.0 - _fadeAnimation.value * 0.3,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    TextWidget.subText(
+                      text: " ${_formatValue(mfData.mfholdingnew?.summary?.absReturnPercent?.toString())}%",
+                      theme: false,
+                      color: _getColorBasedOnValue(
+                        mfData.mfholdingnew?.summary?.absReturnPercent?.toString(),
+                        theme,
+                      ),
+                      fw: 0,
+                    ),
+                    const SizedBox(width: 4),
+                    TextWidget.headText(
+                      text: _formatValue(mfData.mfholdingnew?.summary?.absReturnValue),
+                      theme: false,
+                      color: _getColorBasedOnValue(
+                        mfData.mfholdingnew?.summary?.absReturnValue,
+                        theme,
+                      ),
+                      fw: 0,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -414,6 +590,7 @@ class MfHoldNewScreen extends ConsumerWidget {
     }
 
     return ListView.builder(
+      padding: EdgeInsets.zero,
       physics: const NeverScrollableScrollPhysics(),
       shrinkWrap: true,
       itemBuilder: (BuildContext context, int idx) {

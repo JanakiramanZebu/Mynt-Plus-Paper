@@ -45,16 +45,14 @@ class _IPOmainScreenState extends State<IPOScreen> {
           onTap: () {
             FocusScope.of(context).unfocus();
           },
-          child: SafeArea(
-            child: Scaffold(
-              appBar: widget.isIpo == true
-                  ? _buildAppBar(context, theme, ipo)
-                  : null,
-              body: IpoExploreScreens(
-                theme: theme,
-                initialTabIndex: widget.initialTabIndex,
-                onBoundaryReached: widget.onBoundaryReached,
-              ),
+          child: Scaffold(
+            appBar: widget.isIpo == true
+                ? _buildAppBar(context, theme, ipo)
+                : null,
+            body: IpoExploreScreens(
+              theme: theme,
+              initialTabIndex: widget.initialTabIndex,
+              onBoundaryReached: widget.onBoundaryReached,
             ),
           ),
         );

@@ -272,6 +272,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
               ],
             ),
           ),
+          // const SizedBox(height: 80),
         ],
       ),
     );
@@ -362,6 +363,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
                     return LayoutBuilder(
                       builder: (context, constraints) {
                         return ListView.separated(
+                          padding: EdgeInsets.zero,
                           shrinkWrap:
                               true, // Allow GridView to take only required space
                           physics:
@@ -700,6 +702,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
                 return LayoutBuilder(
                   builder: (context, constraints) {
                     return ListView.separated(
+                      padding: EdgeInsets.zero,
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       separatorBuilder: (_, __) => const ListDivider(),
@@ -786,6 +789,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
           //       fw: 1),
           // ),
           ListView.separated(
+            padding: EdgeInsets.zero,
             separatorBuilder: (_, __) => const ListDivider(),
             physics: const NeverScrollableScrollPhysics(),
             shrinkWrap: true,
