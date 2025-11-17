@@ -663,7 +663,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         child: Container(
           decoration: BoxDecoration(
             color: theme.isDarkMode
-                ? Colors.black.withOpacity(0.30)
+                ? Colors.black
                 : Colors.white.withOpacity(0.45),
             border: Border(
               top: BorderSide(
@@ -678,10 +678,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 end: Alignment.bottomRight,
                 colors: [
                   theme.isDarkMode
-                      ? Colors.white.withOpacity(0.03)
+                      ? Colors.black
                       : Colors.white.withOpacity(0.08),
                   theme.isDarkMode
-                      ? Colors.white.withOpacity(0.01)
+                      ? Colors.black
                       : Colors.white.withOpacity(0.04),
                 ],
               ) : null,

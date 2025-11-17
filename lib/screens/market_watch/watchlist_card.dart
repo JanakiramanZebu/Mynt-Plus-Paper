@@ -221,14 +221,26 @@ class _WatchlistCardState extends ConsumerState<WatchlistCard> {
                           showModalBottomSheet(
                             context: context,
                             isScrollControlled: true,
-                            backgroundColor: Colors.transparent,
-                            builder: (context) => DraggableScrollableSheet(
-                              initialChildSize: 0.6,
-                              minChildSize: 0.4,
-                              maxChildSize: 0.9,
-                              builder: (context, scrollController) => StockEventsDialog(
-                                stockToken: widget.watchListData['token'],
-                                stockName: widget.watchListData['symbol'],
+                            useSafeArea: true,
+                            isDismissible: true,
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(16),
+                                topRight: Radius.circular(16),
+                              ),
+                            ),
+                            enableDrag: true,
+                            builder: (context) => Container(
+                              padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+                              child: DraggableScrollableSheet(
+                                initialChildSize: 0.6,
+                                expand: false,
+                                minChildSize: 0.4,
+                                maxChildSize: 0.9,
+                                builder: (context, scrollController) => StockEventsDialog(
+                                  stockToken: widget.watchListData['token'],
+                                  stockName: widget.watchListData['symbol'],
+                                ),
                               ),
                             ),
                           );

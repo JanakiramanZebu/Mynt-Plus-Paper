@@ -164,151 +164,154 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen>
         countText = "";
       }
 
-      return Column(children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 100),
-            SizedBox(
-              width: MediaQuery.of(context).size.width,
-              height: 40,
-              child: TabBar(
-                onTap: (index) {
-                  setState(() {});
-                },
-                tabAlignment: TabAlignment.start,
-                indicatorSize: TabBarIndicatorSize.tab,
-                indicatorPadding: const EdgeInsets.symmetric(horizontal: 4),
-                isScrollable: true,
-                labelPadding: const EdgeInsets.only( left: 16, right: 12),
-                indicatorColor: theme.isDarkMode
-                    ? colors.secondaryDark
-                    : colors.secondaryLight,
-                unselectedLabelColor: theme.isDarkMode
-                    ? colors.textSecondaryDark
-                    : colors.textSecondaryLight,
-                unselectedLabelStyle: TextWidget.textStyle(
-                  fontSize: 14,
-                  theme: false,
-                  fw: 3,
-                ),
-                labelColor: theme.isDarkMode
-                    ? colors.secondaryDark
-                    : colors.secondaryLight,
-                labelStyle:
-                    TextWidget.textStyle(fontSize: 14, theme: false, fw: 3),
-                controller: portfolio.portTab,
-                tabs: List.generate(portfolio.portTabName.length, (index) {
-                  return AnimatedBuilder(
-                    animation: portfolio.portTab.animation!,
-                    builder: (context, child) {
-                      final isSelected = portfolio.portTab.index == index;
-                      final animationValue = portfolio.portTab.animation!.value;
-                      final isTransitioning =
-                          (animationValue - index).abs() < 1;
-
-                      final color = isTransitioning
-                          ? Color.lerp(
-                              theme.isDarkMode
-                                  ? colors.textSecondaryDark
-                                  : colors.textSecondaryLight,
-                              theme.isDarkMode
-                                  ? colors.secondaryDark
-                                  : colors.secondaryLight,
-                              1 - (animationValue - index).abs())
-                          : isSelected
-                              ? theme.isDarkMode
-                                  ? colors.secondaryDark
-                                  : colors.secondaryLight
-                              : theme.isDarkMode
-                                  ? colors.textSecondaryDark
-                                  : colors.textSecondaryLight;
-
-                      return Tab(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            TextWidget.subText(
-                              text: index == 0
-                                  ? "Holding${portfolio.holdingsModel!.isNotEmpty ? "s" : ""}"
-                                  : index == 1
-                                      ? "Position${portfolio.allPostionList.isNotEmpty ? "s" : ""}"
-                                      : index == 2
-                                          ? "Orders"
-                                          : "Funds",
-                              theme: false,
-                              color: color,
-                              fw: isSelected ? 2 : 2,
-                            ),
-                            const SizedBox(width: 5),
-                            if ((index == 0 &&
-                                    (portfolio.holdingsModel?.isNotEmpty ??
-                                        false)) ||
-                                (index == 1 &&
-                                    portfolio.allPostionList.isNotEmpty))
-                              Container(
-                                margin: const EdgeInsets.only(bottom: 8),
-                                child: TextWidget.paraText(
-                                  text: index == 0
-                                      ? (portfolio.holdingsModel?.isNotEmpty ??
-                                              false
-                                          ? "${portfolio.holdingsModel!.length}"
-                                          : "")
-                                      : index == 1
-                                          ? (portfolio.allPostionList.isNotEmpty
-                                              ? "${portfolio.allPostionList.length}"
-                                              : "")
-                                          : "",
-                                  theme: false,
-                                  color: color,
-                                  fw: isSelected ? 2 : 0,
-                                ),
+      return Padding(
+        padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top, bottom: MediaQuery.of(context).padding.bottom),
+        child: Column(children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // const SizedBox(height: 100),
+              SizedBox(
+                width: MediaQuery.of(context).size.width,
+                height: 40,
+                child: TabBar(
+                  onTap: (index) {
+                    setState(() {});
+                  },
+                  tabAlignment: TabAlignment.start,
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  indicatorPadding: const EdgeInsets.symmetric(horizontal: 4),
+                  isScrollable: true,
+                  labelPadding: const EdgeInsets.only( left: 16, right: 12),
+                  indicatorColor: theme.isDarkMode
+                      ? colors.secondaryDark
+                      : colors.secondaryLight,
+                  unselectedLabelColor: theme.isDarkMode
+                      ? colors.textSecondaryDark
+                      : colors.textSecondaryLight,
+                  unselectedLabelStyle: TextWidget.textStyle(
+                    fontSize: 14,
+                    theme: false,
+                    fw: 3,
+                  ),
+                  labelColor: theme.isDarkMode
+                      ? colors.secondaryDark
+                      : colors.secondaryLight,
+                  labelStyle:
+                      TextWidget.textStyle(fontSize: 14, theme: false, fw: 3),
+                  controller: portfolio.portTab,
+                  tabs: List.generate(portfolio.portTabName.length, (index) {
+                    return AnimatedBuilder(
+                      animation: portfolio.portTab.animation!,
+                      builder: (context, child) {
+                        final isSelected = portfolio.portTab.index == index;
+                        final animationValue = portfolio.portTab.animation!.value;
+                        final isTransitioning =
+                            (animationValue - index).abs() < 1;
+        
+                        final color = isTransitioning
+                            ? Color.lerp(
+                                theme.isDarkMode
+                                    ? colors.textSecondaryDark
+                                    : colors.textSecondaryLight,
+                                theme.isDarkMode
+                                    ? colors.secondaryDark
+                                    : colors.secondaryLight,
+                                1 - (animationValue - index).abs())
+                            : isSelected
+                                ? theme.isDarkMode
+                                    ? colors.secondaryDark
+                                    : colors.secondaryLight
+                                : theme.isDarkMode
+                                    ? colors.textSecondaryDark
+                                    : colors.textSecondaryLight;
+        
+                        return Tab(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              TextWidget.subText(
+                                text: index == 0
+                                    ? "Holding${portfolio.holdingsModel!.isNotEmpty ? "s" : ""}"
+                                    : index == 1
+                                        ? "Position${portfolio.allPostionList.isNotEmpty ? "s" : ""}"
+                                        : index == 2
+                                            ? "Orders"
+                                            : "Funds",
+                                theme: false,
+                                color: color,
+                                fw: isSelected ? 2 : 2,
                               ),
-                          ],
-                        ),
-                      );
-                    },
-                  );
-                }),
+                              const SizedBox(width: 5),
+                              if ((index == 0 &&
+                                      (portfolio.holdingsModel?.isNotEmpty ??
+                                          false)) ||
+                                  (index == 1 &&
+                                      portfolio.allPostionList.isNotEmpty))
+                                Container(
+                                  margin: const EdgeInsets.only(bottom: 8),
+                                  child: TextWidget.paraText(
+                                    text: index == 0
+                                        ? (portfolio.holdingsModel?.isNotEmpty ??
+                                                false
+                                            ? "${portfolio.holdingsModel!.length}"
+                                            : "")
+                                        : index == 1
+                                            ? (portfolio.allPostionList.isNotEmpty
+                                                ? "${portfolio.allPostionList.length}"
+                                                : "")
+                                            : "",
+                                    theme: false,
+                                    color: color,
+                                    fw: isSelected ? 2 : 0,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        );
+                      },
+                    );
+                  }),
+                ),
               ),
-            ),
-            Divider(
-              height: 1,
-              thickness: 1,
-              color:
-                  theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-            ),
-          ],
-        ),
-        Expanded(
-          // child: TransparentLoaderScreen(
-          // isLoading: portfolio.loading,
-          child: TabBarView(controller: portfolio.portTab, children: [
-            portfolio.holdingsTabController.index == 0 ?
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildTabBar(context, ref),
-                Expanded(child: const HoldingScreen()),
-              ],
-            ) : Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-               _buildTabBar(context, ref),
-                Expanded(child: const MfHoldNewScreen()),
-              ],
-            ),
-            PositionScreen(listofPosition: portfolio.allPostionList),
-            const OrdersTabView(),
-            const SecureFund(),
-            //   ]
-            // ],
-            // const Allholdings()
-          ]),
-          // )
-        ),
-      ]);
+              Divider(
+                height: 1,
+                thickness: 1,
+                color:
+                    theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+              ),
+            ],
+          ),
+          Expanded(
+            // child: TransparentLoaderScreen(
+            // isLoading: portfolio.loading,
+            child: TabBarView(controller: portfolio.portTab, children: [
+              portfolio.holdingsTabController.index == 0 ?
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildTabBar(context, ref),
+                  Expanded(child: const HoldingScreen()),
+                ],
+              ) : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                 _buildTabBar(context, ref),
+                  Expanded(child: const MfHoldNewScreen()),
+                ],
+              ),
+              PositionScreen(listofPosition: portfolio.allPostionList),
+              const OrdersTabView(),
+              const SecureFund(),
+              //   ]
+              // ],
+              // const Allholdings()
+            ]),
+            // )
+          ),
+        ]),
+      );
     });
   }
 }

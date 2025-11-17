@@ -52,49 +52,52 @@ class StockEventsDialog extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       TextWidget.titleText(
-                        text: 'Corporate Actions',
-                        theme: theme.isDarkMode,
-                        fw: 1,
-                      ),
-                      const SizedBox(height: 4),
-                      TextWidget.paraText(
                         text: stockName.replaceAll("-EQ", "").toUpperCase(),
-                        color: theme.isDarkMode
-                            ? colors.textSecondaryDark
-                            : colors.textSecondaryLight,
                         theme: theme.isDarkMode,
                         fw: 0,
+                        color: theme.isDarkMode
+                        ? colors.textPrimaryDark
+                        : colors.textPrimaryLight,
                       ),
+                      // const SizedBox(height: 4),
+                      // TextWidget.paraText(
+                      //   text: ,
+                      //   color: theme.isDarkMode
+                      //       ? colors.textSecondaryDark
+                      //       : colors.textSecondaryLight,
+                      //   theme: theme.isDarkMode,
+                      //   fw: 0,
+                      // ),
                     ],
                   ),
                 ),
-                Material(
-                  color: Colors.transparent,
-                  shape: const CircleBorder(),
-                  child: InkWell(
-                    onTap: () async {
-                      await Future.delayed(const Duration(milliseconds: 150));
-                      Navigator.pop(context);
-                    },
-                    borderRadius: BorderRadius.circular(20),
-                    splashColor: theme.isDarkMode
-                        ? Colors.white.withOpacity(0.15)
-                        : Colors.black.withOpacity(0.15),
-                    highlightColor: theme.isDarkMode
-                        ? Colors.white.withOpacity(0.08)
-                        : Colors.black.withOpacity(0.08),
-                    child: Padding(
-                      padding: const EdgeInsets.all(6.0),
-                      child: Icon(
-                        Icons.close_rounded,
-                        size: 22,
-                        color: theme.isDarkMode
-                            ? const Color(0xffBDBDBD)
-                            : colors.colorGrey,
-                      ),
-                    ),
-                  ),
-                )
+                // Material(
+                //   color: Colors.transparent,
+                //   shape: const CircleBorder(),
+                //   child: InkWell(
+                //     onTap: () async {
+                //       await Future.delayed(const Duration(milliseconds: 150));
+                //       Navigator.pop(context);
+                //     },
+                //     borderRadius: BorderRadius.circular(20),
+                //     splashColor: theme.isDarkMode
+                //         ? Colors.white.withOpacity(0.15)
+                //         : Colors.black.withOpacity(0.15),
+                //     highlightColor: theme.isDarkMode
+                //         ? Colors.white.withOpacity(0.08)
+                //         : Colors.black.withOpacity(0.08),
+                //     child: Padding(
+                //       padding: const EdgeInsets.all(6.0),
+                //       child: Icon(
+                //         Icons.close_rounded,
+                //         size: 22,
+                //         color: theme.isDarkMode
+                //             ? const Color(0xffBDBDBD)
+                //             : colors.colorGrey,
+                //       ),
+                //     ),
+                //   ),
+                // )
               ],
             ),
           ),

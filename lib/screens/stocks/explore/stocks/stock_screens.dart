@@ -228,393 +228,241 @@ class _StockScreenState extends ConsumerState<StockScreen>
       },
       child: Consumer(builder: (context, ref, child) {
         return SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-                         
-              const SizedBox(height: 150),
-            const AutoLoadTextNuggetWidget(
-              screenType: TextNuggetScreenType.homescreen,
-            ),
-              
-              const TopIndices(),
-
-              // const Padding(
-              //   padding: EdgeInsets.symmetric(horizontal: 16),
-              //   child: Column(
-              //     children: [
-              //       // Row(
-              //       //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              //       //     children: [
-              //       //       TextWidget.titleText(
-              //       //         text: "Live IPOs",
-              //       //         theme: false,
-              //       //         color: theme.isDarkMode
-              //       //             ? colors.textPrimaryDark
-              //       //             : colors.textPrimaryLight,
-              //       //         fw: 1,
-              //       //       ),
-              //       //       // TextButton(
-              //       //       //     onPressed: () {
-              //       //       //       Navigator.pushNamed(context, Routes.ipo);
-              //       //       //     },
-              //       //       //     child: const Text('See all',
-              //       //       //         style: TextStyle(
-              //       //       //             color: Color(0xff0037B7),
-              //       //       //             fontSize: 14,
-              //       //       //             fontWeight: FontWeight.w600)))
-              //       //     ]),
-              //       LiveIPOList(),
-              //     ],
-              //   ),
-              // ),
-              // const SizedBox(
-              //   height: 16,
-              // ),
-              Container(
-                margin: const EdgeInsets.only(left: 16, right: 16, top: 0,bottom: 16),
-      decoration: BoxDecoration(
-                  color: theme.isDarkMode
-                        ? colors.colorBlack
-                        : colors.colorWhite,
-                  borderRadius: BorderRadius.circular(5),
-        border: Border.all(
-          color: theme.isDarkMode
-                                ? colors.darkColorDivider
-                                : colors.colorDivider,
-                          ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header: icon + title + Add Money
-          Padding(
-                      padding: const EdgeInsets.all(
-                          16),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          child: Padding(
+            padding: EdgeInsets.only(top:MediaQuery.of(context).padding.top, bottom: MediaQuery.of(context).padding.bottom),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        color: theme.isDarkMode
-                                        ? colors.darkGrey
-                                        : const Color(0xffF1F3F8),
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: SvgPicture.asset(
-                          "assets/icon/briefcase.svg",
-                          width: 14,
-                          height: 14,
-                          color: theme.isDarkMode
-                              ? colors.textSecondaryDark
-                              : colors.primaryLight,
-                        ),
-                                  )),
-                    const SizedBox(width: 12),
-                    TextWidget.subText(
-                      text: "Portfolio",
-                      theme: false,
-                                color: theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : colors.colorBlack,
-                      fw: 2,
-                    ),
-                  ],
-                ),
-                          // const SizedBox(width: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    InkWell(
-                      canRequestFocus: false,
-                      onTap: () async {
-                                  Future.delayed(
-                                      const Duration(milliseconds: 150), () {
-                          trancation.changebool(true);
-                                    Navigator.pushNamed(
-                                        context, Routes.fundscreen,
-                                        arguments: trancation);
-                        });
-                      },
-                      child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 8, vertical: 4),
-                        child: TextWidget.subText(
-                          text: "Add Money",
-                          theme: false,
-                                    color: theme.isDarkMode
-                                        ? colors.primaryDark
-                                        : colors.primaryLight,
-                          fw: 2,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 5),
-
-                   Container(
-                              margin: const EdgeInsets.symmetric(horizontal: 16),
-                              height: 35,
-                              child: TabBar(
-                                controller: _statabController,
-                                tabAlignment: TabAlignment.start,
-                                isScrollable: true,
-                                indicatorSize: TabBarIndicatorSize.tab,
-                                indicatorColor: colors.colorWhite,
-                                indicator: BoxDecoration(
-                                            color: theme.isDarkMode
-                                  ? colors.searchBgDark
-                                  : const Color(0xffF1F3F8),
-                              borderRadius: BorderRadius.circular(5),
-                                ),
-                                unselectedLabelColor: theme.isDarkMode
-                                    ? colors.textSecondaryDark
-                                    : colors.textSecondaryLight,
-                                labelStyle: TextWidget.textStyle(
-                                    fontSize: 14,
-                                    theme: false,
-                                    fw: 2,
-                                    color: theme.isDarkMode
-                                        ? colors.textPrimaryDark
-                                        : colors.textPrimaryLight),
-                                unselectedLabelStyle: TextWidget.textStyle(
-                                    fontSize: 14,
-                                    theme: false,
-                                    fw: 3,
-                                    color: colors.textSecondaryLight),
-                                labelPadding: const EdgeInsets.symmetric(horizontal: 8),
-                                tabs: const [
-                                  Tab(text: "Equity"),
-                                  Tab(text: "Mutual Fund"),
-                                  Tab(text: "Position"),
-                                  Tab(text: "Funds"),
-                                ],
-                              ),
+                           
+                // const SizedBox(height: 150),
+              const AutoLoadTextNuggetWidget(
+                screenType: TextNuggetScreenType.homescreen,
+              ),
+                
+                const TopIndices(),
+            
+                // const Padding(
+                //   padding: EdgeInsets.symmetric(horizontal: 16),
+                //   child: Column(
+                //     children: [
+                //       // Row(
+                //       //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                //       //     children: [
+                //       //       TextWidget.titleText(
+                //       //         text: "Live IPOs",
+                //       //         theme: false,
+                //       //         color: theme.isDarkMode
+                //       //             ? colors.textPrimaryDark
+                //       //             : colors.textPrimaryLight,
+                //       //         fw: 1,
+                //       //       ),
+                //       //       // TextButton(
+                //       //       //     onPressed: () {
+                //       //       //       Navigator.pushNamed(context, Routes.ipo);
+                //       //       //     },
+                //       //       //     child: const Text('See all',
+                //       //       //         style: TextStyle(
+                //       //       //             color: Color(0xff0037B7),
+                //       //       //             fontSize: 14,
+                //       //       //             fontWeight: FontWeight.w600)))
+                //       //     ]),
+                //       LiveIPOList(),
+                //     ],
+                //   ),
+                // ),
+                // const SizedBox(
+                //   height: 16,
+                // ),
+                Container(
+                  margin: const EdgeInsets.only(left: 16, right: 16, top: 0,bottom: 16),
+                  decoration: BoxDecoration(
+                    color: theme.isDarkMode
+                          ? colors.colorBlack
+                          : colors.colorWhite,
+                    borderRadius: BorderRadius.circular(5),
+                    border: Border.all(
+            color: theme.isDarkMode
+                                  ? colors.darkColorDivider
+                                  : colors.colorDivider,
                             ),
-          const SizedBox(height: 5),
-                    // if (portfolio.holdingsModel != null &&
-                    //             portfolio.holdingsModel!.isNotEmpty)
-          Material(
-            color: Colors.transparent,
-            shape: const RoundedRectangleBorder(),
-            child: InkWell(
-              canRequestFocus: false,
-              customBorder: const RoundedRectangleBorder(),
-                        splashColor: theme.isDarkMode
-                            ? colors.splashColorDark
-                            : colors.splashColorLight,
-                        highlightColor: theme.isDarkMode
-                            ? colors.highlightDark
-                            : colors.highlightLight,
-              onTap: () {
-                          if(_statabController.index == 0){
-                  Future.delayed(const Duration(milliseconds: 150), () {
-                    indexList.bottomMenu(2, context);
-                    portfolio.changeTabIndex(0);
-                    portfolio.changeHoldingsTabIndex(0);
-                  });
-                          }
-                          else if(_statabController.index == 1){
-                  Future.delayed(const Duration(milliseconds: 150), () {
-                    indexList.bottomMenu(2, context);
-                    portfolio.changeTabIndex(0);
-                    portfolio.changeHoldingsTabIndex(1);
-                  });
-                          }
-                          else if(_statabController.index == 2){
-                  Future.delayed(const Duration(milliseconds: 150), () {
-                    indexList.bottomMenu(2, context);
-                    portfolio.changeTabIndex(1);
-                  });
-                          }
-                          else if(_statabController.index == 3){
-                  Future.delayed(const Duration(milliseconds: 150), () {
-                    indexList.bottomMenu(2, context);
-                    portfolio.changeTabIndex(3);
-                  });
-                }
-              },
-              child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 14),
-                decoration: BoxDecoration(
-                            // color: colors.colorWhite,
-                  borderRadius: BorderRadius.circular(5),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                                 if(_statabController.index == 2)
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            Column(
-                              children: [
-                                TextWidget.subText(
-                                  text: _getRightLabel(_statabController.index),
-                                  theme: false,
-                                        color: theme.isDarkMode
-                                            ? colors.textSecondaryDark
-                                            : colors.textSecondaryLight,
-                                  fw: 0,
-                                  align: TextAlign.center,
-                                ),
-                                TextWidget.titleText(
-                                  text: formatAmountCompact(double.parse(pnlData['percentage'].toString())),
-                                  theme: false,
-                                            color: pnlData['percentage']
-                                                        .toString()
-                                                        .startsWith("-")
-                                                    ? theme.isDarkMode ? colors.lossDark : colors.lossLight : pnlData['percentage'] == "NaN" || pnlData['percentage'] == "0.00" ?
-                                                   theme.isDarkMode
-                                                      ? colors.textPrimaryDark
-                                                      : colors.textPrimaryLight :
-                                                   theme.isDarkMode
-                                                      ? colors.successDark
-                                                      : colors.successLight,
-                                  fw: 0,
-                                ),
-                              ],
-                            ),
-                            Container(
-                              margin: const EdgeInsets.symmetric(horizontal: 16),
-                              height: 30, // adjust height as needed
-                              width: 1,
-                              color: theme.isDarkMode
-                                  ? colors.textSecondaryDark.withOpacity(0.3)
-                                  : colors.textSecondaryLight.withOpacity(0.3),
-                            ),
-                            Column(
-                              children: [
-                                TextWidget.subText(
-                                  text: pnlData['label'],
-                                  theme: false,
-                                          color: theme.isDarkMode
-                                              ? colors.textSecondaryDark
-                                              : colors.textSecondaryLight,
-                                  fw: 0,
-                                  align: TextAlign.center,
-                                ),
-                                TextWidget.titleText(
-                                              text:
-                                                  "${getFormatter(value: totalCurrentVal, v4d: false, noDecimal: false)}",
-                                  theme: false,
-                                              color: totalCurrentVal
-                                                      .toString()
-                                                      .startsWith("-")
-                                                   ?  theme.isDarkMode ? colors.lossDark : colors.lossLight : totalCurrentVal.toDouble() == 0 ?
-                                                   theme.isDarkMode
-                                                      ? colors.textPrimaryDark
-                                                      : colors.textPrimaryLight :
-                                                   theme.isDarkMode
-                                                      ? colors.successDark
-                                                      : colors.successLight,
-                                  fw: 0,
-                                ),
-                                          
-                              ],
-                            ),
-                                
-                          ],
+            // Header: icon + title + Add Money
+            Padding(
+                        padding: const EdgeInsets.all(
+                            16),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          color: theme.isDarkMode
+                                          ? colors.darkGrey
+                                          : const Color(0xffF1F3F8),
+                          borderRadius: BorderRadius.circular(30),
                         ),
-                                if(_statabController.index != 2)
-                        Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            TextWidget.subText(
-                              text: pnlData['label'],
-                              theme: false,
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: SvgPicture.asset(
+                            "assets/icon/briefcase.svg",
+                            width: 14,
+                            height: 14,
+                            color: theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.primaryLight,
+                          ),
+                                    )),
+                      const SizedBox(width: 12),
+                      TextWidget.subText(
+                        text: "Portfolio",
+                        theme: false,
+                                  color: theme.isDarkMode
+                                      ? colors.colorWhite
+                                      : colors.colorBlack,
+                        fw: 2,
+                      ),
+                    ],
+                  ),
+                            // const SizedBox(width: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      InkWell(
+                        canRequestFocus: false,
+                        onTap: () async {
+                                    Future.delayed(
+                                        const Duration(milliseconds: 150), () {
+                            trancation.changebool(true);
+                                      Navigator.pushNamed(
+                                          context, Routes.fundscreen,
+                                          arguments: trancation);
+                          });
+                        },
+                        child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 4),
+                          child: TextWidget.subText(
+                            text: "Add Money",
+                            theme: false,
                                       color: theme.isDarkMode
-                                          ? colors.textSecondaryDark
-                                          : colors.textSecondaryLight,
-                              fw: 0,
-                            ),
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                TextWidget.titleText(
-                                          text:
-                                              "${getFormatter(value: totalCurrentVal, v4d: false, noDecimal: false)}",
-                                  theme: false,
-                                          color: totalCurrentVal
-                                                  .toString()
-                                                  .startsWith("-")
-                                               ?  theme.isDarkMode ? colors.lossDark : colors.lossLight : totalCurrentVal.toDouble() == 0 ?
-                                               theme.isDarkMode
-                                                  ? colors.textPrimaryDark
-                                                  : colors.textPrimaryLight :
-                                               theme.isDarkMode
-                                                  ? colors.successDark
-                                                  : colors.successLight,
-                                  fw: 0,
-                                ),
-                                        if (_statabController.index != 2 && _statabController.index != 3) // Don't show percentage for Position tab
-                                  TextWidget.paraText(
-                                    text:
-                                        " (${pnlData['percentage'] == "NaN" ? 0.00 : pnlData['percentage']}%)",
-                                    theme: false,
-                                            color: pnlData['percentage']
-                                                    .toString()
-                                                    .startsWith("-")
-                                                ? theme.isDarkMode ? colors.lossDark : colors.lossLight : pnlData['percentage'] == "NaN" || pnlData['percentage'] == "0" || pnlData['percentage'] == "0.00" ?
-                                               theme.isDarkMode
-                                                  ? colors.textPrimaryDark
-                                                  : colors.textPrimaryLight :
-                                               theme.isDarkMode
-                                                  ? colors.successDark
-                                                  : colors.successLight,
-                                    fw: 0,
-                                  ),
-                              ],
-                            ),
-                          ],
+                                          ? colors.primaryDark
+                                          : colors.primaryLight,
+                            fw: 2,
+                          ),
                         ),
-                      const SizedBox(height: 10),
-                                if(_statabController.index != 2)
-                        Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                                    if (_statabController.index != 2)...[
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  TextWidget.subText(
-                                    text: _getLeftLabel(_statabController.index),
-                                    theme: false,
-                                          color: theme.isDarkMode
-                                              ? colors.textSecondaryDark
-                                              : colors.textSecondaryLight,
-                                    fw: 0,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 5),
+            
+                     Container(
+                                margin: const EdgeInsets.symmetric(horizontal: 16),
+                                height: 35,
+                                child: TabBar(
+                                  controller: _statabController,
+                                  tabAlignment: TabAlignment.start,
+                                  isScrollable: true,
+                                  indicatorSize: TabBarIndicatorSize.tab,
+                                  indicatorColor: colors.colorWhite,
+                                  indicator: BoxDecoration(
+                                              color: theme.isDarkMode
+                                    ? colors.searchBgDark
+                                    : const Color(0xffF1F3F8),
+                                borderRadius: BorderRadius.circular(5),
                                   ),
-                                  TextWidget.paraText(
-                                          text: formatAmountCompact(
-                                              double.parse(_totalPnlHolding)),
-                                    theme: false,
-                                          color: theme.isDarkMode
-                                              ? colors.colorWhite
-                                              : colors.colorBlack,
-                                    fw: 0,
-                                  ),
-                                ],
+                                  unselectedLabelColor: theme.isDarkMode
+                                      ? colors.textSecondaryDark
+                                      : colors.textSecondaryLight,
+                                  labelStyle: TextWidget.textStyle(
+                                      fontSize: 14,
+                                      theme: false,
+                                      fw: 2,
+                                      color: theme.isDarkMode
+                                          ? colors.textPrimaryDark
+                                          : colors.textPrimaryLight),
+                                  unselectedLabelStyle: TextWidget.textStyle(
+                                      fontSize: 14,
+                                      theme: false,
+                                      fw: 3,
+                                      color: colors.textSecondaryLight),
+                                  labelPadding: const EdgeInsets.symmetric(horizontal: 8),
+                                  tabs: const [
+                                    Tab(text: "Equity"),
+                                    Tab(text: "Mutual Fund"),
+                                    Tab(text: "Position"),
+                                    Tab(text: "Funds"),
+                                  ],
+                                ),
                               ),
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.end,
+            const SizedBox(height: 5),
+                      // if (portfolio.holdingsModel != null &&
+                      //             portfolio.holdingsModel!.isNotEmpty)
+            Material(
+              color: Colors.transparent,
+              shape: const RoundedRectangleBorder(),
+              child: InkWell(
+                canRequestFocus: false,
+                customBorder: const RoundedRectangleBorder(),
+                          splashColor: theme.isDarkMode
+                              ? colors.splashColorDark
+                              : colors.splashColorLight,
+                          highlightColor: theme.isDarkMode
+                              ? colors.highlightDark
+                              : colors.highlightLight,
+                onTap: () {
+                            if(_statabController.index == 0){
+                    Future.delayed(const Duration(milliseconds: 150), () {
+                      indexList.bottomMenu(2, context);
+                      portfolio.changeTabIndex(0);
+                      portfolio.changeHoldingsTabIndex(0);
+                    });
+                            }
+                            else if(_statabController.index == 1){
+                    Future.delayed(const Duration(milliseconds: 150), () {
+                      indexList.bottomMenu(2, context);
+                      portfolio.changeTabIndex(0);
+                      portfolio.changeHoldingsTabIndex(1);
+                    });
+                            }
+                            else if(_statabController.index == 2){
+                    Future.delayed(const Duration(milliseconds: 150), () {
+                      indexList.bottomMenu(2, context);
+                      portfolio.changeTabIndex(1);
+                    });
+                            }
+                            else if(_statabController.index == 3){
+                    Future.delayed(const Duration(milliseconds: 150), () {
+                      indexList.bottomMenu(2, context);
+                      portfolio.changeTabIndex(3);
+                    });
+                  }
+                },
+                child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 14),
+                  decoration: BoxDecoration(
+                              // color: colors.colorWhite,
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                                   if(_statabController.index == 2)
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Column(
                                 children: [
                                   TextWidget.subText(
                                     text: _getRightLabel(_statabController.index),
@@ -623,752 +471,907 @@ class _StockScreenState extends ConsumerState<StockScreen>
                                               ? colors.textSecondaryDark
                                               : colors.textSecondaryLight,
                                     fw: 0,
+                                    align: TextAlign.center,
                                   ),
-                                  TextWidget.paraText(
-                                    text: _statabController.index == 2
-                                        ? formatAmountCompact(double.parse(pnlData['percentage'].toString()))
-                                        : formatAmountCompact(double.parse(_totalCurrentVal)),
+                                  TextWidget.titleText(
+                                    text: formatAmountCompact(double.parse(pnlData['percentage'].toString())),
                                     theme: false,
-                                          color: theme.isDarkMode
-                                              ? colors.colorWhite
-                                              : colors.colorBlack,
+                                              color: pnlData['percentage']
+                                                          .toString()
+                                                          .startsWith("-")
+                                                      ? theme.isDarkMode ? colors.lossDark : colors.lossLight : pnlData['percentage'] == "NaN" || pnlData['percentage'] == "0.00" ?
+                                                     theme.isDarkMode
+                                                        ? colors.textPrimaryDark
+                                                        : colors.textPrimaryLight :
+                                                     theme.isDarkMode
+                                                        ? colors.successDark
+                                                        : colors.successLight,
                                     fw: 0,
                                   ),
                                 ],
                               ),
-                                    ]else...[
+                              Container(
+                                margin: const EdgeInsets.symmetric(horizontal: 16),
+                                height: 30, // adjust height as needed
+                                width: 1,
+                                color: theme.isDarkMode
+                                    ? colors.textSecondaryDark.withOpacity(0.3)
+                                    : colors.textSecondaryLight.withOpacity(0.3),
+                              ),
+                              Column(
+                                children: [
+                                  TextWidget.subText(
+                                    text: pnlData['label'],
+                                    theme: false,
+                                            color: theme.isDarkMode
+                                                ? colors.textSecondaryDark
+                                                : colors.textSecondaryLight,
+                                    fw: 0,
+                                    align: TextAlign.center,
+                                  ),
+                                  TextWidget.titleText(
+                                                text:
+                                                    "${getFormatter(value: totalCurrentVal, v4d: false, noDecimal: false)}",
+                                    theme: false,
+                                                color: totalCurrentVal
+                                                        .toString()
+                                                        .startsWith("-")
+                                                     ?  theme.isDarkMode ? colors.lossDark : colors.lossLight : totalCurrentVal.toDouble() == 0 ?
+                                                     theme.isDarkMode
+                                                        ? colors.textPrimaryDark
+                                                        : colors.textPrimaryLight :
+                                                     theme.isDarkMode
+                                                        ? colors.successDark
+                                                        : colors.successLight,
+                                    fw: 0,
+                                  ),
+                                            
+                                ],
+                              ),
+                                  
+                            ],
+                          ),
+                                  if(_statabController.index != 2)
+                          Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
                               TextWidget.subText(
-                                text: _getRightLabel(_statabController.index),
+                                text: pnlData['label'],
                                 theme: false,
                                         color: theme.isDarkMode
                                             ? colors.textSecondaryDark
                                             : colors.textSecondaryLight,
                                 fw: 0,
                               ),
-                              TextWidget.titleText(
-                                text: formatAmountCompact(double.parse(pnlData['percentage'].toString())),
-                                theme: false,
-                                        color: pnlData['percentage']
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  TextWidget.titleText(
+                                            text:
+                                                "${getFormatter(value: totalCurrentVal, v4d: false, noDecimal: false)}",
+                                    theme: false,
+                                            color: totalCurrentVal
                                                     .toString()
                                                     .startsWith("-")
-                                                ? theme.isDarkMode ? colors.lossDark : colors.lossLight : pnlData['percentage'] == "NaN" || pnlData['percentage'] == "0.00" ?
-                                               theme.isDarkMode
-                                                  ? colors.textPrimaryDark
-                                                  : colors.textPrimaryLight :
-                                               theme.isDarkMode
-                                                  ? colors.successDark
-                                                  : colors.successLight,
-                                fw: 0,
+                                                 ?  theme.isDarkMode ? colors.lossDark : colors.lossLight : totalCurrentVal.toDouble() == 0 ?
+                                                 theme.isDarkMode
+                                                    ? colors.textPrimaryDark
+                                                    : colors.textPrimaryLight :
+                                                 theme.isDarkMode
+                                                    ? colors.successDark
+                                                    : colors.successLight,
+                                    fw: 0,
+                                  ),
+                                          if (_statabController.index != 2 && _statabController.index != 3) // Don't show percentage for Position tab
+                                    TextWidget.paraText(
+                                      text:
+                                          " (${pnlData['percentage'] == "NaN" ? 0.00 : pnlData['percentage']}%)",
+                                      theme: false,
+                                              color: pnlData['percentage']
+                                                      .toString()
+                                                      .startsWith("-")
+                                                  ? theme.isDarkMode ? colors.lossDark : colors.lossLight : pnlData['percentage'] == "NaN" || pnlData['percentage'] == "0" || pnlData['percentage'] == "0.00" ?
+                                                 theme.isDarkMode
+                                                    ? colors.textPrimaryDark
+                                                    : colors.textPrimaryLight :
+                                                 theme.isDarkMode
+                                                    ? colors.successDark
+                                                    : colors.successLight,
+                                      fw: 0,
+                                    ),
+                                ],
                               ),
                             ],
-                          ],
-                                )
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 5),
-                if(_statabController.index == 0)...[
-            Container(
-                      padding: const EdgeInsets.only(left: 16,right: 16,bottom: 8),
-                      // margin: const EdgeInsets.only(top: 4),
-              child: Material(
-                color: Colors.transparent,
-                shape: const RoundedRectangleBorder(),
-                child: InkWell(
-                          // canRequestFocus: false,
-                  customBorder: const RoundedRectangleBorder(),
-                          splashColor: theme.isDarkMode
-                              ? colors.splashColorDark
-                              : colors.splashColorLight,
-                          highlightColor: theme.isDarkMode
-                              ? colors.highlightDark
-                              : colors.highlightLight,
-                  onTap: () {
-                    Future.delayed(const Duration(milliseconds: 150), () {
-                              Navigator.pushNamed(
-                                  context, Routes.portfolioDashboard);
-                    });
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Row(
-                              // mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        TextWidget.subText(
-                          text: "Portfolio insights",
-                          theme: false,
-                                  color: theme.isDarkMode
-                                      ? colors.primaryDark
-                                      : colors.primaryLight,
-                          fw: 2,
-                        ),
-                        const SizedBox(width: 6),
-                        SvgPicture.asset(
-                          assets.leftArrow,
-                                  // width: 12,
-                                  // height: 12,
-                                  color: theme.isDarkMode
-                                      ? colors.primaryDark
-                                      : colors.primaryDark,
-                          fit: BoxFit.scaleDown,
-                        ),
+                          ),
+                        const SizedBox(height: 10),
+                                  if(_statabController.index != 2)
+                          Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                                      if (_statabController.index != 2)...[
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    TextWidget.subText(
+                                      text: _getLeftLabel(_statabController.index),
+                                      theme: false,
+                                            color: theme.isDarkMode
+                                                ? colors.textSecondaryDark
+                                                : colors.textSecondaryLight,
+                                      fw: 0,
+                                    ),
+                                    TextWidget.paraText(
+                                            text: formatAmountCompact(
+                                                double.parse(_totalPnlHolding)),
+                                      theme: false,
+                                            color: theme.isDarkMode
+                                                ? colors.colorWhite
+                                                : colors.colorBlack,
+                                      fw: 0,
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    TextWidget.subText(
+                                      text: _getRightLabel(_statabController.index),
+                                      theme: false,
+                                            color: theme.isDarkMode
+                                                ? colors.textSecondaryDark
+                                                : colors.textSecondaryLight,
+                                      fw: 0,
+                                    ),
+                                    TextWidget.paraText(
+                                      text: _statabController.index == 2
+                                          ? formatAmountCompact(double.parse(pnlData['percentage'].toString()))
+                                          : formatAmountCompact(double.parse(_totalCurrentVal)),
+                                      theme: false,
+                                            color: theme.isDarkMode
+                                                ? colors.colorWhite
+                                                : colors.colorBlack,
+                                      fw: 0,
+                                    ),
+                                  ],
+                                ),
+                                      ]else...[
+                                TextWidget.subText(
+                                  text: _getRightLabel(_statabController.index),
+                                  theme: false,
+                                          color: theme.isDarkMode
+                                              ? colors.textSecondaryDark
+                                              : colors.textSecondaryLight,
+                                  fw: 0,
+                                ),
+                                TextWidget.titleText(
+                                  text: formatAmountCompact(double.parse(pnlData['percentage'].toString())),
+                                  theme: false,
+                                          color: pnlData['percentage']
+                                                      .toString()
+                                                      .startsWith("-")
+                                                  ? theme.isDarkMode ? colors.lossDark : colors.lossLight : pnlData['percentage'] == "NaN" || pnlData['percentage'] == "0.00" ?
+                                                 theme.isDarkMode
+                                                    ? colors.textPrimaryDark
+                                                    : colors.textPrimaryLight :
+                                                 theme.isDarkMode
+                                                    ? colors.successDark
+                                                    : colors.successLight,
+                                  fw: 0,
+                                ),
+                              ],
+                            ],
+                                  )
                       ],
                     ),
                   ),
                 ),
               ),
             ),
-          ] else ...[
-            const SizedBox.shrink(),
-          ],
-                    // const SizedBox(height: 16),
-                
-                    // Center(
-                    //   child: ElevatedButton(
-                    //     onPressed: () async {},
-                    //     style: ElevatedButton.styleFrom(
-                    //       padding: const EdgeInsets.symmetric(vertical: 8),
-                    //       backgroundColor: Colors.white,
-                    //       elevation: 0,
-                    //       // side: const BorderSide(
-                    //       //     color: Color(0xFF87A1DD), width: 1.5),
-                    //       shape: RoundedRectangleBorder(
-                    //         borderRadius: BorderRadius.circular(24),
-                    //       ),
-                    //     ),
-                    //     child: Row(
-                    //       mainAxisSize: MainAxisSize.max,
-                    //       mainAxisAlignment: MainAxisAlignment.center,
-                    //       children: [
-                    //         SvgPicture.asset(
-                    //           'assets/explore/firefox.svg',
-                    //           width: 16,
-                    //           height: 16,
-                    //         ),
-                    //         const SizedBox(width: 8),
-                    //         const Text(
-                    //           "View my portfolio",
-                    //           style: TextStyle(
-                    //               color: Color(0xFF4069C9),
-                    //               fontWeight: FontWeight.w600,
-                    //               fontSize: 14),
-                    //         ),
-                    //         const Icon(
-                    //           Icons.expand_more,
-                    //           color: Color(0xFF4069C9),
-                    //           size: 28,
-                    //           weight: 7,
-                    //         ),
-                    //       ],
-                    //     ),
-                    //   ),
-                    // ),
-        ],
-      ),
-    ),
-              optionZTile(context, theme, funds),
-              // const SizedBox(height: 16),
-              // stockSearchTile(context, theme),
-              const SizedBox(height: 16),
-              // Padding(
-              //   padding: const EdgeInsets.symmetric(horizontal: 16),
-              //   child: Column(
-              //     crossAxisAlignment: CrossAxisAlignment.start,
-              //     children: [
-              //       // const SizedBox(height: 16),
-
-
-              //       // ETF Collections Section
-              //       Container(
-              //         padding: const EdgeInsets.only(right: 8, bottom: 8),
-              //         height: 35,
-              //         child: TabBar(
-              //           controller: _tabController,
-              //           tabAlignment: TabAlignment.start,
-              //           isScrollable: true,
-              //           indicatorSize: TabBarIndicatorSize.tab,
-              //           indicatorColor: colors.colorWhite,
-              //           indicator: BoxDecoration(
-              //             color: theme.isDarkMode
-              //                 ? colors.searchBgDark
-              //                 : const Color(0xffF1F3F8),
-              //             borderRadius: BorderRadius.circular(5),
-              //           ),
-              //           unselectedLabelColor: theme.isDarkMode
-              //               ? colors.textSecondaryDark
-              //               : colors.textSecondaryLight,
-              //           labelStyle: TextWidget.textStyle(
-              //               fontSize: 14,
-              //               theme: false,
-              //               fw: 2,
-              //               color: theme.isDarkMode
-              //                   ? colors.textPrimaryDark
-              //                   : colors.textPrimaryLight),
-              //           unselectedLabelStyle: TextWidget.textStyle(
-              //               fontSize: 14,
-              //               theme: false,
-              //               fw: 3,
-              //               color: colors.textSecondaryLight),
-              //           labelPadding: const EdgeInsets.symmetric(horizontal: 4),
-              //           // onTap: (index) {
-              //           //   if (index == 0) {
-              //           //     Navigator.pushNamed(context, Routes.algoList);
-              //           //   }
-              //           // },
-              //           tabs: const [
-              //             Tab(
-              //               child: Padding(
-              //                 padding: EdgeInsets.only(
-              //                     left: 10, right: 10, top: 0, bottom: 0),
-              //                 child: Text("ETF Collections"),
-              //               ),
-              //             ),
-              //             // Tab(
-              //             //   child: Padding(
-              //             //     padding: EdgeInsets.only(
-              //             //         left: 10, right: 10, top: 0, bottom: 0),
-              //             //     child: Text("Stock Scanner"),
-              //             //   ),
-              //             // ),
-              //           ],
-              //         ),
-              //       ),
-
-              //       // Tab Bar View
-              //       SizedBox(
-              //         height: 450,
-              //         child: TabBarView(
-              //           controller: _tabController,
-              //           children: [
-              //             buildETFCollectionsTab(theme),
-              //             // buildStockScannerTab(theme),
-              //           ],
-              //         ),
-              //       ),
-              //     ],
-              //   ),
-              // ),
-
-// ETF End
-
-              // const SizedBox(height: 16),
-              // Padding(
-              //   padding: const EdgeInsets.symmetric(horizontal: 16),
-              //   child: Row(
-              //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              //     children: [
-              //       Expanded(
-              //         child: Container(
-              //           decoration: BoxDecoration(
-              //             borderRadius: BorderRadius.circular(5),
-              //             border: Border.all(
-              //               color: theme.isDarkMode
-              //                   ? colors.dividerDark
-              //                   : colors.dividerLight,
-              //             ),
-              //           ),
-              //           child: Padding(
-              //             padding: const EdgeInsets.symmetric(
-              //                 horizontal: 16, vertical: 12),
-              //             child: Column(
-              //               crossAxisAlignment: CrossAxisAlignment.start,
-              //               children: [
-              //                 Row(
-              //                   crossAxisAlignment: CrossAxisAlignment.end,
-              //                   children: [
-              //                     TextWidget.custmText(
-              //                         text: "5x",
-              //                         fs: 32,
-              //                         theme: theme.isDarkMode,
-              //                         fw: 0,
-              //                         color: theme.isDarkMode
-              //                             ? colors.primaryDark
-              //                             : colors.primaryLight),
-              //                     Padding(
-              //                       padding: const EdgeInsets.only(bottom: 2),
-              //                       child: TextWidget.headText(
-              //                           text: " - MTF",
-              //                           theme: theme.isDarkMode,
-              //                           fw: 0,
-              //                           color: theme.isDarkMode
-              //                               ? colors.primaryDark
-              //                               : colors.primaryLight),
-              //                     ),
-              //                   ],
-              //                 ),
-              //                 const SizedBox(height: 6),
-              //                 TextWidget.subText(
-              //                     text: "Extra buying power",
-              //                     theme: theme.isDarkMode,
-              //                     fw: 3,
-              //                     color: theme.isDarkMode
-              //                         ? colors.textPrimaryDark
-              //                         : colors.textPrimaryLight),
-              //               ],
-              //             ),
-              //           ),
-              //         ),
-              //       ),
-              //       const SizedBox(width: 16),
-              //       Expanded(
-              //         child: Container(
-              //           decoration: BoxDecoration(
-              //             borderRadius: BorderRadius.circular(5),
-              //             border: Border.all(
-              //               color: theme.isDarkMode
-              //                   ? colors.dividerDark
-              //                   : colors.dividerLight,
-              //             ),
-              //           ),
-              //           child: Padding(
-              //             padding: const EdgeInsets.symmetric(
-              //                 horizontal: 16, vertical: 12),
-              //             child: Column(
-              //               crossAxisAlignment: CrossAxisAlignment.start,
-              //               children: [
-              //                 Row(
-              //                   crossAxisAlignment: CrossAxisAlignment.end,
-              //                   children: [
-              //                     TextWidget.custmText(
-              //                         text: "92",
-              //                         fs: 32,
-              //                         theme: theme.isDarkMode,
-              //                         fw: 0,
-              //                         color: theme.isDarkMode
-              //                             ? colors.primaryDark
-              //                             : colors.primaryLight),
-              //                     Padding(
-              //                       padding: const EdgeInsets.only(bottom: 2),
-              //                       child: TextWidget.custmText(
-              //                           text: "%",
-              //                           theme: theme.isDarkMode,
-              //                           fw: 0,
-              //                           fs: 24,
-              //                           color: theme.isDarkMode
-              //                               ? colors.primaryDark
-              //                               : colors.primaryLight),
-              //                     ),
-              //                   ],
-              //                 ),
-              //                 const SizedBox(height: 6),
-              //                 TextWidget.subText(
-              //                     text: "Benefit of Pledge",
-              //                     theme: theme.isDarkMode,
-              //                     fw: 3,
-              //                     color: theme.isDarkMode
-              //                         ? colors.textPrimaryDark
-              //                         : colors.textPrimaryLight),
-              //               ],
-              //             ),
-              //           ),
-              //         ),
-              //       ),
-              //     ],
-              //   ),
-              // ),
-
-              // const SizedBox(height: 16),
-              const SizedBox(
-                height: 380,
-                child: TradeAction(),
-              ),
-              const SizedBox(height: 16),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+            
+            const SizedBox(height: 5),
+                  if(_statabController.index == 0)...[
+              Container(
+                        padding: const EdgeInsets.only(left: 16,right: 16,bottom: 8),
+                        // margin: const EdgeInsets.only(top: 4),
                 child: Material(
                   color: Colors.transparent,
                   shape: const RoundedRectangleBorder(),
                   child: InkWell(
-                    canRequestFocus: false,
+                            // canRequestFocus: false,
                     customBorder: const RoundedRectangleBorder(),
-                    splashColor: theme.isDarkMode
-                        ? colors.splashColorDark
-                        : colors.splashColorLight,
-                    highlightColor: theme.isDarkMode
-                        ? colors.highlightDark
-                        : colors.highlightLight,
-                    onTap: () async {
-                      // Navigator.pushNamed(context, Routes.referAndEarn);
-                      await Share.share(
-                        "I invite you to explore Mynt by Zebu — from Stocks to Mutual funds and more.\nOpen your free demat account today\n👉 ${Uri.parse(reflink)}",
-                      );
+                            splashColor: theme.isDarkMode
+                                ? colors.splashColorDark
+                                : colors.splashColorLight,
+                            highlightColor: theme.isDarkMode
+                                ? colors.highlightDark
+                                : colors.highlightLight,
+                    onTap: () {
+                      Future.delayed(const Duration(milliseconds: 150), () {
+                                Navigator.pushNamed(
+                                    context, Routes.portfolioDashboard);
+                      });
                     },
-                    child: Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(5),
-                          color: theme.isDarkMode
-                              ? colors.searchBgDark.withOpacity(0.5)
-                              : const Color(0xffF1F3F8).withOpacity(0.5),
-                          border: Border.all(
-                            color: theme.isDarkMode
-                                ? colors.darkColorDivider
-                                : colors.colorDivider,
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // TextWidget.custmText(
-                                //     text: "₹300",
-                                //     theme: false,
-                                //     color: theme.isDarkMode
-                                //         ? colors.primaryDark
-                                //         : colors.primaryLight,
-                                //     fw: 0,
-                                //     fs: 20),
-                                // const SizedBox(height: 4),
-                                TextWidget.custmText(
-                                    text: "Refer",
-                                    theme: false,
-                                     color: theme.isDarkMode
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(
+                                // mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          TextWidget.subText(
+                            text: "Portfolio insights",
+                            theme: false,
+                                    color: theme.isDarkMode
                                         ? colors.primaryDark
                                         : colors.primaryLight,
-                                        fs: 20,
-                                    fw: 0),
-                                const SizedBox(height: 4),
-                                TextWidget.paraText(
-                                    text:
-                                        // "Rewarding you for spreading the word",
-                                        "Invite your friends to Mynt by Zebu",
-                                    theme: false,
+                            fw: 2,
+                          ),
+                          const SizedBox(width: 6),
+                          SvgPicture.asset(
+                            assets.leftArrow,
+                                    // width: 12,
+                                    // height: 12,
                                     color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                        : colors.textSecondaryLight,
-                                    fw: 0),
-                              ],
-                            ),
-                            // const SizedBox(width: 16),
-                            SvgPicture.asset(assets.referandearn,
-                                width: 50, height: 50, fit: BoxFit.contain),
-                          ],
-                        )),
+                                        ? colors.primaryDark
+                                        : colors.primaryDark,
+                            fit: BoxFit.scaleDown,
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),
-             
-              const SizedBox(height: 16),
-              Padding(
+            ] else ...[
+              const SizedBox.shrink(),
+            ],
+                      // const SizedBox(height: 16),
+                  
+                      // Center(
+                      //   child: ElevatedButton(
+                      //     onPressed: () async {},
+                      //     style: ElevatedButton.styleFrom(
+                      //       padding: const EdgeInsets.symmetric(vertical: 8),
+                      //       backgroundColor: Colors.white,
+                      //       elevation: 0,
+                      //       // side: const BorderSide(
+                      //       //     color: Color(0xFF87A1DD), width: 1.5),
+                      //       shape: RoundedRectangleBorder(
+                      //         borderRadius: BorderRadius.circular(24),
+                      //       ),
+                      //     ),
+                      //     child: Row(
+                      //       mainAxisSize: MainAxisSize.max,
+                      //       mainAxisAlignment: MainAxisAlignment.center,
+                      //       children: [
+                      //         SvgPicture.asset(
+                      //           'assets/explore/firefox.svg',
+                      //           width: 16,
+                      //           height: 16,
+                      //         ),
+                      //         const SizedBox(width: 8),
+                      //         const Text(
+                      //           "View my portfolio",
+                      //           style: TextStyle(
+                      //               color: Color(0xFF4069C9),
+                      //               fontWeight: FontWeight.w600,
+                      //               fontSize: 14),
+                      //         ),
+                      //         const Icon(
+                      //           Icons.expand_more,
+                      //           color: Color(0xFF4069C9),
+                      //           size: 28,
+                      //           weight: 7,
+                      //         ),
+                      //       ],
+                      //     ),
+                      //   ),
+                      // ),
+                    ],
+                  ),
+                ),
+                optionZTile(context, theme, funds),
+                // const SizedBox(height: 16),
+                // stockSearchTile(context, theme),
+                const SizedBox(height: 16),
+                // Padding(
+                //   padding: const EdgeInsets.symmetric(horizontal: 16),
+                //   child: Column(
+                //     crossAxisAlignment: CrossAxisAlignment.start,
+                //     children: [
+                //       // const SizedBox(height: 16),
+            
+            
+                //       // ETF Collections Section
+                //       Container(
+                //         padding: const EdgeInsets.only(right: 8, bottom: 8),
+                //         height: 35,
+                //         child: TabBar(
+                //           controller: _tabController,
+                //           tabAlignment: TabAlignment.start,
+                //           isScrollable: true,
+                //           indicatorSize: TabBarIndicatorSize.tab,
+                //           indicatorColor: colors.colorWhite,
+                //           indicator: BoxDecoration(
+                //             color: theme.isDarkMode
+                //                 ? colors.searchBgDark
+                //                 : const Color(0xffF1F3F8),
+                //             borderRadius: BorderRadius.circular(5),
+                //           ),
+                //           unselectedLabelColor: theme.isDarkMode
+                //               ? colors.textSecondaryDark
+                //               : colors.textSecondaryLight,
+                //           labelStyle: TextWidget.textStyle(
+                //               fontSize: 14,
+                //               theme: false,
+                //               fw: 2,
+                //               color: theme.isDarkMode
+                //                   ? colors.textPrimaryDark
+                //                   : colors.textPrimaryLight),
+                //           unselectedLabelStyle: TextWidget.textStyle(
+                //               fontSize: 14,
+                //               theme: false,
+                //               fw: 3,
+                //               color: colors.textSecondaryLight),
+                //           labelPadding: const EdgeInsets.symmetric(horizontal: 4),
+                //           // onTap: (index) {
+                //           //   if (index == 0) {
+                //           //     Navigator.pushNamed(context, Routes.algoList);
+                //           //   }
+                //           // },
+                //           tabs: const [
+                //             Tab(
+                //               child: Padding(
+                //                 padding: EdgeInsets.only(
+                //                     left: 10, right: 10, top: 0, bottom: 0),
+                //                 child: Text("ETF Collections"),
+                //               ),
+                //             ),
+                //             // Tab(
+                //             //   child: Padding(
+                //             //     padding: EdgeInsets.only(
+                //             //         left: 10, right: 10, top: 0, bottom: 0),
+                //             //     child: Text("Stock Scanner"),
+                //             //   ),
+                //             // ),
+                //           ],
+                //         ),
+                //       ),
+            
+                //       // Tab Bar View
+                //       SizedBox(
+                //         height: 450,
+                //         child: TabBarView(
+                //           controller: _tabController,
+                //           children: [
+                //             buildETFCollectionsTab(theme),
+                //             // buildStockScannerTab(theme),
+                //           ],
+                //         ),
+                //       ),
+                //     ],
+                //   ),
+                // ),
+            
+            // ETF End
+            
+                // const SizedBox(height: 16),
+                // Padding(
+                //   padding: const EdgeInsets.symmetric(horizontal: 16),
+                //   child: Row(
+                //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                //     children: [
+                //       Expanded(
+                //         child: Container(
+                //           decoration: BoxDecoration(
+                //             borderRadius: BorderRadius.circular(5),
+                //             border: Border.all(
+                //               color: theme.isDarkMode
+                //                   ? colors.dividerDark
+                //                   : colors.dividerLight,
+                //             ),
+                //           ),
+                //           child: Padding(
+                //             padding: const EdgeInsets.symmetric(
+                //                 horizontal: 16, vertical: 12),
+                //             child: Column(
+                //               crossAxisAlignment: CrossAxisAlignment.start,
+                //               children: [
+                //                 Row(
+                //                   crossAxisAlignment: CrossAxisAlignment.end,
+                //                   children: [
+                //                     TextWidget.custmText(
+                //                         text: "5x",
+                //                         fs: 32,
+                //                         theme: theme.isDarkMode,
+                //                         fw: 0,
+                //                         color: theme.isDarkMode
+                //                             ? colors.primaryDark
+                //                             : colors.primaryLight),
+                //                     Padding(
+                //                       padding: const EdgeInsets.only(bottom: 2),
+                //                       child: TextWidget.headText(
+                //                           text: " - MTF",
+                //                           theme: theme.isDarkMode,
+                //                           fw: 0,
+                //                           color: theme.isDarkMode
+                //                               ? colors.primaryDark
+                //                               : colors.primaryLight),
+                //                     ),
+                //                   ],
+                //                 ),
+                //                 const SizedBox(height: 6),
+                //                 TextWidget.subText(
+                //                     text: "Extra buying power",
+                //                     theme: theme.isDarkMode,
+                //                     fw: 3,
+                //                     color: theme.isDarkMode
+                //                         ? colors.textPrimaryDark
+                //                         : colors.textPrimaryLight),
+                //               ],
+                //             ),
+                //           ),
+                //         ),
+                //       ),
+                //       const SizedBox(width: 16),
+                //       Expanded(
+                //         child: Container(
+                //           decoration: BoxDecoration(
+                //             borderRadius: BorderRadius.circular(5),
+                //             border: Border.all(
+                //               color: theme.isDarkMode
+                //                   ? colors.dividerDark
+                //                   : colors.dividerLight,
+                //             ),
+                //           ),
+                //           child: Padding(
+                //             padding: const EdgeInsets.symmetric(
+                //                 horizontal: 16, vertical: 12),
+                //             child: Column(
+                //               crossAxisAlignment: CrossAxisAlignment.start,
+                //               children: [
+                //                 Row(
+                //                   crossAxisAlignment: CrossAxisAlignment.end,
+                //                   children: [
+                //                     TextWidget.custmText(
+                //                         text: "92",
+                //                         fs: 32,
+                //                         theme: theme.isDarkMode,
+                //                         fw: 0,
+                //                         color: theme.isDarkMode
+                //                             ? colors.primaryDark
+                //                             : colors.primaryLight),
+                //                     Padding(
+                //                       padding: const EdgeInsets.only(bottom: 2),
+                //                       child: TextWidget.custmText(
+                //                           text: "%",
+                //                           theme: theme.isDarkMode,
+                //                           fw: 0,
+                //                           fs: 24,
+                //                           color: theme.isDarkMode
+                //                               ? colors.primaryDark
+                //                               : colors.primaryLight),
+                //                     ),
+                //                   ],
+                //                 ),
+                //                 const SizedBox(height: 6),
+                //                 TextWidget.subText(
+                //                     text: "Benefit of Pledge",
+                //                     theme: theme.isDarkMode,
+                //                     fw: 3,
+                //                     color: theme.isDarkMode
+                //                         ? colors.textPrimaryDark
+                //                         : colors.textPrimaryLight),
+                //               ],
+                //             ),
+                //           ),
+                //         ),
+                //       ),
+                //     ],
+                //   ),
+                // ),
+            
+                // const SizedBox(height: 16),
+                const SizedBox(
+                  height: 380,
+                  child: TradeAction(),
+                ),
+                const SizedBox(height: 16),
+                Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        InkWell(
-                          canRequestFocus: false,
-                          onTap: () {
-                            // Navigator.pushNamed(context, Routes.basketScreen);
-                            // Navigator.pushNamed(context, Routes.portfolioDashboard);
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.only(
-                                left: 14, right: 14, top: 6, bottom: 6),
-                            decoration: BoxDecoration(
+                  child: Material(
+                    color: Colors.transparent,
+                    shape: const RoundedRectangleBorder(),
+                    child: InkWell(
+                      canRequestFocus: false,
+                      customBorder: const RoundedRectangleBorder(),
+                      splashColor: theme.isDarkMode
+                          ? colors.splashColorDark
+                          : colors.splashColorLight,
+                      highlightColor: theme.isDarkMode
+                          ? colors.highlightDark
+                          : colors.highlightLight,
+                      onTap: () async {
+                        // Navigator.pushNamed(context, Routes.referAndEarn);
+                        await Share.share(
+                          "I invite you to explore Mynt by Zebu — from Stocks to Mutual funds and more.\nOpen your free demat account today\n👉 ${Uri.parse(reflink)}",
+                        );
+                      },
+                      child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(5),
+                            color: theme.isDarkMode
+                                ? colors.searchBgDark.withOpacity(0.5)
+                                : const Color(0xffF1F3F8).withOpacity(0.5),
+                            border: Border.all(
                               color: theme.isDarkMode
-                                  ? colors.searchBgDark
-                                  : const Color(0xffF1F3F8),
-                              borderRadius: BorderRadius.circular(5),
-                            ),
-                            child: TextWidget.subText(
-                              text: "Quick Access",
-                              theme: false,
-                              color: theme.isDarkMode
-                                  ? colors.textPrimaryDark
-                                  : colors.textPrimaryLight,
-                              fw: 2,
+                                  ? colors.darkColorDivider
+                                  : colors.colorDivider,
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 16),
-                        ListView.separated(
-                          padding: EdgeInsets.zero,
-                          shrinkWrap:
-                              true, // Important if this is inside another scrollable widget
-                          physics:
-                              const NeverScrollableScrollPhysics(), // Optional: disable scrolling if needed
-                          itemCount: items.length,
-                          itemBuilder: (context, index) {
-                            final item = items[index];
-                            return redesignedActionCard(
-                              icon: item['icon'] as String,
-                              label: item['label'] as String,
-                              subtitle: item['subtitle'] as String,
-                              theme: theme,
-                              onTap: () async {
-                                switch (item['label']) {
-                                  case 'Pledge & Unpledge':
-                                    Future.delayed(Duration(milliseconds: 150),
-                                      () async {
-                                    if (ledgerdate.pledgeandunpledge == null) {
-                                      await ledgerdate.getCurrentDate("pandu");
-                                      ledgerdate
-                                          .fetchpledgeandunpledge(context);
-                                    }
-                                    Navigator.pushNamed(
-                                        context, Routes.pledgeandun,
-                                        arguments: "DDDDD");
-                                  });
-                                    break;
-                                  case 'P&L Summary':
-                                    await ledgerdate.getCurrentDate('pandu');
-                                    Navigator.pushNamed(
-                                        context, Routes.calenderpnlScreen,
-                                        arguments: "DDDDD");
-                                    break;
-                                  case 'Ledger':
-                                    await ledgerdate.getCurrentDate('else');
-                                    Navigator.pushNamed(
-                                        context, Routes.ledgerscreen,
-                                        arguments: "DDDDD");
-                                    break;
-                                  case 'F&O Margin Calculator':
-                                    Navigator.pushNamed(
-                                        context, Routes.marginCalculator);
-                                    break;
-                                  case 'Brokerage Calculator':
-                                    Navigator.pushNamed(
-                                        context, Routes.brokerCalculator);
-                                    break;
-                                }
-                              },
-                            );
-                          },
-                          separatorBuilder: (context, index) {
-                            return Divider(
-                              color: theme.isDarkMode
-                                  ? colors.dividerDark
-                                  : colors.dividerLight,
-                            ); // Simple spacing separator
-                          },
-                        ),
-                        Divider(
-                          color: theme.isDarkMode
-                              ? colors.dividerDark
-                              : colors.dividerLight,
-                          height: 1,
-                        )
-                      ])),
-              const SizedBox(height: 80),
-              // Padding(
-              //   padding: const EdgeInsets.symmetric(horizontal: 16),
-              //   child: Column(
-              //     crossAxisAlignment: CrossAxisAlignment.start,
-              //     children: [
-              //       Row(
-              //         mainAxisAlignment: MainAxisAlignment.start,
-              //         children: [
-              //           Column(
-              //             crossAxisAlignment: CrossAxisAlignment.start,
-              //             children: [
-              //               TextWidget.subText(
-              //                 text: "New",
-              //                 theme: false,
-              //                 color: theme.isDarkMode
-              //                     ? colors.textSecondaryDark
-              //                     : colors.textSecondaryLight,
-              //                 fw: 3,
-              //               ),
-              //               const SizedBox(height: 4),
-              //               TextWidget.titleText(
-              //                 text: "OptionZ",
-              //                 theme: false,
-              //                 color: theme.isDarkMode
-              //                     ? colors.textPrimaryDark
-              //                     : colors.textPrimaryLight,
-              //                 fw: 1,
-              //               ),
-              //               const SizedBox(height: 4),
-              //               SizedBox(
-              //                 width: MediaQuery.of(context).size.width * 0.6,
-              //                 child: TextWidget.subText(
-              //                     text:
-              //                         "Explore the world of options trading with our new platform. Trade options with ease and confidence.",
-              //                     theme: false,
-              //                     color: theme.isDarkMode
-              //                         ? colors.textSecondaryDark
-              //                         : colors.textSecondaryLight,
-              //                     fw: 3,
-              //                     softWrap: true,
-              //                     maxLines: 4,
-              //                     letterSpacing: 0.8,
-              //                     lineHeight: 1.5),
-              //               ),
-              //               const SizedBox(height: 10),
-              //               Material(
-              //                 color: Colors.transparent,
-              //                 shape: const RoundedRectangleBorder(),
-              //                 child: InkWell(
-              //                   splashColor: theme.isDarkMode
-              //                       ? colors.splashColorDark
-              //                       : colors.splashColorLight,
-              //                   highlightColor: theme.isDarkMode
-              //                       ? colors.highlightDark
-              //                       : colors.highlightLight,
-              //                   customBorder: const RoundedRectangleBorder(),
-              //                   onTap: () {
-              //                     Future.delayed(
-              //                         const Duration(milliseconds: 150),
-              //                         () async {
-              //                       await funds.fetchHstoken(context);
-              //                       funds.optionZ(context);
-              //                     });
-              //                   },
-              //                   child: Container(
-              //                     padding: const EdgeInsets.symmetric(
-              //                         horizontal: 16, vertical: 8),
-              //                     decoration: BoxDecoration(
-              //                       color: colors.btnBg,
-              //                       borderRadius: BorderRadius.circular(16),
-              //                     ),
-              //                     child: TextWidget.subText(
-              //                         text: "Explore",
-              //                         theme: false,
-              //                         color: theme.isDarkMode
-              //                             ? colors.textPrimaryDark
-              //                             : colors.textPrimaryLight,
-              //                         fw: 3),
-              //                   ),
-              //                 ),
-              //               )
-              //             ],
-              //           ),
-              //           SizedBox(
-              //             width: MediaQuery.of(context).size.width * 0.3,
-              //             child: Image.asset(
-              //               assets.optionZdash,
-              //               fit: BoxFit.cover,
-              //             ),
-              //           ),
-              //         ],
-              //       ),
-              //     ],
-              //   ),
-              // ),
-              // const NewsScreen(),
-              // Padding(
-              //   padding:
-              //       const EdgeInsets.symmetric(horizontal: 16, vertical: 25),
-              //   child: Column(
-              //     crossAxisAlignment: CrossAxisAlignment.start,
-              //     children: [
-              //       TextWidget.subText(
-              //         text: "Funds & Margin",
-              //         theme: false,
-              //         color: theme.isDarkMode
-              //             ? colors.textPrimaryDark
-              //             : colors.textPrimaryLight,
-              //         fw: 3,
-              //       ),
-              //       const SizedBox(height: 8),
-              //       TextWidget.titleText(
-              //           text:
-              //               "Avail ${formatCurrencyStandard(value: double.parse("${funds.fundDetailModel?.totCredit ?? 0.00}").toString())}",
-              //           theme: false,
-              //           color: theme.isDarkMode
-              //               ? colors.textPrimaryDark
-              //               : colors.textTertiaryLight,
-              //           fw: 0),
-              //       const SizedBox(height: 8),
-              //       Row(
-              //         mainAxisAlignment: MainAxisAlignment.start,
-              //         children: [
-              //           TextWidget.subText(
-              //             text:
-              //                 "Used ${getFormatter(value: double.parse("${funds.fundDetailModel?.utilizedMrgn ?? 0.00}"), v4d: false, noDecimal: false)}",
-              //             theme: false,
-              //             color: theme.isDarkMode
-              //                 ? colors.textPrimaryDark
-              //                 : colors.textPrimaryLight,
-              //           ),
-              //           const SizedBox(width: 8),
-              //           TextWidget.subText(
-              //             text:
-              //                 "Cash + collateral ${getFormatter(value: (double.tryParse('${funds.listOfCredits.isNotEmpty ? funds.listOfCredits[0]["value"] : 0}') ?? 0.0) + (double.tryParse('${funds.listOfCredits.length > 1 ? funds.listOfCredits[1]["value"] : 0}') ?? 0.0), v4d: false, noDecimal: false)}",
-              //             theme: false,
-              //             color: theme.isDarkMode
-              //                 ? colors.textPrimaryDark
-              //                 : colors.textPrimaryLight,
-              //           ),
-              //         ],
-              //       )
-              //     ],
-              //   ),
-              // ),
-
-              // Padding(
-              //   padding: const EdgeInsets.symmetric(horizontal: 16),
-              //   child: Column(
-              //     crossAxisAlignment: CrossAxisAlignment.start,
-              //     children: [
-              //       Text("Products",
-              //           style: textStyle(
-              //               const Color(0xff000000), 16, FontWeight.w600)),
-              //       const SizedBox(height: 16),
-              //       Row(
-              //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              //         children: [
-              //           productList(
-              //               'IPO',
-              //               "A company's first public stock offering.",
-              //               "assets/profileimage/prd-ipo.svg",
-              //               theme, () {
-              //             Navigator.pushNamed(context, Routes.ipo);
-              //             // launch(
-              //             //     "https://mynt.zebuetrade.com/ipo?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
-              //           }),
-              //           productList(
-              //               'Mutual Funds',
-              //               "Invest in experts managed portfolio.",
-              //               "assets/profileimage/prd-mf.svg",
-              //               theme, () async {
-              //             // await portfolio.fetchMFHoldings(context);
-              //             // await mf.fetchMFCategoryType();
-              //             // await mf.fetchmfNFO(context);
-              //             await mf.fetchMFWatchlist("", "", context, true, "");
-              //             Navigator.pushNamed(context, Routes.mfmainscreen);
-              //             // launch(
-              //             //     "https://mynt.zebuetrade.com/mutualfund?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
-              //           }),
-              //           productList('OptionZ', "Options Trading Platform.",
-              //               "assets/profileimage/prd-optz.svg", theme, () async {
-              //             await funds.fetchHstoken(context);
-              //             funds.optionZ(context);
-              //           }),
-              //           productList(
-              //               'All Broker',
-              //               "A company's first public stock offering.",
-              //               "assets/profileimage/prd-ab.svg",
-              //               theme, () {
-              //             Navigator.pushNamed(context, Routes.reportWebViewApp);
-              //             // launch(
-              //             //     "https://mynt.zebuetrade.com/ipo?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
-              //           }),
-              //         ],
-              //       ),
-              //     ],
-              //   ),
-              // ),
-
-              // const CaEvents(),
-              const SizedBox(height: 16),
-              // SizedBox(
-              //   height: 350,
-              //   child: PageView.builder(
-              //     physics: const AlwaysScrollableScrollPhysics(),
-              //     itemCount: 1,
-              //     itemBuilder: (context, index) {
-              //       return RepaintBoundary(child: NewsScreen());
-              //     },
-              //   ),
-              // ),
-            ],
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // TextWidget.custmText(
+                                  //     text: "₹300",
+                                  //     theme: false,
+                                  //     color: theme.isDarkMode
+                                  //         ? colors.primaryDark
+                                  //         : colors.primaryLight,
+                                  //     fw: 0,
+                                  //     fs: 20),
+                                  // const SizedBox(height: 4),
+                                  TextWidget.custmText(
+                                      text: "Refer",
+                                      theme: false,
+                                       color: theme.isDarkMode
+                                          ? colors.primaryDark
+                                          : colors.primaryLight,
+                                          fs: 20,
+                                      fw: 0),
+                                  const SizedBox(height: 4),
+                                  TextWidget.paraText(
+                                      text:
+                                          // "Rewarding you for spreading the word",
+                                          "Invite your friends to Mynt by Zebu",
+                                      theme: false,
+                                      color: theme.isDarkMode
+                                          ? colors.textSecondaryDark
+                                          : colors.textSecondaryLight,
+                                      fw: 0),
+                                ],
+                              ),
+                              // const SizedBox(width: 16),
+                              SvgPicture.asset(assets.referandearn,
+                                  width: 50, height: 50, fit: BoxFit.contain),
+                            ],
+                          )),
+                    ),
+                  ),
+                ),
+               
+                const SizedBox(height: 16),
+                Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          InkWell(
+                            canRequestFocus: false,
+                            onTap: () {
+                              // Navigator.pushNamed(context, Routes.basketScreen);
+                              // Navigator.pushNamed(context, Routes.portfolioDashboard);
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.only(
+                                  left: 14, right: 14, top: 6, bottom: 6),
+                              decoration: BoxDecoration(
+                                color: theme.isDarkMode
+                                    ? colors.searchBgDark
+                                    : const Color(0xffF1F3F8),
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                              child: TextWidget.subText(
+                                text: "Quick Access",
+                                theme: false,
+                                color: theme.isDarkMode
+                                    ? colors.textPrimaryDark
+                                    : colors.textPrimaryLight,
+                                fw: 2,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          ListView.separated(
+                            padding: EdgeInsets.zero,
+                            shrinkWrap:
+                                true, // Important if this is inside another scrollable widget
+                            physics:
+                                const NeverScrollableScrollPhysics(), // Optional: disable scrolling if needed
+                            itemCount: items.length,
+                            itemBuilder: (context, index) {
+                              final item = items[index];
+                              return redesignedActionCard(
+                                icon: item['icon'] as String,
+                                label: item['label'] as String,
+                                subtitle: item['subtitle'] as String,
+                                theme: theme,
+                                onTap: () async {
+                                  switch (item['label']) {
+                                    case 'Pledge & Unpledge':
+                                      Future.delayed(Duration(milliseconds: 150),
+                                        () async {
+                                      if (ledgerdate.pledgeandunpledge == null) {
+                                        await ledgerdate.getCurrentDate("pandu");
+                                        ledgerdate
+                                            .fetchpledgeandunpledge(context);
+                                      }
+                                      Navigator.pushNamed(
+                                          context, Routes.pledgeandun,
+                                          arguments: "DDDDD");
+                                    });
+                                      break;
+                                    case 'P&L Summary':
+                                      await ledgerdate.getCurrentDate('pandu');
+                                      Navigator.pushNamed(
+                                          context, Routes.calenderpnlScreen,
+                                          arguments: "DDDDD");
+                                      break;
+                                    case 'Ledger':
+                                      await ledgerdate.getCurrentDate('else');
+                                      Navigator.pushNamed(
+                                          context, Routes.ledgerscreen,
+                                          arguments: "DDDDD");
+                                      break;
+                                    case 'F&O Margin Calculator':
+                                      Navigator.pushNamed(
+                                          context, Routes.marginCalculator);
+                                      break;
+                                    case 'Brokerage Calculator':
+                                      Navigator.pushNamed(
+                                          context, Routes.brokerCalculator);
+                                      break;
+                                  }
+                                },
+                              );
+                            },
+                            separatorBuilder: (context, index) {
+                              return Divider(
+                                color: theme.isDarkMode
+                                    ? colors.dividerDark
+                                    : colors.dividerLight,
+                              ); // Simple spacing separator
+                            },
+                          ),
+                          Divider(
+                            color: theme.isDarkMode
+                                ? colors.dividerDark
+                                : colors.dividerLight,
+                            height: 1,
+                          )
+                        ])),
+                // const SizedBox(height: 80),
+                // Padding(
+                //   padding: const EdgeInsets.symmetric(horizontal: 16),
+                //   child: Column(
+                //     crossAxisAlignment: CrossAxisAlignment.start,
+                //     children: [
+                //       Row(
+                //         mainAxisAlignment: MainAxisAlignment.start,
+                //         children: [
+                //           Column(
+                //             crossAxisAlignment: CrossAxisAlignment.start,
+                //             children: [
+                //               TextWidget.subText(
+                //                 text: "New",
+                //                 theme: false,
+                //                 color: theme.isDarkMode
+                //                     ? colors.textSecondaryDark
+                //                     : colors.textSecondaryLight,
+                //                 fw: 3,
+                //               ),
+                //               const SizedBox(height: 4),
+                //               TextWidget.titleText(
+                //                 text: "OptionZ",
+                //                 theme: false,
+                //                 color: theme.isDarkMode
+                //                     ? colors.textPrimaryDark
+                //                     : colors.textPrimaryLight,
+                //                 fw: 1,
+                //               ),
+                //               const SizedBox(height: 4),
+                //               SizedBox(
+                //                 width: MediaQuery.of(context).size.width * 0.6,
+                //                 child: TextWidget.subText(
+                //                     text:
+                //                         "Explore the world of options trading with our new platform. Trade options with ease and confidence.",
+                //                     theme: false,
+                //                     color: theme.isDarkMode
+                //                         ? colors.textSecondaryDark
+                //                         : colors.textSecondaryLight,
+                //                     fw: 3,
+                //                     softWrap: true,
+                //                     maxLines: 4,
+                //                     letterSpacing: 0.8,
+                //                     lineHeight: 1.5),
+                //               ),
+                //               const SizedBox(height: 10),
+                //               Material(
+                //                 color: Colors.transparent,
+                //                 shape: const RoundedRectangleBorder(),
+                //                 child: InkWell(
+                //                   splashColor: theme.isDarkMode
+                //                       ? colors.splashColorDark
+                //                       : colors.splashColorLight,
+                //                   highlightColor: theme.isDarkMode
+                //                       ? colors.highlightDark
+                //                       : colors.highlightLight,
+                //                   customBorder: const RoundedRectangleBorder(),
+                //                   onTap: () {
+                //                     Future.delayed(
+                //                         const Duration(milliseconds: 150),
+                //                         () async {
+                //                       await funds.fetchHstoken(context);
+                //                       funds.optionZ(context);
+                //                     });
+                //                   },
+                //                   child: Container(
+                //                     padding: const EdgeInsets.symmetric(
+                //                         horizontal: 16, vertical: 8),
+                //                     decoration: BoxDecoration(
+                //                       color: colors.btnBg,
+                //                       borderRadius: BorderRadius.circular(16),
+                //                     ),
+                //                     child: TextWidget.subText(
+                //                         text: "Explore",
+                //                         theme: false,
+                //                         color: theme.isDarkMode
+                //                             ? colors.textPrimaryDark
+                //                             : colors.textPrimaryLight,
+                //                         fw: 3),
+                //                   ),
+                //                 ),
+                //               )
+                //             ],
+                //           ),
+                //           SizedBox(
+                //             width: MediaQuery.of(context).size.width * 0.3,
+                //             child: Image.asset(
+                //               assets.optionZdash,
+                //               fit: BoxFit.cover,
+                //             ),
+                //           ),
+                //         ],
+                //       ),
+                //     ],
+                //   ),
+                // ),
+                // const NewsScreen(),
+                // Padding(
+                //   padding:
+                //       const EdgeInsets.symmetric(horizontal: 16, vertical: 25),
+                //   child: Column(
+                //     crossAxisAlignment: CrossAxisAlignment.start,
+                //     children: [
+                //       TextWidget.subText(
+                //         text: "Funds & Margin",
+                //         theme: false,
+                //         color: theme.isDarkMode
+                //             ? colors.textPrimaryDark
+                //             : colors.textPrimaryLight,
+                //         fw: 3,
+                //       ),
+                //       const SizedBox(height: 8),
+                //       TextWidget.titleText(
+                //           text:
+                //               "Avail ${formatCurrencyStandard(value: double.parse("${funds.fundDetailModel?.totCredit ?? 0.00}").toString())}",
+                //           theme: false,
+                //           color: theme.isDarkMode
+                //               ? colors.textPrimaryDark
+                //               : colors.textTertiaryLight,
+                //           fw: 0),
+                //       const SizedBox(height: 8),
+                //       Row(
+                //         mainAxisAlignment: MainAxisAlignment.start,
+                //         children: [
+                //           TextWidget.subText(
+                //             text:
+                //                 "Used ${getFormatter(value: double.parse("${funds.fundDetailModel?.utilizedMrgn ?? 0.00}"), v4d: false, noDecimal: false)}",
+                //             theme: false,
+                //             color: theme.isDarkMode
+                //                 ? colors.textPrimaryDark
+                //                 : colors.textPrimaryLight,
+                //           ),
+                //           const SizedBox(width: 8),
+                //           TextWidget.subText(
+                //             text:
+                //                 "Cash + collateral ${getFormatter(value: (double.tryParse('${funds.listOfCredits.isNotEmpty ? funds.listOfCredits[0]["value"] : 0}') ?? 0.0) + (double.tryParse('${funds.listOfCredits.length > 1 ? funds.listOfCredits[1]["value"] : 0}') ?? 0.0), v4d: false, noDecimal: false)}",
+                //             theme: false,
+                //             color: theme.isDarkMode
+                //                 ? colors.textPrimaryDark
+                //                 : colors.textPrimaryLight,
+                //           ),
+                //         ],
+                //       )
+                //     ],
+                //   ),
+                // ),
+            
+                // Padding(
+                //   padding: const EdgeInsets.symmetric(horizontal: 16),
+                //   child: Column(
+                //     crossAxisAlignment: CrossAxisAlignment.start,
+                //     children: [
+                //       Text("Products",
+                //           style: textStyle(
+                //               const Color(0xff000000), 16, FontWeight.w600)),
+                //       const SizedBox(height: 16),
+                //       Row(
+                //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                //         children: [
+                //           productList(
+                //               'IPO',
+                //               "A company's first public stock offering.",
+                //               "assets/profileimage/prd-ipo.svg",
+                //               theme, () {
+                //             Navigator.pushNamed(context, Routes.ipo);
+                //             // launch(
+                //             //     "https://mynt.zebuetrade.com/ipo?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
+                //           }),
+                //           productList(
+                //               'Mutual Funds',
+                //               "Invest in experts managed portfolio.",
+                //               "assets/profileimage/prd-mf.svg",
+                //               theme, () async {
+                //             // await portfolio.fetchMFHoldings(context);
+                //             // await mf.fetchMFCategoryType();
+                //             // await mf.fetchmfNFO(context);
+                //             await mf.fetchMFWatchlist("", "", context, true, "");
+                //             Navigator.pushNamed(context, Routes.mfmainscreen);
+                //             // launch(
+                //             //     "https://mynt.zebuetrade.com/mutualfund?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
+                //           }),
+                //           productList('OptionZ', "Options Trading Platform.",
+                //               "assets/profileimage/prd-optz.svg", theme, () async {
+                //             await funds.fetchHstoken(context);
+                //             funds.optionZ(context);
+                //           }),
+                //           productList(
+                //               'All Broker',
+                //               "A company's first public stock offering.",
+                //               "assets/profileimage/prd-ab.svg",
+                //               theme, () {
+                //             Navigator.pushNamed(context, Routes.reportWebViewApp);
+                //             // launch(
+                //             //     "https://mynt.zebuetrade.com/ipo?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
+                //           }),
+                //         ],
+                //       ),
+                //     ],
+                //   ),
+                // ),
+            
+                // const CaEvents(),
+                const SizedBox(height: 16),
+                // SizedBox(
+                //   height: 350,
+                //   child: PageView.builder(
+                //     physics: const AlwaysScrollableScrollPhysics(),
+                //     itemCount: 1,
+                //     itemBuilder: (context, index) {
+                //       return RepaintBoundary(child: NewsScreen());
+                //     },
+                //   ),
+                // ),
+              ],
+            ),
           ),
         );
       }),
