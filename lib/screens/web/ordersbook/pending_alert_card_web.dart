@@ -13,7 +13,7 @@ import '../../../res/res.dart';
 import '../../../res/web_colors.dart';
 import '../../../res/global_font_web.dart';
 import '../../../sharedWidget/no_data_found.dart';
-import '../../../sharedWidget/snack_bar.dart';
+import '../../../utils/responsive_snackbar.dart';
 import 'pending_alert_detail_screen_web.dart';
 
 class PendingAlertWeb extends ConsumerStatefulWidget {
@@ -943,15 +943,11 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb>
       await ref.read(marketWatchProvider).fetchPendingAlert(context);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          successMessage(context, 'Alert Cancelled'),
-        );
+        ResponsiveSnackBar.showSuccess(context, 'Alert Cancelled');
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          error(context, 'Failed to cancel alert'),
-        );
+        ResponsiveSnackBar.showError(context, 'Failed to cancel alert');
       }
     } finally {
       if (mounted) {
@@ -980,9 +976,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb>
       );
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          error(context, 'Failed to open modify alert: ${e.toString()}'),
-        );
+        ResponsiveSnackBar.showError(context, 'Failed to open modify alert: ${e.toString()}');
       }
     } finally {
       if (mounted) {

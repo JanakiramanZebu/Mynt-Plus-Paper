@@ -478,10 +478,11 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
           const SizedBox(height: 16),
           // Content based on selected tab
           if (_selectedTabIndex == 0) ...[
-            // Table for Stocks
+            // Table for Stocks - Use parent ScrollControllers
             _buildHoldingsTable(theme, portfolioData),
           ] else if (_selectedTabIndex == 1) ...[
-            // Mutual Funds Tab - Show MF Holdings Screen
+            // Mutual Funds Tab - Child has its own ScrollControllers
+            // Don't use parent ScrollControllers to avoid conflicts
             MfHoldingsScreenWeb(
               showSummaryCards: false,
               searchQuery: _mfSearchQuery,
@@ -712,15 +713,13 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
       child: InkWell(
         onTap: () => setState(() => _selectedTabIndex = index),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
           decoration: BoxDecoration(
             color: isSelected
                 ? (theme.isDarkMode
                     ? WebDarkColors.backgroundTertiary
                     : WebColors.backgroundTertiary)
-                : (theme.isDarkMode
-                    ? WebDarkColors.surface
-                    : WebColors.surface),
+                : Colors.white,
             border: Border.all(
               color: isSelected
                   ? (theme.isDarkMode
@@ -729,14 +728,14 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
                   : (theme.isDarkMode
                       ? WebDarkColors.textSecondary
                       : WebColors.textSecondary),
-              width: 1.5,
+              width: isSelected ? 1.5 : 1,
             ),
             borderRadius: BorderRadius.circular(50),
           ),
           child: Text(
             title,
             overflow: TextOverflow.ellipsis,
-            style: WebTextStyles.sub(
+            style: WebTextStyles.tab(
               isDarkTheme: theme.isDarkMode,
               color: isSelected
                   ? (theme.isDarkMode
@@ -745,7 +744,7 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
                   : (theme.isDarkMode
                       ? WebDarkColors.navItem
                       : WebColors.navItem),
-              fontWeight: isSelected ? WebFonts.bold : WebFonts.semiBold,
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
             ),
           ),
         ),

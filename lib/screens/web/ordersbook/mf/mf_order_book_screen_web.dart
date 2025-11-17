@@ -7,6 +7,7 @@ import '../../../../sharedWidget/no_data_found.dart';
 import '../../../../res/res.dart';
 import '../../../../res/web_colors.dart';
 import '../../../../res/global_font_web.dart';
+import '../../../../utils/responsive_snackbar.dart';
 import 'mf_order_detail_screen_web.dart';
 
 class MfOrderBookScreenWeb extends ConsumerStatefulWidget {
@@ -398,23 +399,14 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb>
         if (!mounted) return;
 
         // Show error message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-                'Failed to fetch order details: ${mforderbook.mforderdet?.stat ?? "Unknown error"}'),
-            backgroundColor: colors.lossLight,
-          ),
-        );
+        ResponsiveSnackBar.showError(
+            context,
+            'Failed to fetch order details: ${mforderbook.mforderdet?.stat ?? "Unknown error"}');
       }
     } catch (e) {
       if (mounted) {
         Navigator.pop(context); // Dismiss loading if still showing
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: ${e.toString()}'),
-            backgroundColor: colors.lossLight,
-          ),
-        );
+        ResponsiveSnackBar.showError(context, 'Error: ${e.toString()}');
       }
     }
   }

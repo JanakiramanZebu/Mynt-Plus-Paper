@@ -419,7 +419,6 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                   );
                 }
               }
-              ScaffoldMessenger.of(context).removeCurrentSnackBar();
               if (value.isEmpty || inputPrice <= 0) {
                 showResponsiveWarningMessage(
                   context,
@@ -482,7 +481,6 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                   textCtrl: orderInput.qtyCtrl,
                   textAlign: TextAlign.start,
                   onChanged: (value) {
-                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
                     if (value.isEmpty || value == "0") {
                       showResponsiveWarningMessage(
                         context,
@@ -531,7 +529,6 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                 child: CustomTextFormField(
                   fillColor: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
                   onChanged: (value) {
-                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
                     if (value.isEmpty) {
                       showResponsiveWarningMessage(context, "Price can not be empty");
                     } else {
@@ -615,7 +612,6 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                   );
                 }
               }
-              ScaffoldMessenger.of(context).removeCurrentSnackBar();
               if (value.isEmpty || inputPrice <= 0) {
                 showResponsiveWarningMessage(
                   context,
@@ -670,7 +666,6 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                   textCtrl: orderInput.ocoQtyCtrl,
                   textAlign: TextAlign.start,
                   onChanged: (value) {
-                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
                     if (value.isEmpty || value == "0") {
                       showResponsiveWarningMessage(
                         context,

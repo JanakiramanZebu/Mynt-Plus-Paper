@@ -19,10 +19,10 @@ import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/res/global_font_web.dart';
 import 'package:mynt_plus/sharedWidget/cust_text_formfield.dart';
 import 'package:mynt_plus/sharedWidget/custom_widget_button.dart';
-import 'package:mynt_plus/sharedWidget/snack_bar.dart';
 import 'package:mynt_plus/sharedWidget/enums.dart';
 import 'package:mynt_plus/sharedWidget/custom_exch_badge.dart';
 import 'package:mynt_plus/utils/responsive_navigation.dart';
+import 'package:mynt_plus/utils/responsive_snackbar.dart';
 
 import '../../../res/web_colors.dart';
 import 'margin_charges_sheet_web.dart';
@@ -645,9 +645,9 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
                 onChanged: (v) {
                   final val = double.tryParse(v) ?? 0;
                   if (v.isEmpty || val <= 0) {
-                    ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+                    ResponsiveSnackBar.showWarning(
                         context,
-                        "Price can not be ${val <= 0 ? 'zero' : 'empty'}"));
+                        "Price can not be ${val <= 0 ? 'zero' : 'empty'}");
                   } else {
                     setState(() => ordPrice = v);
                     _marginUpdate();
@@ -682,8 +682,8 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
           textAlign: TextAlign.start,
           onChanged: (value) {
             if (value.isEmpty) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                  warningMessage(context, "Trigger can not be empty"));
+              ResponsiveSnackBar.showWarning(
+                  context, "Trigger can not be empty");
             } else {
               _marginUpdate();
             }
@@ -942,19 +942,19 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
     // Required fields
     if (_convertQtyOrAmtValue(qtyCtrl.text).trim().isEmpty ||
         priceCtrl.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+      ResponsiveSnackBar.showWarning(
           context,
           _convertQtyOrAmtValue(qtyCtrl.text).isEmpty
               ? "Quantity can not be empty"
-              : "Price can not be empty"));
+              : "Price can not be empty");
       return;
     }
     if (_convertQtyOrAmtValue(qtyCtrl.text) == '0' || priceCtrl.text == '0') {
-      ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+      ResponsiveSnackBar.showWarning(
           context,
           _convertQtyOrAmtValue(qtyCtrl.text) == '0'
               ? "Quantity can not be 0"
-              : "Price can not be 0"));
+              : "Price can not be 0");
       return;
     }
 
@@ -962,8 +962,8 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
     final enteredQty = int.tryParse(_convertQtyOrAmtValue(qtyCtrl.text)) ?? 0;
     final qRounded = ((enteredQty / lotSize).round() * lotSize);
     if (enteredQty != qRounded && widget.scripInfo.exch != 'MCX') {
-      ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,
-          "Quantity should be multiple of lot size $lotSize => $qRounded"));
+      ResponsiveSnackBar.showWarning(context,
+          "Quantity should be multiple of lot size $lotSize => $qRounded");
       return;
     }
 
@@ -980,8 +980,8 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
       remainder = enteredQty % frezQty;
       final totalOrders = slices + (remainder > 0 ? 1 : 0);
       if (totalOrders > frezQtyOrderSliceMaxLimit) {
-        ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,
-            "Quantity can only be split into a maximum of $frezQtyOrderSliceMaxLimit slice. (Ex: $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQty * frezQtyOrderSliceMaxLimit})"));
+        ResponsiveSnackBar.showWarning(context,
+            "Quantity can only be split into a maximum of $frezQtyOrderSliceMaxLimit slice. (Ex: $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQty * frezQtyOrderSliceMaxLimit})");
         return;
       }
       // Confirm surveillance before showing slice sheet
@@ -1010,8 +1010,8 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
       final r = _roundOffWithInterval(double.tryParse(priceCtrl.text) ?? 0, tik)
           .toStringAsFixed(2);
       if ((double.tryParse(priceCtrl.text) ?? 0) != double.parse(r)) {
-        ScaffoldMessenger.of(context).showSnackBar(warningMessage(
-            context, "Price should be multiple of tick size $tik => $r"));
+        ResponsiveSnackBar.showWarning(
+            context, "Price should be multiple of tick size $tik => $r");
         return;
       }
     }
@@ -1021,8 +1021,8 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
       final prot =
           int.tryParse(mktProtCtrl.text.isEmpty ? '0' : mktProtCtrl.text) ?? 0;
       if (prot > 20 || prot < 1) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            warningMessage(context, "Market Protection between 1% to 20%"));
+        ResponsiveSnackBar.showWarning(
+            context, "Market Protection between 1% to 20%");
         return;
       }
     }
@@ -1034,11 +1034,11 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
           double.tryParse("${widget.scripInfo.uc ?? 0.00}") ?? double.infinity;
       final px = double.tryParse(ordPrice) ?? 0.0;
       if (px < lc || px > uc) {
-        ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+        ResponsiveSnackBar.showWarning(
             context,
             px < lc
                 ? "Price can not be lesser than Lower Circuit Limit ${widget.scripInfo.lc ?? 0.00}"
-                : "Price can not be greater than Upper Circuit Limit ${widget.scripInfo.uc ?? 0.00}"));
+                : "Price can not be greater than Upper Circuit Limit ${widget.scripInfo.uc ?? 0.00}");
         return;
       }
     }

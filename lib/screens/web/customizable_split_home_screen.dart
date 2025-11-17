@@ -1393,10 +1393,9 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
             final portfolio = ref.watch(portfolioProvider);
             final theme = ref.watch(themeProvider);
             final isLoading = _screenLoadingStates[ScreenType.positions] ?? false;
-            final hasData = portfolio.allPostionList.isNotEmpty;
             
-            // Show loader if local loading state is true, provider loading is true, or no data yet
-            if (isLoading || portfolio.posloader || !hasData) {
+            // Show loader only when actively loading, not when no data exists
+            if (isLoading || portfolio.posloader) {
               return Container(
                 width: double.infinity,
                 height: double.infinity,
@@ -1408,10 +1407,9 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
           },
         );
       case ScreenType.orderBook:
-        // Use lazy loading to prevent blocking UI
-        return _LazyOrderBookScreen(
-          isLoading: _screenLoadingStates[ScreenType.orderBook] ?? false,
-        );
+        // Show OrderBookScreenWeb directly for instant response
+        // It will handle its own loading states internally
+        return const OrderBookScreenWeb();
       case ScreenType.funds:
         return _LazyFundScreen();
       case ScreenType.mutualFund:
@@ -2264,49 +2262,32 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
   }
 
   void _handleOrderBookTap() async {
-    // Set loading state immediately
-    setState(() {
-      _screenLoadingStates[ScreenType.orderBook] = true;
-    });
-    
-    // Replace screen immediately for instant UI response - this triggers setState synchronously
+    // Replace screen immediately - no loading state needed
+    // OrderBookScreenWeb will handle its own loading gracefully
     _replaceScreenInPanel(ScreenType.orderBook);
     
-    // Allow UI to update first, then do background work
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Future.microtask(() async {
-        if (!mounted) return;
-        
-        final portfolio = ref.read(portfolioProvider);
-        final orderProviderRef = ref.read(orderProvider);
+    // Do background work immediately but don't block UI
+    Future.microtask(() async {
+      if (!mounted) return;
+      
+      final portfolio = ref.read(portfolioProvider);
+      final orderProviderRef = ref.read(orderProvider);
 
-        portfolio.cancelTimer();
+      portfolio.cancelTimer();
 
-        // Unsubscribe from other real-time data (non-blocking, fire and forget)
-        portfolio.requestWSHoldings(context: context, isSubscribe: false);
-        portfolio.requestWSPosition(context: context, isSubscribe: false);
-        
-        // Subscribe to order book websocket (non-blocking)
-        orderProviderRef.requestWSOrderBook(context: context, isSubscribe: true);
+      // Unsubscribe from other real-time data (non-blocking)
+      portfolio.requestWSHoldings(context: context, isSubscribe: false);
+      portfolio.requestWSPosition(context: context, isSubscribe: false);
+      
+      // Subscribe to order book websocket (non-blocking)
+      orderProviderRef.requestWSOrderBook(context: context, isSubscribe: true);
 
-        // Fetch order data in the background (non-blocking)
-        // Don't wait for API - screen will show immediately and handle its own loading state
-        if (mounted) {
-          // Clear loading state after widget loads (screen will show)
-          Future.delayed(const Duration(milliseconds: 100), () {
-            if (mounted) {
-              setState(() {
-                _screenLoadingStates[ScreenType.orderBook] = false;
-              });
-            }
-          });
-          
-          // Fetch data in background - screen will update when data arrives
-          orderProviderRef.fetchOrderBook(context, false);
-          orderProviderRef.fetchTradeBook(context);
-          orderProviderRef.fetchSipOrderHistory(context);
-        }
-      });
+      // Fetch data in background - screen will update progressively as data arrives
+      if (mounted) {
+        orderProviderRef.fetchOrderBook(context, false);
+        orderProviderRef.fetchTradeBook(context);
+        orderProviderRef.fetchSipOrderHistory(context);
+      }
     });
   }
 

@@ -544,15 +544,13 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
       child: InkWell(
         onTap: () => setState(() => _selectedTabIndex = index),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
           decoration: BoxDecoration(
             color: isSelected
                 ? (theme.isDarkMode
                     ? WebDarkColors.backgroundTertiary
                     : WebColors.backgroundTertiary)
-                : (theme.isDarkMode
-                    ? WebDarkColors.surface
-                    : WebColors.surface),
+                : Colors.white,
             border: Border.all(
               color: isSelected
                   ? (theme.isDarkMode
@@ -561,14 +559,14 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                   : (theme.isDarkMode
                       ? WebDarkColors.textSecondary
                       : WebColors.textSecondary),
-              width: 1.5,
+              width: isSelected ? 1.5 : 1,
             ),
             borderRadius: BorderRadius.circular(50),
           ),
           child: Text(
             title,
             overflow: TextOverflow.ellipsis,
-            style: WebTextStyles.sub(
+            style: WebTextStyles.tab(
               isDarkTheme: theme.isDarkMode,
               color: isSelected
                   ? (theme.isDarkMode
@@ -577,7 +575,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                   : (theme.isDarkMode
                       ? WebDarkColors.navItem
                       : WebColors.navItem),
-              fontWeight:  isSelected ? FontWeight.w700 : FontWeight.w600,
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
             ),
           ),
         ),

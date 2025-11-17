@@ -9,6 +9,7 @@ import '../../../provider/thems.dart';
 import '../../../res/web_colors.dart';
 import '../../../res/global_font_web.dart';
 import '../../../sharedWidget/custom_exch_badge.dart';
+import '../../../utils/responsive_snackbar.dart';
 
 class SliceOrderSheetWeb extends StatefulWidget {
   final ScripInfoModel scripInfo;
@@ -227,9 +228,8 @@ class _SliceOrderSheetWebState extends State<SliceOrderSheetWeb> {
                                       } catch (e) {
                                         // Handle any unexpected errors
                                         if (context.mounted) {
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            SnackBar(content: Text("Error: ${e.toString()}"))
-                                          );
+                                          ResponsiveSnackBar.showError(
+                                            context, "Error: ${e.toString()}");
                                         }
                                       } finally {
                                         if (mounted) {

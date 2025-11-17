@@ -10,13 +10,12 @@ import '../../../provider/order_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/websocket_provider.dart';
 import '../../../provider/market_watch_provider.dart';
-import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../res/web_colors.dart';
 import '../../../res/global_font_web.dart';
 import '../../../sharedWidget/custom_text_form_field.dart';
 import '../../../sharedWidget/no_data_found.dart';
-import '../../../sharedWidget/snack_bar.dart';
+import '../../../sharedWidget/splash_loader.dart';
 import '../../../models/order_book_model/order_book_model.dart';
 import '../../../models/order_book_model/trade_book_model.dart';
 import '../../../models/order_book_model/gtt_order_book.dart';
@@ -29,7 +28,9 @@ import 'trade_book_detail_screen_web.dart';
 import 'gtt_order_book_detail_screen_web.dart';
 import 'modify_gtt_web.dart';
 import '../order/modify_place_order_web_screen.dart';
+import '../order/place_order_screen_web.dart';
 import '../../../utils/responsive_navigation.dart';
+import '../../../utils/responsive_snackbar.dart';
 
 class OrderBookScreenWeb extends ConsumerStatefulWidget {
   const OrderBookScreenWeb({super.key});
@@ -41,10 +42,12 @@ class OrderBookScreenWeb extends ConsumerStatefulWidget {
 class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     with TickerProviderStateMixin {
   final Set<int> _selectedOrders = <int>{};
-  late TabController _tabController;
+  TabController? _tabController; // Make nullable to allow deferred initialization
   StreamSubscription? _socketSubscription;
   final ScrollController _horizontalScrollController = ScrollController();
-  final ScrollController _verticalScrollController = ScrollController();
+  final ScrollController _orderBookVerticalScrollController = ScrollController();
+  final ScrollController _tradeBookVerticalScrollController = ScrollController();
+  final ScrollController _gttVerticalScrollController = ScrollController();
   final ScrollController _tabScrollController = ScrollController();
   String? _hoveredRowToken; // Track which row is being hovered
   
@@ -52,6 +55,10 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
   bool _isProcessingCancel = false;
   bool _isProcessingModify = false;
   String? _processingOrderToken; // Track which order is being processed
+  
+  // Draggable dialog positions
+  Offset _modifyDialogPosition = const Offset(100, 100);
+  Offset _placeOrderDialogPosition = const Offset(150, 150);
   
   // Sort state per table
   int? _orderSortColumnIndex;
@@ -63,38 +70,72 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
   
   // MF tab state
   int _mfTabIndex = 0; // 0 for Orders, 1 for SIP
+  
+  // Track initialization state
+  bool _isInitialized = false;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(
-      length: ref.read(orderProvider).orderTabName.length,
-      vsync: this,
-      initialIndex: ref.read(orderProvider).selectedTab,
-    );
-
-    _tabController.addListener(() {
-      if (!_tabController.indexIsChanging) {
-        // Only call when tab change is complete, not during animation
-        ref.read(orderProvider).changeTabIndex(_tabController.index, context);
-      }
-    });
-
-    // Set up WebSocket subscription for real-time LTP updates
-    _setupSocketSubscription();
-
+    
+    // Initialize non-blocking components immediately
     FirebaseAnalytics.instance.logScreenView(
       screenName: 'Order Book Screen Web',
       screenClass: 'OrderBookScreenWeb',
     );
+    
+    // Defer heavy operations until after UI renders
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeHeavyComponents();
+    });
+  }
+  
+  void _initializeHeavyComponents() async {
+    if (!mounted) return;
+    
+    try {
+      // Initialize TabController after UI renders
+      final orderProviderRef = ref.read(orderProvider);
+      _tabController = TabController(
+        length: orderProviderRef.orderTabName.length,
+        vsync: this,
+        initialIndex: orderProviderRef.selectedTab,
+      );
+
+      _tabController!.addListener(() {
+        if (!_tabController!.indexIsChanging) {
+          // Only call when tab change is complete, not during animation
+          ref.read(orderProvider).changeTabIndex(_tabController!.index, context);
+        }
+      });
+
+      // Set up WebSocket subscription
+      _setupSocketSubscription();
+      
+      if (mounted) {
+        setState(() {
+          _isInitialized = true;
+        });
+      }
+    } catch (e) {
+      print('Error initializing Order Book components: $e');
+      // Fallback initialization
+      if (mounted) {
+        setState(() {
+          _isInitialized = true;
+        });
+      }
+    }
   }
 
   @override
   void dispose() {
     _socketSubscription?.cancel();
-    _tabController.dispose();
+    _tabController?.dispose(); // Handle nullable TabController
     _horizontalScrollController.dispose();
-    _verticalScrollController.dispose();
+    _orderBookVerticalScrollController.dispose();
+    _tradeBookVerticalScrollController.dispose();
+    _gttVerticalScrollController.dispose();
     _tabScrollController.dispose();
     super.dispose();
   }
@@ -323,39 +364,45 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
 
   @override
   Widget build(BuildContext context) {
-    final orderBook = ref.watch(orderProvider);
     final theme = ref.watch(themeProvider);
 
-    if (orderBook.loading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
+    // Always show the UI structure immediately for better UX
     return Container(
         width: double.infinity,
       height: double.infinity,
       color: theme.isDarkMode ? WebDarkColors.background : Colors.white,
       child: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
-        child: RefreshIndicator(
-          onRefresh: () async {
-            await orderBook.fetchOrderBook(context, true);
-          },
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Main Content Area (includes tabs and search bar)
-                  _buildMainContent(theme, orderBook),
-                ],
-              ),
-            ),
+        child: _isInitialized ? _buildInitializedContent(theme) : _buildLoadingContent(theme),
+      ),
+    );
+  }
+  
+  Widget _buildInitializedContent(ThemesProvider theme) {
+    final orderBook = ref.watch(orderProvider);
+    
+    return RefreshIndicator(
+      onRefresh: () async {
+        await orderBook.fetchOrderBook(context, true);
+      },
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Main Content Area (includes tabs and search bar)
+              _buildMainContent(theme, orderBook),
+            ],
           ),
         ),
       ),
     );
+  }
+  
+  Widget _buildLoadingContent(ThemesProvider theme) {
+    return const CircularLoaderImage();
   }
 
   Widget _buildHeader(ThemesProvider theme, OrderProvider orderBook) {
@@ -498,7 +545,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
               children: orderBook.orderTabName.asMap().entries.map((entry) {
                 final index = entry.key;
                 final tabString = entry.value;
-                final isSelected = _tabController.index == index;
+                final isSelected = (_tabController?.index ?? 0) == index;
                 final isLast = index == orderBook.orderTabName.length - 1;
                 
                 final parts = tabString.text?.split(' ') ?? [];
@@ -543,20 +590,18 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
       cursor: SystemMouseCursors.click,
       child: InkWell(
         onTap: () {
-          if (_tabController.index != index) {
-            _tabController.animateTo(index);
+          if (_tabController != null && _tabController!.index != index) {
+            _tabController!.animateTo(index);
           }
         },
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
           decoration: BoxDecoration(
             color: isSelected
                 ? (theme.isDarkMode
                     ? WebDarkColors.backgroundTertiary
                     : WebColors.backgroundTertiary)
-                : (theme.isDarkMode
-                    ? WebDarkColors.surface
-                    : WebColors.surface),
+                : Colors.white,
             border: Border.all(
               color: isSelected
                   ? (theme.isDarkMode
@@ -565,7 +610,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                   : (theme.isDarkMode
                       ? WebDarkColors.textSecondary
                       : WebColors.textSecondary),
-              width:  1.5,
+              width: isSelected ? 1.5 : 1,
             ),
             borderRadius: BorderRadius.circular(50),
           ),
@@ -575,7 +620,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
               Text(
                 title,
                 overflow: TextOverflow.ellipsis,
-                style: WebTextStyles.sub(
+                style: WebTextStyles.tab(
                   isDarkTheme: theme.isDarkMode,
                   color: isSelected
                       ? (theme.isDarkMode
@@ -584,15 +629,14 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                       : (theme.isDarkMode
                           ? WebDarkColors.navItem
                           : WebColors.navItem),
-                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                 ),
               ),
               if (badge != null) ...[
                 const SizedBox(width: 6),
                 Text(
                   '($badge)',
-                  style: WebTextStyles.custom(
-                    fontSize: 14,
+                  style: WebTextStyles.tab(
                     isDarkTheme: theme.isDarkMode,
                     color: isSelected
                     ? (theme.isDarkMode
@@ -601,7 +645,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                     : (theme.isDarkMode
                         ? WebDarkColors.navItem
                         : WebColors.navItem),
-                    fontWeight: FontWeight.w600,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                   ),
                 ),
               ],
@@ -632,7 +676,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
         return SizedBox(
           height: calculatedHeight.toDouble(),
           child: IndexedStack(
-            index: _tabController.index,
+            index: _tabController?.index ?? 0,
             children: [
               Align(
                 alignment: Alignment.topLeft,
@@ -771,15 +815,13 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
       child: InkWell(
         onTap: () => setState(() => _mfTabIndex = index),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
           decoration: BoxDecoration(
             color: isSelected
                 ? (theme.isDarkMode
                     ? WebDarkColors.backgroundTertiary
                     : WebColors.backgroundTertiary)
-                : (theme.isDarkMode
-                    ? WebDarkColors.surface
-                    : WebColors.surface),
+                : Colors.white,
             border: Border.all(
               color: isSelected
                   ? (theme.isDarkMode
@@ -788,14 +830,14 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                   : (theme.isDarkMode
                       ? WebDarkColors.textSecondary
                       : WebColors.textSecondary),
-              width: 1.5,
+              width: isSelected ? 1.5 : 1,
             ),
             borderRadius: BorderRadius.circular(50),
           ),
           child: Text(
             title,
             overflow: TextOverflow.ellipsis,
-            style: WebTextStyles.sub(
+            style: WebTextStyles.tab(
               isDarkTheme: theme.isDarkMode,
               color: isSelected
                   ? (theme.isDarkMode
@@ -804,7 +846,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                   : (theme.isDarkMode
                       ? WebDarkColors.navItem
                       : WebColors.navItem),
-              fontWeight: FontWeight.w600,
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
             ),
           ),
         ),
@@ -813,27 +855,46 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
   }
 
   Widget _buildOrderBookTable(ThemesProvider theme, List<OrderBookModel> orders, String title) {
+    final orderBook = ref.watch(orderProvider);
+    
+    // Show loading indicator if data is being fetched and no existing data
     if (orders.isEmpty) {
-      return const SizedBox(
-        height: 400,
-        child: Align(
-          alignment: Alignment.center,
-          child: Padding(
-            padding: EdgeInsets.all(16.0),
-            child: NoDataFound(),
+      if (orderBook.loading) {
+        return const SizedBox(
+          height: 400,
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text('Loading orders...', style: TextStyle(color: Colors.grey)),
+              ],
+            ),
           ),
-        ),
-      );
+        );
+      } else {
+        return const SizedBox(
+          height: 400,
+          child: Align(
+            alignment: Alignment.center,
+            child: Padding(
+              padding: EdgeInsets.all(16.0),
+              child: NoDataFound(),
+            ),
+          ),
+        );
+      }
     }
 
     return LayoutBuilder(
       builder: (context, constraints) {
         return Scrollbar(
-          controller: _verticalScrollController,
+          controller: _orderBookVerticalScrollController,
           thumbVisibility: true,
           radius: Radius.zero,
           child: SingleChildScrollView(
-            controller: _verticalScrollController,
+            controller: _orderBookVerticalScrollController,
             scrollDirection: Axis.vertical,
             physics: const AlwaysScrollableScrollPhysics(),
             child: Padding(
@@ -968,27 +1029,46 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
   }
 
   Widget _buildTradeBookTable(ThemesProvider theme, List<TradeBookModel> trades) {
+    final orderBook = ref.watch(orderProvider);
+    
+    // Show loading indicator if data is being fetched and no existing data
     if (trades.isEmpty) {
-      return const SizedBox(
-        height: 400,
-        child: Align(
-          alignment: Alignment.center,
-          child: Padding(
-            padding: EdgeInsets.all(16.0),
-            child: NoDataFound(),
+      if (orderBook.loading) {
+        return const SizedBox(
+          height: 400,
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text('Loading trades...', style: TextStyle(color: Colors.grey)),
+              ],
+            ),
           ),
-        ),
-      );
+        );
+      } else {
+        return const SizedBox(
+          height: 400,
+          child: Align(
+            alignment: Alignment.center,
+            child: Padding(
+              padding: EdgeInsets.all(16.0),
+              child: NoDataFound(),
+            ),
+          ),
+        );
+      }
     }
 
     return LayoutBuilder(
       builder: (context, constraints) {
         return Scrollbar(
-          controller: _verticalScrollController,
+          controller: _tradeBookVerticalScrollController,
           thumbVisibility: true,
           radius: Radius.zero,
           child: SingleChildScrollView(
-            controller: _verticalScrollController,
+            controller: _tradeBookVerticalScrollController,
             scrollDirection: Axis.vertical,
             physics: const AlwaysScrollableScrollPhysics(),
             child: Padding(
@@ -1102,27 +1182,46 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
   }
 
   Widget _buildGttOrderBookTable(ThemesProvider theme, List<GttOrderBookModel> gttOrders) {
+    final orderBook = ref.watch(orderProvider);
+    
+    // Show loading indicator if data is being fetched and no existing data
     if (gttOrders.isEmpty) {
-      return const SizedBox(
-        height: 400,
-        child: Align(
-          alignment: Alignment.center,
-          child: Padding(
-            padding: EdgeInsets.all(16.0),
-            child: NoDataFound(),
+      if (orderBook.loading) {
+        return const SizedBox(
+          height: 400,
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text('Loading GTT orders...', style: TextStyle(color: Colors.grey)),
+              ],
+            ),
           ),
-        ),
-      );
+        );
+      } else {
+        return const SizedBox(
+          height: 400,
+          child: Align(
+            alignment: Alignment.center,
+            child: Padding(
+              padding: EdgeInsets.all(16.0),
+              child: NoDataFound(),
+            ),
+          ),
+        );
+      }
     }
 
     return LayoutBuilder(
       builder: (context, constraints) {
         return Scrollbar(
-          controller: _verticalScrollController,
+          controller: _gttVerticalScrollController,
           thumbVisibility: true,
           radius: Radius.zero,
           child: SingleChildScrollView(
-            controller: _verticalScrollController,
+            controller: _gttVerticalScrollController,
             scrollDirection: Axis.vertical,
             physics: const AlwaysScrollableScrollPhysics(),
             child: Padding(
@@ -1582,6 +1681,171 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
         _processingOrderToken = uniqueId;
       });
 
+      // Show confirmation dialog first
+      final shouldCancel = await showDialog<bool>(
+        context: context,
+        builder: (BuildContext dialogContext) {
+          final theme = ref.read(themeProvider);
+          final symbol = orderData.tsym?.replaceAll("-EQ", "") ?? 'N/A';
+          final exchange = orderData.exch ?? '';
+          final displayText = '$symbol $exchange'.trim();
+          
+          return Dialog(
+            backgroundColor: Colors.transparent,
+            child: Container(
+              width: 400,
+              decoration: BoxDecoration(
+                color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                borderRadius: BorderRadius.circular(5),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Header with close button
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    margin: const EdgeInsets.only(bottom: 8),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: theme.isDarkMode
+                              ? WebDarkColors.divider
+                              : WebColors.divider,
+                        ),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Cancel Order',
+                          style: WebTextStyles.dialogTitle(
+                            isDarkTheme: theme.isDarkMode,
+                            color: theme.isDarkMode
+                                ? WebDarkColors.textPrimary
+                                : WebColors.textPrimary,
+                          ),
+                        ),
+                        Material(
+                          color: Colors.transparent,
+                          shape: const CircleBorder(),
+                          child: InkWell(
+                            customBorder: const CircleBorder(),
+                            splashColor: theme.isDarkMode
+                                ? Colors.white.withOpacity(.15)
+                                : Colors.black.withOpacity(.15),
+                            highlightColor: theme.isDarkMode
+                                ? Colors.white.withOpacity(.08)
+                                : Colors.black.withOpacity(.08),
+                            onTap: () => Navigator.of(dialogContext).pop(false),
+                            child: Padding(
+                              padding: const EdgeInsets.all(6.0),
+                              child: Icon(
+                                Icons.close,
+                                size: 20,
+                                color: theme.isDarkMode
+                                    ? WebDarkColors.iconSecondary
+                                    : WebColors.iconSecondary,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Content area
+                  Flexible(
+                    fit: FlexFit.loose,
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.only(top: 0, bottom: 20, left: 20, right: 20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            child: Center(
+                              child: Text(
+                                'Are you sure you want to cancel this order?',
+                                textAlign: TextAlign.center,
+                                style: WebTextStyles.dialogContent(
+                                  isDarkTheme: theme.isDarkMode,
+                                  color: theme.isDarkMode
+                                      ? WebDarkColors.textPrimary
+                                      : WebColors.textPrimary,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Center(
+                            child: Text(
+                              displayText,
+                              textAlign: TextAlign.center,
+                              style: WebTextStyles.dialogContent(
+                                isDarkTheme: theme.isDarkMode,
+                                color: theme.isDarkMode
+                                    ? WebDarkColors.textSecondary
+                                    : WebColors.textSecondary,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 40,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: theme.isDarkMode
+                                    ? WebDarkColors.error
+                                    : WebColors.error,
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                              child: Material(
+                                color: Colors.transparent,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(5),
+                                ),
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(5),
+                                  splashColor: Colors.white.withOpacity(0.2),
+                                  highlightColor: Colors.white.withOpacity(0.1),
+                                  onTap: () => Navigator.of(dialogContext).pop(true),
+                                  child: Center(
+                                    child: Text(
+                                      'Cancel Order',
+                                      style: WebTextStyles.buttonMd(
+                                        isDarkTheme: theme.isDarkMode,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+
+      if (shouldCancel != true) {
+        // User cancelled the confirmation dialog, reset processing state
+        if (mounted) {
+          setState(() {
+            _isProcessingCancel = false;
+            _processingOrderToken = null;
+          });
+        }
+        return;
+      }
+
+      // Proceed with cancel after confirmation
       // Pass false for loop to avoid Navigator.pop issues when canceling from table
       // The provider will not auto-pop dialogs, which is what we want when canceling from hover buttons
       final cancelResult = await ref.read(orderProvider).fetchOrderCancel(
@@ -1594,17 +1858,13 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
       if (cancelResult != null && cancelResult.stat == "Ok") {
         await ref.read(orderProvider).fetchOrderBook(context, true);
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            successMessage(context, 'Order Cancelled'),
-          );
+          ResponsiveSnackBar.showSuccess(context, 'Order Cancelled');
         }
       }
     } catch (e) {
       // Handle error
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          error(context, 'Failed to cancel order'),
-        );
+        ResponsiveSnackBar.showError(context, 'Failed to cancel order');
       }
     } finally {
       if (mounted) {
@@ -1637,42 +1897,26 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
 
       final scripInfo = ref.read(marketWatchProvider).scripInfoModel;
       if (scripInfo == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          error(context, 'Unable to fetch scrip information'),
-        );
+        ResponsiveSnackBar.showError(context, 'Unable to fetch scrip information');
         return;
       }
 
-      // Show modify order screen as dialog (same format as place order)
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return Dialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(5),
-            ),
-            child: SizedBox(
-              width: 500,
-              height: MediaQuery.of(context).size.height * 0.9,
-              child: StatefulBuilder(
-                builder: (context, setState) {
-                  return ModifyPlaceOrderScreenWeb(
-                    modifyOrderArgs: orderData,
-                    orderArg: _createOrderArgs(orderData),
-                    scripInfo: scripInfo,
-                  );
-                }
-              ),
-            ),
-          );
-        },
-      );
+      // Show draggable modify order dialog without backdrop
+      _showDraggableModifyDialog(orderData, scripInfo);
+
+      // Refresh order book after a short delay to reflect any changes
+      if (mounted) {
+        // Wait a bit for any potential modifications to complete
+        Future.delayed(const Duration(milliseconds: 500), () async {
+          if (mounted) {
+            await ref.read(orderProvider).fetchOrderBook(context, true);
+          }
+        });
+      }
     } catch (e) {
       // Handle error
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          error(context, 'Failed to open modify order: ${e.toString()}'),
-        );
+        ResponsiveSnackBar.showError(context, 'Failed to open modify order: ${e.toString()}');
       }
     } finally {
       if (mounted) {
@@ -1682,6 +1926,28 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
         });
       }
     }
+  }
+
+  void _showDraggableModifyDialog(OrderBookModel orderData, dynamic scripInfo) {
+    final overlay = Overlay.of(context);
+    late OverlayEntry overlayEntry;
+    
+    overlayEntry = OverlayEntry(
+      builder: (context) => _DraggableModifyDialog(
+        orderData: orderData,
+        scripInfo: scripInfo,
+        createOrderArgs: _createOrderArgs,
+        initialPosition: _modifyDialogPosition,
+        onPositionChanged: (newPosition) {
+          _modifyDialogPosition = newPosition;
+        },
+        onClose: () {
+          overlayEntry.remove();
+        },
+      ),
+    );
+    
+    overlay.insert(overlayEntry);
   }
 
   Future<void> _handleRepeatOrder(OrderBookModel orderData) async {
@@ -1695,14 +1961,66 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
 
       if (!mounted) return;
 
-      ResponsiveNavigation.toPlaceOrderScreen(context: context, arguments: {
-        "orderArg": _createOrderArgs(orderData),
-        "scripInfo": ref.read(marketWatchProvider).scripInfoModel!,
-        "isBskt": '',
-      });
+      final scripInfo = ref.read(marketWatchProvider).scripInfoModel;
+      if (scripInfo == null) {
+        ResponsiveSnackBar.showError(context, 'Unable to fetch scrip information');
+        return;
+      }
+
+      // Create OrderScreenArgs for repeat order
+      final orderArgs = _createOrderArgs(orderData);
+
+      // Use ResponsiveNavigation instead of draggable dialog
+      await ResponsiveNavigation.toPlaceOrderScreen(
+        context: context,
+        arguments: {
+          "orderArg": orderArgs,
+          "scripInfo": scripInfo,
+          "isBskt": "",
+        },
+      );
     } catch (e) {
       // Handle error
+      if (mounted) {
+        ResponsiveSnackBar.showError(context, 'Failed to open place order: ${e.toString()}');
+      }
     }
+  }
+
+  void _showDraggablePlaceOrderDialog(OrderBookModel orderData, dynamic scripInfo) {
+    final overlay = Overlay.of(context);
+    late OverlayEntry overlayEntry;
+    
+    overlayEntry = OverlayEntry(
+      builder: (context) => _DraggablePlaceOrderDialog(
+        orderData: orderData,
+        scripInfo: scripInfo,
+        createOrderArgs: _createOrderArgs,
+        initialPosition: _placeOrderDialogPosition,
+        onPositionChanged: (newPosition) {
+          _placeOrderDialogPosition = newPosition;
+        },
+        onClose: () {
+          overlayEntry.remove();
+        },
+      ),
+    );
+    
+    overlay.insert(overlayEntry);
+  }
+
+  void _showDraggableGttModifyDialog(GttOrderBookModel gttOrderData, dynamic scripInfo) {
+    // ModifyGttWeb already wraps itself in a Dialog, so we just show it directly
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) {
+        return ModifyGttWeb(
+          gttOrderBook: gttOrderData,
+          scripInfo: scripInfo,
+        );
+      },
+    );
   }
 
   OrderScreenArgs _createOrderArgs(OrderBookModel orderData) {
@@ -1924,16 +2242,12 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
       // Refresh GTT order book after successful cancel
       await ref.read(orderProvider).fetchGTTOrderBook(context, "");
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          successMessage(context, 'GTT Order Cancelled'),
-        );
+        ResponsiveSnackBar.showSuccess(context, 'GTT Order Cancelled');
       }
     } catch (e) {
       // Handle error
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          error(context, 'Failed to cancel GTT order'),
-        );
+        ResponsiveSnackBar.showError(context, 'Failed to cancel GTT order');
       }
     } finally {
       if (mounted) {
@@ -1966,29 +2280,16 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
 
       final scripInfo = ref.read(marketWatchProvider).scripInfoModel;
       if (scripInfo == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          error(context, 'Unable to fetch scrip information'),
-        );
+        ResponsiveSnackBar.showError(context, 'Unable to fetch scrip information');
         return;
       }
 
-      // Show modify GTT order screen as dialog
-      // ModifyGttWeb already returns a Dialog, so we just show it directly
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return ModifyGttWeb(
-            gttOrderBook: gttOrderData,
-            scripInfo: scripInfo,
-          );
-        },
-      );
+      // Show modify GTT order screen as draggable dialog
+      _showDraggableGttModifyDialog(gttOrderData, scripInfo);
     } catch (e) {
       // Handle error
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          error(context, 'Failed to open modify GTT order: ${e.toString()}'),
-        );
+        ResponsiveSnackBar.showError(context, 'Failed to open modify GTT order: ${e.toString()}');
       }
     } finally {
       if (mounted) {
@@ -2866,3 +3167,448 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     }
   }
 }
+
+// Draggable Modify Dialog Widget
+class _DraggableModifyDialog extends ConsumerStatefulWidget {
+  final OrderBookModel orderData;
+  final dynamic scripInfo;
+  final OrderScreenArgs Function(OrderBookModel) createOrderArgs;
+  final Offset initialPosition;
+  final Function(Offset) onPositionChanged;
+  final VoidCallback onClose;
+
+  const _DraggableModifyDialog({
+    required this.orderData,
+    required this.scripInfo,
+    required this.createOrderArgs,
+    required this.initialPosition,
+    required this.onPositionChanged,
+    required this.onClose,
+  });
+
+  @override
+  ConsumerState<_DraggableModifyDialog> createState() => _DraggableModifyDialogState();
+}
+
+class _DraggableModifyDialogState extends ConsumerState<_DraggableModifyDialog> {
+  late Offset _position;
+  bool _isDragging = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _position = widget.initialPosition;
+    
+    // Listen for navigation changes (when confirmation screen appears)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _listenForNavigationChanges();
+    });
+  }
+
+  void _listenForNavigationChanges() {
+    // Monitor for navigation events that might indicate the modify dialog should close
+    Timer.periodic(const Duration(milliseconds: 200), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      
+      // Stop checking after 30 seconds to prevent memory leaks
+      if (timer.tick > 150) { // 30 seconds
+        timer.cancel();
+        return;
+      }
+      
+      // Check if a new route has been pushed (like confirmation screen)
+      final navigator = Navigator.of(context, rootNavigator: true);
+      if (navigator.canPop()) {
+        // If there are multiple routes on the stack, a confirmation might have appeared
+        // Close this dialog after a short delay to allow the confirmation to fully appear
+        Timer(const Duration(milliseconds: 300), () {
+          if (mounted) {
+            widget.onClose();
+          }
+        });
+        timer.cancel();
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = ref.watch(themeProvider);
+    final screenSize = MediaQuery.of(context).size;
+
+    // Constrain position to screen bounds
+    final constrainedPosition = Offset(
+      _position.dx.clamp(0, screenSize.width - 520), // 520 = dialog width + padding
+      _position.dy.clamp(0, screenSize.height - (screenSize.height * 0.9 + 20)), // dialog height + padding
+    );
+
+    return Stack(
+      children: [
+        // Invisible full-screen tap detector to close dialog when clicking outside
+        Positioned.fill(
+          child: GestureDetector(
+            onTap: widget.onClose,
+            child: Container(
+              color: Colors.transparent,
+            ),
+          ),
+        ),
+        // Actual dialog
+        Positioned(
+          left: constrainedPosition.dx,
+          top: constrainedPosition.dy,
+          child: GestureDetector(
+            onTap: () {}, // Prevent tap from propagating to background
+            onPanStart: (details) {
+              setState(() {
+                _isDragging = true;
+              });
+            },
+            onPanUpdate: (details) {
+              setState(() {
+                _position = Offset(
+                  _position.dx + details.delta.dx,
+                  _position.dy + details.delta.dy,
+                );
+              });
+              widget.onPositionChanged(_position);
+            },
+            onPanEnd: (details) {
+              setState(() {
+                _isDragging = false;
+              });
+            },
+            child: Material(
+              elevation: _isDragging ? 16 : 8,
+              borderRadius: BorderRadius.circular(5),
+              color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+              child: Container(
+                width: 500,
+                height: MediaQuery.of(context).size.height * 0.9,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(5),
+                  border: Border.all(
+                    color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    // Draggable header
+                    Container(
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: theme.isDarkMode 
+                        ? WebDarkColors.backgroundSecondary 
+                        : WebColors.backgroundSecondary,
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(5),
+                          topRight: Radius.circular(5),
+                        ),
+                        border: Border(
+                          bottom: BorderSide(
+                            color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
+                          ),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          // Drag handle
+                          const SizedBox(width: 8),
+                          Icon(
+                            Icons.drag_indicator,
+                            size: 16,
+                            color: theme.isDarkMode 
+                                ? WebDarkColors.iconSecondary 
+                                : WebColors.iconSecondary,
+                          ),
+                          const SizedBox(width: 8),
+                          // Title
+                          Expanded(
+                            child: Text(
+                              'Modify Order - ${widget.orderData.tsym}',
+                              style: WebTextStyles.dialogTitle(
+                                isDarkTheme: theme.isDarkMode,
+                                color: theme.isDarkMode
+                                    ? WebDarkColors.textPrimary
+                                    : WebColors.textPrimary,
+                              ),
+                            ),
+                          ),
+                          // Close button
+                          Material(
+                            color: Colors.transparent,
+                            shape: const CircleBorder(),
+                            child: InkWell(
+                              customBorder: const CircleBorder(),
+                              splashColor: theme.isDarkMode
+                                  ? Colors.white.withOpacity(.15)
+                                  : Colors.black.withOpacity(.15),
+                              highlightColor: theme.isDarkMode
+                                  ? Colors.white.withOpacity(.08)
+                                  : Colors.black.withOpacity(.08),
+                              onTap: widget.onClose,
+                              child: Padding(
+                                padding: const EdgeInsets.all(6.0),
+                                child: Icon(
+                                  Icons.close,
+                                  size: 16,
+                                  color: theme.isDarkMode
+                                      ? WebDarkColors.iconSecondary
+                                      : WebColors.iconSecondary,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                        ],
+                      ),
+                    ),
+                    // Content area
+                    Expanded(
+                      child: ModifyPlaceOrderScreenWeb(
+                        modifyOrderArgs: widget.orderData,
+                        orderArg: widget.createOrderArgs(widget.orderData),
+                        scripInfo: widget.scripInfo,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// Draggable Place Order Dialog Widget
+class _DraggablePlaceOrderDialog extends ConsumerStatefulWidget {
+  final OrderBookModel orderData;
+  final dynamic scripInfo;
+  final OrderScreenArgs Function(OrderBookModel) createOrderArgs;
+  final Offset initialPosition;
+  final Function(Offset) onPositionChanged;
+  final VoidCallback onClose;
+
+  const _DraggablePlaceOrderDialog({
+    required this.orderData,
+    required this.scripInfo,
+    required this.createOrderArgs,
+    required this.initialPosition,
+    required this.onPositionChanged,
+    required this.onClose,
+  });
+
+  @override
+  ConsumerState<_DraggablePlaceOrderDialog> createState() => _DraggablePlaceOrderDialogState();
+}
+
+class _DraggablePlaceOrderDialogState extends ConsumerState<_DraggablePlaceOrderDialog> {
+  late Offset _position;
+  bool _isDragging = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _position = widget.initialPosition;
+    
+    // Listen for navigation changes (when confirmation screen appears)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _listenForNavigationChanges();
+    });
+  }
+
+  void _listenForNavigationChanges() {
+    // Monitor for navigation events that might indicate the place order dialog should close
+    Timer.periodic(const Duration(milliseconds: 200), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      
+      // Stop checking after 30 seconds to prevent memory leaks
+      if (timer.tick > 150) { // 30 seconds
+        timer.cancel();
+        return;
+      }
+      
+      // Check if a new route has been pushed (like confirmation screen)
+      final navigator = Navigator.of(context, rootNavigator: true);
+      if (navigator.canPop()) {
+        // Get the current route to check if it's a confirmation screen
+        final currentRoute = ModalRoute.of(context);
+        final routeName = currentRoute?.settings.name;
+        
+        // Don't close for surveillance dialogs or other temporary dialogs
+        // Only close for actual confirmation screens or permanent navigation
+        if (routeName != null && 
+            (routeName.contains('confirmation') || 
+             routeName.contains('order_confirmation'))) {
+          // Close this dialog after a short delay to allow the confirmation to fully appear
+          Timer(const Duration(milliseconds: 300), () {
+            if (mounted) {
+              widget.onClose();
+            }
+          });
+          timer.cancel();
+        }
+        // For other dialogs (like surveillance), let them stay open
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = ref.watch(themeProvider);
+    final screenSize = MediaQuery.of(context).size;
+
+    // Constrain position to screen bounds
+    final constrainedPosition = Offset(
+      _position.dx.clamp(0, screenSize.width - 520), // 520 = dialog width + padding
+      _position.dy.clamp(0, screenSize.height - (screenSize.height * 0.9 + 20)), // dialog height + padding
+    );
+
+    return Stack(
+      children: [
+        // Invisible full-screen tap detector to close dialog when clicking outside
+        Positioned.fill(
+          child: GestureDetector(
+            onTap: widget.onClose,
+            child: Container(
+              color: Colors.transparent,
+            ),
+          ),
+        ),
+        // Actual dialog
+        Positioned(
+          left: constrainedPosition.dx,
+          top: constrainedPosition.dy,
+          child: GestureDetector(
+            onTap: () {}, // Prevent tap from propagating to background
+            onPanStart: (details) {
+              setState(() {
+                _isDragging = true;
+              });
+            },
+            onPanUpdate: (details) {
+              setState(() {
+                _position = Offset(
+                  _position.dx + details.delta.dx,
+                  _position.dy + details.delta.dy,
+                );
+              });
+              widget.onPositionChanged(_position);
+            },
+            onPanEnd: (details) {
+              setState(() {
+                _isDragging = false;
+              });
+            },
+            child: Material(
+              elevation: _isDragging ? 16 : 8,
+              borderRadius: BorderRadius.circular(5),
+              color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+              child: Container(
+                width: 500,
+                height: MediaQuery.of(context).size.height * 0.9,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(5),
+                  border: Border.all(
+                    color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    // Draggable header
+                    Container(
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: theme.isDarkMode 
+                            ? WebDarkColors.backgroundSecondary 
+                            : WebColors.backgroundSecondary,
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(5),
+                          topRight: Radius.circular(5),
+                        ),
+                        border: Border(
+                          bottom: BorderSide(
+                            color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
+                          ),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          // Drag handle
+                          const SizedBox(width: 8),
+                          Icon(
+                            Icons.drag_indicator,
+                            size: 16,
+                            color: theme.isDarkMode 
+                                ? WebDarkColors.iconSecondary 
+                                : WebColors.iconSecondary,
+                          ),
+                          const SizedBox(width: 8),
+                          // Title
+                          Expanded(
+                            child: Text(
+                              'Place Order - ${widget.orderData.tsym}',
+                              style: WebTextStyles.dialogTitle(
+                                isDarkTheme: theme.isDarkMode,
+                                color: theme.isDarkMode
+                                    ? WebDarkColors.textPrimary
+                                    : WebColors.textPrimary,
+                              ),
+                            ),
+                          ),
+                          // Close button
+                          Material(
+                            color: Colors.transparent,
+                            shape: const CircleBorder(),
+                            child: InkWell(
+                              customBorder: const CircleBorder(),
+                              splashColor: theme.isDarkMode
+                                  ? Colors.white.withOpacity(.15)
+                                  : Colors.black.withOpacity(.15),
+                              highlightColor: theme.isDarkMode
+                                  ? Colors.white.withOpacity(.08)
+                                  : Colors.black.withOpacity(.08),
+                              onTap: widget.onClose,
+                              child: Padding(
+                                padding: const EdgeInsets.all(6.0),
+                                child: Icon(
+                                  Icons.close,
+                                  size: 16,
+                                  color: theme.isDarkMode
+                                      ? WebDarkColors.iconSecondary
+                                      : WebColors.iconSecondary,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                        ],
+                      ),
+                    ),
+                    // Content area
+                    Expanded(
+                      child: PlaceOrderScreenWeb(
+                        orderArg: widget.createOrderArgs(widget.orderData),
+                        scripInfo: widget.scripInfo,
+                        isBasket: '',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+

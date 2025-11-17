@@ -60,7 +60,7 @@ class _RedemptionBottomSheetWebState extends ConsumerState<RedemptionBottomSheet
           children: [
             // Header with close button
             Container(
-              padding: const EdgeInsets.only(left: 16, right: 16, top: 0, bottom: 10),
+              padding: const EdgeInsets.only(left: 16, right: 16, top: 10, bottom: 10),
               margin: const EdgeInsets.only(bottom: 8),
               decoration: BoxDecoration(
                 border: Border(

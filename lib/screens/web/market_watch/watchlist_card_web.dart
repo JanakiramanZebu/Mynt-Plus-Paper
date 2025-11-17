@@ -1952,13 +1952,16 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
         _isNavigating = true;
       });
 
+      final currentToken = widget.watchListData['token']?.toString() ?? "";
+      final currentExch = widget.watchListData['exch']?.toString() ?? "";
+
       // Fetch scrip info first, exactly like reference implementation
       await ref.read(marketWatchProvider).fetchScripInfo(
-          widget.watchListData['token']?.toString() ?? "",
-          widget.watchListData['exch']?.toString() ?? "",
+          currentToken,
+          currentExch,
           context,
           true);
-      await ref.read(marketWatchProvider).fetchScripQuote(widget.watchListData['token']?.toString() ?? "", widget.watchListData['exch']?.toString() ?? "", context);
+      await ref.read(marketWatchProvider).fetchScripQuote(currentToken, currentExch, context);
 
       // Ensure scripInfo is loaded before proceeding
       final scripInfo = ref.read(marketWatchProvider).scripInfoModel;
@@ -1966,15 +1969,75 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
         throw Exception('Failed to load scrip information');
       }
 
+      // Get fresh quote data after fetchScripQuote
+      final freshQuoteData = ref.read(marketWatchProvider).getQuotes;
+      
+      // Also check websocket data for the current token as it has the most up-to-date LTP
+      final wsProvider = ref.read(websocketProvider);
+      final socketData = wsProvider.socketDatas[currentToken];
+      
+      // Priority: Websocket data > Fresh quote data > Watchlist data > Stale depthData
+      String? ltp;
+      String? perChange;
+      
+      // Helper function to check if a value is valid
+      bool isValidPrice(String? value) {
+        if (value == null || value.isEmpty) return false;
+        final normalized = value.trim();
+        return normalized != '0' && 
+               normalized != '0.0' && 
+               normalized != '0.00' && 
+               normalized != 'null' &&
+               normalized != 'NaN' &&
+               normalized != 'Infinity';
+      }
+      
+      // Try websocket data first (most up-to-date)
+      if (socketData != null) {
+        final wsLtp = socketData['lp']?.toString();
+        final wsPc = socketData['pc']?.toString();
+        if (isValidPrice(wsLtp)) {
+          ltp = wsLtp;
+          perChange = wsPc;
+        }
+      }
+      
+      // Fallback to fresh quote data
+      if (!isValidPrice(ltp) && freshQuoteData != null) {
+        final quoteLtp = freshQuoteData.lp ?? freshQuoteData.c;
+        if (isValidPrice(quoteLtp)) {
+          ltp = quoteLtp;
+          perChange = freshQuoteData.pc;
+        }
+      }
+      
+      // Fallback to watchlist data
+      if (!isValidPrice(ltp)) {
+        final wlLtp = widget.watchListData['ltp']?.toString();
+        if (isValidPrice(wlLtp)) {
+          ltp = wlLtp;
+          perChange = widget.watchListData['perChange']?.toString();
+        }
+      }
+      
+      // Final fallback to depthData (stale but better than nothing)
+      if (!isValidPrice(ltp)) {
+        final depthLtp = depthData.lp ?? depthData.c;
+        if (isValidPrice(depthLtp)) {
+          ltp = depthLtp;
+          perChange = depthData.pc;
+        }
+      }
+
       // Use exact lot size logic from reference implementation
       final isBasketMode = widget.watchListData['isBasket']?.toString() ?? "";
       final lotSize = isBasketMode == "BasketMode"
-          ? _safeParseLotSize(scripInfo.ls, depthData.ls, "1")
-          : _safeParseLotSize(depthData.ls, scripInfo.ls, "1");
+          ? _safeParseLotSize(scripInfo.ls, freshQuoteData?.ls ?? depthData.ls, "1")
+          : _safeParseLotSize(freshQuoteData?.ls ?? depthData.ls, scripInfo.ls, "1");
 
-      // Use safe parsing for price values
-      final safeLtp = _safeParseNumeric(depthData.lp ?? depthData.c, "0.00");
-      final safePerChange = _safeParseNumeric(depthData.pc, "0.00");
+      // Use safe parsing for price values with fresh data
+      final safeLtp = _safeParseNumeric(ltp, "0.00");
+      final safePerChange = _safeParseNumeric(perChange, "0.00");
 
       OrderScreenArgs orderArgs = OrderScreenArgs(
           exchange: widget.watchListData['exch']?.toString() ?? "",

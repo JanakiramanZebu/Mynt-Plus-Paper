@@ -12,6 +12,7 @@ import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
 import '../../../../res/web_colors.dart';
 import '../../../../res/global_font_web.dart';
+import '../../../../utils/responsive_snackbar.dart';
 import '../../../../sharedWidget/functions.dart';
 import '../../../../sharedWidget/list_divider.dart';
 import '../../../../sharedWidget/no_data_found.dart';
@@ -719,13 +720,10 @@ class BasketScripList extends ConsumerWidget {
                         onTap: () async {
                           // Check if basket already has frezQtyOrderSliceMaxLimit items
                           if (basket.bsktScripList.length >= basket.frezQtyOrderSliceMaxLimit) {
-                            ScaffoldMessenger.of(context)
-                                .showSnackBar(SnackBar(
-                              content: Text(
-                                  "Basket limit reached. Please create a new basket as you are exceeding the ${basket.frezQtyOrderSliceMaxLimit} item limit."),
-                              backgroundColor: colors.darkred,
-                              duration: const Duration(seconds: 3),
-                            ));
+                            ResponsiveSnackBar.showWarning(
+                              context,
+                              "Basket limit reached. Please create a new basket as you are exceeding the ${basket.frezQtyOrderSliceMaxLimit} item limit.",
+                            );
                             return;
                           }
     
@@ -1139,12 +1137,7 @@ class BasketScripList extends ConsumerWidget {
                                   
                                   final scripInfo = ref.read(marketWatchProvider).scripInfoModel;
                                   if (scripInfo == null) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text('Unable to fetch scrip information'),
-                                        backgroundColor: colors.lossLight,
-                                      ),
-                                    );
+                                    ResponsiveSnackBar.showError(context, 'Unable to fetch scrip information');
                                     return;
                                   }
                                   
@@ -1482,18 +1475,8 @@ class BasketScripList extends ConsumerWidget {
                         ? OutlinedButton.icon(
                             onPressed: () {
                               basket.resetBasketOrderTracking(bsktName);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: TextWidget.paraText(
-                                      text: "Basket reset. You can place orders again.",
-                                      theme: false,
-                                      color: colors.colorWhite,
-                                      fw: 0,
-                                      ),
-                                  backgroundColor: colors.ltpgreen,
-                                  duration: const Duration(seconds: 2),
-                                ),
-                              );
+                              ResponsiveSnackBar.showSuccess(
+                                  context, "Basket reset. You can place orders again.");
                             },
                             label: TextWidget.subText(
                               text: "Reset Orders",
