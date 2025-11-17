@@ -93,7 +93,7 @@ class RazorpayTranstationRes {
     status = json['status'];
     tax = json['tax'];
     vpa = json['vpa'];
-    wallet = json['wallet'];
+    wallet = json['wallet'] == "" ? null : json['wallet'];
   }
 
   Map<String, dynamic> toJson() {
