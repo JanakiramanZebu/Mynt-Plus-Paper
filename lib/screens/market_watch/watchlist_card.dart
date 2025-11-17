@@ -11,6 +11,7 @@ import '../../sharedWidget/custom_exch_badge.dart';
 import '../../sharedWidget/functions.dart';
 import '../../sharedWidget/snack_bar.dart';
 import 'edit_scrip.dart';
+import 'stock_events_dialog.dart';
 
 class WatchlistCard extends ConsumerStatefulWidget {
   final dynamic watchListData;
@@ -24,10 +25,50 @@ class _WatchlistCardState extends ConsumerState<WatchlistCard> {
   // Add navigation lock to prevent multiple navigation events
   bool _isNavigating = false;
 
+  // Helper function to check if expiry date matches today
+  bool _isExpiryToday(String? expDateStr) {
+    if (expDateStr == null || expDateStr.isEmpty) return false;
+
+    try {
+      // Parse the expiry date format "11 NOV 25"
+      final parts = expDateStr.trim().split(' ');
+      if (parts.length != 3) return false;
+
+      final day = int.tryParse(parts[0]);
+      if (day == null) return false;
+
+      final monthStr = parts[1].toUpperCase();
+      final yearStr = parts[2];
+
+      // Map month abbreviations to numbers
+      const months = {
+        'JAN': 1, 'FEB': 2, 'MAR': 3, 'APR': 4, 'MAY': 5, 'JUN': 6,
+        'JUL': 7, 'AUG': 8, 'SEP': 9, 'OCT': 10, 'NOV': 11, 'DEC': 12
+      };
+
+      final month = months[monthStr];
+      if (month == null) return false;
+
+      // Parse year (assuming 2-digit year)
+      final year = int.tryParse('20$yearStr');
+      if (year == null) return false;
+
+      final expDate = DateTime(year, month, day);
+      final today = DateTime.now();
+
+      return expDate.year == today.year &&
+             expDate.month == today.month &&
+             expDate.day == today.day;
+    } catch (e) {
+      return false;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = ref.read(themeProvider);
     final marketWatch = ref.read(marketWatchProvider);
+    final events = marketWatch.filterStockEventsByToken(widget.watchListData['token']);
 
     return Material(
       color: Colors.transparent,
@@ -132,6 +173,7 @@ class _WatchlistCardState extends ConsumerState<WatchlistCard> {
                 padding: const EdgeInsets.only(top: 4),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     CustomExchBadge(exch: '${widget.watchListData["exch"]}'),
                     if (widget.watchListData['expDate'].toString().isNotEmpty)
@@ -143,6 +185,30 @@ class _WatchlistCardState extends ConsumerState<WatchlistCard> {
                         theme: theme.isDarkMode,
                         fw: 0,
                       ),
+                    if (_isExpiryToday(widget.watchListData['expDate'])) ...[
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                            decoration: BoxDecoration(
+                              color: theme.isDarkMode
+                                  ? colors.btnBg
+                                  : colors.btnBg,
+                              borderRadius: BorderRadius.circular(4),
+                              border: Border.all(
+                                color: theme.isDarkMode
+                                    ? colors.searchBgDark.withOpacity(0.3)
+                                    : colors.searchBg.withOpacity(0.3),
+                                width: 1,
+                              ),
+                            ),
+                        child: TextWidget.captionText(
+                          text: "Expiry",
+                          color: theme.isDarkMode ? colors.secondaryDark : colors.secondaryLight,
+                          theme: theme.isDarkMode,
+                          fw: 1,
+                        ),
+                      ),
+                    ],
                     if (widget.watchListData['holdingQty'] != null &&
                         widget.watchListData['holdingQty']
                             .toString()
@@ -162,7 +228,86 @@ class _WatchlistCardState extends ConsumerState<WatchlistCard> {
                         theme: theme.isDarkMode,
                         fw: 0,
                       ),
+                    ],
+                     if (marketWatch.hasStockEvents(events,widget.watchListData['token'])) ...[
+                      
+                      const SizedBox(width: 6),
+                      Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () {
+                            showModalBottomSheet(
+                              context: context,
+                              isScrollControlled: true,
+                              useSafeArea: true,
+                              isDismissible: true,
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.only(
+                                  topLeft: Radius.circular(16),
+                                  topRight: Radius.circular(16),
+                                ),
+                              ),
+                              enableDrag: true,
+                              builder: (context) => Container(
+                                padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+                                child: DraggableScrollableSheet(
+                                  initialChildSize: 0.6,
+                                  expand: false,
+                                  minChildSize: 0.4,
+                                  maxChildSize: 0.9,
+                                  builder: (context, scrollController) => StockEventsDialog(
+                                    stockToken: widget.watchListData['token'],
+                                    stockName: widget.watchListData['symbol'],
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                          borderRadius: BorderRadius.circular(8),
+                          splashColor: theme.isDarkMode
+                              ? Colors.white.withOpacity(0.15)
+                              : Colors.black.withOpacity(0.15),
+                          highlightColor: theme.isDarkMode
+                              ? Colors.white.withOpacity(0.08)
+                              : Colors.black.withOpacity(0.08),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                            decoration: BoxDecoration(
+                              color: theme.isDarkMode
+                                  ? colors.darkiconcolor.withOpacity(0.2)
+                                  : colors.darkiconcolor.withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(4),
+                              border: Border.all(
+                                color: theme.isDarkMode
+                                    ? colors.darkiconcolor.withOpacity(0.3)
+                                    : colors.darkiconcolor.withOpacity(0.3),
+                                width: 1,
+                              ),
+                            ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // SvgPicture.asset(assets.barChart,
+                                //     height: 12,
+                                //     width: 16,
+                                //     color: theme.isDarkMode
+                                //         ? colors.secondaryDark
+                                //         : colors.secondaryLight),
+                                // const SizedBox(width: 4),
+                                TextWidget.captionText(
+                                  text: events["dividend"]!=null?"DIVIDEND":events["bonus"]!=null?"BONUS":events["split"]!=null?"SPLIT":events["rights"]!=null?"RIGHTS":"EVENT",
+                                  color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                  theme: theme.isDarkMode,
+                                  fw: 1,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
                     ]
+                    
                   ],
                 ),
               ),

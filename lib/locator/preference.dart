@@ -388,6 +388,27 @@ class Preferences {
       await _prefInstance!.remove(key);
     }
   }
+
+  // Text Nugget seen tracking methods
+  Future setTextNuggetSeen(String userId, String textId) async =>
+      await _prefInstance!.setBool('${_textNuggetSeen}_${userId}_$textId', true);
+
+  bool isTextNuggetSeen(String userId, String textId) =>
+      _prefInstance?.getBool('${_textNuggetSeen}_${userId}_$textId') ?? false;
+
+  Future<List<String>> getSeenTextNuggetIds(String userId) async {
+    final keys = _prefInstance!.getKeys();
+    final seenKeys = keys.where((key) => key.startsWith('${_textNuggetSeen}_${userId}_')).toList();
+    return seenKeys.map((key) => key.replaceFirst('${_textNuggetSeen}_${userId}_', '')).toList();
+  }
+
+  Future clearSeenTextNuggets(String userId) async {
+    final keys = _prefInstance!.getKeys();
+    final seenKeys = keys.where((key) => key.startsWith('${_textNuggetSeen}_${userId}_')).toList();
+    for (final key in seenKeys) {
+      await _prefInstance!.remove(key);
+    }
+  }
 }
 
 const String _userTheme = 'userTheme';
@@ -417,6 +438,7 @@ const String _orderTracking = 'orderTracking';
 const String _cameraPermissionDeniedCount = 'cameraPermissionDeniedCount';
 const String _bannerImageCache = 'bannerImageCache';
 const String _bannerSeen = 'bannerSeen';
+const String _textNuggetSeen = 'textNuggetSeen';
 
 ////MARKET WATCH Filter
 const String _isMWScripName = "isMWScripName";

@@ -81,51 +81,54 @@ class _ExploreScreensState extends ConsumerState<IpoExploreScreens>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 150),
-          Container(
-            width: MediaQuery.of(context).size.width,
-            padding: const EdgeInsets.only(top: 8),
-            decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(
-                  color: theme.isDarkMode
-                      ? colors.darkColorDivider
-                      : colors.colorDivider,
-                  width: 0,
+          // const SizedBox(height: 150),
+          Padding(
+            padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top, bottom: MediaQuery.of(context).padding.bottom),
+            child: Container(
+              width: MediaQuery.of(context).size.width,
+              padding: const EdgeInsets.only(top: 8),
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(
+                    color: theme.isDarkMode
+                        ? colors.darkColorDivider
+                        : colors.colorDivider,
+                    width: 0,
+                  ),
                 ),
               ),
-            ),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: List.generate(
-                  ref.read(ipoProvide).tablistitems.length,
-                  (tab) => Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      splashColor: theme.isDarkMode
-                          ? Colors.white.withOpacity(0.05)
-                          : Colors.black.withOpacity(0.05),
-                      highlightColor: theme.isDarkMode
-                          ? Colors.white.withOpacity(0.01)
-                          : Colors.black.withOpacity(0.01),
-                      onTap: () {
-                        setState(() {
-                          selectedTab = tab;
-                        });
-                        _tabController.animateTo(tab);
-                        // Also update the page controller to jump directly
-                        if (_tabController.index != tab) {
-                          _tabController.index = tab;
-                        }
-                        
-                        ref.read(ipoProvide).clearCommonIpoSearch();
-                        ref.read(ipoProvide).setIpoSearchQuery("");
-                        FocusScope.of(context).unfocus();
-                      },
-                      child: _tabConstruct(
-                          ref.read(ipoProvide).tablistitems[tab]['title'].toString(), theme, tab),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: List.generate(
+                    ref.read(ipoProvide).tablistitems.length,
+                    (tab) => Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        splashColor: theme.isDarkMode
+                            ? Colors.white.withOpacity(0.05)
+                            : Colors.black.withOpacity(0.05),
+                        highlightColor: theme.isDarkMode
+                            ? Colors.white.withOpacity(0.01)
+                            : Colors.black.withOpacity(0.01),
+                        onTap: () {
+                          setState(() {
+                            selectedTab = tab;
+                          });
+                          _tabController.animateTo(tab);
+                          // Also update the page controller to jump directly
+                          if (_tabController.index != tab) {
+                            _tabController.index = tab;
+                          }
+                          
+                          ref.read(ipoProvide).clearCommonIpoSearch();
+                          ref.read(ipoProvide).setIpoSearchQuery("");
+                          FocusScope.of(context).unfocus();
+                        },
+                        child: _tabConstruct(
+                            ref.read(ipoProvide).tablistitems[tab]['title'].toString(), theme, tab),
+                      ),
                     ),
                   ),
                 ),

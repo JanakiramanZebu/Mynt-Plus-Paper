@@ -15,7 +15,7 @@ class CaEvents extends StatefulWidget {
 }
 
 class _CaEventsState extends State<CaEvents> {
-  List<String> eventaction = ["Dividend", "Bonus", "Splits", "Rights"];
+  List<String> eventaction = ["Dividend", "Bonus", "Split", "Rights"];
 
   @override
   Widget build(BuildContext context) {
@@ -27,8 +27,8 @@ class _CaEventsState extends State<CaEvents> {
           ? actionEvents.caeventsModel?.dividend
           : actionEvents.selctedEventAct == 'bonus'
               ? actionEvents.caeventsModel?.bonus
-              : actionEvents.selctedEventAct == 'splits'
-                  ? actionEvents.caeventsModel?.splits
+              : actionEvents.selctedEventAct == 'split'
+                  ? actionEvents.caeventsModel?.split
                   : actionEvents.selctedEventAct == 'rights'
                       ? actionEvents.caeventsModel?.rights
                       : [];

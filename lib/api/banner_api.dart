@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:developer';
 import '../models/banner_model/banner_model.dart';
+import '../models/text_nugget_model/text_nugget_model.dart';
 import 'core/api_core.dart';
 
 mixin BannerApi on ApiCore {
@@ -119,6 +120,111 @@ mixin BannerApi on ApiCore {
     } catch (e) {
       log("Error fetching banners for screen: $e");
       return BannerResponse(
+        screens: {},
+        success: false,
+        message: "Network error: $e",
+      );
+    }
+  }
+
+  // Text Nugget API Methods
+  Future<TextNuggetResponse?> fetchTextNuggets() async {
+    try {
+      final uri = Uri.parse('https://besim.zebull.in/banner/texts/screens');
+
+      log("Fetching all text nuggets from: $uri");
+
+      final res = await apiClient.get(uri, headers: defaultHeaders).timeout(
+        const Duration(seconds: 8),
+        onTimeout: () {
+          throw TimeoutException('Text Nugget API request timed out', const Duration(seconds: 8));
+        },
+      );
+
+      log("Text Nugget API Response - Status: ${res.statusCode}");
+      log("Text Nugget API Response - Body: ${res.body}");
+
+      if (res.statusCode == 200) {
+        final json = jsonDecode(res.body);
+        final response = TextNuggetResponse.fromJson(json as Map<String, dynamic>);
+
+        log("Parsed response - Success: ${response.success}");
+        log("Available screens: ${response.screens.keys.toList()}");
+
+        for (var screenEntry in response.screens.entries) {
+          final screenName = screenEntry.key;
+          final screenTexts = screenEntry.value;
+          log("Screen '$screenName': ${screenTexts.count} text nuggets");
+          for (var text in screenTexts.texts) {
+            log("  - Text: ${text.id}, Content: ${text.content}, Active: ${text.isActive}");
+          }
+        }
+
+        return response;
+      } else {
+        log("Failed to fetch text nuggets - Status Code: ${res.statusCode}, Body: ${res.body}");
+        return TextNuggetResponse(
+          screens: {},
+          success: false,
+          message: "HTTP ${res.statusCode}: ${res.body}",
+        );
+      }
+    } catch (e, stackTrace) {
+      log("Error fetching text nuggets: $e");
+      log("Stack trace: $stackTrace");
+      return TextNuggetResponse(
+        screens: {},
+        success: false,
+        message: "Network error: $e",
+      );
+    }
+  }
+
+  Future<bool> markTextNuggetSeen({required String textId}) async {
+    try {
+      final uri = Uri.parse('https://besim.zebull.in/banner/texts/$textId/seen');
+
+      final data = {
+        "user_id": prefs.clientId ?? '',
+      };
+
+      final res = await apiClient.post(
+        uri,
+        headers: defaultHeaders,
+        body: jsonEncode(data),
+      );
+
+      log("Mark Text Nugget Seen API - Status: ${res.statusCode}");
+      log("Mark Text Nugget Seen API - Response: ${res.body}");
+
+      return res.statusCode == 200;
+    } catch (e) {
+      log("Error marking text nugget as seen: $e");
+      return false;
+    }
+  }
+
+  Future<TextNuggetResponse?> getTextNuggetsForScreen({required String screenName}) async {
+    try {
+      final uri = Uri.parse('${apiLinks.bemynt}/texts?screen=$screenName');
+
+      final res = await apiClient.get(uri, headers: defaultHeaders);
+
+      log("Fetch Text Nuggets for $screenName => ${res.body}");
+      final json = jsonDecode(res.body);
+
+      if (res.statusCode == 200) {
+        return TextNuggetResponse.fromJson(json as Map<String, dynamic>);
+      } else {
+        return TextNuggetResponse(
+          screens: {},
+          success: false,
+          message: "Failed to fetch text nuggets for screen",
+        );
+      }
+    } catch (e) {
+      log("Error fetching text nuggets for screen: $e");
+      return TextNuggetResponse(
         screens: {},
         success: false,
         message: "Network error: $e",

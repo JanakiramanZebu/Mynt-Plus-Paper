@@ -1744,6 +1744,8 @@ class AuthProvider extends DefaultChangeNotifier {
           // Reset watchlist page index to first tab when switching accounts
           ref.read(marketWatchProvider).resetCurrentWatchlistPageIndex();
 
+          await ref.read(stocksProvide).fetchCAevents();
+
           // Fetch watchlist data with proper initialization
           await ref.read(marketWatchProvider).fetchMWList(context, false);
 
