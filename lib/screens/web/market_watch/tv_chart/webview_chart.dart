@@ -491,24 +491,12 @@ class _ChartScreenWebViewsState extends State<ChartScreenWebViews> {
         isModify: false,
         raw: {});
 
-    await showDialog(
+    // Show place order screen as draggable dialog
+    PlaceOrderScreenWeb.showDraggable(
       context: ctx,
-      barrierDismissible: true,
-      builder: (BuildContext context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: SizedBox(
-            width: MediaQuery.of(context).size.width * 0.3,
-            child: PlaceOrderScreenWeb(
-              orderArg: orderArgs,
-              scripInfo: ref.read(marketWatchProvider).scripInfoModel!,
-              isBasket: "",
-            ),
-          ),
-        );
-      },
+      orderArg: orderArgs,
+      scripInfo: ref.read(marketWatchProvider).scripInfoModel!,
+      isBasket: "",
     );
     
     // Re-enable pointer events on iframe after dialog closes

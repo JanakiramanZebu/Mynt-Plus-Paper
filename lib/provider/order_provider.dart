@@ -847,13 +847,16 @@ class OrderProvider extends DefaultChangeNotifier {
 
         // }
 
-        if (!quickOrder) {
-        Navigator.pop(context);
+        // Don't call Navigator.pop for web overlay dialogs - they're closed via overlay entry removal
+        // Only pop for mobile or non-overlay dialogs
+        if (!quickOrder && !kIsWeb) {
+          Navigator.pop(context);
         }
         if(kIsWeb) {
           showDialog(
-      context: context,
-      builder: (BuildContext context) => OrderConfirmationScreenWeb(orderData: [_placeOrderModel!]),
+            context: context,
+            barrierColor: Colors.black.withOpacity(0.3), // Subtle dark backdrop
+            builder: (BuildContext context) => OrderConfirmationScreenWeb(orderData: [_placeOrderModel!]),
           );
         }else{
         // Navigate to order confirmation screen
@@ -973,8 +976,9 @@ class OrderProvider extends DefaultChangeNotifier {
         if (context.mounted) {
          if(kIsWeb) {
           showDialog(
-      context: context,
-        builder: (BuildContext context) => OrderConfirmationScreenWeb(orderData: _sliceOrderResults),
+            context: context,
+            barrierColor: Colors.black.withOpacity(0.3), // Subtle dark backdrop
+            builder: (BuildContext context) => OrderConfirmationScreenWeb(orderData: _sliceOrderResults),
           );
         }else{
         // Navigate to order confirmation screen
@@ -1363,8 +1367,9 @@ class OrderProvider extends DefaultChangeNotifier {
 
         if(kIsWeb) {
           showDialog(
-      context: context,
-        builder: (BuildContext context) => OrderConfirmationScreenWeb(orderData: [modifyOrderData]),
+            context: context,
+            barrierColor: Colors.black.withOpacity(0.3), // Subtle dark backdrop
+            builder: (BuildContext context) => OrderConfirmationScreenWeb(orderData: [modifyOrderData]),
           );
         }else{
         Navigator.pushNamed(context, Routes.orderConfirmation, arguments: {

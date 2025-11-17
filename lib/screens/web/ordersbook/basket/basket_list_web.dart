@@ -75,92 +75,108 @@ class _BasketListState extends ConsumerState<BasketList> {
 
   Widget _buildSortableColumnHeader(String label, ThemesProvider theme, int columnIndex) {
     final isSorted = _sortColumnIndex == columnIndex;
-    // Check if this is a numeric column (Created Date index is 1, Items index is 2)
-    final isNumeric = columnIndex == 1 || columnIndex == 2; // Created Date (1) or Items (2)
     
-    return InkWell(
-      onTap: () => _onSortTable(columnIndex, !(isSorted && _sortAscending)),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: isNumeric ? MainAxisAlignment.end : MainAxisAlignment.start,
-          children: [
-            Text(
-              label,
-              style: WebTextStyles.tableHeader(
-                isDarkTheme: theme.isDarkMode,
-                color: theme.isDarkMode
-                    ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary,
-              ),
-            ),
-            const SizedBox(width: 4),
-            SizedBox(
-              width: 20,
-              height: 16,
-              child: !isSorted 
-                  ? Icon(
-                      Icons.unfold_more,
-                      size: 16,
-                      color: theme.isDarkMode ? WebDarkColors.iconSecondary : WebColors.iconSecondary,
-                    )
-                  : Icon(
-                      _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
-                      size: 16,
-                      color: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
-                    ),
-            ),
-          ],
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          label,
+          style: WebTextStyles.tableHeader(
+            isDarkTheme: theme.isDarkMode,
+            color: theme.isDarkMode
+                ? WebDarkColors.textPrimary
+                : WebColors.textPrimary,
+          ),
         ),
-      ),
+        const SizedBox(width: 4),
+        SizedBox(
+          width: 20,
+          height: 16,
+          child: !isSorted 
+              ? Icon(
+                  Icons.unfold_more,
+                  size: 16,
+                  color: theme.isDarkMode ? WebDarkColors.iconSecondary : WebColors.iconSecondary,
+                )
+              : const SizedBox.shrink(),
+        ),
+      ],
     );
   }
 
-  Widget _buildBasketNameCellContent(Map<String, dynamic> basket, int index, ThemesProvider theme, bool isHovered) {
+  DataCell _buildBasketNameCellWithHover(Map<String, dynamic> basket, int index, ThemesProvider theme, String token) {
     final bsktName = basket['bsketName'] ?? '';
+    final isHovered = _hoveredRowIndex == token;
 
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SvgPicture.asset(
-            assets.basketdashboard,
-            width: 18,
-            height: 18,
-            color: theme.isDarkMode
-                ? WebDarkColors.iconSecondary
-                : WebColors.iconSecondary,
-          ),
-          const SizedBox(width: 8),
-          Flexible(
-            child: Text(
-              bsktName,
-              style: WebTextStyles.tableDataCompact(
-                isDarkTheme: theme.isDarkMode,
-                color: theme.isDarkMode
-                    ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary,
+    return DataCell(
+      MouseRegion(
+        onEnter: (_) => setState(() => _hoveredRowIndex = token),
+        onExit: (_) => setState(() => _hoveredRowIndex = null),
+        child: SizedBox.expand(
+          child: Row(
+            children: [
+              // Text that takes at least 50% of width, leaves space for buttons
+              Expanded(
+                flex: isHovered ? 1 : 2, // When hovered, text takes less space but still visible
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Tooltip(
+                    message: bsktName,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SvgPicture.asset(
+                          assets.basketdashboard,
+                          width: 18,
+                          height: 18,
+                          color: theme.isDarkMode
+                              ? WebDarkColors.iconSecondary
+                              : WebColors.iconSecondary,
+                        ),
+                        const SizedBox(width: 8),
+                        Flexible(
+                          child: Text(
+                            bsktName,
+                            style: WebTextStyles.tableDataCompact(
+                              isDarkTheme: theme.isDarkMode,
+                              color: theme.isDarkMode
+                                  ? WebDarkColors.textPrimary
+                                  : WebColors.textPrimary,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
-              overflow: TextOverflow.ellipsis,
-              maxLines: 1,
-            ),
+              // Buttons on the right side - fade in/out
+              IgnorePointer(
+                ignoring: !isHovered,
+                child: AnimatedOpacity(
+                  opacity: isHovered ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 150),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildHoverButton(
+                        label: 'Delete',
+                        color: Colors.white,
+                        backgroundColor: theme.isDarkMode
+                            ? WebDarkColors.error
+                            : WebColors.error,
+                        onPressed: () => _handleDeleteBasket(context, basket, index),
+                        theme: theme,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
-          if (isHovered) ...[
-            const SizedBox(width: 8),
-            _buildHoverButton(
-              label: 'Delete',
-              color: Colors.white,
-              backgroundColor: theme.isDarkMode
-                  ? WebDarkColors.error
-                  : WebColors.error,
-              onPressed: () => _handleDeleteBasket(context, basket, index),
-              theme: theme,
-            ),
-          ],
-        ],
+        ),
       ),
     );
   }
@@ -215,10 +231,11 @@ class _BasketListState extends ConsumerState<BasketList> {
             child: Center(
               child: Text(
                 label ?? "",
-                style: WebTextStyles.buttonXs(
+                style: WebTextStyles.custom(
+                  fontSize: 11,
                   isDarkTheme: theme.isDarkMode,
                   color: color,
-                  fontWeight: WebFonts.semiBold,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
@@ -508,112 +525,89 @@ class _BasketListState extends ConsumerState<BasketList> {
                             controller: _verticalScrollController,
                             scrollDirection: Axis.vertical,
                             physics: const AlwaysScrollableScrollPhysics(),
-                            child: Padding(
+                              child: Padding(
                               padding: const EdgeInsets.only(right: 16),
                               child: SizedBox(
                                 width: constraints.maxWidth,
                                 child: Padding(
                                   padding: const EdgeInsets.only(bottom: 16),
-                                  child: Table(
-                                    columnWidths: const {
-                                      0: FractionColumnWidth(1 / 3),
-                                      1: FractionColumnWidth(1 / 3),
-                                      2: FractionColumnWidth(1 / 3),
-                                    },
-                                    children: [
-                                      // Header row
-                                      TableRow(
-                                        decoration: BoxDecoration(
-                                          border: Border(
-                                            bottom: BorderSide(
-                                              color: theme.isDarkMode
-                                                  ? WebDarkColors.divider
-                                                  : WebColors.divider,
-                                            ),
-                                          ),
-                                        ),
-                                        children: [
-                                          _buildSortableColumnHeader('Basket Name', theme, 0),
-                                          _buildSortableColumnHeader('Created Date', theme, 1),
-                                          _buildSortableColumnHeader('Items', theme, 2),
-                                        ],
+                                  child: DataTable(
+                                    columnSpacing: 15,
+                                    showCheckboxColumn: false,
+                                    sortColumnIndex: _sortColumnIndex,
+                                    sortAscending: _sortAscending,
+                                    headingRowHeight: 44,
+                                    headingRowColor: WidgetStateProperty.all(Colors.transparent),
+                                    dataRowColor: WidgetStateProperty.resolveWith<Color?>(
+                                      (Set<WidgetState> states) {
+                                        if (states.contains(WidgetState.hovered)) {
+                                          return (theme.isDarkMode
+                                                  ? WebDarkColors.primary
+                                                  : WebColors.primary)
+                                              .withOpacity(0.15);
+                                        }
+                                        if (states.contains(WidgetState.selected)) {
+                                          return (theme.isDarkMode
+                                                  ? WebDarkColors.primary
+                                                  : WebColors.primary)
+                                              .withOpacity(0.1);
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                    columns: [
+                                      DataColumn(
+                                        numeric: false,
+                                        label: _buildSortableColumnHeader('Basket Name', theme, 0),
+                                        onSort: (columnIndex, ascending) => _onSortTable(columnIndex, ascending),
                                       ),
-                                      // Data rows
-                                      ..._getSortedBaskets(basket.bsktList).asMap().entries.map((entry) {
-                                        final index = entry.key;
-                                        final basketItem = entry.value as Map<String, dynamic>;
-                                        final uniqueId = '$index';
-                                        final isHovered = _hoveredRowIndex == uniqueId;
-                                        
-                                        return TableRow(
-                                          decoration: BoxDecoration(
-                                            color: isHovered
-                                                ? (theme.isDarkMode
-                                                        ? WebDarkColors.primary
-                                                        : WebColors.primary)
-                                                    .withOpacity(0.15)
-                                                : null,
-                                          ),
-                                          children: [
-                                            GestureDetector(
-                                              onTap: () => _handleBasketTap(context, basketItem),
-                                              child: MouseRegion(
-                                                onEnter: (_) => setState(() => _hoveredRowIndex = uniqueId),
-                                                onExit: (_) => setState(() => _hoveredRowIndex = null),
-                                                child: Padding(
-                                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
-                                                  child: _buildBasketNameCellContent(basketItem, index, theme, isHovered),
-                                                ),
-                                              ),
-                                            ),
-                                            GestureDetector(
-                                              onTap: () => _handleBasketTap(context, basketItem),
-                                              child: MouseRegion(
-                                                onEnter: (_) => setState(() => _hoveredRowIndex = uniqueId),
-                                                onExit: (_) => setState(() => _hoveredRowIndex = null),
-                                                child: Padding(
-                                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
-                                                  child: Align(
-                                                    alignment: Alignment.centerRight,
-                                                    child: Text(
-                                                      basketItem['createdDate']?.toString() ?? '',
-                                                      style: WebTextStyles.tableDataCompact(
-                                                        isDarkTheme: theme.isDarkMode,
-                                                        color: theme.isDarkMode
-                                                            ? WebDarkColors.textPrimary
-                                                            : WebColors.textPrimary,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                            GestureDetector(
-                                              onTap: () => _handleBasketTap(context, basketItem),
-                                              child: MouseRegion(
-                                                onEnter: (_) => setState(() => _hoveredRowIndex = uniqueId),
-                                                onExit: (_) => setState(() => _hoveredRowIndex = null),
-                                                child: Padding(
-                                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
-                                                  child: Align(
-                                                    alignment: Alignment.centerRight,
-                                                    child: Text(
-                                                      (basketItem['curLength'] ?? 0).toString(),
-                                                      style: WebTextStyles.tableDataCompact(
-                                                        isDarkTheme: theme.isDarkMode,
-                                                        color: theme.isDarkMode
-                                                            ? WebDarkColors.textPrimary
-                                                            : WebColors.textPrimary,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        );
-                                      }).toList(),
+                                      DataColumn(
+                                        numeric: false,
+                                        label: _buildSortableColumnHeader('Created Date', theme, 1),
+                                        onSort: (columnIndex, ascending) => _onSortTable(columnIndex, ascending),
+                                      ),
+                                      DataColumn(
+                                        numeric: true,
+                                        label: _buildSortableColumnHeader('Items', theme, 2),
+                                        onSort: (columnIndex, ascending) => _onSortTable(columnIndex, ascending),
+                                      ),
                                     ],
+                                    rows: _getSortedBaskets(basket.bsktList).asMap().entries.map((entry) {
+                                      final index = entry.key;
+                                      final basketItem = entry.value as Map<String, dynamic>;
+                                      final uniqueId = '$index';
+                                      
+                                      return DataRow(
+                                        onSelectChanged: (bool? selected) {
+                                          _handleBasketTap(context, basketItem);
+                                        },
+                                        cells: [
+                                          _buildBasketNameCellWithHover(basketItem, index, theme, uniqueId),
+                                          _buildCellWithHover(basketItem, index, DataCell(
+                                            Text(
+                                              basketItem['createdDate']?.toString() ?? '',
+                                              style: WebTextStyles.tableDataCompact(
+                                                isDarkTheme: theme.isDarkMode,
+                                                color: theme.isDarkMode
+                                                    ? WebDarkColors.textPrimary
+                                                    : WebColors.textPrimary,
+                                              ),
+                                            ),
+                                          ), alignment: Alignment.centerLeft),
+                                          _buildCellWithHover(basketItem, index, DataCell(
+                                            Text(
+                                              (basketItem['curLength'] ?? 0).toString(),
+                                              style: WebTextStyles.tableDataCompact(
+                                                isDarkTheme: theme.isDarkMode,
+                                                color: theme.isDarkMode
+                                                    ? WebDarkColors.textPrimary
+                                                    : WebColors.textPrimary,
+                                              ),
+                                            ),
+                                          ), alignment: Alignment.centerRight),
+                                        ],
+                                      );
+                                    }).toList(),
                                   ),
                                 ),
                               ),
@@ -1141,26 +1135,12 @@ class BasketScripList extends ConsumerWidget {
                                     return;
                                   }
                                   
-                                  // Show place order screen as dialog for web
-                                  showDialog(
+                                  // Show place order screen as draggable dialog for web
+                                  PlaceOrderScreenWeb.showDraggable(
                                     context: context,
-                                    builder: (BuildContext context) {
-                                      return Dialog(
-                                        backgroundColor: Colors.transparent,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(5),
-                                        ),
-                                        child: SizedBox(
-                                          width: 500,
-                                          height: 600,
-                                          child: PlaceOrderScreenWeb(
-                                            orderArg: orderArgs,
-                                            scripInfo: scripInfo,
-                                            isBasket: 'BasketEdit',
-                                          ),
-                                        ),
-                                      );
-                                    },
+                                    orderArg: orderArgs,
+                                    scripInfo: scripInfo,
+                                    isBasket: 'BasketEdit',
                                   );
                                 },
                                 child: Container(

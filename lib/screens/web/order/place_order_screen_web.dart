@@ -3,6 +3,7 @@ import 'package:mynt_plus/res/web_colors.dart';
 import 'package:mynt_plus/res/global_font_web.dart';
 import 'margin_details_dialog_web.dart';
 import 'dart:convert';
+import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
@@ -25,10 +26,8 @@ import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/provider/transcation_provider.dart';
 import 'package:mynt_plus/provider/user_profile_provider.dart';
 import 'package:mynt_plus/provider/websocket_provider.dart';
-import 'package:mynt_plus/routes/route_names.dart';
 import 'package:mynt_plus/screens/web/funds/fund_screen_web.dart';
 import 'slice_order_sheet_web.dart';
-import 'package:mynt_plus/screens/Mobile/order_screen/margin_charges_bottom_sheet.dart';
 import 'package:mynt_plus/screens/Mobile/order_screen/order_screen_header.dart';
 import 'package:mynt_plus/screens/Mobile/profile_screen/profile_main_screen.dart';
 import 'package:mynt_plus/sharedWidget/cust_text_formfield.dart';
@@ -48,6 +47,25 @@ import '../../../models/order_book_model/place_gtt_order.dart';
 import 'package:intl/intl.dart';
 import 'package:mynt_plus/utils/url_utils.dart';
 
+// InheritedWidget to pass close callback to child widgets
+class _PlaceOrderDialogCloseNotifier extends InheritedWidget {
+  final VoidCallback onClose;
+
+  const _PlaceOrderDialogCloseNotifier({
+    required this.onClose,
+    required super.child,
+  });
+
+  static _PlaceOrderDialogCloseNotifier? of(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<_PlaceOrderDialogCloseNotifier>();
+  }
+
+  @override
+  bool updateShouldNotify(_PlaceOrderDialogCloseNotifier oldWidget) {
+    return onClose != oldWidget.onClose;
+  }
+}
+
 class PlaceOrderScreenWeb extends ConsumerStatefulWidget {
   final OrderScreenArgs orderArg;
   final ScripInfoModel scripInfo;
@@ -63,6 +81,42 @@ class PlaceOrderScreenWeb extends ConsumerStatefulWidget {
   @override
   ConsumerState<PlaceOrderScreenWeb> createState() =>
       _PlaceOrderScreenWebState();
+
+  /// Static method to show PlaceOrderScreenWeb as a draggable dialog
+  static void showDraggable({
+    required BuildContext context,
+    required OrderScreenArgs orderArg,
+    required ScripInfoModel scripInfo,
+    required String isBasket,
+    bool fromChart = false,
+    Offset? initialPosition,
+  }) {
+    final overlay = Overlay.of(context);
+    late OverlayEntry overlayEntry;
+    
+    final position = initialPosition ?? Offset(
+      MediaQuery.of(context).size.width * 0.1,
+      MediaQuery.of(context).size.height * 0.05,
+    );
+    
+    overlayEntry = OverlayEntry(
+      builder: (context) => _DraggablePlaceOrderScreenDialog(
+        orderArg: orderArg,
+        scripInfo: scripInfo,
+        isBasket: isBasket,
+        fromChart: fromChart,
+        initialPosition: position,
+        onPositionChanged: (newPosition) {
+          // Position can be saved if needed
+        },
+        onClose: () {
+          overlayEntry.remove();
+        },
+      ),
+    );
+    
+    overlay.insert(overlayEntry);
+  }
 }
 
 class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
@@ -75,6 +129,8 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
 //   bool isAmo = false;
   bool isAvbSecu = false;
   bool isSecu = false;
+  bool _showSurveillanceDialog = false;
+  Future<void> Function()? _pendingSurveillanceAction;
 
   late AnimationController anibuildctrl;
   // late Animation<double> _shakeAnimation;
@@ -554,7 +610,19 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                 .showChart(chartState.chartArgs!, previousRoute: null);
           }
         }
-        Navigator.pop(context);
+        // Try to close via dialog callback if available (for overlay dialogs)
+        final closeNotifier = _PlaceOrderDialogCloseNotifier.of(context);
+        if (closeNotifier != null) {
+          closeNotifier.onClose();
+        } else {
+          // Fallback to regular navigation
+          final navigator = Navigator.of(context, rootNavigator: true);
+          if (navigator.canPop()) {
+            navigator.pop();
+          } else {
+            Navigator.pop(context);
+          }
+        }
       },
       child: Consumer(
         builder: (context, WidgetRef ref, _) {
@@ -571,9 +639,11 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
           if (internet.connectionStatus == ConnectivityResult.none)
             return const NoInternetWidget();
 
-          return GestureDetector(
-              onTap: () => FocusScope.of(context).unfocus(),
-              child: Container(
+          return Stack(
+            children: [
+              GestureDetector(
+                  onTap: () => FocusScope.of(context).unfocus(),
+                  child: Container(
                 color: !theme.isDarkMode
                     ? WebDarkColors.textPrimary
                     : WebColors.textPrimary,
@@ -6445,7 +6515,164 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                               ]))
                     ]),
                 // bottomNavigationBar:
-              ));
+              )),
+              // Surveillance dialog overlay - constrained to widget bounds
+              if (_showSurveillanceDialog)
+                Positioned.fill(
+                  child: Container(
+                    color: Colors.black.withOpacity(0.5),
+                    child: Center(
+                      child: Container(
+                        constraints: const BoxConstraints(maxWidth: 500),
+                        margin: const EdgeInsets.symmetric(horizontal: 16),
+                        decoration: BoxDecoration(
+                          color: theme.isDarkMode
+                              ? WebDarkColors.surface
+                              : WebColors.surface,
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 12),
+                              decoration: BoxDecoration(
+                                border: Border(
+                                  bottom: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? WebDarkColors.divider
+                                        : WebColors.divider,
+                                  ),
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Row(
+                                    children: [
+                                      const Icon(Icons.warning_outlined,
+                                          color: Color.fromARGB(190, 255, 170, 0),
+                                          size: 24),
+                                      const SizedBox(width: 12),
+                                      Text(
+                                        'Exchange surveillance active',
+                                        style: WebTextStyles.dialogTitle(
+                                          isDarkTheme: theme.isDarkMode,
+                                          color: theme.isDarkMode
+                                              ? WebDarkColors.textPrimary
+                                              : WebColors.textPrimary,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  Material(
+                                    color: Colors.transparent,
+                                    shape: const CircleBorder(),
+                                    child: InkWell(
+                                      customBorder: const CircleBorder(),
+                                      splashColor: theme.isDarkMode
+                                          ? Colors.white.withOpacity(.15)
+                                          : Colors.black.withOpacity(.15),
+                                      highlightColor: theme.isDarkMode
+                                          ? Colors.white.withOpacity(.08)
+                                          : Colors.black.withOpacity(.08),
+                                      onTap: () {
+                                        setState(() {
+                                          _showSurveillanceDialog = false;
+                                          _pendingSurveillanceAction = null;
+                                        });
+                                      },
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(6.0),
+                                        child: Icon(
+                                          Icons.close,
+                                          size: 18,
+                                          color: theme.isDarkMode
+                                              ? WebDarkColors.iconSecondary
+                                              : WebColors.iconSecondary,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    quotemsg.isNotEmpty ? quotemsg : 'Security is under surveillance. Would you like to continue?',
+                                    style: WebTextStyles.custom(
+                                      fontSize: 13,
+                                      isDarkTheme: theme.isDarkMode,
+                                      color: theme.isDarkMode
+                                          ? WebDarkColors.textPrimary
+                                          : WebColors.textPrimary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  SizedBox(
+                                    width: double.infinity,
+                                    height: 40,
+                                    child: ElevatedButton(
+                                      onPressed: () async {
+                                        setState(() {
+                                          _showSurveillanceDialog = false;
+                                        });
+                                        final action = _pendingSurveillanceAction;
+                                        _pendingSurveillanceAction = null;
+                                        if (action != null) {
+                                          setState(() {
+                                            isSecu = true;
+                                          });
+                                          await action();
+                                          // Close the place order dialog after order is placed
+                                          final closeNotifier = _PlaceOrderDialogCloseNotifier.of(context);
+                                          if (closeNotifier != null) {
+                                            // Add a small delay to allow order confirmation dialog to appear first
+                                            Future.delayed(const Duration(milliseconds: 300), () {
+                                              if (mounted) {
+                                                closeNotifier.onClose();
+                                              }
+                                            });
+                                          }
+                                        }
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        elevation: 0,
+                                        backgroundColor: theme.isDarkMode
+                                            ? colors.primaryDark
+                                            : colors.primaryLight,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(5),
+                                        ),
+                                      ),
+                                      child: Text(
+                                        "Continue",
+                                        style: WebTextStyles.custom(
+                                          fontSize: 14,
+                                          isDarkTheme: theme.isDarkMode,
+                                          color: colors.colorWhite,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          );
         },
       ),
     );
@@ -7366,6 +7593,16 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
           await ref.read(orderProvider).fetchPlaceOrder(
               context, placeOrderInput, widget.orderArg.isExit);
           ref.read(orderProvider).setOrderloader(false);
+          // Close the place order dialog after order is placed (for overlay dialogs)
+          final closeNotifier = _PlaceOrderDialogCloseNotifier.of(context);
+          if (closeNotifier != null) {
+            // Add a small delay to allow order confirmation dialog to appear first
+            Future.delayed(const Duration(milliseconds: 300), () {
+              if (mounted) {
+                closeNotifier.onClose();
+              }
+            });
+          }
         }
       } else {
         int q = ((int.parse(getFinalQuantity(qtyCtrl.text)) / lotSize).round() *
@@ -7452,116 +7689,15 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
 
   void _showSurveillanceBottomSheet(
       OrderInputProvider orderInput, bool isSliceOrd, ThemesProvider theme) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      useRootNavigator: true,
-      builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (context, setModalState) {
-            return Dialog(
-              backgroundColor: Colors.transparent,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Container(
-                constraints: const BoxConstraints(maxWidth: 500),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  color:
-                      theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                  border: Border.all(
-                    color: theme.isDarkMode
-                        ? colors.textSecondaryDark.withOpacity(0.2)
-                        : colors.textSecondaryLight.withOpacity(0.2),
-                    width: 1,
-                  ),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Icon(Icons.warning_outlined,
-                                        color: Color.fromARGB(190, 255, 170, 0),
-                                        size: 24),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                        child: Text(
-                                      "Exchange surveillance active",
-                                      style: TextWidget.textStyle(
-                                        color: theme.isDarkMode
-                                            ? colors.textPrimary
-                                            : colors.textPrimaryLight,
-                                        fontSize: 16,
-                                        fw: 2,
-                                        theme: theme.isDarkMode,
-                                      ),
-                                    )),
-                                  ],
-                                ),
-                                const SizedBox(height: 12),
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 36),
-                                  child: TextWidget.subText(
-                                      text: quotemsg,
-                                      theme: theme.isDarkMode,
-                                      lineHeight: 1.6),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 24),
-                      SizedBox(
-                        width: double.infinity,
-                        height: 45,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            setState(() {
-                              isSecu = true;
-                            });
-                            Navigator.pop(context);
-                            placeOrder(orderInput, isSliceOrd, theme);
-                          },
-                          style: ElevatedButton.styleFrom(
-                            elevation: 0,
-                            backgroundColor: theme.isDarkMode
-                                ? colors.primaryDark
-                                : colors.primaryLight,
-                            minimumSize: const Size(double.infinity, 45),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(5),
-                            ),
-                          ),
-                          child: TextWidget.subText(
-                            text: "Continue",
-                            color: colors.colorWhite,
-                            theme: theme.isDarkMode,
-                            fw: 2,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          },
-        );
-      },
-    );
+    setState(() {
+      _showSurveillanceDialog = true;
+      _pendingSurveillanceAction = () async {
+        setState(() {
+          isSecu = true;
+        });
+        placeOrder(orderInput, isSliceOrd, theme);
+      };
+    });
   }
 
   prepareToPlaceGttOrder(OrderInputProvider orderInput) async {
@@ -7875,5 +8011,240 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
       int inputValue = int.tryParse(value) ?? 0;
       return _isLotToQty ? value : (inputValue * lotSize).toString();
     }
+  }
+}
+
+// Draggable Place Order Screen Dialog Widget
+class _DraggablePlaceOrderScreenDialog extends ConsumerStatefulWidget {
+  final OrderScreenArgs orderArg;
+  final ScripInfoModel scripInfo;
+  final String isBasket;
+  final bool fromChart;
+  final Offset initialPosition;
+  final Function(Offset) onPositionChanged;
+  final VoidCallback onClose;
+
+  const _DraggablePlaceOrderScreenDialog({
+    required this.orderArg,
+    required this.scripInfo,
+    required this.isBasket,
+    required this.fromChart,
+    required this.initialPosition,
+    required this.onPositionChanged,
+    required this.onClose,
+  });
+
+  @override
+  ConsumerState<_DraggablePlaceOrderScreenDialog> createState() => _DraggablePlaceOrderScreenDialogState();
+}
+
+class _DraggablePlaceOrderScreenDialogState extends ConsumerState<_DraggablePlaceOrderScreenDialog> {
+  late Offset _position;
+  bool _isDragging = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _position = widget.initialPosition;
+    
+    // Listen for navigation changes (when confirmation screen appears)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _listenForNavigationChanges();
+    });
+  }
+
+  void _listenForNavigationChanges() {
+    // Monitor for navigation events that might indicate the place order dialog should close
+    Timer.periodic(const Duration(milliseconds: 200), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      
+      // Stop checking after 30 seconds to prevent memory leaks
+      if (timer.tick > 150) { // 30 seconds
+        timer.cancel();
+        return;
+      }
+      
+      // Check if a new route has been pushed (like confirmation screen)
+      final navigator = Navigator.of(context, rootNavigator: true);
+      if (navigator.canPop()) {
+        // Get the current route to check if it's a confirmation screen
+        final currentRoute = ModalRoute.of(context);
+        final routeName = currentRoute?.settings.name;
+        
+        // Don't close for surveillance dialogs or other temporary dialogs
+        // Only close for actual confirmation screens or permanent navigation
+        if (routeName != null && 
+            (routeName.contains('confirmation') || 
+             routeName.contains('order_confirmation'))) {
+          // Close this dialog after a short delay to allow the confirmation to fully appear
+          Timer(const Duration(milliseconds: 300), () {
+            if (mounted) {
+              widget.onClose();
+            }
+          });
+          timer.cancel();
+        }
+        // For other dialogs (like surveillance), let them stay open
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = ref.watch(themeProvider);
+    final screenSize = MediaQuery.of(context).size;
+
+    // Constrain position to screen bounds
+    final dialogWidth = 500.0;
+    final dialogHeight = screenSize.height * 0.9;
+    final constrainedPosition = Offset(
+      _position.dx.clamp(0, screenSize.width - dialogWidth),
+      _position.dy.clamp(0, screenSize.height - dialogHeight),
+    );
+
+    return Stack(
+      children: [
+        // Invisible full-screen tap detector to close dialog when clicking outside
+        Positioned.fill(
+          child: GestureDetector(
+            onTap: widget.onClose,
+            child: Container(
+              color: Colors.transparent,
+            ),
+          ),
+        ),
+        // Actual dialog
+        Positioned(
+          left: constrainedPosition.dx,
+          top: constrainedPosition.dy,
+          child: GestureDetector(
+            onTap: () {}, // Prevent tap from propagating to background
+            onPanStart: (details) {
+              setState(() {
+                _isDragging = true;
+              });
+            },
+            onPanUpdate: (details) {
+              setState(() {
+                _position = Offset(
+                  _position.dx + details.delta.dx,
+                  _position.dy + details.delta.dy,
+                );
+              });
+              widget.onPositionChanged(_position);
+            },
+            onPanEnd: (details) {
+              setState(() {
+                _isDragging = false;
+              });
+            },
+            child: Material(
+              elevation: _isDragging ? 16 : 8,
+              borderRadius: BorderRadius.circular(5),
+              color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+              child: Container(
+                width: dialogWidth,
+                height: dialogHeight,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(5),
+                  border: Border.all(
+                    color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    // Draggable header
+                    Container(
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: theme.isDarkMode 
+                            ? WebDarkColors.backgroundSecondary 
+                            : WebColors.backgroundSecondary,
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(5),
+                          topRight: Radius.circular(5),
+                        ),
+                        border: Border(
+                          bottom: BorderSide(
+                            color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
+                          ),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          // Drag handle
+                          const SizedBox(width: 8),
+                          Icon(
+                            Icons.drag_indicator,
+                            size: 16,
+                            color: theme.isDarkMode 
+                                ? WebDarkColors.iconSecondary 
+                                : WebColors.iconSecondary,
+                          ),
+                          const SizedBox(width: 8),
+                          // Title
+                          Expanded(
+                            child: Text(
+                              'Place Order - ${widget.scripInfo.tsym ?? widget.scripInfo.symbol ?? ""}',
+                              style: WebTextStyles.dialogTitle(
+                                isDarkTheme: theme.isDarkMode,
+                                color: theme.isDarkMode
+                                    ? WebDarkColors.textPrimary
+                                    : WebColors.textPrimary,
+                              ),
+                            ),
+                          ),
+                          // Close button
+                          Material(
+                            color: Colors.transparent,
+                            shape: const CircleBorder(),
+                            child: InkWell(
+                              customBorder: const CircleBorder(),
+                              splashColor: theme.isDarkMode
+                                  ? Colors.white.withOpacity(.15)
+                                  : Colors.black.withOpacity(.15),
+                              highlightColor: theme.isDarkMode
+                                  ? Colors.white.withOpacity(.08)
+                                  : Colors.black.withOpacity(.08),
+                              onTap: widget.onClose,
+                              child: Padding(
+                                padding: const EdgeInsets.all(6.0),
+                                child: Icon(
+                                  Icons.close,
+                                  size: 16,
+                                  color: theme.isDarkMode
+                                      ? WebDarkColors.iconSecondary
+                                      : WebColors.iconSecondary,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                        ],
+                      ),
+                    ),
+                    // Content area
+                    Expanded(
+                      child: _PlaceOrderDialogCloseNotifier(
+                        onClose: widget.onClose,
+                        child: PlaceOrderScreenWeb(
+                          orderArg: widget.orderArg,
+                          scripInfo: widget.scripInfo,
+                          isBasket: widget.isBasket,
+                          fromChart: widget.fromChart,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }

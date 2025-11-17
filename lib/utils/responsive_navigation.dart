@@ -8,38 +8,21 @@ import '../sharedWidget/functions.dart';
 /// Handles navigation logic based on screen size
 class ResponsiveNavigation {
   /// Navigate to PlaceOrderScreen responsively
-  /// Shows as dialog on desktop (width >= 600) and navigates normally on mobile
+  /// Shows as draggable dialog on desktop (width >= 600) and navigates normally on mobile
   static Future<dynamic> toPlaceOrderScreen({
     required BuildContext context,
     required Map<String, dynamic> arguments,
   }) {
     if (getResponsiveWidth(context) >= 600) {
-      // Desktop: Show as dialog using web version
-      return showDialog(
+      // Desktop: Show as draggable dialog using web version
+      PlaceOrderScreenWeb.showDraggable(
         context: context,
-        builder: (BuildContext context) {
-          return Dialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(5),
-            ),
-            child: SizedBox(
-              width: 500,
-              height: 600,
-
-              child: StatefulBuilder(
-                builder: (context, setState) {
-                  return PlaceOrderScreenWeb(
-                    orderArg: arguments['orderArg'],
-                    scripInfo: arguments['scripInfo'],
-                    isBasket: arguments['isBskt']?.toString() ?? "",
-                    fromChart: arguments['fromChart'] ?? false,
-                  );
-                }
-              ),
-            ),
-          );
-        },
+        orderArg: arguments['orderArg'],
+        scripInfo: arguments['scripInfo'],
+        isBasket: arguments['isBskt']?.toString() ?? "",
+        fromChart: arguments['fromChart'] ?? false,
       );
+      return Future.value(null);
     } else {
       // Mobile: Navigate normally using mobile version
       return Navigator.pushNamed(
