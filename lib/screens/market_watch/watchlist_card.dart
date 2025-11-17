@@ -173,6 +173,7 @@ class _WatchlistCardState extends ConsumerState<WatchlistCard> {
                 padding: const EdgeInsets.only(top: 4),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     CustomExchBadge(exch: '${widget.watchListData["exch"]}'),
                     if (widget.watchListData['expDate'].toString().isNotEmpty)
@@ -186,11 +187,26 @@ class _WatchlistCardState extends ConsumerState<WatchlistCard> {
                       ),
                     if (_isExpiryToday(widget.watchListData['expDate'])) ...[
                       const SizedBox(width: 6),
-                      TextWidget.paraText(
-                        text: "Expiry",
-                        color: theme.isDarkMode ? colors.secondaryDark : colors.secondaryLight,
-                        theme: theme.isDarkMode,
-                        fw: 0,
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                            decoration: BoxDecoration(
+                              color: theme.isDarkMode
+                                  ? colors.btnBg
+                                  : colors.btnBg,
+                              borderRadius: BorderRadius.circular(4),
+                              border: Border.all(
+                                color: theme.isDarkMode
+                                    ? colors.searchBgDark.withOpacity(0.3)
+                                    : colors.searchBg.withOpacity(0.3),
+                                width: 1,
+                              ),
+                            ),
+                        child: TextWidget.captionText(
+                          text: "Expiry",
+                          color: theme.isDarkMode ? colors.secondaryDark : colors.secondaryLight,
+                          theme: theme.isDarkMode,
+                          fw: 1,
+                        ),
                       ),
                     ],
                     if (widget.watchListData['holdingQty'] != null &&
@@ -216,52 +232,78 @@ class _WatchlistCardState extends ConsumerState<WatchlistCard> {
                      if (marketWatch.hasStockEvents(events,widget.watchListData['token'])) ...[
                       
                       const SizedBox(width: 6),
-                      GestureDetector(
-                        onTap: () {
-                          showModalBottomSheet(
-                            context: context,
-                            isScrollControlled: true,
-                            useSafeArea: true,
-                            isDismissible: true,
-                            shape: const RoundedRectangleBorder(
-                              borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(16),
-                                topRight: Radius.circular(16),
-                              ),
-                            ),
-                            enableDrag: true,
-                            builder: (context) => Container(
-                              padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-                              child: DraggableScrollableSheet(
-                                initialChildSize: 0.6,
-                                expand: false,
-                                minChildSize: 0.4,
-                                maxChildSize: 0.9,
-                                builder: (context, scrollController) => StockEventsDialog(
-                                  stockToken: widget.watchListData['token'],
-                                  stockName: widget.watchListData['symbol'],
+                      Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () {
+                            showModalBottomSheet(
+                              context: context,
+                              isScrollControlled: true,
+                              useSafeArea: true,
+                              isDismissible: true,
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.only(
+                                  topLeft: Radius.circular(16),
+                                  topRight: Radius.circular(16),
                                 ),
                               ),
-                            ),
-                          );
-                        },
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            SvgPicture.asset(assets.barChart,
-                                height: 12,
-                                width: 16,
+                              enableDrag: true,
+                              builder: (context) => Container(
+                                padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+                                child: DraggableScrollableSheet(
+                                  initialChildSize: 0.6,
+                                  expand: false,
+                                  minChildSize: 0.4,
+                                  maxChildSize: 0.9,
+                                  builder: (context, scrollController) => StockEventsDialog(
+                                    stockToken: widget.watchListData['token'],
+                                    stockName: widget.watchListData['symbol'],
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                          borderRadius: BorderRadius.circular(8),
+                          splashColor: theme.isDarkMode
+                              ? Colors.white.withOpacity(0.15)
+                              : Colors.black.withOpacity(0.15),
+                          highlightColor: theme.isDarkMode
+                              ? Colors.white.withOpacity(0.08)
+                              : Colors.black.withOpacity(0.08),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                            decoration: BoxDecoration(
+                              color: theme.isDarkMode
+                                  ? colors.darkiconcolor.withOpacity(0.2)
+                                  : colors.darkiconcolor.withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(4),
+                              border: Border.all(
                                 color: theme.isDarkMode
-                                    ? colors.secondaryDark
-                                    : colors.secondaryLight),
-                            const SizedBox(width: 4),
-                            TextWidget.paraText(
-                              text: events["dividend"]!=null?"dividend":events["bonus"]!=null?"bonus":events["split"]!=null?"split":events["rights"]!=null?"rights":"event",
-                              color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                              theme: theme.isDarkMode,
-                              fw: 0,
+                                    ? colors.darkiconcolor.withOpacity(0.3)
+                                    : colors.darkiconcolor.withOpacity(0.3),
+                                width: 1,
+                              ),
                             ),
-                          ],
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // SvgPicture.asset(assets.barChart,
+                                //     height: 12,
+                                //     width: 16,
+                                //     color: theme.isDarkMode
+                                //         ? colors.secondaryDark
+                                //         : colors.secondaryLight),
+                                // const SizedBox(width: 4),
+                                TextWidget.captionText(
+                                  text: events["dividend"]!=null?"DIVIDEND":events["bonus"]!=null?"BONUS":events["split"]!=null?"SPLIT":events["rights"]!=null?"RIGHTS":"EVENT",
+                                  color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                  theme: theme.isDarkMode,
+                                  fw: 1,
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
                     ]

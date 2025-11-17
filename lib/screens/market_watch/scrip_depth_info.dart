@@ -185,7 +185,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
       decoration: BoxDecoration(
-        color: theme.isDarkMode ? colors.searchBgDark : colors.searchBg,
+        // color: theme.isDarkMode ? colors.searchBgDark : colors.searchBg,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
@@ -987,7 +987,10 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                   ),
                                                   // Holdings card - display if user holds this scrip
                                                   if (_buildHoldingsCard() != null)
-                                                    _buildHoldingsCard()!,
+                                                    Padding(
+                                                      padding: const EdgeInsets.only(bottom: 12),
+                                                      child: _buildHoldingsCard()!,
+                                                    ),
                                                   if (!scripInfo
                                                           .scripDepthloader &&
                                                       widget.wlValue.instname !=
