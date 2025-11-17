@@ -209,9 +209,8 @@ class _IPOListSection extends StatelessWidget {
             ? ipoList.length
             : _ClosedIPOScreenState._maxDisplayItems;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 0),
-      child: ListView.separated(
+    return ListView.separated(
+        padding: EdgeInsets.zero,
         shrinkWrap: true,
         physics: const ScrollPhysics(),
         itemCount: displayCount,
@@ -229,7 +228,6 @@ class _IPOListSection extends StatelessWidget {
             color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
           );
         },
-      ),
     );
   }
 }

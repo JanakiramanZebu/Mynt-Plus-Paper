@@ -122,6 +122,7 @@ class _ExploreScreensState extends ConsumerState<MFExploreScreens>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const SizedBox(height: 150),
             // const CustomDragHandler(),
             Container(
               width: MediaQuery.of(context).size.width,

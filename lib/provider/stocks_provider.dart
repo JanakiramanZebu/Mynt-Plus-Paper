@@ -222,9 +222,10 @@ class StocksProvider extends DefaultChangeNotifier {
   }
 
   // Method to sync TabBar index with provider's exploreIndex
-  void syncTabIndex(int tabIndex) {
+  syncTabIndex(int tabIndex) {
     if (tabIndex >= 0 && tabIndex < _exploreTabName.length) {
       _exploreIndex = tabIndex;
+      notifyListeners();
       _exploreName = _exploreNames[tabIndex];
       notifyListeners();
     }

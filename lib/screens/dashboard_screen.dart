@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -255,281 +256,304 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
       final stocks = ref.watch(stocksProvide);
 
       return Scaffold(
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          elevation: 0,
-          centerTitle: false,
-          title: Row(
-            children: [
-              // SvgPicture.asset(
-              //   assets.myntnewLogo,
-              //   width: 46,
-              //   height: 46,
-              // ),
-              // const SizedBox(width: 10),
-              Expanded(
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(5),
-                    color: theme.isDarkMode
-                        ? colors.searchBgDark
-                        : colors.searchBg,
-                  ),
-                  child: SizedBox(
-                    height: 40,
-                    child: InkWell(
-                      onTap: () {
-                        if (_mainTabController.index == 1) {
-                          // FocusScope.of(context).unfocus();
-                          Navigator.pushNamed(context, Routes.mfsearchscreen);
-                        } else if (_mainTabController.index == 0) {
-                          FocusScope.of(context).unfocus();
-                          final mw = ref.read(marketWatchProvider);
-                          WidgetsBinding.instance
-                              .addPostFrameCallback((_) async {
-                            await mw.requestMWScrip(
-                                context: context, isSubscribe: false);
-                          });
-                          Navigator.pushNamed(
-                            context,
-                            Routes.searchScrip,
-                            arguments: ref.watch(
-                                marketWatchProvider.select((p) => p.wlName)),
-                          );
-                        }
-                      },
-                      child: AbsorbPointer(
-                        absorbing: _mainTabController.index == 1 ||
-                            _mainTabController.index == 0,
-                        child: TextField(
-                          focusNode: _searchFocusNode,
-                          controller: stocks.searchController,
-                          autofocus: false,
-                          style: TextWidget.textStyle(
-                            fontSize: 14,
-                            theme: theme.isDarkMode,
-                            color: theme.isDarkMode
-                                ? colors.textPrimaryDark
-                                : colors.textPrimaryLight,
-                            fw: 0,
+        extendBodyBehindAppBar: true,
+        backgroundColor: Colors.transparent,
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(100),
+          child: ClipRRect(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+              child: Container(
+                 decoration: BoxDecoration(
+                          color: (theme.isDarkMode ? colors.colorBlack : colors.colorWhite).withOpacity(0.2),
+                          border: Border(
+                            bottom: BorderSide(
+                              color: (theme.isDarkMode
+                                  ? colors.textSecondaryDark
+                                  : colors.textSecondaryLight).withOpacity(0.1),
+                              width: 0.5,
+                            ),
                           ),
-                          readOnly: _mainTabController.index == 2 ||
-                                  _mainTabController.index == 3
-                              ? false
-                              : true,
-                          keyboardType: TextInputType.text,
-                          textCapitalization: TextCapitalization.characters,
-                          inputFormatters: [
-                            UpperCaseTextFormatter(),
-                            NoEmojiInputFormatter(),
-                            FilteringTextInputFormatter.deny(
-                                RegExp('[π£•₹€℅™∆√¶/.,]'))
-                          ],
-                          decoration: InputDecoration(
-                              hintText: "Search",
-                              hintStyle: TextWidget.textStyle(
-                                  fontSize: 16,
-                                  theme: theme.isDarkMode,
-                                   fw: 0,
-                                  color:  (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4)),
-                              fillColor: theme.isDarkMode
+                        ),
+                child: SafeArea(
+                  child: AppBar(
+                    automaticallyImplyLeading: false,
+                    elevation: 0,
+                    centerTitle: false,
+                    backgroundColor: Colors.transparent,
+                    title: Row(
+                      children: [
+                        // SvgPicture.asset(
+                        //   assets.myntnewLogo,
+                        //   width: 46,
+                        //   height: 46,
+                        // ),
+                        // const SizedBox(width: 10),
+                        Expanded(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(5),
+                              color: theme.isDarkMode
                                   ? colors.searchBgDark
                                   : colors.searchBg,
-                              filled: true,
-                              prefixIcon: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: SvgPicture.asset(assets.searchIcon,
-                                    color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                        : colors.textSecondaryLight,
-                                    fit: BoxFit.scaleDown,
-                                    width: 20),
-                              ),
-                              suffixIcon:
-                                  stocks.searchController.text.isNotEmpty
-                                      ? Material(
-                                          color: Colors.transparent,
-                                          shape: const CircleBorder(),
-                                          clipBehavior: Clip.hardEdge,
-                                          child: InkWell(
-                                            customBorder: const CircleBorder(),
-                                            splashColor: theme.isDarkMode
-                                                ? colors.splashColorDark
-                                                : colors.splashColorLight,
-                                            highlightColor: theme.isDarkMode
-                                                ? colors.highlightDark
-                                                : colors.highlightLight,
-                                            onTap: () async {
-                                              // Future.delayed(const Duration(milliseconds: 150), () {
-                                              stocks.searchController.clear();
-                                              FocusScope.of(context).unfocus();
-                                              stocks.clearsearchlist(context);
-                                              if (_mainTabController.index == 2) {
-                                                ref
-                                                    .read(ipoProvide)
-                                                    .setIpoSearchQuery("");
-                                                ;
-                                              } else if (_mainTabController.index ==
-                                                  3) {
-                                                ref
-                                                    .read(bondsProvider)
-                                                    .bondscommonsearchcontroller
-                                                    .clear();
-                                              }
-                                              //   if (positionBook.positionSearchCtrl.text.isEmpty) {
-                                              //     positionBook.showPositionSearch(false);
-                                              //   }
-                                              // });)
-                                            },
-                                            child: SvgPicture.asset(
-                                              assets.removeIcon,
-                                              fit: BoxFit.scaleDown,
-                                              width: 20,
+                            ),
+                            child: SizedBox(
+                              height: 40,
+                              child: InkWell(
+                                onTap: () {
+                                  if (_mainTabController.index == 1) {
+                                    // FocusScope.of(context).unfocus();
+                                    Navigator.pushNamed(context, Routes.mfsearchscreen);
+                                  } else if (_mainTabController.index == 0) {
+                                    FocusScope.of(context).unfocus();
+                                    final mw = ref.read(marketWatchProvider);
+                                    WidgetsBinding.instance
+                                        .addPostFrameCallback((_) async {
+                                      await mw.requestMWScrip(
+                                          context: context, isSubscribe: false);
+                                    });
+                                    Navigator.pushNamed(
+                                      context,
+                                      Routes.searchScrip,
+                                      arguments: ref.watch(
+                                          marketWatchProvider.select((p) => p.wlName)),
+                                    );
+                                  }
+                                },
+                                child: AbsorbPointer(
+                                  absorbing: _mainTabController.index == 1 ||
+                                      _mainTabController.index == 0,
+                                  child: TextField(
+                                    focusNode: _searchFocusNode,
+                                    controller: stocks.searchController,
+                                    autofocus: false,
+                                    style: TextWidget.textStyle(
+                                      fontSize: 14,
+                                      theme: theme.isDarkMode,
+                                      color: theme.isDarkMode
+                                          ? colors.textPrimaryDark
+                                          : colors.textPrimaryLight,
+                                      fw: 0,
+                                    ),
+                                    readOnly: _mainTabController.index == 2 ||
+                                            _mainTabController.index == 3
+                                        ? false
+                                        : true,
+                                    keyboardType: TextInputType.text,
+                                    textCapitalization: TextCapitalization.characters,
+                                    inputFormatters: [
+                                      UpperCaseTextFormatter(),
+                                      NoEmojiInputFormatter(),
+                                      FilteringTextInputFormatter.deny(
+                                          RegExp('[π£•₹€℅™∆√¶/.,]'))
+                                    ],
+                                    decoration: InputDecoration(
+                                        hintText: "Search",
+                                        hintStyle: TextWidget.textStyle(
+                                            fontSize: 16,
+                                            theme: theme.isDarkMode,
+                                             fw: 0,
+                                            color:  (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4)),
+                                        fillColor: theme.isDarkMode
+                                            ? colors.searchBgDark
+                                            : colors.searchBg,
+                                        filled: true,
+                                        prefixIcon: Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: SvgPicture.asset(assets.searchIcon,
                                               color: theme.isDarkMode
                                                   ? colors.textSecondaryDark
                                                   : colors.textSecondaryLight,
-                                            ),
-                                          ),
-                                        )
-                                      : null,
-                              enabledBorder: OutlineInputBorder(
-                                  borderSide: BorderSide.none,
-                                  borderRadius: BorderRadius.circular(20)),
-                              disabledBorder: InputBorder.none,
-                              focusedBorder: OutlineInputBorder(
-                                  borderSide: BorderSide.none,
-                                  borderRadius: BorderRadius.circular(20)),
-                              contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 5, vertical: 5),
-                              border: OutlineInputBorder(
-                                  borderSide: BorderSide.none,
-                                  borderRadius: BorderRadius.circular(20))),
-                          onChanged: (value) {
-                            stocks.searchdashboard(value, context,
-                                tabIndex: _mainTabController.index);
-                          },
+                                              fit: BoxFit.scaleDown,
+                                              width: 20),
+                                        ),
+                                        suffixIcon:
+                                            stocks.searchController.text.isNotEmpty
+                                                ? Material(
+                                                    color: Colors.transparent,
+                                                    shape: const CircleBorder(),
+                                                    clipBehavior: Clip.hardEdge,
+                                                    child: InkWell(
+                                                      customBorder: const CircleBorder(),
+                                                      splashColor: theme.isDarkMode
+                                                          ? colors.splashColorDark
+                                                          : colors.splashColorLight,
+                                                      highlightColor: theme.isDarkMode
+                                                          ? colors.highlightDark
+                                                          : colors.highlightLight,
+                                                      onTap: () async {
+                                                        // Future.delayed(const Duration(milliseconds: 150), () {
+                                                        stocks.searchController.clear();
+                                                        FocusScope.of(context).unfocus();
+                                                        stocks.clearsearchlist(context);
+                                                        if (_mainTabController.index == 2) {
+                                                          ref
+                                                              .read(ipoProvide)
+                                                              .setIpoSearchQuery("");
+                                                          ;
+                                                        } else if (_mainTabController.index ==
+                                                            3) {
+                                                          ref
+                                                              .read(bondsProvider)
+                                                              .bondscommonsearchcontroller
+                                                              .clear();
+                                                        }
+                                                        //   if (positionBook.positionSearchCtrl.text.isEmpty) {
+                                                        //     positionBook.showPositionSearch(false);
+                                                        //   }
+                                                        // });)
+                                                      },
+                                                      child: SvgPicture.asset(
+                                                        assets.removeIcon,
+                                                        fit: BoxFit.scaleDown,
+                                                        width: 20,
+                                                        color: theme.isDarkMode
+                                                            ? colors.textSecondaryDark
+                                                            : colors.textSecondaryLight,
+                                                      ),
+                                                    ),
+                                                  )
+                                                : null,
+                                        enabledBorder: OutlineInputBorder(
+                                            borderSide: BorderSide.none,
+                                            borderRadius: BorderRadius.circular(20)),
+                                        disabledBorder: InputBorder.none,
+                                        focusedBorder: OutlineInputBorder(
+                                            borderSide: BorderSide.none,
+                                            borderRadius: BorderRadius.circular(20)),
+                                        contentPadding: const EdgeInsets.symmetric(
+                                            horizontal: 5, vertical: 5),
+                                        border: OutlineInputBorder(
+                                            borderSide: BorderSide.none,
+                                            borderRadius: BorderRadius.circular(20))),
+                                    onChanged: (value) {
+                                      stocks.searchdashboard(value, context,
+                                          tabIndex: _mainTabController.index);
+                                    },
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
+                      ],
+                    ),
+                    bottom: PreferredSize(
+                      preferredSize: const Size.fromHeight(40), // Height for main tabs only
+                      child: SizedBox(
+                        width: MediaQuery.of(context).size.width,
+                        height: 40,
+                        child: Material(
+                          color: Colors.transparent,
+                          child: TabBar(
+                                onTap: (index) {
+                                // Only proceed if the tab is actually changing
+                                if (_currentMainTab != index) {
+                                  // Update the current main tab
+                                  setState(() {
+                                    _currentMainTab = index;
+                                  });
+                                  
+                                  // Animate to the selected tab
+                                  _mainTabController.animateTo(index);
+                                  
+                                  // Animate to the selected page
+                                  _pageController.animateToPage(
+                                    index,
+                                    duration: const Duration(milliseconds: 300),
+                                    curve: Curves.easeInOut,
+                                  );
+                                  ref.read(mfProvider).mfExTabchange(0);
+                                }
+                                
+                                // Always sync the tab index with the provider and perform other actions
+                                ref.read(stocksProvide).syncTabIndex(index);
+                                FocusScope.of(context).unfocus();
+                                stocks.searchController.clear();
+                                stocks.clearsearchlist(context);
+                                ref.read(ipoProvide).setSelectedTab(0);
+                                },
+                                tabAlignment: TabAlignment.start,
+                                indicatorSize: TabBarIndicatorSize.tab,
+                                isScrollable: true,
+                                indicatorColor: theme.isDarkMode
+                                    ? colors.secondaryDark
+                                    : colors.secondaryLight,
+                                unselectedLabelColor: theme.isDarkMode
+                                    ? colors.textSecondaryDark
+                                    : colors.textSecondaryLight,
+                                unselectedLabelStyle: TextWidget.textStyle(
+                                  fontSize: 14,
+                                  theme: false,
+                                  fw: 2,
+                                ),
+                                labelColor: theme.isDarkMode
+                                    ? colors.secondaryDark
+                                    : colors.secondaryLight,
+                                labelStyle:
+                                    TextWidget.textStyle(fontSize: 14, theme: false, fw: 2),
+                                controller: _mainTabController,
+                                tabs: stocks.exploreTabName,
+                                labelPadding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width * 0.055),
+                                dividerColor: Colors.transparent,
+                                overlayColor: WidgetStateProperty.all(Colors.transparent),
+                                splashFactory: NoSplash.splashFactory,
+                              ),
+                            ),
+                          ),
                     ),
                   ),
                 ),
               ),
-            ],
-          ),
-          bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(40), // Height for main tabs only
-            child: Column(
-              children: [
-                // Main tabs
-                SizedBox(
-                  width: MediaQuery.of(context).size.width,
-                  height: 40,
-                  child: TabBar(
-                    onTap: (index) {
-                      // Only proceed if the tab is actually changing
-                      if (_currentMainTab != index) {
-                        // Update the current main tab
-                        setState(() {
-                          _currentMainTab = index;
-                        });
-                        
-                        // Animate to the selected tab
-                        _mainTabController.animateTo(index);
-                        
-                        // Animate to the selected page
-                        _pageController.animateToPage(
-                          index,
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeInOut,
-                        );
-                        ref.read(mfProvider).mfExTabchange(0);
-                      }
-                      
-                      // Always sync the tab index with the provider and perform other actions
-                      ref.read(stocksProvide).syncTabIndex(index);
-                      FocusScope.of(context).unfocus();
-                      stocks.searchController.clear();
-                      stocks.clearsearchlist(context);
-                      ref.read(ipoProvide).setSelectedTab(0);
-                    },
-                    tabAlignment: TabAlignment.start,
-                    indicatorSize: TabBarIndicatorSize.tab,
-                    isScrollable: true,
-                    indicatorColor: theme.isDarkMode
-                        ? colors.secondaryDark
-                        : colors.secondaryLight,
-                    unselectedLabelColor: theme.isDarkMode
-                        ? colors.textSecondaryDark
-                        : colors.textSecondaryLight,
-                    unselectedLabelStyle: TextWidget.textStyle(
-                      fontSize: 14,
-                      theme: false,
-                      fw: 2,
-                    ),
-                    labelColor: theme.isDarkMode
-                        ? colors.secondaryDark
-                        : colors.secondaryLight,
-                    labelStyle:
-                        TextWidget.textStyle(fontSize: 14, theme: false, fw: 2),
-                    controller: _mainTabController,
-                    tabs: stocks.exploreTabName,
-                    labelPadding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width * 0.055),
-                  ),
-                ),
-                Divider(
-                  height: 1,
-                  thickness: 1,
-                  color:
-                      theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-                ),
-              ],
             ),
           ),
         ),
-                 body: PageView(
-           controller: _pageController,
-           onPageChanged: (index) {
-             // Only update if the page actually changed
-             if (_currentMainTab != index) {
-               setState(() {
-                 _currentMainTab = index;
-               });
-               
-               // Only animate tab controller if it's not already at the target index
-               if (_mainTabController.index != index) {
-                 _mainTabController.animateTo(index);
-               }
-               
-               // Sync with provider when page changes
-               if (mounted) {
-                 ref.read(stocksProvide).syncTabIndex(index);
-               }
-                        ref.read(mfProvider).mfExTabchange(0);
-
-             }
-           },
-           children: [
-             // Stocks - no child tabs
-             const StockScreen(),
-             // Mutual Fund - with child tabs
-             MFExploreScreens(
-               theme: ref.watch(themeProvider),
-               onBoundaryReached: _onChildTabBoundaryReached,
-             ),
-             // IPO - with child tabs
-             IPOScreen(
-               initialTabIndex: 0, 
-               isIpo: false,
-               onBoundaryReached: _onChildTabBoundaryReached,
-             ),
-             // Bond - with child tabs
-             BondsScreen(
-               isBonds: false,
-               onBoundaryReached: _onChildTabBoundaryReached,
-             ),
-           ],
-         ),
-      );
+                 body: 
+                     PageView(
+                                  controller: _pageController,
+                                  onPageChanged: (index) {
+                                    // Only update if the page actually changed
+                                    if (_currentMainTab != index) {
+                                      setState(() {
+                     _currentMainTab = index;
+                                      });
+                                      
+                                      // Only animate tab controller if it's not already at the target index
+                                      if (_mainTabController.index != index) {
+                     _mainTabController.animateTo(index);
+                                      }
+                                      
+                                      // Sync with provider when page changes
+                                      if (mounted) {
+                     ref.read(stocksProvide).syncTabIndex(index);
+                                      }
+                            ref.read(mfProvider).mfExTabchange(0);
+                             
+                                    }
+                                  },
+                                  children: [
+                                    // Stocks - no child tabs
+                                    const StockScreen(),
+                                    // Mutual Fund - with child tabs
+                                    MFExploreScreens(
+                                      theme: ref.watch(themeProvider),
+                                      onBoundaryReached: _onChildTabBoundaryReached,
+                                    ),
+                                    // IPO - with child tabs
+                                    IPOScreen(
+                                      initialTabIndex: 0, 
+                                      isIpo: false,
+                                      onBoundaryReached: _onChildTabBoundaryReached,
+                                    ),
+                                    // Bond - with child tabs
+                                    BondsScreen(
+                                      isBonds: false,
+                                      onBoundaryReached: _onChildTabBoundaryReached,
+                                    ),
+                                  ],
+                  
+      ),
+            );
     });
   }
 

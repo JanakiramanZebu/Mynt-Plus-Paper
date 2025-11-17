@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -231,6 +233,7 @@ class _StockScreenState extends ConsumerState<StockScreen>
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
                          
+              const SizedBox(height: 150),
             const AutoLoadTextNuggetWidget(
               screenType: TextNuggetScreenType.homescreen,
             ),
@@ -271,205 +274,206 @@ class _StockScreenState extends ConsumerState<StockScreen>
               // ),
               Container(
                 margin: const EdgeInsets.only(left: 16, right: 16, top: 0,bottom: 16),
-                decoration: BoxDecoration(
+      decoration: BoxDecoration(
                   color: theme.isDarkMode
                         ? colors.colorBlack
                         : colors.colorWhite,
                   borderRadius: BorderRadius.circular(5),
-                   border: Border.all(
-                            color: theme.isDarkMode
+        border: Border.all(
+          color: theme.isDarkMode
                                 ? colors.darkColorDivider
                                 : colors.colorDivider,
                           ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header: icon + title + Add Money
+          Padding(
                       padding: const EdgeInsets.all(
                           16),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            children: [
-                              Container(
-                                  decoration: BoxDecoration(
-                                    color: theme.isDarkMode
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        color: theme.isDarkMode
                                         ? colors.darkGrey
                                         : const Color(0xffF1F3F8),
-                                    borderRadius: BorderRadius.circular(30),
-                                  ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: SvgPicture.asset(
-                                      "assets/icon/briefcase.svg",
-                                      width: 14,
-                                      height: 14,
-                                      color: theme.isDarkMode
-                                          ? colors.textSecondaryDark
-                                          : colors.primaryLight,
-                                    ),
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: SvgPicture.asset(
+                          "assets/icon/briefcase.svg",
+                          width: 14,
+                          height: 14,
+                          color: theme.isDarkMode
+                              ? colors.textSecondaryDark
+                              : colors.primaryLight,
+                        ),
                                   )),
-                              const SizedBox(width: 12),
-                              TextWidget.subText(
-                                text: "Portfolio",
-                                theme: false,
+                    const SizedBox(width: 12),
+                    TextWidget.subText(
+                      text: "Portfolio",
+                      theme: false,
                                 color: theme.isDarkMode
                                     ? colors.colorWhite
                                     : colors.colorBlack,
-                                fw: 2,
-                              ),
-                            ],
-                          ),
+                      fw: 2,
+                    ),
+                  ],
+                ),
                           // const SizedBox(width: 12),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              InkWell(
-                                canRequestFocus: false,
-                                onTap: () async {
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    InkWell(
+                      canRequestFocus: false,
+                      onTap: () async {
                                   Future.delayed(
                                       const Duration(milliseconds: 150), () {
-                                    trancation.changebool(true);
+                          trancation.changebool(true);
                                     Navigator.pushNamed(
                                         context, Routes.fundscreen,
                                         arguments: trancation);
-                                  });
-                                },
-                                child: Padding(
+                        });
+                      },
+                      child: Padding(
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 8, vertical: 4),
-                                  child: TextWidget.subText(
-                                    text: "Add Money",
-                                    theme: false,
+                        child: TextWidget.subText(
+                          text: "Add Money",
+                          theme: false,
                                     color: theme.isDarkMode
                                         ? colors.primaryDark
                                         : colors.primaryLight,
-                                    fw: 2,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
+                          fw: 2,
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 5),
-                
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 5),
+
                    Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 16),
-                    height: 35,
-                     child: TabBar(
-                            controller: _statabController,
-                            tabAlignment: TabAlignment.start,
-                            isScrollable: true,
-                            indicatorSize: TabBarIndicatorSize.tab,
-                            indicatorColor: colors.colorWhite,
-                            indicator: BoxDecoration(
-                              color: theme.isDarkMode
+                              margin: const EdgeInsets.symmetric(horizontal: 16),
+                              height: 35,
+                              child: TabBar(
+                                controller: _statabController,
+                                tabAlignment: TabAlignment.start,
+                                isScrollable: true,
+                                indicatorSize: TabBarIndicatorSize.tab,
+                                indicatorColor: colors.colorWhite,
+                                indicator: BoxDecoration(
+                                            color: theme.isDarkMode
                                   ? colors.searchBgDark
                                   : const Color(0xffF1F3F8),
                               borderRadius: BorderRadius.circular(5),
+                                ),
+                                unselectedLabelColor: theme.isDarkMode
+                                    ? colors.textSecondaryDark
+                                    : colors.textSecondaryLight,
+                                labelStyle: TextWidget.textStyle(
+                                    fontSize: 14,
+                                    theme: false,
+                                    fw: 2,
+                                    color: theme.isDarkMode
+                                        ? colors.textPrimaryDark
+                                        : colors.textPrimaryLight),
+                                unselectedLabelStyle: TextWidget.textStyle(
+                                    fontSize: 14,
+                                    theme: false,
+                                    fw: 3,
+                                    color: colors.textSecondaryLight),
+                                labelPadding: const EdgeInsets.symmetric(horizontal: 8),
+                                tabs: const [
+                                  Tab(text: "Equity"),
+                                  Tab(text: "Mutual Fund"),
+                                  Tab(text: "Position"),
+                                  Tab(text: "Funds"),
+                                ],
+                              ),
                             ),
-                            unselectedLabelColor: theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : colors.textSecondaryLight,
-                            labelStyle: TextWidget.textStyle(
-                                fontSize: 14,
-                                theme: false,
-                                fw: 2,
-                                color: theme.isDarkMode
-                            ? colors.textPrimaryDark
-                            : colors.textPrimaryLight),
-                            unselectedLabelStyle: TextWidget.textStyle(
-                                fontSize: 14,
-                                theme: false,
-                                fw: 3,
-                                color: colors.textSecondaryLight),
-                            labelPadding: const EdgeInsets.symmetric(horizontal: 8),
-                            tabs: const [
-                              Tab(text: "Equity"),
-                              Tab(text: "Mutual Fund"),
-                              Tab(text: "Position"),
-                              Tab(text: "Funds"),
-                            ],
-                          ),
-                   ),
-                   const SizedBox(height: 5),
+          const SizedBox(height: 5),
                     // if (portfolio.holdingsModel != null &&
                     //             portfolio.holdingsModel!.isNotEmpty)
-                    Material(
-                      color: Colors.transparent,
-                      shape: const RoundedRectangleBorder(),
-                      child: InkWell(
-                        canRequestFocus: false,
-                        customBorder: const RoundedRectangleBorder(),
+          Material(
+            color: Colors.transparent,
+            shape: const RoundedRectangleBorder(),
+            child: InkWell(
+              canRequestFocus: false,
+              customBorder: const RoundedRectangleBorder(),
                         splashColor: theme.isDarkMode
                             ? colors.splashColorDark
                             : colors.splashColorLight,
                         highlightColor: theme.isDarkMode
                             ? colors.highlightDark
                             : colors.highlightLight,
-                        onTap: () {
+              onTap: () {
                           if(_statabController.index == 0){
-                          Future.delayed(const Duration(milliseconds: 150), () {
-                          indexList.bottomMenu(2, context);
-                            portfolio.changeTabIndex(0);
-                            portfolio.changeHoldingsTabIndex(0);
-                          });
+                  Future.delayed(const Duration(milliseconds: 150), () {
+                    indexList.bottomMenu(2, context);
+                    portfolio.changeTabIndex(0);
+                    portfolio.changeHoldingsTabIndex(0);
+                  });
                           }
                           else if(_statabController.index == 1){
-                          Future.delayed(const Duration(milliseconds: 150), () {
-                          indexList.bottomMenu(2, context);
-                            portfolio.changeTabIndex(0);
-                            portfolio.changeHoldingsTabIndex(1);
-                          });
+                  Future.delayed(const Duration(milliseconds: 150), () {
+                    indexList.bottomMenu(2, context);
+                    portfolio.changeTabIndex(0);
+                    portfolio.changeHoldingsTabIndex(1);
+                  });
                           }
                           else if(_statabController.index == 2){
-                          Future.delayed(const Duration(milliseconds: 150), () {
-                          indexList.bottomMenu(2, context);
-                            portfolio.changeTabIndex(1);
-                          });
+                  Future.delayed(const Duration(milliseconds: 150), () {
+                    indexList.bottomMenu(2, context);
+                    portfolio.changeTabIndex(1);
+                  });
                           }
                           else if(_statabController.index == 3){
-                          Future.delayed(const Duration(milliseconds: 150), () {
-                          indexList.bottomMenu(2, context);
-                            portfolio.changeTabIndex(3);
-                          });
-                          }
-                        },
-                        child: Container(
+                  Future.delayed(const Duration(milliseconds: 150), () {
+                    indexList.bottomMenu(2, context);
+                    portfolio.changeTabIndex(3);
+                  });
+                }
+              },
+              child: Container(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 16, vertical: 14),
-                          decoration: BoxDecoration(
+                decoration: BoxDecoration(
                             // color: colors.colorWhite,
-                            borderRadius: BorderRadius.circular(5),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
+                  borderRadius: BorderRadius.circular(5),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                                  if(_statabController.index == 2)
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                  children: [
-                                   Column(
-                                  children: [
-                                    TextWidget.subText(
-                                        text: _getRightLabel(_statabController.index),
-                                        theme: false,
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Column(
+                              children: [
+                                TextWidget.subText(
+                                  text: _getRightLabel(_statabController.index),
+                                  theme: false,
                                         color: theme.isDarkMode
                                             ? colors.textSecondaryDark
                                             : colors.textSecondaryLight,
-                                        fw: 0,
-                                        align: TextAlign.center,
-                                      ),
-                                    TextWidget.titleText(
-                                            text: formatAmountCompact(double.parse(pnlData['percentage'].toString())),
-                                            theme: false,
+                                  fw: 0,
+                                  align: TextAlign.center,
+                                ),
+                                TextWidget.titleText(
+                                  text: formatAmountCompact(double.parse(pnlData['percentage'].toString())),
+                                  theme: false,
                                             color: pnlData['percentage']
                                                         .toString()
                                                         .startsWith("-")
@@ -480,33 +484,33 @@ class _StockScreenState extends ConsumerState<StockScreen>
                                                    theme.isDarkMode
                                                       ? colors.successDark
                                                       : colors.successLight,
-                                              fw: 0,
-                                          ),
-                                  ],
+                                  fw: 0,
                                 ),
-                                 Container(
-                                  margin: const EdgeInsets.symmetric(horizontal: 16),
+                              ],
+                            ),
+                            Container(
+                              margin: const EdgeInsets.symmetric(horizontal: 16),
                               height: 30, // adjust height as needed
                               width: 1,
                               color: theme.isDarkMode
                                   ? colors.textSecondaryDark.withOpacity(0.3)
                                   : colors.textSecondaryLight.withOpacity(0.3),
                             ),
-                             Column(
-                                      children: [
-                                        TextWidget.subText(
-                                          text: pnlData['label'],
-                                          theme: false,
+                            Column(
+                              children: [
+                                TextWidget.subText(
+                                  text: pnlData['label'],
+                                  theme: false,
                                           color: theme.isDarkMode
                                               ? colors.textSecondaryDark
                                               : colors.textSecondaryLight,
-                                          fw: 0,
-                                          align: TextAlign.center,
-                                        ),
-                                        TextWidget.titleText(
+                                  fw: 0,
+                                  align: TextAlign.center,
+                                ),
+                                TextWidget.titleText(
                                               text:
                                                   "${getFormatter(value: totalCurrentVal, v4d: false, noDecimal: false)}",
-                                              theme: false,
+                                  theme: false,
                                               color: totalCurrentVal
                                                       .toString()
                                                       .startsWith("-")
@@ -517,35 +521,35 @@ class _StockScreenState extends ConsumerState<StockScreen>
                                                    theme.isDarkMode
                                                       ? colors.successDark
                                                       : colors.successLight,
-                                              fw: 0,
-                                            ),
-                                          
-                                      ],
-                                    ),
-                                
-                                 ],
+                                  fw: 0,
                                 ),
+                                          
+                              ],
+                            ),
+                                
+                          ],
+                        ),
                                 if(_statabController.index != 2)
-                                Row(
+                        Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    TextWidget.subText(
-                                      text: pnlData['label'],
-                                      theme: false,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            TextWidget.subText(
+                              text: pnlData['label'],
+                              theme: false,
                                       color: theme.isDarkMode
                                           ? colors.textSecondaryDark
                                           : colors.textSecondaryLight,
-                                      fw: 0,
-                                    ),
-                                    Row(
-                                      crossAxisAlignment: CrossAxisAlignment.end,
-                                      children: [
-                                        TextWidget.titleText(
+                              fw: 0,
+                            ),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                TextWidget.titleText(
                                           text:
                                               "${getFormatter(value: totalCurrentVal, v4d: false, noDecimal: false)}",
-                                          theme: false,
+                                  theme: false,
                                           color: totalCurrentVal
                                                   .toString()
                                                   .startsWith("-")
@@ -556,13 +560,13 @@ class _StockScreenState extends ConsumerState<StockScreen>
                                                theme.isDarkMode
                                                   ? colors.successDark
                                                   : colors.successLight,
-                                          fw: 0,
-                                        ),
+                                  fw: 0,
+                                ),
                                         if (_statabController.index != 2 && _statabController.index != 3) // Don't show percentage for Position tab
-                                          TextWidget.paraText(
-                                            text:
-                                                " (${pnlData['percentage'] == "NaN" ? 0.00 : pnlData['percentage']}%)",
-                                            theme: false,
+                                  TextWidget.paraText(
+                                    text:
+                                        " (${pnlData['percentage'] == "NaN" ? 0.00 : pnlData['percentage']}%)",
+                                    theme: false,
                                             color: pnlData['percentage']
                                                     .toString()
                                                     .startsWith("-")
@@ -573,77 +577,77 @@ class _StockScreenState extends ConsumerState<StockScreen>
                                                theme.isDarkMode
                                                   ? colors.successDark
                                                   : colors.successLight,
-                                            fw: 0,
-                                          ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 10),
+                                    fw: 0,
+                                  ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      const SizedBox(height: 10),
                                 if(_statabController.index != 2)
-                                Row(
+                        Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
                                     if (_statabController.index != 2)...[
-                                    Row(
-                                      crossAxisAlignment: CrossAxisAlignment.end,
-                                      children: [
-                                        TextWidget.subText(
-                                          text: _getLeftLabel(_statabController.index),
-                                          theme: false,
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  TextWidget.subText(
+                                    text: _getLeftLabel(_statabController.index),
+                                    theme: false,
                                           color: theme.isDarkMode
                                               ? colors.textSecondaryDark
                                               : colors.textSecondaryLight,
-                                          fw: 0,
-                                        ),
-                                        TextWidget.paraText(
+                                    fw: 0,
+                                  ),
+                                  TextWidget.paraText(
                                           text: formatAmountCompact(
                                               double.parse(_totalPnlHolding)),
-                                          theme: false,
+                                    theme: false,
                                           color: theme.isDarkMode
                                               ? colors.colorWhite
                                               : colors.colorBlack,
-                                          fw: 0,
-                                        ),
-                                      ],
-                                    ),
-                                    Row(
-                                      crossAxisAlignment: CrossAxisAlignment.end,
-                                      children: [
-                                        TextWidget.subText(
-                                          text: _getRightLabel(_statabController.index),
-                                          theme: false,
+                                    fw: 0,
+                                  ),
+                                ],
+                              ),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  TextWidget.subText(
+                                    text: _getRightLabel(_statabController.index),
+                                    theme: false,
                                           color: theme.isDarkMode
                                               ? colors.textSecondaryDark
                                               : colors.textSecondaryLight,
-                                          fw: 0,
-                                        ),
-                                        TextWidget.paraText(
-                                          text: _statabController.index == 2 
-                                              ? formatAmountCompact(double.parse(pnlData['percentage'].toString()))
-                                              : formatAmountCompact(double.parse(_totalCurrentVal)),
-                                          theme: false,
+                                    fw: 0,
+                                  ),
+                                  TextWidget.paraText(
+                                    text: _statabController.index == 2
+                                        ? formatAmountCompact(double.parse(pnlData['percentage'].toString()))
+                                        : formatAmountCompact(double.parse(_totalCurrentVal)),
+                                    theme: false,
                                           color: theme.isDarkMode
                                               ? colors.colorWhite
                                               : colors.colorBlack,
-                                          fw: 0,
-                                        ),
-                                      ],
-                                    ),
+                                    fw: 0,
+                                  ),
+                                ],
+                              ),
                                     ]else...[
-                                      TextWidget.subText(
-                                        text: _getRightLabel(_statabController.index),
-                                        theme: false,
+                              TextWidget.subText(
+                                text: _getRightLabel(_statabController.index),
+                                theme: false,
                                         color: theme.isDarkMode
                                             ? colors.textSecondaryDark
                                             : colors.textSecondaryLight,
-                                        fw: 0,
-                                      ),
-                                      TextWidget.titleText(
-                                        text: formatAmountCompact(double.parse(pnlData['percentage'].toString())),
-                                        theme: false,
+                                fw: 0,
+                              ),
+                              TextWidget.titleText(
+                                text: formatAmountCompact(double.parse(pnlData['percentage'].toString())),
+                                theme: false,
                                         color: pnlData['percentage']
                                                     .toString()
                                                     .startsWith("-")
@@ -654,74 +658,74 @@ class _StockScreenState extends ConsumerState<StockScreen>
                                                theme.isDarkMode
                                                   ? colors.successDark
                                                   : colors.successLight,
-                                          fw: 0,
-                                      ),
-                                    ],
-                                  ],
+                                fw: 0,
+                              ),
+                            ],
+                          ],
                                 )
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                
-                    const SizedBox(height: 5),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 5),
                 if(_statabController.index == 0)...[
-                    Container(
+            Container(
                       padding: const EdgeInsets.only(left: 16,right: 16,bottom: 8),
                       // margin: const EdgeInsets.only(top: 4),
-                      child: Material(
-                        color: Colors.transparent,
-                        shape: const RoundedRectangleBorder(),
-                        child: InkWell(
+              child: Material(
+                color: Colors.transparent,
+                shape: const RoundedRectangleBorder(),
+                child: InkWell(
                           // canRequestFocus: false,
-                          customBorder: const RoundedRectangleBorder(),
+                  customBorder: const RoundedRectangleBorder(),
                           splashColor: theme.isDarkMode
                               ? colors.splashColorDark
                               : colors.splashColorLight,
                           highlightColor: theme.isDarkMode
                               ? colors.highlightDark
                               : colors.highlightLight,
-                          onTap: () {
-                            Future.delayed(const Duration(milliseconds: 150), () {
+                  onTap: () {
+                    Future.delayed(const Duration(milliseconds: 150), () {
                               Navigator.pushNamed(
                                   context, Routes.portfolioDashboard);
-                            });
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Row(
+                    });
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
                               // mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                TextWidget.subText(
-                                  text: "Portfolio insights",
-                                  theme: false,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        TextWidget.subText(
+                          text: "Portfolio insights",
+                          theme: false,
                                   color: theme.isDarkMode
                                       ? colors.primaryDark
                                       : colors.primaryLight,
-                                  fw: 2,
-                                ),
-                                const SizedBox(width: 6),
-                                SvgPicture.asset(
-                                  assets.leftArrow,
+                          fw: 2,
+                        ),
+                        const SizedBox(width: 6),
+                        SvgPicture.asset(
+                          assets.leftArrow,
                                   // width: 12,
                                   // height: 12,
                                   color: theme.isDarkMode
                                       ? colors.primaryDark
                                       : colors.primaryDark,
-                                      fit: BoxFit.scaleDown,
-                                ),
-                              ],
-                            ),
-                          ),
+                          fit: BoxFit.scaleDown,
                         ),
-                      ),
+                      ],
                     ),
-                ]else...[
-                  const SizedBox.shrink(),
-                ],
+                  ),
+                ),
+              ),
+            ),
+          ] else ...[
+            const SizedBox.shrink(),
+          ],
                     // const SizedBox(height: 16),
                 
                     // Center(
@@ -764,9 +768,9 @@ class _StockScreenState extends ConsumerState<StockScreen>
                     //     ),
                     //   ),
                     // ),
-                  ],
-                ),
-              ),
+        ],
+      ),
+    ),
               optionZTile(context, theme, funds),
               // const SizedBox(height: 16),
               // stockSearchTile(context, theme),
@@ -1060,7 +1064,7 @@ class _StockScreenState extends ConsumerState<StockScreen>
                         InkWell(
                           canRequestFocus: false,
                           onTap: () {
-                            Navigator.pushNamed(context, Routes.basketScreen);
+                            // Navigator.pushNamed(context, Routes.basketScreen);
                             // Navigator.pushNamed(context, Routes.portfolioDashboard);
                           },
                           child: Container(
@@ -1084,6 +1088,7 @@ class _StockScreenState extends ConsumerState<StockScreen>
                         ),
                         const SizedBox(height: 16),
                         ListView.separated(
+                          padding: EdgeInsets.zero,
                           shrinkWrap:
                               true, // Important if this is inside another scrollable widget
                           physics:
@@ -1150,7 +1155,7 @@ class _StockScreenState extends ConsumerState<StockScreen>
                           height: 1,
                         )
                       ])),
-              // const SizedBox(height: 16),
+              const SizedBox(height: 80),
               // Padding(
               //   padding: const EdgeInsets.symmetric(horizontal: 16),
               //   child: Column(

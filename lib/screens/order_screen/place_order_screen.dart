@@ -426,7 +426,8 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
 
   // Check if market is closed based on exchange and current time
   bool _checkMarketClosed() {
-    final now = DateTime.now();
+        // Always use IST timezone since Indian markets operate in IST
+    final now = DateTime.now().toUtc().add(const Duration(hours: 5, minutes: 30));
     final currentTime = TimeOfDay.fromDateTime(now);
     final currentMinutes = currentTime.hour * 60 + currentTime.minute;
 

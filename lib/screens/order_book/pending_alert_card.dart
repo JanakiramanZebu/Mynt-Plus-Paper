@@ -123,6 +123,7 @@ class _PendingAlertState extends ConsumerState<PendingAlert> {
       );
     }
     return ListView.builder(
+      padding: EdgeInsets.only(bottom: 80),
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: alerts.length,

@@ -51,7 +51,8 @@ class BondsListScreen extends StatelessWidget {
         TreasuryBondsScreen(),
         StateBondsScreen(),
         SovereignGoldBondsScreen(),
-        SizedBox(height: 24),
+        // SizedBox(height: 24),
+        // SizedBox(height: 80),
       ],
     );
   }

@@ -101,7 +101,8 @@ class MainSmeListCard extends StatelessWidget {
                   if (ipos.ipoPreClose?.msg?.isNotEmpty == true) ...[
                     const ClosedIPOScreen(),
                   ],
-                  const SizedBox(height: 24),
+                  // const SizedBox(height: 22),
+                  // const SizedBox(height: 80),
                 ],
               ),
             ),
@@ -255,7 +256,7 @@ class _IPOListSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.separated(
-      padding: const EdgeInsets.all(0),
+      padding: EdgeInsets.zero,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: ipos.length,

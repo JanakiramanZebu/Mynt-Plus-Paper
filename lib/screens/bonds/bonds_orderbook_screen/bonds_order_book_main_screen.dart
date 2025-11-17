@@ -72,6 +72,7 @@ class _BondsOrderbookMainScreenState
                 BondsCloseOrderList(
                     orders: filteredClose, theme: theme),
                 theme),
+          // const SizedBox(height: 80),
         ],
       ),
     );

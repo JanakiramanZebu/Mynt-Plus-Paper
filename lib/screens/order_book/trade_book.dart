@@ -160,6 +160,7 @@ class TradeBook extends ConsumerWidget {
         child: order.tradeBooksearch!.isEmpty
             ? tradeBook.isNotEmpty
                 ? ListView.separated(
+                    padding: EdgeInsets.only(bottom: 80),
                     physics: const AlwaysScrollableScrollPhysics(),
                     shrinkWrap: false,
                     itemBuilder: (context, index) {
@@ -379,6 +380,7 @@ class TradeBook extends ConsumerWidget {
                         child: const NoDataFound()))
             : order.tradeBooksearch!.isNotEmpty
                 ? ListView.separated(
+                    padding: EdgeInsets.only(bottom: 80),
                     physics: const AlwaysScrollableScrollPhysics(),
                     shrinkWrap: false,
                     itemBuilder: (context, index) {

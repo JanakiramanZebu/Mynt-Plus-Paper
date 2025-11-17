@@ -200,6 +200,7 @@ class _PledgeFilterState extends State<PledgeFilter>
       final List<dynamic> displaypledgedvalue = pledgedvalue;
 
       return Scaffold(
+        backgroundColor: Colors.transparent,
         body: RefreshIndicator(
           onRefresh: _refresh,
           child: Stack(
@@ -374,6 +375,7 @@ class _PledgeFilterState extends State<PledgeFilter>
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 16.0),
                 child: ListView.separated(
+                  padding: EdgeInsets.zero,
                   physics: ScrollPhysics(),
                   itemCount: dataval.length ?? 0,
                   shrinkWrap: true,

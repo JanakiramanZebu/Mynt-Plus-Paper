@@ -32,6 +32,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
     return Scaffold(
       backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
       body: ListView(
+        padding: EdgeInsets.zero,
         children: [
           // Available Margin Section
           Container(
@@ -454,6 +455,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
           ),
           if (funds.listOfCredits.isNotEmpty) ...[
             ListView.separated(
+              padding: EdgeInsets.zero,
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: filteredCredits.length,
@@ -593,6 +595,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
 
           if (funds.listOfUsedMrgn.isNotEmpty) ...[
             ListView.separated(
+              padding: EdgeInsets.zero,
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: filteredMargin.length,
