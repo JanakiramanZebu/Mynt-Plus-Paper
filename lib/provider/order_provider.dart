@@ -32,6 +32,7 @@ import '../models/order_book_model/trade_book_model.dart';
 import '../routes/route_names.dart';
 import '../sharedWidget/functions.dart';
 import '../sharedWidget/snack_bar.dart';
+import '../utils/responsive_snackbar.dart';
 import 'auth_provider.dart';
 import 'core/default_change_notifier.dart';
 import 'index_list_provider.dart';
@@ -1897,12 +1898,25 @@ class OrderProvider extends DefaultChangeNotifier {
         ref.read(ordInputProvider).clearTextField();
         await fetchGTTOrderBook(context, "");
 
-        Navigator.pop(context);
-        ref.read(indexListProvider).bottomMenu(2, context);
-        // Switch to Orders tab in Portfolio screen
-        ref.read(portfolioProvider).changeTabIndex(2);
-        HapticFeedback.heavyImpact();
-        SystemSound.play(SystemSoundType.click);
+        // Show success message - ResponsiveSnackBar for web, ScaffoldMessenger for mobile
+        if (kIsWeb) {
+          ResponsiveSnackBar.showSuccess(context, "Order Placed Successfully");
+        } else {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(successMessage(context, "Order Placed Successfully"));
+        }
+
+        if (kIsWeb) {
+          // On web, skip Navigator.pop and bottomMenu navigation
+          // The draggable dialog will handle closing itself
+        } else {
+          Navigator.pop(context);
+          ref.read(indexListProvider).bottomMenu(2, context);
+          // Switch to Orders tab in Portfolio screen
+          ref.read(portfolioProvider).changeTabIndex(2);
+          HapticFeedback.heavyImpact();
+          SystemSound.play(SystemSoundType.click);
+        }
       } else {
         if (_placeGttOrderModel!.emsg ==
                 "Session Expired :  Invalid Session Key" &&
@@ -1926,15 +1940,26 @@ class OrderProvider extends DefaultChangeNotifier {
 
       if (_modifyGttOrderModel!.stat == "OI replaced") {
         ConstantName.sessCheck = true;
-        ScaffoldMessenger.of(context)
-            .showSnackBar(successMessage(context, "Modified Order"));
         ref.read(ordInputProvider).clearTextField();
         await fetchGTTOrderBook(context, "");
 
-        Navigator.pop(context);
-        ref.read(indexListProvider).bottomMenu(2, context);
-        HapticFeedback.heavyImpact();
-        SystemSound.play(SystemSoundType.click);
+        // Show success message - ResponsiveSnackBar for web, ScaffoldMessenger for mobile
+        if (kIsWeb) {
+          ResponsiveSnackBar.showSuccess(context, "Modified Order");
+        } else {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(successMessage(context, "Modified Order"));
+        }
+
+        if (kIsWeb) {
+          // On web, skip Navigator.pop and bottomMenu navigation
+          // The draggable dialog will handle closing itself
+        } else {
+          Navigator.pop(context);
+          ref.read(indexListProvider).bottomMenu(2, context);
+          HapticFeedback.heavyImpact();
+          SystemSound.play(SystemSoundType.click);
+        }
       } else {
         if (_modifyGttOrderModel!.emsg ==
                 "Session Expired :  Invalid Session Key" &&
@@ -1960,9 +1985,13 @@ class OrderProvider extends DefaultChangeNotifier {
       if (_placeGttOrderModel!.stat == "OI deleted") {
         ConstantName.sessCheck = true;
 
-        // Navigator.pop(context);
-        showResponsiveSuccess(context, "GTT Order Cancelled Successfully");
-        Navigator.pop(context);
+        // Show success message - ResponsiveSnackBar for web, ScaffoldMessenger for mobile
+        if (kIsWeb) {
+          ResponsiveSnackBar.showSuccess(context, "GTT Order Cancelled Successfully");
+        } else {
+          showResponsiveSuccess(context, "GTT Order Cancelled Successfully");
+          Navigator.pop(context);
+        }
       } else {
         if (_placeGttOrderModel!.emsg ==
                 "Session Expired :  Invalid Session Key" &&
@@ -1970,11 +1999,15 @@ class OrderProvider extends DefaultChangeNotifier {
           ref.read(authProvider).ifSessionExpired(context);
         }
       }
-      //  Navigator.pop(context);
       if (_placeGttOrderModel!.stat == "Invalid Oi") {
         await fetchGTTOrderBook(context, "");
-        showResponsiveWarningMessage(context, "Provided GTT Order is not found");
-        Navigator.pop(context);
+        // Show warning message - ResponsiveSnackBar for web, ScaffoldMessenger for mobile
+        if (kIsWeb) {
+          ResponsiveSnackBar.showWarning(context, "Provided GTT Order is not found");
+        } else {
+          showResponsiveWarningMessage(context, "Provided GTT Order is not found");
+          Navigator.pop(context);
+        }
       }
     } catch (e) {
       ref
@@ -1997,10 +2030,23 @@ class OrderProvider extends DefaultChangeNotifier {
         ref.read(ordInputProvider).clearTextField();
         await fetchGTTOrderBook(context, "");
 
-        Navigator.pop(context);
-        ref.read(indexListProvider).bottomMenu(2, context);
-        HapticFeedback.heavyImpact();
-        SystemSound.play(SystemSoundType.click);
+        // Show success message - ResponsiveSnackBar for web, ScaffoldMessenger for mobile
+        if (kIsWeb) {
+          ResponsiveSnackBar.showSuccess(context, "Order Placed Successfully");
+        } else {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(successMessage(context, "Order Placed Successfully"));
+        }
+
+        if (kIsWeb) {
+          // On web, skip Navigator.pop and bottomMenu navigation
+          // The draggable dialog will handle closing itself
+        } else {
+          Navigator.pop(context);
+          ref.read(indexListProvider).bottomMenu(2, context);
+          HapticFeedback.heavyImpact();
+          SystemSound.play(SystemSoundType.click);
+        }
       } else {
         if (_placeGttOrderModel!.emsg ==
                 "Session Expired :  Invalid Session Key" &&
@@ -2024,15 +2070,26 @@ class OrderProvider extends DefaultChangeNotifier {
 
       if (_modifyGttOrderModel!.stat == "OI replaced") {
         ConstantName.sessCheck = true;
-        ScaffoldMessenger.of(context)
-            .showSnackBar(successMessage(context, "Modified Order"));
         ref.read(ordInputProvider).clearTextField();
         await fetchGTTOrderBook(context, "");
 
-        Navigator.pop(context);
-        ref.read(indexListProvider).bottomMenu(2, context);
-        HapticFeedback.heavyImpact();
-        SystemSound.play(SystemSoundType.click);
+        // Show success message - ResponsiveSnackBar for web, ScaffoldMessenger for mobile
+        if (kIsWeb) {
+          ResponsiveSnackBar.showSuccess(context, "Modified Order");
+        } else {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(successMessage(context, "Modified Order"));
+        }
+
+        if (kIsWeb) {
+          // On web, skip Navigator.pop and bottomMenu navigation
+          // The draggable dialog will handle closing itself
+        } else {
+          Navigator.pop(context);
+          ref.read(indexListProvider).bottomMenu(2, context);
+          HapticFeedback.heavyImpact();
+          SystemSound.play(SystemSoundType.click);
+        }
       } else {
         if (_modifyGttOrderModel!.emsg ==
                 "Session Expired :  Invalid Session Key" &&
@@ -3482,10 +3539,23 @@ class OrderProvider extends DefaultChangeNotifier {
         ref.read(ordInputProvider).clearTextField();
         await fetchGTTOrderBook(context, "");
 
-        Navigator.pop(context);
-        ref.read(indexListProvider).bottomMenu(2, context);
-        HapticFeedback.heavyImpact();
-        SystemSound.play(SystemSoundType.click);
+        // Show success message - ResponsiveSnackBar for web, ScaffoldMessenger for mobile
+        if (kIsWeb) {
+          ResponsiveSnackBar.showSuccess(context, "Order Placed Successfully");
+        } else {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(successMessage(context, "Order Placed Successfully"));
+        }
+
+        if (kIsWeb) {
+          // On web, skip Navigator.pop and bottomMenu navigation
+          // The draggable dialog will handle closing itself
+        } else {
+          Navigator.pop(context);
+          ref.read(indexListProvider).bottomMenu(2, context);
+          HapticFeedback.heavyImpact();
+          SystemSound.play(SystemSoundType.click);
+        }
       } else {
         if (_placeGttOrderModel!.emsg ==
                 "Session Expired :  Invalid Session Key" &&

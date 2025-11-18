@@ -526,9 +526,10 @@ class _GttOrderBookDetailScreenWebState extends ConsumerState<GttOrderBookDetail
               
               Navigator.pop(context);
               
-              showDialog(
+              ModifyGttWeb.showDraggable(
                 context: context,
-                builder: (context) => ModifyGttWeb(gttOrderBook: _gttOrder, scripInfo: marketwatch.scripInfoModel!),
+                gttOrderBook: _gttOrder,
+                scripInfo: marketwatch.scripInfoModel!,
               );
             },
             child: Center(

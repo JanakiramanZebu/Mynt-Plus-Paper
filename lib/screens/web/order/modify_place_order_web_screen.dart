@@ -17,16 +17,62 @@ import '../../../models/order_book_model/order_margin_model.dart';
 import '../../../provider/network_state_provider.dart';
 import '../../../provider/order_provider.dart';
 import '../../../provider/thems.dart';
+import '../../../res/web_colors.dart';
+import '../../../res/global_font_web.dart';
 import '../../../sharedWidget/cust_text_formfield.dart';
-import '../../../sharedWidget/custom_back_btn.dart';
-import '../../../sharedWidget/custom_exch_badge.dart';
-import '../../../sharedWidget/custom_switch_btn.dart';
 import '../../../sharedWidget/custom_widget_button.dart';
 import '../../../sharedWidget/no_internet_widget.dart';
 import '../../../sharedWidget/snack_bar.dart';
 import '../../../utils/responsive_snackbar.dart';
 import '../../Mobile/order_screen/margin_charges_bottom_sheet.dart';
-import '../../Mobile/order_screen/order_screen_header.dart';
+import 'orderscreen_header_web.dart';
+
+// InheritedWidget to pass close callback to child widgets
+class _ModifyPlaceOrderDialogCloseNotifier extends InheritedWidget {
+  final VoidCallback onClose;
+
+  const _ModifyPlaceOrderDialogCloseNotifier({
+    required this.onClose,
+    required super.child,
+  });
+
+  static _ModifyPlaceOrderDialogCloseNotifier? of(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<_ModifyPlaceOrderDialogCloseNotifier>();
+  }
+
+  @override
+  bool updateShouldNotify(_ModifyPlaceOrderDialogCloseNotifier oldWidget) {
+    return onClose != oldWidget.onClose;
+  }
+}
+
+// InheritedWidget to pass drag handlers to child widgets
+class _ModifyPlaceOrderDialogDragNotifier extends InheritedWidget {
+  final void Function(DragStartDetails) onPanStart;
+  final void Function(DragUpdateDetails) onPanUpdate;
+  final void Function(DragEndDetails) onPanEnd;
+  final bool isDragging;
+
+  const _ModifyPlaceOrderDialogDragNotifier({
+    required this.onPanStart,
+    required this.onPanUpdate,
+    required this.onPanEnd,
+    required this.isDragging,
+    required super.child,
+  });
+
+  static _ModifyPlaceOrderDialogDragNotifier? of(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<_ModifyPlaceOrderDialogDragNotifier>();
+  }
+
+  @override
+  bool updateShouldNotify(_ModifyPlaceOrderDialogDragNotifier oldWidget) {
+    return onPanStart != oldWidget.onPanStart ||
+        onPanUpdate != oldWidget.onPanUpdate ||
+        onPanEnd != oldWidget.onPanEnd ||
+        isDragging != oldWidget.isDragging;
+  }
+}
 
 class ModifyPlaceOrderScreenWeb extends ConsumerStatefulWidget {
   final OrderBookModel modifyOrderArgs;
@@ -41,6 +87,40 @@ class ModifyPlaceOrderScreenWeb extends ConsumerStatefulWidget {
   @override
   ConsumerState<ModifyPlaceOrderScreenWeb> createState() =>
       _ModifyPlaceOrderScreenState();
+
+  /// Static method to show ModifyPlaceOrderScreenWeb as a draggable dialog
+  static void showDraggable({
+    required BuildContext context,
+    required OrderBookModel modifyOrderArgs,
+    required ScripInfoModel scripInfo,
+    required OrderScreenArgs orderArg,
+    Offset? initialPosition,
+  }) {
+    final overlay = Overlay.of(context);
+    late OverlayEntry overlayEntry;
+    
+    final position = initialPosition ?? Offset(
+      MediaQuery.of(context).size.width * 0.1,
+      MediaQuery.of(context).size.height * 0.05,
+    );
+    
+    overlayEntry = OverlayEntry(
+      builder: (context) => _DraggableModifyPlaceOrderScreenDialog(
+        modifyOrderArgs: modifyOrderArgs,
+        scripInfo: scripInfo,
+        orderArg: orderArg,
+        initialPosition: position,
+        onPositionChanged: (newPosition) {
+          // Position can be saved if needed
+        },
+        onClose: () {
+          overlayEntry.remove();
+        },
+      ),
+    );
+    
+    overlay.insert(overlayEntry);
+  }
 }
 
 class _ModifyPlaceOrderScreenState
@@ -61,6 +141,7 @@ class _ModifyPlaceOrderScreenState
   List<String> priceType = ["Limit", "Market", "SL Limit", "SL MKT"];
   // List<bool> isActivePrice = [];
   List<String> validityType = ["Day", "IOC"];
+  List<String> validityTypes = ["DAY", "IOC", "EOS"];
   // List<bool> isActiveValidity = [true, false];
 
   String prcType = "";
@@ -74,6 +155,8 @@ class _ModifyPlaceOrderScreenState
   bool _isStoplossOrder = false;
   bool _isBOCOOrderEnabled = false;
   bool isAdvancedOptionClicked = false;
+  bool _afterMarketOrder = false;
+  bool _addValidityAndDisclosedQty = false;
   // String orderType = "Delivery";
 
   double tik = 0.00;
@@ -167,6 +250,28 @@ class _ModifyPlaceOrderScreenState
       _isBOCOOrderEnabled = widget.modifyOrderArgs.sPrdtAli == "BO" ||
           widget.modifyOrderArgs.sPrdtAli == "CO";
 
+      // Auto-expand advanced section and set states based on order data
+      // Auto-expand advanced section for stop-loss orders
+      if (["SL-LMT", "SL-MKT"].contains(prcType)) {
+        _isStoplossOrder = true;
+        isAdvancedOptionClicked = true;
+      }
+
+      // Auto-expand for IOC validity or disclosed quantity
+      if (validity.toUpperCase() == 'IOC' || 
+          (widget.modifyOrderArgs.dscqty != null && 
+           int.parse(widget.modifyOrderArgs.dscqty.toString()) > 0)) {
+        isAdvancedOptionClicked = true;
+        _addValidityAndDisclosedQty = true;
+        addValidity = true;
+      }
+
+      // Auto-expand for AMO orders (if AMO flag exists in order data)
+      if (isAmo) {
+        isAdvancedOptionClicked = true;
+        _afterMarketOrder = true;
+      }
+
       marginUpdate();
     });
     super.initState();
@@ -174,98 +279,155 @@ class _ModifyPlaceOrderScreenState
 
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-      canPop: true, // Allows back navigation
-      onPopInvokedWithResult: (didPop, result) {
-        if (didPop) return; // If system handled back, do nothing
-      },
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final orderProvide = ref.watch(orderProvider);
+      final internet = ref.watch(networkStateProvider);
+      final theme = ref.read(themeProvider);
+      final clientFundDetail = ref.watch(fundProvider).fundDetailModel;
+      final trancation = ref.watch(transcationProvider);
 
-      child: Consumer(builder: (context, WidgetRef ref, _) {
-        final orderProvide = ref.watch(orderProvider);
-        final internet = ref.watch(networkStateProvider);
-        final theme = ref.read(themeProvider);
-        final clientFundDetail = ref.watch(fundProvider).fundDetailModel;
-        final trancation = ref.watch(transcationProvider);
+      int frezQtyOrderSliceMaxLimit =
+          ref.read(orderProvider).frezQtyOrderSliceMaxLimit;
 
-        int frezQtyOrderSliceMaxLimit =
-            ref.read(orderProvider).frezQtyOrderSliceMaxLimit;
-
-        return GestureDetector(
-            onTap: () => FocusScope.of(context).unfocus(),
-            child: Scaffold(
-                resizeToAvoidBottomInset: true,
-                appBar: AppBar(
-                  centerTitle: false,
-                  leadingWidth: 41,
-                  titleSpacing: 6,
-                  leading: const CustomBackBtn(),
-                  elevation: .4,
-                  title: Container(
-                    margin: const EdgeInsets.only(right: 10),
-                    child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 8),
-                            child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.end,
+      return GestureDetector(
+          onTap: () => FocusScope.of(context).unfocus(),
+          child: Column(
+            children: [
+              // Header with drag functionality
+              Builder(
+                builder: (context) {
+                  final dragNotifier = _ModifyPlaceOrderDialogDragNotifier.of(context);
+                  final closeNotifier = _ModifyPlaceOrderDialogCloseNotifier.of(context);
+                  
+                  Widget headerContent = Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: theme.isDarkMode
+                              ? WebDarkColors.divider
+                              : WebColors.divider,
+                        ),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 8.0),
+                              child: Row(
                                 children: [
-                                  TextWidget.subText(
-                                      text: "${widget.scripInfo.symbol!} ",
-                                      theme: theme.isDarkMode,
+                                  Text(
+                                    "${widget.scripInfo.symbol!.replaceAll("-EQ", "")} ",
+                                    style: WebTextStyles.symbolList(
+                                      isDarkTheme: theme.isDarkMode,
                                       color: theme.isDarkMode
-                                          ? colors.textPrimaryDark
-                                          : colors.textPrimaryLight,
-                                      fw: 3),
-                                  // Text("${widget.scripInfo.symbol!} ",
-                                  //     style: textStyle(theme.isDarkMode ? colors.colorWhite : colors.colorBlack, 14, FontWeight.w400),
-                                  //     overflow: TextOverflow.ellipsis,
-                                  //     maxLines: 1),
-                                  if (widget.scripInfo.option!.isNotEmpty)
-                                    TextWidget.subText(
-                                        text: widget.scripInfo.option!,
-                                        theme: theme.isDarkMode,
-                                        color: theme.isDarkMode
-                                            ? colors.textPrimaryDark
-                                            : colors.textPrimaryLight,
-                                        fw: 3),
-                                  // Text(widget.scripInfo.option!,
-                                  //     style: textStyle(theme.isDarkMode ? colors.colorWhite : colors.colorBlack, 14, FontWeight.w400),
-                                  //     overflow: TextOverflow.ellipsis,
-                                  //     maxLines: 1),
+                                          ? WebDarkColors.textPrimary
+                                          : WebColors.textPrimary,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                   if (widget.scripInfo.expDate!.isNotEmpty)
-                                    TextWidget.subText(
-                                        text: " ${widget.scripInfo.expDate} ",
-                                        theme: theme.isDarkMode,
+                                    Text(
+                                      " ${widget.scripInfo.expDate} ",
+                                      style: WebTextStyles.symbolList(
+                                        isDarkTheme: theme.isDarkMode,
                                         color: theme.isDarkMode
-                                            ? colors.textPrimaryDark
-                                            : colors.textPrimaryLight,
-                                        fw: 3),
-                                  // Text(" ${widget.scripInfo.expDate} ",
-                                  //     style: textStyle(theme.isDarkMode ? colors.colorWhite : colors.colorBlack, 14, FontWeight.w400)),
-                                  CustomExchBadge(
-                                      exch: "${widget.scripInfo.exch}"),
-                                ]),
-                          ),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              OrderScreenHeader(headerData: widget.orderArg),
-                              // Row(children: [
-                              //   SvgPicture.asset(assets.buyIcon),
-                              //   const SizedBox(width: 6),
-                              //   CustomSwitch(
-                              //       onChanged: (bool value) {}, value: isBuy),
-                              //   const SizedBox(width: 6),
-                              //   SvgPicture.asset(assets.sellIcon)
-                              // ])
+                                            ? WebDarkColors.textPrimary
+                                            : WebColors.textPrimary,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  if (widget.scripInfo.option!.isNotEmpty)
+                                    Text(
+                                      widget.scripInfo.option!,
+                                      style: WebTextStyles.symbolList(
+                                        isDarkTheme: theme.isDarkMode,
+                                        color: theme.isDarkMode
+                                            ? WebDarkColors.textPrimary
+                                            : WebColors.textPrimary,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  Text(
+                                    " ${widget.scripInfo.exch}",
+                                    style: WebTextStyles.exchText(
+                                      isDarkTheme: theme.isDarkMode,
+                                      color: theme.isDarkMode
+                                          ? WebDarkColors.textSecondary
+                                          : WebColors.textSecondary,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Row(
+                              children: [
+                                OrderScreenHeaderWeb(headerData: widget.orderArg),
+                               
+                              ],
+                            ),
+                          ],
+                        ),
+
+                         if (closeNotifier != null) ...[
+                              const SizedBox(width: 8),
+                              Material(
+                                color: Colors.transparent,
+                                shape: const CircleBorder(),
+                                child: InkWell(
+                                  customBorder: const CircleBorder(),
+                                  splashColor: theme.isDarkMode
+                                      ? Colors.white.withOpacity(.15)
+                                      : Colors.black.withOpacity(.15),
+                                  highlightColor: theme.isDarkMode
+                                      ? Colors.white.withOpacity(.08)
+                                      : Colors.black.withOpacity(.08),
+                                  onTap: closeNotifier.onClose,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(6.0),
+                                    child: Icon(
+                                      Icons.close,
+                                      size: 18,
+                                      color: theme.isDarkMode
+                                          ? WebDarkColors.iconSecondary
+                                          : WebColors.iconSecondary,
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ],
-                          ),
-                        ]),
-                  ),
-                ),
-                body: SafeArea(
+                      ],
+                    ),
+                  );
+                  
+                  // Wrap with drag functionality if drag notifier is available
+                  if (dragNotifier != null) {
+                    return MouseRegion(
+                      cursor: SystemMouseCursors.move,
+                      child: GestureDetector(
+                        onPanStart: dragNotifier.onPanStart,
+                        onPanUpdate: dragNotifier.onPanUpdate,
+                        onPanEnd: dragNotifier.onPanEnd,
+                        child: headerContent,
+                      ),
+                    );
+                  }
+                  
+                  return headerContent;
+                },
+              ),
+              // Body content
+              Expanded(
+                child: SafeArea(
                   child: Stack(
                     children: [
                       SingleChildScrollView(
@@ -562,9 +724,9 @@ class _ModifyPlaceOrderScreenState
                                                       // .substring(
                                                       //     0,
                                                       //     10); // Restrict max value
-                                                      ResponsiveSnackBar.showWarning(
-                                                          context,
-                                                          "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}");
+                                                      ResponsiveSnackBar
+                                                          .showWarning(context,
+                                                              "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}");
                                                     }
                                                     if (newValue != value) {
                                                       qtyCtrl.text = newValue;
@@ -679,9 +841,9 @@ class _ModifyPlaceOrderScreenState
                                                     }
                                                     if (value.isEmpty ||
                                                         inputPrice <= 0) {
-                                                      ResponsiveSnackBar.showWarning(
-                                                          context,
-                                                          "Limit Price can not be ${inputPrice <= 0 ? 'zero' : 'empty'}");
+                                                      ResponsiveSnackBar
+                                                          .showWarning(context,
+                                                              "Limit Price can not be ${inputPrice <= 0 ? 'zero' : 'empty'}");
                                                     } else {
                                                       if ((double.parse(value) <
                                                               double.parse(
@@ -766,190 +928,370 @@ class _ModifyPlaceOrderScreenState
                                     ],
                                   ),
                                 ),
-                                // const SizedBox(height: 16),
+                                const SizedBox(height: 16),
                                 // Advance Option section
-                                // Column(
-                                //   children: [
-                                //     GestureDetector(
-                                //       onTap: () {
-                                //         setState(() {
-                                //           isAdvancedOptionClicked =
-                                //               !isAdvancedOptionClicked;
-                                //           updatePriceType();
-                                //         });
-                                //       },
-                                //       child: Container(
-                                //         color: Colors
-                                //             .transparent, // To make the full width tappable
-                                //         height: 48,
-                                //         child: Center(
-                                //           child: Row(
-                                //             mainAxisSize: MainAxisSize.min,
-                                //             children: [
-                                //               Text('Advance',
-                                //                   style: textStyle(
-                                //                     colors.colorBlue,
-                                //                     14,
-                                //                     FontWeight.w600,
-                                //                   )),
-                                //               Padding(
-                                //                 padding: const EdgeInsets.only(
-                                //                     left: 4),
-                                //                 child: Icon(
-                                //                   isAdvancedOptionClicked
-                                //                       ? Icons.keyboard_arrow_up
-                                //                       : Icons.keyboard_arrow_down,
-                                //                   color: colors.colorBlue,
-                                //                 ),
-                                //               ),
-                                //             ],
-                                //           ),
-                                //         ),
-                                //       ),
-                                //     ),
-                                //     Visibility(
-                                //       visible: isAdvancedOptionClicked,
-                                //       child: Column(
-                                //         children: [
-                                //           CheckboxListTile(
-                                //               title: Text(
-                                //                 'Stoploss order',
-                                //                 style: textStyle(
-                                //                   theme.isDarkMode
-                                //                       ? colors.colorWhite
-                                //                       : colors.colorBlack,
-                                //                   14,
-                                //                   FontWeight.w400,
-                                //                 ),
-                                //               ),
-                                //               value: _isStoplossOrder,
-                                //               onChanged: (bool? value) {
-                                //                 setState(() {
-                                //                   _isStoplossOrder = value!;
-                                //                   updatePriceType();
-                                //                   // orderInput.chngPriceType(
-                                //                   //     priceType,
-                                //                   //     widget.orderArg.exchange);
-                                //                   marginUpdate();
-                                //                 });
-                                //               },
-                                //               controlAffinity:
-                                //                   ListTileControlAffinity
-                                //                       .trailing,
-                                //               activeColor: colors.colorBlue,
-                                //               checkboxShape:
-                                //                   const RoundedRectangleBorder(
-                                //                 borderRadius: BorderRadius.all(
-                                //                     Radius.circular(5)),
-                                //               )),
-                                //           if (prcType == "SL-LMT" ||
-                                //               prcType == "SL-MKT") ...[
-                                //             triggerOption(
-                                //                 theme, context, widget.scripInfo),
-                                //             Divider(
-                                //               color: theme.isDarkMode
-                                //                   ? colors.darkColorDivider
-                                //                   : colors.colorDivider,
-                                //             ),
-                                //           ],
+                                Column(
+                                  children: [
+                                    GestureDetector(
+                                      onTap: () {
+                                        setState(() {
+                                          if (!_isStoplossOrder && !_afterMarketOrder && !_addValidityAndDisclosedQty) {
+                                            isAdvancedOptionClicked =
+                                                !isAdvancedOptionClicked;
+                                          }
+                                          updatePriceType();
+                                        });
+                                      },
+                                      child: Container(
+                                        color: Colors
+                                            .transparent, // To make the full width tappable
+                                        height: 48,
+                                        child: Center(
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              TextWidget.subText(
+                                                  text: 'Advance',
+                                                  theme: theme.isDarkMode,
+                                                  color: theme.isDarkMode
+                                                      ? colors.colorLightBlue
+                                                      : colors.colorBlue,
+                                                  fw: 2),
+                                              Padding(
+                                                padding: const EdgeInsets.only(
+                                                    left: 4),
+                                                child: Icon(
+                                                  isAdvancedOptionClicked
+                                                      ? Icons.keyboard_arrow_up
+                                                      : Icons.keyboard_arrow_down,
+                                                  color: theme.isDarkMode
+                                                      ? colors.colorLightBlue
+                                                      : colors.colorBlue,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    Visibility(
+                                      visible: isAdvancedOptionClicked,
+                                      child: Column(
+                                        children: [
+                                          Divider(
+                                            color: theme.isDarkMode
+                                                ? WebDarkColors.divider
+                                                : WebColors.divider,
+                                          ),
 
-                                //           // Divider(
-                                //           //     color: theme.isDarkMode
-                                //           //         ? colors.darkColorDivider
-                                //           //         : colors.colorDivider),
-                                //           // CheckboxListTile(
-                                //           //     title: Text(
-                                //           //       'After market order (AMO)',
-                                //           //       style: textStyle(
-                                //           //         theme.isDarkMode
-                                //           //             ? colors.colorWhite
-                                //           //             : colors.colorBlack,
-                                //           //         14,
-                                //           //         FontWeight.w400,
-                                //           //       ),
-                                //           //     ),
-                                //           //     value: _afterMarketOrder,
-                                //           //     onChanged: (bool? value) {
-                                //           //       setState(() {
-                                //           //         _afterMarketOrder = value!;
-                                //           //         //   isAmo = !isAmo;
-                                //           //       });
-                                //           //     },
-                                //           //     controlAffinity:
-                                //           //         ListTileControlAffinity
-                                //           //             .trailing,
-                                //           //     activeColor: colors.colorBlue,
-                                //           //     checkboxShape:
-                                //           //         const RoundedRectangleBorder(
-                                //           //       borderRadius: BorderRadius.all(
-                                //           //           Radius.circular(5)),
-                                //           //     )),
-                                //           // Divider(
-                                //           //     color: theme.isDarkMode
-                                //           //         ? colors.darkColorDivider
-                                //           //         : colors.colorDivider),
-                                //           // CheckboxListTile(
-                                //           //   title: Text(
-                                //           //     'Add validity & Disclosed quantity',
-                                //           //     style: textStyle(
-                                //           //       theme.isDarkMode
-                                //           //           ? colors.colorWhite
-                                //           //           : colors.colorBlack,
-                                //           //       14,
-                                //           //       FontWeight.w400,
-                                //           //     ),
-                                //           //   ),
-                                //           //   value: _addValidityAndDisclosedQty,
-                                //           //   onChanged: (bool? value) {
-                                //           //     setState(() {
-                                //           //       _addValidityAndDisclosedQty =
-                                //           //           value!;
-                                //           //     });
-                                //           //   },
-                                //           //   controlAffinity:
-                                //           //       ListTileControlAffinity
-                                //           //           .trailing,
-                                //           //   activeColor: colors.colorBlue,
-                                //           //   checkboxShape:
-                                //           //       const RoundedRectangleBorder(
-                                //           //     borderRadius: BorderRadius.all(
-                                //           //         Radius.circular(5)),
-                                //           //   ),
-                                //           // ),
-                                //           // if (_addValidityAndDisclosedQty) ...[
-                                //           //   addValidityAndDisclosedQtyOption(
-                                //           //       theme,
-                                //           //       context,
-                                //           //       widget.scripInfo),
-                                //           //   const SizedBox(height: 10)
-                                //           // ],
-                                //           // Divider(
-                                //           //     color: theme.isDarkMode
-                                //           //         ? colors.darkColorDivider
-                                //           //         : colors.colorDivider),
-                                //           // SizedBox(
-                                //           //     height: priceType == "Market"
-                                //           //         ? 180
-                                //           //         : 100)
-                                //         ],
-                                //       ),
-                                //     ),
-                                //   ],
-                                // ),
+                                          // Row with Stoploss and Add validity (50% each)
+                                          Row(
+                                            children: [
+                                              // Stoploss order - 50% width
+                                              Expanded(
+                                                child: Theme(
+                                                  data: ThemeData(
+                                                    unselectedWidgetColor: theme.isDarkMode
+                                                        ? WebDarkColors.textPrimary
+                                                        : WebColors.textPrimary,
+                                                  ),
+                                                  child: GestureDetector(
+                                                    behavior: HitTestBehavior.translucent,
+                                                    onTap: () {
+                                                      setState(() {
+                                                        _isStoplossOrder = !_isStoplossOrder;
+                                                        updatePriceType();
+                                                        marginUpdate();
+                                                      });
+                                                    },
+                                                    child: Container(
+                                                      padding: const EdgeInsets.symmetric(
+                                                          horizontal: 16, vertical: 5),
+                                                      child: Row(
+                                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                        children: [
+                                                          Flexible(
+                                                            child: Text(
+                                                              'Stoploss order',
+                                                              style: WebTextStyles.sub(
+                                                                isDarkTheme: theme.isDarkMode,
+                                                                color: theme.isDarkMode
+                                                                    ? WebDarkColors.textPrimary
+                                                                    : WebColors.textPrimary,
+                                                              ),
+                                                              overflow: TextOverflow.ellipsis,
+                                                            ),
+                                                          ),
+                                                          AnimatedContainer(
+                                                            duration: const Duration(milliseconds: 250),
+                                                            curve: Curves.easeOut,
+                                                            width: 40,
+                                                            height: 22,
+                                                            padding: const EdgeInsets.symmetric(horizontal: 3),
+                                                            decoration: BoxDecoration(
+                                                              color: _isStoplossOrder
+                                                                  ? WebColors.primary.withOpacity(0.25)
+                                                                  : (theme.isDarkMode
+                                                                      ? Colors.grey[700]
+                                                                      : Colors.grey[300]),
+                                                              borderRadius: BorderRadius.circular(20),
+                                                            ),
+                                                            child: AnimatedAlign(
+                                                              duration: const Duration(milliseconds: 250),
+                                                              curve: Curves.easeOut,
+                                                              alignment: _isStoplossOrder
+                                                                  ? Alignment.centerRight
+                                                                  : Alignment.centerLeft,
+                                                              child: Container(
+                                                                width: 16,
+                                                                height: 16,
+                                                                decoration: BoxDecoration(
+                                                                  color: _isStoplossOrder
+                                                                      ? colors.colorBlue
+                                                                      : Colors.grey[500],
+                                                                  shape: BoxShape.circle,
+                                                                  boxShadow: [
+                                                                    BoxShadow(
+                                                                      color: Colors.black.withOpacity(0.25),
+                                                                      blurRadius: 3,
+                                                                      offset: const Offset(0, 1),
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                              
+                                              // Divider between Stoploss and Add validity
+                                              if (!_isBOCOOrderEnabled) ...[
+                                                Container(
+                                                  width: 1,
+                                                  height: 40,
+                                                  color: theme.isDarkMode
+                                                      ? WebDarkColors.divider
+                                                      : WebColors.divider,
+                                                ),
+                                              ],
 
-                                // const SizedBox(height: 16),
-                                // const Divider(color: Color(0xffDDDDDD)),
-                                // (widget.modifyOrderArgs.sPrdtAli != "BO" && widget.modifyOrderArgs.sPrdtAli != "CO") &&
-                                if ((prcType == "SL-LMT" ||
-                                    prcType == "SL-MKT")) ...[
-                                  const SizedBox(height: 16),
-                                  triggerOption(
-                                      theme, context, widget.scripInfo),
-                                  Divider(
-                                      color: theme.isDarkMode
-                                          ? colors.darkColorDivider
-                                          : colors.colorDivider),
-                                ],
+                                              // Add validity & Disclosed Qty - 50% width (only if not BO/CO)
+                                              if (!_isBOCOOrderEnabled) ...[
+                                                Expanded(
+                                                  child: Theme(
+                                                    data: ThemeData(
+                                                      unselectedWidgetColor: theme.isDarkMode
+                                                          ? WebDarkColors.textPrimary
+                                                          : WebColors.textPrimary,
+                                                    ),
+                                                    child: GestureDetector(
+                                                      behavior: HitTestBehavior.translucent,
+                                                      onTap: () {
+                                                        setState(() {
+                                                          _addValidityAndDisclosedQty = !_addValidityAndDisclosedQty;
+                                                          addValidity = _addValidityAndDisclosedQty;
+                                                        });
+                                                      },
+                                                      child: Container(
+                                                        padding: const EdgeInsets.symmetric(
+                                                            horizontal: 16, vertical: 5),
+                                                        child: Row(
+                                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                          children: [
+                                                            Flexible(
+                                                              child: Text(
+                                                                'Add validity & Disclosed quantity',
+                                                                style: WebTextStyles.sub(
+                                                                  isDarkTheme: theme.isDarkMode,
+                                                                  color: theme.isDarkMode
+                                                                      ? WebDarkColors.textPrimary
+                                                                      : WebColors.textPrimary,
+                                                                ),
+                                                                overflow: TextOverflow.ellipsis,
+                                                              ),
+                                                            ),
+                                                            AnimatedContainer(
+                                                              duration: const Duration(milliseconds: 250),
+                                                              curve: Curves.easeOut,
+                                                              width: 40,
+                                                              height: 22,
+                                                              padding: const EdgeInsets.symmetric(horizontal: 3),
+                                                              decoration: BoxDecoration(
+                                                                color: _addValidityAndDisclosedQty
+                                                                    ? colors.colorBlue.withOpacity(0.25)
+                                                                    : (theme.isDarkMode
+                                                                        ? Colors.grey[700]
+                                                                        : Colors.grey[300]),
+                                                                borderRadius: BorderRadius.circular(20),
+                                                              ),
+                                                              child: AnimatedAlign(
+                                                                duration: const Duration(milliseconds: 250),
+                                                                curve: Curves.easeOut,
+                                                                alignment: _addValidityAndDisclosedQty
+                                                                    ? Alignment.centerRight
+                                                                    : Alignment.centerLeft,
+                                                                child: Container(
+                                                                  width: 16,
+                                                                  height: 16,
+                                                                  decoration: BoxDecoration(
+                                                                    color: _addValidityAndDisclosedQty
+                                                                        ? colors.colorBlue
+                                                                        : Colors.grey[500],
+                                                                    shape: BoxShape.circle,
+                                                                    boxShadow: [
+                                                                      BoxShadow(
+                                                                        color: Colors.black.withOpacity(0.25),
+                                                                        blurRadius: 3,
+                                                                        offset: const Offset(0, 1),
+                                                                      ),
+                                                                    ],
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ],
+                                          ),
+
+                                          // Show trigger and validity options side by side (50% each)
+                                          if ((prcType == "SL-LMT" || prcType == "SL-MKT") ||
+                                              (!_isBOCOOrderEnabled && _addValidityAndDisclosedQty)) ...[
+                                            Row(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                // Trigger option - 50% width (only if stoploss is on)
+                                                Expanded(
+                                                  flex: 1,
+                                                  child: prcType == "SL-LMT" || prcType == "SL-MKT"
+                                                      ? triggerOption(theme, context, widget.scripInfo)
+                                                      : const SizedBox.shrink(),
+                                                ),
+                                                
+                                                // Divider between trigger and validity (only if both are visible)
+                                                if ((prcType == "SL-LMT" || prcType == "SL-MKT") &&
+                                                    !_isBOCOOrderEnabled && _addValidityAndDisclosedQty) ...[
+                                                  Container(
+                                                    width: 1,
+                                                    margin: const EdgeInsets.symmetric(horizontal: 8),
+                                                    color: theme.isDarkMode
+                                                        ? WebDarkColors.divider
+                                                        : WebColors.divider,
+                                                  ),
+                                                ],
+                                                
+                                                // Validity options - 50% width (only if enabled)
+                                                Expanded(
+                                                  flex: 1,
+                                                  child: !_isBOCOOrderEnabled && _addValidityAndDisclosedQty
+                                                      ? addValidityAndDisclosedQtyOption(theme, context, widget.scripInfo)
+                                                      : const SizedBox.shrink(),
+                                                ),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 10),
+                                          ],
+
+                                          if (!_isBOCOOrderEnabled) ...[
+                                            // AMO switch section
+                                            Divider(
+                                                color: theme.isDarkMode
+                                                    ? WebDarkColors.divider
+                                                    : WebColors.divider),
+                                            Theme(
+                                              data: ThemeData(
+                                                unselectedWidgetColor: theme.isDarkMode
+                                                    ? WebDarkColors.textPrimary
+                                                    : WebColors.textPrimary,
+                                              ),
+                                              child: GestureDetector(
+                                                behavior: HitTestBehavior.translucent,
+                                                onTap: () {
+                                                  setState(() {
+                                                    _afterMarketOrder = !_afterMarketOrder;
+                                                    isAmo = _afterMarketOrder;
+                                                  });
+                                                },
+                                                child: Container(
+                                                  padding: const EdgeInsets.symmetric(
+                                                      horizontal: 16, vertical: 5),
+                                                  child: Row(
+                                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                    children: [
+                                                      Text(
+                                                        'After market order (AMO)',
+                                                        style: WebTextStyles.sub(
+                                                          isDarkTheme: theme.isDarkMode,
+                                                          color: theme.isDarkMode
+                                                              ? WebDarkColors.textPrimary
+                                                              : WebColors.textPrimary,
+                                                        ),
+                                                      ),
+                                                      AnimatedContainer(
+                                                        duration: const Duration(milliseconds: 250),
+                                                        curve: Curves.easeOut,
+                                                        width: 40,
+                                                        height: 22,
+                                                        padding: const EdgeInsets.symmetric(horizontal: 3),
+                                                        decoration: BoxDecoration(
+                                                          color: _afterMarketOrder
+                                                              ? colors.colorBlue.withOpacity(0.25)
+                                                              : (theme.isDarkMode
+                                                                  ? Colors.grey[700]
+                                                                  : Colors.grey[300]),
+                                                          borderRadius: BorderRadius.circular(20),
+                                                        ),
+                                                        child: AnimatedAlign(
+                                                          duration: const Duration(milliseconds: 250),
+                                                          curve: Curves.easeOut,
+                                                          alignment: _afterMarketOrder
+                                                              ? Alignment.centerRight
+                                                              : Alignment.centerLeft,
+                                                          child: Container(
+                                                            width: 16,
+                                                            height: 16,
+                                                            decoration: BoxDecoration(
+                                                              color: _afterMarketOrder
+                                                                  ? colors.colorBlue
+                                                                  : Colors.grey[500],
+                                                              shape: BoxShape.circle,
+                                                              boxShadow: [
+                                                                BoxShadow(
+                                                                  color: Colors.black.withOpacity(0.25),
+                                                                  blurRadius: 3,
+                                                                  offset: const Offset(0, 1),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            Divider(
+                                                color: theme.isDarkMode
+                                                    ? WebDarkColors.divider
+                                                    : WebColors.divider),
+                                          ],
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+
+                                // Trigger option is now handled inside the advanced options section
                                 if (_isBOCOOrderEnabled) ...[
                                   const SizedBox(height: 16),
                                   stopLossOption(
@@ -1242,23 +1584,24 @@ class _ModifyPlaceOrderScreenState
                     ],
                   ),
                 ),
-                bottomNavigationBar:
-                    internet.connectionStatus == ConnectivityResult.none
-                        ? const NoInternetWidget()
-                        : SafeArea(
-                            child: Padding(
-                              padding: EdgeInsets.only(
-                                  bottom:
-                                      MediaQuery.of(context).viewInsets.bottom),
-                              child: Container(
-                                  color: theme.isDarkMode
-                                      ? colors.colorBlack
-                                      : colors.colorWhite,
-                                  child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
+              ),
+              // Bottom navigation bar
+              internet.connectionStatus == ConnectivityResult.none
+                  ? const NoInternetWidget()
+                  : SafeArea(
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                            bottom:
+                                MediaQuery.of(context).viewInsets.bottom),
+                        child: Container(
+                            color: theme.isDarkMode
+                                ? colors.colorBlack
+                                : colors.colorWhite,
+                            child: Column(
+                                crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
                                         // if (prcType == "MKT" || prcType == "SL-MKT") ...[
                                         //   Padding(
                                         //     padding: const EdgeInsets.only(
@@ -1573,7 +1916,7 @@ class _ModifyPlaceOrderScreenState
                                             )),
                                         Container(
                                             padding: const EdgeInsets.symmetric(
-                                                horizontal: 16, vertical: 4),
+                                                horizontal: 16, vertical: 10),
                                             width: MediaQuery.of(context)
                                                 .size
                                                 .width,
@@ -1592,7 +1935,8 @@ class _ModifyPlaceOrderScreenState
                                                                       .isEmpty) {
                                                                 ResponsiveSnackBar.showWarning(
                                                                     context,
-                                                                    qtyCtrl.text.isEmpty
+                                                                    qtyCtrl.text
+                                                                            .isEmpty
                                                                         ? "Quantity can not be empty"
                                                                         : "Price can not be empty");
                                                               } else if (qtyCtrl
@@ -1612,7 +1956,9 @@ class _ModifyPlaceOrderScreenState
                                                                           "${widget.scripInfo.uc}"))) {
                                                                 ResponsiveSnackBar.showWarning(
                                                                     context,
-                                                                    double.parse(prcType == "MKT" || prcType == "SL-MKT" ? price : priceCtrl.text) <
+                                                                    double.parse(prcType == "MKT" || prcType == "SL-MKT"
+                                                                                ? price
+                                                                                : priceCtrl.text) <
                                                                             double.parse("${widget.scripInfo.lc}")
                                                                         ? "Price can not be lesser than Lower Circuit Limit ${widget.scripInfo.lc}"
                                                                         : "Price can not be greater than Upper Circuit Limit ${widget.scripInfo.uc}");
@@ -1766,9 +2112,10 @@ class _ModifyPlaceOrderScreenState
                                                                     targetCtrl
                                                                         .text
                                                                         .isEmpty) {
-                                                                  ResponsiveSnackBar.showWarning(
-                                                                      context,
-                                                                      "${stopLossCtrl.text.isEmpty ? "Stoploss" : "Target"} can not be empty");
+                                                                  ResponsiveSnackBar
+                                                                      .showWarning(
+                                                                          context,
+                                                                          "${stopLossCtrl.text.isEmpty ? "Stoploss" : "Target"} can not be empty");
                                                                 } else {
                                                                   modifyOrder();
                                                                 }
@@ -1779,9 +2126,10 @@ class _ModifyPlaceOrderScreenState
                                                                 if (stopLossCtrl
                                                                     .text
                                                                     .isEmpty) {
-                                                                  ResponsiveSnackBar.showWarning(
-                                                                      context,
-                                                                      " Stoploss can not be empty");
+                                                                  ResponsiveSnackBar
+                                                                      .showWarning(
+                                                                          context,
+                                                                          " Stoploss can not be empty");
                                                                 } else {
                                                                   modifyOrder();
                                                                 }
@@ -1838,9 +2186,12 @@ class _ModifyPlaceOrderScreenState
                                             TargetPlatform.iOS)
                                           const SizedBox(height: 18)
                                       ])),
-                            ),
-                          )));
-      }),
+                        ),
+                      ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -1899,8 +2250,7 @@ class _ModifyPlaceOrderScreenState
                       }
                     }
                     if (value.isEmpty || inputPrice <= 0) {
-                      ResponsiveSnackBar.showWarning(
-                          context,
+                      ResponsiveSnackBar.showWarning(context,
                           "Trigger can not be ${inputPrice <= 0 ? 'zero' : 'empty'}");
                     }
                   },
@@ -1957,8 +2307,7 @@ class _ModifyPlaceOrderScreenState
                       }
 
                       if (value.isEmpty || inputPrice <= 0) {
-                        ResponsiveSnackBar.showWarning(
-                            context,
+                        ResponsiveSnackBar.showWarning(context,
                             "Target can not be ${inputPrice <= 0 ? 'zero' : 'empty'}");
                       }
                     },
@@ -2008,8 +2357,7 @@ class _ModifyPlaceOrderScreenState
                         }
                       }
                       if (value.isEmpty || inputPrice <= 0) {
-                        ResponsiveSnackBar.showWarning(
-                            context,
+                        ResponsiveSnackBar.showWarning(context,
                             "Stoploss can not be ${inputPrice <= 0 ? 'zero' : 'empty'}");
                       }
                     },
@@ -2122,14 +2470,13 @@ class _ModifyPlaceOrderScreenState
                               inputFormate: [
                                 FilteringTextInputFormatter.digitsOnly
                               ],
-                               hintStyle: TextWidget.textStyle(
-                                      fontSize: 14,
-                                      theme: theme.isDarkMode,
-                                     color: theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : colors.textSecondaryLight,
-                                    ),
-                                    
+                              hintStyle: TextWidget.textStyle(
+                                fontSize: 14,
+                                theme: theme.isDarkMode,
+                                color: theme.isDarkMode
+                                    ? colors.textSecondaryDark
+                                    : colors.textSecondaryLight,
+                              ),
                               onChanged: (value) {
                                 setState(() {
                                   if (value.isEmpty) {
@@ -2142,8 +2489,9 @@ class _ModifyPlaceOrderScreenState
                                     if (newValue != value) {
                                       mktProtCtrl.text = newValue;
                                       mktProtCtrl.selection =
-                                          TextSelection.fromPosition(TextPosition(
-                                              offset: newValue.length));
+                                          TextSelection.fromPosition(
+                                              TextPosition(
+                                                  offset: newValue.length));
                                     }
                                     if (int.parse(value) > 20) {
                                       mktProtCtrl.text = "20";
@@ -2159,12 +2507,12 @@ class _ModifyPlaceOrderScreenState
                               },
                               keyboardType: TextInputType.number,
                               style: TextWidget.textStyle(
-                                    fontSize: 16,
-                                    color: theme.isDarkMode
-                                        ? colors.textPrimaryDark
-                                        : colors.textPrimaryLight,
-                                    theme: theme.isDarkMode,
-                                  ),
+                                fontSize: 16,
+                                color: theme.isDarkMode
+                                    ? colors.textPrimaryDark
+                                    : colors.textPrimaryLight,
+                                theme: theme.isDarkMode,
+                              ),
                               textCtrl: mktProtCtrl,
                               prefixIcon: Container(
                                 margin: const EdgeInsets.all(12),
@@ -2320,6 +2668,9 @@ class _ModifyPlaceOrderScreenState
           context, "Quantity should be multiple of lot size $lotSize => $q");
     }
     if (placeorder) {
+      // Get close notifier before async call
+      final closeNotifier = _ModifyPlaceOrderDialogCloseNotifier.of(context);
+      
       ref.read(orderProvider).setOrderloader(true);
       ModifyOrderInput input = ModifyOrderInput(
           dscqty: widget.modifyOrderArgs.dscqty ?? "0",
@@ -2329,18 +2680,40 @@ class _ModifyPlaceOrderScreenState
               ? widget.modifyOrderArgs.mktProtection ?? ""
               : mktProtCtrl.text,
           orderNum: widget.modifyOrderArgs.norenordno!,
-          prc: price,//prcType == "LMT" || prcType == "SL-LMT" ? priceCtrl.text : "0",
+          prc:
+              price, //prcType == "LMT" || prcType == "SL-LMT" ? priceCtrl.text : "0",
           prd: widget.modifyOrderArgs.prd!,
           trantype: widget.modifyOrderArgs.trantype!,
           prctyp: prcType,
           blprc: stopLossCtrl.text,
           bpprc: targetCtrl.text,
-          qty: int.parse(widget.modifyOrderArgs.qty ?? "0") == (int.parse(qtyCtrl.text) + int.parse((widget.modifyOrderArgs.fillshares ?? "0"))) ? widget.modifyOrderArgs.exch == 'MCX' ? (int.parse(widget.modifyOrderArgs.qty.toString()) * lotSize).toString() : (widget.modifyOrderArgs.qty.toString()) : widget.modifyOrderArgs.exch == 'MCX' ? ((int.parse(qtyCtrl.text) + int.parse((widget.modifyOrderArgs.fillshares ?? "0"))) * lotSize).toString() : (int.parse(qtyCtrl.text) + int.parse(widget.modifyOrderArgs.fillshares ?? "0")).toString(),
+          qty: int.parse(widget.modifyOrderArgs.qty ?? "0") ==
+                  (int.parse(qtyCtrl.text) +
+                      int.parse((widget.modifyOrderArgs.fillshares ?? "0")))
+              ? widget.modifyOrderArgs.exch == 'MCX'
+                  ? (int.parse(widget.modifyOrderArgs.qty.toString()) * lotSize)
+                      .toString()
+                  : (widget.modifyOrderArgs.qty.toString())
+              : widget.modifyOrderArgs.exch == 'MCX'
+                  ? ((int.parse(qtyCtrl.text) +
+                              int.parse(
+                                  (widget.modifyOrderArgs.fillshares ?? "0"))) *
+                          lotSize)
+                      .toString()
+                  : (int.parse(qtyCtrl.text) +
+                          int.parse(widget.modifyOrderArgs.fillshares ?? "0"))
+                      .toString(),
           ret: validity,
           trgprc: triggerPriceCtrl.text,
           tsym: widget.modifyOrderArgs.tsym!);
       await ref.read(orderProvider).fetchModifyOrder(input, context);
       ref.read(orderProvider).setOrderloader(false);
+      
+      // Close dialog on successful modification
+      final modifyOrderModel = ref.read(orderProvider).modifyOrderModel;
+      if (modifyOrderModel != null && modifyOrderModel.stat == "Ok" && closeNotifier != null) {
+        closeNotifier.onClose();
+      }
     }
   }
 
@@ -2376,5 +2749,205 @@ class _ModifyPlaceOrderScreenState
           : "${widget.orderArg.ltp}";
       price = priceCtrl.text;
     }
+  }
+
+  Padding addValidityAndDisclosedQtyOption(ThemesProvider theme, BuildContext context, ScripInfoModel scripInfo) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                headerTitleText("Validity", theme),
+            const SizedBox(height: 8),
+                SizedBox(
+                    height: 38,
+                    child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemBuilder: (context, index) {
+                          return ElevatedButton(
+                            onPressed: () {
+                              setState(() {
+                                validity = validityTypes[index];
+                              });
+                            },
+                            style: ElevatedButton.styleFrom(
+                                elevation: 0,
+                            minimumSize: const Size(0, 0),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                                backgroundColor: !theme.isDarkMode
+                                    ? validity != validityTypes[index]
+                                        ? const Color(0xffF1F3F8)
+                                        : theme.isDarkMode
+                                            ? colors.secondaryDark
+                                            : colors.secondaryLight
+                                    : validity != validityTypes[index]
+                                        ? colors.darkGrey
+                                        : theme.isDarkMode
+                                            ? colors.secondaryDark
+                                            : colors.secondaryLight,
+                                shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.all(Radius.circular(5)),
+                                )),
+                            child: TextWidget.subText(
+                                text: validityTypes[index],
+                                color: !theme.isDarkMode
+                                    ? validity != validityTypes[index]
+                                        ? theme.isDarkMode
+                                            ? colors.textSecondaryDark
+                                            : colors.textSecondaryLight
+                                        : colors.colorWhite
+                                    : validity != validityTypes[index]
+                                        ? theme.isDarkMode
+                                            ? colors.textSecondaryDark
+                                            : colors.textSecondaryLight
+                                        : colors.colorWhite,
+                                theme: theme.isDarkMode,
+                            fw: validity == validityTypes[index] ? 1 : 0),
+                          );
+                        },
+                        separatorBuilder: (context, index) {
+                          return const SizedBox(width: 8);
+                        },
+                    itemCount: widget.orderArg.exchange == "BSE" || widget.orderArg.exchange == "BFO" ? validityTypes.length : 2))
+              ])),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                headerTitleText("Disclosed Qty", theme),
+                const SizedBox(height: 8),
+                SizedBox(
+                  height: 45,
+                  child: CustomTextFormField(
+                        fillColor: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
+                      hintText: "0",
+                      hintStyle: TextWidget.textStyle(
+                        fontSize: 14,
+                        theme: theme.isDarkMode,
+                          color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                      ),
+                      inputFormate: [FilteringTextInputFormatter.digitsOnly],
+                      keyboardType: TextInputType.number,
+                      style: TextWidget.textStyle(
+                        fontSize: 16,
+                          color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                        theme: theme.isDarkMode,
+                      ),
+                      textCtrl: discQtyCtrl,
+                      textAlign: TextAlign.start),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DraggableModifyPlaceOrderScreenDialog extends ConsumerStatefulWidget {
+  final OrderBookModel modifyOrderArgs;
+  final ScripInfoModel scripInfo;
+  final OrderScreenArgs orderArg;
+  final Offset initialPosition;
+  final Function(Offset) onPositionChanged;
+  final VoidCallback onClose;
+
+  const _DraggableModifyPlaceOrderScreenDialog({
+    required this.modifyOrderArgs,
+    required this.scripInfo,
+    required this.orderArg,
+    required this.initialPosition,
+    required this.onPositionChanged,
+    required this.onClose,
+  });
+
+  @override
+  ConsumerState<_DraggableModifyPlaceOrderScreenDialog> createState() => _DraggableModifyPlaceOrderScreenDialogState();
+}
+
+class _DraggableModifyPlaceOrderScreenDialogState extends ConsumerState<_DraggableModifyPlaceOrderScreenDialog> {
+  late Offset _position;
+  bool _isDragging = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _position = widget.initialPosition;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = ref.watch(themeProvider);
+    final screenSize = MediaQuery.of(context).size;
+
+    // Constrain position to screen bounds
+    final dialogWidth = 600.0;
+    final dialogHeight = screenSize.height * 0.6;
+    final constrainedPosition = Offset(
+      _position.dx.clamp(0, screenSize.width - dialogWidth),
+      _position.dy.clamp(0, screenSize.height - dialogHeight),
+    );
+
+    return Stack(
+      children: [
+        // Actual dialog
+        Positioned(
+          left: constrainedPosition.dx,
+          top: constrainedPosition.dy,
+          child: GestureDetector(
+            onTap: () {}, // Prevent tap from propagating to background
+            child: Material(
+              elevation: _isDragging ? 16 : 8,
+              borderRadius: BorderRadius.circular(5),
+              color: theme.isDarkMode ? WebDarkColors.background : WebColors.background,
+              child: Container(
+                width: dialogWidth,
+                height: dialogHeight,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(5),
+                  border: Border.all(
+                    color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
+                  ),
+                ),
+                child: _ModifyPlaceOrderDialogCloseNotifier(
+                  onClose: widget.onClose,
+                  child: _ModifyPlaceOrderDialogDragNotifier(
+                    onPanStart: (details) {
+                      setState(() {
+                        _isDragging = true;
+                      });
+                    },
+                    onPanUpdate: (details) {
+                      setState(() {
+                        _position = Offset(
+                          _position.dx + details.delta.dx,
+                          _position.dy + details.delta.dy,
+                        );
+                      });
+                      widget.onPositionChanged(_position);
+                    },
+                    onPanEnd: (details) {
+                      setState(() {
+                        _isDragging = false;
+                      });
+                    },
+                    isDragging: _isDragging,
+                    child: ModifyPlaceOrderScreenWeb(
+                      modifyOrderArgs: widget.modifyOrderArgs,
+                      scripInfo: widget.scripInfo,
+                      orderArg: widget.orderArg,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }

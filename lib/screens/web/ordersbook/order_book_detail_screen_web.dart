@@ -12,10 +12,10 @@ import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../res/web_colors.dart';
 import '../../../res/global_font_web.dart';
-import '../../../routes/route_names.dart';
 import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/time_line.dart';
 import '../../../utils/responsive_navigation.dart';
+import '../order/modify_place_order_web_screen.dart';
 
 class OrderBookDetailScreenWeb extends ConsumerStatefulWidget {
   final OrderBookModel orderBookData;
@@ -767,11 +767,12 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
 
       // Navigate to modify order screen
       Navigator.pop(context);
-      Navigator.pushNamed(context, Routes.modifyOrder, arguments: {
-        "modifyOrderArgs": orderData,
-        "orderArg": _createOrderArgs(orderData),
-        "scripInfo": ref.read(marketWatchProvider).scripInfoModel!,
-      });
+      ModifyPlaceOrderScreenWeb.showDraggable(
+        context: context,
+        modifyOrderArgs: orderData,
+        orderArg: _createOrderArgs(orderData),
+        scripInfo: ref.read(marketWatchProvider).scripInfoModel!,
+      );
     } catch (e) {
       // Handle error
     } finally {

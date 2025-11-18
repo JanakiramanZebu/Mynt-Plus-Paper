@@ -1929,25 +1929,13 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
   }
 
   void _showDraggableModifyDialog(OrderBookModel orderData, dynamic scripInfo) {
-    final overlay = Overlay.of(context);
-    late OverlayEntry overlayEntry;
-    
-    overlayEntry = OverlayEntry(
-      builder: (context) => _DraggableModifyDialog(
-        orderData: orderData,
-        scripInfo: scripInfo,
-        createOrderArgs: _createOrderArgs,
-        initialPosition: _modifyDialogPosition,
-        onPositionChanged: (newPosition) {
-          _modifyDialogPosition = newPosition;
-        },
-        onClose: () {
-          overlayEntry.remove();
-        },
-      ),
+    ModifyPlaceOrderScreenWeb.showDraggable(
+      context: context,
+      modifyOrderArgs: orderData,
+      scripInfo: scripInfo,
+      orderArg: _createOrderArgs(orderData),
+      initialPosition: _modifyDialogPosition,
     );
-    
-    overlay.insert(overlayEntry);
   }
 
   Future<void> _handleRepeatOrder(OrderBookModel orderData) async {
@@ -2010,16 +1998,11 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
   }
 
   void _showDraggableGttModifyDialog(GttOrderBookModel gttOrderData, dynamic scripInfo) {
-    // ModifyGttWeb already wraps itself in a Dialog, so we just show it directly
-    showDialog(
+    // Show ModifyGttWeb as a draggable dialog
+    ModifyGttWeb.showDraggable(
       context: context,
-      barrierDismissible: true,
-      builder: (BuildContext context) {
-        return ModifyGttWeb(
-          gttOrderBook: gttOrderData,
-          scripInfo: scripInfo,
-        );
-      },
+      gttOrderBook: gttOrderData,
+      scripInfo: scripInfo,
     );
   }
 
@@ -2184,8 +2167,8 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                             child: Container(
                               decoration: BoxDecoration(
                                 color: theme.isDarkMode
-                                    ? WebDarkColors.primary
-                                    : WebColors.primary,
+                                    ? WebDarkColors.tertiary
+                                    : WebColors.tertiary,
                                 borderRadius: BorderRadius.circular(5),
                               ),
                               child: Material(
@@ -2241,9 +2224,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
 
       // Refresh GTT order book after successful cancel
       await ref.read(orderProvider).fetchGTTOrderBook(context, "");
-      if (mounted) {
-        ResponsiveSnackBar.showSuccess(context, 'GTT Order Cancelled');
-      }
+      // Note: Success message is already shown by cancelGttOrder in provider
     } catch (e) {
       // Handle error
       if (mounted) {
@@ -3169,222 +3150,6 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
 }
 
 // Draggable Modify Dialog Widget
-class _DraggableModifyDialog extends ConsumerStatefulWidget {
-  final OrderBookModel orderData;
-  final dynamic scripInfo;
-  final OrderScreenArgs Function(OrderBookModel) createOrderArgs;
-  final Offset initialPosition;
-  final Function(Offset) onPositionChanged;
-  final VoidCallback onClose;
-
-  const _DraggableModifyDialog({
-    required this.orderData,
-    required this.scripInfo,
-    required this.createOrderArgs,
-    required this.initialPosition,
-    required this.onPositionChanged,
-    required this.onClose,
-  });
-
-  @override
-  ConsumerState<_DraggableModifyDialog> createState() => _DraggableModifyDialogState();
-}
-
-class _DraggableModifyDialogState extends ConsumerState<_DraggableModifyDialog> {
-  late Offset _position;
-  bool _isDragging = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _position = widget.initialPosition;
-    
-    // Listen for navigation changes (when confirmation screen appears)
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _listenForNavigationChanges();
-    });
-  }
-
-  void _listenForNavigationChanges() {
-    // Monitor for navigation events that might indicate the modify dialog should close
-    Timer.periodic(const Duration(milliseconds: 200), (timer) {
-      if (!mounted) {
-        timer.cancel();
-        return;
-      }
-      
-      // Stop checking after 30 seconds to prevent memory leaks
-      if (timer.tick > 150) { // 30 seconds
-        timer.cancel();
-        return;
-      }
-      
-      // Check if a new route has been pushed (like confirmation screen)
-      final navigator = Navigator.of(context, rootNavigator: true);
-      if (navigator.canPop()) {
-        // If there are multiple routes on the stack, a confirmation might have appeared
-        // Close this dialog after a short delay to allow the confirmation to fully appear
-        Timer(const Duration(milliseconds: 300), () {
-          if (mounted) {
-            widget.onClose();
-          }
-        });
-        timer.cancel();
-      }
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = ref.watch(themeProvider);
-    final screenSize = MediaQuery.of(context).size;
-
-    // Constrain position to screen bounds
-    final constrainedPosition = Offset(
-      _position.dx.clamp(0, screenSize.width - 520), // 520 = dialog width + padding
-      _position.dy.clamp(0, screenSize.height - (screenSize.height * 0.9 + 20)), // dialog height + padding
-    );
-
-    return Stack(
-      children: [
-        // Invisible full-screen tap detector to close dialog when clicking outside
-        Positioned.fill(
-          child: GestureDetector(
-            onTap: widget.onClose,
-            child: Container(
-              color: Colors.transparent,
-            ),
-          ),
-        ),
-        // Actual dialog
-        Positioned(
-          left: constrainedPosition.dx,
-          top: constrainedPosition.dy,
-          child: GestureDetector(
-            onTap: () {}, // Prevent tap from propagating to background
-            onPanStart: (details) {
-              setState(() {
-                _isDragging = true;
-              });
-            },
-            onPanUpdate: (details) {
-              setState(() {
-                _position = Offset(
-                  _position.dx + details.delta.dx,
-                  _position.dy + details.delta.dy,
-                );
-              });
-              widget.onPositionChanged(_position);
-            },
-            onPanEnd: (details) {
-              setState(() {
-                _isDragging = false;
-              });
-            },
-            child: Material(
-              elevation: _isDragging ? 16 : 8,
-              borderRadius: BorderRadius.circular(5),
-              color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-              child: Container(
-                width: 500,
-                height: MediaQuery.of(context).size.height * 0.9,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(5),
-                  border: Border.all(
-                    color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
-                  ),
-                ),
-                child: Column(
-                  children: [
-                    // Draggable header
-                    Container(
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: theme.isDarkMode 
-                        ? WebDarkColors.backgroundSecondary 
-                        : WebColors.backgroundSecondary,
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(5),
-                          topRight: Radius.circular(5),
-                        ),
-                        border: Border(
-                          bottom: BorderSide(
-                            color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
-                          ),
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          // Drag handle
-                          const SizedBox(width: 8),
-                          Icon(
-                            Icons.drag_indicator,
-                            size: 16,
-                            color: theme.isDarkMode 
-                                ? WebDarkColors.iconSecondary 
-                                : WebColors.iconSecondary,
-                          ),
-                          const SizedBox(width: 8),
-                          // Title
-                          Expanded(
-                            child: Text(
-                              'Modify Order - ${widget.orderData.tsym}',
-                              style: WebTextStyles.dialogTitle(
-                                isDarkTheme: theme.isDarkMode,
-                                color: theme.isDarkMode
-                                    ? WebDarkColors.textPrimary
-                                    : WebColors.textPrimary,
-                              ),
-                            ),
-                          ),
-                          // Close button
-                          Material(
-                            color: Colors.transparent,
-                            shape: const CircleBorder(),
-                            child: InkWell(
-                              customBorder: const CircleBorder(),
-                              splashColor: theme.isDarkMode
-                                  ? Colors.white.withOpacity(.15)
-                                  : Colors.black.withOpacity(.15),
-                              highlightColor: theme.isDarkMode
-                                  ? Colors.white.withOpacity(.08)
-                                  : Colors.black.withOpacity(.08),
-                              onTap: widget.onClose,
-                              child: Padding(
-                                padding: const EdgeInsets.all(6.0),
-                                child: Icon(
-                                  Icons.close,
-                                  size: 16,
-                                  color: theme.isDarkMode
-                                      ? WebDarkColors.iconSecondary
-                                      : WebColors.iconSecondary,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                        ],
-                      ),
-                    ),
-                    // Content area
-                    Expanded(
-                      child: ModifyPlaceOrderScreenWeb(
-                        modifyOrderArgs: widget.orderData,
-                        orderArg: widget.createOrderArgs(widget.orderData),
-                        scripInfo: widget.scripInfo,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
 // Draggable Place Order Dialog Widget
 class _DraggablePlaceOrderDialog extends ConsumerStatefulWidget {
   final OrderBookModel orderData;

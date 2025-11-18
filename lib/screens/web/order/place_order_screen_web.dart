@@ -27,8 +27,8 @@ import 'package:mynt_plus/provider/transcation_provider.dart';
 import 'package:mynt_plus/provider/user_profile_provider.dart';
 import 'package:mynt_plus/provider/websocket_provider.dart';
 import 'package:mynt_plus/screens/web/funds/fund_screen_web.dart';
+import 'orderscreen_header_web.dart';
 import 'slice_order_sheet_web.dart';
-import 'package:mynt_plus/screens/Mobile/order_screen/order_screen_header.dart';
 import 'package:mynt_plus/screens/Mobile/profile_screen/profile_main_screen.dart';
 import 'package:mynt_plus/sharedWidget/cust_text_formfield.dart';
 import 'package:mynt_plus/sharedWidget/custom_widget_button.dart';
@@ -41,7 +41,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/provider/fund_provider.dart';
 import 'package:mynt_plus/provider/profile_all_details_provider.dart';
-import 'package:mynt_plus/res/global_state_text.dart';
 import 'package:mynt_plus/res/res.dart';
 import '../../../models/order_book_model/place_gtt_order.dart';
 import 'package:intl/intl.dart';
@@ -63,6 +62,34 @@ class _PlaceOrderDialogCloseNotifier extends InheritedWidget {
   @override
   bool updateShouldNotify(_PlaceOrderDialogCloseNotifier oldWidget) {
     return onClose != oldWidget.onClose;
+  }
+}
+
+// InheritedWidget to pass drag handlers to child widgets
+class _PlaceOrderDialogDragNotifier extends InheritedWidget {
+  final void Function(DragStartDetails) onPanStart;
+  final void Function(DragUpdateDetails) onPanUpdate;
+  final void Function(DragEndDetails) onPanEnd;
+  final bool isDragging;
+
+  const _PlaceOrderDialogDragNotifier({
+    required this.onPanStart,
+    required this.onPanUpdate,
+    required this.onPanEnd,
+    required this.isDragging,
+    required super.child,
+  });
+
+  static _PlaceOrderDialogDragNotifier? of(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<_PlaceOrderDialogDragNotifier>();
+  }
+
+  @override
+  bool updateShouldNotify(_PlaceOrderDialogDragNotifier oldWidget) {
+    return onPanStart != oldWidget.onPanStart ||
+        onPanUpdate != oldWidget.onPanUpdate ||
+        onPanEnd != oldWidget.onPanEnd ||
+        isDragging != oldWidget.isDragging;
   }
 }
 
@@ -129,7 +156,6 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
 //   bool isAmo = false;
   bool isAvbSecu = false;
   bool isSecu = false;
-  bool _showSurveillanceDialog = false;
   Future<void> Function()? _pendingSurveillanceAction;
 
   late AnimationController anibuildctrl;
@@ -706,136 +732,170 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                       Column(children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          decoration: BoxDecoration(
-                            border: Border(
-                              bottom: BorderSide(
-                                color: theme.isDarkMode
-                                    ? WebDarkColors.divider
-                                    : WebColors.divider,
-                              ),
-                            ),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 4),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                        crossAxisAlignment: CrossAxisAlignment.end,
-                                        children: [
-                                          TextWidget.titleText(
-                                            text:
-                                                "${widget.scripInfo.symbol!.replaceAll("-EQ", "")} ",
-                                            theme: theme.isDarkMode,
-                                            color: theme.isDarkMode
-                                                ? colors.textPrimaryDark
-                                                : colors.textPrimaryLight,
-                                            maxLines: 1,
-                                            textOverflow: TextOverflow.ellipsis,
-                                            fw: 0,
-                                          ),
-                                    
-                                          // Text(
-                                          //     "${widget.scripInfo.symbol!.replaceAll("-EQ", "")} ",
-                                          //     style: textStyle(
-                                          //         theme.isDarkMode
-                                          //             ? colors.colorWhite
-                                          //             : colors.colorBlack,
-                                          //         14,
-                                          //         FontWeight.w400),
-                                          //     overflow: TextOverflow.ellipsis,
-                                          //     maxLines: 1),
-                                          if (widget.scripInfo.expDate!.isNotEmpty)
-                                            TextWidget.titleText(
-                                              text: " ${widget.scripInfo.expDate} ",
-                                              theme: theme.isDarkMode,
-                                              color: theme.isDarkMode
-                                                  ? colors.textPrimaryDark
-                                                  : colors.textPrimaryLight,
-                                              maxLines: 1,
-                                              textOverflow: TextOverflow.ellipsis,
-                                              fw: 0,
-                                            ),
-                                    
-                                          // Text(" ${widget.scripInfo.expDate} ",
-                                          //     style: textStyle(
-                                          //         theme.isDarkMode
-                                          //             ? colors.colorWhite
-                                          //             : colors.colorBlack,
-                                          //         14,
-                                          //         FontWeight.w400)),
-                                          if (widget.scripInfo.option!.isNotEmpty)
-                                            TextWidget.titleText(
-                                              text: widget.scripInfo.option!,
-                                              theme: theme.isDarkMode,
-                                              color: theme.isDarkMode
-                                                  ? colors.textPrimaryDark
-                                                  : colors.textPrimaryLight,
-                                              maxLines: 1,
-                                              textOverflow: TextOverflow.ellipsis,
-                                              fw: 0,
-                                            ),
-                                    
-                                          // Text(widget.scripInfo.option!,
-                                          //     style: textStyle(
-                                          //         theme.isDarkMode
-                                          //             ? colors.colorWhite
-                                          //             : colors.colorBlack,
-                                          //         14,
-                                          //         FontWeight.w400),
-                                          //     overflow: TextOverflow.ellipsis,
-                                          //     maxLines: 1),
-                                          // CustomExchBadge(
-                                          //     exch: " ${widget.scripInfo.exch}"),
-                                    
-                                          TextWidget.titleText(
-                                            fw: 0,
-                                            text: " ${widget.scripInfo.exch}",
-                                            textOverflow: TextOverflow.ellipsis,
-                                            maxLines: 1,
-                                            color: theme.isDarkMode
-                                                ? colors.textPrimaryDark
-                                                : colors.textPrimaryLight,
-                                            theme: false,
-                                          ),
-                                        ]),
-                                        const SizedBox(height: 4),
-                                    OrderScreenHeader(headerData: widget.orderArg),
-                                  ],
-                                ),
+                        Builder(
+                          builder: (context) {
+                            final dragNotifier = _PlaceOrderDialogDragNotifier.of(context);
+                            final closeNotifier = _PlaceOrderDialogCloseNotifier.of(context);
                             
-                                Material(
-                                  color: Colors.transparent,
-                                  shape: const CircleBorder(),
-                                  child: InkWell(
-                                    customBorder: const CircleBorder(),
-                                    splashColor: theme.isDarkMode
-                                        ? Colors.white.withOpacity(.15)
-                                        : Colors.black.withOpacity(.15),
-                                    highlightColor: theme.isDarkMode
-                                        ? Colors.white.withOpacity(.08)
-                                        : Colors.black.withOpacity(.08),
-                                    onTap: () => Navigator.of(context).pop(),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(6),
-                                      child: Icon(
-                                        Icons.close,
-                                        size: 20,
-                                        color: theme.isDarkMode
-                                            ? WebDarkColors.iconSecondary
-                                            : WebColors.iconSecondary,
-                                      ),
-                                    ),
+                            Widget headerContent = Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              decoration: BoxDecoration(
+                                border: Border(
+                                  bottom: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? WebDarkColors.divider
+                                        : WebColors.divider,
                                   ),
                                 ),
-                              ],
-                            ),
-                          ),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 4),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.only(bottom: 8.0),
+                                          child: Row(
+                                              children: [
+                                                Text(
+                                                  "${widget.scripInfo.symbol!.replaceAll("-EQ", "")} ",
+                                                  style: WebTextStyles.symbolList(
+                                                    isDarkTheme: theme.isDarkMode,
+                                                    color: theme.isDarkMode
+                                                        ? WebDarkColors.textPrimary
+                                                        : WebColors.textPrimary,
+                                                  ),
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                          
+                                                // Text(
+                                                //     "${widget.scripInfo.symbol!.replaceAll("-EQ", "")} ",
+                                                //     style: textStyle(
+                                                //         theme.isDarkMode
+                                                //             ? colors.colorWhite
+                                                //             : colors.colorBlack,
+                                                //         14,
+                                                //         FontWeight.w400),
+                                                //     overflow: TextOverflow.ellipsis,
+                                                //     maxLines: 1),
+                                                if (widget.scripInfo.expDate!.isNotEmpty)
+                                                  Text(
+                                                    " ${widget.scripInfo.expDate} ",
+                                                    style: WebTextStyles.symbolList(
+                                                      isDarkTheme: theme.isDarkMode,
+                                                      color: theme.isDarkMode
+                                                          ? WebDarkColors.textPrimary
+                                                          : WebColors.textPrimary,
+                                                    ),
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow.ellipsis,
+                                                  ),
+                                          
+                                                // Text(" ${widget.scripInfo.expDate} ",
+                                                //     style: textStyle(
+                                                //         theme.isDarkMode
+                                                //             ? colors.colorWhite
+                                                //             : colors.colorBlack,
+                                                //         14,
+                                                //         FontWeight.w400)),
+                                                if (widget.scripInfo.option!.isNotEmpty)
+                                                  Text(
+                                                    widget.scripInfo.option!,
+                                                    style: WebTextStyles.symbolList(
+                                                      isDarkTheme: theme.isDarkMode,
+                                                      color: theme.isDarkMode
+                                                          ? WebDarkColors.textPrimary
+                                                          : WebColors.textPrimary,
+                                                    ),
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow.ellipsis,
+                                                  ),
+                                          
+                                                // Text(widget.scripInfo.option!,
+                                                //     style: textStyle(
+                                                //         theme.isDarkMode
+                                                //             ? colors.colorWhite
+                                                //             : colors.colorBlack,
+                                                //         14,
+                                                //         FontWeight.w400),
+                                                //     overflow: TextOverflow.ellipsis,
+                                                //     maxLines: 1),
+                                                // CustomExchBadge(
+                                                //     exch: " ${widget.scripInfo.exch}"),
+                                          
+                                                Text(
+                                                  " ${widget.scripInfo.exch}",
+                                                  style: WebTextStyles.exchText(
+                                                    isDarkTheme: theme.isDarkMode,
+                                                    color: theme.isDarkMode
+                                                        ? WebDarkColors.textPrimary
+                                                        : WebColors.textPrimary,
+                                                  ),
+                                                  overflow: TextOverflow.ellipsis,
+                                                  maxLines: 1,
+                                                ),
+                                              ]),
+                                        ),                                                                    
+                                            Row(
+                                              children: [
+                                                OrderScreenHeaderWeb(headerData: widget.orderArg),
+                                              
+                                              ],
+                                            ),                            
+                                      ],
+                                    ),
+
+                                      if (closeNotifier != null) ...[
+                                              const SizedBox(width: 8),
+                                              Material(
+                                                color: Colors.transparent,
+                                                shape: const CircleBorder(),
+                                                child: InkWell(
+                                                  customBorder: const CircleBorder(),
+                                                  splashColor: theme.isDarkMode
+                                                      ? Colors.white.withOpacity(.15)
+                                                      : Colors.black.withOpacity(.15),
+                                                  highlightColor: theme.isDarkMode
+                                                      ? Colors.white.withOpacity(.08)
+                                                      : Colors.black.withOpacity(.08),
+                                                  onTap: closeNotifier.onClose,
+                                                  child: Padding(
+                                                    padding: const EdgeInsets.all(6.0),
+                                                    child: Icon(
+                                                      Icons.close,
+                                                      size: 18,
+                                                      color: theme.isDarkMode
+                                                          ? WebDarkColors.iconSecondary
+                                                          : WebColors.iconSecondary,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                  ],
+                                ),
+                              ),
+                            );
+                            
+                            // Wrap with drag functionality if drag notifier is available
+                            if (dragNotifier != null) {
+                              return MouseRegion(
+                                cursor: SystemMouseCursors.move,
+                                child: GestureDetector(
+                                  onPanStart: dragNotifier.onPanStart,
+                                  onPanUpdate: dragNotifier.onPanUpdate,
+                                  onPanEnd: dragNotifier.onPanEnd,
+                                  child: headerContent,
+                                ),
+                              );
+                            }
+                            
+                            return headerContent;
+                          },
                         ),
                         // Padding(
                         //   padding: const EdgeInsets.symmetric(
@@ -1065,7 +1125,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                                 : const Color(0xffF1F3F8),
                                                                             borderRadius: const BorderRadius.all(Radius.circular(32)))),
                                                                     isExpanded: true,
-                                                                    style: theme.isDarkMode ? textStyles.textFieldLabelStyle.copyWith(color: colors.colorWhite) : textStyles.textFieldLabelStyle,
+                                                                    style: theme.isDarkMode ? textStyles.textFieldLabelStyle.copyWith(color: WebDarkColors.textPrimary) : textStyles.textFieldLabelStyle,
                                                                     items: sipDropdown.map((item) {
                                                                       return DropdownMenuItem(
                                                                         value:
@@ -1428,20 +1488,20 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                         child: Column(children: [
                                       Text(
                                         "₹${resultsip == 0.0 ? widget.orderArg.ltp : resultsip.toStringAsFixed(2)}",
-                                        style: TextWidget.textStyle(
-                                            color: const Color(0xff43A833),
-                                            fontSize: 20,
-                                            fw: 2,
-                                            theme: theme.isDarkMode),
+                                        style: WebTextStyles.hero(
+                                          isDarkTheme: theme.isDarkMode,
+                                          color: WebColors.profit,
+                                          fontWeight: WebFonts.semiBold,
+                                        ),
                                       ),
                                       Text("Installment Amount",
-                                          style: TextWidget.textStyle(
-                                              color: theme.isDarkMode
-                                                  ? colors.colorWhite
-                                                  : colors.colorBlack,
-                                              fontSize: 15,
-                                              fw: 2,
-                                              theme: theme.isDarkMode))
+                                          style: WebTextStyles.titleMedium(
+                                            isDarkTheme: theme.isDarkMode,
+                                            color: theme.isDarkMode
+                                                ? WebDarkColors.textPrimary
+                                                : WebColors.textPrimary,
+                                            fontWeight: WebFonts.semiBold,
+                                          ))
                                     ]))
                                   ])
                             ],
@@ -1468,7 +1528,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                       ]),
                                       const SizedBox(height: 8),
                                       SizedBox(
-                                          height: 45,
+                                          height: 40,
                                           child: Semantics(
                                             identifier: 'trigger_price_input',
                                             child: CustomTextFormField(
@@ -1478,8 +1538,8 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                           r'^\d*\.?\d{0,2}$'))
                                                 ],
                                                 fillColor: theme.isDarkMode
-                                                    ? colors.darkGrey
-                                                    : const Color(0xffF1F3F8),
+                                                    ? WebDarkColors.backgroundTertiary
+                                                    : WebColors.backgroundTertiary,
                                                 onChanged: (value) {
                                                   double inputPrice =
                                                       double.tryParse(value) ??
@@ -1513,28 +1573,21 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                 },
                                                 hintText:
                                                     "${widget.orderArg.ltp}",
-                                                hintStyle: TextWidget.textStyle(
-                                                  fontSize: 14,
-                                                  theme: theme.isDarkMode,
-                                                  color: (theme.isDarkMode
-                                                          ? colors
-                                                              .textSecondaryDark
-                                                          : colors
-                                                              .textSecondaryLight)
-                                                      .withOpacity(0.4),
-                                                  fw: 0,
+                                                hintStyle: WebTextStyles.formInput(
+                                                  isDarkTheme: theme.isDarkMode,
+                                                  color: theme.isDarkMode
+                                                      ? WebDarkColors.textSecondary
+                                                      : WebColors.textSecondary,
                                                 ),
                                                 keyboardType:
                                                     const TextInputType
                                                         .numberWithOptions(
                                                         decimal: true),
-                                                style: TextWidget.textStyle(
-                                                  fontSize: 16,
+                                                style: WebTextStyles.formInput(
+                                                  isDarkTheme: theme.isDarkMode,
                                                   color: theme.isDarkMode
-                                                      ? colors.textPrimaryDark
-                                                      : colors.textPrimaryLight,
-                                                  theme: theme.isDarkMode,
-                                                  fw: 0,
+                                                      ? WebDarkColors.textPrimary
+                                                      : WebColors.textPrimary,
                                                 ),
                                                 textCtrl: orderInput.val1Ctrl,
                                                 textAlign: TextAlign.start),
@@ -1576,30 +1629,21 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                               headerTitleText("Qty", theme),
                                               const SizedBox(height: 8),
                                               SizedBox(
-                                                  height: 45,
+                                                  height: 40,
                                                   child: Semantics(
                                                     identifier: "GTT Qty Input",
                                                     child: CustomTextFormField(
                                                         fillColor: theme
                                                                 .isDarkMode
-                                                            ? colors.darkGrey
-                                                            : const Color(
-                                                                0xffF1F3F8),
+                                                            ? WebDarkColors.backgroundTertiary
+                                                            : WebColors.backgroundTertiary,
                                                         hintText:
                                                             "0", //orderInput.qtyCtrl.text,
-                                                        hintStyle: TextWidget
-                                                            .textStyle(
-                                                          fontSize: 14,
-                                                          theme:
-                                                              theme.isDarkMode,
-                                                          color: (theme
-                                                                      .isDarkMode
-                                                                  ? colors
-                                                                      .textSecondaryDark
-                                                                  : colors
-                                                                      .textSecondaryLight)
-                                                              .withOpacity(0.4),
-                                                          fw: 0,
+                                                        hintStyle: WebTextStyles.formInput(
+                                                          isDarkTheme: theme.isDarkMode,
+                                                          color: theme.isDarkMode
+                                                              ? WebDarkColors.textSecondary
+                                                              : WebColors.textSecondary,
                                                         ),
                                                         inputFormate: [
                                                           FilteringTextInputFormatter
@@ -1608,18 +1652,11 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                         keyboardType:
                                                             TextInputType
                                                                 .number,
-                                                        style: TextWidget
-                                                            .textStyle(
-                                                          fontSize: 16,
-                                                          color: theme
-                                                                  .isDarkMode
-                                                              ? colors
-                                                                  .textPrimaryDark
-                                                              : colors
-                                                                  .textPrimaryLight,
-                                                          theme:
-                                                              theme.isDarkMode,
-                                                          fw: 0,
+                                                        style: WebTextStyles.formInput(
+                                                          isDarkTheme: theme.isDarkMode,
+                                                          color: theme.isDarkMode
+                                                              ? WebDarkColors.textPrimary
+                                                              : WebColors.textPrimary,
                                                         ),
                                                         // prefixIcon: InkWell(
                                                         //   onTap: () {
@@ -1811,21 +1848,20 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                     headerTitleText(
                                                         "Price", theme),
                                                     const SizedBox(width: 4),
-                                                    TextWidget.subText(
-                                                      text:
-                                                          "${orderInput.actPrcType}",
-                                                      color: theme.isDarkMode
-                                                          ? colors
-                                                              .textPrimaryDark
-                                                          : colors
-                                                              .textPrimaryLight,
-                                                      theme: theme.isDarkMode,
-                                                      fw: 1,
+                                                    Text(
+                                                      "${orderInput.actPrcType}",
+                                                      style: WebTextStyles.sub(
+                                                        isDarkTheme: theme.isDarkMode,
+                                                        color: theme.isDarkMode
+                                                            ? WebDarkColors.textPrimary
+                                                            : WebColors.textPrimary,
+                                                        fontWeight: WebFonts.medium,
+                                                      ),
                                                     ),
                                                   ]),
                                               const SizedBox(height: 8),
                                               SizedBox(
-                                                  height: 45,
+                                                  height: 40,
                                                   child: Semantics(
                                                     identifier:
                                                         "GTT Price Input",
@@ -1837,9 +1873,8 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                         ],
                                                         fillColor: theme
                                                                 .isDarkMode
-                                                            ? colors.darkGrey
-                                                            : const Color(
-                                                                0xffF1F3F8),
+                                                            ? WebDarkColors.backgroundTertiary
+                                                            : WebColors.backgroundTertiary,
                                                         onChanged: (value) {
                                                           double inputPrice =
                                                               double.tryParse(
@@ -1888,36 +1923,21 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                         },
                                                         hintText:
                                                             "${widget.orderArg.ltp}",
-                                                        hintStyle: TextWidget
-                                                            .textStyle(
-                                                          fontSize: 14,
-                                                          theme:
-                                                              theme.isDarkMode,
-                                                          color: (theme
-                                                                      .isDarkMode
-                                                                  ? colors
-                                                                      .textSecondaryDark
-                                                                  : colors
-                                                                      .textSecondaryLight)
-                                                              .withOpacity(0.4),
-                                                          fw: 0,
+                                                        hintStyle: WebTextStyles.formInput(
+                                                          isDarkTheme: theme.isDarkMode,
+                                                          color: theme.isDarkMode
+                                                              ? WebDarkColors.textSecondary
+                                                              : WebColors.textSecondary,
                                                         ),
                                                         keyboardType:
                                                             const TextInputType
                                                                 .numberWithOptions(
                                                                 decimal: true),
-                                                        style: TextWidget
-                                                            .textStyle(
-                                                          fontSize: 16,
-                                                          color: theme
-                                                                  .isDarkMode
-                                                              ? colors
-                                                                  .textPrimaryDark
-                                                              : colors
-                                                                  .textPrimaryLight,
-                                                          theme:
-                                                              theme.isDarkMode,
-                                                          fw: 0,
+                                                        style: WebTextStyles.formInput(
+                                                          isDarkTheme: theme.isDarkMode,
+                                                          color: theme.isDarkMode
+                                                              ? WebDarkColors.textPrimary
+                                                              : WebColors.textPrimary,
                                                         ),
                                                         isReadable: orderInput
                                                                         .actPrcType ==
@@ -2101,13 +2121,14 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                     //   const SizedBox(width: 16),
                                     Row(
                                       children: [
-                                        TextWidget.subText(
-                                          text: "OCO",
-                                          color: theme.isDarkMode
-                                              ? colors.textSecondaryDark
-                                              : colors.textSecondaryLight,
-                                          theme: theme.isDarkMode,
-                                          fw: 0,
+                                        Text(
+                                          "OCO",
+                                          style: WebTextStyles.sub(
+                                            isDarkTheme: theme.isDarkMode,
+                                            color: theme.isDarkMode
+                                                ? WebDarkColors.textSecondary
+                                                : WebColors.textSecondary,
+                                          ),
                                         ),
                                         Semantics(
                                           identifier: 'GTT OCO button',
@@ -2167,7 +2188,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                           : Colors.grey[
                                                               300]) // Disabled state
                                                       : isOco
-                                                          ? colors.colorBlue
+                                                          ? WebColors.primary
                                                               .withOpacity(0.25)
                                                           : (theme.isDarkMode
                                                               ? Colors.grey[700]
@@ -2196,7 +2217,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                               : Colors.grey[
                                                                   400]) // Disabled knob
                                                           : isOco
-                                                              ? colors.colorBlue
+                                                              ? WebColors.primary
                                                               : Colors
                                                                   .grey[500],
                                                       shape: BoxShape.circle,
@@ -2266,7 +2287,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                         ]),
                                         const SizedBox(height: 8),
                                         SizedBox(
-                                            height: 45,
+                                            height: 40,
                                             child: Semantics(
                                               identifier:
                                                   'stoploss_trigger_price',
@@ -2277,8 +2298,8 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                             r'^\d*\.?\d{0,2}$'))
                                                   ],
                                                   fillColor: theme.isDarkMode
-                                                      ? colors.darkGrey
-                                                      : const Color(0xffF1F3F8),
+                                                      ? WebDarkColors.backgroundTertiary
+                                                      : WebColors.backgroundTertiary,
                                                   onChanged: (value) {
                                                     double inputPrice =
                                                         double.tryParse(
@@ -2317,30 +2338,21 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                   },
                                                   hintText:
                                                       "${widget.orderArg.ltp}",
-                                                  hintStyle:
-                                                      TextWidget.textStyle(
-                                                    fontSize: 14,
-                                                    theme: theme.isDarkMode,
-                                                    color: (theme.isDarkMode
-                                                            ? colors
-                                                                .textSecondaryDark
-                                                            : colors
-                                                                .textSecondaryLight)
-                                                        .withOpacity(0.4),
-                                                    fw: 0,
+                                                  hintStyle: WebTextStyles.formInput(
+                                                    isDarkTheme: theme.isDarkMode,
+                                                    color: theme.isDarkMode
+                                                        ? WebDarkColors.textSecondary
+                                                        : WebColors.textSecondary,
                                                   ),
                                                   keyboardType:
                                                       const TextInputType
                                                           .numberWithOptions(
                                                           decimal: true),
-                                                  style: TextWidget.textStyle(
-                                                    fontSize: 16,
+                                                  style: WebTextStyles.formInput(
+                                                    isDarkTheme: theme.isDarkMode,
                                                     color: theme.isDarkMode
-                                                        ? colors.textPrimaryDark
-                                                        : colors
-                                                            .textPrimaryLight,
-                                                    theme: theme.isDarkMode,
-                                                    fw: 0,
+                                                        ? WebDarkColors.textPrimary
+                                                        : WebColors.textPrimary,
                                                   ),
                                                   textCtrl: orderInput.val2Ctrl,
                                                   textAlign: TextAlign.start),
@@ -2364,40 +2376,26 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                 headerTitleText("Qty", theme),
                                                 const SizedBox(height: 8),
                                                 SizedBox(
-                                                    height: 45,
+                                                    height: 40,
                                                     child: Semantics(
                                                       identifier:
                                                           'oco_qty_input',
                                                       child: CustomTextFormField(
-                                                          fillColor: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
+                                                          fillColor: theme.isDarkMode ? WebDarkColors.backgroundTertiary : WebColors.backgroundTertiary,
                                                           hintText: "0", //orderInput.ocoQtyCtrl.text,
-                                                          hintStyle: TextWidget.textStyle(
-                                                            fontSize: 14,
-                                                            theme: theme
-                                                                .isDarkMode,
-                                                            color: (theme
-                                                                        .isDarkMode
-                                                                    ? colors
-                                                                        .textSecondaryDark
-                                                                    : colors
-                                                                        .textSecondaryLight)
-                                                                .withOpacity(
-                                                                    0.4),
-                                                            fw: 0,
+                                                          hintStyle: WebTextStyles.formInput(
+                                                            isDarkTheme: theme.isDarkMode,
+                                                            color: theme.isDarkMode
+                                                                ? WebDarkColors.textSecondary
+                                                                : WebColors.textSecondary,
                                                           ),
                                                           inputFormate: [FilteringTextInputFormatter.digitsOnly],
                                                           keyboardType: TextInputType.number,
-                                                          style: TextWidget.textStyle(
-                                                            fontSize: 16,
-                                                            color: theme
-                                                                    .isDarkMode
-                                                                ? colors
-                                                                    .textPrimaryDark
-                                                                : colors
-                                                                    .textPrimaryLight,
-                                                            theme: theme
-                                                                .isDarkMode,
-                                                            fw: 0,
+                                                          style: WebTextStyles.formInput(
+                                                            isDarkTheme: theme.isDarkMode,
+                                                            color: theme.isDarkMode
+                                                                ? WebDarkColors.textPrimary
+                                                                : WebColors.textPrimary,
                                                           ),
                                                           // prefixIcon: InkWell(
                                                           //   onTap: () {
@@ -2595,21 +2593,20 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                       headerTitleText(
                                                           "Price", theme),
                                                       const SizedBox(width: 4),
-                                                      TextWidget.subText(
-                                                        text:
-                                                            "${orderInput.actOcoPrcType}",
-                                                        color: theme.isDarkMode
-                                                            ? colors
-                                                                .textPrimaryDark
-                                                            : colors
-                                                                .textPrimaryLight,
-                                                        theme: theme.isDarkMode,
-                                                        fw: 1,
+                                                      Text(
+                                                        "${orderInput.actOcoPrcType}",
+                                                        style: WebTextStyles.sub(
+                                                          isDarkTheme: theme.isDarkMode,
+                                                          color: theme.isDarkMode
+                                                              ? WebDarkColors.textPrimary
+                                                              : WebColors.textPrimary,
+                                                          fontWeight: WebFonts.medium,
+                                                        ),
                                                       ),
                                                     ]),
                                                 const SizedBox(height: 8),
                                                 SizedBox(
-                                                    height: 44,
+                                                    height: 40,
                                                     child: Semantics(
                                                       identifier:
                                                           'oco_price_input',
@@ -2622,10 +2619,8 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                           ],
                                                               fillColor: theme
                                                                       .isDarkMode
-                                                                  ? colors
-                                                                      .darkGrey
-                                                                  : const Color(
-                                                                      0xffF1F3F8),
+                                                                  ? WebDarkColors.backgroundTertiary
+                                                                  : WebColors.backgroundTertiary,
                                                               onChanged:
                                                                   (value) {
                                                                 double
@@ -2681,38 +2676,22 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                               },
                                                               hintText:
                                                                   "${widget.orderArg.ltp}",
-                                                              hintStyle:
-                                                                  TextWidget
-                                                                      .textStyle(
-                                                                fontSize: 14,
-                                                                theme: theme
-                                                                    .isDarkMode,
-                                                                color: (theme
-                                                                            .isDarkMode
-                                                                        ? colors
-                                                                            .textSecondaryDark
-                                                                        : colors
-                                                                            .textSecondaryLight)
-                                                                    .withOpacity(
-                                                                        0.4),
-                                                                fw: 0,
+                                                              hintStyle: WebTextStyles.formInput(
+                                                                isDarkTheme: theme.isDarkMode,
+                                                                color: theme.isDarkMode
+                                                                    ? WebDarkColors.textSecondary
+                                                                    : WebColors.textSecondary,
                                                               ),
                                                               keyboardType:
                                                                   const TextInputType
                                                                       .numberWithOptions(
                                                                       decimal:
                                                                           true),
-                                                              style: TextWidget
-                                                                  .textStyle(
-                                                                fontSize: 16,
+                                                              style: WebTextStyles.formInput(
+                                                                isDarkTheme: theme.isDarkMode,
                                                                 color: theme.isDarkMode
-                                                                    ? colors
-                                                                        .textPrimaryDark
-                                                                    : colors
-                                                                        .textPrimaryLight,
-                                                                theme: theme
-                                                                    .isDarkMode,
-                                                                fw: 0,
+                                                                    ? WebDarkColors.textPrimary
+                                                                    : WebColors.textPrimary,
                                                               ),
                                                               isReadable: orderInput
                                                                               .actOcoPrcType ==
@@ -3292,18 +3271,18 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                             Icon(Icons.lock_outline,
                                                 size: 40,
                                                 color: theme.isDarkMode
-                                                    ? colors.lossDark
-                                                    : colors
-                                                        .lossLight), // your blue
+                                                    ? WebDarkColors.loss
+                                                    : WebColors.loss), // your blue
                                             const SizedBox(height: 16),
-                                            TextWidget.subText(
-                                              text: "MTF is not Enabled",
-                                              align: TextAlign.center,
-                                              color: theme.isDarkMode
-                                                  ? colors.lossDark
-                                                  : colors.lossLight,
-                                              theme: theme.isDarkMode,
-                                              fw: 0,
+                                            Text(
+                                              "MTF is not Enabled",
+                                              textAlign: TextAlign.center,
+                                              style: WebTextStyles.sub(
+                                                isDarkTheme: theme.isDarkMode,
+                                                color: theme.isDarkMode
+                                                    ? WebDarkColors.loss
+                                                    : WebColors.loss,
+                                              ),
                                             ),
                                             const SizedBox(height: 24),
                                             SizedBox(
@@ -3311,7 +3290,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                               child: ElevatedButton(
                                                 style: ElevatedButton.styleFrom(
                                                   backgroundColor:
-                                                      colors.colorBlue,
+                                                      WebColors.primary,
                                                   minimumSize:
                                                       const Size(0, 50),
                                                   shape: RoundedRectangleBorder(
@@ -3372,11 +3351,13 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                         'You need to enable DDPI before you can proceed with enabling MTF.');
                                                   }
                                                 },
-                                                child: TextWidget.subText(
-                                                  text: "Enable MTF",
-                                                  color: colors.colorWhite,
-                                                  theme: theme.isDarkMode,
-                                                  fw: 2,
+                                                child: Text(
+                                                  "Enable MTF",
+                                                  style: WebTextStyles.sub(
+                                                    isDarkTheme: theme.isDarkMode,
+                                                    color: WebColors.background,
+                                                    fontWeight: WebFonts.semiBold,
+                                                  ),
                                                 ),
                                               ),
                                             ),
@@ -3520,27 +3501,20 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                   ]),
                                               const SizedBox(height: 8),
                                               SizedBox(
-                                                height: 45,
+                                                height: 40,
                                                 child: Semantics(
                                                   identifier: 'qty_input',
                                                   child: CustomTextFormField(
                                                     fillColor: theme.isDarkMode
-                                                        ? colors.darkGrey
-                                                        : const Color(
-                                                            0xffF1F3F8),
+                                                        ? WebDarkColors.backgroundTertiary
+                                                        : WebColors.backgroundTertiary,
                                                     hintText:
                                                         "0", //qtyCtrl.text,
-                                                    hintStyle:
-                                                        TextWidget.textStyle(
-                                                      fontSize: 14,
-                                                      theme: theme.isDarkMode,
-                                                      color: (theme.isDarkMode
-                                                              ? colors
-                                                                  .textSecondaryDark
-                                                              : colors
-                                                                  .textSecondaryLight)
-                                                          .withOpacity(0.4),
-                                                      fw: 0,
+                                                    hintStyle: WebTextStyles.formInput(
+                                                      isDarkTheme: theme.isDarkMode,
+                                                      color: theme.isDarkMode
+                                                          ? WebDarkColors.textSecondary
+                                                          : WebColors.textSecondary,
                                                     ),
                                                     inputFormate: [
                                                       FilteringTextInputFormatter
@@ -3548,15 +3522,11 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                     ],
                                                     keyboardType:
                                                         TextInputType.number,
-                                                    style: TextWidget.textStyle(
-                                                      fontSize: 16,
+                                                    style: WebTextStyles.formInput(
+                                                      isDarkTheme: theme.isDarkMode,
                                                       color: theme.isDarkMode
-                                                          ? colors
-                                                              .textPrimaryDark
-                                                          : colors
-                                                              .textPrimaryLight,
-                                                      theme: theme.isDarkMode,
-                                                      fw: 0,
+                                                          ? WebDarkColors.textPrimary
+                                                          : WebColors.textPrimary,
                                                     ),
                                                     prefixIcon: _isStock
                                                         ? null
@@ -3855,30 +3825,28 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                               //                 FontWeight.w500))
                                               // ]
                                               if (_isQtyToAmount && (_isStock))
-                                                TextWidget.subText(
-                                                  text:
-                                                      "Qty : ${getFinalQuantity(qtyCtrl.text)}",
-                                                  theme: theme.isDarkMode,
-                                                  color: theme.isDarkMode
-                                                      ? colors.textSecondaryDark
-                                                      : colors
-                                                          .textSecondaryLight,
-                                                  fw: 0,
+                                                Text(
+                                                  "Qty : ${getFinalQuantity(qtyCtrl.text)}",
+                                                  style: WebTextStyles.sub(
+                                                    isDarkTheme: theme.isDarkMode,
+                                                    color: theme.isDarkMode
+                                                        ? WebDarkColors.textSecondary
+                                                        : WebColors.textSecondary,
+                                                  ),
                                                 ),
                                               if (_isLotToQty &&
                                                   (widget.scripInfo.exch ==
                                                           "NFO" ||
                                                       widget.scripInfo.exch ==
                                                           "BFO"))
-                                                TextWidget.subText(
-                                                  text:
-                                                      "Lot : ${((int.tryParse(qtyCtrl.text) ?? 0) / lotSize).ceil()}",
-                                                  theme: theme.isDarkMode,
-                                                  color: theme.isDarkMode
-                                                      ? colors.textSecondaryDark
-                                                      : colors
-                                                          .textSecondaryLight,
-                                                  fw: 0,
+                                                Text(
+                                                  "Lot : ${((int.tryParse(qtyCtrl.text) ?? 0) / lotSize).ceil()}",
+                                                  style: WebTextStyles.sub(
+                                                    isDarkTheme: theme.isDarkMode,
+                                                    color: theme.isDarkMode
+                                                        ? WebDarkColors.textSecondary
+                                                        : WebColors.textSecondary,
+                                                  ),
                                                 ),
                                               // Text(
                                               //     "Qty : ${getFinalQuantity(qtyCtrl.text)}",
@@ -3907,15 +3875,15 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                     headerTitleText(
                                                         "Price", theme),
                                                     const SizedBox(width: 4),
-                                                    TextWidget.subText(
-                                                        text: "$priceType",
-                                                        theme: theme.isDarkMode,
-                                                        fw: 1,
-                                                        color: theme.isDarkMode
-                                                            ? colors
-                                                                .textPrimaryDark
-                                                            : colors
-                                                                .textPrimaryLight)
+                                                    Text(
+                                                        "$priceType",
+                                                        style: WebTextStyles.sub(
+                                                          isDarkTheme: theme.isDarkMode,
+                                                          fontWeight: WebFonts.medium,
+                                                          color: theme.isDarkMode
+                                                              ? WebDarkColors.textPrimary
+                                                              : WebColors.textPrimary,
+                                                        ))
                                                   ]),
                                               const SizedBox(height: 8),
                                               SizedBox(
@@ -3979,36 +3947,21 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                         },
                                                         hintText:
                                                             "${widget.orderArg.ltp}",
-                                                        hintStyle: TextWidget
-                                                            .textStyle(
-                                                          fontSize: 14,
-                                                          theme:
-                                                              theme.isDarkMode,
-                                                          color: (theme
-                                                                      .isDarkMode
-                                                                  ? colors
-                                                                      .textSecondaryDark
-                                                                  : colors
-                                                                      .textSecondaryLight)
-                                                              .withOpacity(0.4),
-                                                          fw: 0,
+                                                        hintStyle: WebTextStyles.formInput(
+                                                          isDarkTheme: theme.isDarkMode,
+                                                          color: theme.isDarkMode
+                                                              ? WebDarkColors.textSecondary
+                                                              : WebColors.textSecondary,
                                                         ),
                                                         keyboardType:
                                                             const TextInputType
                                                                 .numberWithOptions(
                                                                 decimal: true),
-                                                        style: TextWidget
-                                                            .textStyle(
-                                                          fontSize: 16,
-                                                          color: theme
-                                                                  .isDarkMode
-                                                              ? colors
-                                                                  .textPrimaryDark
-                                                              : colors
-                                                                  .textPrimaryLight,
-                                                          theme:
-                                                              theme.isDarkMode,
-                                                          fw: 0,
+                                                        style: WebTextStyles.formInput(
+                                                          isDarkTheme: theme.isDarkMode,
+                                                          color: theme.isDarkMode
+                                                              ? WebDarkColors.textPrimary
+                                                              : WebColors.textPrimary,
                                                         ),
                                                         isReadable: priceType ==
                                                                     "Limit" ||
@@ -4061,11 +4014,13 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                               padding:
                                                                   const EdgeInsets
                                                                       .all(
-                                                                      12.0),
+                                                                      14.0),
                                                               child: SvgPicture
                                                                   .asset(
                                                                 assets
                                                                     .switchIcon,
+                                                                width: 10,
+                                                                height: 10,
                                                                 fit: BoxFit
                                                                     .contain,
                                                               ),
@@ -4115,7 +4070,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                               backgroundColor: Colors.white,
                                               foregroundColor: Colors.white,
                                               elevation: 0.0,
-                                              minimumSize: const Size(0, 40),
+                                              minimumSize: const Size(0, 30),
                                               side: BorderSide.none,
                                             ),
                                             onPressed: () {
@@ -4138,15 +4093,15 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                   mainAxisSize:
                                                       MainAxisSize.min,
                                                   children: [
-                                                    TextWidget.subText(
-                                                        text: 'Advance',
-                                                        color: theme.isDarkMode
-                                                            ? colors
-                                                                .secondaryDark
-                                                            : colors
-                                                                .secondaryLight,
-                                                        theme: theme.isDarkMode,
-                                                        fw: 2),
+                                                    Text(
+                                                        'Advance',
+                                                        style: WebTextStyles.sub(
+                                                          isDarkTheme: theme.isDarkMode,
+                                                          color: theme.isDarkMode
+                                                              ? WebDarkColors.secondary
+                                                              : WebColors.secondary,
+                                                          fontWeight: WebFonts.semiBold,
+                                                        )),
                                                     Padding(
                                                       padding:
                                                           const EdgeInsets.only(
@@ -4181,132 +4136,318 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                   : colors.colorDivider,
                                             ),
 
-                                            Theme(
-                                              data: ThemeData(
-                                                unselectedWidgetColor: theme
-                                                        .isDarkMode
-                                                    ? colors.textPrimaryDark
-                                                    : colors.textPrimaryLight,
-                                              ),
-                                              child: GestureDetector(
-                                                behavior: HitTestBehavior
-                                                    .translucent, // Improves touch detection
-                                                onTap: () {
-                                                  setState(() {
-                                                    _isStoplossOrder =
-                                                        !_isStoplossOrder;
-                                                    updatePriceType();
-                                                    orderInput.chngPriceType(
-                                                        priceType,
-                                                        widget
-                                                            .orderArg.exchange);
-                                                    marginUpdate();
-                                                  });
-                                                },
-                                                child: Container(
-                                                  padding: const EdgeInsets
-                                                      .symmetric(
-                                                      horizontal: 16,
-                                                      vertical: 5),
-                                                  child: Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .spaceBetween,
-                                                    children: [
-                                                      TextWidget.subText(
-                                                        text: 'Stoploss order',
-                                                        theme: theme.isDarkMode,
-                                                        color: theme.isDarkMode
-                                                            ? colors
-                                                                .textPrimaryDark
-                                                            : colors
-                                                                .textPrimaryLight,
-                                                        fw: 0,
-                                                      ),
-                                                      // Text(
-                                                      //   'Stoploss order',
-                                                      //   style: textStyle(
-                                                      //     theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                                                      //     14,
-                                                      //     FontWeight.w400,
-                                                      //   ),
-                                                      // ),
-                                                      AnimatedContainer(
-                                                        duration:
-                                                            const Duration(
-                                                                milliseconds:
-                                                                    250),
-                                                        curve: Curves.easeOut,
-                                                        width: 40,
-                                                        height: 22,
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .symmetric(
-                                                                horizontal: 3),
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          color: _isStoplossOrder
-                                                              ? colors.colorBlue
-                                                                  .withOpacity(
-                                                                      0.25)
-                                                              : (theme.isDarkMode
-                                                                  ? Colors
-                                                                      .grey[700]
-                                                                  : Colors.grey[
-                                                                      300]),
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(20),
-                                                        ),
-                                                        child: AnimatedAlign(
-                                                          duration:
-                                                              const Duration(
-                                                                  milliseconds:
-                                                                      250),
-                                                          curve: Curves.easeOut,
-                                                          alignment:
-                                                              _isStoplossOrder
-                                                                  ? Alignment
-                                                                      .centerRight
-                                                                  : Alignment
-                                                                      .centerLeft,
-                                                          child: Container(
-                                                            width: 16,
-                                                            height: 16,
-                                                            decoration:
-                                                                BoxDecoration(
-                                                              color: _isStoplossOrder
-                                                                  ? colors
-                                                                      .colorBlue
-                                                                  : Colors.grey[
-                                                                      500],
-                                                              shape: BoxShape
-                                                                  .circle,
-                                                              boxShadow: [
-                                                                BoxShadow(
-                                                                  color: Colors
-                                                                      .black
-                                                                      .withOpacity(
-                                                                          0.25),
-                                                                  blurRadius: 3,
-                                                                  offset:
-                                                                      const Offset(
-                                                                          0, 1),
+                                            // Row with Stoploss and Add validity (50% each)
+                                            Row(
+                                              children: [
+                                                // Stoploss order - 50% width
+                                                Expanded(
+                                                  child: Theme(
+                                                    data: ThemeData(
+                                                      unselectedWidgetColor: theme
+                                                              .isDarkMode
+                                                          ? WebDarkColors.textPrimary
+                                                          : WebColors.textPrimary,
+                                                    ),
+                                                    child: GestureDetector(
+                                                      behavior: HitTestBehavior
+                                                          .translucent, // Improves touch detection
+                                                      onTap: () {
+                                                        setState(() {
+                                                          _isStoplossOrder =
+                                                              !_isStoplossOrder;
+                                                          updatePriceType();
+                                                          orderInput.chngPriceType(
+                                                              priceType,
+                                                              widget
+                                                                  .orderArg.exchange);
+                                                          marginUpdate();
+                                                        });
+                                                      },
+                                                      child: Container(
+                                                        padding: const EdgeInsets
+                                                            .symmetric(
+                                                            horizontal: 16,
+                                                            vertical: 5),
+                                                        child: Row(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .spaceBetween,
+                                                          children: [
+                                                            Flexible(
+                                                              child: Text(
+                                                                'Stoploss order',
+                                                                style: WebTextStyles.sub(
+                                                                  isDarkTheme: theme.isDarkMode,
+                                                                  color: theme.isDarkMode
+                                                                      ? WebDarkColors.textPrimary
+                                                                      : WebColors.textPrimary,
                                                                 ),
-                                                              ],
+                                                                overflow: TextOverflow.ellipsis,
+                                                              ),
                                                             ),
+                                                            // Text(
+                                                            //   'Stoploss order',
+                                                            //   style: textStyle(
+                                                            //     theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                                                            //     14,
+                                                            //     FontWeight.w400,
+                                                            //   ),
+                                                            // ),
+                                                            AnimatedContainer(
+                                                              duration:
+                                                                  const Duration(
+                                                                      milliseconds:
+                                                                          250),
+                                                              curve: Curves.easeOut,
+                                                              width: 40,
+                                                              height: 22,
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .symmetric(
+                                                                      horizontal: 3),
+                                                              decoration:
+                                                                  BoxDecoration(
+                                                                color: _isStoplossOrder
+                                                                    ? WebColors.primary
+                                                                        .withOpacity(
+                                                                            0.25)
+                                                                    : (theme.isDarkMode
+                                                                        ? Colors
+                                                                            .grey[700]
+                                                                        : Colors.grey[
+                                                                            300]),
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(20),
+                                                              ),
+                                                              child: AnimatedAlign(
+                                                                duration:
+                                                                    const Duration(
+                                                                        milliseconds:
+                                                                            250),
+                                                                curve: Curves.easeOut,
+                                                                alignment:
+                                                                    _isStoplossOrder
+                                                                        ? Alignment
+                                                                            .centerRight
+                                                                        : Alignment
+                                                                            .centerLeft,
+                                                                child: Container(
+                                                                  width: 16,
+                                                                  height: 16,
+                                                                  decoration:
+                                                                      BoxDecoration(
+                                                                    color: _isStoplossOrder
+                                                                        ? colors
+                                                                            .colorBlue
+                                                                        : Colors.grey[
+                                                                            500],
+                                                                    shape: BoxShape
+                                                                        .circle,
+                                                                    boxShadow: [
+                                                                      BoxShadow(
+                                                                        color: Colors
+                                                                            .black
+                                                                            .withOpacity(
+                                                                                0.25),
+                                                                        blurRadius: 3,
+                                                                        offset:
+                                                                            const Offset(
+                                                                                0, 1),
+                                                                      ),
+                                                                    ],
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                
+                                                // Divider between Stoploss and Add validity
+                                                if (!(orderType == "CO - BO")) ...[
+                                                  Container(
+                                                    width: 1,
+                                                    height: 40,
+                                                    color: theme.isDarkMode
+                                                        ? colors.darkColorDivider
+                                                        : colors.colorDivider,
+                                                  ),
+                                                ],
+
+                                                // Add validity & Disclosed Qty - 50% width (only if not CO-BO)
+                                                if (!(orderType == "CO - BO")) ...[
+                                                  Expanded(
+                                                    child: Theme(
+                                                      data: ThemeData(
+                                                        unselectedWidgetColor: theme
+                                                                .isDarkMode
+                                                            ? colors.textPrimaryDark
+                                                            : colors.textPrimaryLight,
+                                                      ),
+                                                      child: GestureDetector(
+                                                        behavior: HitTestBehavior
+                                                            .translucent, // Improves touch detection
+                                                        onTap: () {
+                                                          setState(() {
+                                                            _addValidityAndDisclosedQty =
+                                                                !_addValidityAndDisclosedQty;
+                                                          });
+                                                        },
+                                                        child: Container(
+                                                          padding: const EdgeInsets
+                                                              .symmetric(
+                                                              horizontal: 16,
+                                                              vertical: 5),
+                                                          child: Row(
+                                                            mainAxisAlignment:
+                                                                MainAxisAlignment
+                                                                    .spaceBetween,
+                                                            children: [
+                                                              Flexible(
+                                                                child: Text(
+                                                                  'Add validity & Disclosed quantity',
+                                                                  style: WebTextStyles.sub(
+                                                                    isDarkTheme: theme.isDarkMode,
+                                                                    color: theme.isDarkMode
+                                                                        ? WebDarkColors.textPrimary
+                                                                        : WebColors.textPrimary,
+                                                                  ),
+                                                                  overflow: TextOverflow.ellipsis,
+                                                                ),
+                                                              ),
+                                                              // Text(
+                                                              //   'Add validity & Disclosed quantity',
+                                                              //   style: textStyle(
+                                                              //     theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                                                              //     14,
+                                                              //     FontWeight.w400,
+                                                              //   ),
+                                                              // ),
+                                                              AnimatedContainer(
+                                                                duration:
+                                                                    const Duration(
+                                                                        milliseconds:
+                                                                            250),
+                                                                curve: Curves.easeOut,
+                                                                width: 40,
+                                                                height: 22,
+                                                                padding:
+                                                                    const EdgeInsets
+                                                                        .symmetric(
+                                                                        horizontal:
+                                                                            3),
+                                                                decoration:
+                                                                    BoxDecoration(
+                                                                  color: _addValidityAndDisclosedQty
+                                                                      ? colors
+                                                                          .colorBlue
+                                                                          .withOpacity(
+                                                                              0.25)
+                                                                      : (theme.isDarkMode
+                                                                          ? Colors.grey[
+                                                                              700]
+                                                                          : Colors.grey[
+                                                                              300]),
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              20),
+                                                                ),
+                                                                child: AnimatedAlign(
+                                                                  duration:
+                                                                      const Duration(
+                                                                          milliseconds:
+                                                                              250),
+                                                                  curve:
+                                                                      Curves.easeOut,
+                                                                  alignment: _addValidityAndDisclosedQty
+                                                                      ? Alignment
+                                                                          .centerRight
+                                                                      : Alignment
+                                                                          .centerLeft,
+                                                                  child: Container(
+                                                                    width: 16,
+                                                                    height: 16,
+                                                                    decoration:
+                                                                        BoxDecoration(
+                                                                      color: _addValidityAndDisclosedQty
+                                                                          ? colors
+                                                                              .colorBlue
+                                                                          : Colors.grey[
+                                                                              500],
+                                                                      shape: BoxShape
+                                                                          .circle,
+                                                                      boxShadow: [
+                                                                        BoxShadow(
+                                                                          color: Colors
+                                                                              .black
+                                                                              .withOpacity(
+                                                                                  0.25),
+                                                                          blurRadius:
+                                                                              3,
+                                                                          offset:
+                                                                              const Offset(
+                                                                                  0,
+                                                                                  1),
+                                                                        ),
+                                                                      ],
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ],
                                                           ),
                                                         ),
                                                       ),
-                                                    ],
+                                                    ),
                                                   ),
-                                                ),
-                                              ),
+                                                ],
+                                              ],
                                             ),
-                                            if (priceType == "SL Limit" ||
-                                                priceType == "SL MKT") ...[
-                                              triggerOption(theme, context,
-                                                  widget.scripInfo),
+
+                                            // Show trigger and validity options side by side (50% each)
+                                            if ((priceType == "SL Limit" || priceType == "SL MKT") ||
+                                                (!(orderType == "CO - BO") && _addValidityAndDisclosedQty)) ...[
+                                              Row(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  // Trigger option - 50% width (only if stoploss is on)
+                                                  Expanded(
+                                                    flex: 1,
+                                                    child: priceType == "SL Limit" || priceType == "SL MKT"
+                                                        ? triggerOption(theme, context, widget.scripInfo)
+                                                        : const SizedBox.shrink(),
+                                                  ),
+                                                  
+                                                  // Divider between trigger and validity (only if both are visible)
+                                                  if ((priceType == "SL Limit" || priceType == "SL MKT") &&
+                                                      !(orderType == "CO - BO") && _addValidityAndDisclosedQty) ...[
+                                                    Container(
+                                                      width: 1,
+                                                      margin: const EdgeInsets.symmetric(horizontal: 8),
+                                                      color: theme.isDarkMode
+                                                          ? colors.darkColorDivider
+                                                          : colors.colorDivider,
+                                                    ),
+                                                  ],
+                                                  
+                                                  // Validity options - 50% width (only if enabled)
+                                                  Expanded(
+                                                    flex: 1,
+                                                    child: !(orderType == "CO - BO") && _addValidityAndDisclosedQty
+                                                        ? addValidityAndDisclosedQtyOption(
+                                                            theme,
+                                                            context,
+                                                            widget.scripInfo)
+                                                        : const SizedBox.shrink(),
+                                                  ),
+                                                ],
+                                              ),
+                                              const SizedBox(height: 10),
                                             ],
 
                                             if (!(orderType == "CO - BO")) ...[
@@ -4342,18 +4483,14 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                           MainAxisAlignment
                                                               .spaceBetween,
                                                       children: [
-                                                        TextWidget.subText(
-                                                          text:
-                                                              'After market order (AMO)',
-                                                          theme:
-                                                              theme.isDarkMode,
-                                                          color: theme
-                                                                  .isDarkMode
-                                                              ? colors
-                                                                  .textPrimaryDark
-                                                              : colors
-                                                                  .textPrimaryLight,
-                                                          fw: 0,
+                                                        Text(
+                                                          'After market order (AMO)',
+                                                          style: WebTextStyles.sub(
+                                                            isDarkTheme: theme.isDarkMode,
+                                                            color: theme.isDarkMode
+                                                                ? WebDarkColors.textPrimary
+                                                                : WebColors.textPrimary,
+                                                          ),
                                                         ),
                                                         // Text(
                                                         //   'After market order (AMO)',
@@ -4442,146 +4579,6 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                               ),
                                             ],
 
-                                            if (!(orderType == "CO - BO")) ...[
-                                              // validity & Disclosed Qty  section
-                                              Divider(
-                                                  color: theme.isDarkMode
-                                                      ? colors.darkColorDivider
-                                                      : colors.colorDivider),
-                                              Theme(
-                                                data: ThemeData(
-                                                  unselectedWidgetColor: theme
-                                                          .isDarkMode
-                                                      ? colors.textPrimaryDark
-                                                      : colors.textPrimaryLight,
-                                                ),
-                                                child: GestureDetector(
-                                                  behavior: HitTestBehavior
-                                                      .translucent, // Improves touch detection
-                                                  onTap: () {
-                                                    setState(() {
-                                                      _addValidityAndDisclosedQty =
-                                                          !_addValidityAndDisclosedQty;
-                                                    });
-                                                  },
-                                                  child: Container(
-                                                    padding: const EdgeInsets
-                                                        .symmetric(
-                                                        horizontal: 16,
-                                                        vertical: 5),
-                                                    child: Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .spaceBetween,
-                                                      children: [
-                                                        TextWidget.subText(
-                                                          text:
-                                                              'Add validity & Disclosed quantity',
-                                                          theme:
-                                                              theme.isDarkMode,
-                                                          color: theme
-                                                                  .isDarkMode
-                                                              ? colors
-                                                                  .textPrimaryDark
-                                                              : colors
-                                                                  .textPrimaryLight,
-                                                          fw: 0,
-                                                        ),
-                                                        // Text(
-                                                        //   'Add validity & Disclosed quantity',
-                                                        //   style: textStyle(
-                                                        //     theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                                                        //     14,
-                                                        //     FontWeight.w400,
-                                                        //   ),
-                                                        // ),
-                                                        AnimatedContainer(
-                                                          duration:
-                                                              const Duration(
-                                                                  milliseconds:
-                                                                      250),
-                                                          curve: Curves.easeOut,
-                                                          width: 40,
-                                                          height: 22,
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .symmetric(
-                                                                  horizontal:
-                                                                      3),
-                                                          decoration:
-                                                              BoxDecoration(
-                                                            color: _addValidityAndDisclosedQty
-                                                                ? colors
-                                                                    .colorBlue
-                                                                    .withOpacity(
-                                                                        0.25)
-                                                                : (theme.isDarkMode
-                                                                    ? Colors.grey[
-                                                                        700]
-                                                                    : Colors.grey[
-                                                                        300]),
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        20),
-                                                          ),
-                                                          child: AnimatedAlign(
-                                                            duration:
-                                                                const Duration(
-                                                                    milliseconds:
-                                                                        250),
-                                                            curve:
-                                                                Curves.easeOut,
-                                                            alignment: _addValidityAndDisclosedQty
-                                                                ? Alignment
-                                                                    .centerRight
-                                                                : Alignment
-                                                                    .centerLeft,
-                                                            child: Container(
-                                                              width: 16,
-                                                              height: 16,
-                                                              decoration:
-                                                                  BoxDecoration(
-                                                                color: _addValidityAndDisclosedQty
-                                                                    ? colors
-                                                                        .colorBlue
-                                                                    : Colors.grey[
-                                                                        500],
-                                                                shape: BoxShape
-                                                                    .circle,
-                                                                boxShadow: [
-                                                                  BoxShadow(
-                                                                    color: Colors
-                                                                        .black
-                                                                        .withOpacity(
-                                                                            0.25),
-                                                                    blurRadius:
-                                                                        3,
-                                                                    offset:
-                                                                        const Offset(
-                                                                            0,
-                                                                            1),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-
-                                              if (_addValidityAndDisclosedQty) ...[
-                                                addValidityAndDisclosedQtyOption(
-                                                    theme,
-                                                    context,
-                                                    widget.scripInfo),
-                                                const SizedBox(height: 10)
-                                              ],
-                                            ],
-
                                             Divider(
                                                 color: theme.isDarkMode
                                                     ? colors.darkColorDivider
@@ -4632,15 +4629,14 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                         MainAxisAlignment
                                                             .spaceBetween,
                                                     children: [
-                                                      TextWidget.subText(
-                                                        text: 'Cover - Only SL',
-                                                        theme: theme.isDarkMode,
-                                                        color: theme.isDarkMode
-                                                            ? colors
-                                                                .textPrimaryDark
-                                                            : colors
-                                                                .textPrimaryLight,
-                                                        fw: 0,
+                                                      Text(
+                                                        'Cover - Only SL',
+                                                        style: WebTextStyles.sub(
+                                                          isDarkTheme: theme.isDarkMode,
+                                                          color: theme.isDarkMode
+                                                              ? WebDarkColors.textPrimary
+                                                              : WebColors.textPrimary,
+                                                        ),
                                                       ),
                                                       // Text(
                                                       //   'Cover - Only SL',
@@ -4665,7 +4661,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                         decoration:
                                                             BoxDecoration(
                                                           color: _isCoverOrderEnabled
-                                                              ? colors.colorBlue
+                                                              ? WebColors.primary
                                                                   .withOpacity(
                                                                       0.25)
                                                               : (theme.isDarkMode
@@ -4751,16 +4747,14 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                         MainAxisAlignment
                                                             .spaceBetween,
                                                     children: [
-                                                      TextWidget.subText(
-                                                        text:
-                                                            'Bracket - TGT / SL',
-                                                        theme: theme.isDarkMode,
-                                                        color: theme.isDarkMode
-                                                            ? colors
-                                                                .textPrimaryDark
-                                                            : colors
-                                                                .textPrimaryLight,
-                                                        fw: 0,
+                                                      Text(
+                                                        'Bracket - TGT / SL',
+                                                        style: WebTextStyles.sub(
+                                                          isDarkTheme: theme.isDarkMode,
+                                                          color: theme.isDarkMode
+                                                              ? WebDarkColors.textPrimary
+                                                              : WebColors.textPrimary,
+                                                        ),
                                                       ),
                                                       // Text(
                                                       AnimatedContainer(
@@ -4778,7 +4772,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                         decoration:
                                                             BoxDecoration(
                                                           color: _isBracketOrderEnabled
-                                                              ? colors.colorBlue
+                                                              ? WebColors.primary
                                                                   .withOpacity(
                                                                       0.25)
                                                               : (theme.isDarkMode
@@ -4890,8 +4884,8 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                       ),
                       Container(
                           color: theme.isDarkMode
-                              ? colors.colorBlack
-                              : colors.colorWhite,
+                              ? WebDarkColors.background
+                              : WebColors.background,
                           child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisSize: MainAxisSize.min,
@@ -5081,44 +5075,63 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                           context);
 
                                                                   {
-                                                                    // On web, prefer a dialog. On other platforms, use bottom sheet.
-                                                                    showDialog(
-                                                                      context:
-                                                                          context,
-                                                                      barrierDismissible:
-                                                                          true,
-                                                                      builder:
-                                                                          (_) =>
-                                                                              const MarginDetailsDialogWeb(),
+                                                                    // On web, show dialog as overlay entry above the order screen
+                                                                    final overlay = Overlay.of(context, rootOverlay: true);
+                                                                    late OverlayEntry dialogOverlayEntry;
+                                                                    
+                                                                    dialogOverlayEntry = OverlayEntry(
+                                                                      builder: (overlayContext) => Stack(
+                                                                        children: [
+                                                                          // Backdrop
+                                                                          Positioned.fill(
+                                                                            child: GestureDetector(
+                                                                              onTap: () {
+                                                                                dialogOverlayEntry.remove();
+                                                                              },
+                                                                              child: Container(
+                                                                                color: Colors.black.withOpacity(0.5),
+                                                                              ),
+                                                                            ),
+                                                                          ),
+                                                                          // Dialog centered
+                                                                          Center(
+                                                                            child: Material(
+                                                                              color: Colors.transparent,
+                                                                              child: MarginDetailsDialogWeb(
+                                                                                onClose: () {
+                                                                                  dialogOverlayEntry.remove();
+                                                                                },
+                                                                              ),
+                                                                            ),
+                                                                          ),
+                                                                        ],
+                                                                      ),
                                                                     );
+                                                                    
+                                                                    overlay.insert(dialogOverlayEntry);
                                                                   }
                                                                 },
                                                           widget:
                                                               Row(children: [
-                                                            TextWidget.paraText(
-                                                              text: "Required ",
-                                                              color: theme.isDarkMode
-                                                                  ? colors
-                                                                      .textSecondaryDark
-                                                                  : colors
-                                                                      .textSecondaryLight,
-                                                              theme: theme
-                                                                  .isDarkMode,
-                                                              fw: 0,
+                                                            Text(
+                                                              "Required ",
+                                                              style: WebTextStyles.para(
+                                                                isDarkTheme: theme.isDarkMode,
+                                                                color: theme.isDarkMode
+                                                                    ? WebDarkColors.textSecondary
+                                                                    : WebColors.textSecondary,
+                                                              ),
                                                             ),
 
-                                                            TextWidget.paraText(
-                                                              text:
-                                                                  "${orderProvide.orderMarginModel == null ? 0.00 : orderProvide.orderMarginModel!.ordermargin}  + ${orderProvide.getBrokerageModel == null ? 0.00 : orderProvide.getBrokerageModel!.brkageAmt ?? 0.00}",
-                                                              theme: theme
-                                                                  .isDarkMode,
-                                                              color: !theme
-                                                                      .isDarkMode
-                                                                  ? colors
-                                                                      .colorBlue
-                                                                  : colors
-                                                                      .colorLightBlue,
-                                                              fw: 2,
+                                                            Text(
+                                                              "${orderProvide.orderMarginModel == null ? 0.00 : orderProvide.orderMarginModel!.ordermargin}  + ${orderProvide.getBrokerageModel == null ? 0.00 : orderProvide.getBrokerageModel!.brkageAmt ?? 0.00}",
+                                                              style: WebTextStyles.para(
+                                                                isDarkTheme: theme.isDarkMode,
+                                                                color: !theme.isDarkMode
+                                                                    ? WebColors.primary
+                                                                    : WebDarkColors.primary,
+                                                                fontWeight: WebFonts.semiBold,
+                                                              ),
                                                             ),
 
                                                             // Text(
@@ -5141,31 +5154,24 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                       const SizedBox(width: 16),
                                                       Row(
                                                         children: [
-                                                          TextWidget.paraText(
-                                                            text: "Balance ",
-                                                            color: theme
-                                                                    .isDarkMode
-                                                                ? colors
-                                                                    .textSecondaryDark
-                                                                : colors
-                                                                    .textSecondaryLight,
-                                                            theme: theme
-                                                                .isDarkMode,
-                                                            fw: 0,
+                                                          Text(
+                                                            "Balance ",
+                                                            style: WebTextStyles.para(
+                                                              isDarkTheme: theme.isDarkMode,
+                                                              color: theme.isDarkMode
+                                                                  ? WebDarkColors.textSecondary
+                                                                  : WebColors.textSecondary,
+                                                            ),
                                                           ),
                                                           // const SizedBox(width: 4),
-                                                          TextWidget.paraText(
-                                                            text:
-                                                                " ${clientFundDetail?.avlMrg ?? ''}",
-                                                            color: theme
-                                                                    .isDarkMode
-                                                                ? colors
-                                                                    .textPrimaryDark
-                                                                : colors
-                                                                    .textPrimaryLight,
-                                                            theme: theme
-                                                                .isDarkMode,
-                                                            fw: 0,
+                                                          Text(
+                                                            " ${clientFundDetail?.avlMrg ?? ''}",
+                                                            style: WebTextStyles.para(
+                                                              isDarkTheme: theme.isDarkMode,
+                                                              color: theme.isDarkMode
+                                                                  ? WebDarkColors.textPrimary
+                                                                  : WebColors.textPrimary,
+                                                            ),
                                                           ),
                                                           const SizedBox(
                                                               width: 4),
@@ -5234,14 +5240,15 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                       // ),
 
                                                                       // "+ Add fund" text in blue
-                                                                      TextWidget.paraText(
-                                                                          text:
-                                                                              '+ Add fund',
-                                                                          color: theme.isDarkMode
-                                                                              ? colors.secondaryDark
-                                                                              : colors.secondaryLight,
-                                                                          theme: theme.isDarkMode,
-                                                                          fw: 2),
+                                                                      Text(
+                                                                          '+ Add fund',
+                                                                          style: WebTextStyles.para(
+                                                                            isDarkTheme: theme.isDarkMode,
+                                                                            color: theme.isDarkMode
+                                                                                ? WebDarkColors.secondary
+                                                                                : WebColors.secondary,
+                                                                            fontWeight: WebFonts.semiBold,
+                                                                          )),
                                                                       const SizedBox(
                                                                           width:
                                                                               8),
@@ -6483,8 +6490,8 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                   strokeWidth: 2,
                                                   color: Color(0xffffffff)),
                                             )
-                                          : TextWidget.subText(
-                                              text: (widget.isBasket ==
+                                          : Text(
+                                              (widget.isBasket ==
                                                           "Basket" ||
                                                       widget.isBasket ==
                                                           "BasketEdit" ||
@@ -6499,13 +6506,14 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                       : isBuy!
                                                           ? 'Buy'
                                                           : "Sell",
-                                              color: theme.isDarkMode
-                                                  ? orderType == "SIP"
-                                                      ? colors.colorBlack
-                                                      : colors.colorWhite
-                                                  : const Color(0xffffffff),
-                                              theme: theme.isDarkMode,
-                                              fw: 2),
+                                              style: WebTextStyles.buttonMd(
+                                                isDarkTheme: theme.isDarkMode,
+                                                color: theme.isDarkMode
+                                                    ? orderType == "SIP"
+                                                        ? WebDarkColors.background
+                                                        : WebDarkColors.textPrimary
+                                                    : WebColors.background,
+                                              )),
                                     ),
                                   ),
                                   // if (defaultTargetPlatform ==
@@ -6516,161 +6524,6 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                     ]),
                 // bottomNavigationBar:
               )),
-              // Surveillance dialog overlay - constrained to widget bounds
-              if (_showSurveillanceDialog)
-                Positioned.fill(
-                  child: Container(
-                    color: Colors.black.withOpacity(0.5),
-                    child: Center(
-                      child: Container(
-                        constraints: const BoxConstraints(maxWidth: 500),
-                        margin: const EdgeInsets.symmetric(horizontal: 16),
-                        decoration: BoxDecoration(
-                          color: theme.isDarkMode
-                              ? WebDarkColors.surface
-                              : WebColors.surface,
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 12),
-                              decoration: BoxDecoration(
-                                border: Border(
-                                  bottom: BorderSide(
-                                    color: theme.isDarkMode
-                                        ? WebDarkColors.divider
-                                        : WebColors.divider,
-                                  ),
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Row(
-                                    children: [
-                                      const Icon(Icons.warning_outlined,
-                                          color: Color.fromARGB(190, 255, 170, 0),
-                                          size: 24),
-                                      const SizedBox(width: 12),
-                                      Text(
-                                        'Exchange surveillance active',
-                                        style: WebTextStyles.dialogTitle(
-                                          isDarkTheme: theme.isDarkMode,
-                                          color: theme.isDarkMode
-                                              ? WebDarkColors.textPrimary
-                                              : WebColors.textPrimary,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  Material(
-                                    color: Colors.transparent,
-                                    shape: const CircleBorder(),
-                                    child: InkWell(
-                                      customBorder: const CircleBorder(),
-                                      splashColor: theme.isDarkMode
-                                          ? Colors.white.withOpacity(.15)
-                                          : Colors.black.withOpacity(.15),
-                                      highlightColor: theme.isDarkMode
-                                          ? Colors.white.withOpacity(.08)
-                                          : Colors.black.withOpacity(.08),
-                                      onTap: () {
-                                        setState(() {
-                                          _showSurveillanceDialog = false;
-                                          _pendingSurveillanceAction = null;
-                                        });
-                                      },
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(6.0),
-                                        child: Icon(
-                                          Icons.close,
-                                          size: 18,
-                                          color: theme.isDarkMode
-                                              ? WebDarkColors.iconSecondary
-                                              : WebColors.iconSecondary,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    quotemsg.isNotEmpty ? quotemsg : 'Security is under surveillance. Would you like to continue?',
-                                    style: WebTextStyles.custom(
-                                      fontSize: 13,
-                                      isDarkTheme: theme.isDarkMode,
-                                      color: theme.isDarkMode
-                                          ? WebDarkColors.textPrimary
-                                          : WebColors.textPrimary,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 16),
-                                  SizedBox(
-                                    width: double.infinity,
-                                    height: 40,
-                                    child: ElevatedButton(
-                                      onPressed: () async {
-                                        setState(() {
-                                          _showSurveillanceDialog = false;
-                                        });
-                                        final action = _pendingSurveillanceAction;
-                                        _pendingSurveillanceAction = null;
-                                        if (action != null) {
-                                          setState(() {
-                                            isSecu = true;
-                                          });
-                                          await action();
-                                          // Close the place order dialog after order is placed
-                                          final closeNotifier = _PlaceOrderDialogCloseNotifier.of(context);
-                                          if (closeNotifier != null) {
-                                            // Add a small delay to allow order confirmation dialog to appear first
-                                            Future.delayed(const Duration(milliseconds: 300), () {
-                                              if (mounted) {
-                                                closeNotifier.onClose();
-                                              }
-                                            });
-                                          }
-                                        }
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        elevation: 0,
-                                        backgroundColor: theme.isDarkMode
-                                            ? colors.primaryDark
-                                            : colors.primaryLight,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(5),
-                                        ),
-                                      ),
-                                      child: Text(
-                                        "Continue",
-                                        style: WebTextStyles.custom(
-                                          fontSize: 14,
-                                          isDarkTheme: theme.isDarkMode,
-                                          color: colors.colorWhite,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
             ],
           );
         },
@@ -6682,110 +6535,97 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
       ThemesProvider theme, BuildContext context, ScripInfoModel scripInfo) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Row(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                headerTitleText("Validity", theme),
-                const SizedBox(height: 8),
-                SizedBox(
-                    height: 35,
-                    child: ListView.separated(
-                        scrollDirection: Axis.horizontal,
-                        itemBuilder: (context, index) {
-                          return ElevatedButton(
-                            onPressed: () {
-                              setState(() {
-                                validityType = validityTypes[index];
-                              });
-                            },
-                            style: ElevatedButton.styleFrom(
-                                elevation: 0,
-                                minimumSize: const Size(0, 0),
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 0),
-                                backgroundColor: !theme.isDarkMode
-                                    ? validityType != validityTypes[index]
-                                        ? const Color(0xffF1F3F8)
-                                        : theme.isDarkMode
-                                            ? colors.secondaryDark
-                                            : colors.secondaryLight
-                                    : validityType != validityTypes[index]
-                                        ? colors.darkGrey
-                                        : theme.isDarkMode
-                                            ? colors.secondaryDark
-                                            : colors.secondaryLight,
-                                shape: const RoundedRectangleBorder(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(5)),
-                                )
-                                //   const StadiumBorder()
-                                ),
-                            child: TextWidget.subText(
-                                text: validityTypes[index],
-                                color: !theme.isDarkMode
-                                    ? validityType != validityTypes[index]
-                                        ? theme.isDarkMode
-                                            ? colors.textSecondaryDark
-                                            : colors.textSecondaryLight
-                                        : colors.colorWhite
-                                    : validityType != validityTypes[index]
-                                        ? theme.isDarkMode
-                                            ? colors.textSecondaryDark
-                                            : colors.textSecondaryLight
-                                        : colors.colorWhite,
-                                textOverflow: TextOverflow.ellipsis,
-                                theme: theme.isDarkMode,
-                                fw: validityType == validityTypes[index]
-                                    ? 1
-                                    : 0),
-                          );
-                        },
-                        separatorBuilder: (context, index) {
-                          return const SizedBox(width: 8);
-                        },
-                        itemCount: widget.orderArg.exchange == "BSE" ||
-                                widget.orderArg.exchange == "BFO"
-                            ? validityTypes.length
-                            : 2))
-              ])),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                headerTitleText("Disclosed Qty", theme),
-                const SizedBox(height: 8),
-                SizedBox(
-                  height: 40,
-                  child: Semantics(
-                    identifier: "Disclosed Qty",
-                    child: CustomTextFormField(
+          // Validity field
+          headerTitleText("Validity", theme),
+          const SizedBox(height: 8),
+          SizedBox(
+              height: 35,
+              child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemBuilder: (context, index) {
+                    return ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          validityType = validityTypes[index];
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                          elevation: 0,
+                          minimumSize: const Size(0, 0),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 0),
+                          backgroundColor: !theme.isDarkMode
+                              ? validityType != validityTypes[index]
+                                  ? const Color(0xffF1F3F8)
+                                  : theme.isDarkMode
+                                      ? WebDarkColors.secondary
+                                      : WebColors.secondary
+                              : validityType != validityTypes[index]
+                                  ? colors.darkGrey
+                                  : theme.isDarkMode
+                                      ? WebDarkColors.secondary
+                                      : WebColors.secondary,
+                          shape: const RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(5)),
+                          )
+                          //   const StadiumBorder()
+                          ),
+                      child: Text(
+                          validityTypes[index],
+                          style: WebTextStyles.sub(
+                            isDarkTheme: theme.isDarkMode,
+                            color: !theme.isDarkMode
+                                ? validityType != validityTypes[index]
+                                    ? WebColors.textSecondary
+                                    : WebColors.background
+                                : validityType != validityTypes[index]
+                                    ? WebDarkColors.textSecondary
+                                    : WebDarkColors.background,
+                            fontWeight: validityType == validityTypes[index]
+                                ? WebFonts.medium
+                                : WebFonts.regular,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                      ),
+                    );
+                  },
+                  separatorBuilder: (context, index) {
+                    return const SizedBox(width: 8);
+                  },
+                  itemCount: widget.orderArg.exchange == "BSE" ||
+                          widget.orderArg.exchange == "BFO"
+                      ? validityTypes.length
+                      : 2)),
+          const SizedBox(height: 16),
+          // Disclosed Qty field
+          headerTitleText("Disclosed Qty", theme),
+          const SizedBox(height: 8),
+          SizedBox(
+            height: 40,
+            child: Semantics(
+              identifier: "Disclosed Qty",
+              child: CustomTextFormField(
                         fillColor: theme.isDarkMode
-                            ? colors.darkGrey
-                            : const Color(0xffF1F3F8),
+                            ? WebDarkColors.backgroundTertiary
+                            : WebColors.backgroundTertiary,
                         hintText: "0",
-                        hintStyle: TextWidget.textStyle(
-                          fontSize: 14,
-                          theme: theme.isDarkMode,
-                          color: (theme.isDarkMode
-                                  ? colors.textSecondaryDark
-                                  : colors.textSecondaryLight)
-                              .withOpacity(0.4),
-                          fw: 0,
+                        hintStyle: WebTextStyles.formInput(
+                          isDarkTheme: theme.isDarkMode,
+                          color: theme.isDarkMode
+                              ? WebDarkColors.textSecondary
+                              : WebColors.textSecondary,
                         ),
                         inputFormate: [FilteringTextInputFormatter.digitsOnly],
                         keyboardType: TextInputType.number,
-                        style: TextWidget.textStyle(
-                          fontSize: 16,
+                        style: WebTextStyles.formInput(
+                          isDarkTheme: theme.isDarkMode,
                           color: theme.isDarkMode
-                              ? colors.textPrimaryDark
-                              : colors.textPrimaryLight,
-                          theme: theme.isDarkMode,
-                          fw: 0,
+                              ? WebDarkColors.textPrimary
+                              : WebColors.textPrimary,
                         ),
                         // prefixIcon: InkWell(
                         //   onTap: () {
@@ -6859,9 +6699,6 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                         textAlign: TextAlign.start),
                   ),
                 ),
-              ],
-            ),
-          ),
         ],
       ),
     );
@@ -6888,17 +6725,14 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                               RegExp(r'^\d*\.?\d{0,2}$'))
                         ],
                         fillColor: theme.isDarkMode
-                            ? colors.darkGrey
-                            : const Color(0xffF1F3F8),
+                            ? WebDarkColors.backgroundTertiary
+                            : WebColors.backgroundTertiary,
                         hintText: "0.00",
-                        hintStyle: TextWidget.textStyle(
-                          fontSize: 14,
-                          theme: theme.isDarkMode,
-                          color: (theme.isDarkMode
-                                  ? colors.textSecondaryDark
-                                  : colors.textSecondaryLight)
-                              .withOpacity(0.4),
-                          fw: 0,
+                        hintStyle: WebTextStyles.formInput(
+                          isDarkTheme: theme.isDarkMode,
+                          color: theme.isDarkMode
+                              ? WebDarkColors.textSecondary
+                              : WebColors.textSecondary,
                         ),
                         onChanged: (value) {
                           if (value.isNotEmpty && double.parse(value) > 0) {
@@ -6926,13 +6760,11 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                         },
                         keyboardType: const TextInputType.numberWithOptions(
                             decimal: true),
-                        style: TextWidget.textStyle(
-                          fontSize: 16,
+                        style: WebTextStyles.formInput(
+                          isDarkTheme: theme.isDarkMode,
                           color: theme.isDarkMode
-                              ? colors.textPrimaryDark
-                              : colors.textPrimaryLight,
-                          theme: theme.isDarkMode,
-                          fw: 0,
+                              ? WebDarkColors.textPrimary
+                              : WebColors.textPrimary,
                         ),
                         // prefixIcon: Container(
                         //     margin: const EdgeInsets.all(12),
@@ -6959,7 +6791,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
           headerTitleText("Target", theme),
           const SizedBox(height: 8),
           SizedBox(
-              height: 45,
+              height: 40,
               child: Semantics(
                 identifier: "Bracket Target Input",
                 child: CustomTextFormField(
@@ -6968,8 +6800,8 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                           RegExp(r'^\d*\.?\d{0,2}$'))
                     ],
                     fillColor: theme.isDarkMode
-                        ? colors.darkGrey
-                        : const Color(0xffF1F3F8),
+                        ? WebDarkColors.backgroundTertiary
+                        : WebColors.backgroundTertiary,
                     hintText: "0.00",
                     onChanged: (value) {
                       if (value.isNotEmpty && double.parse(value) > 0) {
@@ -6992,24 +6824,19 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                         ResponsiveSnackBar.showWarning(context, "Target cannot be 0");
                       }
                     },
-                    hintStyle: TextWidget.textStyle(
-                      fontSize: 14,
-                      theme: theme.isDarkMode,
-                      color: (theme.isDarkMode
-                              ? colors.textSecondaryDark
-                              : colors.textSecondaryLight)
-                          .withOpacity(0.4),
-                      fw: 0,
+                    hintStyle: WebTextStyles.formInput(
+                      isDarkTheme: theme.isDarkMode,
+                      color: theme.isDarkMode
+                          ? WebDarkColors.textSecondary
+                          : WebColors.textSecondary,
                     ),
                     keyboardType:
                         const TextInputType.numberWithOptions(decimal: true),
-                    style: TextWidget.textStyle(
-                      fontSize: 16,
+                    style: WebTextStyles.formInput(
+                      isDarkTheme: theme.isDarkMode,
                       color: theme.isDarkMode
-                          ? colors.textPrimaryDark
-                          : colors.textPrimaryLight,
-                      theme: theme.isDarkMode,
-                      fw: 0,
+                          ? WebDarkColors.textPrimary
+                          : WebColors.textPrimary,
                     ),
                     // prefixIcon: Container(
                     //   margin: const EdgeInsets.all(12),
@@ -7035,7 +6862,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
           headerTitleText("Stoploss", theme),
           const SizedBox(height: 8),
           SizedBox(
-              height: 45,
+              height: 40,
               child: Semantics(
                 identifier: "Stoploss cover sl",
                 child: CustomTextFormField(
@@ -7044,8 +6871,8 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                           RegExp(r'^\d*\.?\d{0,2}$'))
                     ],
                     fillColor: theme.isDarkMode
-                        ? colors.darkGrey
-                        : const Color(0xffF1F3F8),
+                        ? WebDarkColors.backgroundTertiary
+                        : WebColors.backgroundTertiary,
                     onChanged: (value) {
                       if (value.isNotEmpty && double.parse(value) > 0) {
                         final regex = RegExp(
@@ -7067,24 +6894,19 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                       }
                     },
                     hintText: "0.00",
-                    hintStyle: TextWidget.textStyle(
-                      fontSize: 14,
-                      theme: theme.isDarkMode,
-                      color: (theme.isDarkMode
-                              ? colors.textSecondaryDark
-                              : colors.textSecondaryLight)
-                          .withOpacity(0.4),
-                      fw: 0,
+                    hintStyle: WebTextStyles.formInput(
+                      isDarkTheme: theme.isDarkMode,
+                      color: theme.isDarkMode
+                          ? WebDarkColors.textSecondary
+                          : WebColors.textSecondary,
                     ),
                     keyboardType:
                         const TextInputType.numberWithOptions(decimal: true),
-                    style: TextWidget.textStyle(
-                      fontSize: 16,
+                    style: WebTextStyles.formInput(
+                      isDarkTheme: theme.isDarkMode,
                       color: theme.isDarkMode
-                          ? colors.textPrimaryDark
-                          : colors.textPrimaryLight,
-                      theme: theme.isDarkMode,
-                      fw: 0,
+                          ? WebDarkColors.textPrimary
+                          : WebColors.textPrimary,
                     ),
                     // prefixIcon: Container(
                     //   margin: const EdgeInsets.all(12),
@@ -7110,7 +6932,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
           headerTitleText("Trailing SL", theme),
           const SizedBox(height: 8),
           SizedBox(
-              height: 45,
+              height: 40,
               child: Semantics(
                 identifier: "Trailing SL Input",
                 child: CustomTextFormField(
@@ -7119,8 +6941,8 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                           RegExp(r'^\d*\.?\d{0,2}$'))
                     ],
                     fillColor: theme.isDarkMode
-                        ? colors.darkGrey
-                        : const Color(0xffF1F3F8),
+                        ? WebDarkColors.backgroundTertiary
+                        : WebColors.backgroundTertiary,
                     hintText: "0.00",
                     onChanged: (value) {
                       if (value.isNotEmpty) {
@@ -7147,24 +6969,19 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                         ResponsiveSnackBar.showWarning(context, "Trailing SL cannot be empty");
                       }
                     },
-                    hintStyle: TextWidget.textStyle(
-                      fontSize: 14,
-                      theme: theme.isDarkMode,
-                      color: (theme.isDarkMode
-                              ? colors.textSecondaryDark
-                              : colors.textSecondaryLight)
-                          .withOpacity(0.4),
-                      fw: 0,
+                    hintStyle: WebTextStyles.formInput(
+                      isDarkTheme: theme.isDarkMode,
+                      color: theme.isDarkMode
+                          ? WebDarkColors.textSecondary
+                          : WebColors.textSecondary,
                     ),
                     keyboardType:
                         const TextInputType.numberWithOptions(decimal: true),
-                    style: TextWidget.textStyle(
-                      fontSize: 16,
+                    style: WebTextStyles.formInput(
+                      isDarkTheme: theme.isDarkMode,
                       color: theme.isDarkMode
-                          ? colors.textPrimaryDark
-                          : colors.textPrimaryLight,
-                      theme: theme.isDarkMode,
-                      fw: 0,
+                          ? WebDarkColors.textPrimary
+                          : WebColors.textPrimary,
                     ),
                     textCtrl: trailingTicksCtrl,
                     textAlign: TextAlign.start),
@@ -7183,13 +7000,14 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
         children: [
           Row(
             children: [
-              TextWidget.subText(
-                  text: "Market Protected by",
-                  color: theme.isDarkMode
-                      ? colors.colorLightBlue
-                      : colors.colorBlue,
-                  theme: theme.isDarkMode,
-                  fw: 0),
+              Text(
+                  "Market Protected by",
+                  style: WebTextStyles.sub(
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode
+                        ? WebDarkColors.primary
+                        : WebColors.primary,
+                  )),
               Semantics(
                 identifier: "Market Protection %",
                 child: InkWell(
@@ -7248,8 +7066,8 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                       Icons.close_rounded,
                                       size: 22,
                                       color: theme.isDarkMode
-                                          ? colors.textSecondaryDark
-                                          : colors.textSecondaryLight,
+                                          ? WebDarkColors.textSecondary
+                                          : WebColors.textSecondary,
                                     ),
                                   ),
                                 ],
@@ -7257,13 +7075,14 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                               content: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  TextWidget.subText(
-                                      text: 'Enter Market Protection',
-                                      color: theme.isDarkMode
-                                          ? colors.textPrimaryDark
-                                          : colors.textPrimaryLight,
-                                      theme: theme.isDarkMode,
-                                      fw: 0),
+                                  Text(
+                                      'Enter Market Protection',
+                                      style: WebTextStyles.sub(
+                                        isDarkTheme: theme.isDarkMode,
+                                        color: theme.isDarkMode
+                                            ? WebDarkColors.textPrimary
+                                            : WebColors.textPrimary,
+                                      )),
                                   const SizedBox(height: 8),
                                   Semantics(
                                     identifier: "Market Protection % Input",
@@ -7306,13 +7125,11 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                         });
                                       },
                                       keyboardType: TextInputType.number,
-                                      style: TextWidget.textStyle(
-                                        fontSize: 16,
+                                      style: WebTextStyles.title(
+                                        isDarkTheme: theme.isDarkMode,
                                         color: theme.isDarkMode
-                                            ? colors.textPrimaryDark
-                                            : colors.textPrimaryLight,
-                                        theme: theme.isDarkMode,
-                                        fw: 0,
+                                            ? WebDarkColors.textPrimary
+                                            : WebColors.textPrimary,
                                       ),
                                       textCtrl: mktProtDialogCtrl,
                                       prefixIcon: Container(
@@ -7322,24 +7139,22 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                 BorderRadius.circular(20),
                                             color: theme.isDarkMode
                                                 ? const Color(0xff555555)
-                                                : colors.colorWhite),
+                                                : WebColors.background),
                                         child: SvgPicture.asset(
                                             color: theme.isDarkMode
-                                                ? colors.colorWhite
-                                                : colors.colorGrey,
+                                                ? WebDarkColors.textPrimary
+                                                : WebColors.icon,
                                             assets.precentIcon,
                                             fit: BoxFit.scaleDown),
                                       ),
                                       textAlign: TextAlign.start,
                                       hintText: "Add Market Protection %",
-                                      hintStyle: TextWidget.textStyle(
-                                        fontSize: 14,
-                                        theme: theme.isDarkMode,
+                                      hintStyle: WebTextStyles.sub(
+                                        isDarkTheme: theme.isDarkMode,
                                         color: (theme.isDarkMode
-                                                ? colors.textSecondaryDark
-                                                : colors.textSecondaryLight)
+                                                ? WebDarkColors.textSecondary
+                                                : WebColors.textSecondary)
                                             .withOpacity(0.4),
-                                        fw: 0,
                                       ),
                                     ),
                                   ),
@@ -7349,13 +7164,14 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                       child: Semantics(
                                         identifier:
                                             "Market Protection % Error Text",
-                                        child: TextWidget.paraText(
-                                          text: mktProtErrorText,
-                                          color: theme.isDarkMode
-                                              ? colors.lossDark
-                                              : colors.lossLight,
-                                          theme: theme.isDarkMode,
-                                          fw: 0,
+                                        child: Text(
+                                          mktProtErrorText,
+                                          style: WebTextStyles.para(
+                                            isDarkTheme: theme.isDarkMode,
+                                            color: theme.isDarkMode
+                                                ? WebDarkColors.loss
+                                                : WebColors.loss,
+                                          ),
                                         ),
                                       ),
                                       //  Text(
@@ -7408,11 +7224,13 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                       backgroundColor: colors
                                           .primaryDark, // Transparent background
                                     ),
-                                    child: TextWidget.titleText(
-                                        text: "OK",
-                                        color: colors.colorWhite,
-                                        theme: theme.isDarkMode,
-                                        fw: 2),
+                                    child: Text(
+                                        "OK",
+                                        style: WebTextStyles.buttonMd(
+                                          isDarkTheme: theme.isDarkMode,
+                                          color: WebColors.background,
+                                          fontWeight: WebFonts.semiBold,
+                                        )),
                                   ),
                                 ),
 
@@ -7435,14 +7253,15 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                   },
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: TextWidget.paraText(
-                      text: " $marketProtection %",
-                      color: theme.isDarkMode
-                          ? colors.colorLightBlue
-                          : colors.colorBlue,
-                      theme: theme.isDarkMode,
-                      decoration: TextDecoration.underline,
-                      fw: 2,
+                    child: Text(
+                      " $marketProtection %",
+                      style: WebTextStyles.para(
+                        isDarkTheme: theme.isDarkMode,
+                        color: theme.isDarkMode
+                            ? WebDarkColors.primary
+                            : WebColors.primary,
+                        fontWeight: WebFonts.semiBold,
+                      ).copyWith(decoration: TextDecoration.underline),
                     ),
 
                     //  Text(
@@ -7645,13 +7464,15 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
   }
 
   headerTitleText(String text, ThemesProvider theme) {
-    return TextWidget.subText(
-        text: text,
-        theme: theme.isDarkMode,
-        fw: 1,
+    return Text(
+      text,
+      style: WebTextStyles.formLabel(
+        isDarkTheme: theme.isDarkMode,
         color: theme.isDarkMode
-            ? colors.textPrimaryDark
-            : colors.textPrimaryLight);
+            ? WebDarkColors.textPrimary
+            : WebColors.textPrimary,
+      ),
+    );
   }
 
   void marginUpdate() {
@@ -7689,8 +7510,189 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
 
   void _showSurveillanceBottomSheet(
       OrderInputProvider orderInput, bool isSliceOrd, ThemesProvider theme) {
+    // Show surveillance dialog as overlay entry above the order screen
+    final overlay = Overlay.of(context, rootOverlay: true);
+    late OverlayEntry surveillanceOverlayEntry;
+    
+    surveillanceOverlayEntry = OverlayEntry(
+      builder: (overlayContext) => Consumer(
+        builder: (context, ref, _) {
+          final currentTheme = ref.watch(themeProvider);
+          return Stack(
+            children: [
+              // Backdrop
+              Positioned.fill(
+                child: GestureDetector(
+                  onTap: () {
+                    surveillanceOverlayEntry.remove();
+                    setState(() {
+                      _pendingSurveillanceAction = null;
+                    });
+                  },
+                  child: Container(
+                    color: Colors.black.withOpacity(0.5),
+                  ),
+                ),
+              ),
+              // Dialog centered
+              Center(
+                child: Material(
+                  color: Colors.transparent,
+                  child: Container(
+                    constraints: const BoxConstraints(maxWidth: 500),
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: currentTheme.isDarkMode
+                          ? WebDarkColors.surface
+                          : WebColors.surface,
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 12),
+                          decoration: BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(
+                                color: currentTheme.isDarkMode
+                                    ? WebDarkColors.divider
+                                    : WebColors.divider,
+                              ),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(Icons.warning_outlined,
+                                      color: Color.fromARGB(190, 255, 170, 0),
+                                      size: 24),
+                                  const SizedBox(width: 12),
+                                  Text(
+                                    'Exchange surveillance active',
+                                    style: WebTextStyles.dialogTitle(
+                                      isDarkTheme: currentTheme.isDarkMode,
+                                      color: currentTheme.isDarkMode
+                                          ? WebDarkColors.textPrimary
+                                          : WebColors.textPrimary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Material(
+                                color: Colors.transparent,
+                                shape: const CircleBorder(),
+                                child: InkWell(
+                                  customBorder: const CircleBorder(),
+                                  splashColor: currentTheme.isDarkMode
+                                      ? Colors.white.withOpacity(.15)
+                                      : Colors.black.withOpacity(.15),
+                                  highlightColor: currentTheme.isDarkMode
+                                      ? Colors.white.withOpacity(.08)
+                                      : Colors.black.withOpacity(.08),
+                                  onTap: () {
+                                    surveillanceOverlayEntry.remove();
+                                    setState(() {
+                                      _pendingSurveillanceAction = null;
+                                    });
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(6.0),
+                                    child: Icon(
+                                      Icons.close,
+                                      size: 18,
+                                      color: currentTheme.isDarkMode
+                                          ? WebDarkColors.iconSecondary
+                                          : WebColors.iconSecondary,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                quotemsg.isNotEmpty ? quotemsg : 'Security is under surveillance. Would you like to continue?',
+                                style: WebTextStyles.custom(
+                                  fontSize: 13,
+                                  isDarkTheme: currentTheme.isDarkMode,
+                                  color: currentTheme.isDarkMode
+                                      ? WebDarkColors.textPrimary
+                                      : WebColors.textPrimary,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              SizedBox(
+                                width: double.infinity,
+                                height: 40,
+                                child: ElevatedButton(
+                                  onPressed: () async {
+                                    surveillanceOverlayEntry.remove();
+                                    final action = _pendingSurveillanceAction;
+                                    _pendingSurveillanceAction = null;
+                                    if (action != null) {
+                                      setState(() {
+                                        isSecu = true;
+                                      });
+                                      await action();
+                                      // Close the place order dialog after order is placed
+                                      final closeNotifier = _PlaceOrderDialogCloseNotifier.of(context);
+                                      if (closeNotifier != null) {
+                                        // Add a small delay to allow order confirmation dialog to appear first
+                                        Future.delayed(const Duration(milliseconds: 300), () {
+                                          if (mounted) {
+                                            closeNotifier.onClose();
+                                          }
+                                        });
+                                      }
+                                    }
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    elevation: 0,
+                                    backgroundColor: currentTheme.isDarkMode
+                                        ? colors.primaryDark
+                                        : colors.primaryLight,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(5),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    "Continue",
+                                    style: WebTextStyles.custom(
+                                      fontSize: 14,
+                                      isDarkTheme: currentTheme.isDarkMode,
+                                      color: WebColors.background,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+    
+    overlay.insert(surveillanceOverlayEntry);
+    
     setState(() {
-      _showSurveillanceDialog = true;
       _pendingSurveillanceAction = () async {
         setState(() {
           isSecu = true;
@@ -7722,7 +7724,21 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
             ? orderInput.trgPrcCtrl.text
             : "",
         alid: '');
+    
+    // Get close callback before async call
+    final closeNotifier = _PlaceOrderDialogCloseNotifier.of(context);
+    
     await ref.read(orderProvider).placeGTTOrder(input, context);
+    
+    // Check if placement was successful
+    final placeResult = ref.read(orderProvider).placeGttOrderModel;
+    final wasSuccessful = placeResult?.stat == "OI created";
+    
+    // Close the draggable dialog immediately if placement was successful
+    if (wasSuccessful && closeNotifier != null && mounted) {
+      // Close immediately - don't wait
+      closeNotifier.onClose();
+    }
   }
 
   prepareToPlaceOCOOrder(OrderInputProvider orderInput) async {
@@ -7758,7 +7774,21 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
             ? orderInput.ocoTrgPrcCtrl.text
             : "",
         alid: '');
+    
+    // Get close callback before async call
+    final closeNotifier = _PlaceOrderDialogCloseNotifier.of(context);
+    
     await ref.read(orderProvider).placeOCOOrder(input, context);
+    
+    // Check if placement was successful
+    final placeResult = ref.read(orderProvider).placeGttOrderModel;
+    final wasSuccessful = placeResult?.stat == "OI created";
+    
+    // Close the draggable dialog immediately if placement was successful
+    if (wasSuccessful && closeNotifier != null && mounted) {
+      // Close immediately - don't wait
+      closeNotifier.onClose();
+    }
   }
 
   addBasketScrip(
@@ -8098,8 +8128,8 @@ class _DraggablePlaceOrderScreenDialogState extends ConsumerState<_DraggablePlac
     final screenSize = MediaQuery.of(context).size;
 
     // Constrain position to screen bounds
-    final dialogWidth = 500.0;
-    final dialogHeight = screenSize.height * 0.9;
+    final dialogWidth = 600.0;
+    final dialogHeight = screenSize.height * 0.6;
     final constrainedPosition = Offset(
       _position.dx.clamp(0, screenSize.width - dialogWidth),
       _position.dy.clamp(0, screenSize.height - dialogHeight),
@@ -8107,44 +8137,16 @@ class _DraggablePlaceOrderScreenDialogState extends ConsumerState<_DraggablePlac
 
     return Stack(
       children: [
-        // Invisible full-screen tap detector to close dialog when clicking outside
-        Positioned.fill(
-          child: GestureDetector(
-            onTap: widget.onClose,
-            child: Container(
-              color: Colors.transparent,
-            ),
-          ),
-        ),
         // Actual dialog
         Positioned(
           left: constrainedPosition.dx,
           top: constrainedPosition.dy,
           child: GestureDetector(
             onTap: () {}, // Prevent tap from propagating to background
-            onPanStart: (details) {
-              setState(() {
-                _isDragging = true;
-              });
-            },
-            onPanUpdate: (details) {
-              setState(() {
-                _position = Offset(
-                  _position.dx + details.delta.dx,
-                  _position.dy + details.delta.dy,
-                );
-              });
-              widget.onPositionChanged(_position);
-            },
-            onPanEnd: (details) {
-              setState(() {
-                _isDragging = false;
-              });
-            },
             child: Material(
               elevation: _isDragging ? 16 : 8,
               borderRadius: BorderRadius.circular(5),
-              color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+              color: theme.isDarkMode ? WebDarkColors.background : WebColors.background,
               child: Container(
                 width: dialogWidth,
                 height: dialogHeight,
@@ -8154,91 +8156,36 @@ class _DraggablePlaceOrderScreenDialogState extends ConsumerState<_DraggablePlac
                     color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
                   ),
                 ),
-                child: Column(
-                  children: [
-                    // Draggable header
-                    Container(
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: theme.isDarkMode 
-                            ? WebDarkColors.backgroundSecondary 
-                            : WebColors.backgroundSecondary,
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(5),
-                          topRight: Radius.circular(5),
-                        ),
-                        border: Border(
-                          bottom: BorderSide(
-                            color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
-                          ),
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          // Drag handle
-                          const SizedBox(width: 8),
-                          Icon(
-                            Icons.drag_indicator,
-                            size: 16,
-                            color: theme.isDarkMode 
-                                ? WebDarkColors.iconSecondary 
-                                : WebColors.iconSecondary,
-                          ),
-                          const SizedBox(width: 8),
-                          // Title
-                          Expanded(
-                            child: Text(
-                              'Place Order - ${widget.scripInfo.tsym ?? widget.scripInfo.symbol ?? ""}',
-                              style: WebTextStyles.dialogTitle(
-                                isDarkTheme: theme.isDarkMode,
-                                color: theme.isDarkMode
-                                    ? WebDarkColors.textPrimary
-                                    : WebColors.textPrimary,
-                              ),
-                            ),
-                          ),
-                          // Close button
-                          Material(
-                            color: Colors.transparent,
-                            shape: const CircleBorder(),
-                            child: InkWell(
-                              customBorder: const CircleBorder(),
-                              splashColor: theme.isDarkMode
-                                  ? Colors.white.withOpacity(.15)
-                                  : Colors.black.withOpacity(.15),
-                              highlightColor: theme.isDarkMode
-                                  ? Colors.white.withOpacity(.08)
-                                  : Colors.black.withOpacity(.08),
-                              onTap: widget.onClose,
-                              child: Padding(
-                                padding: const EdgeInsets.all(6.0),
-                                child: Icon(
-                                  Icons.close,
-                                  size: 16,
-                                  color: theme.isDarkMode
-                                      ? WebDarkColors.iconSecondary
-                                      : WebColors.iconSecondary,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                        ],
-                      ),
+                child: _PlaceOrderDialogCloseNotifier(
+                  onClose: widget.onClose,
+                  child: _PlaceOrderDialogDragNotifier(
+                    onPanStart: (details) {
+                      setState(() {
+                        _isDragging = true;
+                      });
+                    },
+                    onPanUpdate: (details) {
+                      setState(() {
+                        _position = Offset(
+                          _position.dx + details.delta.dx,
+                          _position.dy + details.delta.dy,
+                        );
+                      });
+                      widget.onPositionChanged(_position);
+                    },
+                    onPanEnd: (details) {
+                      setState(() {
+                        _isDragging = false;
+                      });
+                    },
+                    isDragging: _isDragging,
+                    child: PlaceOrderScreenWeb(
+                      orderArg: widget.orderArg,
+                      scripInfo: widget.scripInfo,
+                      isBasket: widget.isBasket,
+                      fromChart: widget.fromChart,
                     ),
-                    // Content area
-                    Expanded(
-                      child: _PlaceOrderDialogCloseNotifier(
-                        onClose: widget.onClose,
-                        child: PlaceOrderScreenWeb(
-                          orderArg: widget.orderArg,
-                          scripInfo: widget.scripInfo,
-                          isBasket: widget.isBasket,
-                          fromChart: widget.fromChart,
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),

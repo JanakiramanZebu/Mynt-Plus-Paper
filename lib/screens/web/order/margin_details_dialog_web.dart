@@ -7,7 +7,8 @@ import 'package:mynt_plus/res/global_font_web.dart';
 import 'package:mynt_plus/res/web_colors.dart';
 
 class MarginDetailsDialogWeb extends ConsumerWidget {
-  const MarginDetailsDialogWeb({super.key});
+  final VoidCallback? onClose;
+  const MarginDetailsDialogWeb({super.key, this.onClose});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -60,7 +61,13 @@ class MarginDetailsDialogWeb extends ConsumerWidget {
                       shape: const CircleBorder(),
                       child: InkWell(
                         customBorder: const CircleBorder(),
-                        onTap: () => Navigator.of(context).pop(),
+                        onTap: () {
+                          if (onClose != null) {
+                            onClose!();
+                          } else {
+                            Navigator.of(context).pop();
+                          }
+                        },
                         child: Padding(
                           padding: const EdgeInsets.all(6),
                           child: Icon(

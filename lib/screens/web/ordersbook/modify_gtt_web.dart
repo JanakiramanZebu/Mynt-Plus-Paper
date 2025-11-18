@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../models/marketwatch_model/scrip_info.dart';
 import '../../../models/order_book_model/gtt_order_book.dart';
@@ -15,10 +14,58 @@ import '../../../provider/order_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/websocket_provider.dart';
 import '../../../res/res.dart';
+import '../../../res/global_font_web.dart';
+import '../../../res/web_colors.dart';
 import '../../../sharedWidget/cust_text_formfield.dart';
 import '../../../sharedWidget/no_internet_widget.dart';
 import '../../../sharedWidget/snack_bar.dart';
-import '../../../res/global_state_text.dart';
+
+// InheritedWidget to pass close callback to child widgets
+class _ModifyGttDialogCloseNotifier extends InheritedWidget {
+  final VoidCallback onClose;
+
+  const _ModifyGttDialogCloseNotifier({
+    required this.onClose,
+    required super.child,
+  });
+
+  static _ModifyGttDialogCloseNotifier? of(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<_ModifyGttDialogCloseNotifier>();
+  }
+
+  @override
+  bool updateShouldNotify(_ModifyGttDialogCloseNotifier oldWidget) {
+    return onClose != oldWidget.onClose;
+  }
+}
+
+// InheritedWidget to pass drag callbacks to child widgets
+class _ModifyGttDialogDragNotifier extends InheritedWidget {
+  final void Function(DragStartDetails) onPanStart;
+  final void Function(DragUpdateDetails) onPanUpdate;
+  final void Function(DragEndDetails) onPanEnd;
+  final bool isDragging;
+
+  const _ModifyGttDialogDragNotifier({
+    required this.onPanStart,
+    required this.onPanUpdate,
+    required this.onPanEnd,
+    required this.isDragging,
+    required super.child,
+  });
+
+  static _ModifyGttDialogDragNotifier? of(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<_ModifyGttDialogDragNotifier>();
+  }
+
+  @override
+  bool updateShouldNotify(_ModifyGttDialogDragNotifier oldWidget) {
+    return onPanStart != oldWidget.onPanStart ||
+        onPanUpdate != oldWidget.onPanUpdate ||
+        onPanEnd != oldWidget.onPanEnd ||
+        isDragging != oldWidget.isDragging;
+  }
+}
 
 class ModifyGttWeb extends ConsumerStatefulWidget {
   final GttOrderBookModel gttOrderBook;
@@ -32,6 +79,42 @@ class ModifyGttWeb extends ConsumerStatefulWidget {
 
   @override
   ConsumerState<ModifyGttWeb> createState() => _ModifyGttWebState();
+
+  /// Static method to show ModifyGttWeb as a draggable dialog
+  static void showDraggable({
+    required BuildContext context,
+    required GttOrderBookModel gttOrderBook,
+    required ScripInfoModel scripInfo,
+    Offset? initialPosition,
+  }) {
+    final overlay = Overlay.of(context, rootOverlay: true);
+    late OverlayEntry overlayEntry;
+    
+    final position = initialPosition ?? Offset(
+      MediaQuery.of(context).size.width * 0.1,
+      MediaQuery.of(context).size.height * 0.05,
+    );
+    
+    overlayEntry = OverlayEntry(
+      maintainState: false,
+      builder: (context) => _DraggableModifyGttDialog(
+        gttOrderBook: gttOrderBook,
+        scripInfo: scripInfo,
+        initialPosition: position,
+        onPositionChanged: (newPosition) {
+          // Position can be saved if needed
+        },
+        onClose: () {
+          // Remove overlay immediately for quick response
+          if (overlayEntry.mounted) {
+            overlayEntry.remove();
+          }
+        },
+      ),
+    );
+    
+    overlay.insert(overlayEntry);
+  }
 }
 
 class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
@@ -135,67 +218,61 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
             .read(marketWatchProvider)
             .requestMWScrip(context: context, isSubscribe: true);
       },
-      child: Dialog(
-        backgroundColor: Colors.transparent,
-        child: Container(
-          width: 500,
-          constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(context).size.height * 0.85,
-          ),
-          height: MediaQuery.of(context).size.height * 0.85,
-          decoration: BoxDecoration(
-            color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-            borderRadius: BorderRadius.circular(5),
-            // border: Border.all(
-            //   color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-            // ),
-          ),
-          child: Column(
-            children: [
-              // Header
-              _buildHeader(theme),
-              
-              // Content
-              Expanded(
-                child: GestureDetector(
-                  onTap: () => FocusScope.of(context).unfocus(),
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Symbol and Exchange Info
-                        // _buildSymbolSection(theme),
-                        // const SizedBox(height: 24),
-                        
-                        // Trigger Price Section
-                        _buildTriggerPriceSection(theme),
+      child: Container(
+        width: 500,
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.6,
+        ),
+        height: MediaQuery.of(context).size.height * 0.6,
+        decoration: BoxDecoration(
+          color: theme.isDarkMode ? WebDarkColors.background : WebColors.background,
+          borderRadius: BorderRadius.circular(5),
+        ),
+        child: Column(
+          children: [
+            // Header
+            _buildHeader(theme),
+            
+            // Content
+            Expanded(
+              child: GestureDetector(
+                onTap: () => FocusScope.of(context).unfocus(),
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Symbol and Exchange Info
+                      // _buildSymbolSection(theme),
+                      // const SizedBox(height: 24),
+                      
+                      // Trigger Price Section
+                      _buildTriggerPriceSection(theme),
+                      const SizedBox(height: 24),
+                      
+                      // Qty and Price Section
+                      _buildQtyPriceSection(theme),
+                      const SizedBox(height: 24),
+                      
+                      // OCO Section (if applicable)
+                      if (isOco) ...[
+                        _buildOcoTriggerSection(theme),
                         const SizedBox(height: 24),
-                        
-                        // Qty and Price Section
-                        _buildQtyPriceSection(theme),
+                        _buildOcoQtyPriceSection(theme),
                         const SizedBox(height: 24),
-                        
-                        // OCO Section (if applicable)
-                        if (isOco) ...[
-                          _buildOcoTriggerSection(theme),
-                          const SizedBox(height: 24),
-                          _buildOcoQtyPriceSection(theme),
-                          const SizedBox(height: 24),
-                        ],
                       ],
-                    ),
+                    ],
                   ),
                 ),
               ),
-              
-              // Footer with Modify Button
-              if (internet.connectionStatus == ConnectivityResult.none)
-                const NoInternetWidget()
-              else
-                _buildFooter(theme),
-            ],
-          ),
+            ),
+            
+            // Footer with Modify Button
+            if (internet.connectionStatus == ConnectivityResult.none)
+              const NoInternetWidget()
+            else
+              _buildFooter(theme),
+          ],
         ),
       ),
     );
@@ -213,12 +290,15 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
     final change = currentChange ?? widget.gttOrderBook.change ?? '0.00';
     final perChange = currentPerChange ?? widget.gttOrderBook.perChange ?? '0.00';
     
-    return Container(
+    // Get drag notifier for header dragging
+    final dragNotifier = _ModifyGttDialogDragNotifier.of(context);
+    
+    Widget headerContent = Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(
-            color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+            color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
           ),
         ),
       ),
@@ -233,28 +313,17 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                   children: [
                     Text(
                       "$symbol $expDate $option ",
-                      style: TextWidget.textStyle(
-                        fontSize: 16,
-                        theme: theme.isDarkMode,
-                        color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                        fw: 1,
+                      style: WebTextStyles.symbolList(
+                        isDarkTheme: theme.isDarkMode,
+                        color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
                       ),
                     ),
                     const SizedBox(width: 4),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: theme.isDarkMode ? colors.primaryDark.withOpacity(0.7) : colors.primaryLight.withOpacity(0.7),
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                      child: Text(
-                        exchange,
-                        style: TextWidget.textStyle(
-                          fontSize: 12,
-                          theme: false,
-                          color: colors.textPrimaryDark,
-                          fw: 1,
-                        ),
+                    Text(
+                      exchange,
+                      style: WebTextStyles.exchText(
+                          isDarkTheme: theme.isDarkMode,
+                          color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
                       ),
                     ),
                   ],
@@ -265,31 +334,27 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                   children: [
                     Text(
                       ltp,
-                      style: TextWidget.textStyle(
-                        fontSize: 16,
-                        theme: false,
+                      style: WebTextStyles.priceWatch(
+                        isDarkTheme: theme.isDarkMode,
                         color: (change == "null" || change == "0.00")
                             ? (theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : colors.textSecondaryLight)
+                                ? WebDarkColors.textSecondary
+                                : WebColors.textSecondary)
                             : (change.startsWith("-") == true || perChange.startsWith("-") == true)
                                 ? (theme.isDarkMode
-                                    ? colors.lossDark
-                                    : colors.lossLight)
+                                    ? WebDarkColors.loss
+                                    : WebColors.loss)
                                 : (theme.isDarkMode
-                                    ? colors.profitDark
-                                    : colors.profitLight),
-                        fw: 1,
+                                    ? WebDarkColors.profit
+                                    : WebColors.profit),
                       ),
                     ),
                     const SizedBox(width: 4),
                     Text(
                       "${(double.tryParse(change) ?? 0.00).toStringAsFixed(2)} ($perChange%)",
-                      style: TextWidget.textStyle(
-                        fontSize: 16,
-                        theme: false,
-                        color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                        fw: 1,
+                      style: WebTextStyles.pricePercent(
+                        isDarkTheme: theme.isDarkMode,
+                        color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
                       ),
                     ),
                   ],
@@ -310,7 +375,13 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                   : Colors.black.withOpacity(.08),
               onTap: () {
                 ref.read(ordInputProvider).clearTextField();
-                Navigator.pop(context);
+                // Try to use draggable dialog close callback, fallback to Navigator.pop
+                final closeNotifier = _ModifyGttDialogCloseNotifier.of(context);
+                if (closeNotifier != null) {
+                  closeNotifier.onClose();
+                } else {
+                  Navigator.pop(context);
+                }
               },
               child: Padding(
                 padding: const EdgeInsets.all(6),
@@ -318,8 +389,8 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                   Icons.close,
                   size: 20,
                   color: theme.isDarkMode
-                      ? colors.textSecondaryDark
-                      : colors.textSecondaryLight,
+                      ? WebDarkColors.iconSecondary
+                      : WebColors.iconSecondary,
                 ),
               ),
             ),
@@ -327,13 +398,28 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
         ],
       ),
     );
+    
+    // Wrap with drag functionality if drag notifier is available
+    if (dragNotifier != null) {
+      return MouseRegion(
+        cursor: SystemMouseCursors.move,
+        child: GestureDetector(
+          onPanStart: dragNotifier.onPanStart,
+          onPanUpdate: dragNotifier.onPanUpdate,
+          onPanEnd: dragNotifier.onPanEnd,
+          child: headerContent,
+        ),
+      );
+    }
+    
+    return headerContent;
   }
 
   Widget _buildSymbolSection(ThemesProvider theme) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
+        color: theme.isDarkMode ? WebDarkColors.backgroundTertiary : WebColors.backgroundTertiary,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -344,20 +430,18 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
             children: [
               Text(
                 "LTP",
-                style: TextWidget.textStyle(
-                  fontSize: 12,
-                  theme: theme.isDarkMode,
-                  color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                style: WebTextStyles.para(
+                  isDarkTheme: theme.isDarkMode,
+                  color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
                 ),
               ),
               const SizedBox(height: 4),
               Text(
                 currentLtp ?? widget.gttOrderBook.ltp ?? widget.gttOrderBook.prc ?? '0.00',
-                style: TextWidget.textStyle(
-                  fontSize: 16,
-                  theme: theme.isDarkMode,
-                  color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                  fw: 2,
+                style: WebTextStyles.title(
+                  isDarkTheme: theme.isDarkMode,
+                  color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                  fontWeight: WebFonts.bold,
                 ),
               ),
             ],
@@ -367,20 +451,18 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
             children: [
               Text(
                 "Lot Size",
-                style: TextWidget.textStyle(
-                  fontSize: 12,
-                  theme: theme.isDarkMode,
-                  color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                style: WebTextStyles.para(
+                  isDarkTheme: theme.isDarkMode,
+                  color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
                 ),
               ),
               const SizedBox(height: 4),
               Text(
                 "$lotSize",
-                style: TextWidget.textStyle(
-                  fontSize: 16,
-                  theme: theme.isDarkMode,
-                  color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                  fw: 2,
+                style: WebTextStyles.title(
+                  isDarkTheme: theme.isDarkMode,
+                  color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                  fontWeight: WebFonts.bold,
                 ),
               ),
             ],
@@ -396,17 +478,18 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        TextWidget.subText(
-          text: isOco ? "Target Trigger Price" : "Trigger Price",
-          theme: theme.isDarkMode,
-          color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-          fw: 0,
+        Text(
+          isOco ? "Target Trigger Price" : "Trigger Price",
+          style: WebTextStyles.formLabel(
+            isDarkTheme: theme.isDarkMode,
+            color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          ),
         ),
         const SizedBox(height: 8),
         SizedBox(
-          height: 50,
+          height: 40,
           child: CustomTextFormField(
-            fillColor: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
+            fillColor: theme.isDarkMode ? WebDarkColors.backgroundTertiary : WebColors.backgroundTertiary,
             onChanged: (value) {
               double inputPrice = double.tryParse(value) ?? 0;
 
@@ -427,16 +510,14 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
               }
             },
             hintText: "${widget.gttOrderBook.ltp}",
-            hintStyle: TextWidget.textStyle(
-              fontSize: 14,
-              theme: theme.isDarkMode,
-              color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+            hintStyle: WebTextStyles.helperText(
+              isDarkTheme: theme.isDarkMode,
+              color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
             ),
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            style: TextWidget.textStyle(
-              fontSize: 16,
-              color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-              theme: theme.isDarkMode,
+            style: WebTextStyles.formInput(
+              isDarkTheme: theme.isDarkMode,
+              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
             ),
             textCtrl: orderInput.val1Ctrl,
             textAlign: TextAlign.start,
@@ -455,28 +536,27 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              TextWidget.subText(
-                text: "Qty",
-                theme: theme.isDarkMode,
-                color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                fw: 0,
+              Text(
+                "Qty",
+                style: WebTextStyles.formLabel(
+                  isDarkTheme: theme.isDarkMode,
+                  color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                ),
               ),
               const SizedBox(height: 8),
               SizedBox(
-                height: 50,
+                height: 40,
                 child: CustomTextFormField(
-                  fillColor: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
+                  fillColor: theme.isDarkMode ? WebDarkColors.backgroundTertiary : WebColors.backgroundTertiary,
                   hintText: orderInput.qtyCtrl.text,
-                  hintStyle: TextWidget.textStyle(
-                    fontSize: 14,
-                    theme: theme.isDarkMode,
-                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                  hintStyle: WebTextStyles.helperText(
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
                   ),
                   inputFormate: [FilteringTextInputFormatter.digitsOnly],
-                  style: TextWidget.textStyle(
-                    fontSize: 16,
-                    color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                    theme: theme.isDarkMode,
+                  style: WebTextStyles.formInput(
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
                   ),
                   textCtrl: orderInput.qtyCtrl,
                   textAlign: TextAlign.start,
@@ -508,26 +588,28 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
             children: [
               Row(
                 children: [
-                  TextWidget.subText(
-                    text: "Price",
-                    theme: theme.isDarkMode,
-                    color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                    fw: 0,
+                  Text(
+                    "Price",
+                    style: WebTextStyles.formLabel(
+                      isDarkTheme: theme.isDarkMode,
+                      color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                    ),
                   ),
                   const SizedBox(width: 4),
-                  TextWidget.subText(
-                    text: "${orderInput.actPrcType}",
-                    theme: theme.isDarkMode,
-                    color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                    fw: 0,
+                  Text(
+                    "${orderInput.actPrcType}",
+                    style: WebTextStyles.formLabel(
+                      isDarkTheme: theme.isDarkMode,
+                      color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                    ),
                   ),
                 ],
               ),
               const SizedBox(height: 8),
               SizedBox(
-                height: 50,
+                height: 40,
                 child: CustomTextFormField(
-                  fillColor: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
+                  fillColor: theme.isDarkMode ? WebDarkColors.backgroundTertiary : WebColors.backgroundTertiary,
                   onChanged: (value) {
                     if (value.isEmpty) {
                       showResponsiveWarningMessage(context, "Price can not be empty");
@@ -538,15 +620,13 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                     }
                   },
                   hintText: "${widget.gttOrderBook.placeOrderParams!.prc}",
-                  hintStyle: TextWidget.textStyle(
-                    fontSize: 14,
-                    theme: theme.isDarkMode,
-                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                  hintStyle: WebTextStyles.helperText(
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
                   ),
-                  style: TextWidget.textStyle(
-                    fontSize: 16,
-                    color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                    theme: theme.isDarkMode,
+                  style: WebTextStyles.formInput(
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
                   ),
                   isReadable: orderInput.actPrcType == "Limit" ||
                       orderInput.actPrcType == "SL Limit"
@@ -589,17 +669,18 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        TextWidget.subText(
-          text: isOco ? "Stoploss Trigger Price" : "Trigger Price",
-          theme: theme.isDarkMode,
-          color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-          fw: 0,
+        Text(
+          isOco ? "Stoploss Trigger Price" : "Trigger Price",
+          style: WebTextStyles.formLabel(
+            isDarkTheme: theme.isDarkMode,
+            color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          ),
         ),
         const SizedBox(height: 8),
         SizedBox(
-          height: 50,
+          height: 40,
           child: CustomTextFormField(
-            fillColor: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
+            fillColor: theme.isDarkMode ? WebDarkColors.backgroundTertiary : WebColors.backgroundTertiary,
             onChanged: (value) {
               double inputPrice = double.tryParse(value) ?? 0;
 
@@ -620,12 +701,14 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
               }
             },
             hintText: "${widget.gttOrderBook.ltp}",
-            hintStyle: textStyle(const Color(0xff666666), 15, FontWeight.w400),
+            hintStyle: WebTextStyles.helperText(
+              isDarkTheme: theme.isDarkMode,
+              color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
+            ),
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            style: textStyle(
-              theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-              16,
-              FontWeight.w600,
+            style: WebTextStyles.formInput(
+              isDarkTheme: theme.isDarkMode,
+              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
             ),
             textCtrl: orderInput.val2Ctrl,
             textAlign: TextAlign.start,
@@ -644,24 +727,27 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              TextWidget.subText(
-                text: "Qty",
-                theme: theme.isDarkMode,
-                color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                fw: 0,
+              Text(
+                "Qty",
+                style: WebTextStyles.formLabel(
+                  isDarkTheme: theme.isDarkMode,
+                  color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                ),
               ),
               const SizedBox(height: 8),
               SizedBox(
-                height: 50,
+                height: 40,
                 child: CustomTextFormField(
-                  fillColor: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
+                  fillColor: theme.isDarkMode ? WebDarkColors.backgroundTertiary : WebColors.backgroundTertiary,
                   hintText: orderInput.ocoQtyCtrl.text,
-                  hintStyle: textStyle(const Color(0xff666666), 15, FontWeight.w400),
+                  hintStyle: WebTextStyles.helperText(
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
+                  ),
                   inputFormate: [FilteringTextInputFormatter.digitsOnly],
-                  style: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    16,
-                    FontWeight.w600,
+                  style: WebTextStyles.formInput(
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
                   ),
                   textCtrl: orderInput.ocoQtyCtrl,
                   textAlign: TextAlign.start,
@@ -693,31 +779,38 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
             children: [
               Row(
                 children: [
-                  TextWidget.subText(
-                    text: "Price",
-                    theme: theme.isDarkMode,
-                    color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                    fw: 0,
+                  Text(
+                    "Price",
+                    style: WebTextStyles.formLabel(
+                      isDarkTheme: theme.isDarkMode,
+                      color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                    ),
                   ),
                   const SizedBox(width: 4),
                   Text(
                     "${orderInput.actOcoPrcType}",
-                    style: textStyle(const Color(0xff777777), 14, FontWeight.w600),
+                    style: WebTextStyles.sub(
+                      isDarkTheme: theme.isDarkMode,
+                      color: theme.isDarkMode ? WebDarkColors.icon : WebColors.icon,
+                      fontWeight: WebFonts.semiBold,
+                    ),
                   ),
                 ],
               ),
               const SizedBox(height: 8),
               SizedBox(
-                height: 50,
+                height: 40,
                 child: CustomTextFormField(
-                  fillColor: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
+                  fillColor: theme.isDarkMode ? WebDarkColors.backgroundTertiary : WebColors.backgroundTertiary,
                   onChanged: (value) {},
                   hintText: "${widget.gttOrderBook.placeOrderParamsLeg2!.prc}",
-                  hintStyle: textStyle(const Color(0xff666666), 15, FontWeight.w400),
-                  style: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    16,
-                    FontWeight.w600,
+                  hintStyle: WebTextStyles.helperText(
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
+                  ),
+                  style: WebTextStyles.formInput(
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
                   ),
                   isReadable: orderInput.actOcoPrcType == "Limit" ||
                       orderInput.actOcoPrcType == "SL Limit"
@@ -759,17 +852,17 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
     final internet = ref.watch(networkStateProvider);
     
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         border: Border(
           top: BorderSide(
-            color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+            color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
           ),
         ),
       ),
       child: SizedBox(
         width: double.infinity,
-        height: 50,
+        height: 40,
         child: ElevatedButton(
           onPressed: internet.connectionStatus == ConnectivityResult.none ||
               ref.read(orderProvider).loading
@@ -823,8 +916,10 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                 },
           style: ElevatedButton.styleFrom(
             padding: const EdgeInsets.symmetric(vertical: 10),
-            backgroundColor: isBuy! ? colors.primary : colors.tertiary,
-            minimumSize: const Size(double.infinity, 50),
+            backgroundColor: isBuy! 
+                ? (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary)
+                : (theme.isDarkMode ? WebDarkColors.tertiary : WebColors.tertiary),
+            minimumSize: const Size(double.infinity, 40),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(5),
             ),
@@ -838,11 +933,13 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                     color: Color(0xff666666),
                   ),
                 )
-              : TextWidget.subText(
-                  text: "Modify",
-                  theme: theme.isDarkMode,
-                  color: colors.colorWhite,
-                  fw: 2,
+              : Text(
+                  "Modify",
+                  style: WebTextStyles.buttonMd(
+                    isDarkTheme: theme.isDarkMode,
+                    color: WebColors.background,
+                    fontWeight: WebFonts.bold,
+                  ),
                 ),
         ),
       ),
@@ -868,7 +965,25 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
           : "",
       alid: '${widget.gttOrderBook.alId}',
     );
-    await ref.read(orderProvider).modifyGTTOrder(input, context);
+    
+    // Get the result before calling modify
+    final orderProv = ref.read(orderProvider);
+    
+    // Close the draggable dialog callback (get it before the async call)
+    final closeNotifier = _ModifyGttDialogCloseNotifier.of(context);
+    
+    await orderProv.modifyGTTOrder(input, context);
+    
+    // Check if modification was successful by checking the model
+    final modifyResult = orderProv.modifyGttOrderModel;
+    final wasSuccessful = modifyResult?.stat == "OI replaced";
+    
+    // Close the draggable dialog immediately if modification was successful
+    // Close right away to prevent user from seeing cleared fields
+    if (wasSuccessful && closeNotifier != null && mounted) {
+      // Close immediately - don't wait
+      closeNotifier.onClose();
+    }
   }
 
   prepareToModifyOCOOrder(OrderInputProvider orderInput) async {
@@ -897,12 +1012,127 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
           : "",
       alid: '${widget.gttOrderBook.alId}',
     );
-    await ref.read(orderProvider).modifyOCOOrder(input, context);
+    
+    // Get the result before calling modify
+    final orderProv = ref.read(orderProvider);
+    
+    // Close the draggable dialog callback (get it before the async call)
+    final closeNotifier = _ModifyGttDialogCloseNotifier.of(context);
+    
+    await orderProv.modifyOCOOrder(input, context);
+    
+    // Check if modification was successful by checking the model
+    final modifyResult = orderProv.modifyGttOrderModel;
+    final wasSuccessful = modifyResult?.stat == "OI replaced";
+    
+    // Close the draggable dialog immediately if modification was successful
+    // Close right away to prevent user from seeing cleared fields
+    if (wasSuccessful && closeNotifier != null && mounted) {
+      // Close immediately - don't wait
+      closeNotifier.onClose();
+    }
   }
 
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-      textStyle: TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize),
+}
+
+// Draggable Modify GTT Dialog Widget
+class _DraggableModifyGttDialog extends ConsumerStatefulWidget {
+  final GttOrderBookModel gttOrderBook;
+  final ScripInfoModel scripInfo;
+  final Offset initialPosition;
+  final Function(Offset) onPositionChanged;
+  final VoidCallback onClose;
+
+  const _DraggableModifyGttDialog({
+    required this.gttOrderBook,
+    required this.scripInfo,
+    required this.initialPosition,
+    required this.onPositionChanged,
+    required this.onClose,
+  });
+
+  @override
+  ConsumerState<_DraggableModifyGttDialog> createState() => _DraggableModifyGttDialogState();
+}
+
+class _DraggableModifyGttDialogState extends ConsumerState<_DraggableModifyGttDialog> {
+  late Offset _position;
+  bool _isDragging = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _position = widget.initialPosition;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = ref.watch(themeProvider);
+    final screenSize = MediaQuery.of(context).size;
+
+    // Constrain position to screen bounds
+    final dialogWidth = 400.0;
+    final dialogHeight = screenSize.height * 0.5;
+    final constrainedPosition = Offset(
+      _position.dx.clamp(0, screenSize.width - dialogWidth),
+      _position.dy.clamp(0, screenSize.height - dialogHeight),
+    );
+
+    return Stack(
+      children: [
+        // Actual dialog
+        Positioned(
+          left: constrainedPosition.dx,
+          top: constrainedPosition.dy,
+          child: GestureDetector(
+            onTap: () {}, // Prevent tap from propagating to background
+            child: Material(
+              elevation: _isDragging ? 16 : 8,
+              borderRadius: BorderRadius.circular(5),
+              color: theme.isDarkMode ? WebDarkColors.background : WebColors.background,
+              child: Container(
+                width: dialogWidth,
+                height: dialogHeight,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(5),
+                  border: Border.all(
+                    color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
+                  ),
+                ),
+                child: _ModifyGttDialogCloseNotifier(
+                  onClose: widget.onClose,
+                  child: _ModifyGttDialogDragNotifier(
+                    onPanStart: (details) {
+                      setState(() {
+                        _isDragging = true;
+                      });
+                    },
+                    onPanUpdate: (details) {
+                      setState(() {
+                        _position = Offset(
+                          _position.dx + details.delta.dx,
+                          _position.dy + details.delta.dy,
+                        );
+                      });
+                      widget.onPositionChanged(_position);
+                    },
+                    onPanEnd: (details) {
+                      setState(() {
+                        _isDragging = false;
+                      });
+                    },
+                    isDragging: _isDragging,
+                    child: ModifyGttWeb(
+                      gttOrderBook: widget.gttOrderBook,
+                      scripInfo: widget.scripInfo,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
