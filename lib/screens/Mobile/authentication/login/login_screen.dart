@@ -392,6 +392,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                                       textCapitalization:
                                                           TextCapitalization
                                                               .characters,
+                                                      textInputAction: TextInputAction.next,
                                                       inputFormatters: [
                                                         UpperCaseTextFormatter(),
                                                         FilteringTextInputFormatter
@@ -510,6 +511,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                                         auth.validateLogin();
                                                         auth.activeBtnLogin();
                                                       },
+                                                      onFieldSubmitted: (_) {
+                                                        FocusScope.of(context).requestFocus(focusNode1);
+                                                      },
                                                     ),
                                                     const SizedBox(height: 5),
                                                     Row(
@@ -554,6 +558,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                             readOnly:
                                                 (_isProcessing || auth.loading),
                                             textAlign: TextAlign.start,
+                                            textInputAction: TextInputAction.done,
                                             style: TextWidget.textStyle(
                                               fontSize: 16,
                                               theme: theme.isDarkMode,
@@ -663,6 +668,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                             onChanged: (v) {
                                               auth.validatePass();
                                               auth.activeBtnLogin();
+                                            },
+                                            onFieldSubmitted: (_) {
+                                              if (!_isProcessing && !auth.loading) {
+                                                _handleContinue();
+                                              }
                                             },
                                           ),
                                           const SizedBox(height: 5),

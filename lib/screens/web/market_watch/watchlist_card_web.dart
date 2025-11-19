@@ -198,34 +198,23 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.start,
                             children: [
-                              Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 4, vertical: 2),
-                                          margin: const EdgeInsets.only(right: 8),
-                                      decoration: BoxDecoration(
-                                        color: theme.isDarkMode
-                                            ? WebDarkColors.primary
-                                            : WebColors.primary
-                                                .withOpacity(0.9),
-                                        borderRadius: BorderRadius.circular(5),
-                                      ),
-                                      child: Text(
-                                      '${widget.watchListData["exch"]}',
-
-                                        style: WebTextStyles.exchText(
-                                            isDarkTheme: theme.isDarkMode,
-                                            color: WebDarkColors.textPrimary),
-                                      ),
-                                    ),
+                              Text(
+                              '${widget.watchListData["exch"]} ',
+                              
+                                style: WebTextStyles.exchText(
+                                    isDarkTheme: theme.isDarkMode,
+                                    color: WebColors.textPrimary),
+                              ),
                             
                               if (widget.watchListData['expDate'].toString().isNotEmpty)
                                 Text(
                                   "${widget.watchListData['expDate']}",
-                                  style: WebTextStyles.symbolList(
+                                  style: WebTextStyles.para(
                                     isDarkTheme: theme.isDarkMode,
                                     color: theme.isDarkMode
                                         ? WebDarkColors.textSecondary
                                         : WebColors.textSecondary,
+                                    fontWeight: WebFonts.medium,
                                   ),
                                 ),
                               if (widget.watchListData['holdingQty'] != null &&

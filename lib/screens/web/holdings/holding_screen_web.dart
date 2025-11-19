@@ -53,15 +53,17 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
     _horizontalScrollController.dispose();
     _verticalScrollController.dispose();
     _tabScrollController.dispose();
-    
+
     // Close WebSocket connection when screen is disposed
     try {
-      ProviderScope.containerOf(context).read(websocketProvider).closeSocket(false);
+      ProviderScope.containerOf(context)
+          .read(websocketProvider)
+          .closeSocket(false);
     } catch (e) {
       // Context might not be available during disposal, ignore error
       print('WebSocket close error during disposal: $e');
     }
-    
+
     super.dispose();
   }
 
@@ -128,7 +130,7 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
                   // Summary Cards Section
                   _buildSummaryCards(theme, portfolioData, _selectedTabIndex),
                   const SizedBox(height: 24),
-      
+
                   // Main Content Area
                   _buildMainContent(theme, portfolioData),
                 ],
@@ -160,7 +162,9 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
       height: 120,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-       color: theme.isDarkMode ? WebDarkColors.backgroundSecondary : WebColors.backgroundSecondary.withOpacity(0.3),
+        color: theme.isDarkMode
+            ? WebDarkColors.backgroundSecondary
+            : WebColors.backgroundSecondary.withOpacity(0.3),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
           color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
@@ -175,12 +179,11 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
         // ],
       ),
       child: Column(
-         mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Row(
             children: [
-
-               Expanded(
+              Expanded(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.end,
@@ -192,7 +195,9 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
                           'Profit/Loss',
                           style: WebTextStyles.sub(
                             isDarkTheme: theme.isDarkMode,
-                            color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
+                            color: theme.isDarkMode
+                                ? WebDarkColors.textSecondary
+                                : WebColors.textSecondary,
                             fontWeight: WebFonts.semiBold,
                           ),
                         ),
@@ -248,7 +253,9 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
                           'Day Change',
                           style: WebTextStyles.sub(
                             isDarkTheme: theme.isDarkMode,
-                            color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
+                            color: theme.isDarkMode
+                                ? WebDarkColors.textSecondary
+                                : WebColors.textSecondary,
                             fontWeight: WebFonts.semiBold,
                           ),
                         ),
@@ -291,7 +298,6 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
                 ),
               ),
               // _buildDivider(theme),
-             
             ],
           ),
           // const SizedBox(height: 20),
@@ -329,12 +335,15 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
           height: 120,
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: theme.isDarkMode ? WebDarkColors.backgroundSecondary : WebColors.backgroundSecondary.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
-          width: 1,
-        ),
+            color: theme.isDarkMode
+                ? WebDarkColors.backgroundSecondary
+                : WebColors.backgroundSecondary.withOpacity(0.3),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color:
+                  theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
+              width: 1,
+            ),
             // boxShadow: [
             //   BoxShadow(
             //     color: Colors.black.withOpacity(0.05),
@@ -413,7 +422,9 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
           label,
           style: WebTextStyles.sub(
             isDarkTheme: theme.isDarkMode,
-            color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
+            color: theme.isDarkMode
+                ? WebDarkColors.textSecondary
+                : WebColors.textSecondary,
             fontWeight: WebFonts.semiBold,
           ),
         ),
@@ -463,8 +474,8 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
     return Container(
       decoration: BoxDecoration(
         color: theme.isDarkMode
-            ? WebColors.textPrimary :
-             WebDarkColors.textPrimary,
+            ? WebColors.textPrimary
+            : WebDarkColors.textPrimary,
         // borderRadius: BorderRadius.circular(8),
         // border: Border.all(
         //   color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
@@ -493,7 +504,8 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
     );
   }
 
-  Widget _buildTabsAndActionBar(ThemesProvider theme, PortfolioProvider portfolioData) {
+  Widget _buildTabsAndActionBar(
+      ThemesProvider theme, PortfolioProvider portfolioData) {
     final stocksCount = _getStocksCount(portfolioData);
     final mutualFundsCount = _getMutualFundsCount(portfolioData);
 
@@ -509,7 +521,8 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
       child: Row(
         children: [
           // Segmented Control Tabs on the left
-          _buildSegmentedControl(theme, portfolioData, stocksCount, mutualFundsCount),
+          _buildSegmentedControl(
+              theme, portfolioData, stocksCount, mutualFundsCount),
           // Spacer to push action items to the right
           const Spacer(),
           // Search Bar - Show different search based on selected tab
@@ -520,10 +533,14 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
               child: Container(
                 height: 40,
                 decoration: BoxDecoration(
-                  color: theme.isDarkMode ? WebDarkColors.inputBackground : WebColors.inputBackground,
+                  color: theme.isDarkMode
+                      ? WebDarkColors.inputBackground
+                      : WebColors.inputBackground,
                   borderRadius: BorderRadius.circular(5),
                   border: Border.all(
-                    color: theme.isDarkMode ? WebDarkColors.inputBorder : WebColors.inputBorder,
+                    color: theme.isDarkMode
+                        ? WebDarkColors.inputBorder
+                        : WebColors.inputBorder,
                     width: 1,
                   ),
                 ),
@@ -555,8 +572,8 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
                       ),
                     ),
                     border: InputBorder.none,
-                    contentPadding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 12),
                   ),
                 ),
               ),
@@ -569,10 +586,14 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
               child: Container(
                 height: 40,
                 decoration: BoxDecoration(
-                  color: theme.isDarkMode ? WebDarkColors.inputBackground : WebColors.inputBackground,
+                  color: theme.isDarkMode
+                      ? WebDarkColors.inputBackground
+                      : WebColors.inputBackground,
                   borderRadius: BorderRadius.circular(5),
                   border: Border.all(
-                    color: theme.isDarkMode ? WebDarkColors.inputBorder : WebColors.inputBorder,
+                    color: theme.isDarkMode
+                        ? WebDarkColors.inputBorder
+                        : WebColors.inputBorder,
                     width: 1,
                   ),
                 ),
@@ -604,8 +625,8 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
                       ),
                     ),
                     border: InputBorder.none,
-                    contentPadding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 12),
                   ),
                 ),
               ),
@@ -649,7 +670,8 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
     );
   }
 
-  Widget _buildSegmentedControl(ThemesProvider theme, PortfolioProvider portfolioData, int stocksCount, int mutualFundsCount) {
+  Widget _buildSegmentedControl(ThemesProvider theme,
+      PortfolioProvider portfolioData, int stocksCount, int mutualFundsCount) {
     final tabs = [
       'Stocks ($stocksCount)',
       'Mutual Funds ($mutualFundsCount)',
@@ -766,14 +788,10 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
           width: 22,
           height: 22,
           decoration: BoxDecoration(
-            color: theme.isDarkMode
-                ? WebDarkColors.surface
-                : WebColors.surface,
+            color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
             shape: BoxShape.circle,
             border: Border.all(
-              color: theme.isDarkMode
-                  ? WebDarkColors.border
-                  : WebColors.border,
+              color: theme.isDarkMode ? WebDarkColors.border : WebColors.border,
               width: 1,
             ),
           ),
@@ -795,8 +813,8 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
     if (!_tabScrollController.hasClients) return;
 
     final currentOffset = _tabScrollController.offset;
-    final newOffset = (currentOffset - 200).clamp(
-        0.0, _tabScrollController.position.maxScrollExtent);
+    final newOffset = (currentOffset - 200)
+        .clamp(0.0, _tabScrollController.position.maxScrollExtent);
 
     _tabScrollController.animateTo(
       newOffset,
@@ -809,8 +827,8 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
     if (!_tabScrollController.hasClients) return;
 
     final currentOffset = _tabScrollController.offset;
-    final newOffset = (currentOffset + 200).clamp(
-        0.0, _tabScrollController.position.maxScrollExtent);
+    final newOffset = (currentOffset + 200)
+        .clamp(0.0, _tabScrollController.position.maxScrollExtent);
 
     _tabScrollController.animateTo(
       newOffset,
@@ -842,122 +860,171 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
               scrollDirection: Axis.vertical,
               physics: const AlwaysScrollableScrollPhysics(),
               child: Padding(
-                padding: const EdgeInsets.only(right: 16), // Space for vertical scrollbar
+                padding: const EdgeInsets.only(
+                    right: 16), // Space for vertical scrollbar
                 child: SizedBox(
                   width: constraints.maxWidth,
                   child: Padding(
                     padding: const EdgeInsets.only(bottom: 16),
-                    child: DataTable(
-                columnSpacing: 10,
-                horizontalMargin: 0,
-                showCheckboxColumn: false,
-                sortColumnIndex: _sortColumnIndex,
-                sortAscending: _sortAscending,
-                headingRowHeight: 44,
-                headingRowColor: WidgetStateProperty.all(Colors.transparent),
-                dataRowColor: WidgetStateProperty.resolveWith<Color?>(
-                  (Set<WidgetState> states) {
-                    if (states.contains(WidgetState.hovered)) {
-                      return (theme.isDarkMode
-                              ? WebDarkColors.primary
-                              : WebColors.primary)
-                          .withOpacity(0.15);
-                    }
-                    if (states.contains(WidgetState.selected)) {
-                      return (theme.isDarkMode
-                              ? WebDarkColors.primary
-                              : WebColors.primary)
-                          .withOpacity(0.1);
-                    }
-                    return null;
-                  },
-                ),
-                columns: [
-                  DataColumn(
-                    numeric: false, // Left-align text column
-                    label: _buildSortableColumnHeader('Instrument', theme, 0),
-                    onSort: (columnIndex, ascending) =>
-                        _onSortTable(columnIndex, ascending),
-                  ),
-                  DataColumn(
-                    numeric: true, // Right-align numeric column
-                    label: _buildSortableColumnHeader('Net Qty', theme, 1),
-                    onSort: (columnIndex, ascending) =>
-                        _onSortTable(columnIndex, ascending),
-                  ),
-                  DataColumn(
-                    numeric: true, // Right-align numeric column
-                    label: _buildSortableColumnHeader('Avg Price', theme, 2),
-                    onSort: (columnIndex, ascending) =>
-                        _onSortTable(columnIndex, ascending),
-                  ),
-                  DataColumn(
-                    numeric: true, // Right-align numeric column
-                    label: _buildSortableColumnHeader('LTP', theme, 3),
-                    onSort: (columnIndex, ascending) =>
-                        _onSortTable(columnIndex, ascending),
-                  ),
-                  DataColumn(
-                    numeric: true, // Right-align numeric column
-                    label: _buildSortableColumnHeader('Invested', theme, 4),
-                    onSort: (columnIndex, ascending) =>
-                        _onSortTable(columnIndex, ascending),
-                  ),
-                  DataColumn(
-                    numeric: true, // Right-align numeric column
-                    label: _buildSortableColumnHeader('Current Value', theme, 5),
-                    onSort: (columnIndex, ascending) =>
-                        _onSortTable(columnIndex, ascending),
-                  ),
-                  DataColumn(
-                    numeric: true, // Right-align numeric column
-                    label: _buildSortableColumnHeader('Day P&L', theme, 6),
-                    onSort: (columnIndex, ascending) =>
-                        _onSortTable(columnIndex, ascending),
-                  ),
-                  DataColumn(
-                    numeric: true, // Right-align numeric column
-                    label: _buildSortableColumnHeader('Day %', theme, 7),
-                    onSort: (columnIndex, ascending) =>
-                        _onSortTable(columnIndex, ascending),
-                  ),
-                  DataColumn(
-                    numeric: true, // Right-align numeric column
-                    label: _buildSortableColumnHeader('Overall P&L', theme, 8),
-                    onSort: (columnIndex, ascending) =>
-                        _onSortTable(columnIndex, ascending),
-                  ),
-                  DataColumn(
-                    numeric: true, // Right-align numeric column
-                    label: _buildSortableColumnHeader('Overall %', theme, 9),
-                    onSort: (columnIndex, ascending) =>
-                        _onSortTable(columnIndex, ascending),
-                  ),
-                ],
-                rows: filteredHoldings.map((holding) {
-                  final exchTsym = holding.exchTsym != null && holding.exchTsym!.isNotEmpty
-                      ? holding.exchTsym![0]
-                      : null;
-                  final token = exchTsym?.token ?? '';
-                  
-                  return DataRow(
-                    onSelectChanged: (bool? selected) {
-                      _showHoldingDetail(holding);
-                    },
-                    cells: [
-                      _buildInstrumentCellWithHover(holding, theme, token),
-                      _buildCellWithHover(holding, theme, token, _buildNetQtyCell(holding, theme)),
-                      _buildCellWithHover(holding, theme, token, _buildAvgPriceCell(holding, theme)),
-                      _buildCellWithHover(holding, theme, token, _buildLTPCell(holding, theme)),
-                      _buildCellWithHover(holding, theme, token, _buildInvestedCell(holding, theme)),
-                      _buildCellWithHover(holding, theme, token, _buildCurrentValueCell(holding, theme)),
-                      _buildCellWithHover(holding, theme, token, _buildDayPnLCell(holding, theme)),
-                      _buildCellWithHover(holding, theme, token, _buildDayPercentCell(holding, theme)),
-                      _buildCellWithHover(holding, theme, token, _buildOverallPnLCell(holding, theme)),
-                      _buildCellWithHover(holding, theme, token, _buildOverallPercentCell(holding, theme)),
-                    ],
-                  );
-                }).toList(),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: theme.isDarkMode
+                            ? WebDarkColors.cardBackground
+                            : WebColors.cardBackground,
+                        border: Border.all(
+                          color: theme.isDarkMode
+                              ? WebDarkColors.border
+                              : WebColors.border,
+                          width: 1,
+                        ),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: DataTable(
+                        columnSpacing: 20,
+                        horizontalMargin: 16,
+                        showCheckboxColumn: false,
+                        sortColumnIndex: _sortColumnIndex,
+                        sortAscending: _sortAscending,
+                        headingRowHeight: 40,
+                        dataRowMinHeight: 40,
+                        dataRowMaxHeight: 40,
+                        headingRowColor: WidgetStateProperty.all(
+                          theme.isDarkMode
+                              ? WebDarkColors.primary.withOpacity(0.1)
+                              : WebColors.primary.withOpacity(0.05),
+                        ),
+                        border: TableBorder(
+                          horizontalInside: BorderSide(
+                            color: theme.isDarkMode
+                                ? WebDarkColors.border.withOpacity(0.5)
+                                : WebColors.border.withOpacity(0.5),
+                            width: 0.5,
+                          ),
+                          bottom: BorderSide(
+                            color: theme.isDarkMode
+                                ? WebDarkColors.border
+                                : WebColors.border,
+                            width: 1,
+                          ),
+                        ),
+                        dataRowColor: WidgetStateProperty.resolveWith<Color?>(
+                          (Set<WidgetState> states) {
+                            if (states.contains(WidgetState.hovered)) {
+                              return (theme.isDarkMode
+                                      ? WebDarkColors.primary
+                                      : WebColors.primary)
+                                  .withOpacity(0.08);
+                            }
+                            return null;
+                          },
+                        ),
+                        columns: [
+                          DataColumn(
+                            numeric: false, // Left-align text column
+                            label: _buildSortableColumnHeader(
+                                'Instrument', theme, 0),
+                            onSort: (columnIndex, ascending) =>
+                                _onSortTable(columnIndex, ascending),
+                          ),
+                          DataColumn(
+                            numeric: true, // Right-align numeric column
+                            label:
+                                _buildSortableColumnHeader('Net Qty', theme, 1),
+                            onSort: (columnIndex, ascending) =>
+                                _onSortTable(columnIndex, ascending),
+                          ),
+                          DataColumn(
+                            numeric: true, // Right-align numeric column
+                            label: _buildSortableColumnHeader(
+                                'Avg Price', theme, 2),
+                            onSort: (columnIndex, ascending) =>
+                                _onSortTable(columnIndex, ascending),
+                          ),
+                          DataColumn(
+                            numeric: true, // Right-align numeric column
+                            label: _buildSortableColumnHeader('LTP', theme, 3),
+                            onSort: (columnIndex, ascending) =>
+                                _onSortTable(columnIndex, ascending),
+                          ),
+                          DataColumn(
+                            numeric: true, // Right-align numeric column
+                            label: _buildSortableColumnHeader(
+                                'Invested', theme, 4),
+                            onSort: (columnIndex, ascending) =>
+                                _onSortTable(columnIndex, ascending),
+                          ),
+                          DataColumn(
+                            numeric: true, // Right-align numeric column
+                            label: _buildSortableColumnHeader(
+                                'Current Value', theme, 5),
+                            onSort: (columnIndex, ascending) =>
+                                _onSortTable(columnIndex, ascending),
+                          ),
+                          DataColumn(
+                            numeric: true, // Right-align numeric column
+                            label:
+                                _buildSortableColumnHeader('Day P&L', theme, 6),
+                            onSort: (columnIndex, ascending) =>
+                                _onSortTable(columnIndex, ascending),
+                          ),
+                          DataColumn(
+                            numeric: true, // Right-align numeric column
+                            label:
+                                _buildSortableColumnHeader('Day %', theme, 7),
+                            onSort: (columnIndex, ascending) =>
+                                _onSortTable(columnIndex, ascending),
+                          ),
+                          DataColumn(
+                            numeric: true, // Right-align numeric column
+                            label: _buildSortableColumnHeader(
+                                'Overall P&L', theme, 8),
+                            onSort: (columnIndex, ascending) =>
+                                _onSortTable(columnIndex, ascending),
+                          ),
+                          DataColumn(
+                            numeric: true, // Right-align numeric column
+                            label: _buildSortableColumnHeader(
+                                'Overall %', theme, 9),
+                            onSort: (columnIndex, ascending) =>
+                                _onSortTable(columnIndex, ascending),
+                          ),
+                        ],
+                        rows: filteredHoldings.map((holding) {
+                          final exchTsym = holding.exchTsym != null &&
+                                  holding.exchTsym!.isNotEmpty
+                              ? holding.exchTsym![0]
+                              : null;
+                          final token = exchTsym?.token ?? '';
+
+                          return DataRow(
+                            onSelectChanged: (bool? selected) {
+                              _showHoldingDetail(holding);
+                            },
+                            cells: [
+                              _buildInstrumentCellWithHover(
+                                  holding, theme, token),
+                              _buildCellWithHover(holding, theme, token,
+                                  _buildNetQtyCell(holding, theme)),
+                              _buildCellWithHover(holding, theme, token,
+                                  _buildAvgPriceCell(holding, theme)),
+                              _buildCellWithHover(holding, theme, token,
+                                  _buildLTPCell(holding, theme)),
+                              _buildCellWithHover(holding, theme, token,
+                                  _buildInvestedCell(holding, theme)),
+                              _buildCellWithHover(holding, theme, token,
+                                  _buildCurrentValueCell(holding, theme)),
+                              _buildCellWithHover(holding, theme, token,
+                                  _buildDayPnLCell(holding, theme)),
+                              _buildCellWithHover(holding, theme, token,
+                                  _buildDayPercentCell(holding, theme)),
+                              _buildCellWithHover(holding, theme, token,
+                                  _buildOverallPnLCell(holding, theme)),
+                              _buildCellWithHover(holding, theme, token,
+                                  _buildOverallPercentCell(holding, theme)),
+                            ],
+                          );
+                        }).toList(),
+                      ),
                     ),
                   ),
                 ),
@@ -969,20 +1036,24 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
     );
   }
 
-  DataCell _buildInstrumentCellWithHover(dynamic holding, ThemesProvider theme, String token) {
+  DataCell _buildInstrumentCellWithHover(
+      dynamic holding, ThemesProvider theme, String token) {
     final exchTsym = holding.exchTsym != null && holding.exchTsym!.isNotEmpty
         ? holding.exchTsym![0]
         : null;
 
-    if (exchTsym == null) return DataCell(
-      Text(
-        'N/A',
-        style: WebTextStyles.tableDataCompact(
-          isDarkTheme: theme.isDarkMode,
-          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+    if (exchTsym == null)
+      return DataCell(
+        Text(
+          'N/A',
+          style: WebTextStyles.tableDataCompact(
+            isDarkTheme: theme.isDarkMode,
+            color: theme.isDarkMode
+                ? WebDarkColors.textPrimary
+                : WebColors.textPrimary,
+          ),
         ),
-      ),
-    );
+      );
 
     final holdingToken = exchTsym.token ?? '';
     final isHovered = _hoveredRowToken == holdingToken;
@@ -997,7 +1068,9 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
             children: [
               // Text that takes at least 50% of width, leaves space for buttons
               Expanded(
-                flex: isHovered ? 1 : 2, // When hovered, text takes less space but still visible
+                flex: isHovered
+                    ? 1
+                    : 2, // When hovered, text takes less space but still visible
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: Tooltip(
@@ -1048,7 +1121,8 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
                               ? WebDarkColors.tertiary
                               : WebColors.tertiary,
                           onPressed: () async {
-                            await _handleExitHolding(context, holding, exchTsym);
+                            await _handleExitHolding(
+                                context, holding, exchTsym);
                           },
                           theme: theme,
                         ),
@@ -1088,7 +1162,8 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
     );
   }
 
-  DataCell _buildCellWithHover(dynamic holding, ThemesProvider theme, String token, DataCell cell) {
+  DataCell _buildCellWithHover(
+      dynamic holding, ThemesProvider theme, String token, DataCell cell) {
     // Wrap the cell's child with MouseRegion to detect hover anywhere on the row
     // Use SizedBox.expand to fill the entire cell area, not just the text content
     return DataCell(
@@ -1110,15 +1185,18 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
         ? holding.exchTsym![0]
         : null;
 
-    if (exchTsym == null) return DataCell(
-      Text(
-        'N/A',
-        style: WebTextStyles.tableDataCompact(
-          isDarkTheme: theme.isDarkMode,
-          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+    if (exchTsym == null)
+      return DataCell(
+        Text(
+          'N/A',
+          style: WebTextStyles.tableDataCompact(
+            isDarkTheme: theme.isDarkMode,
+            color: theme.isDarkMode
+                ? WebDarkColors.textPrimary
+                : WebColors.textPrimary,
+          ),
         ),
-      ),
-    );
+      );
 
     return DataCell(
       Text(
@@ -1144,7 +1222,7 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
         style: WebTextStyles.tableDataCompact(
           isDarkTheme: theme.isDarkMode,
           color: _getQtyColor(qty, theme),
-        ),
+        ).copyWith(fontWeight: FontWeight.w600),
       ),
     );
   }
@@ -1162,7 +1240,7 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
           color: theme.isDarkMode
               ? WebDarkColors.textPrimary
               : WebColors.textPrimary,
-        ),
+        ).copyWith(fontWeight: FontWeight.w600),
       ),
     );
   }
@@ -1180,7 +1258,7 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
           color: theme.isDarkMode
               ? WebDarkColors.textPrimary
               : WebColors.textPrimary,
-        ),
+        ).copyWith(fontWeight: FontWeight.w600),
       ),
     );
   }
@@ -1194,7 +1272,7 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
           color: theme.isDarkMode
               ? WebDarkColors.textPrimary
               : WebColors.textPrimary,
-        ),
+        ).copyWith(fontWeight: FontWeight.w600),
       ),
     );
   }
@@ -1208,7 +1286,7 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
           color: theme.isDarkMode
               ? WebDarkColors.textPrimary
               : WebColors.textPrimary,
-        ),
+        ).copyWith(fontWeight: FontWeight.w600),
       ),
     );
   }
@@ -1226,7 +1304,7 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
         style: WebTextStyles.tableDataCompact(
           isDarkTheme: theme.isDarkMode,
           color: _getValueColor(dayPnL, theme),
-        ),
+        ).copyWith(fontWeight: FontWeight.w600),
       ),
     );
   }
@@ -1244,7 +1322,7 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
         style: WebTextStyles.tableDataCompact(
           isDarkTheme: theme.isDarkMode,
           color: _getValueColor(dayPercent, theme),
-        ),
+        ).copyWith(fontWeight: FontWeight.w600),
       ),
     );
   }
@@ -1262,7 +1340,7 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
         style: WebTextStyles.tableDataCompact(
           isDarkTheme: theme.isDarkMode,
           color: _getValueColor(overallPnL, theme),
-        ),
+        ).copyWith(fontWeight: FontWeight.w600),
       ),
     );
   }
@@ -1280,7 +1358,7 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
         style: WebTextStyles.tableDataCompact(
           isDarkTheme: theme.isDarkMode,
           color: _getValueColor(overallPercent, theme),
-        ),
+        ).copyWith(fontWeight: FontWeight.w600),
       ),
     );
   }
@@ -1540,11 +1618,15 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
   Color _getValueColor(String value, ThemesProvider theme) {
     final numValue = double.tryParse(value) ?? 0.0;
     if (numValue > 0) {
-      return theme.isDarkMode ? WebDarkColors.success : WebColors.success; // Green
+      return theme.isDarkMode
+          ? WebDarkColors.success
+          : WebColors.success; // Green
     } else if (numValue < 0) {
       return theme.isDarkMode ? WebDarkColors.error : WebColors.error; // Red
     } else {
-      return theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary; // Grey
+      return theme.isDarkMode
+          ? WebDarkColors.textSecondary
+          : WebColors.textSecondary; // Grey
     }
   }
 
@@ -1613,9 +1695,10 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
     });
   }
 
-  Widget _buildSortableColumnHeader(String label, ThemesProvider theme, int columnIndex) {
+  Widget _buildSortableColumnHeader(
+      String label, ThemesProvider theme, int columnIndex) {
     final isSorted = _sortColumnIndex == columnIndex;
-    
+
     return Row(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -1635,13 +1718,16 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
         SizedBox(
           width: 20, // Fixed width to prevent layout shift
           height: 16,
-          child: !isSorted 
+          child: !isSorted
               ? Icon(
                   Icons.unfold_more,
                   size: 16,
-                  color: theme.isDarkMode ? WebDarkColors.iconSecondary : WebColors.iconSecondary,
+                  color: theme.isDarkMode
+                      ? WebDarkColors.iconSecondary
+                      : WebColors.iconSecondary,
                 )
-              : const SizedBox.shrink(), // Hide when sorted, DataTable will show its indicator
+              : const SizedBox
+                  .shrink(), // Hide when sorted, DataTable will show its indicator
         ),
       ],
     );
@@ -1687,7 +1773,8 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
           highlightColor: color.withOpacity(0.08),
           onTap: onPressed,
           child: Container(
-            padding: isLongLabel ? const EdgeInsets.symmetric(horizontal: 8) : null,
+            padding:
+                isLongLabel ? const EdgeInsets.symmetric(horizontal: 8) : null,
             decoration: BoxDecoration(
               color: backgroundColor ?? Colors.transparent,
               borderRadius: BorderRadius.circular(borderRadiusValue),
@@ -1720,9 +1807,10 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
     );
   }
 
-  Future<void> _handleChartTap(BuildContext context, dynamic holding, dynamic exchTsym) async {
+  Future<void> _handleChartTap(
+      BuildContext context, dynamic holding, dynamic exchTsym) async {
     final scripData = ref.read(marketWatchProvider);
-    
+
     await scripData.fetchScripQuoteIndex(
       exchTsym.token ?? "",
       exchTsym.exch ?? "",
@@ -1744,10 +1832,11 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
     }
   }
 
-  Future<void> _handlePlaceOrder(BuildContext context, dynamic holding, dynamic exchTsym, bool isBuy) async {
+  Future<void> _handlePlaceOrder(BuildContext context, dynamic holding,
+      dynamic exchTsym, bool isBuy) async {
     try {
       final scripData = ref.read(marketWatchProvider);
-      
+
       // Fetch scrip info first
       await scripData.fetchScripInfo(
         exchTsym.token ?? "",
@@ -1755,15 +1844,16 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
         context,
         true,
       );
-      
+
       if (scripData.scripInfoModel == null) {
-        showResponsiveWarningMessage(context, "Unable to fetch scrip information");
+        showResponsiveWarningMessage(
+            context, "Unable to fetch scrip information");
         return;
       }
-      
+
       final scripInfo = scripData.scripInfoModel!;
       final lotSize = scripInfo.ls?.toString() ?? "1";
-      
+
       OrderScreenArgs orderArgs = OrderScreenArgs(
         exchange: exchTsym.exch ?? "",
         tSym: exchTsym.tsym ?? "",
@@ -1778,7 +1868,7 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
         isModify: false,
         raw: {},
       );
-      
+
       ResponsiveNavigation.toPlaceOrderScreen(
         context: context,
         arguments: {
@@ -1788,26 +1878,29 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
         },
       );
     } catch (e) {
-      showResponsiveWarningMessage(context, "Error placing order: ${e.toString()}");
+      showResponsiveWarningMessage(
+          context, "Error placing order: ${e.toString()}");
     }
   }
 
-  Future<void> _handleExitHolding(BuildContext context, dynamic holding, dynamic exchTsym) async {
+  Future<void> _handleExitHolding(
+      BuildContext context, dynamic holding, dynamic exchTsym) async {
     try {
       final scripData = ref.read(marketWatchProvider);
-      
+
       await scripData.fetchScripInfo(
         exchTsym.token ?? "",
         exchTsym.exch ?? "",
         context,
         true,
       );
-      
+
       if (scripData.scripInfoModel == null) {
-        showResponsiveWarningMessage(context, "Unable to fetch scrip information");
+        showResponsiveWarningMessage(
+            context, "Unable to fetch scrip information");
         return;
       }
-      
+
       OrderScreenArgs orderArgs = OrderScreenArgs(
         exchange: exchTsym.exch ?? "",
         tSym: exchTsym.tsym ?? "",
@@ -1833,28 +1926,31 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
         },
       );
     } catch (e) {
-      showResponsiveWarningMessage(context, "Error exiting holding: ${e.toString()}");
+      showResponsiveWarningMessage(
+          context, "Error exiting holding: ${e.toString()}");
     }
   }
 
-  Future<void> _handleAddHolding(BuildContext context, dynamic holding, dynamic exchTsym) async {
+  Future<void> _handleAddHolding(
+      BuildContext context, dynamic holding, dynamic exchTsym) async {
     try {
       final scripData = ref.read(marketWatchProvider);
-      
+
       await scripData.fetchScripInfo(
         exchTsym.token ?? "",
         exchTsym.exch ?? "",
         context,
         true,
       );
-      
+
       if (scripData.scripInfoModel == null) {
-        showResponsiveWarningMessage(context, "Unable to fetch scrip information");
+        showResponsiveWarningMessage(
+            context, "Unable to fetch scrip information");
         return;
       }
-      
+
       final lotSize = scripData.scripInfoModel!.ls?.toString() ?? "1";
-      
+
       OrderScreenArgs orderArgs = OrderScreenArgs(
         exchange: exchTsym.exch ?? "",
         tSym: exchTsym.tsym ?? "",
@@ -1880,7 +1976,8 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
         },
       );
     } catch (e) {
-      showResponsiveWarningMessage(context, "Error adding holding: ${e.toString()}");
+      showResponsiveWarningMessage(
+          context, "Error adding holding: ${e.toString()}");
     }
   }
 

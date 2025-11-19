@@ -415,12 +415,13 @@ class WebTextStyles {
   static TextStyle formInput({
     required bool isDarkTheme,
     Color? color,
+    FontWeight? fontWeight,
   }) {
     return _baseStyle(
-      fontSize: WebFonts.bodySmallSize,
+      fontSize: WebFonts.subSize,
       isDarkTheme: isDarkTheme,
-      color: color,
-      fontWeight: WebFonts.medium,
+      color: color ,
+      fontWeight: fontWeight ?? WebFonts.medium,
     );
   }
 
@@ -545,10 +546,10 @@ class WebTextStyles {
     Color? color,
   }) {
     return _baseStyle(
-      fontSize: WebFonts.captionSize,
+      fontSize: WebFonts.paraSize,
       isDarkTheme: isDarkTheme,
       color: color,
-      fontWeight: WebFonts.regular,
+      fontWeight: WebFonts.medium,
     );
   }
 

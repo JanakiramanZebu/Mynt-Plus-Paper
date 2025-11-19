@@ -9,7 +9,11 @@ import '../../../res/res.dart';
 
 class OrderScreenHeaderWeb extends ConsumerWidget {
   final OrderScreenArgs headerData;
-  const OrderScreenHeaderWeb({super.key, required this.headerData});
+  
+  const OrderScreenHeaderWeb({
+    super.key, 
+    required this.headerData,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -54,16 +58,18 @@ class OrderScreenHeaderWeb extends ConsumerWidget {
           children: [
             Text(
               "${ltp} ",
-              style: WebTextStyles.priceWatch(
+              style: WebTextStyles.sub(
                 isDarkTheme: theme.isDarkMode,
                 color: percentageColor,
+                fontWeight: WebFonts.medium,
               ),
             ),
             Text(
               " (${perChange}%)",
-              style: WebTextStyles.pricePercent(
+              style: WebTextStyles.sub(
                 isDarkTheme: theme.isDarkMode,
                 color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                fontWeight: WebFonts.medium,
               ),
             ),
           ],
@@ -71,5 +77,4 @@ class OrderScreenHeaderWeb extends ConsumerWidget {
       }
     );
   }
-
 }

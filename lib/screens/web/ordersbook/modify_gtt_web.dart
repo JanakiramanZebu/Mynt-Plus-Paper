@@ -313,15 +313,16 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                   children: [
                     Text(
                       "$symbol $expDate $option ",
-                      style: WebTextStyles.symbolList(
+                      style: WebTextStyles.sub(
                         isDarkTheme: theme.isDarkMode,
                         color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                        fontWeight: WebFonts.medium,
                       ),
                     ),
                     const SizedBox(width: 4),
                     Text(
                       exchange,
-                      style: WebTextStyles.exchText(
+                      style: WebTextStyles.para(
                           isDarkTheme: theme.isDarkMode,
                           color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
                       ),
@@ -334,7 +335,7 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                   children: [
                     Text(
                       ltp,
-                      style: WebTextStyles.priceWatch(
+                      style: WebTextStyles.sub(
                         isDarkTheme: theme.isDarkMode,
                         color: (change == "null" || change == "0.00")
                             ? (theme.isDarkMode
@@ -347,52 +348,21 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                                 : (theme.isDarkMode
                                     ? WebDarkColors.profit
                                     : WebColors.profit),
+                        fontWeight: WebFonts.medium,
                       ),
                     ),
                     const SizedBox(width: 4),
                     Text(
                       "${(double.tryParse(change) ?? 0.00).toStringAsFixed(2)} ($perChange%)",
-                      style: WebTextStyles.pricePercent(
+                      style: WebTextStyles.sub(
                         isDarkTheme: theme.isDarkMode,
                         color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
+                        fontWeight: WebFonts.medium,
                       ),
                     ),
                   ],
                 ),
               ],
-            ),
-          ),
-          Material(
-            color: Colors.transparent,
-            shape: const CircleBorder(),
-            child: InkWell(
-              customBorder: const CircleBorder(),
-              splashColor: theme.isDarkMode
-                  ? Colors.white.withOpacity(.15)
-                  : Colors.black.withOpacity(.15),
-              highlightColor: theme.isDarkMode
-                  ? Colors.white.withOpacity(.08)
-                  : Colors.black.withOpacity(.08),
-              onTap: () {
-                ref.read(ordInputProvider).clearTextField();
-                // Try to use draggable dialog close callback, fallback to Navigator.pop
-                final closeNotifier = _ModifyGttDialogCloseNotifier.of(context);
-                if (closeNotifier != null) {
-                  closeNotifier.onClose();
-                } else {
-                  Navigator.pop(context);
-                }
-              },
-              child: Padding(
-                padding: const EdgeInsets.all(6),
-                child: Icon(
-                  Icons.close,
-                  size: 20,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.iconSecondary
-                      : WebColors.iconSecondary,
-                ),
-              ),
             ),
           ),
         ],
@@ -485,11 +455,14 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
             color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 10),
         SizedBox(
           height: 40,
           child: CustomTextFormField(
-            fillColor: theme.isDarkMode ? WebDarkColors.backgroundTertiary : WebColors.backgroundTertiary,
+         fillColor: theme.isDarkMode
+                                                            ? colors.darkGrey
+                                                            : const Color(
+                                                                0xffF1F3F8),
             onChanged: (value) {
               double inputPrice = double.tryParse(value) ?? 0;
 
@@ -510,15 +483,19 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
               }
             },
             hintText: "${widget.gttOrderBook.ltp}",
-            hintStyle: WebTextStyles.helperText(
-              isDarkTheme: theme.isDarkMode,
-              color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
-            ),
+          hintStyle: WebTextStyles.formInput(
+                                isDarkTheme: theme.isDarkMode,
+                                color: theme.isDarkMode
+                                    ? WebDarkColors.textSecondary
+                                    : WebColors.textSecondary,
+                              ),
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            style: WebTextStyles.formInput(
-              isDarkTheme: theme.isDarkMode,
-              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
-            ),
+          style: WebTextStyles.formInput(
+                                isDarkTheme: theme.isDarkMode,
+                                color: theme.isDarkMode
+                                    ? WebDarkColors.textPrimary
+                                    : WebColors.textPrimary,
+                              ),
             textCtrl: orderInput.val1Ctrl,
             textAlign: TextAlign.start,
           ),
@@ -543,21 +520,25 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                   color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
               SizedBox(
                 height: 40,
                 child: CustomTextFormField(
                   fillColor: theme.isDarkMode ? WebDarkColors.backgroundTertiary : WebColors.backgroundTertiary,
                   hintText: orderInput.qtyCtrl.text,
-                  hintStyle: WebTextStyles.helperText(
-                    isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
-                  ),
+                   hintStyle: WebTextStyles.formInput(
+                                isDarkTheme: theme.isDarkMode,
+                                color: theme.isDarkMode
+                                    ? WebDarkColors.textSecondary
+                                    : WebColors.textSecondary,
+                              ),
                   inputFormate: [FilteringTextInputFormatter.digitsOnly],
                   style: WebTextStyles.formInput(
-                    isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
-                  ),
+                                isDarkTheme: theme.isDarkMode,
+                                color: theme.isDarkMode
+                                    ? WebDarkColors.textPrimary
+                                    : WebColors.textPrimary,
+                              ),
                   textCtrl: orderInput.qtyCtrl,
                   textAlign: TextAlign.start,
                   onChanged: (value) {
@@ -605,7 +586,7 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
               SizedBox(
                 height: 40,
                 child: CustomTextFormField(
@@ -620,14 +601,18 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                     }
                   },
                   hintText: "${widget.gttOrderBook.placeOrderParams!.prc}",
-                  hintStyle: WebTextStyles.helperText(
-                    isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
-                  ),
-                  style: WebTextStyles.formInput(
-                    isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
-                  ),
+               hintStyle: WebTextStyles.formInput(
+                                isDarkTheme: theme.isDarkMode,
+                                color: theme.isDarkMode
+                                    ? WebDarkColors.textSecondary
+                                    : WebColors.textSecondary,
+                              ),
+                   style: WebTextStyles.formInput(
+                                isDarkTheme: theme.isDarkMode,
+                                color: theme.isDarkMode
+                                    ? WebDarkColors.textPrimary
+                                    : WebColors.textPrimary,
+                              ),
                   isReadable: orderInput.actPrcType == "Limit" ||
                       orderInput.actPrcType == "SL Limit"
                       ? false
@@ -676,11 +661,14 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
             color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 10),
         SizedBox(
           height: 40,
           child: CustomTextFormField(
-            fillColor: theme.isDarkMode ? WebDarkColors.backgroundTertiary : WebColors.backgroundTertiary,
+            fillColor: theme.isDarkMode
+                                                            ? colors.darkGrey
+                                                            : const Color(
+                                                                0xffF1F3F8),
             onChanged: (value) {
               double inputPrice = double.tryParse(value) ?? 0;
 
@@ -701,15 +689,19 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
               }
             },
             hintText: "${widget.gttOrderBook.ltp}",
-            hintStyle: WebTextStyles.helperText(
-              isDarkTheme: theme.isDarkMode,
-              color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
-            ),
+           hintStyle: WebTextStyles.formInput(
+                                isDarkTheme: theme.isDarkMode,
+                                color: theme.isDarkMode
+                                    ? WebDarkColors.textSecondary
+                                    : WebColors.textSecondary,
+                              ),
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             style: WebTextStyles.formInput(
-              isDarkTheme: theme.isDarkMode,
-              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
-            ),
+                                isDarkTheme: theme.isDarkMode,
+                                color: theme.isDarkMode
+                                    ? WebDarkColors.textPrimary
+                                    : WebColors.textPrimary,
+                              ),
             textCtrl: orderInput.val2Ctrl,
             textAlign: TextAlign.start,
           ),
@@ -734,21 +726,25 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                   color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
               SizedBox(
                 height: 40,
                 child: CustomTextFormField(
                   fillColor: theme.isDarkMode ? WebDarkColors.backgroundTertiary : WebColors.backgroundTertiary,
                   hintText: orderInput.ocoQtyCtrl.text,
-                  hintStyle: WebTextStyles.helperText(
-                    isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
-                  ),
+                  hintStyle: WebTextStyles.formInput(
+                                isDarkTheme: theme.isDarkMode,
+                                color: theme.isDarkMode
+                                    ? WebDarkColors.textSecondary
+                                    : WebColors.textSecondary,
+                              ),
                   inputFormate: [FilteringTextInputFormatter.digitsOnly],
                   style: WebTextStyles.formInput(
-                    isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
-                  ),
+                                isDarkTheme: theme.isDarkMode,
+                                color: theme.isDarkMode
+                                    ? WebDarkColors.textPrimary
+                                    : WebColors.textPrimary,
+                              ),
                   textCtrl: orderInput.ocoQtyCtrl,
                   textAlign: TextAlign.start,
                   onChanged: (value) {
@@ -789,29 +785,32 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                   const SizedBox(width: 4),
                   Text(
                     "${orderInput.actOcoPrcType}",
-                    style: WebTextStyles.sub(
+                    style: WebTextStyles.formLabel(
                       isDarkTheme: theme.isDarkMode,
                       color: theme.isDarkMode ? WebDarkColors.icon : WebColors.icon,
-                      fontWeight: WebFonts.semiBold,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
               SizedBox(
                 height: 40,
                 child: CustomTextFormField(
                   fillColor: theme.isDarkMode ? WebDarkColors.backgroundTertiary : WebColors.backgroundTertiary,
                   onChanged: (value) {},
                   hintText: "${widget.gttOrderBook.placeOrderParamsLeg2!.prc}",
-                  hintStyle: WebTextStyles.helperText(
-                    isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
-                  ),
-                  style: WebTextStyles.formInput(
-                    isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
-                  ),
+                  hintStyle: WebTextStyles.formInput(
+                                isDarkTheme: theme.isDarkMode,
+                                color: theme.isDarkMode
+                                    ? WebDarkColors.textSecondary
+                                    : WebColors.textSecondary,
+                              ),
+                 style: WebTextStyles.formInput(
+                                isDarkTheme: theme.isDarkMode,
+                                color: theme.isDarkMode
+                                    ? WebDarkColors.textPrimary
+                                    : WebColors.textPrimary,
+                              ),
                   isReadable: orderInput.actOcoPrcType == "Limit" ||
                       orderInput.actOcoPrcType == "SL Limit"
                       ? false
@@ -850,6 +849,7 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
   Widget _buildFooter(ThemesProvider theme) {
     final orderInput = ref.watch(ordInputProvider);
     final internet = ref.watch(networkStateProvider);
+    final closeNotifier = _ModifyGttDialogCloseNotifier.of(context);
     
     return Container(
       padding: const EdgeInsets.all(10),
@@ -860,88 +860,143 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
           ),
         ),
       ),
-      child: SizedBox(
-        width: double.infinity,
-        height: 40,
-        child: ElevatedButton(
-          onPressed: internet.connectionStatus == ConnectivityResult.none ||
-              ref.read(orderProvider).loading
-              ? null
-              : () async {
-                  if (orderInput.disableGTTCond) {
-                    if ((orderInput.val1Ctrl.text.isNotEmpty &&
-                            orderInput.val2Ctrl.text.isNotEmpty &&
-                            orderInput.priceCtrl.text.isNotEmpty &&
-                            orderInput.ocoPriceCtrl.text.isNotEmpty &&
-                            orderInput.ocoQtyCtrl.text.isNotEmpty) &&
-                        orderInput.qtyCtrl.text.isNotEmpty) {
-                      double ltp = double.parse(widget.gttOrderBook.ltp ?? "0.00");
-                      double val1 = double.parse(orderInput.val1Ctrl.text);
-                      double val2 = double.parse(orderInput.val2Ctrl.text);
-
-                      if (val1 > ltp && val2 < ltp) {
-                        prepareToModifyOCOOrder(orderInput);
-                      } else {
-                        showResponsiveWarningMessage(
-                          context,
-                          val1 <= ltp
-                              ? "Target Trigger Price can not be Less than LTP"
-                              : val2 >= ltp
-                                  ? "Stoploss Trigger Price can not be Greater than LTP"
-                                  : "Trigger Price can not be equal to LTP",
-                        );
-                      }
+      child: Row(
+        children: [
+          Expanded(
+            child: Container(
+              height: 40,
+              decoration: BoxDecoration(
+                border: theme.isDarkMode
+                    ? null
+                    : Border.all(
+                        color: colors.primaryLight,
+                        width: 1),
+                color: theme.isDarkMode
+                    ? colors.textSecondaryDark.withOpacity(0.6)
+                    : colors.btnBg,
+                borderRadius: BorderRadius.circular(5),
+              ),
+              child: Material(
+                color: Colors.transparent,
+                shape: const BeveledRectangleBorder(),
+                child: InkWell(
+                  customBorder: const BeveledRectangleBorder(),
+                  splashColor: theme.isDarkMode
+                      ? colors.splashColorDark
+                      : colors.splashColorLight,
+                  highlightColor: theme.isDarkMode
+                      ? colors.highlightDark
+                      : colors.highlightLight,
+                  onTap: () {
+                    ref.read(ordInputProvider).clearTextField();
+                    // Try to use draggable dialog close callback, fallback to Navigator.pop
+                    if (closeNotifier != null) {
+                      closeNotifier.onClose();
                     } else {
-                      showResponsiveWarningMessage(context, "Enter all Input fields");
+                      Navigator.pop(context);
                     }
-                  } else {
-                    if ((orderInput.val1Ctrl.text.isNotEmpty &&
-                            orderInput.priceCtrl.text.isNotEmpty) &&
-                        orderInput.qtyCtrl.text.isNotEmpty) {
-                      double ltp = double.parse(widget.gttOrderBook.ltp ?? "0.00");
-                      double val1 = double.parse(orderInput.val1Ctrl.text);
-
-                      if (val1 > ltp) {
-                        prepareToModifyGttOrder(orderInput);
-                      } else {
-                        showResponsiveWarningMessage(
-                          context,
-                          "Trigger Price can not be equal to LTP",
-                        );
-                      }
-                    } else {
-                      showResponsiveWarningMessage(context, "Enter all Input fields");
-                    }
-                  }
-                },
-          style: ElevatedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(vertical: 10),
-            backgroundColor: isBuy! 
-                ? (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary)
-                : (theme.isDarkMode ? WebDarkColors.tertiary : WebColors.tertiary),
-            minimumSize: const Size(double.infinity, 40),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(5),
-            ),
-          ),
-          child: ref.read(orderProvider).loading
-              ? const SizedBox(
-                  width: 18,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Color(0xff666666),
-                  ),
-                )
-              : Text(
-                  "Modify",
-                  style: WebTextStyles.buttonMd(
-                    isDarkTheme: theme.isDarkMode,
-                    color: WebColors.background,
-                    fontWeight: WebFonts.bold,
+                  },
+                  child: Center(
+                    child: Text(
+                      "Close",
+                      style: WebTextStyles.buttonMd(
+                        isDarkTheme: theme.isDarkMode,
+                        color: theme.isDarkMode
+                            ? colors.colorWhite
+                            : colors.primaryLight,
+                      ),
+                    ),
                   ),
                 ),
-        ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Container(
+              height: 40,
+              child: ElevatedButton(
+                onPressed: internet.connectionStatus == ConnectivityResult.none ||
+                    ref.read(orderProvider).loading
+                    ? null
+                    : () async {
+                        if (orderInput.disableGTTCond) {
+                          if ((orderInput.val1Ctrl.text.isNotEmpty &&
+                                  orderInput.val2Ctrl.text.isNotEmpty &&
+                                  orderInput.priceCtrl.text.isNotEmpty &&
+                                  orderInput.ocoPriceCtrl.text.isNotEmpty &&
+                                  orderInput.ocoQtyCtrl.text.isNotEmpty) &&
+                              orderInput.qtyCtrl.text.isNotEmpty) {
+                            double ltp = double.parse(widget.gttOrderBook.ltp ?? "0.00");
+                            double val1 = double.parse(orderInput.val1Ctrl.text);
+                            double val2 = double.parse(orderInput.val2Ctrl.text);
+
+                            if (val1 > ltp && val2 < ltp) {
+                              prepareToModifyOCOOrder(orderInput);
+                            } else {
+                              showResponsiveWarningMessage(
+                                context,
+                                val1 <= ltp
+                                    ? "Target Trigger Price can not be Less than LTP"
+                                    : val2 >= ltp
+                                        ? "Stoploss Trigger Price can not be Greater than LTP"
+                                        : "Trigger Price can not be equal to LTP",
+                              );
+                            }
+                          } else {
+                            showResponsiveWarningMessage(context, "Enter all Input fields");
+                          }
+                        } else {
+                          if ((orderInput.val1Ctrl.text.isNotEmpty &&
+                                  orderInput.priceCtrl.text.isNotEmpty) &&
+                              orderInput.qtyCtrl.text.isNotEmpty) {
+                            double ltp = double.parse(widget.gttOrderBook.ltp ?? "0.00");
+                            double val1 = double.parse(orderInput.val1Ctrl.text);
+
+                            if (val1 > ltp) {
+                              prepareToModifyGttOrder(orderInput);
+                            } else {
+                              showResponsiveWarningMessage(
+                                context,
+                                "Trigger Price can not be equal to LTP",
+                              );
+                            }
+                          } else {
+                            showResponsiveWarningMessage(context, "Enter all Input fields");
+                          }
+                        }
+                      },
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  backgroundColor: isBuy! 
+                      ? (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary)
+                      : (theme.isDarkMode ? WebDarkColors.tertiary : WebColors.tertiary),
+                  minimumSize: const Size(double.infinity, 40),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                ),
+                child: ref.read(orderProvider).loading
+                    ? const SizedBox(
+                        width: 18,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Color(0xff666666),
+                        ),
+                      )
+                    : Text(
+                        "Modify",
+                        style: WebTextStyles.buttonMd(
+                          isDarkTheme: theme.isDarkMode,
+                          color: WebColors.background,
+                          fontWeight: WebFonts.bold,
+                        ),
+                      ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1071,8 +1126,8 @@ class _DraggableModifyGttDialogState extends ConsumerState<_DraggableModifyGttDi
     final screenSize = MediaQuery.of(context).size;
 
     // Constrain position to screen bounds
-    final dialogWidth = 400.0;
-    final dialogHeight = screenSize.height * 0.5;
+    final dialogWidth = 550.0;
+    final dialogHeight = screenSize.height * 0.8;
     final constrainedPosition = Offset(
       _position.dx.clamp(0, screenSize.width - dialogWidth),
       _position.dy.clamp(0, screenSize.height - dialogHeight),

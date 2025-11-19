@@ -47,14 +47,12 @@ class MarginDetailsDialogWeb extends ConsumerWidget {
                   children: [
                     Text(
                       'Order Margin',
-                      style: WebTextStyles.custom(
-                        fontSize: 13,
+                      style: WebTextStyles.dialogTitle(
                         isDarkTheme: theme.isDarkMode,
                         color: theme.isDarkMode
                             ? WebDarkColors.textPrimary
                             : WebColors.textPrimary,
-                        fontWeight: FontWeight.w700,
-                      ),
+                      ).copyWith(fontWeight: WebFonts.bold),
                     ),
                     Material(
                       color: Colors.transparent,
@@ -119,13 +117,12 @@ class MarginDetailsDialogWeb extends ConsumerWidget {
                                   children: [
                                     Text(
                                       'Remarks',
-                                      style: WebTextStyles.custom(
-                                        fontSize: 13,
+                                      style: WebTextStyles.bodySmall(
                                         isDarkTheme: theme.isDarkMode,
                                         color: theme.isDarkMode
                                             ? WebDarkColors.textSecondary
                                             : WebColors.textSecondary,
-                                        fontWeight: FontWeight.w500,
+                                        fontWeight: WebFonts.medium,
                                       ),
                                     ),
                                     Flexible(
@@ -133,13 +130,12 @@ class MarginDetailsDialogWeb extends ConsumerWidget {
                                         orderMargin?.remarks ?? '',
                                         textAlign: TextAlign.right,
                                         overflow: TextOverflow.ellipsis,
-                                        style: WebTextStyles.custom(
-                                          fontSize: 13,
+                                        style: WebTextStyles.bodySmall(
                                           isDarkTheme: theme.isDarkMode,
                                           color: theme.isDarkMode
                                               ? WebDarkColors.error
                                               : WebColors.error,
-                                          fontWeight: FontWeight.w700,
+                                          fontWeight: WebFonts.bold,
                                         ),
                                       ),
                                     ),
@@ -184,13 +180,12 @@ class MarginDetailsDialogWeb extends ConsumerWidget {
                               Text(
                                 'View exact charges in contract note at the end of the day',
                                 textAlign: TextAlign.center,
-                                style: WebTextStyles.custom(
-                                  fontSize: 12,
+                                style: WebTextStyles.para(
                                   isDarkTheme: theme.isDarkMode,
                                   color: theme.isDarkMode
                                       ? WebDarkColors.textSecondary
                                       : WebColors.textSecondary,
-                                  fontWeight: FontWeight.w500,
+                                  fontWeight: WebFonts.medium,
                                 ),
                               ),
                             ],
@@ -203,13 +198,12 @@ class MarginDetailsDialogWeb extends ConsumerWidget {
                           title: 'Approx Charges',
                           child: Text(
                             'Get your brokerage details updated. Reach out to our support.',
-                            style: WebTextStyles.custom(
-                              fontSize: 12,
+                            style: WebTextStyles.para(
                               isDarkTheme: theme.isDarkMode,
                               color: theme.isDarkMode
                                   ? WebDarkColors.textSecondary
                                   : WebColors.textSecondary,
-                              fontWeight: FontWeight.w500,
+                              fontWeight: WebFonts.medium,
                             ),
                           ),
                         ),
@@ -232,11 +226,11 @@ class MarginDetailsDialogWeb extends ConsumerWidget {
   }) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: theme.isDarkMode
-            ? WebDarkColors.backgroundTertiary
-            : WebColors.backgroundTertiary,
+            ? WebDarkColors.backgroundTertiary.withOpacity(0.5)
+            : WebColors.backgroundTertiary.withOpacity(0.5),
         borderRadius: BorderRadius.circular(5),
         border: Border.all(
           color:
@@ -248,13 +242,12 @@ class MarginDetailsDialogWeb extends ConsumerWidget {
         children: [
           Text(
             title,
-            style: WebTextStyles.custom(
-              fontSize: 13,
+            style: WebTextStyles.sub(
               isDarkTheme: theme.isDarkMode,
               color: theme.isDarkMode
                   ? WebDarkColors.textPrimary
                   : WebColors.textPrimary,
-              fontWeight: FontWeight.w700,
+              fontWeight: WebFonts.bold,
             ),
           ),
           const SizedBox(height: 12),
@@ -270,25 +263,23 @@ class MarginDetailsDialogWeb extends ConsumerWidget {
       children: [
         Text(
           k,
-          style: WebTextStyles.custom(
-            fontSize: 13,
+          style: WebTextStyles.sub(
             isDarkTheme: theme.isDarkMode,
             color: theme.isDarkMode
                 ? WebDarkColors.textSecondary
                 : WebColors.textSecondary,
-            fontWeight: FontWeight.w500,
+            fontWeight: WebFonts.medium,
           ),
         ),
         Text(
           v,
           textAlign: TextAlign.right,
-          style: WebTextStyles.custom(
-            fontSize: 13,
+          style: WebTextStyles.sub(
             isDarkTheme: theme.isDarkMode,
             color: theme.isDarkMode
                 ? WebDarkColors.textPrimary
                 : WebColors.textPrimary,
-            fontWeight: FontWeight.w700,
+            fontWeight: WebFonts.medium,
           ),
         ),
       ],

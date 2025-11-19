@@ -50,72 +50,105 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
         final socketDatas = snapshot.data ?? {};
 
         return Padding(
-          padding: const EdgeInsets.only(left: 16, right: 16, top: 0, bottom: 16),
+          padding:
+              const EdgeInsets.only(left: 16, right: 16, top: 0, bottom: 16),
           child: SingleChildScrollView(
-            child: SizedBox(
+            child: Container(
               width: double.infinity,
+              decoration: BoxDecoration(
+                color: theme.isDarkMode
+                    ? WebDarkColors.cardBackground
+                    : WebColors.cardBackground,
+                border: Border.all(
+                  color: theme.isDarkMode
+                      ? WebDarkColors.border
+                      : WebColors.border,
+                  width: 1,
+                ),
+                borderRadius: BorderRadius.circular(4),
+              ),
               child: DataTable(
-                columnSpacing: 10,
-                horizontalMargin: 0,
+                columnSpacing: 20,
+                horizontalMargin: 16,
                 showCheckboxColumn: false,
-                headingRowHeight: 44,
-                headingRowColor: WidgetStateProperty.all(Colors.transparent),
+                headingRowHeight: 40,
+                dataRowMinHeight: 40,
+                dataRowMaxHeight: 40,
+                headingRowColor: WidgetStateProperty.all(
+                  theme.isDarkMode
+                      ? WebDarkColors.primary.withOpacity(0.1)
+                      : WebColors.primary.withOpacity(0.05),
+                ),
+                border: TableBorder(
+                  horizontalInside: BorderSide(
+                    color: theme.isDarkMode
+                        ? WebDarkColors.border.withOpacity(0.5)
+                        : WebColors.border.withOpacity(0.5),
+                    width: 0.5,
+                  ),
+                  bottom: BorderSide(
+                    color: theme.isDarkMode
+                        ? WebDarkColors.border
+                        : WebColors.border,
+                    width: 1,
+                  ),
+                ),
                 dataRowColor: WidgetStateProperty.resolveWith<Color?>(
                   (Set<WidgetState> states) {
                     if (states.contains(WidgetState.hovered)) {
                       return (theme.isDarkMode
                               ? WebDarkColors.primary
                               : WebColors.primary)
-                          .withOpacity(0.15);
-                    }
-                    if (states.contains(WidgetState.selected)) {
-                      return (theme.isDarkMode
-                              ? WebDarkColors.primary
-                              : WebColors.primary)
-                          .withOpacity(0.1);
+                          .withOpacity(0.08);
                     }
                     return null;
                   },
                 ),
                 columns: [
                   DataColumn(
-                    label: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        'Symbol',
-                        style: WebTextStyles.tableHeader(
-                          isDarkTheme: theme.isDarkMode,
-                          color: theme.isDarkMode
-                              ? WebDarkColors.textPrimary
-                              : WebColors.textPrimary,
+                    label: Expanded(
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Symbol',
+                          style: WebTextStyles.tableHeader(
+                            isDarkTheme: theme.isDarkMode,
+                            color: theme.isDarkMode
+                                ? WebDarkColors.textPrimary
+                                : WebColors.textPrimary,
+                          ),
                         ),
                       ),
                     ),
                   ),
                   DataColumn(
-                    label: Align(
-                      alignment: Alignment.centerRight,
-                      child: Text(
-                        'LTP',
-                        style: WebTextStyles.tableHeader(
-                          isDarkTheme: theme.isDarkMode,
-                          color: theme.isDarkMode
-                              ? WebDarkColors.textPrimary
-                              : WebColors.textPrimary,
+                    label: Expanded(
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: Text(
+                          'LTP',
+                          style: WebTextStyles.tableHeader(
+                            isDarkTheme: theme.isDarkMode,
+                            color: theme.isDarkMode
+                                ? WebDarkColors.textPrimary
+                                : WebColors.textPrimary,
+                          ),
                         ),
                       ),
                     ),
                   ),
                   DataColumn(
-                    label: Align(
-                      alignment: Alignment.centerRight,
-                      child: Text(
-                        '%Change',
-                        style: WebTextStyles.tableHeader(
-                          isDarkTheme: theme.isDarkMode,
-                          color: theme.isDarkMode
-                              ? WebDarkColors.textPrimary
-                              : WebColors.textPrimary,
+                    label: Expanded(
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: Text(
+                          '%Change',
+                          style: WebTextStyles.tableHeader(
+                            isDarkTheme: theme.isDarkMode,
+                            color: theme.isDarkMode
+                                ? WebDarkColors.textPrimary
+                                : WebColors.textPrimary,
+                          ),
                         ),
                       ),
                     ),
@@ -125,15 +158,19 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
                   // Update with socket data if available
                   var updatedData = displayData;
                   final tokenKey = displayData.token?.toString();
-                  
+
                   if (tokenKey != null && socketDatas.containsKey(tokenKey)) {
                     final socketData = socketDatas[tokenKey];
-                    
+
                     // Try multiple possible keys for LTP
-                    final lp = socketData['lp']?.toString() ?? 
-                               socketData['ltp']?.toString() ?? 
-                               socketData['last_price']?.toString();
-                    if (lp != null && lp != "null" && lp != "0" && lp != "0.00" && lp.isNotEmpty) {
+                    final lp = socketData['lp']?.toString() ??
+                        socketData['ltp']?.toString() ??
+                        socketData['last_price']?.toString();
+                    if (lp != null &&
+                        lp != "null" &&
+                        lp != "0" &&
+                        lp != "0.00" &&
+                        lp.isNotEmpty) {
                       try {
                         final ltpValue = double.parse(lp);
                         if (ltpValue > 0) {
@@ -145,9 +182,9 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
                     }
 
                     // Try multiple possible keys for change
-                    final chng = socketData['chng']?.toString() ?? 
-                                 socketData['change']?.toString() ?? 
-                                 socketData['net_change']?.toString();
+                    final chng = socketData['chng']?.toString() ??
+                        socketData['change']?.toString() ??
+                        socketData['net_change']?.toString();
                     if (chng != null && chng != "null" && chng.isNotEmpty) {
                       try {
                         updatedData.change = chng;
@@ -157,10 +194,10 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
                     }
 
                     // Try multiple possible keys for percentage change
-                    final pc = socketData['pc']?.toString() ?? 
-                               socketData['per_change']?.toString() ?? 
-                               socketData['percentage_change']?.toString() ??
-                               socketData['pchange']?.toString();
+                    final pc = socketData['pc']?.toString() ??
+                        socketData['per_change']?.toString() ??
+                        socketData['percentage_change']?.toString() ??
+                        socketData['pchange']?.toString();
                     if (pc != null && pc != "null" && pc.isNotEmpty) {
                       try {
                         updatedData.perChange = pc;
@@ -171,7 +208,7 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
                   }
 
                   final token = updatedData.token?.toString() ?? '';
-                  
+
                   return DataRow(
                     onSelectChanged: (bool? selected) {
                       // Enable hover detection
@@ -180,36 +217,46 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
                       // Symbol cell with hover actions
                       _buildSymbolCellWithHover(updatedData, theme, future),
                       // LTP cell with hover
-                      _buildCellWithHover(updatedData, theme, token, DataCell(
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: Text(
-                            updatedData.ltp != null && updatedData.ltp != "null" 
-                                ? "${updatedData.ltp}" 
-                                : updatedData.close != null && updatedData.close != "null" 
-                                    ? "${updatedData.close}" 
-                                    : '0.00',
-                            style: WebTextStyles.tableDataCompact(
-                              isDarkTheme: theme.isDarkMode,
-                              color: _getPriceColor(updatedData, theme),
+                      _buildCellWithHover(
+                          updatedData,
+                          theme,
+                          token,
+                          DataCell(
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: Text(
+                                updatedData.ltp != null &&
+                                        updatedData.ltp != "null"
+                                    ? "${updatedData.ltp}"
+                                    : updatedData.close != null &&
+                                            updatedData.close != "null"
+                                        ? "${updatedData.close}"
+                                        : '0.00',
+                                style: WebTextStyles.tableDataCompact(
+                                  isDarkTheme: theme.isDarkMode,
+                                  color: _getPriceColor(updatedData, theme),
+                                ).copyWith(fontWeight: FontWeight.w600),
+                              ),
                             ),
-                          ),
-                        ),
-                      )),
+                          )),
                       // Change cell with hover
-                      _buildCellWithHover(updatedData, theme, token, DataCell(
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: Text(
-                            "${(_getChangeValue(updatedData))} "
-                            "(${_getPerChangeValue(updatedData)}%)",
-                            style: WebTextStyles.tableDataCompact(
-                              isDarkTheme: theme.isDarkMode,
-                              color: _getChangeColor(updatedData, theme),
+                      _buildCellWithHover(
+                          updatedData,
+                          theme,
+                          token,
+                          DataCell(
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: Text(
+                                "${(_getChangeValue(updatedData))} "
+                                "(${_getPerChangeValue(updatedData)}%)",
+                                style: WebTextStyles.tableDataCompact(
+                                  isDarkTheme: theme.isDarkMode,
+                                  color: _getChangeColor(updatedData, theme),
+                                ).copyWith(fontWeight: FontWeight.w600),
+                              ),
                             ),
-                          ),
-                        ),
-                      )),
+                          )),
                     ],
                   );
                 }).toList(),
@@ -221,7 +268,8 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
     );
   }
 
-  DataCell _buildCellWithHover(dynamic displayData, ThemesProvider theme, String token, DataCell cell) {
+  DataCell _buildCellWithHover(
+      dynamic displayData, ThemesProvider theme, String token, DataCell cell) {
     // Wrap the cell's child with MouseRegion to detect hover anywhere on the row
     return DataCell(
       MouseRegion(
@@ -237,7 +285,8 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
     );
   }
 
-  DataCell _buildSymbolCellWithHover(dynamic displayData, ThemesProvider theme, MarketWatchProvider future) {
+  DataCell _buildSymbolCellWithHover(
+      dynamic displayData, ThemesProvider theme, MarketWatchProvider future) {
     final token = displayData.token?.toString() ?? '';
     final isHovered = _hoveredToken == token;
     final displayText = displayData.tsym?.toString() ?? '';
@@ -294,7 +343,6 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
     );
   }
 
-
   Widget _buildActionButtons(
     BuildContext context,
     dynamic displayData,
@@ -316,9 +364,8 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
         _buildHoverButton(
           label: 'B',
           color: Colors.white,
-          backgroundColor: theme.isDarkMode 
-              ? WebDarkColors.primary
-              : WebColors.primary,
+          backgroundColor:
+              theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
           onPressed: () async {
             try {
               await _placeOrderInput(context, displayData, true, future);
@@ -333,9 +380,8 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
         _buildHoverButton(
           label: 'S',
           color: Colors.white,
-          backgroundColor: theme.isDarkMode
-              ? WebDarkColors.tertiary
-              : WebColors.tertiary,
+          backgroundColor:
+              theme.isDarkMode ? WebDarkColors.tertiary : WebColors.tertiary,
           onPressed: () async {
             try {
               await _placeOrderInput(context, displayData, false, future);
@@ -355,7 +401,9 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
           onPressed: () {
             // Navigate to chart screen - same logic as watchlist_card_web
             Navigator.pop(context);
-            ref.read(marketWatchProvider).calldepthApis(context, displayData, "");
+            ref
+                .read(marketWatchProvider)
+                .calldepthApis(context, displayData, "");
           },
           theme: theme,
         ),
@@ -363,9 +411,11 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
         // Save Button (Add to watchlist)
         _buildHoverButton(
           svgIcon: isInWatchlist ? assets.bookmarkIcon : assets.bookmarkedIcon,
-          color: isInWatchlist 
+          color: isInWatchlist
               ? (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary)
-              : (theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary),
+              : (theme.isDarkMode
+                  ? WebDarkColors.textSecondary
+                  : WebColors.textSecondary),
           backgroundColor: Colors.white,
           borderRadius: 5.0,
           onPressed: () async {
@@ -382,9 +432,11 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
             if (success && mounted) {
               // Show toast message (provider only shows Fluttertoast for add case)
               if (add) {
-                ResponsiveSnackBar.showSuccess(context, 'Added to ${future.wlName}');
+                ResponsiveSnackBar.showSuccess(
+                    context, 'Added to ${future.wlName}');
               } else {
-                ResponsiveSnackBar.showInfo(context, 'Removed from ${future.wlName}');
+                ResponsiveSnackBar.showInfo(
+                    context, 'Removed from ${future.wlName}');
               }
               // Force rebuild to refresh icon state
               setState(() {});
@@ -420,7 +472,8 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
           highlightColor: color.withOpacity(0.08),
           onTap: onPressed,
           child: Container(
-            padding: isLongLabel ? const EdgeInsets.symmetric(horizontal: 8) : null,
+            padding:
+                isLongLabel ? const EdgeInsets.symmetric(horizontal: 8) : null,
             decoration: BoxDecoration(
               color: backgroundColor ?? Colors.transparent,
               borderRadius: BorderRadius.circular(borderRadiusValue),
