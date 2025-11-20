@@ -516,7 +516,7 @@ class WebTextStyles {
       fontSize: WebFonts.bodySmallSize,
       isDarkTheme: isDarkTheme,
       color: color,
-      fontWeight: WebFonts.medium,
+      fontWeight: WebFonts.semiBold,
     );
   }
   static TextStyle priceWatch({
@@ -527,7 +527,7 @@ class WebTextStyles {
       fontSize: WebFonts.bodySmallSize,
       isDarkTheme: isDarkTheme,
       color: color,
-      fontWeight: WebFonts.medium,
+      fontWeight: WebFonts.semiBold,
     );
   }
   static TextStyle pricePercent({
@@ -538,8 +538,8 @@ class WebTextStyles {
       fontSize: WebFonts.bodySmallSize,
       isDarkTheme: isDarkTheme,
       color: color,
-      fontWeight: WebFonts.medium,
-    );
+      fontWeight: WebFonts.semiBold,
+    ); 
   }
   static TextStyle exchText({
     required bool isDarkTheme,
@@ -549,7 +549,7 @@ class WebTextStyles {
       fontSize: WebFonts.paraSize,
       isDarkTheme: isDarkTheme,
       color: color,
-      fontWeight: WebFonts.medium,
+      fontWeight: WebFonts.semiBold,
     );
   }
 

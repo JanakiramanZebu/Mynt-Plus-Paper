@@ -203,18 +203,18 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                               
                                 style: WebTextStyles.exchText(
                                     isDarkTheme: theme.isDarkMode,
-                                    color: WebColors.textPrimary),
+                                    color: WebColors.textSecondary),
                               ),
                             
                               if (widget.watchListData['expDate'].toString().isNotEmpty)
                                 Text(
                                   "${widget.watchListData['expDate']}",
-                                  style: WebTextStyles.para(
+                                  style: WebTextStyles.symbolList(
                                     isDarkTheme: theme.isDarkMode,
                                     color: theme.isDarkMode
-                                        ? WebDarkColors.textSecondary
-                                        : WebColors.textSecondary,
-                                    fontWeight: WebFonts.medium,
+                                        ? WebDarkColors.textPrimary
+                                        : WebColors.textPrimary,
+                                    // fontWeight: WebFonts.medium,
                                   ),
                                 ),
                               if (widget.watchListData['holdingQty'] != null &&

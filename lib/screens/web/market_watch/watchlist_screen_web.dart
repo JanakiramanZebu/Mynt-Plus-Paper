@@ -813,27 +813,72 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              CustomTextBtnWeb(
-                label: 'Add Symbol',
-                icon: assets.addCircleIcon,
-                onPress: () {
-                  mw.requestMWScrip(context: context, isSubscribe: false);
-                  showDialog(
-                    context: context,
-                    barrierColor: Colors.transparent,
-                    builder: (BuildContext context) {
-                      return SearchDialogWeb(
-                        wlName: mw.wlName,
-                        isBasket: "Watchlist",
-                      );
-                    },
-                  );
-                },
+              // CustomTextBtnWeb(
+              //   label: 'Add Symbol',
+              //   icon: assets.addCircleIcon,
+              //   onPress: () {
+              //     mw.requestMWScrip(context: context, isSubscribe: false);
+              //     showDialog(
+              //       context: context,
+              //       barrierColor: Colors.transparent,
+              //       builder: (BuildContext context) {
+              //         return SearchDialogWeb(
+              //           wlName: mw.wlName,
+              //           isBasket: "Watchlist",
+              //         );
+              //       },
+              //     );
+              //   },
+              // ),
+
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () {
+                    mw.requestMWScrip(context: context, isSubscribe: false);
+
+                    showDialog(
+                      context: context,
+                      barrierColor: Colors.transparent,
+                      builder: (BuildContext context) {
+                        return SearchDialogWeb(
+                          wlName: mw.wlName,
+                          isBasket: "Watchlist",
+                        );
+                      },
+                    );
+                  },
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(6),
+                      color: Colors
+                          .grey.shade200, // adjust to match your custom widget
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SvgPicture.asset(
+                          assets.addCircleIcon,
+                          height: 18,
+                          width: 18,
+                        ),
+                        const SizedBox(width: 6),
+                        const Text(
+                          'Add Symbol',
+                          style: TextStyle(fontSize: 14),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
+
               const SizedBox(height: 12),
               Text(
                 'No symbol in this watchlist',
-                style: WebTextStyles.cardTitle(
+                style: WebTextStyles.bodySmall(
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? WebDarkColors.textPrimary
@@ -846,7 +891,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                 child: Text(
                   'Use the search box above to find and add stocks, indices, futures or options.',
                   textAlign: TextAlign.center,
-                  style: WebTextStyles.helperText(
+                  style: WebTextStyles.para(
                     isDarkTheme: theme.isDarkMode,
                     color: theme.isDarkMode
                         ? WebDarkColors.textSecondary
@@ -1153,8 +1198,8 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                                 Material(
                                   color: Colors.transparent,
                                   child: InkWell(
-                                    onTap: () =>
-                                        _showCreateWatchlistDialog(context, ref),
+                                    onTap: () => _showCreateWatchlistDialog(
+                                        context, ref),
                                     customBorder: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(5),
                                     ),
@@ -1384,7 +1429,8 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
               children: [
                 // Header with close button
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   margin: const EdgeInsets.only(bottom: 8),
                   decoration: BoxDecoration(
                     border: Border(
@@ -1436,8 +1482,9 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                 ),
                 Flexible(
                   child: SingleChildScrollView(
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16, top: 16),
+                    child: Padding(
+                      padding: const EdgeInsets.only(
+                          left: 16, right: 16, bottom: 16, top: 16),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
@@ -1481,7 +1528,9 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                             child: Container(
                               height: 40,
                               decoration: BoxDecoration(
-                                color: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
+                                color: theme.isDarkMode
+                                    ? WebDarkColors.primary
+                                    : WebColors.primary,
                                 borderRadius: BorderRadius.circular(5),
                               ),
                               child: Material(
@@ -1550,7 +1599,8 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
               children: [
                 // Header with close button
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   margin: const EdgeInsets.only(bottom: 8),
                   decoration: BoxDecoration(
                     border: Border(
@@ -1603,13 +1653,14 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                 Flexible(
                   child: SingleChildScrollView(
                     child: Padding(
-                      padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16, top: 16),
+                      padding: const EdgeInsets.only(
+                          left: 16, right: 16, bottom: 16, top: 16),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            'Are you sure you want to delete "${_formatWatchlistName(watchlistName)}"?',                          
+                            'Are you sure you want to delete "${_formatWatchlistName(watchlistName)}"?',
                             style: WebTextStyles.bodySmall(
                               isDarkTheme: theme.isDarkMode,
                               color: theme.isDarkMode
@@ -1624,7 +1675,9 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                             child: Container(
                               height: 40,
                               decoration: BoxDecoration(
-                                color: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
+                                color: theme.isDarkMode
+                                    ? WebDarkColors.primary
+                                    : WebColors.primary,
                                 borderRadius: BorderRadius.circular(5),
                               ),
                               child: Material(
@@ -1639,7 +1692,8 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                                   onTap: () async {
                                     Navigator.of(deleteDialogContext)
                                         .pop(); // Close delete confirmation dialog
-                                    await _handleWatchlistDelete(watchlistName, ref);
+                                    await _handleWatchlistDelete(
+                                        watchlistName, ref);
                                     // Small delay to ensure deletion completes
                                     await Future.delayed(
                                         const Duration(milliseconds: 200));
@@ -1694,7 +1748,8 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
               children: [
                 // Header with close button
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   margin: const EdgeInsets.only(bottom: 8),
                   decoration: BoxDecoration(
                     border: Border(
@@ -1747,7 +1802,8 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                 Flexible(
                   child: SingleChildScrollView(
                     child: Padding(
-                      padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16, top: 16),
+                      padding: const EdgeInsets.only(
+                          left: 16, right: 16, bottom: 16, top: 16),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
@@ -1791,7 +1847,9 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                             child: Container(
                               height: 40,
                               decoration: BoxDecoration(
-                                color: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
+                                color: theme.isDarkMode
+                                    ? WebDarkColors.primary
+                                    : WebColors.primary,
                                 borderRadius: BorderRadius.circular(5),
                               ),
                               child: Material(

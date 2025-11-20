@@ -42,6 +42,9 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
   late bool scripisAscending;
   late bool pricepisAscending;
   late bool perchangisAscending;
+  
+  // Hover state tracking for each list item
+  final Map<int, bool> _hoveredItems = {};
 
   // Dragging state - COMMENTED OUT (draggable functionality disabled)
   // Offset? _position;
@@ -254,7 +257,8 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
 
                       // Search Bar Section
                       Container(
-                        padding: const EdgeInsets.only(left: 10, right: 10, top: 10, bottom: 0),
+                        padding: const EdgeInsets.only(
+                            left: 10, right: 10, top: 10, bottom: 0),
                         child: Row(
                           children: [
                             Expanded(
@@ -304,15 +308,17 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
                                           border: InputBorder.none,
                                           enabledBorder: InputBorder.none,
                                           focusedBorder: InputBorder.none,
-                                          hintText: "Search stocks, indices, options",
+                                          hintText:
+                                              "Search stocks, indices, options",
                                           hintStyle: WebTextStyles.formInput(
                                             isDarkTheme: theme.isDarkMode,
                                             color: theme.isDarkMode
                                                 ? WebDarkColors.textSecondary
                                                 : WebColors.textSecondary,
                                           ),
-                                          contentPadding: const EdgeInsets.symmetric(
-                                              horizontal: 0, vertical: 12),
+                                          contentPadding:
+                                              const EdgeInsets.symmetric(
+                                                  horizontal: 0, vertical: 12),
                                         ),
                                         onChanged: (value) async {
                                           setState(() {
@@ -337,44 +343,56 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
                                         if (value.text.isNotEmpty)
                                           // ignore: curly_braces_in_flow_control_structures
                                           return Padding(
-                                            padding: const EdgeInsets.only(right: 8),
+                                            padding:
+                                                const EdgeInsets.only(right: 8),
                                             child: Material(
                                               color: Colors.transparent,
                                               shape: const CircleBorder(),
                                               child: InkWell(
-                                                customBorder: const CircleBorder(),
+                                                customBorder:
+                                                    const CircleBorder(),
                                                 hoverColor: theme.isDarkMode
-                                                    ? Colors.white.withOpacity(0.1)
-                                                    : Colors.black.withOpacity(0.1),
+                                                    ? Colors.white
+                                                        .withOpacity(0.1)
+                                                    : Colors.black
+                                                        .withOpacity(0.1),
                                                 splashColor: theme.isDarkMode
-                                                    ? Colors.white.withOpacity(0.2)
-                                                    : Colors.black.withOpacity(0.2),
+                                                    ? Colors.white
+                                                        .withOpacity(0.2)
+                                                    : Colors.black
+                                                        .withOpacity(0.2),
                                                 onTap: () async {
                                                   _textController.clear();
-                                                  await searchScrip.searchClear();
+                                                  await searchScrip
+                                                      .searchClear();
                                                 },
                                                 child: Container(
-                                    padding: const EdgeInsets.all(2),
-                                    decoration: BoxDecoration(
-                                      // color: theme.isDarkMode
-                                      //     ? WebDarkColors.surface
-                                      //     : WebColors.surface,
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: theme.isDarkMode
-                                            ? WebDarkColors.inputBorder
-                                            : WebColors.inputBorder,
-                                        width: 1,
-                                      ),
-                                    ),
-                                    child: Icon(
-                                      Icons.close,
-                                      size: 14,
-                                      color: theme.isDarkMode
-                                          ? WebDarkColors.iconSecondary
-                                          : WebColors.iconSecondary,
-                                    ),
-                                  ),
+                                                  padding:
+                                                      const EdgeInsets.all(2),
+                                                  decoration: BoxDecoration(
+                                                    // color: theme.isDarkMode
+                                                    //     ? WebDarkColors.surface
+                                                    //     : WebColors.surface,
+                                                    shape: BoxShape.circle,
+                                                    border: Border.all(
+                                                      color: theme.isDarkMode
+                                                          ? WebDarkColors
+                                                              .inputBorder
+                                                          : WebColors
+                                                              .inputBorder,
+                                                      width: 1,
+                                                    ),
+                                                  ),
+                                                  child: Icon(
+                                                    Icons.close,
+                                                    size: 14,
+                                                    color: theme.isDarkMode
+                                                        ? WebDarkColors
+                                                            .iconSecondary
+                                                        : WebColors
+                                                            .iconSecondary,
+                                                  ),
+                                                ),
                                               ),
                                             ),
                                           );
@@ -403,15 +421,15 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
                                     Navigator.of(context).pop();
                                   },
                                   child: Padding(
-                                                  padding: const EdgeInsets.all(8.0),
-                                                  child: Icon(
-                                                    Icons.close,
-                                                    size: 18,
-                                                    color: theme.isDarkMode
-                                                        ? WebDarkColors.iconSecondary
-                                                        : WebColors.iconSecondary,
-                                                  ),
-                                                ),
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Icon(
+                                      Icons.close,
+                                      size: 18,
+                                      color: theme.isDarkMode
+                                          ? WebDarkColors.iconSecondary
+                                          : WebColors.iconSecondary,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
@@ -597,24 +615,25 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
             itemCount: searchScrip.allSearchScrip!.length,
             separatorBuilder: (context, index) => Divider(
               height: 0,
-              color: theme.isDarkMode
-                  ? WebDarkColors.divider
-                  : WebColors.divider,
+              color:
+                  theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
             ),
             itemBuilder: (BuildContext context, int index) {
               final scrip = searchScrip.allSearchScrip![index];
 
-              return Material(
-                color: Colors.transparent,
-                child: InkWell(
-                
-                  splashColor: theme.isDarkMode
-                      ? Colors.white.withOpacity(0.05)
-                      : Colors.black.withOpacity(0.05),
-                  highlightColor: theme.isDarkMode
-                      ? Colors.white.withOpacity(0.02)
-                      : Colors.black.withOpacity(0.02),
-                  onTap: () async {
+              return MouseRegion(
+                onEnter: (_) => setState(() => _hoveredItems[index] = true),
+                onExit: (_) => setState(() => _hoveredItems[index] = false),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    splashColor: theme.isDarkMode
+                        ? Colors.white.withOpacity(0.05)
+                        : Colors.black.withOpacity(0.05),
+                    highlightColor: theme.isDarkMode
+                        ? Colors.white.withOpacity(0.02)
+                        : Colors.black.withOpacity(0.02),
+                    onTap: () async {
                     if (widget.isBasket == "Chart||Is") {
                       // Create DepthInputArgs from selected scrip to update header and scrip info
                       final depthArgs = DepthInputArgs(
@@ -671,7 +690,7 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
                             children: [
                               // Symbol name and option
                               Row(
-                                crossAxisAlignment: CrossAxisAlignment.end,
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   Text(
                                     "${scrip.symbol?.isNotEmpty == true ? scrip.symbol : scrip.tsym}"
@@ -706,7 +725,7 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
                                         " ${scrip.expDate}",
                                         style: WebTextStyles.symbolList(
                                           isDarkTheme: theme.isDarkMode,
-                                            color: theme.isDarkMode
+                                          color: theme.isDarkMode
                                               ? WebDarkColors.textPrimary
                                               : WebColors.textPrimary,
                                         ),
@@ -714,24 +733,88 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
                                     ),
                                   Padding(
                                     padding: const EdgeInsets.only(left: 4),
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 4, vertical: 2),
-                                      decoration: BoxDecoration(
-                                        color: theme.isDarkMode
-                                            ? WebDarkColors.primary
-                                            : WebColors.primary
-                                                .withOpacity(0.9),
-                                        borderRadius: BorderRadius.circular(5),
-                                      ),
-                                      child: Text(
-                                        '${scrip.exch}',
-                                        style: WebTextStyles.exchText(
-                                            isDarkTheme: theme.isDarkMode,
-                                            color: WebDarkColors.textPrimary),
-                                      ),
+                                    child: Text(
+                                      '${scrip.exch}',
+                                      style: WebTextStyles.exchText(
+                                          isDarkTheme: theme.isDarkMode,
+                                          color: WebColors.textSecondary),
                                     ),
                                   ),
+                                  // Buy/Sell buttons for Basket mode - shown next to symbol
+                                  if (widget.isBasket == "Basket") ...[
+                                    const SizedBox(width: 8),
+                                    IgnorePointer(
+                                      ignoring: !(_hoveredItems[index] ?? false),
+                                      child: AnimatedOpacity(
+                                        opacity: (_hoveredItems[index] ?? false) ? 1.0 : 0.0,
+                                        duration: const Duration(milliseconds: 150),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            // Buy Button
+                                            Material(
+                                              color: Colors.transparent,
+                                              child: InkWell(
+                                                borderRadius: BorderRadius.circular(5),
+                                                onTap: () async {
+                                                  await _handleBuySellClick(
+                                                      context, scrip, true, ref, theme);
+                                                },
+                                                child: Container(
+                                                  width: 22,
+                                                  height: 22,
+                                                  decoration: BoxDecoration(
+                                                    color: WebColors.primary,
+                                                    borderRadius: BorderRadius.circular(5),
+                                                  ),
+                                                  child: Center(
+                                                    child: Text(
+                                                      'B',
+                                                      style: WebTextStyles.buttonMd(
+                                                        isDarkTheme: theme.isDarkMode,
+                                                        color: Colors.white,
+                                                        fontWeight: WebFonts.medium,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 8),
+                                            // Sell Button
+                                            Material(
+                                              color: Colors.transparent,
+                                              child: InkWell(
+                                                borderRadius: BorderRadius.circular(5),
+                                                onTap: () async {
+                                                  await _handleBuySellClick(
+                                                      context, scrip, false, ref, theme);
+                                                },
+                                                child: Container(
+                                                  width: 22,
+                                                  height: 22,
+                                                  decoration: BoxDecoration(
+                                                    color: WebColors.tertiary,
+                                                    borderRadius: BorderRadius.circular(5),
+                                                  ),
+                                                  child: Center(
+                                                    child: Text(
+                                                      'S',
+                                                      style: WebTextStyles.buttonSm(
+                                                        isDarkTheme: theme.isDarkMode,
+                                                        color: Colors.white,
+                                                        fontWeight: WebFonts.medium,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ],
                               ),
                               // const SizedBox(height: 8),
@@ -760,77 +843,9 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
                           ),
                         ),
 
-                        // Buy/Sell buttons for Basket mode, or Save/Bookmark Icon for Watchlist mode
-                        if (widget.isBasket == "Basket") ...[
-                          // Buy Button
-                          Material(
-                            color: Colors.transparent,
-                            borderRadius: BorderRadius.circular(4),
-                            child: InkWell(
-                              borderRadius: BorderRadius.circular(4),
-                              splashColor:
-                                  WebDarkColors.primary.withOpacity(0.2),
-                              highlightColor:
-                                  WebDarkColors.primary.withOpacity(0.1),
-                              onTap: () async {
-                                await _handleBuySellClick(
-                                    context, scrip, true, ref, theme);
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 6),
-                                decoration: BoxDecoration(
-                                  color: theme.isDarkMode
-                                      ? WebDarkColors.primary
-                                      : WebColors.primary,
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Text(
-                                  "Buy",
-                                  style: WebTextStyles.buttonSm(
-                                    isDarkTheme: theme.isDarkMode,
-                                    color: WebDarkColors.textPrimary,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          // Sell Button
-                          Material(
-                            color: Colors.transparent,
-                            borderRadius: BorderRadius.circular(4),
-                            child: InkWell(
-                              borderRadius: BorderRadius.circular(4),
-                              splashColor: WebDarkColors.error.withOpacity(0.2),
-                              highlightColor:
-                                  WebDarkColors.error.withOpacity(0.1),
-                              onTap: () async {
-                                await _handleBuySellClick(
-                                    context, scrip, false, ref, theme);
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 6),
-                                decoration: BoxDecoration(
-                                  color: theme.isDarkMode
-                                      ? WebDarkColors.error
-                                      : WebColors.error,
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Text(
-                                  "Sell",
-                                  style: WebTextStyles.buttonSm(
-                                    isDarkTheme: theme.isDarkMode,
-                                    color: WebDarkColors.textPrimary,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ] else if (widget.isBasket != "Chart||Is" &&
+                        // Save/Bookmark Icon for Watchlist mode
+                        if (widget.isBasket != "Basket" &&
+                            widget.isBasket != "Chart||Is" &&
                             widget.isBasket != "Option||Is" &&
                             searchScrip.isPreDefWLs != "Yes" &&
                             searchScrip.scrips.length < 50)
@@ -903,7 +918,7 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
                                 }
                               },
                               child: Padding(
-                                padding: const EdgeInsets.all(8),
+                                padding: const EdgeInsets.all(7),
                                 child: !searchScrip.exarr
                                         .contains('"${scrip.exch}"')
                                     ? SvgPicture.asset(
@@ -932,7 +947,8 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
                     ),
                   ),
                 ),
-              );
+              ),
+            );
             },
           ),
         ),

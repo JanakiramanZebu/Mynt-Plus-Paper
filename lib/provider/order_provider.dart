@@ -1068,15 +1068,21 @@ class OrderProvider extends DefaultChangeNotifier {
               element.option = "${spilitSymbol["option"]}";
             }
             if (element.stat == "Ok") {
+              debugPrint("Order ${element.norenordno}: Status=${element.status}, Stat=${element.stat}");
               if (element.status == "REJECTED" ||
                   element.status == "CANCELED" ||
                   element.status == "COMPLETE" ||
                   element.status == "INVALID_STATUS_TYPE") {
                 _executedOrder!.add(element);
+                debugPrint("  -> Added to _executedOrder (Status: ${element.status})");
               } else {
                 _openOrder!.add(element);
+                debugPrint("  -> Added to _openOrder (Status: ${element.status})");
               }
               _allOrder!.add(element);
+            } else {
+              debugPrint("Order ${element.norenordno}: Stat=${element.stat}, Error=${element.emsg}");
+              debugPrint("  -> NOT added to any list (stat != Ok)");
             }
           }
 
@@ -2763,8 +2769,12 @@ class OrderProvider extends DefaultChangeNotifier {
 
   placeBasketOrder(BuildContext context, {bool navigateToOrderBook = true}) async {
     try {
+      debugPrint("=== BASKET PLACE ORDER START ===");
       // Initialize basket tracking for current basket
       String basketName = _selectedBsktName;
+      debugPrint("Basket Name: $basketName");
+      debugPrint("Total items in basket: ${_bsktScripList.length}");
+      
       _basketOrderIds[basketName] = [];
       _basketOrderStatuses[basketName] = {};
       _basketOverallStatus[basketName] = 'placing';
@@ -2778,6 +2788,104 @@ class OrderProvider extends DefaultChangeNotifier {
         var element = _bsktScripList[index];
         String itemKey = "${element['tsym']}_${element['token']}_$index";
         
+        debugPrint("\n--- Processing Basket Item $index ---");
+        debugPrint("Item Key: $itemKey");
+        debugPrint("TSYM: ${element['tsym']}");
+        debugPrint("Exchange: ${element['exch']}");
+        debugPrint("Token: ${element['token']}");
+        debugPrint("Quantity: ${element['qty']}");
+        debugPrint("Price: ${element['prc']}");
+        debugPrint("Price Type: ${element['prctype']}");
+        debugPrint("Product: ${element['prd']}");
+        debugPrint("Transaction Type: ${element['trantype']}");
+        debugPrint("Market Protection: ${element['mktProt']}");
+        debugPrint("LTP: ${element['lp']}");
+        debugPrint("Ret (Validity): ${element['ret']}");
+        
+        // Set channel - use empty string like mobile, or set to WEB for web platform
+        String channelValue = '';
+        if (kIsWeb) {
+          channelValue = 'WEB';
+        } else {
+          channelValue = defaultTargetPlatform == TargetPlatform.android
+              ? '${ref.read(authProvider).deviceInfo["brand"]}'
+              : "${ref.read(authProvider).deviceInfo["model"]}";
+        }
+        debugPrint("Channel: $channelValue");
+        
+        // Set default validity (ret) if not provided - same logic as mobile/web place order screens
+        String retValue = element['ret']?.toString().trim() ?? '';
+        if (retValue.isEmpty) {
+          // Default validity based on exchange: EOS for BSE/BFO, DAY for others
+          String exchange = element['exch']?.toString() ?? '';
+          if (exchange == "BSE" || exchange == "BFO") {
+            retValue = "EOS";
+          } else {
+            retValue = "DAY";
+          }
+          debugPrint("Ret was empty, setting default: $retValue (Exchange: $exchange)");
+        } else {
+          debugPrint("Using provided ret value: $retValue");
+        }
+        
+        // Convert prd to correct code format (same as mobile)
+        // API expects: "C" (Delivery/CNC), "I" (Intraday/MIS), "F" (MTF), "B" (Bracket), "H" (Cover), "M" (Carry Forward/NRML)
+        String prdValue = element['prd']?.toString().trim() ?? '';
+        String ordTypeValue = element['ordType']?.toString().trim() ?? '';
+        String prdCode = prdValue;
+        
+        // If prd is stored as name, convert to code
+        if (prdValue.isNotEmpty) {
+          // Check if it's already a code (single character)
+          if (prdValue.length == 1 && ['C', 'I', 'F', 'B', 'H', 'M'].contains(prdValue.toUpperCase())) {
+            prdCode = prdValue.toUpperCase();
+          } else {
+            // Convert name to code
+            // For "CO - BO", check ordType to determine if it's Cover (H) or Bracket (B)
+            if (prdValue == 'CO - BO' || prdValue == 'CO-BO') {
+              if (ordTypeValue == 'CO') {
+                prdCode = 'H'; // Cover Order
+              } else if (ordTypeValue == 'BO') {
+                prdCode = 'B'; // Bracket Order
+              } else {
+                // Default to Bracket if ordType is not available
+                prdCode = 'B';
+                debugPrint("CO - BO order without ordType, defaulting to Bracket (B)");
+              }
+            } else {
+              Map<String, String> nameToCode = {
+                'Delivery': 'C',
+                'Intraday': 'I',
+                'MTF': 'F',
+                'MIS': 'I',
+                'CNC': 'C',
+                'NRML': 'M',
+                'CO': 'H',
+                'BO': 'B',
+              };
+              prdCode = nameToCode[prdValue] ?? 'C'; // Default to 'C' if not found
+            }
+            debugPrint("Converted prd from '$prdValue' to '$prdCode' (ordType: $ordTypeValue)");
+          }
+          
+          // Final validation: For NSE/BSE equity orders, "M" (Carry Forward) is not valid
+          // Convert "M" to "C" (Delivery) for equity orders to prevent rejection
+          String exchange = element['exch']?.toString().trim() ?? '';
+          String tsym = element['tsym']?.toString().trim() ?? '';
+          bool isEquity = (exchange == "NSE" || exchange == "BSE") && 
+                         (tsym.endsWith("-EQ") || tsym.contains("EQ"));
+          
+          if (prdCode == 'M' && isEquity) {
+            prdCode = 'C'; // Convert Carry Forward to Delivery for equity orders
+            debugPrint("Final validation: Converted prd from 'M' (Carry Forward) to 'C' (Delivery) for NSE/BSE equity order to prevent rejection");
+          }
+        } else {
+          // Default to 'C' (Delivery) if prd is empty
+          prdCode = 'C';
+          debugPrint("prd was empty, setting default: 'C'");
+        }
+        debugPrint("Final prd code: $prdCode");
+        
         PlaceOrderInput placeOrderInput = PlaceOrderInput(
             amo: element['amo'],
             blprc: element['blprc'],
@@ -2788,28 +2896,88 @@ class OrderProvider extends DefaultChangeNotifier {
                 ? element['lp']
                 : element['prc'],
             prctype: element['prctype'],
-            prd: element['prd'],
+            prd: prdCode, // Use converted code
             qty: element['qty'],
-            ret: element['ret'],
+            ret: retValue,
             trailprc: '',
             trantype: element['trantype'],
             trgprc: element['trgprc'],
             tsym: element['tsym'],
             mktProt: element['mktProt'],
-            channel: defaultTargetPlatform == TargetPlatform.android
-                ? '${ref.read(authProvider).deviceInfo["brand"]}'
-                : "${ref.read(authProvider).deviceInfo["model"]}");
+            channel: channelValue);
 
+        // Print the PlaceOrderInput payload that will be sent to API
+        debugPrint("\n=== BASKET ORDER PAYLOAD ===");
+        debugPrint("Exchange: ${placeOrderInput.exch}");
+        debugPrint("TSYM: ${placeOrderInput.tsym}");
+        debugPrint("Quantity: ${placeOrderInput.qty}");
+        debugPrint("Price: ${placeOrderInput.prc}");
+        debugPrint("Product (prd): ${placeOrderInput.prd}");
+        debugPrint("Transaction Type: ${placeOrderInput.trantype}");
+        debugPrint("Price Type (prctyp): ${placeOrderInput.prctype}");
+        debugPrint("Validity (ret): ${placeOrderInput.ret}");
+        debugPrint("Channel: ${placeOrderInput.channel}");
+        debugPrint("AMO: ${placeOrderInput.amo}");
+        debugPrint("Stop Loss (blprc): ${placeOrderInput.blprc}");
+        debugPrint("Target (bpprc): ${placeOrderInput.bpprc}");
+        debugPrint("Disclosed Qty (dscqty): ${placeOrderInput.dscqty}");
+        debugPrint("Trigger Price (trgprc): ${placeOrderInput.trgprc}");
+        debugPrint("Trailing Price (trailprc): ${placeOrderInput.trailprc}");
+        debugPrint("Market Protection (mktProt): ${placeOrderInput.mktProt}");
+        debugPrint("IP Address: $_ip");
+        
+        // Print as JSON for easy copy-paste
+        Map<String, dynamic> payloadMap = {
+          "exch": placeOrderInput.exch,
+          "tsym": placeOrderInput.tsym,
+          "qty": placeOrderInput.qty,
+          "prc": (placeOrderInput.prctype == 'MKT' || placeOrderInput.prctype == 'SL-MKT') ? '0' : placeOrderInput.prc,
+          "prd": placeOrderInput.prd,
+          "trantype": placeOrderInput.trantype,
+          "prctyp": placeOrderInput.prctype,
+          "ret": placeOrderInput.ret.toUpperCase(),
+          "channel": placeOrderInput.channel,
+          "amo": placeOrderInput.amo,
+          "blprc": placeOrderInput.blprc,
+          "bpprc": placeOrderInput.bpprc,
+          "dscqty": placeOrderInput.dscqty,
+          "trgprc": placeOrderInput.trgprc,
+          "trailprc": placeOrderInput.trailprc,
+          "mkt_protection": placeOrderInput.mktProt,
+        };
+        debugPrint("\nPayload JSON:");
+        debugPrint(jsonEncode(payloadMap));
+        debugPrint("============================\n");
+        
+        debugPrint("Calling getPlaceOrder API...");
         _placeOrderModel = await api.getPlaceOrder(placeOrderInput, _ip);
+        
+        debugPrint("\n=== BASKET ORDER RESPONSE ===");
+        if (_placeOrderModel != null) {
+          debugPrint("Status: ${_placeOrderModel!.stat}");
+          debugPrint("Error Message: ${_placeOrderModel!.emsg}");
+          debugPrint("Order Number: ${_placeOrderModel!.norenordno}");
+          debugPrint("Request Time: ${_placeOrderModel!.requestTime}");
+          
+          // Print full response as JSON
+          debugPrint("\nResponse JSON:");
+          debugPrint(jsonEncode(_placeOrderModel!.toJson()));
+        } else {
+          debugPrint("Response is null!");
+        }
+        debugPrint("============================\n");
 
         if (_placeOrderModel!.emsg ==
                 "Session Expired :  Invalid Session Key" &&
             _placeOrderModel!.stat == "Not_Ok") {
+          debugPrint("ERROR: Session Expired");
           ref.read(authProvider).ifSessionExpired(context);
           break;
         } else if (_placeOrderModel!.stat == "Ok" && _placeOrderModel!.norenordno != null) {
           // Store successful order details
           String orderId = _placeOrderModel!.norenordno!;
+          debugPrint("SUCCESS: Order placed with ID: $orderId");
+          
           _basketOrderIds[basketName]!.add(orderId);
           _basketOrderStatuses[basketName]![itemKey] = 'placed';
           
@@ -2822,26 +2990,54 @@ class OrderProvider extends DefaultChangeNotifier {
           ConstantName.sessCheck = true;
         } else {
           // Handle failed order
+          debugPrint("FAILED: Order placement failed");
+          debugPrint("  Status: ${_placeOrderModel!.stat}");
+          debugPrint("  Error: ${_placeOrderModel!.emsg ?? 'Unknown error'}");
+          debugPrint("  Order Number: ${_placeOrderModel!.norenordno}");
+          
           _basketOrderStatuses[basketName]![itemKey] = 'failed';
           element['orderStatus'] = 'failed';
           element['orderError'] = _placeOrderModel!.emsg ?? 'Unknown error';
           failedOrders.add(element['tsym']);
+          
+          // IMPORTANT: Even failed orders should be tracked if they have an order number
+          // Some APIs return order numbers even for failed orders
+          if (_placeOrderModel!.norenordno != null) {
+            String failedOrderId = _placeOrderModel!.norenordno!;
+            debugPrint("  NOTE: Failed order has order ID: $failedOrderId - will track it");
+            _basketOrderIds[basketName]!.add(failedOrderId);
+            element['orderIds'] = element['orderIds'] ?? [];
+            element['orderIds'].add(failedOrderId);
+          }
         }
       }
+      
+      debugPrint("\n=== BASKET PLACE ORDER SUMMARY ===");
+      debugPrint("Successful Orders: ${successfulOrders.length}");
+      debugPrint("Failed Orders: ${failedOrders.length}");
+      debugPrint("Total Order IDs tracked: ${_basketOrderIds[basketName]?.length ?? 0}");
       
       // Update overall basket status
       if (failedOrders.isEmpty) {
         _basketOverallStatus[basketName] = 'placed';
+        debugPrint("Overall Status: placed");
       } else if (successfulOrders.isEmpty) {
         _basketOverallStatus[basketName] = 'failed';
+        debugPrint("Overall Status: failed");
       } else {
         _basketOverallStatus[basketName] = 'partially_placed';
+        debugPrint("Overall Status: partially_placed");
       }
       
       if (navigateToOrderBook) {
+        debugPrint("Navigating to Order Book...");
         ref.read(indexListProvider).bottomMenu(2, context);
 
+        debugPrint("Fetching Order Book...");
         await fetchOrderBook(context, false);
+        debugPrint("Order Book fetched. Total orders: ${_orderBookModel?.length ?? 0}");
+        debugPrint("Executed orders: ${_executedOrder?.length ?? 0}");
+        
         await changeTabIndex(0, context);
         ref.read(indexListProvider).bottomMenu(2, context);
 
@@ -2849,7 +3045,9 @@ class OrderProvider extends DefaultChangeNotifier {
       }
       
       // Save order tracking data to preferences
+      debugPrint("Saving order tracking data to preferences...");
       await _saveOrderTrackingData();
+      debugPrint("Order tracking data saved");
       
       // Show appropriate success/failure message
       String message;
@@ -2861,11 +3059,17 @@ class OrderProvider extends DefaultChangeNotifier {
         message = "Basket Order Partially Placed - ${successfulOrders.length} success, ${failedOrders.length} failed";
       }
       
+      debugPrint("Showing message: $message");
       ScaffoldMessenger.of(context).showSnackBar(
           successMessage(context, message));
           
+      debugPrint("=== BASKET PLACE ORDER END ===\n");
       notifyListeners();
-    } catch (e) {
+    } catch (e, stackTrace) {
+      debugPrint("=== BASKET PLACE ORDER ERROR ===");
+      debugPrint("Error: $e");
+      debugPrint("Stack Trace: $stackTrace");
+      
       // Update basket status to failed
       if (_selectedBsktName.isNotEmpty) {
         _basketOverallStatus[_selectedBsktName] = 'failed';
@@ -2881,7 +3085,10 @@ class OrderProvider extends DefaultChangeNotifier {
   // Method to update basket order statuses from order book data
   void updateBasketOrderStatus() async {
     try {
-      print("=== UPDATING BASKET ORDER STATUS ===");
+      debugPrint("=== UPDATING BASKET ORDER STATUS ===");
+      debugPrint("Order Book Model Count: ${_orderBookModel?.length ?? 0}");
+      debugPrint("Executed Order Count: ${_executedOrder?.length ?? 0}");
+      debugPrint("Open Order Count: ${_openOrder?.length ?? 0}");
       
       // Get all baskets that need processing (those with tracking data OR current basket with item orders)
       Set<String> basketsToProcess = Set<String>.from(_basketOrderIds.keys);
@@ -2925,6 +3132,7 @@ class OrderProvider extends DefaultChangeNotifier {
         int openCount = 0;
         
         for (String orderId in orderIds) {
+          debugPrint("  Checking order ID: $orderId");
           // Find order in all order lists
           OrderBookModel? order = _findOrderById(orderId);
           
@@ -2933,22 +3141,39 @@ class OrderProvider extends DefaultChangeNotifier {
             orderIdToStatus[orderId] = actualStatus;
             orderIdToModel[orderId] = order;
             
-            print("Order $orderId status: $actualStatus");
+            debugPrint("    Order $orderId found - Status: $actualStatus");
+            debugPrint("    Order TSYM: ${order.tsym}");
+            debugPrint("    Order Exchange: ${order.exch}");
+            debugPrint("    Order Stat: ${order.stat}");
+            debugPrint("    Order Error: ${order.emsg}");
             
             // Count statuses
             if (actualStatus == 'COMPLETE') {
               completedCount++;
+              debugPrint("    -> Counted as COMPLETE");
             } else if (actualStatus == 'REJECTED' || actualStatus == 'CANCELED') {
               rejectedCount++;
+              debugPrint("    -> Counted as REJECTED/CANCELED (should appear in executed)");
             } else {
               openCount++; // OPEN or other statuses
+              debugPrint("    -> Counted as OPEN/OTHER");
             }
           } else {
             // Order not found in order book - this means it's stale/expired
-            print("Order $orderId not found in current orderbook - will be cleaned up");
+            debugPrint("    Order $orderId NOT FOUND in current orderbook");
+            debugPrint("    This could mean:");
+            debugPrint("      - Order was never placed (failed immediately)");
+            debugPrint("      - Order is stale/expired");
+            debugPrint("      - Order book hasn't been refreshed yet");
             // Don't add to orderIdToStatus map - let it be cleaned up
           }
         }
+        
+        debugPrint("  Status Summary for basket $basketName:");
+        debugPrint("    Completed: $completedCount");
+        debugPrint("    Rejected/Canceled: $rejectedCount");
+        debugPrint("    Open: $openCount");
+        debugPrint("    Total tracked: ${orderIds.length}");
         
         // Update individual basket items with real order statuses
         _updateBasketItemStatusesWithOrderBook(basketName, orderIdToStatus, orderIdToModel);
@@ -2984,25 +3209,44 @@ class OrderProvider extends DefaultChangeNotifier {
   
   // Helper method to find order by ID in all order lists
   OrderBookModel? _findOrderById(String orderId) {
-    // Search in all orders
+    debugPrint("    _findOrderById: Searching for order ID: $orderId");
+    
+    // Search in all orders (orderBookModel)
     if (_orderBookModel != null) {
       try {
-        return _orderBookModel!.firstWhere(
+        OrderBookModel? found = _orderBookModel!.firstWhere(
           (order) => order.norenordno == orderId,
         );
+        debugPrint("      Found in _orderBookModel");
+        return found;
       } catch (e) {
-        // Order not found
+        debugPrint("      Not found in _orderBookModel");
+      }
+    }
+    
+    // Search in executed orders (REJECTED, CANCELED, COMPLETE should be here)
+    if (_executedOrder != null) {
+      try {
+        OrderBookModel? found = _executedOrder!.firstWhere(
+          (order) => order.norenordno == orderId,
+        );
+        debugPrint("      Found in _executedOrder (status: ${found.status})");
+        return found;
+      } catch (e) {
+        debugPrint("      Not found in _executedOrder");
       }
     }
     
     // Search in open orders
     if (_openOrder != null) {
       try {
-        return _openOrder!.firstWhere(
+        OrderBookModel? found = _openOrder!.firstWhere(
           (order) => order.norenordno == orderId,
         );
+        debugPrint("      Found in _openOrder");
+        return found;
       } catch (e) {
-        // Order not found
+        debugPrint("      Not found in _openOrder");
       }
     }
     

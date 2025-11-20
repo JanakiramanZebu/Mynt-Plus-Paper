@@ -56,7 +56,8 @@ class _PlaceOrderDialogCloseNotifier extends InheritedWidget {
   });
 
   static _PlaceOrderDialogCloseNotifier? of(BuildContext context) {
-    return context.dependOnInheritedWidgetOfExactType<_PlaceOrderDialogCloseNotifier>();
+    return context
+        .dependOnInheritedWidgetOfExactType<_PlaceOrderDialogCloseNotifier>();
   }
 
   @override
@@ -81,7 +82,8 @@ class _PlaceOrderDialogDragNotifier extends InheritedWidget {
   });
 
   static _PlaceOrderDialogDragNotifier? of(BuildContext context) {
-    return context.dependOnInheritedWidgetOfExactType<_PlaceOrderDialogDragNotifier>();
+    return context
+        .dependOnInheritedWidgetOfExactType<_PlaceOrderDialogDragNotifier>();
   }
 
   @override
@@ -109,6 +111,9 @@ class PlaceOrderScreenWeb extends ConsumerStatefulWidget {
   ConsumerState<PlaceOrderScreenWeb> createState() =>
       _PlaceOrderScreenWebState();
 
+  // Static variable to track the current overlay entry
+  static OverlayEntry? _currentOverlayEntry;
+
   /// Static method to show PlaceOrderScreenWeb as a draggable dialog
   static void showDraggable({
     required BuildContext context,
@@ -119,13 +124,24 @@ class PlaceOrderScreenWeb extends ConsumerStatefulWidget {
     Offset? initialPosition,
   }) {
     final overlay = Overlay.of(context);
+    
+    // Close existing order screen if one is already open
+    if (_currentOverlayEntry != null) {
+      try {
+        _currentOverlayEntry!.remove();
+      } catch (e) {
+        // Entry might already be removed, ignore error
+      }
+      _currentOverlayEntry = null;
+    }
+
+    final position = initialPosition ??
+        Offset(
+          MediaQuery.of(context).size.width * 0.1,
+          MediaQuery.of(context).size.height * 0.05,
+        );
+
     late OverlayEntry overlayEntry;
-    
-    final position = initialPosition ?? Offset(
-      MediaQuery.of(context).size.width * 0.1,
-      MediaQuery.of(context).size.height * 0.05,
-    );
-    
     overlayEntry = OverlayEntry(
       builder: (context) => _DraggablePlaceOrderScreenDialog(
         orderArg: orderArg,
@@ -138,10 +154,13 @@ class PlaceOrderScreenWeb extends ConsumerStatefulWidget {
         },
         onClose: () {
           overlayEntry.remove();
+          _currentOverlayEntry = null;
         },
       ),
     );
-    
+
+    // Store the current overlay entry
+    _currentOverlayEntry = overlayEntry;
     overlay.insert(overlayEntry);
   }
 }
@@ -482,6 +501,12 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
         priceCtrl.text = priceType == "Market" || priceType == "SL MKT"
             ? "Market"
             : ordPrice;
+      } else {
+        // Fallback to LTP from orderArg when websocket data is not available
+        ordPrice = widget.orderArg.ltp ?? "0.00";
+        priceCtrl.text = priceType == "Market" || priceType == "SL MKT"
+            ? "Market"
+            : ordPrice;
       }
     });
 
@@ -510,12 +535,19 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
               ? true
               : false;
       _afterMarketOrder = orderRawValue['amo'] == "Yes" ? true : false;
+      // Use orderRawValue price if available and not "0", otherwise fallback to LTP
+      final rawPrice = orderRawValue['prc'];
+      final fallbackPrice =
+          (rawPrice == null || rawPrice == "0" || rawPrice == "0.00")
+              ? (widget.orderArg.ltp ?? "0.00")
+              : rawPrice;
+
       priceCtrl.text = priceType == "Market" || priceType == "SL MKT"
           ? "Market"
-          : orderRawValue['prc'] ?? "0";
+          : fallbackPrice;
       ordPrice = priceType == "Market" || priceType == "SL MKT"
           ? ordPrice
-          : orderRawValue['prc'] ?? "0";
+          : fallbackPrice;
       qtyCtrl.text = widget.scripInfo.exch == 'MCX'
           ? (int.parse(orderRawValue['qty'] ?? lotSize) / lotSize)
               .toStringAsFixed(0)
@@ -670,116 +702,127 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
               GestureDetector(
                   onTap: () => FocusScope.of(context).unfocus(),
                   child: Container(
-                color: !theme.isDarkMode
-                    ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary,
-                width: double.infinity,
-                child:
+                    color: !theme.isDarkMode
+                        ? WebDarkColors.textPrimary
+                        : WebColors.textPrimary,
+                    width: double.infinity,
+                    child:
 
-                    //  Scaffold(
-                    //     resizeToAvoidBottomInset: true,
-                    // appBar: AppBar(
-                    //     // leadingWidth: 41,
-                    //     centerTitle: false,
-                    //     titleSpacing: 0,
-                    //     // leading: Material(
-                    //     //   color: Colors.transparent,
-                    //     //   shape: const CircleBorder(),
-                    //     //   clipBehavior: Clip.hardEdge,
-                    //     //   child: Semantics(
-                    //     //     identifier: "Back button",
-                    //     //     child: IconButton(
-                    //     //       // customBorder: const CircleBorder(),
-                    //     //       splashColor: theme.isDarkMode ? colors.splashColorDark : colors.splashColorLight,
-                    //     //       highlightColor: theme.isDarkMode ? colors.highlightDark : colors.highlightLight,
-                    //     //       onPressed: () {
-                    //     //       ref.read(ordInputProvider).clearTextField();
+                        //  Scaffold(
+                        //     resizeToAvoidBottomInset: true,
+                        // appBar: AppBar(
+                        //     // leadingWidth: 41,
+                        //     centerTitle: false,
+                        //     titleSpacing: 0,
+                        //     // leading: Material(
+                        //     //   color: Colors.transparent,
+                        //     //   shape: const CircleBorder(),
+                        //     //   clipBehavior: Clip.hardEdge,
+                        //     //   child: Semantics(
+                        //     //     identifier: "Back button",
+                        //     //     child: IconButton(
+                        //     //       // customBorder: const CircleBorder(),
+                        //     //       splashColor: theme.isDarkMode ? colors.splashColorDark : colors.splashColorLight,
+                        //     //       highlightColor: theme.isDarkMode ? colors.highlightDark : colors.highlightLight,
+                        //     //       onPressed: () {
+                        //     //       ref.read(ordInputProvider).clearTextField();
 
-                    //     //         // If coming from chart, restore the chart overlay
-                    //     //         if (widget.fromChart) {
-                    //     //           final chartState = ref.read(chartProvider);
-                    //     //           if (chartState.chartArgs != null) {
-                    //     //             ref.read(chartProvider.notifier).showChart(chartState.chartArgs!, previousRoute: null);
-                    //     //           }
-                    //     //         }
+                        //     //         // If coming from chart, restore the chart overlay
+                        //     //         if (widget.fromChart) {
+                        //     //           final chartState = ref.read(chartProvider);
+                        //     //           if (chartState.chartArgs != null) {
+                        //     //             ref.read(chartProvider.notifier).showChart(chartState.chartArgs!, previousRoute: null);
+                        //     //           }
+                        //     //         }
 
-                    //     //       Navigator.pop(context);
-                    //     //     },
-                    //     //       icon: Container(
-                    //     //       width: 44, // Increased touch area
-                    //     //       height: 44,
-                    //     //       alignment: Alignment.center,
-                    //     //       child: Icon(
-                    //     //         Icons.arrow_back_ios_outlined,
-                    //     //         size: 18,
-                    //     //           color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                    //     //         ),
-                    //     //       ),
-                    //     //     ),
-                    //     //   ),
-                    //     // ),
-                    //     elevation: .4,
-                    //     title: Container(
-                    //       margin: const EdgeInsets.only(right: 10),
-                    //       child:
-                    //     ),
-                    //     // Tab section starts here
-                    //     bottom: PreferredSize(
-                    //         preferredSize: const Size.fromHeight(50), // widget.orderArg.exchange == "NCOM" ? 10 :
-                    //         child:
-                    //  body:
-                    Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                      Column(children: [
-                        Builder(
-                          builder: (context) {
-                            final dragNotifier = _PlaceOrderDialogDragNotifier.of(context);
-                            final closeNotifier = _PlaceOrderDialogCloseNotifier.of(context);
-                            
-                            Widget headerContent = Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                              decoration: BoxDecoration(
-                                color: (isBuy ?? true)
-                                    ? (theme.isDarkMode 
-                                        ? WebDarkColors.primary 
-                                        : WebColors.primary).withOpacity(0.1)
-                                    : (theme.isDarkMode 
-                                        ? WebDarkColors.tertiary 
-                                        : WebColors.tertiary).withOpacity(0.1),
-                                border: Border(
-                                  bottom: BorderSide(
-                                    color: theme.isDarkMode
-                                        ? WebDarkColors.divider
-                                        : WebColors.divider,
+                        //     //       Navigator.pop(context);
+                        //     //     },
+                        //     //       icon: Container(
+                        //     //       width: 44, // Increased touch area
+                        //     //       height: 44,
+                        //     //       alignment: Alignment.center,
+                        //     //       child: Icon(
+                        //     //         Icons.arrow_back_ios_outlined,
+                        //     //         size: 18,
+                        //     //           color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                        //     //         ),
+                        //     //       ),
+                        //     //     ),
+                        //     //   ),
+                        //     // ),
+                        //     elevation: .4,
+                        //     title: Container(
+                        //       margin: const EdgeInsets.only(right: 10),
+                        //       child:
+                        //     ),
+                        //     // Tab section starts here
+                        //     bottom: PreferredSize(
+                        //         preferredSize: const Size.fromHeight(50), // widget.orderArg.exchange == "NCOM" ? 10 :
+                        //         child:
+                        //  body:
+                        Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                          Column(children: [
+                            Builder(
+                              builder: (context) {
+                                final dragNotifier =
+                                    _PlaceOrderDialogDragNotifier.of(context);
+                                final closeNotifier =
+                                    _PlaceOrderDialogCloseNotifier.of(context);
+
+                                Widget headerContent = Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: (isBuy ?? true)
+                                        ? (theme.isDarkMode
+                                                ? WebDarkColors.primary
+                                                : WebColors.primary)
+                                            .withOpacity(0.1)
+                                        : (theme.isDarkMode
+                                                ? WebDarkColors.tertiary
+                                                : WebColors.tertiary)
+                                            .withOpacity(0.1),
+                                    border: Border(
+                                      bottom: BorderSide(
+                                        color: theme.isDarkMode
+                                            ? WebDarkColors.divider
+                                            : WebColors.divider,
+                                      ),
+                                    ),
                                   ),
-                                ),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 4),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                  child: Padding(
+                                    padding:
+                                        const EdgeInsets.symmetric(vertical: 4),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Padding(
-                                          padding: const EdgeInsets.only(bottom: 8.0),
-                                          child: Row(
-                                              children: [
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                  bottom: 8.0),
+                                              child: Row(children: [
                                                 Text(
                                                   "${widget.scripInfo.symbol!.replaceAll("-EQ", "")} ",
                                                   style: WebTextStyles.sub(
-                                                    isDarkTheme: theme.isDarkMode,
+                                                    isDarkTheme:
+                                                        theme.isDarkMode,
                                                     color: theme.isDarkMode
-                                                        ? WebDarkColors.textPrimary
+                                                        ? WebDarkColors
+                                                            .textPrimary
                                                         : WebColors.textPrimary,
                                                     fontWeight: WebFonts.medium,
                                                   ),
                                                   maxLines: 1,
-                                                  overflow: TextOverflow.ellipsis,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
                                                 ),
-                                          
+
                                                 // Text(
                                                 //     "${widget.scripInfo.symbol!.replaceAll("-EQ", "")} ",
                                                 //     style: textStyle(
@@ -790,20 +833,26 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                 //         FontWeight.w400),
                                                 //     overflow: TextOverflow.ellipsis,
                                                 //     maxLines: 1),
-                                                if (widget.scripInfo.expDate!.isNotEmpty)
+                                                if (widget.scripInfo.expDate!
+                                                    .isNotEmpty)
                                                   Text(
                                                     " ${widget.scripInfo.expDate} ",
                                                     style: WebTextStyles.sub(
-                                                      isDarkTheme: theme.isDarkMode,
+                                                      isDarkTheme:
+                                                          theme.isDarkMode,
                                                       color: theme.isDarkMode
-                                                          ? WebDarkColors.textPrimary
-                                                          : WebColors.textPrimary,
-                                                      fontWeight: WebFonts.medium,
+                                                          ? WebDarkColors
+                                                              .textPrimary
+                                                          : WebColors
+                                                              .textPrimary,
+                                                      fontWeight:
+                                                          WebFonts.medium,
                                                     ),
                                                     maxLines: 1,
-                                                    overflow: TextOverflow.ellipsis,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
                                                   ),
-                                          
+
                                                 // Text(" ${widget.scripInfo.expDate} ",
                                                 //     style: textStyle(
                                                 //         theme.isDarkMode
@@ -811,20 +860,26 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                 //             : colors.colorBlack,
                                                 //         14,
                                                 //         FontWeight.w400)),
-                                                if (widget.scripInfo.option!.isNotEmpty)
+                                                if (widget.scripInfo.option!
+                                                    .isNotEmpty)
                                                   Text(
                                                     widget.scripInfo.option!,
                                                     style: WebTextStyles.sub(
-                                                      isDarkTheme: theme.isDarkMode,
+                                                      isDarkTheme:
+                                                          theme.isDarkMode,
                                                       color: theme.isDarkMode
-                                                          ? WebDarkColors.textPrimary
-                                                          : WebColors.textPrimary,
-                                                      fontWeight: WebFonts.medium,
+                                                          ? WebDarkColors
+                                                              .textPrimary
+                                                          : WebColors
+                                                              .textPrimary,
+                                                      fontWeight:
+                                                          WebFonts.medium,
                                                     ),
                                                     maxLines: 1,
-                                                    overflow: TextOverflow.ellipsis,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
                                                   ),
-                                          
+
                                                 // Text(widget.scripInfo.option!,
                                                 //     style: textStyle(
                                                 //         theme.isDarkMode
@@ -836,914 +891,2847 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                 //     maxLines: 1),
                                                 // CustomExchBadge(
                                                 //     exch: " ${widget.scripInfo.exch}"),
-                                          
+
                                                 Text(
                                                   " ${widget.scripInfo.exch}",
                                                   style: WebTextStyles.para(
-                                                    isDarkTheme: theme.isDarkMode,
+                                                    isDarkTheme:
+                                                        theme.isDarkMode,
                                                     color: theme.isDarkMode
-                                                        ? WebDarkColors.textPrimary
+                                                        ? WebDarkColors
+                                                            .textPrimary
                                                         : WebColors.textPrimary,
                                                     fontWeight: WebFonts.medium,
                                                   ),
-                                                  overflow: TextOverflow.ellipsis,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
                                                   maxLines: 1,
                                                 ),
-                                               
                                               ]),
-                                        ),                                                                    
+                                            ),
                                             Row(
                                               children: [
                                                 OrderScreenHeaderWeb(
                                                   headerData: widget.orderArg,
                                                 ),
-                                              
                                               ],
-                                            ),                            
-                                      ],
-                                    ),
+                                            ),
+                                          ],
+                                        ),
 
-                                     const SizedBox(width: 12),
-                                                // Buy/Sell Toggle
-                                                Row(
-                                                  mainAxisSize: MainAxisSize.min,
-                                                  children: [
-                                                    // Green "B" Button
-                                                    Material(
-                                                      color: Colors.transparent,
-                                                      child: InkWell(
-                                                        onTap: () {
-                                                          setState(() {
-                                                            isBuy = true;
-                                                          });
-                                                          marginUpdate();
-                                                        },
-                                                        borderRadius: BorderRadius.circular(5),
-                                                        child: Container(
-                                                          width: 25,
-                                                          height: 25,
-                                                          decoration: BoxDecoration(
-                                                            color: WebColors.primary,
-                                                            borderRadius: BorderRadius.circular(5),
-                                                          ),
-                                                          child: Center(
-                                                            child: Text(
-                                                              'B',
-                                                              style: WebTextStyles.buttonMd(
-                                                                isDarkTheme: theme.isDarkMode,
-                                                                color: Colors.white,
-                                                                fontWeight: WebFonts.medium,
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        ),
+                                        const SizedBox(width: 12),
+                                        // Buy/Sell Toggle
+                                        Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            // Green "B" Button
+                                            Material(
+                                              color: Colors.transparent,
+                                              child: InkWell(
+                                                onTap: () {
+                                                  setState(() {
+                                                    isBuy = true;
+                                                  });
+                                                  marginUpdate();
+                                                },
+                                                borderRadius:
+                                                    BorderRadius.circular(5),
+                                                child: Container(
+                                                  width: 25,
+                                                  height: 25,
+                                                  decoration: BoxDecoration(
+                                                    color: WebColors.primary,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            5),
+                                                  ),
+                                                  child: Center(
+                                                    child: Text(
+                                                      'B',
+                                                      style: WebTextStyles
+                                                          .buttonMd(
+                                                        isDarkTheme:
+                                                            theme.isDarkMode,
+                                                        color: Colors.white,
+                                                        fontWeight:
+                                                            WebFonts.medium,
                                                       ),
                                                     ),
-                                                    const SizedBox(width: 8),
-                                                    // Toggle Switch
-                                                    MouseRegion(
-                                                      cursor: SystemMouseCursors.click,
-                                                      child: GestureDetector(
-                                                        onTap: () {
-                                                          setState(() {
-                                                            isBuy = !(isBuy ?? true);
-                                                          });
-                                                          marginUpdate();
-                                                        },
-                                                        child: Container(
-                                                          width: 42,
-                                                          height: 22,
-                                                          decoration: BoxDecoration(
-                                                            color: Colors.white,
-                                                            borderRadius: BorderRadius.circular(11),
-                                                          ),
-                                                          child: Stack(
-                                                            children: [
-                                                              AnimatedPositioned(
-                                                                duration: const Duration(milliseconds: 200),
-                                                                curve: Curves.easeInOut,
-                                                                left: (isBuy ?? true) ? 2 : 24,
-                                                                top: 2,
-                                                                child: Container(
-                                                                  width: 16,
-                                                                  height: 16,
-                                                                  decoration: BoxDecoration(
-                                                                    color: Colors.black,
-                                                                    borderRadius: BorderRadius.circular(8),
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    const SizedBox(width: 8),
-                                                    // Red "S" Button
-                                                    Material(
-                                                      color: Colors.transparent,
-                                                      child: InkWell(
-                                                        onTap: () {
-                                                          setState(() {
-                                                            isBuy = false;
-                                                          });
-                                                          marginUpdate();
-                                                        },
-                                                        borderRadius: BorderRadius.circular(5),
-                                                        child: Container(
-                                                          width: 25,
-                                                          height: 25,
-                                                          decoration: BoxDecoration(
-                                                            color: WebColors.tertiary,
-                                                            borderRadius: BorderRadius.circular(5),
-                                                          ),
-                                                          child: Center(
-                                                            child: Text(
-                                                              'S',
-                                                              style: WebTextStyles.buttonMd(
-                                                                isDarkTheme: theme.isDarkMode,
-                                                                color: Colors.white,
-                                                                fontWeight: WebFonts.medium,
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
+                                                  ),
                                                 ),
-
-                                    
-                                  ],
-                                ),
-                              ),
-                            );
-                            
-                            // Wrap with drag functionality if drag notifier is available
-                            if (dragNotifier != null) {
-                              return MouseRegion(
-                                cursor: SystemMouseCursors.move,
-                                child: GestureDetector(
-                                  onPanStart: dragNotifier.onPanStart,
-                                  onPanUpdate: dragNotifier.onPanUpdate,
-                                  onPanEnd: dragNotifier.onPanEnd,
-                                  child: headerContent,
-                                ),
-                              );
-                            }
-                            
-                            return headerContent;
-                          },
-                        ),
-                        // Padding(
-                        //   padding: const EdgeInsets.symmetric(
-                        //       horizontal: 16, vertical: 8),
-                        //   child: Row(
-                        //       crossAxisAlignment: CrossAxisAlignment.end,
-                        //       mainAxisAlignment: MainAxisAlignment.start,
-                        //       children: [
-                        //         // if (orderType == "Regular" ||
-                        //         //     orderType == "Cover" ||
-                        //         //     orderType == "Bracket" ||
-                        //         //     orderType == "GTT") ...[
-                        //         //   Row(children: [
-                        //         //     InkWell(
-                        //         //         onTap: () {
-                        //         //           setState(() {
-                        //         //             isBuy = true;
-                        //         //           });
-                        //         //         },
-                        //         //         child:
-                        //         //             SvgPicture.asset(assets.buyIcon)),
-                        //         //     const SizedBox(width: 6),
-                        //         //     CustomSwitch(
-                        //         //         onChanged: (bool value) {
-                        //         //           setState(() {
-                        //         //             isBuy = value;
-                        //         //           });
-                        //         //           marginUpdate();
-                        //         //         },
-                        //         //         value: isBuy!),
-                        //         //     const SizedBox(width: 6),
-                        //         //     InkWell(
-                        //         //         onTap: () {
-                        //         //           setState(() {
-                        //         //             isBuy = false;
-                        //         //           });
-                        //         //         },
-                        //         //         child:
-                        //         //             SvgPicture.asset(assets.sellIcon))
-                        //         //   ])
-                        //         // ]
-                        //       ]),
-                        // )
-                      ]),
-
-                      // if (widget.orderArg.exchange != "NCOM") ...[
-                      Container(
-                          height: 50,
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-                          child: ListView.builder(
-                              scrollDirection: Axis.horizontal,
-                              itemBuilder: (context, index) {
-                                final isSelected = orderType == orderTypes[index]['type'];
-                                return Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 6),
-                                  child: MouseRegion(
-                                    cursor: SystemMouseCursors.click,
-                                    child: InkWell(
-                                      onTap: () {
-                                        setState(() {
-                                          orderType = orderTypes[index]['type'];
-                                          updatePriceType();
-                                          onOrderTypeChangeClearValues();
-                                          // if (priceType == "SL MKT") {
-                                          //   priceType = "Limit";
-                                          // }
-
-                                          // if (index == 2) {
-                                          //   // index == 1
-                                          //   addStoploss = true;
-                                          // } else {
-                                          //   addStoploss = false;
-                                          // }
-                                          if (orderType == "SIP") {
-                                            sip.startdatemethod("0");
-                                            sip.numberofSips.clear();
-                                          }
-                                        });
-
-                                        if (orderTypes[index]['type'] ==
-                                            "CO - BO") {
-                                          orderInput.chngOrderType(
-                                              orderTypes[index]['type'],
-                                              _isCoverOrderEnabled,
-                                              _isBracketOrderEnabled);
-                                        } else if (orderTypes[index]['type'] ==
-                                            "Intraday") {
-                                          orderInput.chngInvesType(
-                                              InvestType.intraday, "PlcOrder");
-                                        } else if (orderTypes[index]['type'] ==
-                                            "MTF") {
-                                          orderInput.chngInvesType(
-                                              InvestType.mtf, "PlcOrder");
-                                        } else {
-                                          // this condition works both for PlcOrder and GTT
-                                          orderInput.chngInvesType(
-                                              widget.scripInfo.seg == "EQT"
-                                                  ? InvestType.delivery
-                                                  : InvestType.carryForward,
-                                              "PlcOrder");
-                                          orderInput.chngInvesType(
-                                              widget.scripInfo.seg == "EQT"
-                                                  ? InvestType.delivery
-                                                  : InvestType.carryForward,
-                                              "OCO");
-                                        }
-                                        if (orderType != "GTT") {
-                                          isOco = false;
-                                          marginUpdate();
-                                        } else {
-                                          // ref.read(ordInputProvider)
-                                          //     .chngInvesType(
-                                          //         widget.scripInfo.seg == "EQT"
-                                          //             ? InvestType.delivery
-                                          //             : InvestType.carryForward,
-                                          //         "GTT");
-                                          if (orderInput.prcType != "MKT") {
-                                            ref
-                                                .read(ordInputProvider)
-                                                .updatePrcCtrl(
-                                                    "${widget.orderArg.ltp}",
-                                                    widget.orderArg.lotSize!
-                                                        .replaceAll("-", ""));
-                                            ref
-                                                .read(ordInputProvider)
-                                                .chngGTTPriceType("Limit");
-                                          }
-                                          ref
-                                              .read(ordInputProvider)
-                                              .disableCondGTT(false);
-                                        }
-                                        if (priceType == "Market" ||
-                                            priceType == "SL MKT") {
-                                          priceCtrl.text = "Market";
-                                        } else {
-                                          priceCtrl.text = "${widget.orderArg.ltp}";
-                                          ordPrice = priceCtrl.text;
-                                        }
-                                        FocusScope.of(context).unfocus();
-                                      },
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-                                        decoration: BoxDecoration(
-                                          color: isSelected
-                                              ? (theme.isDarkMode
-                                                  ? WebDarkColors.backgroundTertiary
-                                                  : WebColors.backgroundTertiary)
-                                              : Colors.transparent,
-                                          border: Border.all(
-                                            color: isSelected
-                                                ? (theme.isDarkMode
-                                                    ? WebDarkColors.primary
-                                                    : WebColors.primary)
-                                                : (theme.isDarkMode
-                                                    ? WebDarkColors.textSecondary
-                                                    : WebColors.textSecondary),
-                                            width: isSelected ? 1.5 : 1,
-                                          ),
-                                          borderRadius: BorderRadius.circular(50),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 8),
+                                            // Toggle Switch
+                                            MouseRegion(
+                                              cursor: SystemMouseCursors.click,
+                                              child: GestureDetector(
+                                                onTap: () {
+                                                  setState(() {
+                                                    isBuy = !(isBuy ?? true);
+                                                  });
+                                                  marginUpdate();
+                                                },
+                                                child: Container(
+                                                  width: 42,
+                                                  height: 22,
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.white,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            11),
+                                                  ),
+                                                  child: Stack(
+                                                    children: [
+                                                      AnimatedPositioned(
+                                                        duration:
+                                                            const Duration(
+                                                                milliseconds:
+                                                                    200),
+                                                        curve: Curves.easeInOut,
+                                                        left: (isBuy ?? true)
+                                                            ? 2
+                                                            : 24,
+                                                        top: 2,
+                                                        child: Container(
+                                                          width: 16,
+                                                          height: 16,
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            color: Colors.black,
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        8),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 8),
+                                            // Red "S" Button
+                                            Material(
+                                              color: Colors.transparent,
+                                              child: InkWell(
+                                                onTap: () {
+                                                  setState(() {
+                                                    isBuy = false;
+                                                  });
+                                                  marginUpdate();
+                                                },
+                                                borderRadius:
+                                                    BorderRadius.circular(5),
+                                                child: Container(
+                                                  width: 25,
+                                                  height: 25,
+                                                  decoration: BoxDecoration(
+                                                    color: WebColors.tertiary,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            5),
+                                                  ),
+                                                  child: Center(
+                                                    child: Text(
+                                                      'S',
+                                                      style: WebTextStyles
+                                                          .buttonMd(
+                                                        isDarkTheme:
+                                                            theme.isDarkMode,
+                                                        color: Colors.white,
+                                                        fontWeight:
+                                                            WebFonts.medium,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                        child: Text(
-                                          orderTypes[index]['type'],
-                                          overflow: TextOverflow.ellipsis,
-                                          style: WebTextStyles.tab(
-                                            isDarkTheme: theme.isDarkMode,
-                                            color: isSelected
-                                                ? (theme.isDarkMode
-                                                    ? WebDarkColors.textPrimary
-                                                    : WebColors.textPrimary)
-                                                : (theme.isDarkMode
-                                                    ? WebDarkColors.navItem
-                                                    : WebColors.navItem),
-                                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                                          ),
-                                        ),
-                                      ),
+                                      ],
                                     ),
                                   ),
                                 );
+
+                                // Wrap with drag functionality if drag notifier is available
+                                if (dragNotifier != null) {
+                                  return MouseRegion(
+                                    cursor: SystemMouseCursors.move,
+                                    child: GestureDetector(
+                                      onPanStart: dragNotifier.onPanStart,
+                                      onPanUpdate: dragNotifier.onPanUpdate,
+                                      onPanEnd: dragNotifier.onPanEnd,
+                                      child: headerContent,
+                                    ),
+                                  );
+                                }
+
+                                return headerContent;
                               },
-                              itemCount: orderTypes.length)),
-                      // ]
+                            ),
+                            // Padding(
+                            //   padding: const EdgeInsets.symmetric(
+                            //       horizontal: 16, vertical: 8),
+                            //   child: Row(
+                            //       crossAxisAlignment: CrossAxisAlignment.end,
+                            //       mainAxisAlignment: MainAxisAlignment.start,
+                            //       children: [
+                            //         // if (orderType == "Regular" ||
+                            //         //     orderType == "Cover" ||
+                            //         //     orderType == "Bracket" ||
+                            //         //     orderType == "GTT") ...[
+                            //         //   Row(children: [
+                            //         //     InkWell(
+                            //         //         onTap: () {
+                            //         //           setState(() {
+                            //         //             isBuy = true;
+                            //         //           });
+                            //         //         },
+                            //         //         child:
+                            //         //             SvgPicture.asset(assets.buyIcon)),
+                            //         //     const SizedBox(width: 6),
+                            //         //     CustomSwitch(
+                            //         //         onChanged: (bool value) {
+                            //         //           setState(() {
+                            //         //             isBuy = value;
+                            //         //           });
+                            //         //           marginUpdate();
+                            //         //         },
+                            //         //         value: isBuy!),
+                            //         //     const SizedBox(width: 6),
+                            //         //     InkWell(
+                            //         //         onTap: () {
+                            //         //           setState(() {
+                            //         //             isBuy = false;
+                            //         //           });
+                            //         //         },
+                            //         //         child:
+                            //         //             SvgPicture.asset(assets.sellIcon))
+                            //         //   ])
+                            //         // ]
+                            //       ]),
+                            // )
+                          ]),
 
-                      const SizedBox(height: 10),
-                      Expanded(
-                        child: SingleChildScrollView(
-                          child: Column(children: [
-                            if (orderType == "SIP") ...[
-                              Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 16, vertical: 4),
-                                        child: Row(children: [
-                                          Expanded(
-                                              child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                headerTitleText(
-                                                    "Frequency", theme),
-                                                const SizedBox(height: 5),
-                                                SizedBox(
-                                                    height: 44,
-                                                    child:
-                                                        DropdownButtonHideUnderline(
-                                                            child:
-                                                                DropdownButton2(
-                                                                    dropdownStyleData: DropdownStyleData(
-                                                                        maxHeight:
-                                                                            240,
-                                                                        decoration: BoxDecoration(
-                                                                            borderRadius: BorderRadius.circular(
-                                                                                10),
-                                                                            color: !theme.isDarkMode
-                                                                                ? colors
-                                                                                    .colorWhite
-                                                                                : const Color.fromARGB(255, 18, 18,
-                                                                                    18))),
-                                                                    buttonStyleData: ButtonStyleData(
-                                                                        height:
-                                                                            40,
-                                                                        decoration: BoxDecoration(
-                                                                            color: theme.isDarkMode
-                                                                                ? colors.darkGrey
-                                                                                : const Color(0xffF1F3F8),
-                                                                            borderRadius: const BorderRadius.all(Radius.circular(32)))),
-                                                                    isExpanded: true,
-                                                                    style: theme.isDarkMode ? textStyles.textFieldLabelStyle.copyWith(color: WebDarkColors.textPrimary) : textStyles.textFieldLabelStyle,
-                                                                    items: sipDropdown.map((item) {
-                                                                      return DropdownMenuItem(
-                                                                        value:
-                                                                            item,
-                                                                        child: Text(
-                                                                            item.toString()),
-                                                                      );
-                                                                    }).toList(),
-                                                                    value: selectedValue,
-                                                                    onChanged: (newValue) {
-                                                                      setState(
-                                                                          () {
-                                                                        selectedValue =
-                                                                            newValue!.toString();
+                          // if (widget.orderArg.exchange != "NCOM") ...[
+                          Container(
+                              height: 50,
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              child: ListView.builder(
+                                  scrollDirection: Axis.horizontal,
+                                  itemBuilder: (context, index) {
+                                    final isSelected =
+                                        orderType == orderTypes[index]['type'];
+                                    return Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 6),
+                                      child: MouseRegion(
+                                        cursor: SystemMouseCursors.click,
+                                        child: InkWell(
+                                          onTap: () {
+                                            setState(() {
+                                              orderType =
+                                                  orderTypes[index]['type'];
+                                              updatePriceType();
+                                              onOrderTypeChangeClearValues();
+                                              // if (priceType == "SL MKT") {
+                                              //   priceType = "Limit";
+                                              // }
 
-                                                                        FocusScope.of(context)
-                                                                            .unfocus();
-                                                                      });
-                                                                    })))
-                                              ])),
-                                          const SizedBox(width: 16),
-                                          Expanded(
-                                              child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                headerTitleText("Qty", theme),
-                                                const SizedBox(height: 5),
-                                                SizedBox(
-                                                  height: 44,
-                                                  child: TextFormField(
-                                                    textAlign: TextAlign.center,
-                                                    controller: sipqtyctrl,
-                                                    style: theme.isDarkMode
-                                                        ? textStyles
-                                                            .textFieldLabelStyle
-                                                            .copyWith(
-                                                                color: colors
-                                                                    .colorWhite)
-                                                        : textStyles
-                                                            .textFieldLabelStyle,
-                                                    keyboardType:
-                                                        TextInputType.number,
-                                                    decoration: InputDecoration(
-                                                        prefixIcon: Theme(
-                                                            data: ThemeData(
-                                                                splashColor: Colors
-                                                                    .transparent,
-                                                                splashFactory: NoSplash
-                                                                    .splashFactory),
-                                                            child: InkWell(
-                                                                // onLongPress: () {
-                                                                //   setState(
-                                                                //       () {
-                                                                //     if (sipqtyctrl
-                                                                //         .text
-                                                                //         .isNotEmpty) {
-                                                                //       if (int.parse(sipqtyctrl.text) >
-                                                                //           multiplayer) {
-                                                                //         sipqtyctrl.text = (int.parse(sipqtyctrl.text) - multiplayer).toString();
-                                                                //         double inputValue = double.tryParse(sipqtyctrl.text) ?? 0.00;
-                                                                //         double ltpsip = double.parse("${widget.orderArg.ltp}");
-                                                                //         resultsip = inputValue * ltpsip;
-                                                                //       }
-                                                                //     } else {
-                                                                //       sipqtyctrl.text =
-                                                                //           "$multiplayer";
-                                                                //     }
-                                                                //   });
-                                                                // },
-                                                                onTap: () {
-                                                                  setState(() {
-                                                                    // if () {
-                                                                    int sipQty =
-                                                                        int.tryParse(sipqtyctrl.text) ??
-                                                                            multiplayer;
-                                                                    //  if (sipQty ==
-                                                                    //   multiplayer) {
-                                                                    // sipqtyctrl.text = (sipQty).toString();
-                                                                    //   }
-                                                                    if (sipqtyctrl
-                                                                            .text
-                                                                            .isNotEmpty &&
-                                                                        sipQty >
-                                                                            multiplayer) {
-                                                                      sipqtyctrl
-                                                                          .text = (sipQty -
-                                                                              multiplayer)
-                                                                          .toString();
-                                                                      double
-                                                                          ltpsip =
-                                                                          double.parse(
-                                                                              "${widget.orderArg.ltp}");
-                                                                      int inputValue =
-                                                                          int.tryParse(sipqtyctrl.text) ??
-                                                                              0;
-                                                                      resultsip =
-                                                                          inputValue *
-                                                                              ltpsip;
-                                                                      // }
-                                                                    } else {
-                                                                      sipqtyctrl
-                                                                              .text =
-                                                                          "$multiplayer";
-                                                                    }
-                                                                  });
-                                                                },
-                                                                child: SvgPicture.asset(theme.isDarkMode ? assets.darkCMinus : assets.minusIcon,
-                                                                    fit: BoxFit
-                                                                        .scaleDown))),
-                                                        suffixIcon: Theme(
-                                                            data: ThemeData(
-                                                                splashColor: Colors
-                                                                    .transparent,
-                                                                splashFactory:
-                                                                    NoSplash
-                                                                        .splashFactory),
-                                                            child: InkWell(
-                                                                // onLongPress: () {
-                                                                //   setState(
-                                                                //       () {
-                                                                //     if (sipqtyctrl
-                                                                //         .text
-                                                                //         .isNotEmpty) {
-                                                                //       sipqtyctrl.text =
-                                                                //           (int.parse(sipqtyctrl.text) + multiplayer).toString();
-                                                                //       double
-                                                                //           inputValue =
-                                                                //           double.tryParse(sipqtyctrl.text) ?? 0.00;
-                                                                //       double
-                                                                //           ltpsip =
-                                                                //           double.parse("${widget.orderArg.ltp}");
-                                                                //       resultsip =
-                                                                //           inputValue * ltpsip;
-                                                                //     } else {
-                                                                //       sipqtyctrl.text =
-                                                                //           "$multiplayer";
-                                                                //     }
-                                                                //   });
-                                                                // },
-                                                                onTap: () {
-                                                                  setState(() {
-                                                                    int sipQty =
-                                                                        int.tryParse(sipqtyctrl.text) ??
-                                                                            multiplayer;
-                                                                    bool
-                                                                        hasNoFreezeLimit =
-                                                                        frezQty <=
-                                                                            lotSize;
-                                                                    bool
-                                                                        withinLimit =
-                                                                        hasNoFreezeLimit ||
-                                                                            sipQty <
-                                                                                frezQtyOrderSliceMaxLimit * frezQty;
+                                              // if (index == 2) {
+                                              //   // index == 1
+                                              //   addStoploss = true;
+                                              // } else {
+                                              //   addStoploss = false;
+                                              // }
+                                              if (orderType == "SIP") {
+                                                sip.startdatemethod("0");
+                                                sip.numberofSips.clear();
+                                              }
+                                            });
 
-                                                                    if (sipqtyctrl
-                                                                            .text
-                                                                            .isNotEmpty &&
-                                                                        withinLimit) {
-                                                                      sipqtyctrl
-                                                                          .text = (sipQty +
-                                                                              multiplayer)
-                                                                          .toString();
-                                                                      double
-                                                                          ltpsip =
-                                                                          double.parse(
-                                                                              "${widget.orderArg.ltp}");
-                                                                      int inputValue =
-                                                                          int.tryParse(sipqtyctrl.text) ??
-                                                                              0;
-                                                                      resultsip =
-                                                                          inputValue *
-                                                                              ltpsip;
-                                                                    } else if (!hasNoFreezeLimit) {
-                                                                      ResponsiveSnackBar.showWarning(
-                                                                          context,
-                                                                          "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}");
-                                                                      // sipqtyctrl.text =
-                                                                      //     "$multiplayer";
-                                                                    }
-                                                                  });
-                                                                },
-                                                                child: SvgPicture.asset(theme.isDarkMode ? assets.darkAdd : assets.addIcon,
-                                                                    fit: BoxFit
-                                                                        .scaleDown))),
-                                                        fillColor: theme.isDarkMode
-                                                            ? colors.darkGrey
-                                                            : const Color(
-                                                                0xffF1F3F8),
-                                                        filled: true,
-                                                        enabledBorder:
-                                                            OutlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.circular(30)),
-                                                        disabledBorder: InputBorder.none,
-                                                        focusedBorder: OutlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.circular(30)),
-                                                        contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-                                                        border: OutlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.circular(30))),
-                                                    onTap: () {},
-                                                    onChanged: (value) {
-                                                      if (value.isEmpty ||
-                                                          value == "0") {
-                                                        ResponsiveSnackBar.showWarning(context,
-                                                            "The minimum quantity of this stock is one.");
-                                                      } else {
-                                                        setState(() {
-                                                          int inputValue =
-                                                              int.tryParse(
-                                                                      value) ??
-                                                                  0;
-
-                                                          double ltpsip =
-                                                              double.parse(
-                                                                  "${widget.orderArg.ltp}");
-                                                          resultsip =
-                                                              inputValue *
-                                                                  ltpsip;
-                                                          sipLtpctrl.text =
-                                                              resultsip
-                                                                  .toStringAsFixed(
-                                                                      2);
-                                                        });
-                                                      }
-                                                    },
-                                                  ),
-                                                ),
-                                              ]))
-                                        ])),
-                                    const SizedBox(height: 10),
-                                    Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 16, vertical: 4),
-                                        child: Row(children: [
-                                          Expanded(
-                                              child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                headerTitleText(
-                                                    "Start Date", theme),
-                                                const SizedBox(height: 5),
-                                                SizedBox(
-                                                    height: 44,
-                                                    child: TextFormField(
-                                                        controller:
-                                                            sip.datefield,
-                                                        style: theme.isDarkMode
-                                                            ? textStyles
-                                                                .textFieldLabelStyle
-                                                                .copyWith(
-                                                                    color: colors
-                                                                        .colorWhite)
-                                                            : textStyles
-                                                                .textFieldLabelStyle,
-                                                        decoration: InputDecoration(
-                                                            fillColor: theme.isDarkMode
-                                                                ? colors
-                                                                    .darkGrey
-                                                                : const Color(
-                                                                    0xffF1F3F8),
-                                                            filled: true,
-                                                            enabledBorder: OutlineInputBorder(
-                                                                borderSide:
-                                                                    BorderSide
-                                                                        .none,
-                                                                borderRadius:
-                                                                    BorderRadius.circular(
-                                                                        30)),
-                                                            disabledBorder:
-                                                                InputBorder
-                                                                    .none,
-                                                            focusedBorder:
-                                                                OutlineInputBorder(
-                                                                    borderSide: BorderSide.none,
-                                                                    borderRadius: BorderRadius.circular(30)),
-                                                            contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-                                                            border: OutlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.circular(30))),
-                                                        readOnly: true,
-                                                        onTap: () {
-                                                          sip.providedate(
-                                                              context,
-                                                              theme,
-                                                              "2");
-                                                        },
-                                                        onChanged: (value) {
-                                                          sip.providedate(
-                                                              context,
-                                                              theme,
-                                                              "2");
-                                                        }))
-                                              ])),
-                                          const SizedBox(width: 16),
-                                          Expanded(
-                                              child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                headerTitleText(
-                                                    "Number of SIPs", theme),
-                                                const SizedBox(height: 5),
-                                                SizedBox(
-                                                    height: 44,
-                                                    child: TextFormField(
-                                                        keyboardType: TextInputType
-                                                            .number,
-                                                        controller:
-                                                            sip.numberofSips,
-                                                        style: theme.isDarkMode
-                                                            ? textStyles
-                                                                .textFieldLabelStyle
-                                                                .copyWith(
-                                                                    color: colors
-                                                                        .colorWhite)
-                                                            : textStyles
-                                                                .textFieldLabelStyle,
-                                                        decoration: InputDecoration(
-                                                            fillColor: theme.isDarkMode
-                                                                ? colors
-                                                                    .darkGrey
-                                                                : const Color(
-                                                                    0xffF1F3F8),
-                                                            filled: true,
-                                                            enabledBorder: OutlineInputBorder(
-                                                                borderSide:
-                                                                    BorderSide
-                                                                        .none,
-                                                                borderRadius:
-                                                                    BorderRadius.circular(
-                                                                        30)),
-                                                            disabledBorder: InputBorder
-                                                                .none,
-                                                            focusedBorder: OutlineInputBorder(
-                                                                borderSide: BorderSide.none,
-                                                                borderRadius: BorderRadius.circular(30)),
-                                                            contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-                                                            border: OutlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.circular(30))),
-                                                        onChanged: (value) {
-                                                          int inputValue =
-                                                              int.tryParse(
-                                                                      value) ??
-                                                                  0;
-                                                          if (value.isEmpty ||
-                                                              inputValue < 1) {
-                                                            ResponsiveSnackBar.showWarning(
-                                                                context,
-                                                                "The minimum number of this SIP is one.");
-                                                          }
-                                                          //  if (value.isEmpty) {
-                                                          //   ScaffoldMessenger
-                                                          //           .of(
-                                                          //               context)
-                                                          //       .showSnackBar(
-                                                          //           ResponsiveSnackBar.showWarning(
-                                                          //               context,
-                                                          //               "The minimum number of this SIP is one."));
-                                                          // }
-                                                        }))
-                                              ]))
-                                        ])),
-                                    const SizedBox(height: 40),
-                                    Center(
-                                        child: Column(children: [
-                                      Text(
-                                        "₹${resultsip == 0.0 ? widget.orderArg.ltp : resultsip.toStringAsFixed(2)}",
-                                        style: WebTextStyles.hero(
-                                          isDarkTheme: theme.isDarkMode,
-                                          color: WebColors.profit,
-                                          fontWeight: WebFonts.semiBold,
+                                            if (orderTypes[index]['type'] ==
+                                                "CO - BO") {
+                                              orderInput.chngOrderType(
+                                                  orderTypes[index]['type'],
+                                                  _isCoverOrderEnabled,
+                                                  _isBracketOrderEnabled);
+                                            } else if (orderTypes[index]
+                                                    ['type'] ==
+                                                "Intraday") {
+                                              orderInput.chngInvesType(
+                                                  InvestType.intraday,
+                                                  "PlcOrder");
+                                            } else if (orderTypes[index]
+                                                    ['type'] ==
+                                                "MTF") {
+                                              orderInput.chngInvesType(
+                                                  InvestType.mtf, "PlcOrder");
+                                            } else {
+                                              // this condition works both for PlcOrder and GTT
+                                              orderInput.chngInvesType(
+                                                  widget.scripInfo.seg == "EQT"
+                                                      ? InvestType.delivery
+                                                      : InvestType.carryForward,
+                                                  "PlcOrder");
+                                              orderInput.chngInvesType(
+                                                  widget.scripInfo.seg == "EQT"
+                                                      ? InvestType.delivery
+                                                      : InvestType.carryForward,
+                                                  "OCO");
+                                            }
+                                            if (orderType != "GTT") {
+                                              isOco = false;
+                                              marginUpdate();
+                                            } else {
+                                              // ref.read(ordInputProvider)
+                                              //     .chngInvesType(
+                                              //         widget.scripInfo.seg == "EQT"
+                                              //             ? InvestType.delivery
+                                              //             : InvestType.carryForward,
+                                              //         "GTT");
+                                              if (orderInput.prcType != "MKT") {
+                                                ref
+                                                    .read(ordInputProvider)
+                                                    .updatePrcCtrl(
+                                                        "${widget.orderArg.ltp}",
+                                                        widget.orderArg.lotSize!
+                                                            .replaceAll(
+                                                                "-", ""));
+                                                ref
+                                                    .read(ordInputProvider)
+                                                    .chngGTTPriceType("Limit");
+                                              }
+                                              ref
+                                                  .read(ordInputProvider)
+                                                  .disableCondGTT(false);
+                                            }
+                                            if (priceType == "Market" ||
+                                                priceType == "SL MKT") {
+                                              priceCtrl.text = "Market";
+                                            } else {
+                                              priceCtrl.text =
+                                                  "${widget.orderArg.ltp}";
+                                              ordPrice = priceCtrl.text;
+                                            }
+                                            FocusScope.of(context).unfocus();
+                                          },
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 12, vertical: 7),
+                                            decoration: BoxDecoration(
+                                              color: isSelected
+                                                  ? (theme.isDarkMode
+                                                      ? WebDarkColors
+                                                          .backgroundTertiary
+                                                      : WebColors
+                                                          .backgroundTertiary)
+                                                  : Colors.transparent,
+                                              border: Border.all(
+                                                color: isSelected
+                                                    ? (theme.isDarkMode
+                                                        ? WebDarkColors.primary
+                                                        : WebColors.primary)
+                                                    : (theme.isDarkMode
+                                                        ? WebDarkColors
+                                                            .textSecondary
+                                                        : WebColors
+                                                            .textSecondary),
+                                                width: isSelected ? 1.5 : 1,
+                                              ),
+                                              borderRadius:
+                                                  BorderRadius.circular(50),
+                                            ),
+                                            child: Text(
+                                              orderTypes[index]['type'],
+                                              overflow: TextOverflow.ellipsis,
+                                              style: WebTextStyles.tab(
+                                                isDarkTheme: theme.isDarkMode,
+                                                color: isSelected
+                                                    ? (theme.isDarkMode
+                                                        ? WebDarkColors
+                                                            .textPrimary
+                                                        : WebColors.textPrimary)
+                                                    : (theme.isDarkMode
+                                                        ? WebDarkColors.navItem
+                                                        : WebColors.navItem),
+                                                fontWeight: isSelected
+                                                    ? FontWeight.w600
+                                                    : FontWeight.w500,
+                                              ),
+                                            ),
+                                          ),
                                         ),
                                       ),
-                                      Text("Installment Amount",
-                                          style: WebTextStyles.titleMedium(
-                                            isDarkTheme: theme.isDarkMode,
-                                            color: theme.isDarkMode
-                                                ? WebDarkColors.textPrimary
-                                                : WebColors.textPrimary,
-                                            fontWeight: WebFonts.semiBold,
-                                          ))
-                                    ]))
-                                  ])
-                            ],
-                            if (orderType == "GTT") ...[
-                              // GttCondition(
-                              //     isOco: false,
-                              //     isGtt: isGtt,
-                              //     isModify: widget.orderArg.isModify),
+                                    );
+                                  },
+                                  itemCount: orderTypes.length)),
+                          // ]
 
-                              // const SizedBox(height: 16),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16.0),
-                                child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Row(children: [
-                                        headerTitleText(
-                                            isOco
-                                                ? "Target Trigger Price"
-                                                : "Trigger Price",
-                                            theme),
-                                      ]),
-                                      const SizedBox(height: 10),
-                                      SizedBox(
-                                          height: 40,
-                                          width: 150,
-                                          child: Semantics(
-                                            identifier: 'trigger_price_input',
-                                            child: CustomTextFormField(
-                                                inputFormate: [
-                                                  FilteringTextInputFormatter
-                                                      .allow(RegExp(
-                                                          r'^\d*\.?\d{0,2}$'))
-                                                ],
-                                                 fillColor: theme.isDarkMode
-                                                    ? colors.darkGrey
-                                                    : const Color(0xffF1F3F8),
-                                                onChanged: (value) {
-                                                  double inputPrice =
-                                                      double.tryParse(value) ??
-                                                          0;
-
-                                                  if (value.isNotEmpty &&
-                                                      inputPrice > 0) {
-                                                    final regex = RegExp(
-                                                        r'^(\d+)?(\.\d{0,2})?$');
-                                                    if (!regex
-                                                        .hasMatch(value)) {
-                                                      orderInput.val1Ctrl.text =
-                                                          value.substring(0,
-                                                              value.length - 1);
-                                                      orderInput.val1Ctrl
-                                                              .selection =
-                                                          TextSelection.collapsed(
-                                                              offset: orderInput
-                                                                  .val1Ctrl
-                                                                  .text
-                                                                  .length);
-                                                    }
-                                                  }
-                                                  if (value.isEmpty) {
-                                                    ResponsiveSnackBar.showWarning(context,
-                                                        "Target trigger price cannot be empty");
-                                                  } else if (inputPrice <= 0) {
-                                                    ResponsiveSnackBar.showWarning(context,
-                                                        "Target trigger price cannot be 0");
-                                                  }
-                                                },
-                                                hintText:
-                                                    "${widget.orderArg.ltp}",
-                                                hintStyle: WebTextStyles.formInput(
-                                                  isDarkTheme: theme.isDarkMode,
-                                                  color: theme.isDarkMode
-                                                      ? WebDarkColors.textSecondary
-                                                      : WebColors.textSecondary,
-                                                ),
-                                                keyboardType:
-                                                    const TextInputType
-                                                        .numberWithOptions(
-                                                        decimal: true),
-                                                style: WebTextStyles.formInput(
-                                                  isDarkTheme: theme.isDarkMode,
-                                                  color: theme.isDarkMode
-                                                      ? WebDarkColors.textPrimary
-                                                      : WebColors.textPrimary,
-                                                ),
-                                                textCtrl: orderInput.val1Ctrl,
-                                                textAlign: TextAlign.start),
-                                          )),
-                                    ]),
-                              ),
-
-                              // const SizedBox(height: 8),
-                              // // InvesTypeWidget(
-                              // //     scripInfo: widget.scripInfo, ordType: "GTT"),
-                              // const SizedBox(height: 8),
-                              // Padding(
-                              //     padding: const EdgeInsets.only(left: 16),
-                              //     child: headerTitleText("Price type", theme)),
-                              // const SizedBox(height: 10),
-                              // PriceTypeBtn(
-                              //     isOco: false,
-                              //     isGtt: isGtt,
-                              //     ltp: "${widget.orderArg.ltp}"),
-                              // const SizedBox(height: 3),
-                              // Divider(
-                              //     color: theme.isDarkMode
-                              //         ? colors.darkColorDivider
-                              //         : colors.colorDivider),
-
-                              const SizedBox(height: 16),
-                              Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16),
-                                  child: Row(
+                          const SizedBox(height: 10),
+                          Expanded(
+                            child: SingleChildScrollView(
+                              child: Column(children: [
+                                if (orderType == "SIP") ...[
+                                  Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        Expanded(
+                                        Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 16, vertical: 4),
+                                            child: Row(children: [
+                                              Expanded(
+                                                  child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                    headerTitleText(
+                                                        "Frequency", theme),
+                                                    const SizedBox(height: 5),
+                                                    SizedBox(
+                                                        height: 44,
+                                                        child: DropdownButtonHideUnderline(
+                                                            child: DropdownButton2(
+                                                                dropdownStyleData: DropdownStyleData(maxHeight: 240, decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: !theme.isDarkMode ? colors.colorWhite : const Color.fromARGB(255, 18, 18, 18))),
+                                                                buttonStyleData: ButtonStyleData(height: 40, decoration: BoxDecoration(color: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8), borderRadius: const BorderRadius.all(Radius.circular(32)))),
+                                                                isExpanded: true,
+                                                                style: theme.isDarkMode ? textStyles.textFieldLabelStyle.copyWith(color: WebDarkColors.textPrimary) : textStyles.textFieldLabelStyle,
+                                                                items: sipDropdown.map((item) {
+                                                                  return DropdownMenuItem(
+                                                                    value: item,
+                                                                    child: Text(
+                                                                        item.toString()),
+                                                                  );
+                                                                }).toList(),
+                                                                value: selectedValue,
+                                                                onChanged: (newValue) {
+                                                                  setState(() {
+                                                                    selectedValue =
+                                                                        newValue!
+                                                                            .toString();
+
+                                                                    FocusScope.of(
+                                                                            context)
+                                                                        .unfocus();
+                                                                  });
+                                                                })))
+                                                  ])),
+                                              const SizedBox(width: 16),
+                                              Expanded(
+                                                  child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                    headerTitleText(
+                                                        "Qty", theme),
+                                                    const SizedBox(height: 5),
+                                                    SizedBox(
+                                                      height: 44,
+                                                      child: TextFormField(
+                                                        textAlign:
+                                                            TextAlign.center,
+                                                        controller: sipqtyctrl,
+                                                        style: theme.isDarkMode
+                                                            ? textStyles
+                                                                .textFieldLabelStyle
+                                                                .copyWith(
+                                                                    color: colors
+                                                                        .colorWhite)
+                                                            : textStyles
+                                                                .textFieldLabelStyle,
+                                                        keyboardType:
+                                                            TextInputType
+                                                                .number,
+                                                        decoration: InputDecoration(
+                                                            prefixIcon: Theme(
+                                                                data: ThemeData(splashColor: Colors.transparent, splashFactory: NoSplash.splashFactory),
+                                                                child: InkWell(
+                                                                    // onLongPress: () {
+                                                                    //   setState(
+                                                                    //       () {
+                                                                    //     if (sipqtyctrl
+                                                                    //         .text
+                                                                    //         .isNotEmpty) {
+                                                                    //       if (int.parse(sipqtyctrl.text) >
+                                                                    //           multiplayer) {
+                                                                    //         sipqtyctrl.text = (int.parse(sipqtyctrl.text) - multiplayer).toString();
+                                                                    //         double inputValue = double.tryParse(sipqtyctrl.text) ?? 0.00;
+                                                                    //         double ltpsip = double.parse("${widget.orderArg.ltp}");
+                                                                    //         resultsip = inputValue * ltpsip;
+                                                                    //       }
+                                                                    //     } else {
+                                                                    //       sipqtyctrl.text =
+                                                                    //           "$multiplayer";
+                                                                    //     }
+                                                                    //   });
+                                                                    // },
+                                                                    onTap: () {
+                                                                      setState(
+                                                                          () {
+                                                                        // if () {
+                                                                        int sipQty =
+                                                                            int.tryParse(sipqtyctrl.text) ??
+                                                                                multiplayer;
+                                                                        //  if (sipQty ==
+                                                                        //   multiplayer) {
+                                                                        // sipqtyctrl.text = (sipQty).toString();
+                                                                        //   }
+                                                                        if (sipqtyctrl.text.isNotEmpty &&
+                                                                            sipQty >
+                                                                                multiplayer) {
+                                                                          sipqtyctrl.text =
+                                                                              (sipQty - multiplayer).toString();
+                                                                          double
+                                                                              ltpsip =
+                                                                              double.parse("${widget.orderArg.ltp}");
+                                                                          int inputValue =
+                                                                              int.tryParse(sipqtyctrl.text) ?? 0;
+                                                                          resultsip =
+                                                                              inputValue * ltpsip;
+                                                                          // }
+                                                                        } else {
+                                                                          sipqtyctrl.text =
+                                                                              "$multiplayer";
+                                                                        }
+                                                                      });
+                                                                    },
+                                                                    child: SvgPicture.asset(theme.isDarkMode ? assets.darkCMinus : assets.minusIcon, fit: BoxFit.scaleDown))),
+                                                            suffixIcon: Theme(
+                                                                data: ThemeData(splashColor: Colors.transparent, splashFactory: NoSplash.splashFactory),
+                                                                child: InkWell(
+                                                                    // onLongPress: () {
+                                                                    //   setState(
+                                                                    //       () {
+                                                                    //     if (sipqtyctrl
+                                                                    //         .text
+                                                                    //         .isNotEmpty) {
+                                                                    //       sipqtyctrl.text =
+                                                                    //           (int.parse(sipqtyctrl.text) + multiplayer).toString();
+                                                                    //       double
+                                                                    //           inputValue =
+                                                                    //           double.tryParse(sipqtyctrl.text) ?? 0.00;
+                                                                    //       double
+                                                                    //           ltpsip =
+                                                                    //           double.parse("${widget.orderArg.ltp}");
+                                                                    //       resultsip =
+                                                                    //           inputValue * ltpsip;
+                                                                    //     } else {
+                                                                    //       sipqtyctrl.text =
+                                                                    //           "$multiplayer";
+                                                                    //     }
+                                                                    //   });
+                                                                    // },
+                                                                    onTap: () {
+                                                                      setState(
+                                                                          () {
+                                                                        int sipQty =
+                                                                            int.tryParse(sipqtyctrl.text) ??
+                                                                                multiplayer;
+                                                                        bool
+                                                                            hasNoFreezeLimit =
+                                                                            frezQty <=
+                                                                                lotSize;
+                                                                        bool
+                                                                            withinLimit =
+                                                                            hasNoFreezeLimit ||
+                                                                                sipQty < frezQtyOrderSliceMaxLimit * frezQty;
+
+                                                                        if (sipqtyctrl.text.isNotEmpty &&
+                                                                            withinLimit) {
+                                                                          sipqtyctrl.text =
+                                                                              (sipQty + multiplayer).toString();
+                                                                          double
+                                                                              ltpsip =
+                                                                              double.parse("${widget.orderArg.ltp}");
+                                                                          int inputValue =
+                                                                              int.tryParse(sipqtyctrl.text) ?? 0;
+                                                                          resultsip =
+                                                                              inputValue * ltpsip;
+                                                                        } else if (!hasNoFreezeLimit) {
+                                                                          ResponsiveSnackBar.showWarning(
+                                                                              context,
+                                                                              "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}");
+                                                                          // sipqtyctrl.text =
+                                                                          //     "$multiplayer";
+                                                                        }
+                                                                      });
+                                                                    },
+                                                                    child: SvgPicture.asset(theme.isDarkMode ? assets.darkAdd : assets.addIcon, fit: BoxFit.scaleDown))),
+                                                            fillColor: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
+                                                            filled: true,
+                                                            enabledBorder: OutlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.circular(30)),
+                                                            disabledBorder: InputBorder.none,
+                                                            focusedBorder: OutlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.circular(30)),
+                                                            contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                                                            border: OutlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.circular(30))),
+                                                        onTap: () {},
+                                                        onChanged: (value) {
+                                                          if (value.isEmpty ||
+                                                              value == "0") {
+                                                            ResponsiveSnackBar
+                                                                .showWarning(
+                                                                    context,
+                                                                    "The minimum quantity of this stock is one.");
+                                                          } else {
+                                                            setState(() {
+                                                              int inputValue =
+                                                                  int.tryParse(
+                                                                          value) ??
+                                                                      0;
+
+                                                              double ltpsip =
+                                                                  double.parse(
+                                                                      "${widget.orderArg.ltp}");
+                                                              resultsip =
+                                                                  inputValue *
+                                                                      ltpsip;
+                                                              sipLtpctrl.text =
+                                                                  resultsip
+                                                                      .toStringAsFixed(
+                                                                          2);
+                                                            });
+                                                          }
+                                                        },
+                                                      ),
+                                                    ),
+                                                  ]))
+                                            ])),
+                                        const SizedBox(height: 10),
+                                        Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 16, vertical: 4),
+                                            child: Row(children: [
+                                              Expanded(
+                                                  child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                    headerTitleText(
+                                                        "Start Date", theme),
+                                                    const SizedBox(height: 5),
+                                                    SizedBox(
+                                                        height: 44,
+                                                        child: TextFormField(
+                                                            controller:
+                                                                sip.datefield,
+                                                            style: theme.isDarkMode
+                                                                ? textStyles
+                                                                    .textFieldLabelStyle
+                                                                    .copyWith(
+                                                                        color: colors
+                                                                            .colorWhite)
+                                                                : textStyles
+                                                                    .textFieldLabelStyle,
+                                                            decoration: InputDecoration(
+                                                                fillColor: theme
+                                                                        .isDarkMode
+                                                                    ? colors
+                                                                        .darkGrey
+                                                                    : const Color(
+                                                                        0xffF1F3F8),
+                                                                filled: true,
+                                                                enabledBorder: OutlineInputBorder(
+                                                                    borderSide:
+                                                                        BorderSide
+                                                                            .none,
+                                                                    borderRadius:
+                                                                        BorderRadius.circular(
+                                                                            30)),
+                                                                disabledBorder:
+                                                                    InputBorder
+                                                                        .none,
+                                                                focusedBorder:
+                                                                    OutlineInputBorder(
+                                                                        borderSide: BorderSide.none,
+                                                                        borderRadius: BorderRadius.circular(30)),
+                                                                contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                                                                border: OutlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.circular(30))),
+                                                            readOnly: true,
+                                                            onTap: () {
+                                                              sip.providedate(
+                                                                  context,
+                                                                  theme,
+                                                                  "2");
+                                                            },
+                                                            onChanged: (value) {
+                                                              sip.providedate(
+                                                                  context,
+                                                                  theme,
+                                                                  "2");
+                                                            }))
+                                                  ])),
+                                              const SizedBox(width: 16),
+                                              Expanded(
+                                                  child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                    headerTitleText(
+                                                        "Number of SIPs",
+                                                        theme),
+                                                    const SizedBox(height: 5),
+                                                    SizedBox(
+                                                        height: 44,
+                                                        child: TextFormField(
+                                                            keyboardType:
+                                                                TextInputType
+                                                                    .number,
+                                                            controller: sip
+                                                                .numberofSips,
+                                                            style: theme.isDarkMode
+                                                                ? textStyles.textFieldLabelStyle.copyWith(
+                                                                    color: colors
+                                                                        .colorWhite)
+                                                                : textStyles
+                                                                    .textFieldLabelStyle,
+                                                            decoration: InputDecoration(
+                                                                fillColor: theme.isDarkMode
+                                                                    ? colors
+                                                                        .darkGrey
+                                                                    : const Color(
+                                                                        0xffF1F3F8),
+                                                                filled: true,
+                                                                enabledBorder: OutlineInputBorder(
+                                                                    borderSide:
+                                                                        BorderSide
+                                                                            .none,
+                                                                    borderRadius:
+                                                                        BorderRadius.circular(
+                                                                            30)),
+                                                                disabledBorder:
+                                                                    InputBorder
+                                                                        .none,
+                                                                focusedBorder: OutlineInputBorder(
+                                                                    borderSide: BorderSide.none,
+                                                                    borderRadius: BorderRadius.circular(30)),
+                                                                contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                                                                border: OutlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.circular(30))),
+                                                            onChanged: (value) {
+                                                              int inputValue =
+                                                                  int.tryParse(
+                                                                          value) ??
+                                                                      0;
+                                                              if (value
+                                                                      .isEmpty ||
+                                                                  inputValue <
+                                                                      1) {
+                                                                ResponsiveSnackBar
+                                                                    .showWarning(
+                                                                        context,
+                                                                        "The minimum number of this SIP is one.");
+                                                              }
+                                                              //  if (value.isEmpty) {
+                                                              //   ScaffoldMessenger
+                                                              //           .of(
+                                                              //               context)
+                                                              //       .showSnackBar(
+                                                              //           ResponsiveSnackBar.showWarning(
+                                                              //               context,
+                                                              //               "The minimum number of this SIP is one."));
+                                                              // }
+                                                            }))
+                                                  ]))
+                                            ])),
+                                        const SizedBox(height: 40),
+                                        Center(
+                                            child: Column(children: [
+                                          Text(
+                                            "₹${resultsip == 0.0 ? widget.orderArg.ltp : resultsip.toStringAsFixed(2)}",
+                                            style: WebTextStyles.hero(
+                                              isDarkTheme: theme.isDarkMode,
+                                              color: WebColors.profit,
+                                              fontWeight: WebFonts.semiBold,
+                                            ),
+                                          ),
+                                          Text("Installment Amount",
+                                              style: WebTextStyles.titleMedium(
+                                                isDarkTheme: theme.isDarkMode,
+                                                color: theme.isDarkMode
+                                                    ? WebDarkColors.textPrimary
+                                                    : WebColors.textPrimary,
+                                                fontWeight: WebFonts.semiBold,
+                                              ))
+                                        ]))
+                                      ])
+                                ],
+                                if (orderType == "GTT") ...[
+                                  // GttCondition(
+                                  //     isOco: false,
+                                  //     isGtt: isGtt,
+                                  //     isModify: widget.orderArg.isModify),
+
+                                  // const SizedBox(height: 16),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16.0),
+                                    child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Row(children: [
+                                            headerTitleText(
+                                                isOco
+                                                    ? "Target Trigger Price"
+                                                    : "Trigger Price",
+                                                theme),
+                                          ]),
+                                          const SizedBox(height: 10),
+                                          SizedBox(
+                                              height: 40,
+                                              width: 150,
+                                              child: Semantics(
+                                                identifier:
+                                                    'trigger_price_input',
+                                                child: CustomTextFormField(
+                                                    inputFormate: [
+                                                      FilteringTextInputFormatter
+                                                          .allow(RegExp(
+                                                              r'^\d*\.?\d{0,2}$'))
+                                                    ],
+                                                    fillColor: theme.isDarkMode
+                                                        ? colors.darkGrey
+                                                        : const Color(
+                                                            0xffF1F3F8),
+                                                    onChanged: (value) {
+                                                      double inputPrice =
+                                                          double.tryParse(
+                                                                  value) ??
+                                                              0;
+
+                                                      if (value.isNotEmpty &&
+                                                          inputPrice > 0) {
+                                                        final regex = RegExp(
+                                                            r'^(\d+)?(\.\d{0,2})?$');
+                                                        if (!regex
+                                                            .hasMatch(value)) {
+                                                          orderInput.val1Ctrl
+                                                                  .text =
+                                                              value.substring(
+                                                                  0,
+                                                                  value.length -
+                                                                      1);
+                                                          orderInput.val1Ctrl
+                                                                  .selection =
+                                                              TextSelection.collapsed(
+                                                                  offset: orderInput
+                                                                      .val1Ctrl
+                                                                      .text
+                                                                      .length);
+                                                        }
+                                                      }
+                                                      if (value.isEmpty) {
+                                                        ResponsiveSnackBar
+                                                            .showWarning(
+                                                                context,
+                                                                "Target trigger price cannot be empty");
+                                                      } else if (inputPrice <=
+                                                          0) {
+                                                        ResponsiveSnackBar
+                                                            .showWarning(
+                                                                context,
+                                                                "Target trigger price cannot be 0");
+                                                      }
+                                                    },
+                                                    hintText:
+                                                        "${widget.orderArg.ltp}",
+                                                    hintStyle:
+                                                        WebTextStyles.formInput(
+                                                      isDarkTheme:
+                                                          theme.isDarkMode,
+                                                      color: theme.isDarkMode
+                                                          ? WebDarkColors
+                                                              .textSecondary
+                                                          : WebColors
+                                                              .textSecondary,
+                                                    ),
+                                                    keyboardType:
+                                                        const TextInputType
+                                                            .numberWithOptions(
+                                                            decimal: true),
+                                                    style:
+                                                        WebTextStyles.formInput(
+                                                      isDarkTheme:
+                                                          theme.isDarkMode,
+                                                      color: theme.isDarkMode
+                                                          ? WebDarkColors
+                                                              .textPrimary
+                                                          : WebColors
+                                                              .textPrimary,
+                                                    ),
+                                                    textCtrl:
+                                                        orderInput.val1Ctrl,
+                                                    textAlign: TextAlign.start),
+                                              )),
+                                        ]),
+                                  ),
+
+                                  // const SizedBox(height: 8),
+                                  // // InvesTypeWidget(
+                                  // //     scripInfo: widget.scripInfo, ordType: "GTT"),
+                                  // const SizedBox(height: 8),
+                                  // Padding(
+                                  //     padding: const EdgeInsets.only(left: 16),
+                                  //     child: headerTitleText("Price type", theme)),
+                                  // const SizedBox(height: 10),
+                                  // PriceTypeBtn(
+                                  //     isOco: false,
+                                  //     isGtt: isGtt,
+                                  //     ltp: "${widget.orderArg.ltp}"),
+                                  // const SizedBox(height: 3),
+                                  // Divider(
+                                  //     color: theme.isDarkMode
+                                  //         ? colors.darkColorDivider
+                                  //         : colors.colorDivider),
+
+                                  const SizedBox(height: 16),
+                                  Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 16),
+                                      child: Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Expanded(
+                                                child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                  headerTitleText("Qty", theme),
+                                                  const SizedBox(height: 10),
+                                                  SizedBox(
+                                                      height: 40,
+                                                      // width: 150,
+                                                      child: Semantics(
+                                                        identifier:
+                                                            "GTT Qty Input",
+                                                        child: CustomTextFormField(
+                                                            fillColor: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
+                                                            hintText: "0", //orderInput.qtyCtrl.text,
+                                                            hintStyle: WebTextStyles.formInput(
+                                                              isDarkTheme: theme
+                                                                  .isDarkMode,
+                                                              color: theme
+                                                                      .isDarkMode
+                                                                  ? WebDarkColors
+                                                                      .textSecondary
+                                                                  : WebColors
+                                                                      .textSecondary,
+                                                            ),
+                                                            inputFormate: [FilteringTextInputFormatter.digitsOnly],
+                                                            keyboardType: TextInputType.number,
+                                                            style: WebTextStyles.formInput(
+                                                              isDarkTheme: theme
+                                                                  .isDarkMode,
+                                                              color: theme
+                                                                      .isDarkMode
+                                                                  ? WebDarkColors
+                                                                      .textPrimary
+                                                                  : WebColors
+                                                                      .textPrimary,
+                                                            ),
+                                                            // prefixIcon: InkWell(
+                                                            //   onTap: () {
+                                                            //     setState(() {
+                                                            //       String input =
+                                                            //           orderInput
+                                                            //               .qtyCtrl.text;
+
+                                                            //       int currentQty =
+                                                            //           int.tryParse(
+                                                            //                   input) ??
+                                                            //               0;
+
+                                                            //       int adjustedQty =
+                                                            //           ((currentQty /
+                                                            //                       multiplayer)
+                                                            //                   .floor()) *
+                                                            //               multiplayer;
+
+                                                            //       if (currentQty !=
+                                                            //           adjustedQty) {
+                                                            //         orderInput.qtyCtrl
+                                                            //                 .text =
+                                                            //             adjustedQty
+                                                            //                 .toString();
+                                                            //       } else if (input
+                                                            //               .isNotEmpty &&
+                                                            //           currentQty >
+                                                            //               multiplayer) {
+                                                            //         orderInput.qtyCtrl
+                                                            //             .text = (int.parse(orderInput
+                                                            //                     .qtyCtrl
+                                                            //                     .text) -
+                                                            //                 multiplayer)
+                                                            //             .toString();
+                                                            //       } else {
+                                                            //         orderInput.qtyCtrl
+                                                            //                 .text =
+                                                            //             "$multiplayer";
+                                                            //       }
+                                                            //     });
+                                                            //   },
+                                                            //   child: SvgPicture.asset(
+                                                            //       theme.isDarkMode
+                                                            //           ? assets
+                                                            //               .darkCMinus
+                                                            //           : assets
+                                                            //               .minusIcon,
+                                                            //       fit:
+                                                            //           BoxFit.scaleDown),
+                                                            // ),
+                                                            // suffixIcon: InkWell(
+                                                            //           onTap: () {},
+                                                            //           child: SvgPicture.asset(
+                                                            //               assets.switchIcon,
+                                                            //               fit: BoxFit.scaleDown),
+                                                            //         ),
+
+                                                            // suffixIcon: InkWell(
+                                                            //   onTap: () {
+                                                            //     setState(() {
+                                                            //       String input =
+                                                            //           orderInput
+                                                            //               .qtyCtrl.text;
+
+                                                            //       int currentQty =
+                                                            //           int.tryParse(
+                                                            //                   input) ??
+                                                            //               0;
+
+                                                            //       int adjustedQty =
+                                                            //           ((currentQty /
+                                                            //                       multiplayer)
+                                                            //                   .round()) *
+                                                            //               multiplayer;
+
+                                                            //       if (currentQty !=
+                                                            //           adjustedQty) {
+                                                            //         orderInput.qtyCtrl
+                                                            //                 .text =
+                                                            //             adjustedQty
+                                                            //                 .toString();
+                                                            //       } else if (input
+                                                            //               .isNotEmpty &&
+                                                            //           currentQty <
+                                                            //               ((frezQtyOrderSliceMaxLimit *
+                                                            //                           frezQty) ==
+                                                            //                       frezQtyOrderSliceMaxLimit
+                                                            //                   ? 999999
+                                                            //                   : frezQtyOrderSliceMaxLimit *
+                                                            //                       frezQty)) {
+                                                            //         orderInput.qtyCtrl
+                                                            //                 .text =
+                                                            //             (currentQty +
+                                                            //                     multiplayer)
+                                                            //                 .toString();
+                                                            //       } else {
+                                                            //         ScaffoldMessenger
+                                                            //                 .of(context)
+                                                            //             .removeCurrentSnackBar();
+                                                            //         ScaffoldMessenger
+                                                            //                 .of(context)
+                                                            //             .showSnackBar(
+                                                            //                 ResponsiveSnackBar.showWarning(
+                                                            //                     context,
+                                                            //                     "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}"));
+                                                            //         // orderInput.
+                                                            //         //         qtyCtrl
+                                                            //         //         .text =
+                                                            //         //      multiplayer
+                                                            //         //       .toString();
+                                                            //       }
+                                                            //     });
+                                                            //   },
+                                                            //   child: SvgPicture.asset(
+                                                            //       theme.isDarkMode
+                                                            //           ? assets.darkAdd
+                                                            //           : assets.addIcon,
+                                                            //       fit:
+                                                            //           BoxFit.scaleDown),
+                                                            // ),
+                                                            textCtrl: orderInput.qtyCtrl,
+                                                            textAlign: TextAlign.start,
+                                                            onChanged: (value) {
+                                                              if (value
+                                                                      .isEmpty ||
+                                                                  value ==
+                                                                      "0") {
+                                                                ResponsiveSnackBar
+                                                                    .showWarning(
+                                                                        context,
+                                                                        "Quantity cannot be ${value == "0" ? '0' : 'empty'}");
+                                                              } else {
+                                                                String
+                                                                    newValue =
+                                                                    value.replaceAll(
+                                                                        RegExp(
+                                                                            r'[^0-9]'),
+                                                                        '');
+
+                                                                int number =
+                                                                    int.tryParse(
+                                                                            newValue) ??
+                                                                        0;
+                                                                if (number >
+                                                                    (frezQty ==
+                                                                            lotSize
+                                                                        ? 999999
+                                                                        : frezQtyOrderSliceMaxLimit *
+                                                                            frezQty)) {
+                                                                  orderInput
+                                                                          .qtyCtrl
+                                                                          .text =
+                                                                      orderInput
+                                                                          .qtyCtrl
+                                                                          .text;
+                                                                  ResponsiveSnackBar
+                                                                      .showWarning(
+                                                                          context,
+                                                                          "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}");
+                                                                }
+
+                                                                if (newValue !=
+                                                                    value) {
+                                                                  orderInput
+                                                                          .qtyCtrl
+                                                                          .text =
+                                                                      newValue;
+
+                                                                  orderInput
+                                                                          .qtyCtrl
+                                                                          .selection =
+                                                                      TextSelection
+                                                                          .fromPosition(
+                                                                    TextPosition(
+                                                                        offset:
+                                                                            newValue.length),
+                                                                  );
+                                                                }
+                                                              }
+                                                            }),
+                                                      ))
+                                                ])),
+                                            const SizedBox(width: 16),
+                                            Expanded(
+                                                child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                  Row(
+                                                      // mainAxisAlignment:
+                                                      //     MainAxisAlignment
+                                                      //         .spaceBetween,
+                                                      children: [
+                                                        headerTitleText(
+                                                            "Price", theme),
+                                                        const SizedBox(
+                                                            width: 4),
+                                                        Text(
+                                                          "${orderInput.actPrcType}",
+                                                          style: WebTextStyles
+                                                              .formLabel(
+                                                            isDarkTheme: theme
+                                                                .isDarkMode,
+                                                            color: theme
+                                                                    .isDarkMode
+                                                                ? WebDarkColors
+                                                                    .textPrimary
+                                                                : WebColors
+                                                                    .textPrimary,
+                                                          ),
+                                                        ),
+                                                      ]),
+                                                  const SizedBox(height: 10),
+                                                  SizedBox(
+                                                      height: 40,
+                                                      // width: 150,
+                                                      child: Semantics(
+                                                        identifier:
+                                                            "GTT Price Input",
+                                                        child:
+                                                            CustomTextFormField(
+                                                                inputFormate: [
+                                                              FilteringTextInputFormatter
+                                                                  .allow(RegExp(
+                                                                      r'^\d*\.?\d{0,2}$'))
+                                                            ],
+                                                                fillColor: theme
+                                                                        .isDarkMode
+                                                                    ? colors
+                                                                        .darkGrey
+                                                                    : const Color(
+                                                                        0xffF1F3F8),
+                                                                onChanged:
+                                                                    (value) {
+                                                                  double
+                                                                      inputPrice =
+                                                                      double.tryParse(
+                                                                              value) ??
+                                                                          0;
+                                                                  if (value
+                                                                          .isNotEmpty &&
+                                                                      inputPrice >
+                                                                          0) {
+                                                                    final regex =
+                                                                        RegExp(
+                                                                            r'^(\d+)?(\.\d{0,2})?$');
+                                                                    if (!regex
+                                                                        .hasMatch(
+                                                                            value)) {
+                                                                      orderInput
+                                                                              .priceCtrl
+                                                                              .text =
+                                                                          value.substring(
+                                                                              0,
+                                                                              value.length - 1);
+                                                                      orderInput
+                                                                              .priceCtrl
+                                                                              .selection =
+                                                                          TextSelection
+                                                                              .collapsed(
+                                                                        offset: orderInput
+                                                                            .priceCtrl
+                                                                            .text
+                                                                            .length,
+                                                                      );
+                                                                    }
+                                                                  }
+                                                                  if (value
+                                                                      .isEmpty) {
+                                                                    ResponsiveSnackBar.showWarning(
+                                                                        context,
+                                                                        "Price cannot be empty");
+                                                                  } else if (inputPrice <=
+                                                                      0) {
+                                                                    ResponsiveSnackBar.showWarning(
+                                                                        context,
+                                                                        "Price cannot be 0");
+                                                                  } else {
+                                                                    setState(
+                                                                        () {
+                                                                      ordPrice =
+                                                                          value;
+                                                                    });
+                                                                  }
+                                                                },
+                                                                hintText:
+                                                                    "${widget.orderArg.ltp}",
+                                                                hintStyle: WebTextStyles
+                                                                    .formInput(
+                                                                  isDarkTheme: theme
+                                                                      .isDarkMode,
+                                                                  color: theme
+                                                                          .isDarkMode
+                                                                      ? WebDarkColors
+                                                                          .textSecondary
+                                                                      : WebColors
+                                                                          .textSecondary,
+                                                                ),
+                                                                keyboardType:
+                                                                    const TextInputType
+                                                                        .numberWithOptions(
+                                                                        decimal:
+                                                                            true),
+                                                                style: WebTextStyles
+                                                                    .formInput(
+                                                                  isDarkTheme: theme
+                                                                      .isDarkMode,
+                                                                  color: theme
+                                                                          .isDarkMode
+                                                                      ? WebDarkColors
+                                                                          .textPrimary
+                                                                      : WebColors
+                                                                          .textPrimary,
+                                                                ),
+                                                                isReadable: orderInput.actPrcType ==
+                                                                            "Limit" ||
+                                                                        orderInput.actPrcType ==
+                                                                            "SL Limit"
+                                                                    ? false
+                                                                    : true,
+                                                                // prefixIcon: Container(
+                                                                //     margin:
+                                                                //         const EdgeInsets.all(
+                                                                //             12),
+                                                                //     decoration: BoxDecoration(
+                                                                //         borderRadius:
+                                                                //             BorderRadius.circular(20),
+                                                                //         color: theme.isDarkMode ? const Color(0xff555555) : colors.colorWhite),
+                                                                //     child: SvgPicture.asset(color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey, orderInput.actPrcType == "Limit" || orderInput.actPrcType == "SL Limit" ? assets.ruppeIcon : assets.lock, fit: BoxFit.scaleDown)),
+                                                                suffixIcon:
+                                                                    Material(
+                                                                  color: Colors
+                                                                      .transparent,
+                                                                  shape:
+                                                                      const CircleBorder(),
+                                                                  child:
+                                                                      Semantics(
+                                                                    identifier:
+                                                                        "GTT Price Type button",
+                                                                    child:
+                                                                        InkWell(
+                                                                      customBorder:
+                                                                          const CircleBorder(),
+                                                                      splashColor: theme.isDarkMode
+                                                                          ? colors
+                                                                              .splashColorDark
+                                                                          : colors
+                                                                              .splashColorLight,
+                                                                      highlightColor: theme.isDarkMode
+                                                                          ? colors
+                                                                              .highlightDark
+                                                                          : colors
+                                                                              .highlightLight,
+                                                                      onTap:
+                                                                          () {
+                                                                        setState(
+                                                                            () {
+                                                                          orderInput
+                                                                              .setGTTPriceTypeOrderIsMarket(!orderInput.GTTPriceTypeOrderIsMarket);
+                                                                          final newType = orderInput.GTTPriceTypeOrderIsMarket
+                                                                              ? "Market"
+                                                                              : "Limit";
+                                                                          orderInput
+                                                                              .chngGTTPriceType(newType);
+                                                                          if (orderInput.actPrcType == "Market" ||
+                                                                              orderInput.actPrcType == "SL MKT") {
+                                                                            orderInput.priceCtrl.text =
+                                                                                "Market";
+                                                                          } else {
+                                                                            orderInput.priceCtrl.text =
+                                                                                "${widget.orderArg.ltp}";
+                                                                          }
+                                                                        });
+                                                                      },
+                                                                      child:
+                                                                          Padding(
+                                                                        padding: const EdgeInsets
+                                                                            .all(
+                                                                            12.0),
+                                                                        child: SvgPicture.asset(
+                                                                            assets
+                                                                                .switchIcon,
+                                                                            fit:
+                                                                                BoxFit.contain),
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                                textCtrl:
+                                                                    orderInput
+                                                                        .priceCtrl,
+                                                                textAlign:
+                                                                    TextAlign
+                                                                        .start),
+                                                      )),
+                                                ]))
+                                          ])),
+                                  const SizedBox(height: 16),
+                                  // if(orderInput.actPrcType == "Market" || orderInput.actPrcType == "SL MKT") ...[
+                                  //     marketProtectionDisclaimer(theme, context, widget.scripInfo, mktProtCtrl.text),
+                                  //   const SizedBox(height: 16),
+                                  // ],
+                                  // Divider(
+                                  //     color: theme.isDarkMode
+                                  //         ? colors.darkColorDivider
+                                  //         : colors.colorDivider),
+                                  // if (orderInput.actPrcType == "SL Limit" || orderInput.actPrcType == "SL MKT") ...[
+                                  //   triggerOption(theme, context, widget.scripInfo),
+                                  //   Divider(
+                                  //       color: theme.isDarkMode
+                                  //           ? colors.darkColorDivider
+                                  //           : colors.colorDivider)
+                                  // ],
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16),
+                                    child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        //   Expanded(
+                                        //       child: Column(
+                                        //           crossAxisAlignment:
+                                        //               CrossAxisAlignment.start,
+                                        //           children: [
+                                        //         headerTitleText(
+                                        //             "Validity", theme),
+                                        //         const SizedBox(height: 7),
+                                        //         SizedBox(
+                                        //             height: 38,
+                                        //             child: ListView.separated(
+                                        //                 scrollDirection:
+                                        //                     Axis.horizontal,
+                                        //                 itemBuilder:
+                                        //                     (context, index) {
+                                        //                   return ElevatedButton(
+                                        //                       onPressed: () {
+                                        //                         setState(() {
+                                        //                           validityTypeGTT =
+                                        //                               validityTypesGTT[
+                                        //                                   index];
+                                        //                         });
+                                        //                       },
+                                        //                       style: ElevatedButton
+                                        //                           .styleFrom(
+                                        //                               elevation:
+                                        //                                   0,
+                                        //                               padding: const EdgeInsets
+                                        //                                   .symmetric(
+                                        //                                   horizontal:
+                                        //                                       12,
+                                        //                                   vertical:
+                                        //                                       0),
+                                        //                               backgroundColor: !theme
+                                        //                                       .isDarkMode
+                                        //                                   ? validityTypeGTT != validityTypesGTT[index]
+                                        //                                       ? const Color(0xffF1F3F8)
+                                        //                                       : colors.colorBlack
+                                        //                                   : validityTypeGTT != validityTypesGTT[index]
+                                        //                                       ? colors.darkGrey
+                                        //                                       : colors.colorbluegrey,
+                                        //                               shape: const StadiumBorder()),
+                                        //                       child: Text(validityTypesGTT[index],
+                                        //                           style: textStyle(
+                                        //                               !theme.isDarkMode
+                                        //                                   ? validityTypeGTT != validityTypesGTT[index]
+                                        //                                       ? const Color(0xff666666)
+                                        //                                       : colors.colorWhite
+                                        //                                   : validityTypeGTT != validityTypesGTT[index]
+                                        //                                       ? const Color(0xff666666)
+                                        //                                       : colors.colorBlack,
+                                        //                               14,
+                                        //                               validityTypeGTT == validityTypesGTT[index] ? FontWeight.w600 : FontWeight.w500)));
+                                        //                 },
+                                        //                 separatorBuilder:
+                                        //                     (context, index) {
+                                        //                   return const SizedBox(
+                                        //                       width: 8);
+                                        //                 },
+                                        //                 itemCount:
+                                        //                     validityTypesGTT
+                                        //                         .length))
+                                        //       ],
+                                        //       ),
+                                        //       ),
+                                        //   const SizedBox(width: 16),
+                                        Row(
+                                          children: [
+                                            Text(
+                                              "OCO",
+                                              style: WebTextStyles.sub(
+                                                isDarkTheme: theme.isDarkMode,
+                                                color: theme.isDarkMode
+                                                    ? WebDarkColors
+                                                        .textSecondary
+                                                    : WebColors.textSecondary,
+                                              ),
+                                            ),
+                                            Semantics(
+                                              identifier: 'GTT OCO button',
+                                              child: Checkbox(
+                                                value: isOco,
+                                                onChanged: (isBuy! &&
+                                                        widget.scripInfo.seg ==
+                                                            "EQT")
+                                                    ? null
+                                                    : (bool? value) {
+                                                        if (isBuy! &&
+                                                            widget.scripInfo
+                                                                    .seg ==
+                                                                "EQT") {
+                                                          ResponsiveSnackBar
+                                                              .showWarning(
+                                                                  context,
+                                                                  "OCO Order cannot be placed for Buy order");
+                                                          return;
+                                                        }
+
+                                                        setState(() {
+                                                          isOco =
+                                                              value ?? false;
+                                                          orderInput
+                                                              .disableCondGTT(
+                                                                  isOco);
+                                                          //  orderInput.setGTTPriceTypeOrderIsMarket(isOco);
+                                                        });
+                                                        if (orderInput
+                                                                .ocoPrcType !=
+                                                            "MKT") {
+                                                          orderInput
+                                                              .chngOCOPriceType(
+                                                                  "Limit");
+
+                                                          ref
+                                                              .read(
+                                                                  ordInputProvider)
+                                                              .updateOcoPrcQtyCtrl(
+                                                                "${widget.orderArg.ltp}",
+                                                                widget.orderArg
+                                                                    .lotSize!
+                                                                    .replaceAll(
+                                                                        "-",
+                                                                        ""),
+                                                              );
+                                                        }
+                                                      },
+                                                activeColor: theme.isDarkMode
+                                                    ? WebDarkColors.primary
+                                                    : WebColors.primary,
+                                                checkColor: Colors.white,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  if (isOco) ...[
+                                    // Divider(
+                                    //     color: theme.isDarkMode
+                                    //         ? colors.darkColorDivider
+                                    //         : colors.colorDivider,
+                                    //     thickness: .4),
+                                    // const SizedBox(height: 16),
+                                    // GttCondition(
+                                    //     isOco: isOco,
+                                    //     isGtt: isGtt,
+                                    //     isModify: widget.orderArg.isModify),
+                                    // const SizedBox(height: 8),
+                                    // InvesTypeWidget(
+                                    //     scripInfo: widget.scripInfo, ordType: "OCO"),
+                                    // const SizedBox(height: 8),
+                                    // Padding(
+                                    //     padding: const EdgeInsets.only(left: 16),
+                                    //     child: headerTitleText("Price type", theme)),
+                                    // const SizedBox(height: 10),
+                                    // PriceTypeBtn(
+                                    //     isOco: isOco,
+                                    //     isGtt: isGtt,
+                                    //     ltp: "${widget.orderArg.ltp}"),
+                                    // Divider(
+                                    //     color: theme.isDarkMode
+                                    //         ? colors.darkColorDivider
+                                    //         : colors.colorDivider),
+                                    const SizedBox(height: 16),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 16.0),
+                                      child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Row(children: [
+                                              headerTitleText(
+                                                  isOco
+                                                      ? "Stoploss Trigger Price"
+                                                      : "Trigger Price",
+                                                  theme),
+                                            ]),
+                                            const SizedBox(height: 10),
+                                            SizedBox(
+                                                height: 40,
+                                                width: 150,
+                                                child: Semantics(
+                                                  identifier:
+                                                      'stoploss_trigger_price',
+                                                  child: CustomTextFormField(
+                                                      inputFormate: [
+                                                        FilteringTextInputFormatter
+                                                            .allow(RegExp(
+                                                                r'^\d*\.?\d{0,2}$'))
+                                                      ],
+                                                      fillColor:
+                                                          theme.isDarkMode
+                                                              ? colors.darkGrey
+                                                              : const Color(
+                                                                  0xffF1F3F8),
+                                                      onChanged: (value) {
+                                                        double inputPrice =
+                                                            double.tryParse(
+                                                                    value) ??
+                                                                0;
+
+                                                        if (value.isNotEmpty &&
+                                                            inputPrice > 0) {
+                                                          final regex = RegExp(
+                                                              r'^(\d+)?(\.\d{0,2})?$');
+                                                          if (!regex.hasMatch(
+                                                              value)) {
+                                                            orderInput.val2Ctrl
+                                                                    .text =
+                                                                value.substring(
+                                                                    0,
+                                                                    value.length -
+                                                                        1);
+                                                            orderInput.val2Ctrl
+                                                                    .selection =
+                                                                TextSelection.collapsed(
+                                                                    offset: orderInput
+                                                                        .val2Ctrl
+                                                                        .text
+                                                                        .length);
+                                                          }
+                                                        }
+                                                        if (value.isEmpty) {
+                                                          ResponsiveSnackBar
+                                                              .showWarning(
+                                                                  context,
+                                                                  "Stoploss trigger price cannot be empty");
+                                                        } else if (inputPrice <=
+                                                            0) {
+                                                          ResponsiveSnackBar
+                                                              .showWarning(
+                                                                  context,
+                                                                  "Stoploss trigger price cannot be 0");
+                                                        }
+                                                      },
+                                                      hintText:
+                                                          "${widget.orderArg.ltp}",
+                                                      hintStyle: WebTextStyles
+                                                          .formInput(
+                                                        isDarkTheme:
+                                                            theme.isDarkMode,
+                                                        color: theme.isDarkMode
+                                                            ? WebDarkColors
+                                                                .textSecondary
+                                                            : WebColors
+                                                                .textSecondary,
+                                                      ),
+                                                      keyboardType:
+                                                          const TextInputType
+                                                              .numberWithOptions(
+                                                              decimal: true),
+                                                      style: WebTextStyles
+                                                          .formInput(
+                                                        isDarkTheme:
+                                                            theme.isDarkMode,
+                                                        color: theme.isDarkMode
+                                                            ? WebDarkColors
+                                                                .textPrimary
+                                                            : WebColors
+                                                                .textPrimary,
+                                                      ),
+                                                      textCtrl:
+                                                          orderInput.val2Ctrl,
+                                                      textAlign:
+                                                          TextAlign.start),
+                                                )),
+                                          ]),
+                                    ),
+
+                                    const SizedBox(height: 16),
+                                    Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 16),
+                                        child: Row(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Expanded(
+                                                  child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                    headerTitleText(
+                                                        "Qty", theme),
+                                                    const SizedBox(height: 10),
+                                                    SizedBox(
+                                                        height: 40,
+                                                        width: 150,
+                                                        child: Semantics(
+                                                          identifier:
+                                                              'oco_qty_input',
+                                                          child: CustomTextFormField(
+                                                              fillColor: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
+                                                              hintText: "0", //orderInput.ocoQtyCtrl.text,
+                                                              hintStyle: WebTextStyles.formInput(
+                                                                isDarkTheme: theme
+                                                                    .isDarkMode,
+                                                                color: theme
+                                                                        .isDarkMode
+                                                                    ? WebDarkColors
+                                                                        .textSecondary
+                                                                    : WebColors
+                                                                        .textSecondary,
+                                                              ),
+                                                              inputFormate: [FilteringTextInputFormatter.digitsOnly],
+                                                              keyboardType: TextInputType.number,
+                                                              style: WebTextStyles.formInput(
+                                                                isDarkTheme: theme
+                                                                    .isDarkMode,
+                                                                color: theme
+                                                                        .isDarkMode
+                                                                    ? WebDarkColors
+                                                                        .textPrimary
+                                                                    : WebColors
+                                                                        .textPrimary,
+                                                              ),
+                                                              // prefixIcon: InkWell(
+                                                              //   onTap: () {
+                                                              //     setState(() {
+                                                              //       String input =
+                                                              //           orderInput
+                                                              //               .ocoQtyCtrl
+                                                              //               .text;
+                                                              //       int currentQty =
+                                                              //           int.tryParse(
+                                                              //                   input) ??
+                                                              //               0;
+                                                              //       int adjustedQty =
+                                                              //           ((currentQty /
+                                                              //                       multiplayer)
+                                                              //                   .floor()) *
+                                                              //               multiplayer;
+
+                                                              //       if (currentQty !=
+                                                              //           adjustedQty) {
+                                                              //         orderInput
+                                                              //                 .ocoQtyCtrl
+                                                              //                 .text =
+                                                              //             adjustedQty
+                                                              //                 .toString();
+                                                              //       } else if (input
+                                                              //               .isNotEmpty &&
+                                                              //           currentQty >
+                                                              //               multiplayer) {
+                                                              //         orderInput
+                                                              //             .ocoQtyCtrl
+                                                              //             .text = (currentQty -
+                                                              //                 multiplayer)
+                                                              //             .toString();
+                                                              //       } else {
+                                                              //         orderInput
+                                                              //                 .ocoQtyCtrl
+                                                              //                 .text =
+                                                              //             multiplayer
+                                                              //                 .toString();
+                                                              //       }
+                                                              //     });
+                                                              //   },
+                                                              //   child: SvgPicture.asset(
+                                                              //       theme.isDarkMode
+                                                              //           ? assets
+                                                              //               .darkCMinus
+                                                              //           : assets
+                                                              //               .minusIcon,
+                                                              //       fit: BoxFit
+                                                              //           .scaleDown),
+                                                              // ),
+
+                                                              // suffixIcon: InkWell(
+                                                              //       onTap: () {},
+                                                              //       child: SvgPicture.asset(
+                                                              //           assets.switchIcon,
+                                                              //           fit: BoxFit.scaleDown),
+                                                              //     ),
+
+                                                              // suffixIcon: InkWell(
+                                                              //   onTap: () {
+                                                              //     setState(() {
+                                                              //       String input =
+                                                              //           orderInput
+                                                              //               .ocoQtyCtrl
+                                                              //               .text;
+                                                              //       int currentQty =
+                                                              //           int.tryParse(
+                                                              //                   input) ??
+                                                              //               0;
+                                                              //       int adjustedQty =
+                                                              //           ((currentQty /
+                                                              //                       multiplayer)
+                                                              //                   .round()) *
+                                                              //               multiplayer;
+
+                                                              //       if (currentQty !=
+                                                              //           adjustedQty) {
+                                                              //         orderInput
+                                                              //                 .ocoQtyCtrl
+                                                              //                 .text =
+                                                              //             adjustedQty
+                                                              //                 .toString();
+                                                              //       } else if (input
+                                                              //               .isNotEmpty &&
+                                                              //           currentQty <
+                                                              //               ((frezQtyOrderSliceMaxLimit *
+                                                              //                           frezQty) ==
+                                                              //                       frezQtyOrderSliceMaxLimit
+                                                              //                   ? 999999
+                                                              //                   : frezQtyOrderSliceMaxLimit *
+                                                              //                       frezQty)) {
+                                                              //         orderInput
+                                                              //             .ocoQtyCtrl
+                                                              //             .text = (int.parse(orderInput
+                                                              //                     .ocoQtyCtrl
+                                                              //                     .text) +
+                                                              //                 multiplayer)
+                                                              //             .toString();
+                                                              //       } else {
+                                                              //         ScaffoldMessenger
+                                                              //                 .of(context)
+                                                              //             .removeCurrentSnackBar();
+                                                              //         ScaffoldMessenger
+                                                              //                 .of(
+                                                              //                     context)
+                                                              //             .showSnackBar(
+                                                              //                 ResponsiveSnackBar.showWarning(
+                                                              //                     context,
+                                                              //                     "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}"));
+                                                              //         // orderInput
+                                                              //         //     .ocoQtyCtrl
+                                                              //         //     .text = "$multiplayer";
+                                                              //       }
+                                                              //     });
+                                                              //   },
+                                                              //   child: SvgPicture.asset(
+                                                              //       theme.isDarkMode
+                                                              //           ? assets.darkAdd
+                                                              //           : assets
+                                                              //               .addIcon,
+                                                              //       fit: BoxFit
+                                                              //           .scaleDown),
+                                                              // ),
+                                                              textCtrl: orderInput.ocoQtyCtrl,
+                                                              textAlign: TextAlign.start,
+                                                              onChanged: (value) {
+                                                                if (value
+                                                                        .isEmpty ||
+                                                                    value ==
+                                                                        "0") {
+                                                                  ResponsiveSnackBar
+                                                                      .showWarning(
+                                                                          context,
+                                                                          "OCO quantity cannot be ${value == "0" ? '0' : 'empty'}");
+                                                                } else {
+                                                                  String
+                                                                      newValue =
+                                                                      value.replaceAll(
+                                                                          RegExp(
+                                                                              r'[^0-9]'),
+                                                                          '');
+
+                                                                  int number =
+                                                                      int.tryParse(
+                                                                              newValue) ??
+                                                                          0;
+                                                                  bool
+                                                                      hasNoFreezeLimit =
+                                                                      frezQty <=
+                                                                          lotSize;
+                                                                  if (!hasNoFreezeLimit &&
+                                                                      number >
+                                                                          frezQtyOrderSliceMaxLimit *
+                                                                              frezQty) {
+                                                                    orderInput
+                                                                            .qtyCtrl
+                                                                            .text =
+                                                                        orderInput
+                                                                            .qtyCtrl
+                                                                            .text;
+                                                                    ResponsiveSnackBar.showWarning(
+                                                                        context,
+                                                                        "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}");
+                                                                  }
+
+                                                                  if (newValue !=
+                                                                      value) {
+                                                                    orderInput
+                                                                            .ocoQtyCtrl
+                                                                            .text =
+                                                                        newValue;
+                                                                    orderInput
+                                                                            .ocoQtyCtrl
+                                                                            .selection =
+                                                                        TextSelection
+                                                                            .fromPosition(
+                                                                      TextPosition(
+                                                                          offset:
+                                                                              newValue.length),
+                                                                    );
+                                                                  }
+                                                                }
+                                                              }),
+                                                        ))
+                                                  ])),
+                                              const SizedBox(width: 16),
+                                              Expanded(
+                                                  child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                    Row(
+                                                        // mainAxisAlignment:
+                                                        //     MainAxisAlignment
+                                                        //         .spaceBetween,
+                                                        children: [
+                                                          headerTitleText(
+                                                              "Price", theme),
+                                                          const SizedBox(
+                                                              width: 4),
+                                                          Text(
+                                                            "${orderInput.actOcoPrcType}",
+                                                            style: WebTextStyles
+                                                                .formLabel(
+                                                              isDarkTheme: theme
+                                                                  .isDarkMode,
+                                                              color: theme
+                                                                      .isDarkMode
+                                                                  ? WebDarkColors
+                                                                      .textPrimary
+                                                                  : WebColors
+                                                                      .textPrimary,
+                                                            ),
+                                                          ),
+                                                        ]),
+                                                    const SizedBox(height: 10),
+                                                    SizedBox(
+                                                        height: 40,
+                                                        width: 150,
+                                                        child: Semantics(
+                                                          identifier:
+                                                              'oco_price_input',
+                                                          child:
+                                                              CustomTextFormField(
+                                                                  inputFormate: [
+                                                                FilteringTextInputFormatter
+                                                                    .allow(RegExp(
+                                                                        r'^\d*\.?\d{0,2}$'))
+                                                              ],
+                                                                  fillColor: theme.isDarkMode
+                                                                      ? colors
+                                                                          .darkGrey
+                                                                      : const Color(
+                                                                          0xffF1F3F8),
+                                                                  onChanged:
+                                                                      (value) {
+                                                                    double
+                                                                        inputPrice =
+                                                                        double.tryParse(value) ??
+                                                                            0;
+                                                                    if (value
+                                                                            .isNotEmpty &&
+                                                                        inputPrice >
+                                                                            0) {
+                                                                      final regex =
+                                                                          RegExp(
+                                                                              r'^(\d+)?(\.\d{0,2})?$');
+                                                                      if (!regex
+                                                                          .hasMatch(
+                                                                              value)) {
+                                                                        orderInput
+                                                                            .ocoPriceCtrl
+                                                                            .text = value.substring(0, value.length - 1);
+                                                                        orderInput
+                                                                            .ocoPriceCtrl
+                                                                            .selection = TextSelection.collapsed(
+                                                                          offset: orderInput
+                                                                              .ocoPriceCtrl
+                                                                              .text
+                                                                              .length,
+                                                                        );
+                                                                      }
+                                                                    }
+                                                                    if (value
+                                                                        .isEmpty) {
+                                                                      ResponsiveSnackBar.showWarning(
+                                                                          context,
+                                                                          "OCO price cannot be empty");
+                                                                    } else if (inputPrice <=
+                                                                        0) {
+                                                                      ResponsiveSnackBar.showWarning(
+                                                                          context,
+                                                                          "OCO price cannot be 0");
+                                                                    } else {
+                                                                      setState(
+                                                                          () {
+                                                                        ordPrice =
+                                                                            value;
+                                                                      });
+                                                                    }
+                                                                  },
+                                                                  hintText:
+                                                                      "${widget.orderArg.ltp}",
+                                                                  hintStyle:
+                                                                      WebTextStyles
+                                                                          .formInput(
+                                                                    isDarkTheme:
+                                                                        theme
+                                                                            .isDarkMode,
+                                                                    color: theme.isDarkMode
+                                                                        ? WebDarkColors
+                                                                            .textSecondary
+                                                                        : WebColors
+                                                                            .textSecondary,
+                                                                  ),
+                                                                  keyboardType: const TextInputType
+                                                                      .numberWithOptions(
+                                                                      decimal:
+                                                                          true),
+                                                                  style: WebTextStyles
+                                                                      .formInput(
+                                                                    isDarkTheme:
+                                                                        theme
+                                                                            .isDarkMode,
+                                                                    color: theme.isDarkMode
+                                                                        ? WebDarkColors
+                                                                            .textPrimary
+                                                                        : WebColors
+                                                                            .textPrimary,
+                                                                  ),
+                                                                  isReadable: orderInput.actOcoPrcType ==
+                                                                              "Limit" ||
+                                                                          orderInput
+                                                                                  .actOcoPrcType ==
+                                                                              "SL Limit"
+                                                                      ? false
+                                                                      : true,
+                                                                  // prefixIcon: Container(
+                                                                  //     margin: const EdgeInsets.all(
+                                                                  //         12),
+                                                                  //     decoration: BoxDecoration(
+                                                                  //         borderRadius:
+                                                                  //             BorderRadius.circular(20),
+                                                                  //         color: theme.isDarkMode ? const Color(0xff555555) : colors.colorWhite),
+                                                                  //     child: SvgPicture.asset(color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey, orderInput.actOcoPrcType == "Limit" || orderInput.actOcoPrcType == "SL Limit" ? assets.ruppeIcon : assets.lock, fit: BoxFit.scaleDown)),
+
+                                                                  suffixIcon:
+                                                                      InkWell(
+                                                                    onTap: () {
+                                                                      setState(
+                                                                          () {
+                                                                        orderInput
+                                                                            .setGTTOCOPriceTypeOrderIsMarket(!orderInput.GTTOCOPriceTypeOrderIsMarket);
+                                                                        final newType1 = orderInput.GTTOCOPriceTypeOrderIsMarket
+                                                                            ? "Market"
+                                                                            : "Limit";
+                                                                        orderInput
+                                                                            .chngOCOPriceType(newType1);
+                                                                        if (orderInput.actOcoPrcType ==
+                                                                                "Market" ||
+                                                                            orderInput.actOcoPrcType ==
+                                                                                "SL MKT") {
+                                                                          orderInput
+                                                                              .ocoPriceCtrl
+                                                                              .text = "Market";
+                                                                        } else {
+                                                                          orderInput
+                                                                              .ocoPriceCtrl
+                                                                              .text = "${widget.orderArg.ltp}";
+                                                                        }
+                                                                      });
+                                                                    },
+                                                                    child:
+                                                                        Padding(
+                                                                      padding: const EdgeInsets
+                                                                          .all(
+                                                                          12.0),
+                                                                      child: SvgPicture.asset(
+                                                                          assets
+                                                                              .switchIcon,
+                                                                          fit: BoxFit
+                                                                              .contain),
+                                                                    ),
+                                                                  ),
+                                                                  textCtrl:
+                                                                      orderInput
+                                                                          .ocoPriceCtrl,
+                                                                  textAlign:
+                                                                      TextAlign
+                                                                          .start),
+                                                        ))
+                                                  ]))
+                                            ])),
+
+                                    // const SizedBox(height: 3),
+                                    // Divider(
+                                    //     color: theme.isDarkMode
+                                    //         ? colors.darkColorDivider
+                                    //         : colors.colorDivider),
+                                    // if (orderInput.actOcoPrcType == "SL Limit" ||
+                                    //     orderInput.actOcoPrcType == "SL MKT") ...[
+                                    //   Padding(
+                                    //       padding: const EdgeInsets.symmetric(
+                                    //           horizontal: 16),
+                                    //       child: Column(
+                                    //           mainAxisAlignment:
+                                    //               MainAxisAlignment.start,
+                                    //           crossAxisAlignment:
+                                    //               CrossAxisAlignment.start,
+                                    //           children: [
+                                    //             const SizedBox(height: 2),
+                                    //             headerTitleText("Trigger", theme),
+                                    //             const SizedBox(height: 7),
+                                    //             SizedBox(
+                                    //                 height: 44,
+                                    //                 child: CustomTextFormField(
+                                    //                     fillColor: theme.isDarkMode
+                                    //                         ? colors.darkGrey
+                                    //                         : const Color(0xffF1F3F8),
+                                    //                     hintText: "0.00",
+                                    //                     hintStyle: textStyle(
+                                    //                         const Color(0xff666666),
+                                    //                         15,
+                                    //                         FontWeight.w400),
+                                    //                     onChanged: (value) {
+                                    //                       if (value.isNotEmpty &&
+                                    //                           double.parse(value) >
+                                    //                               0) {
+                                    //                         final regex = RegExp(
+                                    //                             r'^(\d+)?(\.\d{0,2})?$'); // Allows numbers with up to 2 decimal places
+                                    //                         if (!regex
+                                    //                             .hasMatch(value)) {
+                                    //                           orderInput.ocoTrgPrcCtrl
+                                    //                                   .text =
+                                    //                               value.substring(
+                                    //                                   0,
+                                    //                                   value.length -
+                                    //                                       1); // Revert to previous valid input
+                                    //                           orderInput.ocoTrgPrcCtrl
+                                    //                                   .selection =
+                                    //                               TextSelection.collapsed(
+                                    //                                   offset: orderInput
+                                    //                                       .ocoTrgPrcCtrl
+                                    //                                       .text
+                                    //                                       .length); // Keep cursor at the end
+                                    //                         }
+                                    //                       }
+                                    //                       ScaffoldMessenger.of(
+                                    //                               context)
+                                    //                           .hideCurrentSnackBar();
+                                    //                       if (value.isNotEmpty) {
+                                    //                       } else {
+                                    //                         ScaffoldMessenger.of(
+                                    //                                 context)
+                                    //                             .showSnackBar(
+                                    //                                 ResponsiveSnackBar.showWarning(
+                                    //                                     context,
+                                    //                                     "Trigger cannot be empty"));
+                                    //                       }
+                                    //                     },
+                                    //                     keyboardType:
+                                    //                         const TextInputType.numberWithOptions(
+                                    //                             decimal: true),
+                                    //                     style: textStyle(
+                                    //                         theme.isDarkMode
+                                    //                             ? colors.colorWhite
+                                    //                             : colors.colorBlack,
+                                    //                         16,
+                                    //                         FontWeight.w600),
+                                    //                     prefixIcon: Container(
+                                    //                         margin:
+                                    //                             const EdgeInsets.all(
+                                    //                                 12),
+                                    //                         decoration: BoxDecoration(
+                                    //                             borderRadius:
+                                    //                                 BorderRadius.circular(
+                                    //                                     20),
+                                    //                             color: theme.isDarkMode
+                                    //                                 ? const Color(
+                                    //                                     0xff555555)
+                                    //                                 : colors
+                                    //                                     .colorWhite),
+                                    //                         child: SvgPicture.asset(
+                                    //                             color: theme.isDarkMode
+                                    //                                 ? colors.colorWhite
+                                    //                                 : colors.colorGrey,
+                                    //                             assets.ruppeIcon,
+                                    //                             fit: BoxFit.scaleDown)),
+                                    //                     textCtrl: orderInput.ocoTrgPrcCtrl,
+                                    //                     textAlign: TextAlign.start)),
+                                    //           ])),
+                                    //   Divider(
+                                    //       color: theme.isDarkMode
+                                    //           ? colors.darkColorDivider
+                                    //           : colors.colorDivider)
+                                    // ]
+                                  ],
+
+                                  // if (!isOco) ...[
+                                  //   const SizedBox(height: 3),
+                                  //   Divider(
+                                  //       color: theme.isDarkMode
+                                  //           ? colors.darkColorDivider
+                                  //           : colors.colorDivider,
+                                  //       thickness: .4)
+
+                                  // Padding(
+                                  //   padding:
+                                  //       const EdgeInsets.only(bottom: 8, left: 16),
+                                  //   child: headerTitleText("Remarks", theme),
+                                  // ),
+                                  // Container(
+                                  //   padding:
+                                  //       const EdgeInsets.symmetric(horizontal: 16),
+                                  //   height: 40,
+                                  //   child: CustomTextFormField(
+                                  //       keyboardType: TextInputType.text,
+                                  //       fillColor: theme.isDarkMode
+                                  //           ? colors.darkGrey
+                                  //           : const Color(0xffF1F3F8),
+                                  //       hintStyle: textStyle(const Color(0xff666666),
+                                  //           15, FontWeight.w400),
+                                  //       style: textStyle(
+                                  //           theme.isDarkMode
+                                  //               ? colors.colorWhite
+                                  //               : colors.colorBlack,
+                                  //           16,
+                                  //           FontWeight.w600),
+                                  //       textAlign: TextAlign.start,
+                                  //       onChanged: (value) {},
+                                  //       textCtrl: orderInput.reMarksCtrl),
+                                  // ),
+
+                                  //  ],
+                                  // if ((orderInput.actOcoPrcType == "Market" ||
+                                  //         orderInput.actOcoPrcType == "SL MKT") ||
+                                  //     (orderInput.actPrcType == "Market" ||
+                                  //         orderInput.actPrcType == "SL MKT")) ...[
+                                  //   const SizedBox(height: 16),
+                                  //   marketProtectionDisclaimer(theme, context,
+                                  //       widget.scripInfo, mktProtCtrl.text),
+                                  //   const SizedBox(height: 16),
+                                  // ],
+                                  const SizedBox(height: 100)
+                                ] else ...[
+                                  // If Order Tab is Regular then show investment type and investment type radio button
+                                  // if (orderType == "Delivery" || orderType == "Intraday") ...[
+                                  //   Column(
+                                  //       crossAxisAlignment:
+                                  //           CrossAxisAlignment.start,
+                                  //       children: [
+                                  //         Padding(
+                                  //             padding: const EdgeInsets.symmetric(
+                                  //                 horizontal: 16),
+                                  //             child: Row(
+                                  //               mainAxisAlignment:
+                                  //                   MainAxisAlignment
+                                  //                       .spaceBetween,
+                                  //               children: [
+                                  //                 Text("Investment type",
+                                  //                     style: textStyle(
+                                  //                         theme.isDarkMode
+                                  //                             ? colors.colorWhite
+                                  //                             : colors.colorBlack,
+                                  //                         14,
+                                  //                         FontWeight.w500)),
+                                  //                 InkWell(
+                                  //                   onTap: () {
+                                  //                     setState(() {
+                                  //                       Navigator.pop(context);
+                                  //                       Navigator.pushNamed(
+                                  //                           context,
+                                  //                           Routes.orderPrefer,
+                                  //                           arguments: {
+                                  //                             "orderArg":
+                                  //                                 widget.orderArg,
+                                  //                             "scripInfo": widget
+                                  //                                 .scripInfo,
+                                  //                             "isRollback": 'yes'
+                                  //                           });
+                                  //                     });
+                                  //                   },
+                                  //                   child: SvgPicture.asset(
+                                  //                       'assets/profile/privacy_settings.svg'),
+                                  //                 )
+                                  //               ],
+                                  //             )),
+                                  //         Row(
+                                  //             mainAxisAlignment:
+                                  //                 MainAxisAlignment.start,
+                                  //             children: [
+                                  //               if (widget.orderArg.exchange !=
+                                  //                   "NCOM") ...[
+                                  //                 Radio<InvestType>(
+                                  //                     fillColor:
+                                  //                         WidgetStateProperty
+                                  //                             .resolveWith<
+                                  //                                 Color>((Set<
+                                  //                                     WidgetState>
+                                  //                                 states) {
+                                  //                       if (states.contains(
+                                  //                           WidgetState
+                                  //                               .disabled)) {
+                                  //                         return const Color(
+                                  //                             0xff666666);
+                                  //                       }
+                                  //                       return theme.isDarkMode
+                                  //                           ? colors.colorWhite
+                                  //                           : const Color(
+                                  //                               0xff666666);
+                                  //                     }),
+                                  //                     activeColor:
+                                  //                         theme.isDarkMode
+                                  //                             ? colors.colorWhite
+                                  //                             : const Color(
+                                  //                                 0xff666666),
+                                  //                     value: InvestType.intraday,
+                                  //                     groupValue:
+                                  //                         orderInput.investType,
+                                  //                     onChanged:
+                                  //                         (InvestType? value) {
+                                  //                       orderInput.chngInvesType(
+                                  //                           value!, "PlcOrder");
+                                  //                       if (orderType != "GTT") {
+                                  //                         marginUpdate();
+                                  //                       }
+                                  //                     }),
+                                  //                 Text('Intraday',
+                                  //                     style: textStyle(
+                                  //                         theme.isDarkMode
+                                  //                             ? Color(orderInput
+                                  //                                         .investType ==
+                                  //                                     InvestType
+                                  //                                         .intraday
+                                  //                                 ? 0xffffffff
+                                  //                                 : 0xff666666)
+                                  //                             : Color(orderInput
+                                  //                                         .investType ==
+                                  //                                     InvestType
+                                  //                                         .intraday
+                                  //                                 ? 0xff3E4763
+                                  //                                 : 0xff666666),
+                                  //                         14,
+                                  //                         FontWeight.w500))
+                                  //               ],
+                                  //               Radio<InvestType>(
+                                  //                   fillColor: WidgetStateProperty
+                                  //                       .resolveWith<Color>(
+                                  //                           (Set<WidgetState>
+                                  //                               states) {
+                                  //                     if (states.contains(
+                                  //                         WidgetState.disabled)) {
+                                  //                       return const Color(
+                                  //                           0xff666666);
+                                  //                     }
+                                  //                     return theme.isDarkMode
+                                  //                         ? colors.colorWhite
+                                  //                         : const Color(
+                                  //                             0xff666666);
+                                  //                   }),
+                                  //                   activeColor: theme.isDarkMode
+                                  //                       ? colors.colorWhite
+                                  //                       : const Color(0xff666666),
+                                  //                   value: widget.scripInfo.seg ==
+                                  //                           "EQT"
+                                  //                       ? InvestType.delivery
+                                  //                       : InvestType.carryForward,
+                                  //                   groupValue:
+                                  //                       orderInput.investType,
+                                  //                   onChanged:
+                                  //                       (InvestType? value) {
+                                  //                     orderInput.chngInvesType(
+                                  //                         value!, "PlcOrder");
+                                  //                     if (orderType != "GTT") {
+                                  //                       marginUpdate();
+                                  //                     }
+                                  //                   }),
+                                  //               Text(
+                                  //                   widget.scripInfo.seg == "EQT"
+                                  //                       ? 'Delivery'
+                                  //                       : "Carry Forward",
+                                  //                   style: textStyle(
+                                  //                       theme.isDarkMode
+                                  //                           ? Color(orderInput
+                                  //                                           .investType ==
+                                  //                                       InvestType
+                                  //                                           .delivery ||
+                                  //                                   orderInput
+                                  //                                           .investType ==
+                                  //                                       InvestType
+                                  //                                           .carryForward
+                                  //                               ? 0xffffffff
+                                  //                               : 0xff666666)
+                                  //                           : Color(orderInput
+                                  //                                           .investType ==
+                                  //                                       InvestType
+                                  //                                           .delivery ||
+                                  //                                   orderInput
+                                  //                                           .investType ==
+                                  //                                       InvestType
+                                  //                                           .carryForward
+                                  //                               ? 0xff3E4763
+                                  //                               : 0xff666666),
+                                  //                       14,
+                                  //                       FontWeight.w500))
+                                  //             ])
+                                  //       ]),
+                                  //   const SizedBox(height: 8)
+                                  // ],
+                                  // If Order Tab is Regular, Cover, Bracket, or GTT then show Price type Section , Quantity and Price fields
+                                  // if (orderType == "Regular" || orderType == "Cover" || orderType == "Bracket" || orderType == "GTT") ...[
+                                  if (orderType == "Delivery" ||
+                                      orderType == "Intraday" ||
+                                      orderType == "CO - BO" ||
+                                      orderType == "GTT" ||
+                                      orderType == "MTF") ...[
+                                    //   Padding(
+                                    //       padding: const EdgeInsets.symmetric(
+                                    //         horizontal: 16),
+                                    //         child: Row(
+                                    //           mainAxisAlignment:
+                                    //               MainAxisAlignment.spaceBetween,
+                                    //           children: [
+                                    //             Text("Price type",
+                                    //                 style: textStyle(
+                                    //                     theme.isDarkMode
+                                    //                         ? colors.colorWhite
+                                    //                         : colors.colorBlack,
+                                    //                     14,
+                                    //                     FontWeight.w500)),
+                                    //             if (orderType != "Regular") ...[
+                                    //                 InkWell(
+                                    //                   onTap: () {
+                                    //                       setState(() {
+                                    //                         Navigator.pop(context);
+                                    //                         Navigator.pushNamed(context,
+                                    //                             Routes.orderPrefer,
+                                    //                             arguments: {
+                                    //                               "orderArg":
+                                    //                                   widget.orderArg,
+                                    //                               "scripInfo":
+                                    //                                   widget.scripInfo,
+                                    //                               "isRollback": 'yes'
+                                    //                             });
+                                    //                       },
+                                    //                     );
+                                    //                   },
+                                    //                   child: SvgPicture.asset(
+                                    //                       'assets/profile/privacy_settings.svg'),
+                                    //                 )
+                                    //             ]
+                                    //           ],
+                                    //         ),
+                                    //     ),
+                                    //       const SizedBox(height: 10),
+
+                                    //   // Price Type section, List of buttons such as Market, Limit, SL, SL Mkt
+                                    // Padding(
+                                    //   padding: const EdgeInsets.only(left: 16),
+                                    //   child: SizedBox(
+                                    //       height: 38,
+                                    //       child: ListView.separated(
+                                    //           scrollDirection: Axis.horizontal,
+                                    //           itemBuilder: (context, index) {
+                                    //                 return ElevatedButton(
+                                    //                     onPressed: () {
+                                    //                     setState(() {
+                                    //                         priceType =
+                                    //                             priceTypes[index]
+                                    //                                 ['type'];
+                                    //                         if (priceType ==
+                                    //                                 "Market" ||
+                                    //                             priceType ==
+                                    //                                 "SL MKT") {
+                                    //                         priceCtrl.text =
+                                    //                             "Market";
+
+                                    //                         double ltp = (double.parse("${widget.orderArg.ltp}") *
+                                    //                                 double.parse(mktProtCtrl.text.isEmpty? "0": mktProtCtrl.text)) /100;
+
+                                    //                         if (isBuy!) {
+                                    //                             ordPrice = (double.parse("${widget.orderArg.ltp ?? 0.00}") + ltp).toStringAsFixed(2);
+                                    //                         } else {
+                                    //                             ordPrice = (double.parse("${widget.orderArg.ltp ?? 0.00}") - ltp).toStringAsFixed(2);
+                                    //                         }
+                                    //                         double result = double.parse(ordPrice) + (double.parse( "${widget.scripInfo.ti}") / 2);
+                                    //                         result -= result % double.parse("${widget.scripInfo.ti}");
+
+                                    //                           if (result >=
+                                    //                               double.parse(
+                                    //                                   "${widget.scripInfo.uc ?? 0.00}")) {
+                                    //                               ordPrice =
+                                    //                                   "${widget.scripInfo.uc ?? 0.00}";
+                                    //                           } else if (result <=
+                                    //                               double.parse(
+                                    //                                   "${widget.scripInfo.lc ?? 0.00}")) {
+                                    //                               ordPrice =
+                                    //                                   "${widget.scripInfo.lc ?? 0.00}";
+                                    //                           } else {
+                                    //                               ordPrice = result
+                                    //                                   .toStringAsFixed(
+                                    //                                       2);
+                                    //                           }
+                                    //                           } else {
+                                    //                               priceCtrl.text =
+                                    //                                   "${widget.orderArg.ltp}";
+                                    //                               ordPrice =
+                                    //                                   priceCtrl.text;
+                                    //                           }
+                                    //                           orderInput
+                                    //                               .chngPriceType(
+                                    //                                   priceTypes[
+                                    //                                           index]
+                                    //                                       ['type'],
+                                    //                                   widget.orderArg
+                                    //                                       .exchange);
+                                    //                       });
+                                    //                       marginUpdate();
+                                    //                       FocusScope.of(context)
+                                    //                           .unfocus();
+                                    //                       },
+                                    //                       style: ElevatedButton
+                                    //                           .styleFrom(
+                                    //                               elevation: 0,
+                                    //                               padding: const EdgeInsets
+                                    //                                   .symmetric(
+                                    //                                   horizontal: 12,
+                                    //                                   vertical: 0),
+                                    //                               backgroundColor: !theme
+                                    //                                       .isDarkMode
+                                    //                                   ? priceType !=
+                                    //                                           priceTypes[index]
+                                    //                                               [
+                                    //                                               'type']
+                                    //                                       ? const Color(
+                                    //                                           0xffF1F3F8)
+                                    //                                       : colors
+                                    //                                           .colorBlack
+                                    //                                   : priceType !=
+                                    //                                           priceTypes[index]
+                                    //                                               [
+                                    //                                               'type']
+                                    //                                       ? colors
+                                    //                                           .darkGrey
+                                    //                                       : colors
+                                    //                                           .colorbluegrey,
+                                    //                               shape:
+                                    //                                   const StadiumBorder()),
+                                    //                       child: Text(
+                                    //                           priceTypes[index]
+                                    //                               ['type'],
+                                    //                           style: textStyle(
+                                    //                               !theme.isDarkMode
+                                    //                                   ? priceType !=
+                                    //                                           priceTypes[index]
+                                    //                                               [
+                                    //                                               'type']
+                                    //                                       ? const Color(
+                                    //                                           0xff666666)
+                                    //                                       : colors
+                                    //                                           .colorWhite
+                                    //                                   : priceType !=
+                                    //                                           priceTypes[index]
+                                    //                                               ['type']
+                                    //                                       ? const Color(0xff666666)
+                                    //                                       : colors.colorBlack,
+                                    //                               14,
+                                    //                               priceType == priceTypes[index]['type'] ? FontWeight.w600 : FontWeight.w500),
+                                    //                           ),
+                                    //                       );
+                                    //             },
+                                    //             separatorBuilder:
+                                    //                 (context, index) {
+                                    //               return const SizedBox(width: 8);
+                                    //             },
+                                    //             itemCount: orderType == "Cover" || orderType == "Bracket" ? 3 : priceTypes.length
+                                    //           ),
+                                    //         ),
+                                    //     ),
+                                    //   const SizedBox(height: 3),
+                                    // Divider(
+                                    //     color: theme.isDarkMode
+                                    //         ? colors.darkColorDivider
+                                    //         : colors.colorDivider),
+
+                                    // Quantity and Price fields
+                                    if (orderType == "MTF" &&
+                                        !_isMTFEnabled) ...[
+                                      Padding(
+                                        padding: const EdgeInsets.all(16.0),
+                                        child: Card(
+                                          color: theme.isDarkMode
+                                              ? const Color(0xFF121212)
+                                              : const Color(0xFFF1F3F8),
+                                          elevation: 4,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                          ),
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 24, vertical: 28),
                                             child: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Icon(Icons.lock_outline,
+                                                    size: 40,
+                                                    color: theme.isDarkMode
+                                                        ? WebDarkColors.loss
+                                                        : WebColors
+                                                            .loss), // your blue
+                                                const SizedBox(height: 16),
+                                                Text(
+                                                  "MTF is not Enabled",
+                                                  textAlign: TextAlign.center,
+                                                  style: WebTextStyles.sub(
+                                                    isDarkTheme:
+                                                        theme.isDarkMode,
+                                                    color: theme.isDarkMode
+                                                        ? WebDarkColors.loss
+                                                        : WebColors.loss,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 24),
+                                                SizedBox(
+                                                  width: double.infinity,
+                                                  child: ElevatedButton(
+                                                    style: ElevatedButton
+                                                        .styleFrom(
+                                                      backgroundColor:
+                                                          WebColors.primary,
+                                                      minimumSize:
+                                                          const Size(0, 50),
+                                                      shape:
+                                                          RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(5),
+                                                      ),
+                                                      padding: const EdgeInsets
+                                                          .symmetric(
+                                                          vertical: 14),
+                                                    ),
+                                                    onPressed: () {
+                                                      final profileDetails =
+                                                          ref.watch(
+                                                              profileAllDetailsProvider);
+                                                      final clientData =
+                                                          profileDetails
+                                                              .clientAllDetails
+                                                              .clientData;
+
+                                                      bool DDPIActive =
+                                                          clientData?.dDPI ==
+                                                              'Y';
+                                                      bool POAActive =
+                                                          clientData?.pOA ==
+                                                              'Y';
+                                                      // Navigate to the screen where the user enables MTF
+                                                      // Navigator.pushNamed(context, Routes.mtfEnableScreen);
+
+                                                      if (!DDPIActive &&
+                                                          !POAActive) {
+                                                        // final pendingStatuses =
+                                                        //   ref.watch(profileAllDetailsProvider).pendingStatusList;
+                                                        // if (pendingStatuses.isNotEmpty &&
+                                                        //     pendingStatuses[0].data != null) {
+                                                        //   final hasPendingChanges = pendingStatuses[0]
+                                                        //       .data!
+                                                        //       .any((status) => status == 'mtf_pending');
+                                                        //   ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                                                        // if (hasPendingChanges) {
+                                                        //     ResponsiveSnackBar.showWarning(context, 'You have pending request.click on the E-Sign to proceed.');
+                                                        //     return;
+                                                        //   }
+                                                        // }
+                                                        // profileDetails.openInWebURL(context, "segment");
+                                                        ref
+                                                            .watch(
+                                                                profileAllDetailsProvider)
+                                                            .openInWebURLk(
+                                                                context,
+                                                                "segment",
+                                                                "mtf");
+                                                      } else {
+                                                        Navigator.push(
+                                                          context,
+                                                          MaterialPageRoute(
+                                                            builder: (_) =>
+                                                                const MyAccountScreen(
+                                                                    initialIndex:
+                                                                        2),
+                                                          ),
+                                                        );
+                                                        ResponsiveSnackBar
+                                                            .showWarning(
+                                                                context,
+                                                                'You need to enable DDPI before you can proceed with enabling MTF.');
+                                                      }
+                                                    },
+                                                    child: Text(
+                                                      "Enable MTF",
+                                                      style: WebTextStyles.sub(
+                                                        isDarkTheme:
+                                                            theme.isDarkMode,
+                                                        color: WebColors
+                                                            .background,
+                                                        fontWeight:
+                                                            WebFonts.semiBold,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      )
+                                    ] else ...[
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 16),
+                                        child: Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Expanded(
+                                              child: Column(
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.start,
                                                 children: [
-                                              headerTitleText("Qty", theme),
-                                              const SizedBox(height: 10),
-                                              SizedBox(
-                                                  height: 40,
-                                                  // width: 150,
-                                                  child: Semantics(
-                                                    identifier: "GTT Qty Input",
-                                                    child: CustomTextFormField(
-                                                       fillColor: theme.isDarkMode
+                                                  Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .spaceBetween,
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .end,
+                                                      children: [
+                                                        Row(
+                                                          children: [
+                                                            headerTitleText(
+                                                                (_isStock)
+                                                                    ? (_isQtyToAmount
+                                                                        ? "Amount"
+                                                                        : "Qty")
+                                                                    : (_isLotToQty
+                                                                        ? "Qty"
+                                                                        : "Lot"),
+                                                                theme),
+                                                            const SizedBox(
+                                                                width: 16),
+                                                            if (widget.scripInfo
+                                                                        .exch ==
+                                                                    "NFO" ||
+                                                                widget.scripInfo
+                                                                        .exch ==
+                                                                    "BFO" ||
+                                                                _isStock)
+                                                              Material(
+                                                                color: Colors
+                                                                    .transparent,
+                                                                shape:
+                                                                    const CircleBorder(),
+                                                                child: InkWell(
+                                                                  customBorder:
+                                                                      const CircleBorder(),
+                                                                  splashColor: theme
+                                                                          .isDarkMode
+                                                                      ? colors
+                                                                          .splashColorDark
+                                                                      : colors
+                                                                          .splashColorLight,
+                                                                  highlightColor: theme
+                                                                          .isDarkMode
+                                                                      ? colors
+                                                                          .highlightDark
+                                                                      : colors
+                                                                          .highlightLight,
+                                                                  onTap: () {
+                                                                    setState(
+                                                                        () {
+                                                                      if (_isStock) {
+                                                                        // NSE/BSE: Toggle between Qty and Amount
+                                                                        _isQtyToAmount =
+                                                                            !_isQtyToAmount;
+                                                                        if (_isQtyToAmount) {
+                                                                          qtyCtrl.text =
+                                                                              ((double.tryParse(widget.orderArg.ltp ?? "0.00") ?? 0).ceil()).toString();
+                                                                        } else {
+                                                                          qtyCtrl.text =
+                                                                              "1";
+                                                                        }
+                                                                      } else {
+                                                                        // NFO/BFO: Toggle between Lot and Qty
+                                                                        _isLotToQty =
+                                                                            !_isLotToQty;
+                                                                        if (_isLotToQty) {
+                                                                          // Converting from Lot to Qty: multiply by lot size
+                                                                          int currentLot =
+                                                                              int.tryParse(qtyCtrl.text) ?? 1;
+                                                                          qtyCtrl.text =
+                                                                              (currentLot * lotSize).toString();
+                                                                        } else {
+                                                                          // Converting from Qty to Lot: divide by lot size
+                                                                          int currentQty =
+                                                                              int.tryParse(qtyCtrl.text) ?? lotSize;
+                                                                          qtyCtrl.text =
+                                                                              ((currentQty / lotSize).round()).toString();
+                                                                          // if (qtyCtrl.text == "0") qtyCtrl.text = "1";
+                                                                        }
+                                                                      }
+                                                                      marginUpdate();
+                                                                    });
+                                                                  },
+                                                                  child:
+                                                                      Padding(
+                                                                    padding:
+                                                                        const EdgeInsets
+                                                                            .all(
+                                                                            0.0),
+                                                                    child: SvgPicture
+                                                                        .asset(
+                                                                      assets
+                                                                          .switchIcon,
+                                                                      width: 16,
+                                                                      height:
+                                                                          16,
+                                                                      fit: BoxFit
+                                                                          .contain,
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                          ],
+                                                        ),
+
+                                                        // Text(
+                                                        // "Lot: ${widget.scripInfo.ls} ${widget.scripInfo.prcunt ?? ''}  ",
+                                                        // style: textStyle(
+                                                        //     const Color(
+                                                        //         0xff777777),
+                                                        //     11,
+                                                        //     FontWeight.w600),
+                                                        // )
+                                                      ]),
+                                                  const SizedBox(height: 10),
+                                                  SizedBox(
+                                                    height: 40,
+                                                    width: double.infinity,
+                                                    child: Semantics(
+                                                      identifier: 'qty_input',
+                                                      child:
+                                                          CustomTextFormField(
+                                                        fillColor: theme
+                                                                .isDarkMode
                                                             ? colors.darkGrey
                                                             : const Color(
                                                                 0xffF1F3F8),
                                                         hintText:
-                                                            "0", //orderInput.qtyCtrl.text,
-                                                        hintStyle: WebTextStyles.formInput(
-                                                          isDarkTheme: theme.isDarkMode,
-                                                          color: theme.isDarkMode
-                                                              ? WebDarkColors.textSecondary
-                                                              : WebColors.textSecondary,
+                                                            "0", //qtyCtrl.text,
+                                                        hintStyle: WebTextStyles
+                                                            .formInput(
+                                                          isDarkTheme:
+                                                              theme.isDarkMode,
+                                                          color: theme
+                                                                  .isDarkMode
+                                                              ? WebDarkColors
+                                                                  .textSecondary
+                                                              : WebColors
+                                                                  .textSecondary,
                                                         ),
                                                         inputFormate: [
                                                           FilteringTextInputFormatter
@@ -1752,835 +3740,258 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                         keyboardType:
                                                             TextInputType
                                                                 .number,
-                                                        style: WebTextStyles.formInput(
-                                                          isDarkTheme: theme.isDarkMode,
-                                                          color: theme.isDarkMode
-                                                              ? WebDarkColors.textPrimary
-                                                              : WebColors.textPrimary,
+                                                        style: WebTextStyles
+                                                            .formInput(
+                                                          isDarkTheme:
+                                                              theme.isDarkMode,
+                                                          color: theme
+                                                                  .isDarkMode
+                                                              ? WebDarkColors
+                                                                  .textPrimary
+                                                              : WebColors
+                                                                  .textPrimary,
                                                         ),
-                                                        // prefixIcon: InkWell(
-                                                        //   onTap: () {
-                                                        //     setState(() {
-                                                        //       String input =
-                                                        //           orderInput
-                                                        //               .qtyCtrl.text;
+                                                        prefixIcon: _isStock
+                                                            ? null
+                                                            : Material(
+                                                                color: Colors
+                                                                    .transparent,
+                                                                shape:
+                                                                    const CircleBorder(),
+                                                                child: InkWell(
+                                                                  customBorder:
+                                                                      const CircleBorder(),
+                                                                  splashColor: theme
+                                                                          .isDarkMode
+                                                                      ? colors
+                                                                          .splashColorDark
+                                                                      : colors
+                                                                          .splashColorLight,
+                                                                  highlightColor: theme
+                                                                          .isDarkMode
+                                                                      ? colors
+                                                                          .highlightDark
+                                                                      : colors
+                                                                          .highlightLight,
+                                                                  onTap: () {
+                                                                    setState(
+                                                                        () {
+                                                                      String
+                                                                          input =
+                                                                          qtyCtrl
+                                                                              .text;
+                                                                      int currentValue =
+                                                                          int.tryParse(input) ??
+                                                                              0;
+                                                                      int adjustedQty = currentValue >=
+                                                                              multiplayer
+                                                                          ? ((currentValue / multiplayer).floor()) *
+                                                                              multiplayer
+                                                                          : multiplayer;
 
-                                                        //       int currentQty =
-                                                        //           int.tryParse(
-                                                        //                   input) ??
-                                                        //               0;
+                                                                      if (_isLotToQty) {
+                                                                        // Qty mode: decrement by Lot size
+                                                                        if (currentValue !=
+                                                                            adjustedQty) {
+                                                                          qtyCtrl.text =
+                                                                              (adjustedQty).toString();
+                                                                        } else if (input.isNotEmpty &&
+                                                                            currentValue >
+                                                                                multiplayer) {
+                                                                          qtyCtrl.text =
+                                                                              (currentValue - multiplayer).toString();
+                                                                        } else {
+                                                                          qtyCtrl.text =
+                                                                              "$multiplayer";
+                                                                        }
+                                                                      } else {
+                                                                        // Lot mode: decrement by 1
+                                                                        if (currentValue >
+                                                                            1) {
+                                                                          qtyCtrl.text =
+                                                                              (currentValue - 1).toString();
+                                                                        } else {
+                                                                          qtyCtrl.text =
+                                                                              "1";
+                                                                        }
+                                                                      }
+                                                                      marginUpdate();
+                                                                    });
+                                                                  },
+                                                                  child:
+                                                                      SvgPicture
+                                                                          .asset(
+                                                                    theme.isDarkMode
+                                                                        ? assets
+                                                                            .darkCMinus
+                                                                        : assets
+                                                                            .minusIcon,
+                                                                    fit: BoxFit
+                                                                        .scaleDown,
+                                                                  ),
+                                                                )),
 
-                                                        //       int adjustedQty =
-                                                        //           ((currentQty /
-                                                        //                       multiplayer)
-                                                        //                   .floor()) *
-                                                        //               multiplayer;
+                                                        suffixIcon: _isStock
+                                                            ? null
+                                                            : Material(
+                                                                color: Colors
+                                                                    .transparent,
+                                                                shape:
+                                                                    const CircleBorder(),
+                                                                child: InkWell(
+                                                                  customBorder:
+                                                                      const CircleBorder(),
+                                                                  splashColor: theme
+                                                                          .isDarkMode
+                                                                      ? colors
+                                                                          .splashColorDark
+                                                                      : colors
+                                                                          .splashColorLight,
+                                                                  highlightColor: theme
+                                                                          .isDarkMode
+                                                                      ? colors
+                                                                          .highlightDark
+                                                                      : colors
+                                                                          .highlightLight,
+                                                                  onTap: () {
+                                                                    setState(
+                                                                        () {
+                                                                      String
+                                                                          input =
+                                                                          qtyCtrl
+                                                                              .text;
+                                                                      int currentValue =
+                                                                          int.tryParse(input) ??
+                                                                              0;
+                                                                      int adjustedQty = currentValue >=
+                                                                              multiplayer
+                                                                          ? ((currentValue / multiplayer).floor()) *
+                                                                              multiplayer
+                                                                          : multiplayer;
 
-                                                        //       if (currentQty !=
-                                                        //           adjustedQty) {
-                                                        //         orderInput.qtyCtrl
-                                                        //                 .text =
-                                                        //             adjustedQty
-                                                        //                 .toString();
-                                                        //       } else if (input
-                                                        //               .isNotEmpty &&
-                                                        //           currentQty >
-                                                        //               multiplayer) {
-                                                        //         orderInput.qtyCtrl
-                                                        //             .text = (int.parse(orderInput
-                                                        //                     .qtyCtrl
-                                                        //                     .text) -
-                                                        //                 multiplayer)
-                                                        //             .toString();
-                                                        //       } else {
-                                                        //         orderInput.qtyCtrl
-                                                        //                 .text =
-                                                        //             "$multiplayer";
-                                                        //       }
-                                                        //     });
-                                                        //   },
-                                                        //   child: SvgPicture.asset(
-                                                        //       theme.isDarkMode
-                                                        //           ? assets
-                                                        //               .darkCMinus
-                                                        //           : assets
-                                                        //               .minusIcon,
-                                                        //       fit:
-                                                        //           BoxFit.scaleDown),
-                                                        // ),
-                                                        // suffixIcon: InkWell(
-                                                        //           onTap: () {},
-                                                        //           child: SvgPicture.asset(
-                                                        //               assets.switchIcon,
-                                                        //               fit: BoxFit.scaleDown),
-                                                        //         ),
+                                                                      bool
+                                                                          hasNoFreezeLimit =
+                                                                          frezQty <=
+                                                                              lotSize;
+                                                                      bool
+                                                                          withinLimit =
+                                                                          hasNoFreezeLimit ||
+                                                                              currentValue < frezQtyOrderSliceMaxLimit * frezQty;
 
-                                                        // suffixIcon: InkWell(
-                                                        //   onTap: () {
-                                                        //     setState(() {
-                                                        //       String input =
-                                                        //           orderInput
-                                                        //               .qtyCtrl.text;
+                                                                      if (_isLotToQty) {
+                                                                        // Qty mode: increment by Lot Size, check against freeze limit
+                                                                        if (currentValue !=
+                                                                            adjustedQty) {
+                                                                          qtyCtrl.text =
+                                                                              adjustedQty.toString();
+                                                                        } else if (input.isNotEmpty &&
+                                                                            withinLimit) {
+                                                                          qtyCtrl.text =
+                                                                              (currentValue + multiplayer).toString();
+                                                                        } else if (input
+                                                                            .isEmpty) {
+                                                                          qtyCtrl.text =
+                                                                              "$multiplayer";
+                                                                        } else if (!hasNoFreezeLimit) {
+                                                                          ResponsiveSnackBar.showWarning(
+                                                                              context,
+                                                                              "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}");
+                                                                          // qtyCtrl.text =
+                                                                          //     "$multiplayer";
+                                                                        }
+                                                                      } else {
+                                                                        // Lot mode: increment by 1 lot, check against freeze limit
+                                                                        bool
+                                                                            hasNoFreezeLimit =
+                                                                            frezQty <=
+                                                                                lotSize;
+                                                                        int maxAllowedLots = hasNoFreezeLimit
+                                                                            ? 999999
+                                                                            : (frezQtyOrderSliceMaxLimit * frezQty) ~/
+                                                                                lotSize;
 
-                                                        //       int currentQty =
-                                                        //           int.tryParse(
-                                                        //                   input) ??
-                                                        //               0;
+                                                                        if (input
+                                                                            .isEmpty) {
+                                                                          qtyCtrl.text =
+                                                                              "1";
+                                                                        } else if (currentValue <
+                                                                            maxAllowedLots) {
+                                                                          qtyCtrl.text =
+                                                                              (currentValue + 1).toString();
+                                                                        } else {
+                                                                          ResponsiveSnackBar.showWarning(
+                                                                              context,
+                                                                              "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}");
+                                                                        }
+                                                                      }
+                                                                      marginUpdate();
+                                                                    });
+                                                                  },
+                                                                  child: SvgPicture.asset(
+                                                                      theme.isDarkMode
+                                                                          ? assets
+                                                                              .darkAdd
+                                                                          : assets
+                                                                              .addIcon,
+                                                                      fit: BoxFit
+                                                                          .scaleDown),
+                                                                ),
+                                                              ),
 
-                                                        //       int adjustedQty =
-                                                        //           ((currentQty /
-                                                        //                       multiplayer)
-                                                        //                   .round()) *
-                                                        //               multiplayer;
-
-                                                        //       if (currentQty !=
-                                                        //           adjustedQty) {
-                                                        //         orderInput.qtyCtrl
-                                                        //                 .text =
-                                                        //             adjustedQty
-                                                        //                 .toString();
-                                                        //       } else if (input
-                                                        //               .isNotEmpty &&
-                                                        //           currentQty <
-                                                        //               ((frezQtyOrderSliceMaxLimit *
-                                                        //                           frezQty) ==
-                                                        //                       frezQtyOrderSliceMaxLimit
-                                                        //                   ? 999999
-                                                        //                   : frezQtyOrderSliceMaxLimit *
-                                                        //                       frezQty)) {
-                                                        //         orderInput.qtyCtrl
-                                                        //                 .text =
-                                                        //             (currentQty +
-                                                        //                     multiplayer)
-                                                        //                 .toString();
-                                                        //       } else {
-                                                        //         ScaffoldMessenger
-                                                        //                 .of(context)
-                                                        //             .removeCurrentSnackBar();
-                                                        //         ScaffoldMessenger
-                                                        //                 .of(context)
-                                                        //             .showSnackBar(
-                                                        //                 ResponsiveSnackBar.showWarning(
-                                                        //                     context,
-                                                        //                     "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}"));
-                                                        //         // orderInput.
-                                                        //         //         qtyCtrl
-                                                        //         //         .text =
-                                                        //         //      multiplayer
-                                                        //         //       .toString();
-                                                        //       }
-                                                        //     });
-                                                        //   },
-                                                        //   child: SvgPicture.asset(
-                                                        //       theme.isDarkMode
-                                                        //           ? assets.darkAdd
-                                                        //           : assets.addIcon,
-                                                        //       fit:
-                                                        //           BoxFit.scaleDown),
-                                                        // ),
-                                                        textCtrl:
-                                                            orderInput.qtyCtrl,
-                                                        textAlign:
-                                                            TextAlign.start,
+                                                        textCtrl: qtyCtrl,
+                                                        textAlign: _isStock
+                                                            ? TextAlign.start
+                                                            : TextAlign.center,
                                                         onChanged: (value) {
                                                           if (value.isEmpty ||
                                                               value == "0") {
-                                                            ResponsiveSnackBar.showWarning(
-                                                                context,
-                                                                "Quantity cannot be ${value == "0" ? '0' : 'empty'}");
+                                                            String fieldName = (_isStock)
+                                                                ? (_isQtyToAmount
+                                                                    ? 'Amount'
+                                                                    : 'Quantity')
+                                                                : (_isLotToQty
+                                                                    ? 'Quantity'
+                                                                    : 'Lot');
+                                                            ResponsiveSnackBar
+                                                                .showWarning(
+                                                                    context,
+                                                                    "$fieldName cannot be ${value == "0" ? '0' : 'empty'}");
                                                           } else {
                                                             String newValue =
                                                                 value.replaceAll(
                                                                     RegExp(
                                                                         r'[^0-9]'),
                                                                     '');
+                                                            double ltp = double
+                                                                    .tryParse(widget
+                                                                            .orderArg
+                                                                            .ltp ??
+                                                                        "0.0") ??
+                                                                0.0;
+                                                            var number = (_isStock)
+                                                                ? (!_isQtyToAmount
+                                                                    ? int.tryParse(
+                                                                            newValue) ??
+                                                                        0
+                                                                    : ((double.tryParse(newValue) ??
+                                                                            0.0) ~/
+                                                                        ltp))
+                                                                : (!_isLotToQty
+                                                                    ? int.tryParse(
+                                                                            newValue) ??
+                                                                        0
+                                                                    : ((int.tryParse(newValue) ??
+                                                                            0) ~/
+                                                                        lotSize));
 
-                                                            int number =
-                                                                int.tryParse(
-                                                                        newValue) ??
-                                                                    0;
-                                                            if (number >
-                                                                (frezQty ==
-                                                                        lotSize
-                                                                    ? 999999
-                                                                    : frezQtyOrderSliceMaxLimit *
-                                                                        frezQty)) {
-                                                              orderInput.qtyCtrl
-                                                                      .text =
-                                                                  orderInput
-                                                                      .qtyCtrl
-                                                                      .text;
-                                                              ResponsiveSnackBar.showWarning(
-                                                                  context,
-                                                                  "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}");
-                                                            }
-
-                                                            if (newValue !=
-                                                                value) {
-                                                              orderInput.qtyCtrl
-                                                                      .text =
-                                                                  newValue;
-
-                                                              orderInput.qtyCtrl
-                                                                      .selection =
-                                                                  TextSelection
-                                                                      .fromPosition(
-                                                                TextPosition(
-                                                                    offset: newValue
-                                                                        .length),
-                                                              );
-                                                            }
-                                                          }
-                                                        }),
-                                                  ))
-                                            ])),
-                                        const SizedBox(width: 16),
-                                        Expanded(
-                                            child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                              Row(
-                                                  // mainAxisAlignment:
-                                                  //     MainAxisAlignment
-                                                  //         .spaceBetween,
-                                                  children: [
-                                                    headerTitleText(
-                                                        "Price", theme),
-                                                    const SizedBox(width: 4),
-                                                    Text(
-                                                      "${orderInput.actPrcType}",
-                                                      style: WebTextStyles.formLabel(
-                                                        isDarkTheme: theme.isDarkMode,
-                                                        color: theme.isDarkMode
-                                                            ? WebDarkColors.textPrimary
-                                                            : WebColors.textPrimary,
-                                                      ),
-                                                    ),
-                                                  ]),
-                                              const SizedBox(height: 10),
-                                              SizedBox(
-                                                  height: 40,
-                                                  // width: 150,
-                                                  child: Semantics(
-                                                    identifier:
-                                                        "GTT Price Input",
-                                                    child: CustomTextFormField(
-                                                        inputFormate: [
-                                                          FilteringTextInputFormatter
-                                                              .allow(RegExp(
-                                                                  r'^\d*\.?\d{0,2}$'))
-                                                        ],
-                                                       fillColor: theme.isDarkMode
-                                                            ? colors.darkGrey
-                                                            : const Color(
-                                                                0xffF1F3F8),
-                                                        onChanged: (value) {
-                                                          double inputPrice =
-                                                              double.tryParse(
-                                                                      value) ??
-                                                                  0;
-                                                          if (value
-                                                                  .isNotEmpty &&
-                                                              inputPrice > 0) {
-                                                            final regex = RegExp(
-                                                                r'^(\d+)?(\.\d{0,2})?$');
-                                                            if (!regex.hasMatch(
-                                                                value)) {
-                                                              orderInput
-                                                                      .priceCtrl
-                                                                      .text =
-                                                                  value.substring(
-                                                                      0,
-                                                                      value.length -
-                                                                          1);
-                                                              orderInput
-                                                                      .priceCtrl
-                                                                      .selection =
-                                                                  TextSelection
-                                                                      .collapsed(
-                                                                offset: orderInput
-                                                                    .priceCtrl
-                                                                    .text
-                                                                    .length,
-                                                              );
-                                                            }
-                                                          }
-                                                          if (value.isEmpty) {
-                                                            ResponsiveSnackBar.showWarning(
-                                                                context,
-                                                                "Price cannot be empty");
-                                                          } else if (inputPrice <=
-                                                              0) {
-                                                            ResponsiveSnackBar.showWarning(
-                                                                context,
-                                                                "Price cannot be 0");
-                                                          } else {
-                                                            setState(() {
-                                                              ordPrice = value;
-                                                            });
-                                                          }
-                                                        },
-                                                        hintText:
-                                                            "${widget.orderArg.ltp}",
-                                                        hintStyle: WebTextStyles.formInput(
-                                                          isDarkTheme: theme.isDarkMode,
-                                                          color: theme.isDarkMode
-                                                              ? WebDarkColors.textSecondary
-                                                              : WebColors.textSecondary,
-                                                        ),
-                                                        keyboardType:
-                                                            const TextInputType
-                                                                .numberWithOptions(
-                                                                decimal: true),
-                                                        style: WebTextStyles.formInput(
-                                                          isDarkTheme: theme.isDarkMode,
-                                                          color: theme.isDarkMode
-                                                              ? WebDarkColors.textPrimary
-                                                              : WebColors.textPrimary,
-                                                        ),
-                                                        isReadable: orderInput
-                                                                        .actPrcType ==
-                                                                    "Limit" ||
-                                                                orderInput
-                                                                        .actPrcType ==
-                                                                    "SL Limit"
-                                                            ? false
-                                                            : true,
-                                                        // prefixIcon: Container(
-                                                        //     margin:
-                                                        //         const EdgeInsets.all(
-                                                        //             12),
-                                                        //     decoration: BoxDecoration(
-                                                        //         borderRadius:
-                                                        //             BorderRadius.circular(20),
-                                                        //         color: theme.isDarkMode ? const Color(0xff555555) : colors.colorWhite),
-                                                        //     child: SvgPicture.asset(color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey, orderInput.actPrcType == "Limit" || orderInput.actPrcType == "SL Limit" ? assets.ruppeIcon : assets.lock, fit: BoxFit.scaleDown)),
-                                                        suffixIcon: Material(
-                                                          color: Colors
-                                                              .transparent,
-                                                          shape:
-                                                              const CircleBorder(),
-                                                          child: Semantics(
-                                                            identifier:
-                                                                "GTT Price Type button",
-                                                            child: InkWell(
-                                                              customBorder:
-                                                                  const CircleBorder(),
-                                                              splashColor: theme
-                                                                      .isDarkMode
-                                                                  ? colors
-                                                                      .splashColorDark
-                                                                  : colors
-                                                                      .splashColorLight,
-                                                              highlightColor: theme
-                                                                      .isDarkMode
-                                                                  ? colors
-                                                                      .highlightDark
-                                                                  : colors
-                                                                      .highlightLight,
-                                                              onTap: () {
-                                                                setState(() {
-                                                                  orderInput.setGTTPriceTypeOrderIsMarket(
-                                                                      !orderInput
-                                                                          .GTTPriceTypeOrderIsMarket);
-                                                                  final newType = orderInput
-                                                                          .GTTPriceTypeOrderIsMarket
-                                                                      ? "Market"
-                                                                      : "Limit";
-                                                                  orderInput
-                                                                      .chngGTTPriceType(
-                                                                          newType);
-                                                                  if (orderInput
-                                                                              .actPrcType ==
-                                                                          "Market" ||
-                                                                      orderInput
-                                                                              .actPrcType ==
-                                                                          "SL MKT") {
-                                                                    orderInput
-                                                                            .priceCtrl
-                                                                            .text =
-                                                                        "Market";
-                                                                  } else {
-                                                                    orderInput
-                                                                            .priceCtrl
-                                                                            .text =
-                                                                        "${widget.orderArg.ltp}";
-                                                                  }
-                                                                });
-                                                              },
-                                                              child: Padding(
-                                                                padding:
-                                                                    const EdgeInsets
-                                                                        .all(
-                                                                        12.0),
-                                                                child: SvgPicture.asset(
-                                                                    assets
-                                                                        .switchIcon,
-                                                                    fit: BoxFit
-                                                                        .contain),
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        textCtrl: orderInput
-                                                            .priceCtrl,
-                                                        textAlign:
-                                                            TextAlign.start),
-                                                  )),
-                                            ]))
-                                      ])),
-                              const SizedBox(height: 16),
-                              // if(orderInput.actPrcType == "Market" || orderInput.actPrcType == "SL MKT") ...[
-                              //     marketProtectionDisclaimer(theme, context, widget.scripInfo, mktProtCtrl.text),
-                              //   const SizedBox(height: 16),
-                              // ],
-                              // Divider(
-                              //     color: theme.isDarkMode
-                              //         ? colors.darkColorDivider
-                              //         : colors.colorDivider),
-                              // if (orderInput.actPrcType == "SL Limit" || orderInput.actPrcType == "SL MKT") ...[
-                              //   triggerOption(theme, context, widget.scripInfo),
-                              //   Divider(
-                              //       color: theme.isDarkMode
-                              //           ? colors.darkColorDivider
-                              //           : colors.colorDivider)
-                              // ],
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 16),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: [
-                                    //   Expanded(
-                                    //       child: Column(
-                                    //           crossAxisAlignment:
-                                    //               CrossAxisAlignment.start,
-                                    //           children: [
-                                    //         headerTitleText(
-                                    //             "Validity", theme),
-                                    //         const SizedBox(height: 7),
-                                    //         SizedBox(
-                                    //             height: 38,
-                                    //             child: ListView.separated(
-                                    //                 scrollDirection:
-                                    //                     Axis.horizontal,
-                                    //                 itemBuilder:
-                                    //                     (context, index) {
-                                    //                   return ElevatedButton(
-                                    //                       onPressed: () {
-                                    //                         setState(() {
-                                    //                           validityTypeGTT =
-                                    //                               validityTypesGTT[
-                                    //                                   index];
-                                    //                         });
-                                    //                       },
-                                    //                       style: ElevatedButton
-                                    //                           .styleFrom(
-                                    //                               elevation:
-                                    //                                   0,
-                                    //                               padding: const EdgeInsets
-                                    //                                   .symmetric(
-                                    //                                   horizontal:
-                                    //                                       12,
-                                    //                                   vertical:
-                                    //                                       0),
-                                    //                               backgroundColor: !theme
-                                    //                                       .isDarkMode
-                                    //                                   ? validityTypeGTT != validityTypesGTT[index]
-                                    //                                       ? const Color(0xffF1F3F8)
-                                    //                                       : colors.colorBlack
-                                    //                                   : validityTypeGTT != validityTypesGTT[index]
-                                    //                                       ? colors.darkGrey
-                                    //                                       : colors.colorbluegrey,
-                                    //                               shape: const StadiumBorder()),
-                                    //                       child: Text(validityTypesGTT[index],
-                                    //                           style: textStyle(
-                                    //                               !theme.isDarkMode
-                                    //                                   ? validityTypeGTT != validityTypesGTT[index]
-                                    //                                       ? const Color(0xff666666)
-                                    //                                       : colors.colorWhite
-                                    //                                   : validityTypeGTT != validityTypesGTT[index]
-                                    //                                       ? const Color(0xff666666)
-                                    //                                       : colors.colorBlack,
-                                    //                               14,
-                                    //                               validityTypeGTT == validityTypesGTT[index] ? FontWeight.w600 : FontWeight.w500)));
-                                    //                 },
-                                    //                 separatorBuilder:
-                                    //                     (context, index) {
-                                    //                   return const SizedBox(
-                                    //                       width: 8);
-                                    //                 },
-                                    //                 itemCount:
-                                    //                     validityTypesGTT
-                                    //                         .length))
-                                    //       ],
-                                    //       ),
-                                    //       ),
-                                    //   const SizedBox(width: 16),
-                                    Row(
-                                      children: [
-                                        Text(
-                                          "OCO",
-                                          style: WebTextStyles.sub(
-                                            isDarkTheme: theme.isDarkMode,
-                                            color: theme.isDarkMode
-                                                ? WebDarkColors.textSecondary
-                                                : WebColors.textSecondary,
-                                          ),
-                                        ),
-                                        Semantics(
-                                          identifier: 'GTT OCO button',
-                                          child: Checkbox(
-                                            value: isOco,
-                                            onChanged: (isBuy! &&
-                                                    widget.scripInfo.seg ==
-                                                        "EQT")
-                                                ? null
-                                                : (bool? value) {
-                                                    if (isBuy! &&
-                                                        widget.scripInfo.seg ==
-                                                            "EQT") {
-                                                      ResponsiveSnackBar.showWarning(context,
-                                                          "OCO Order cannot be placed for Buy order");
-                                                      return;
-                                                    }
-
-                                                    setState(() {
-                                                      isOco = value ?? false;
-                                                      orderInput
-                                                          .disableCondGTT(isOco);
-                                                      //  orderInput.setGTTPriceTypeOrderIsMarket(isOco);
-                                                    });
-                                                    if (orderInput.ocoPrcType !=
-                                                        "MKT") {
-                                                      orderInput
-                                                          .chngOCOPriceType("Limit");
-
-                                                      ref
-                                                          .read(ordInputProvider)
-                                                          .updateOcoPrcQtyCtrl(
-                                                            "${widget.orderArg.ltp}",
-                                                            widget.orderArg.lotSize!
-                                                                .replaceAll("-", ""),
-                                                          );
-                                                    }
-                                                  },
-                                            activeColor: theme.isDarkMode
-                                                ? WebDarkColors.primary
-                                                : WebColors.primary,
-                                            checkColor: Colors.white,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              if (isOco) ...[
-                                // Divider(
-                                //     color: theme.isDarkMode
-                                //         ? colors.darkColorDivider
-                                //         : colors.colorDivider,
-                                //     thickness: .4),
-                                // const SizedBox(height: 16),
-                                // GttCondition(
-                                //     isOco: isOco,
-                                //     isGtt: isGtt,
-                                //     isModify: widget.orderArg.isModify),
-                                // const SizedBox(height: 8),
-                                // InvesTypeWidget(
-                                //     scripInfo: widget.scripInfo, ordType: "OCO"),
-                                // const SizedBox(height: 8),
-                                // Padding(
-                                //     padding: const EdgeInsets.only(left: 16),
-                                //     child: headerTitleText("Price type", theme)),
-                                // const SizedBox(height: 10),
-                                // PriceTypeBtn(
-                                //     isOco: isOco,
-                                //     isGtt: isGtt,
-                                //     ltp: "${widget.orderArg.ltp}"),
-                                // Divider(
-                                //     color: theme.isDarkMode
-                                //         ? colors.darkColorDivider
-                                //         : colors.colorDivider),
-                                const SizedBox(height: 16),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16.0),
-                                  child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Row(children: [
-                                          headerTitleText(
-                                              isOco
-                                                  ? "Stoploss Trigger Price"
-                                                  : "Trigger Price",
-                                              theme),
-                                        ]),
-                                        const SizedBox(height: 10),
-                                        SizedBox(
-                                            height: 40,
-                                            width: 150,
-                                            child: Semantics(
-                                              identifier:
-                                                  'stoploss_trigger_price',
-                                              child: CustomTextFormField(
-                                                  inputFormate: [
-                                                    FilteringTextInputFormatter
-                                                        .allow(RegExp(
-                                                            r'^\d*\.?\d{0,2}$'))
-                                                  ],
-                                                fillColor: theme.isDarkMode
-                                                            ? colors.darkGrey
-                                                            : const Color(
-                                                                0xffF1F3F8),
-                                                  onChanged: (value) {
-                                                    double inputPrice =
-                                                        double.tryParse(
-                                                                value) ??
-                                                            0;
-
-                                                    if (value.isNotEmpty &&
-                                                        inputPrice > 0) {
-                                                      final regex = RegExp(
-                                                          r'^(\d+)?(\.\d{0,2})?$');
-                                                      if (!regex
-                                                          .hasMatch(value)) {
-                                                        orderInput
-                                                                .val2Ctrl.text =
-                                                            value.substring(
-                                                                0,
-                                                                value.length -
-                                                                    1);
-                                                        orderInput.val2Ctrl
-                                                                .selection =
-                                                            TextSelection.collapsed(
-                                                                offset: orderInput
-                                                                    .val2Ctrl
-                                                                    .text
-                                                                    .length);
-                                                      }
-                                                    }
-                                                    if (value.isEmpty) {
-                                                      ResponsiveSnackBar.showWarning(context,
-                                                          "Stoploss trigger price cannot be empty");
-                                                    } else if (inputPrice <=
-                                                        0) {
-                                                      ResponsiveSnackBar.showWarning(context,
-                                                          "Stoploss trigger price cannot be 0");
-                                                    }
-                                                  },
-                                                  hintText:
-                                                      "${widget.orderArg.ltp}",
-                                                  hintStyle: WebTextStyles.formInput(
-                                                    isDarkTheme: theme.isDarkMode,
-                                                    color: theme.isDarkMode
-                                                        ? WebDarkColors.textSecondary
-                                                        : WebColors.textSecondary,
-                                                  ),
-                                                  keyboardType:
-                                                      const TextInputType
-                                                          .numberWithOptions(
-                                                          decimal: true),
-                                                  style: WebTextStyles.formInput(
-                                                    isDarkTheme: theme.isDarkMode,
-                                                    color: theme.isDarkMode
-                                                        ? WebDarkColors.textPrimary
-                                                        : WebColors.textPrimary,
-                                                  ),
-                                                  textCtrl: orderInput.val2Ctrl,
-                                                  textAlign: TextAlign.start),
-                                            )),
-                                      ]),
-                                ),
-
-                                const SizedBox(height: 16),
-                                Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 16),
-                                    child: Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Expanded(
-                                              child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                headerTitleText("Qty", theme),
-                                                const SizedBox(height: 10),
-                                                SizedBox(
-                                                    height: 40,
-                                                    width: 150,
-                                                    child: Semantics(
-                                                      identifier:
-                                                          'oco_qty_input',
-                                                      child: CustomTextFormField(
-                                                      fillColor: theme.isDarkMode
-                                                            ? colors.darkGrey
-                                                            : const Color(
-                                                                0xffF1F3F8),
-                                                          hintText: "0", //orderInput.ocoQtyCtrl.text,
-                                                          hintStyle: WebTextStyles.formInput(
-                                                            isDarkTheme: theme.isDarkMode,
-                                                            color: theme.isDarkMode
-                                                                ? WebDarkColors.textSecondary
-                                                                : WebColors.textSecondary,
-                                                          ),
-                                                          inputFormate: [FilteringTextInputFormatter.digitsOnly],
-                                                          keyboardType: TextInputType.number,
-                                                          style: WebTextStyles.formInput(
-                                                            isDarkTheme: theme.isDarkMode,
-                                                            color: theme.isDarkMode
-                                                                ? WebDarkColors.textPrimary
-                                                                : WebColors.textPrimary,
-                                                          ),
-                                                          // prefixIcon: InkWell(
-                                                          //   onTap: () {
-                                                          //     setState(() {
-                                                          //       String input =
-                                                          //           orderInput
-                                                          //               .ocoQtyCtrl
-                                                          //               .text;
-                                                          //       int currentQty =
-                                                          //           int.tryParse(
-                                                          //                   input) ??
-                                                          //               0;
-                                                          //       int adjustedQty =
-                                                          //           ((currentQty /
-                                                          //                       multiplayer)
-                                                          //                   .floor()) *
-                                                          //               multiplayer;
-
-                                                          //       if (currentQty !=
-                                                          //           adjustedQty) {
-                                                          //         orderInput
-                                                          //                 .ocoQtyCtrl
-                                                          //                 .text =
-                                                          //             adjustedQty
-                                                          //                 .toString();
-                                                          //       } else if (input
-                                                          //               .isNotEmpty &&
-                                                          //           currentQty >
-                                                          //               multiplayer) {
-                                                          //         orderInput
-                                                          //             .ocoQtyCtrl
-                                                          //             .text = (currentQty -
-                                                          //                 multiplayer)
-                                                          //             .toString();
-                                                          //       } else {
-                                                          //         orderInput
-                                                          //                 .ocoQtyCtrl
-                                                          //                 .text =
-                                                          //             multiplayer
-                                                          //                 .toString();
-                                                          //       }
-                                                          //     });
-                                                          //   },
-                                                          //   child: SvgPicture.asset(
-                                                          //       theme.isDarkMode
-                                                          //           ? assets
-                                                          //               .darkCMinus
-                                                          //           : assets
-                                                          //               .minusIcon,
-                                                          //       fit: BoxFit
-                                                          //           .scaleDown),
-                                                          // ),
-
-                                                          // suffixIcon: InkWell(
-                                                          //       onTap: () {},
-                                                          //       child: SvgPicture.asset(
-                                                          //           assets.switchIcon,
-                                                          //           fit: BoxFit.scaleDown),
-                                                          //     ),
-
-                                                          // suffixIcon: InkWell(
-                                                          //   onTap: () {
-                                                          //     setState(() {
-                                                          //       String input =
-                                                          //           orderInput
-                                                          //               .ocoQtyCtrl
-                                                          //               .text;
-                                                          //       int currentQty =
-                                                          //           int.tryParse(
-                                                          //                   input) ??
-                                                          //               0;
-                                                          //       int adjustedQty =
-                                                          //           ((currentQty /
-                                                          //                       multiplayer)
-                                                          //                   .round()) *
-                                                          //               multiplayer;
-
-                                                          //       if (currentQty !=
-                                                          //           adjustedQty) {
-                                                          //         orderInput
-                                                          //                 .ocoQtyCtrl
-                                                          //                 .text =
-                                                          //             adjustedQty
-                                                          //                 .toString();
-                                                          //       } else if (input
-                                                          //               .isNotEmpty &&
-                                                          //           currentQty <
-                                                          //               ((frezQtyOrderSliceMaxLimit *
-                                                          //                           frezQty) ==
-                                                          //                       frezQtyOrderSliceMaxLimit
-                                                          //                   ? 999999
-                                                          //                   : frezQtyOrderSliceMaxLimit *
-                                                          //                       frezQty)) {
-                                                          //         orderInput
-                                                          //             .ocoQtyCtrl
-                                                          //             .text = (int.parse(orderInput
-                                                          //                     .ocoQtyCtrl
-                                                          //                     .text) +
-                                                          //                 multiplayer)
-                                                          //             .toString();
-                                                          //       } else {
-                                                          //         ScaffoldMessenger
-                                                          //                 .of(context)
-                                                          //             .removeCurrentSnackBar();
-                                                          //         ScaffoldMessenger
-                                                          //                 .of(
-                                                          //                     context)
-                                                          //             .showSnackBar(
-                                                          //                 ResponsiveSnackBar.showWarning(
-                                                          //                     context,
-                                                          //                     "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}"));
-                                                          //         // orderInput
-                                                          //         //     .ocoQtyCtrl
-                                                          //         //     .text = "$multiplayer";
-                                                          //       }
-                                                          //     });
-                                                          //   },
-                                                          //   child: SvgPicture.asset(
-                                                          //       theme.isDarkMode
-                                                          //           ? assets.darkAdd
-                                                          //           : assets
-                                                          //               .addIcon,
-                                                          //       fit: BoxFit
-                                                          //           .scaleDown),
-                                                          // ),
-                                                          textCtrl: orderInput.ocoQtyCtrl,
-                                                          textAlign: TextAlign.start,
-                                                          onChanged: (value) {
-                                                            if (value.isEmpty ||
-                                                                value == "0") {
-                                                              ResponsiveSnackBar.showWarning(
-                                                                  context,
-                                                                  "OCO quantity cannot be ${value == "0" ? '0' : 'empty'}");
+                                                            if (_isQtyToAmount &&
+                                                                number < 1 &&
+                                                                (_isStock)) {
+                                                              ResponsiveSnackBar
+                                                                  .showWarning(
+                                                                      context,
+                                                                      "Minimum Allowed Amount should be greater than $ltp");
                                                             } else {
-                                                              String newValue =
-                                                                  value.replaceAll(
-                                                                      RegExp(
-                                                                          r'[^0-9]'),
-                                                                      '');
-
-                                                              int number =
-                                                                  int.tryParse(
-                                                                          newValue) ??
-                                                                      0;
                                                               bool
                                                                   hasNoFreezeLimit =
                                                                   frezQty <=
@@ -2589,1679 +4000,613 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                   number >
                                                                       frezQtyOrderSliceMaxLimit *
                                                                           frezQty) {
-                                                                orderInput
-                                                                        .qtyCtrl
-                                                                        .text =
-                                                                    orderInput
-                                                                        .qtyCtrl
+                                                                qtyCtrl.text =
+                                                                    qtyCtrl
                                                                         .text;
-                                                                ResponsiveSnackBar.showWarning(
-                                                                    context,
-                                                                    "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}");
-                                                              }
-
-                                                              if (newValue !=
-                                                                  value) {
-                                                                orderInput
-                                                                        .ocoQtyCtrl
-                                                                        .text =
-                                                                    newValue;
-                                                                orderInput
-                                                                        .ocoQtyCtrl
-                                                                        .selection =
-                                                                    TextSelection
-                                                                        .fromPosition(
-                                                                  TextPosition(
-                                                                      offset: newValue
-                                                                          .length),
-                                                                );
+                                                                ResponsiveSnackBar
+                                                                    .showWarning(
+                                                                        context,
+                                                                        "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}");
                                                               }
                                                             }
-                                                          }),
-                                                    ))
-                                              ])),
-                                          const SizedBox(width: 16),
-                                          Expanded(
-                                              child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                Row(
-                                                    // mainAxisAlignment:
-                                                    //     MainAxisAlignment
-                                                    //         .spaceBetween,
-                                                    children: [
-                                                      headerTitleText(
-                                                          "Price", theme),
-                                                      const SizedBox(width: 4),
-                                                      Text(
-                                                        "${orderInput.actOcoPrcType}",
-                                                        style: WebTextStyles.formLabel(
-                                                          isDarkTheme: theme.isDarkMode,
-                                                          color: theme.isDarkMode
-                                                              ? WebDarkColors.textPrimary
-                                                              : WebColors.textPrimary,
+
+                                                            if (newValue !=
+                                                                value) {
+                                                              qtyCtrl.text =
+                                                                  newValue;
+                                                              qtyCtrl.selection =
+                                                                  TextSelection
+                                                                      .fromPosition(
+                                                                TextPosition(
+                                                                    offset: newValue
+                                                                        .length),
+                                                              );
+                                                            }
+                                                            marginUpdate();
+                                                          }
+                                                        },
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  // if (widget.scripInfo.frzqty != null) ...[
+                                                  //         const SizedBox(height: 8),
+                                                  //         Text("Frz Qty : $frezQty",
+                                                  //             style: textStyle(
+                                                  //                 const Color(
+                                                  //                     0xff666666),
+                                                  //                 12,
+                                                  //                 FontWeight.w500))
+                                                  // ]
+                                                  if (_isQtyToAmount &&
+                                                      (_isStock))
+                                                    Text(
+                                                      "Qty : ${getFinalQuantity(qtyCtrl.text)}",
+                                                      style: WebTextStyles.sub(
+                                                        isDarkTheme:
+                                                            theme.isDarkMode,
+                                                        color: theme.isDarkMode
+                                                            ? WebDarkColors
+                                                                .textSecondary
+                                                            : WebColors
+                                                                .textSecondary,
+                                                      ),
+                                                    ),
+                                                  if (_isLotToQty &&
+                                                      (widget.scripInfo.exch ==
+                                                              "NFO" ||
+                                                          widget.scripInfo
+                                                                  .exch ==
+                                                              "BFO"))
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                              top: 4),
+                                                      child: Text(
+                                                        "Lot : ${((int.tryParse(qtyCtrl.text) ?? 0) / lotSize).ceil()}",
+                                                        style:
+                                                            WebTextStyles.para(
+                                                          isDarkTheme:
+                                                              theme.isDarkMode,
+                                                          color: theme
+                                                                  .isDarkMode
+                                                              ? WebDarkColors
+                                                                  .textSecondary
+                                                              : WebColors
+                                                                  .textSecondary,
                                                         ),
                                                       ),
-                                                    ]),
-                                                const SizedBox(height: 10),
-                                                SizedBox(
-                                                    height: 40,
-                                                    width: 150,
-                                                    child: Semantics(
-                                                      identifier:
-                                                          'oco_price_input',
-                                                      child:
-                                                          CustomTextFormField(
-                                                              inputFormate: [
-                                                            FilteringTextInputFormatter
-                                                                .allow(RegExp(
-                                                                    r'^\d*\.?\d{0,2}$'))
-                                                          ],
-                                                             fillColor: theme.isDarkMode
-                                                            ? colors.darkGrey
-                                                            : const Color(
-                                                                0xffF1F3F8),
-                                                              onChanged:
-                                                                  (value) {
-                                                                double
-                                                                    inputPrice =
-                                                                    double.tryParse(
-                                                                            value) ??
-                                                                        0;
-                                                                if (value
-                                                                        .isNotEmpty &&
-                                                                    inputPrice >
-                                                                        0) {
-                                                                  final regex =
-                                                                      RegExp(
-                                                                          r'^(\d+)?(\.\d{0,2})?$');
-                                                                  if (!regex
-                                                                      .hasMatch(
-                                                                          value)) {
-                                                                    orderInput
-                                                                            .ocoPriceCtrl
-                                                                            .text =
-                                                                        value.substring(
-                                                                            0,
-                                                                            value.length -
-                                                                                1);
-                                                                    orderInput
-                                                                            .ocoPriceCtrl
-                                                                            .selection =
-                                                                        TextSelection
-                                                                            .collapsed(
-                                                                      offset: orderInput
-                                                                          .ocoPriceCtrl
-                                                                          .text
-                                                                          .length,
-                                                                    );
-                                                                  }
-                                                                }
-                                                                if (value
-                                                                    .isEmpty) {
-                                                                  ResponsiveSnackBar.showWarning(
-                                                                      context,
-                                                                      "OCO price cannot be empty");
-                                                                } else if (inputPrice <=
-                                                                    0) {
-                                                                  ResponsiveSnackBar.showWarning(
-                                                                      context,
-                                                                      "OCO price cannot be 0");
-                                                                } else {
-                                                                  setState(() {
-                                                                    ordPrice =
-                                                                        value;
-                                                                  });
-                                                                }
-                                                              },
-                                                              hintText:
-                                                                  "${widget.orderArg.ltp}",
-                                                              hintStyle: WebTextStyles.formInput(
-                                                                isDarkTheme: theme.isDarkMode,
-                                                                color: theme.isDarkMode
-                                                                    ? WebDarkColors.textSecondary
-                                                                    : WebColors.textSecondary,
-                                                              ),
-                                                              keyboardType:
-                                                                  const TextInputType
-                                                                      .numberWithOptions(
-                                                                      decimal:
-                                                                          true),
-                                                              style: WebTextStyles.formInput(
-                                                                isDarkTheme: theme.isDarkMode,
-                                                                color: theme.isDarkMode
-                                                                    ? WebDarkColors.textPrimary
-                                                                    : WebColors.textPrimary,
-                                                              ),
-                                                              isReadable: orderInput
-                                                                              .actOcoPrcType ==
-                                                                          "Limit" ||
-                                                                      orderInput
-                                                                              .actOcoPrcType ==
-                                                                          "SL Limit"
-                                                                  ? false
-                                                                  : true,
-                                                              // prefixIcon: Container(
-                                                              //     margin: const EdgeInsets.all(
-                                                              //         12),
-                                                              //     decoration: BoxDecoration(
-                                                              //         borderRadius:
-                                                              //             BorderRadius.circular(20),
-                                                              //         color: theme.isDarkMode ? const Color(0xff555555) : colors.colorWhite),
-                                                              //     child: SvgPicture.asset(color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey, orderInput.actOcoPrcType == "Limit" || orderInput.actOcoPrcType == "SL Limit" ? assets.ruppeIcon : assets.lock, fit: BoxFit.scaleDown)),
-
-                                                              suffixIcon:
-                                                                  InkWell(
-                                                                onTap: () {
-                                                                  setState(() {
-                                                                    orderInput.setGTTOCOPriceTypeOrderIsMarket(
-                                                                        !orderInput
-                                                                            .GTTOCOPriceTypeOrderIsMarket);
-                                                                    final newType1 = orderInput
-                                                                            .GTTOCOPriceTypeOrderIsMarket
-                                                                        ? "Market"
-                                                                        : "Limit";
-                                                                    orderInput
-                                                                        .chngOCOPriceType(
-                                                                            newType1);
-                                                                    if (orderInput.actOcoPrcType ==
-                                                                            "Market" ||
-                                                                        orderInput.actOcoPrcType ==
-                                                                            "SL MKT") {
-                                                                      orderInput
-                                                                          .ocoPriceCtrl
-                                                                          .text = "Market";
-                                                                    } else {
-                                                                      orderInput
-                                                                          .ocoPriceCtrl
-                                                                          .text = "${widget.orderArg.ltp}";
-                                                                    }
-                                                                  });
-                                                                },
-                                                                child: Padding(
-                                                                  padding:
-                                                                      const EdgeInsets
-                                                                          .all(
-                                                                          12.0),
-                                                                  child: SvgPicture.asset(
-                                                                      assets
-                                                                          .switchIcon,
-                                                                      fit: BoxFit
-                                                                          .contain),
-                                                                ),
-                                                              ),
-                                                              textCtrl: orderInput
-                                                                  .ocoPriceCtrl,
-                                                              textAlign:
-                                                                  TextAlign
-                                                                      .start),
-                                                    ))
-                                              ]))
-                                        ])),
-
-                                // const SizedBox(height: 3),
-                                // Divider(
-                                //     color: theme.isDarkMode
-                                //         ? colors.darkColorDivider
-                                //         : colors.colorDivider),
-                                // if (orderInput.actOcoPrcType == "SL Limit" ||
-                                //     orderInput.actOcoPrcType == "SL MKT") ...[
-                                //   Padding(
-                                //       padding: const EdgeInsets.symmetric(
-                                //           horizontal: 16),
-                                //       child: Column(
-                                //           mainAxisAlignment:
-                                //               MainAxisAlignment.start,
-                                //           crossAxisAlignment:
-                                //               CrossAxisAlignment.start,
-                                //           children: [
-                                //             const SizedBox(height: 2),
-                                //             headerTitleText("Trigger", theme),
-                                //             const SizedBox(height: 7),
-                                //             SizedBox(
-                                //                 height: 44,
-                                //                 child: CustomTextFormField(
-                                //                     fillColor: theme.isDarkMode
-                                //                         ? colors.darkGrey
-                                //                         : const Color(0xffF1F3F8),
-                                //                     hintText: "0.00",
-                                //                     hintStyle: textStyle(
-                                //                         const Color(0xff666666),
-                                //                         15,
-                                //                         FontWeight.w400),
-                                //                     onChanged: (value) {
-                                //                       if (value.isNotEmpty &&
-                                //                           double.parse(value) >
-                                //                               0) {
-                                //                         final regex = RegExp(
-                                //                             r'^(\d+)?(\.\d{0,2})?$'); // Allows numbers with up to 2 decimal places
-                                //                         if (!regex
-                                //                             .hasMatch(value)) {
-                                //                           orderInput.ocoTrgPrcCtrl
-                                //                                   .text =
-                                //                               value.substring(
-                                //                                   0,
-                                //                                   value.length -
-                                //                                       1); // Revert to previous valid input
-                                //                           orderInput.ocoTrgPrcCtrl
-                                //                                   .selection =
-                                //                               TextSelection.collapsed(
-                                //                                   offset: orderInput
-                                //                                       .ocoTrgPrcCtrl
-                                //                                       .text
-                                //                                       .length); // Keep cursor at the end
-                                //                         }
-                                //                       }
-                                //                       ScaffoldMessenger.of(
-                                //                               context)
-                                //                           .hideCurrentSnackBar();
-                                //                       if (value.isNotEmpty) {
-                                //                       } else {
-                                //                         ScaffoldMessenger.of(
-                                //                                 context)
-                                //                             .showSnackBar(
-                                //                                 ResponsiveSnackBar.showWarning(
-                                //                                     context,
-                                //                                     "Trigger cannot be empty"));
-                                //                       }
-                                //                     },
-                                //                     keyboardType:
-                                //                         const TextInputType.numberWithOptions(
-                                //                             decimal: true),
-                                //                     style: textStyle(
-                                //                         theme.isDarkMode
-                                //                             ? colors.colorWhite
-                                //                             : colors.colorBlack,
-                                //                         16,
-                                //                         FontWeight.w600),
-                                //                     prefixIcon: Container(
-                                //                         margin:
-                                //                             const EdgeInsets.all(
-                                //                                 12),
-                                //                         decoration: BoxDecoration(
-                                //                             borderRadius:
-                                //                                 BorderRadius.circular(
-                                //                                     20),
-                                //                             color: theme.isDarkMode
-                                //                                 ? const Color(
-                                //                                     0xff555555)
-                                //                                 : colors
-                                //                                     .colorWhite),
-                                //                         child: SvgPicture.asset(
-                                //                             color: theme.isDarkMode
-                                //                                 ? colors.colorWhite
-                                //                                 : colors.colorGrey,
-                                //                             assets.ruppeIcon,
-                                //                             fit: BoxFit.scaleDown)),
-                                //                     textCtrl: orderInput.ocoTrgPrcCtrl,
-                                //                     textAlign: TextAlign.start)),
-                                //           ])),
-                                //   Divider(
-                                //       color: theme.isDarkMode
-                                //           ? colors.darkColorDivider
-                                //           : colors.colorDivider)
-                                // ]
-                              ],
-
-                              // if (!isOco) ...[
-                              //   const SizedBox(height: 3),
-                              //   Divider(
-                              //       color: theme.isDarkMode
-                              //           ? colors.darkColorDivider
-                              //           : colors.colorDivider,
-                              //       thickness: .4)
-
-                              // Padding(
-                              //   padding:
-                              //       const EdgeInsets.only(bottom: 8, left: 16),
-                              //   child: headerTitleText("Remarks", theme),
-                              // ),
-                              // Container(
-                              //   padding:
-                              //       const EdgeInsets.symmetric(horizontal: 16),
-                              //   height: 40,
-                              //   child: CustomTextFormField(
-                              //       keyboardType: TextInputType.text,
-                              //       fillColor: theme.isDarkMode
-                              //           ? colors.darkGrey
-                              //           : const Color(0xffF1F3F8),
-                              //       hintStyle: textStyle(const Color(0xff666666),
-                              //           15, FontWeight.w400),
-                              //       style: textStyle(
-                              //           theme.isDarkMode
-                              //               ? colors.colorWhite
-                              //               : colors.colorBlack,
-                              //           16,
-                              //           FontWeight.w600),
-                              //       textAlign: TextAlign.start,
-                              //       onChanged: (value) {},
-                              //       textCtrl: orderInput.reMarksCtrl),
-                              // ),
-
-                              //  ],
-                              // if ((orderInput.actOcoPrcType == "Market" ||
-                              //         orderInput.actOcoPrcType == "SL MKT") ||
-                              //     (orderInput.actPrcType == "Market" ||
-                              //         orderInput.actPrcType == "SL MKT")) ...[
-                              //   const SizedBox(height: 16),
-                              //   marketProtectionDisclaimer(theme, context,
-                              //       widget.scripInfo, mktProtCtrl.text),
-                              //   const SizedBox(height: 16),
-                              // ],
-                              const SizedBox(height: 100)
-                            ] else ...[
-                              // If Order Tab is Regular then show investment type and investment type radio button
-                              // if (orderType == "Delivery" || orderType == "Intraday") ...[
-                              //   Column(
-                              //       crossAxisAlignment:
-                              //           CrossAxisAlignment.start,
-                              //       children: [
-                              //         Padding(
-                              //             padding: const EdgeInsets.symmetric(
-                              //                 horizontal: 16),
-                              //             child: Row(
-                              //               mainAxisAlignment:
-                              //                   MainAxisAlignment
-                              //                       .spaceBetween,
-                              //               children: [
-                              //                 Text("Investment type",
-                              //                     style: textStyle(
-                              //                         theme.isDarkMode
-                              //                             ? colors.colorWhite
-                              //                             : colors.colorBlack,
-                              //                         14,
-                              //                         FontWeight.w500)),
-                              //                 InkWell(
-                              //                   onTap: () {
-                              //                     setState(() {
-                              //                       Navigator.pop(context);
-                              //                       Navigator.pushNamed(
-                              //                           context,
-                              //                           Routes.orderPrefer,
-                              //                           arguments: {
-                              //                             "orderArg":
-                              //                                 widget.orderArg,
-                              //                             "scripInfo": widget
-                              //                                 .scripInfo,
-                              //                             "isRollback": 'yes'
-                              //                           });
-                              //                     });
-                              //                   },
-                              //                   child: SvgPicture.asset(
-                              //                       'assets/profile/privacy_settings.svg'),
-                              //                 )
-                              //               ],
-                              //             )),
-                              //         Row(
-                              //             mainAxisAlignment:
-                              //                 MainAxisAlignment.start,
-                              //             children: [
-                              //               if (widget.orderArg.exchange !=
-                              //                   "NCOM") ...[
-                              //                 Radio<InvestType>(
-                              //                     fillColor:
-                              //                         WidgetStateProperty
-                              //                             .resolveWith<
-                              //                                 Color>((Set<
-                              //                                     WidgetState>
-                              //                                 states) {
-                              //                       if (states.contains(
-                              //                           WidgetState
-                              //                               .disabled)) {
-                              //                         return const Color(
-                              //                             0xff666666);
-                              //                       }
-                              //                       return theme.isDarkMode
-                              //                           ? colors.colorWhite
-                              //                           : const Color(
-                              //                               0xff666666);
-                              //                     }),
-                              //                     activeColor:
-                              //                         theme.isDarkMode
-                              //                             ? colors.colorWhite
-                              //                             : const Color(
-                              //                                 0xff666666),
-                              //                     value: InvestType.intraday,
-                              //                     groupValue:
-                              //                         orderInput.investType,
-                              //                     onChanged:
-                              //                         (InvestType? value) {
-                              //                       orderInput.chngInvesType(
-                              //                           value!, "PlcOrder");
-                              //                       if (orderType != "GTT") {
-                              //                         marginUpdate();
-                              //                       }
-                              //                     }),
-                              //                 Text('Intraday',
-                              //                     style: textStyle(
-                              //                         theme.isDarkMode
-                              //                             ? Color(orderInput
-                              //                                         .investType ==
-                              //                                     InvestType
-                              //                                         .intraday
-                              //                                 ? 0xffffffff
-                              //                                 : 0xff666666)
-                              //                             : Color(orderInput
-                              //                                         .investType ==
-                              //                                     InvestType
-                              //                                         .intraday
-                              //                                 ? 0xff3E4763
-                              //                                 : 0xff666666),
-                              //                         14,
-                              //                         FontWeight.w500))
-                              //               ],
-                              //               Radio<InvestType>(
-                              //                   fillColor: WidgetStateProperty
-                              //                       .resolveWith<Color>(
-                              //                           (Set<WidgetState>
-                              //                               states) {
-                              //                     if (states.contains(
-                              //                         WidgetState.disabled)) {
-                              //                       return const Color(
-                              //                           0xff666666);
-                              //                     }
-                              //                     return theme.isDarkMode
-                              //                         ? colors.colorWhite
-                              //                         : const Color(
-                              //                             0xff666666);
-                              //                   }),
-                              //                   activeColor: theme.isDarkMode
-                              //                       ? colors.colorWhite
-                              //                       : const Color(0xff666666),
-                              //                   value: widget.scripInfo.seg ==
-                              //                           "EQT"
-                              //                       ? InvestType.delivery
-                              //                       : InvestType.carryForward,
-                              //                   groupValue:
-                              //                       orderInput.investType,
-                              //                   onChanged:
-                              //                       (InvestType? value) {
-                              //                     orderInput.chngInvesType(
-                              //                         value!, "PlcOrder");
-                              //                     if (orderType != "GTT") {
-                              //                       marginUpdate();
-                              //                     }
-                              //                   }),
-                              //               Text(
-                              //                   widget.scripInfo.seg == "EQT"
-                              //                       ? 'Delivery'
-                              //                       : "Carry Forward",
-                              //                   style: textStyle(
-                              //                       theme.isDarkMode
-                              //                           ? Color(orderInput
-                              //                                           .investType ==
-                              //                                       InvestType
-                              //                                           .delivery ||
-                              //                                   orderInput
-                              //                                           .investType ==
-                              //                                       InvestType
-                              //                                           .carryForward
-                              //                               ? 0xffffffff
-                              //                               : 0xff666666)
-                              //                           : Color(orderInput
-                              //                                           .investType ==
-                              //                                       InvestType
-                              //                                           .delivery ||
-                              //                                   orderInput
-                              //                                           .investType ==
-                              //                                       InvestType
-                              //                                           .carryForward
-                              //                               ? 0xff3E4763
-                              //                               : 0xff666666),
-                              //                       14,
-                              //                       FontWeight.w500))
-                              //             ])
-                              //       ]),
-                              //   const SizedBox(height: 8)
-                              // ],
-                              // If Order Tab is Regular, Cover, Bracket, or GTT then show Price type Section , Quantity and Price fields
-                              // if (orderType == "Regular" || orderType == "Cover" || orderType == "Bracket" || orderType == "GTT") ...[
-                              if (orderType == "Delivery" ||
-                                  orderType == "Intraday" ||
-                                  orderType == "CO - BO" ||
-                                  orderType == "GTT" ||
-                                  orderType == "MTF") ...[
-                                //   Padding(
-                                //       padding: const EdgeInsets.symmetric(
-                                //         horizontal: 16),
-                                //         child: Row(
-                                //           mainAxisAlignment:
-                                //               MainAxisAlignment.spaceBetween,
-                                //           children: [
-                                //             Text("Price type",
-                                //                 style: textStyle(
-                                //                     theme.isDarkMode
-                                //                         ? colors.colorWhite
-                                //                         : colors.colorBlack,
-                                //                     14,
-                                //                     FontWeight.w500)),
-                                //             if (orderType != "Regular") ...[
-                                //                 InkWell(
-                                //                   onTap: () {
-                                //                       setState(() {
-                                //                         Navigator.pop(context);
-                                //                         Navigator.pushNamed(context,
-                                //                             Routes.orderPrefer,
-                                //                             arguments: {
-                                //                               "orderArg":
-                                //                                   widget.orderArg,
-                                //                               "scripInfo":
-                                //                                   widget.scripInfo,
-                                //                               "isRollback": 'yes'
-                                //                             });
-                                //                       },
-                                //                     );
-                                //                   },
-                                //                   child: SvgPicture.asset(
-                                //                       'assets/profile/privacy_settings.svg'),
-                                //                 )
-                                //             ]
-                                //           ],
-                                //         ),
-                                //     ),
-                                //       const SizedBox(height: 10),
-
-                                //   // Price Type section, List of buttons such as Market, Limit, SL, SL Mkt
-                                // Padding(
-                                //   padding: const EdgeInsets.only(left: 16),
-                                //   child: SizedBox(
-                                //       height: 38,
-                                //       child: ListView.separated(
-                                //           scrollDirection: Axis.horizontal,
-                                //           itemBuilder: (context, index) {
-                                //                 return ElevatedButton(
-                                //                     onPressed: () {
-                                //                     setState(() {
-                                //                         priceType =
-                                //                             priceTypes[index]
-                                //                                 ['type'];
-                                //                         if (priceType ==
-                                //                                 "Market" ||
-                                //                             priceType ==
-                                //                                 "SL MKT") {
-                                //                         priceCtrl.text =
-                                //                             "Market";
-
-                                //                         double ltp = (double.parse("${widget.orderArg.ltp}") *
-                                //                                 double.parse(mktProtCtrl.text.isEmpty? "0": mktProtCtrl.text)) /100;
-
-                                //                         if (isBuy!) {
-                                //                             ordPrice = (double.parse("${widget.orderArg.ltp ?? 0.00}") + ltp).toStringAsFixed(2);
-                                //                         } else {
-                                //                             ordPrice = (double.parse("${widget.orderArg.ltp ?? 0.00}") - ltp).toStringAsFixed(2);
-                                //                         }
-                                //                         double result = double.parse(ordPrice) + (double.parse( "${widget.scripInfo.ti}") / 2);
-                                //                         result -= result % double.parse("${widget.scripInfo.ti}");
-
-                                //                           if (result >=
-                                //                               double.parse(
-                                //                                   "${widget.scripInfo.uc ?? 0.00}")) {
-                                //                               ordPrice =
-                                //                                   "${widget.scripInfo.uc ?? 0.00}";
-                                //                           } else if (result <=
-                                //                               double.parse(
-                                //                                   "${widget.scripInfo.lc ?? 0.00}")) {
-                                //                               ordPrice =
-                                //                                   "${widget.scripInfo.lc ?? 0.00}";
-                                //                           } else {
-                                //                               ordPrice = result
-                                //                                   .toStringAsFixed(
-                                //                                       2);
-                                //                           }
-                                //                           } else {
-                                //                               priceCtrl.text =
-                                //                                   "${widget.orderArg.ltp}";
-                                //                               ordPrice =
-                                //                                   priceCtrl.text;
-                                //                           }
-                                //                           orderInput
-                                //                               .chngPriceType(
-                                //                                   priceTypes[
-                                //                                           index]
-                                //                                       ['type'],
-                                //                                   widget.orderArg
-                                //                                       .exchange);
-                                //                       });
-                                //                       marginUpdate();
-                                //                       FocusScope.of(context)
-                                //                           .unfocus();
-                                //                       },
-                                //                       style: ElevatedButton
-                                //                           .styleFrom(
-                                //                               elevation: 0,
-                                //                               padding: const EdgeInsets
-                                //                                   .symmetric(
-                                //                                   horizontal: 12,
-                                //                                   vertical: 0),
-                                //                               backgroundColor: !theme
-                                //                                       .isDarkMode
-                                //                                   ? priceType !=
-                                //                                           priceTypes[index]
-                                //                                               [
-                                //                                               'type']
-                                //                                       ? const Color(
-                                //                                           0xffF1F3F8)
-                                //                                       : colors
-                                //                                           .colorBlack
-                                //                                   : priceType !=
-                                //                                           priceTypes[index]
-                                //                                               [
-                                //                                               'type']
-                                //                                       ? colors
-                                //                                           .darkGrey
-                                //                                       : colors
-                                //                                           .colorbluegrey,
-                                //                               shape:
-                                //                                   const StadiumBorder()),
-                                //                       child: Text(
-                                //                           priceTypes[index]
-                                //                               ['type'],
-                                //                           style: textStyle(
-                                //                               !theme.isDarkMode
-                                //                                   ? priceType !=
-                                //                                           priceTypes[index]
-                                //                                               [
-                                //                                               'type']
-                                //                                       ? const Color(
-                                //                                           0xff666666)
-                                //                                       : colors
-                                //                                           .colorWhite
-                                //                                   : priceType !=
-                                //                                           priceTypes[index]
-                                //                                               ['type']
-                                //                                       ? const Color(0xff666666)
-                                //                                       : colors.colorBlack,
-                                //                               14,
-                                //                               priceType == priceTypes[index]['type'] ? FontWeight.w600 : FontWeight.w500),
-                                //                           ),
-                                //                       );
-                                //             },
-                                //             separatorBuilder:
-                                //                 (context, index) {
-                                //               return const SizedBox(width: 8);
-                                //             },
-                                //             itemCount: orderType == "Cover" || orderType == "Bracket" ? 3 : priceTypes.length
-                                //           ),
-                                //         ),
-                                //     ),
-                                //   const SizedBox(height: 3),
-                                // Divider(
-                                //     color: theme.isDarkMode
-                                //         ? colors.darkColorDivider
-                                //         : colors.colorDivider),
-
-                                // Quantity and Price fields
-                                if (orderType == "MTF" && !_isMTFEnabled) ...[
-                                  Padding(
-                                    padding: const EdgeInsets.all(16.0),
-                                    child: Card(
-                                      color: theme.isDarkMode
-                                          ? const Color(0xFF121212)
-                                          : const Color(0xFFF1F3F8),
-                                      elevation: 4,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 24, vertical: 28),
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Icon(Icons.lock_outline,
-                                                size: 40,
-                                                color: theme.isDarkMode
-                                                    ? WebDarkColors.loss
-                                                    : WebColors.loss), // your blue
-                                            const SizedBox(height: 16),
-                                            Text(
-                                              "MTF is not Enabled",
-                                              textAlign: TextAlign.center,
-                                              style: WebTextStyles.sub(
-                                                isDarkTheme: theme.isDarkMode,
-                                                color: theme.isDarkMode
-                                                    ? WebDarkColors.loss
-                                                    : WebColors.loss,
+                                                    ),
+                                                  // Text(
+                                                  //     "Qty : ${getFinalQuantity(qtyCtrl.text)}",
+                                                  //     style: textStyle(
+                                                  //         const Color(
+                                                  //             0xff666666),
+                                                  //         14,
+                                                  //         FontWeight.w500)),
+                                                ],
                                               ),
                                             ),
-                                            const SizedBox(height: 24),
-                                            SizedBox(
-                                              width: double.infinity,
-                                              child: ElevatedButton(
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor:
-                                                      WebColors.primary,
-                                                  minimumSize:
-                                                      const Size(0, 50),
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            5),
-                                                  ),
-                                                  padding: const EdgeInsets
-                                                      .symmetric(vertical: 14),
-                                                ),
-                                                onPressed: () {
-                                                  final profileDetails = ref.watch(
-                                                      profileAllDetailsProvider);
-                                                  final clientData =
-                                                      profileDetails
-                                                          .clientAllDetails
-                                                          .clientData;
-
-                                                  bool DDPIActive =
-                                                      clientData?.dDPI == 'Y';
-                                                  bool POAActive =
-                                                      clientData?.pOA == 'Y';
-                                                  // Navigate to the screen where the user enables MTF
-                                                  // Navigator.pushNamed(context, Routes.mtfEnableScreen);
-
-                                                  if (!DDPIActive &&
-                                                      !POAActive) {
-                                                    // final pendingStatuses =
-                                                    //   ref.watch(profileAllDetailsProvider).pendingStatusList;
-                                                    // if (pendingStatuses.isNotEmpty &&
-                                                    //     pendingStatuses[0].data != null) {
-                                                    //   final hasPendingChanges = pendingStatuses[0]
-                                                    //       .data!
-                                                    //       .any((status) => status == 'mtf_pending');
-                                                    //   ScaffoldMessenger.of(context).removeCurrentSnackBar();
-                                                    // if (hasPendingChanges) {
-                                                    //     ResponsiveSnackBar.showWarning(context, 'You have pending request.click on the E-Sign to proceed.');
-                                                    //     return;
-                                                    //   }
-                                                    // }
-                                                    // profileDetails.openInWebURL(context, "segment");
-                                                    ref
-                                                        .watch(
-                                                            profileAllDetailsProvider)
-                                                        .openInWebURLk(context,
-                                                            "segment", "mtf");
-                                                  } else {
-                                                    Navigator.push(
-                                                      context,
-                                                      MaterialPageRoute(
-                                                        builder: (_) =>
-                                                            const MyAccountScreen(
-                                                                initialIndex:
-                                                                    2),
-                                                      ),
-                                                    );
-                                                    ResponsiveSnackBar.showWarning(context,
-                                                        'You need to enable DDPI before you can proceed with enabling MTF.');
-                                                  }
-                                                },
-                                                child: Text(
-                                                  "Enable MTF",
-                                                  style: WebTextStyles.sub(
-                                                    isDarkTheme: theme.isDarkMode,
-                                                    color: WebColors.background,
-                                                    fontWeight: WebFonts.semiBold,
-                                                  ),
-                                                ),
+                                            const SizedBox(width: 16),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Row(
+                                                      // mainAxisAlignment:
+                                                      //     MainAxisAlignment
+                                                      //         .spaceBetween,
+                                                      // crossAxisAlignment:
+                                                      //     CrossAxisAlignment
+                                                      //         .end,
+                                                      children: [
+                                                        headerTitleText(
+                                                            "Price", theme),
+                                                        const SizedBox(
+                                                            width: 4),
+                                                        Text("$priceType",
+                                                            style: WebTextStyles
+                                                                .formLabel(
+                                                              isDarkTheme: theme
+                                                                  .isDarkMode,
+                                                              color: theme
+                                                                      .isDarkMode
+                                                                  ? WebDarkColors
+                                                                      .textPrimary
+                                                                  : WebColors
+                                                                      .textPrimary,
+                                                            ))
+                                                      ]),
+                                                  const SizedBox(height: 10),
+                                                  SizedBox(
+                                                      height: 40,
+                                                      // width: 150,
+                                                      child: Semantics(
+                                                        identifier:
+                                                            'price_input',
+                                                        child:
+                                                            CustomTextFormField(
+                                                                inputFormate: [
+                                                              FilteringTextInputFormatter
+                                                                  .allow(RegExp(
+                                                                      r'^\d*\.?\d{0,2}$'))
+                                                            ],
+                                                                fillColor: theme
+                                                                        .isDarkMode
+                                                                    ? colors
+                                                                        .darkGrey
+                                                                    : const Color(
+                                                                        0xffF1F3F8),
+                                                                onChanged:
+                                                                    (value) {
+                                                                  double
+                                                                      inputPrice =
+                                                                      double.tryParse(
+                                                                              value) ??
+                                                                          0;
+                                                                  if (value
+                                                                          .isNotEmpty &&
+                                                                      inputPrice >
+                                                                          0) {
+                                                                    final regex =
+                                                                        RegExp(
+                                                                            r'^(\d+)?(\.\d{0,2})?$');
+                                                                    if (!regex
+                                                                        .hasMatch(
+                                                                            value)) {
+                                                                      priceCtrl
+                                                                              .text =
+                                                                          value.substring(
+                                                                              0,
+                                                                              value.length - 1);
+                                                                      priceCtrl
+                                                                              .selection =
+                                                                          TextSelection
+                                                                              .collapsed(
+                                                                        offset: priceCtrl
+                                                                            .text
+                                                                            .length,
+                                                                      );
+                                                                    }
+                                                                  }
+                                                                  if (value
+                                                                      .isEmpty) {
+                                                                    ResponsiveSnackBar.showWarning(
+                                                                        context,
+                                                                        "Price cannot be empty");
+                                                                  } else if (inputPrice <=
+                                                                      0) {
+                                                                    ResponsiveSnackBar.showWarning(
+                                                                        context,
+                                                                        "Price cannot be 0");
+                                                                  } else {
+                                                                    setState(
+                                                                        () {
+                                                                      ordPrice =
+                                                                          value;
+                                                                      marginUpdate();
+                                                                    });
+                                                                  }
+                                                                },
+                                                                hintText:
+                                                                    "${widget.orderArg.ltp}",
+                                                                hintStyle: WebTextStyles
+                                                                    .formInput(
+                                                                  isDarkTheme: theme
+                                                                      .isDarkMode,
+                                                                  color: theme
+                                                                          .isDarkMode
+                                                                      ? WebDarkColors
+                                                                          .textSecondary
+                                                                      : WebColors
+                                                                          .textSecondary,
+                                                                ),
+                                                                keyboardType:
+                                                                    const TextInputType
+                                                                        .numberWithOptions(
+                                                                        decimal:
+                                                                            true),
+                                                                style: WebTextStyles
+                                                                    .formInput(
+                                                                  isDarkTheme: theme
+                                                                      .isDarkMode,
+                                                                  color: theme
+                                                                          .isDarkMode
+                                                                      ? WebDarkColors
+                                                                          .textPrimary
+                                                                      : WebColors
+                                                                          .textPrimary,
+                                                                ),
+                                                                isReadable: priceType ==
+                                                                            "Limit" ||
+                                                                        priceType ==
+                                                                            "SL Limit"
+                                                                    ? false
+                                                                    : true,
+                                                                // prefixIcon: Container(
+                                                                //     margin:
+                                                                //         const EdgeInsets.all(
+                                                                //             12),
+                                                                //     decoration: BoxDecoration(
+                                                                //         borderRadius: BorderRadius.circular(20),
+                                                                //         color: theme.isDarkMode ? const Color(0xff555555) : colors.colorWhite),
+                                                                //     child: SvgPicture.asset(color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey, priceType == "Limit" || priceType == "SL Limit" ? assets.ruppeIcon : assets.lock, fit: BoxFit.scaleDown)),
+                                                                suffixIcon:
+                                                                    Material(
+                                                                  color: Colors
+                                                                      .transparent,
+                                                                  shape:
+                                                                      const CircleBorder(),
+                                                                  child:
+                                                                      InkWell(
+                                                                    customBorder:
+                                                                        const CircleBorder(),
+                                                                    splashColor: theme.isDarkMode
+                                                                        ? colors
+                                                                            .splashColorDark
+                                                                        : colors
+                                                                            .splashColorLight,
+                                                                    highlightColor: theme.isDarkMode
+                                                                        ? colors
+                                                                            .highlightDark
+                                                                        : colors
+                                                                            .highlightLight,
+                                                                    onTap: () {
+                                                                      setState(
+                                                                          () {
+                                                                        _isMarketOrder =
+                                                                            !_isMarketOrder;
+                                                                        updatePriceType();
+                                                                        orderInput.chngPriceType(
+                                                                            priceType,
+                                                                            widget.orderArg.exchange);
+                                                                        marginUpdate();
+                                                                      });
+                                                                    },
+                                                                    child:
+                                                                        Padding(
+                                                                      padding: const EdgeInsets
+                                                                          .all(
+                                                                          14.0),
+                                                                      child: SvgPicture
+                                                                          .asset(
+                                                                        assets
+                                                                            .switchIcon,
+                                                                        width:
+                                                                            10,
+                                                                        height:
+                                                                            10,
+                                                                        fit: BoxFit
+                                                                            .contain,
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                                textCtrl:
+                                                                    priceCtrl,
+                                                                textAlign:
+                                                                    TextAlign
+                                                                        .start),
+                                                      )),
+                                                  // const SizedBox(height: 8),
+                                                  // Text(
+                                                  //     "Cir Lv : ${widget.scripInfo.lc ?? 0.00} - ${widget.scripInfo.uc ?? 0.00}",
+                                                  //     style: textStyle(
+                                                  //         const Color(
+                                                  //             0xff666666),
+                                                  //         12,
+                                                  //         FontWeight.w500))
+                                                ],
                                               ),
                                             ),
                                           ],
                                         ),
                                       ),
-                                    ),
-                                  )
-                                ] else ...[
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 16),
-                                    child: Row(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceBetween,
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.end,
-                                                  children: [
-                                                    Row(
+
+                                      if ((priceType == "Market" ||
+                                          priceType == "SL MKT")) ...[
+                                        const SizedBox(height: 16),
+                                        marketProtectionDisclaimer(
+                                            theme,
+                                            context,
+                                            widget.scripInfo,
+                                            mktProtCtrl.text),
+                                        // const SizedBox(height: 16),
+                                      ],
+
+                                      // if (orderType == "Delivery" || orderType == "Intraday" || orderType == "MTF" || orderType == "CO - BO") ...[
+                                      // Advance Option section
+                                      const SizedBox(height: 10),
+                                      Column(
+                                        children: [
+                                          Center(
+                                            child: SizedBox(
+                                              width: 150,
+                                              child: TextButton(
+                                                style: TextButton.styleFrom(
+                                                  shape:
+                                                      const RoundedRectangleBorder(),
+                                                  padding:
+                                                      const EdgeInsets.all(0),
+                                                  backgroundColor: Colors.white,
+                                                  foregroundColor: Colors.white,
+                                                  elevation: 0.0,
+                                                  minimumSize:
+                                                      const Size(0, 30),
+                                                  side: BorderSide.none,
+                                                ),
+                                                onPressed: () {
+                                                  setState(() {
+                                                    if (!_isStoplossOrder &&
+                                                        !_afterMarketOrder &&
+                                                        !_addValidityAndDisclosedQty) {
+                                                      isAdvancedOptionClicked =
+                                                          !isAdvancedOptionClicked;
+                                                    }
+                                                    updatePriceType();
+                                                  });
+                                                },
+                                                child: Container(
+                                                  color: Colors
+                                                      .transparent, // To make the full width tappable
+                                                  height: 40,
+                                                  child: Center(
+                                                    child: Row(
+                                                      mainAxisSize:
+                                                          MainAxisSize.min,
                                                       children: [
-                                                        headerTitleText(
-                                                            (_isStock)
-                                                                ? (_isQtyToAmount
-                                                                    ? "Amount"
-                                                                    : "Qty")
-                                                                : (_isLotToQty
-                                                                    ? "Qty"
-                                                                    : "Lot"),
-                                                            theme),
-                                                        const SizedBox(
-                                                            width: 16),
-                                                        if (widget.scripInfo
-                                                                    .exch ==
-                                                                "NFO" ||
-                                                            widget.scripInfo
-                                                                    .exch ==
-                                                                "BFO" ||
-                                                            _isStock)
-                                                          Material(
-                                                            color: Colors
-                                                                .transparent,
-                                                            shape:
-                                                                const CircleBorder(),
-                                                            child: InkWell(
-                                                              customBorder:
-                                                                  const CircleBorder(),
-                                                              splashColor: theme
+                                                        Text('Advance',
+                                                            style: WebTextStyles
+                                                                .sub(
+                                                              isDarkTheme: theme
+                                                                  .isDarkMode,
+                                                              color: theme
                                                                       .isDarkMode
-                                                                  ? colors
-                                                                      .splashColorDark
-                                                                  : colors
-                                                                      .splashColorLight,
-                                                              highlightColor: theme
-                                                                      .isDarkMode
-                                                                  ? colors
-                                                                      .highlightDark
-                                                                  : colors
-                                                                      .highlightLight,
-                                                              onTap: () {
-                                                                setState(() {
-                                                                  if (_isStock) {
-                                                                    // NSE/BSE: Toggle between Qty and Amount
-                                                                    _isQtyToAmount =
-                                                                        !_isQtyToAmount;
-                                                                    if (_isQtyToAmount) {
-                                                                      qtyCtrl
-                                                                          .text = ((double.tryParse(widget.orderArg.ltp ?? "0.00") ?? 0)
-                                                                              .ceil())
-                                                                          .toString();
-                                                                    } else {
-                                                                      qtyCtrl.text =
-                                                                          "1";
-                                                                    }
-                                                                  } else {
-                                                                    // NFO/BFO: Toggle between Lot and Qty
-                                                                    _isLotToQty =
-                                                                        !_isLotToQty;
-                                                                    if (_isLotToQty) {
-                                                                      // Converting from Lot to Qty: multiply by lot size
-                                                                      int currentLot =
-                                                                          int.tryParse(qtyCtrl.text) ??
-                                                                              1;
-                                                                      qtyCtrl
-                                                                          .text = (currentLot *
-                                                                              lotSize)
-                                                                          .toString();
-                                                                    } else {
-                                                                      // Converting from Qty to Lot: divide by lot size
-                                                                      int currentQty =
-                                                                          int.tryParse(qtyCtrl.text) ??
-                                                                              lotSize;
-                                                                      qtyCtrl
-                                                                          .text = ((currentQty / lotSize)
-                                                                              .round())
-                                                                          .toString();
-                                                                      // if (qtyCtrl.text == "0") qtyCtrl.text = "1";
-                                                                    }
-                                                                  }
-                                                                  marginUpdate();
-                                                                });
-                                                              },
-                                                              child: Padding(
-                                                                padding:
-                                                                    const EdgeInsets
-                                                                        .all(
-                                                                        0.0),
-                                                                child:
-                                                                    SvgPicture
-                                                                        .asset(
-                                                                  assets
-                                                                      .switchIcon,
-                                                                  width: 16,
-                                                                  height: 16,
-                                                                  fit: BoxFit
-                                                                      .contain,
-                                                                ),
-                                                              ),
-                                                            ),
+                                                                  ? WebDarkColors
+                                                                      .secondary
+                                                                  : WebColors
+                                                                      .secondary,
+                                                              fontWeight:
+                                                                  WebFonts
+                                                                      .semiBold,
+                                                            )),
+                                                        Padding(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .only(
+                                                                  left: 4),
+                                                          child: Icon(
+                                                            isAdvancedOptionClicked
+                                                                ? Icons
+                                                                    .keyboard_arrow_up
+                                                                : Icons
+                                                                    .keyboard_arrow_down,
+                                                            color: theme
+                                                                    .isDarkMode
+                                                                ? colors
+                                                                    .secondaryDark
+                                                                : colors
+                                                                    .secondaryLight,
                                                           ),
+                                                        ),
                                                       ],
                                                     ),
-
-                                                    // Text(
-                                                    // "Lot: ${widget.scripInfo.ls} ${widget.scripInfo.prcunt ?? ''}  ",
-                                                    // style: textStyle(
-                                                    //     const Color(
-                                                    //         0xff777777),
-                                                    //     11,
-                                                    //     FontWeight.w600),
-                                                    // )
-                                                  ]),
-                                              const SizedBox(height: 10),
-                                              SizedBox(
-                                                height: 40,
-                                                width: double.infinity,
-                                                child: Semantics(
-                                                  identifier: 'qty_input',
-                                                  child: CustomTextFormField(
-                                                    fillColor: theme.isDarkMode
-                                                            ? colors.darkGrey
-                                                            : const Color(
-                                                                0xffF1F3F8),
-                                                    hintText:
-                                                        "0", //qtyCtrl.text,
-                                                    hintStyle: WebTextStyles.formInput(
-                                                      isDarkTheme: theme.isDarkMode,
-                                                      color: theme.isDarkMode
-                                                          ? WebDarkColors.textSecondary
-                                                          : WebColors.textSecondary,
-                                                    ),
-                                                    inputFormate: [
-                                                      FilteringTextInputFormatter
-                                                          .digitsOnly
-                                                    ],
-                                                    keyboardType:
-                                                        TextInputType.number,
-                                                    style: WebTextStyles.formInput(
-                                                      isDarkTheme: theme.isDarkMode,
-                                                      color: theme.isDarkMode
-                                                          ? WebDarkColors.textPrimary
-                                                          : WebColors.textPrimary,
-                                                    ),
-                                                    prefixIcon: _isStock
-                                                        ? null
-                                                        : Material(
-                                                            color: Colors
-                                                                .transparent,
-                                                            shape:
-                                                                const CircleBorder(),
-                                                            child: InkWell(
-                                                              customBorder:
-                                                                  const CircleBorder(),
-                                                              splashColor: theme
-                                                                      .isDarkMode
-                                                                  ? colors
-                                                                      .splashColorDark
-                                                                  : colors
-                                                                      .splashColorLight,
-                                                              highlightColor: theme
-                                                                      .isDarkMode
-                                                                  ? colors
-                                                                      .highlightDark
-                                                                  : colors
-                                                                      .highlightLight,
-                                                              onTap: () {
-                                                                setState(() {
-                                                                  String input =
-                                                                      qtyCtrl
-                                                                          .text;
-                                                                  int currentValue =
-                                                                      int.tryParse(
-                                                                              input) ??
-                                                                          0;
-                                                                  int adjustedQty = currentValue >=
-                                                                          multiplayer
-                                                                      ? ((currentValue / multiplayer)
-                                                                              .floor()) *
-                                                                          multiplayer
-                                                                      : multiplayer;
-
-                                                                  if (_isLotToQty) {
-                                                                    // Qty mode: decrement by Lot size
-                                                                    if (currentValue !=
-                                                                        adjustedQty) {
-                                                                      qtyCtrl.text =
-                                                                          (adjustedQty)
-                                                                              .toString();
-                                                                    } else if (input
-                                                                            .isNotEmpty &&
-                                                                        currentValue >
-                                                                            multiplayer) {
-                                                                      qtyCtrl
-                                                                          .text = (currentValue -
-                                                                              multiplayer)
-                                                                          .toString();
-                                                                    } else {
-                                                                      qtyCtrl.text =
-                                                                          "$multiplayer";
-                                                                    }
-                                                                  } else {
-                                                                    // Lot mode: decrement by 1
-                                                                    if (currentValue >
-                                                                        1) {
-                                                                      qtyCtrl
-                                                                          .text = (currentValue -
-                                                                              1)
-                                                                          .toString();
-                                                                    } else {
-                                                                      qtyCtrl.text =
-                                                                          "1";
-                                                                    }
-                                                                  }
-                                                                  marginUpdate();
-                                                                });
-                                                              },
-                                                              child: SvgPicture
-                                                                  .asset(
-                                                                theme.isDarkMode
-                                                                    ? assets
-                                                                        .darkCMinus
-                                                                    : assets
-                                                                        .minusIcon,
-                                                                fit: BoxFit
-                                                                    .scaleDown,
-                                                              ),
-                                                            )),
-
-                                                    suffixIcon: _isStock
-                                                        ? null
-                                                        : Material(
-                                                            color: Colors
-                                                                .transparent,
-                                                            shape:
-                                                                const CircleBorder(),
-                                                            child: InkWell(
-                                                              customBorder:
-                                                                  const CircleBorder(),
-                                                              splashColor: theme
-                                                                      .isDarkMode
-                                                                  ? colors
-                                                                      .splashColorDark
-                                                                  : colors
-                                                                      .splashColorLight,
-                                                              highlightColor: theme
-                                                                      .isDarkMode
-                                                                  ? colors
-                                                                      .highlightDark
-                                                                  : colors
-                                                                      .highlightLight,
-                                                              onTap: () {
-                                                                setState(() {
-                                                                  String input =
-                                                                      qtyCtrl
-                                                                          .text;
-                                                                  int currentValue =
-                                                                      int.tryParse(
-                                                                              input) ??
-                                                                          0;
-                                                                  int adjustedQty = currentValue >=
-                                                                          multiplayer
-                                                                      ? ((currentValue / multiplayer)
-                                                                              .floor()) *
-                                                                          multiplayer
-                                                                      : multiplayer;
-
-                                                                  bool
-                                                                      hasNoFreezeLimit =
-                                                                      frezQty <=
-                                                                          lotSize;
-                                                                  bool
-                                                                      withinLimit =
-                                                                      hasNoFreezeLimit ||
-                                                                          currentValue <
-                                                                              frezQtyOrderSliceMaxLimit * frezQty;
-
-                                                                  if (_isLotToQty) {
-                                                                    // Qty mode: increment by Lot Size, check against freeze limit
-                                                                    if (currentValue !=
-                                                                        adjustedQty) {
-                                                                      qtyCtrl.text =
-                                                                          adjustedQty
-                                                                              .toString();
-                                                                    } else if (input
-                                                                            .isNotEmpty &&
-                                                                        withinLimit) {
-                                                                      qtyCtrl
-                                                                          .text = (currentValue +
-                                                                              multiplayer)
-                                                                          .toString();
-                                                                    } else if (input
-                                                                        .isEmpty) {
-                                                                      qtyCtrl.text =
-                                                                          "$multiplayer";
-                                                                    } else if (!hasNoFreezeLimit) {
-                                                                      ResponsiveSnackBar.showWarning(
-                                                                          context,
-                                                                          "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}");
-                                                                      // qtyCtrl.text =
-                                                                      //     "$multiplayer";
-                                                                    }
-                                                                  } else {
-                                                                    // Lot mode: increment by 1 lot, check against freeze limit
-                                                                    bool
-                                                                        hasNoFreezeLimit =
-                                                                        frezQty <=
-                                                                            lotSize;
-                                                                    int maxAllowedLots = hasNoFreezeLimit
-                                                                        ? 999999
-                                                                        : (frezQtyOrderSliceMaxLimit *
-                                                                                frezQty) ~/
-                                                                            lotSize;
-
-                                                                    if (input
-                                                                        .isEmpty) {
-                                                                      qtyCtrl.text =
-                                                                          "1";
-                                                                    } else if (currentValue <
-                                                                        maxAllowedLots) {
-                                                                      qtyCtrl
-                                                                          .text = (currentValue +
-                                                                              1)
-                                                                          .toString();
-                                                                    } else {
-                                                                      ResponsiveSnackBar.showWarning(
-                                                                          context,
-                                                                          "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}");
-                                                                    }
-                                                                  }
-                                                                  marginUpdate();
-                                                                });
-                                                              },
-                                                              child: SvgPicture.asset(
-                                                                  theme.isDarkMode
-                                                                      ? assets
-                                                                          .darkAdd
-                                                                      : assets
-                                                                          .addIcon,
-                                                                  fit: BoxFit
-                                                                      .scaleDown),
-                                                            ),
-                                                          ),
-
-                                                    textCtrl: qtyCtrl,
-                                                    textAlign: _isStock
-                                                        ? TextAlign.start
-                                                        : TextAlign.center,
-                                                    onChanged: (value) {
-                                                      if (value.isEmpty ||
-                                                          value == "0") {
-                                                        String fieldName =
-                                                            (_isStock)
-                                                                ? (_isQtyToAmount
-                                                                    ? 'Amount'
-                                                                    : 'Quantity')
-                                                                : (_isLotToQty
-                                                                    ? 'Quantity'
-                                                                    : 'Lot');
-                                                        ResponsiveSnackBar.showWarning(context,
-                                                            "$fieldName cannot be ${value == "0" ? '0' : 'empty'}");
-                                                      } else {
-                                                        String newValue =
-                                                            value.replaceAll(
-                                                                RegExp(
-                                                                    r'[^0-9]'),
-                                                                '');
-                                                        double ltp = double
-                                                                .tryParse(widget
-                                                                        .orderArg
-                                                                        .ltp ??
-                                                                    "0.0") ??
-                                                            0.0;
-                                                        var number = (_isStock)
-                                                            ? (!_isQtyToAmount
-                                                                ? int.tryParse(
-                                                                        newValue) ??
-                                                                    0
-                                                                : ((double.tryParse(
-                                                                            newValue) ??
-                                                                        0.0) ~/
-                                                                    ltp))
-                                                            : (!_isLotToQty
-                                                                ? int.tryParse(
-                                                                        newValue) ??
-                                                                    0
-                                                                : ((int.tryParse(
-                                                                            newValue) ??
-                                                                        0) ~/
-                                                                    lotSize));
-
-                                                        if (_isQtyToAmount &&
-                                                            number < 1 &&
-                                                            (_isStock)) {
-                                                          ResponsiveSnackBar.showWarning(
-                                                              context,
-                                                              "Minimum Allowed Amount should be greater than $ltp");
-                                                        } else {
-                                                          bool
-                                                              hasNoFreezeLimit =
-                                                              frezQty <=
-                                                                  lotSize;
-                                                          if (!hasNoFreezeLimit &&
-                                                              number >
-                                                                  frezQtyOrderSliceMaxLimit *
-                                                                      frezQty) {
-                                                            qtyCtrl.text =
-                                                                qtyCtrl.text;
-                                                            ResponsiveSnackBar.showWarning(
-                                                                context,
-                                                                "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}");
-                                                          }
-                                                        }
-
-                                                        if (newValue != value) {
-                                                          qtyCtrl.text =
-                                                              newValue;
-                                                          qtyCtrl.selection =
-                                                              TextSelection
-                                                                  .fromPosition(
-                                                            TextPosition(
-                                                                offset: newValue
-                                                                    .length),
-                                                          );
-                                                        }
-                                                        marginUpdate();
-                                                      }
-                                                    },
                                                   ),
                                                 ),
                                               ),
-                                              // if (widget.scripInfo.frzqty != null) ...[
-                                              //         const SizedBox(height: 8),
-                                              //         Text("Frz Qty : $frezQty",
-                                              //             style: textStyle(
-                                              //                 const Color(
-                                              //                     0xff666666),
-                                              //                 12,
-                                              //                 FontWeight.w500))
-                                              // ]
-                                              if (_isQtyToAmount && (_isStock))
-                                                Text(
-                                                  "Qty : ${getFinalQuantity(qtyCtrl.text)}",
-                                                  style: WebTextStyles.sub(
-                                                    isDarkTheme: theme.isDarkMode,
-                                                    color: theme.isDarkMode
-                                                        ? WebDarkColors.textSecondary
-                                                        : WebColors.textSecondary,
-                                                  ),
-                                                ),
-                                              if (_isLotToQty &&
-                                                  (widget.scripInfo.exch ==
-                                                          "NFO" ||
-                                                      widget.scripInfo.exch ==
-                                                          "BFO"))
-                                                Padding(
-                                                  padding: const EdgeInsets.only(top: 4),
-                                                  child: Text(
-                                                    "Lot : ${((int.tryParse(qtyCtrl.text) ?? 0) / lotSize).ceil()}",
-                                                    style: WebTextStyles.para(
-                                                      isDarkTheme: theme.isDarkMode,
-                                                      color: theme.isDarkMode
-                                                          ? WebDarkColors.textSecondary
-                                                          : WebColors.textSecondary,
-                                                    ),
-                                                  ),
-                                                ),
-                                              // Text(
-                                              //     "Qty : ${getFinalQuantity(qtyCtrl.text)}",
-                                              //     style: textStyle(
-                                              //         const Color(
-                                              //             0xff666666),
-                                              //         14,
-                                              //         FontWeight.w500)),
-                                            ],
+                                            ),
                                           ),
-                                        ),
-                                        const SizedBox(width: 16),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Row(
-                                                  // mainAxisAlignment:
-                                                  //     MainAxisAlignment
-                                                  //         .spaceBetween,
-                                                  // crossAxisAlignment:
-                                                  //     CrossAxisAlignment
-                                                  //         .end,
+                                          Visibility(
+                                            visible: isAdvancedOptionClicked,
+                                            child: Column(
+                                              children: [
+                                                Divider(
+                                                  color: theme.isDarkMode
+                                                      ? colors.darkColorDivider
+                                                      : colors.colorDivider,
+                                                ),
+
+                                                // Column with Stoploss and Add validity (stacked vertically)
+                                                Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
                                                   children: [
-                                                    headerTitleText(
-                                                        "Price", theme),
-                                                    const SizedBox(width: 4),
-                                                    Text(
-                                                        "$priceType",
-                                                        style: WebTextStyles.formLabel(
-                                                          isDarkTheme: theme.isDarkMode,
-                                                          color: theme.isDarkMode
-                                                              ? WebDarkColors.textPrimary
-                                                              : WebColors.textPrimary,
-                                                        ))
-                                                  ]),
-                                              const SizedBox(height: 10),
-                                              SizedBox(
-                                                  height: 40,
-                                                  // width: 150,
-                                                  child: Semantics(
-                                                    identifier: 'price_input',
-                                                    child: CustomTextFormField(
-                                                        inputFormate: [
-                                                          FilteringTextInputFormatter
-                                                              .allow(RegExp(
-                                                                  r'^\d*\.?\d{0,2}$'))
-                                                        ],
-                                                        fillColor: theme
-                                                                .isDarkMode
-                                                            ? colors.darkGrey
-                                                            : const Color(
-                                                                0xffF1F3F8),
-                                                        onChanged: (value) {
-                                                          double inputPrice =
-                                                              double.tryParse(
-                                                                      value) ??
-                                                                  0;
-                                                          if (value
-                                                                  .isNotEmpty &&
-                                                              inputPrice > 0) {
-                                                            final regex = RegExp(
-                                                                r'^(\d+)?(\.\d{0,2})?$');
-                                                            if (!regex.hasMatch(
-                                                                value)) {
-                                                              priceCtrl.text =
-                                                                  value.substring(
-                                                                      0,
-                                                                      value.length -
-                                                                          1);
-                                                              priceCtrl
-                                                                      .selection =
-                                                                  TextSelection
-                                                                      .collapsed(
-                                                                offset:
-                                                                    priceCtrl
-                                                                        .text
-                                                                        .length,
-                                                              );
-                                                            }
-                                                          }
-                                                          if (value.isEmpty) {
-                                                            ResponsiveSnackBar.showWarning(
-                                                                context,
-                                                                "Price cannot be empty");
-                                                          } else if (inputPrice <=
-                                                              0) {
-                                                            ResponsiveSnackBar.showWarning(
-                                                                context,
-                                                                "Price cannot be 0");
-                                                          } else {
-                                                            setState(() {
-                                                              ordPrice = value;
-                                                              marginUpdate();
-                                                            });
-                                                          }
-                                                        },
-                                                        hintText:
-                                                            "${widget.orderArg.ltp}",
-                                                        hintStyle: WebTextStyles.formInput(
-                                                          isDarkTheme: theme.isDarkMode,
-                                                          color: theme.isDarkMode
-                                                              ? WebDarkColors.textSecondary
-                                                              : WebColors.textSecondary,
-                                                        ),
-                                                        keyboardType:
-                                                            const TextInputType
-                                                                .numberWithOptions(
-                                                                decimal: true),
-                                                        style: WebTextStyles.formInput(
-                                                          isDarkTheme: theme.isDarkMode,
-                                                          color: theme.isDarkMode
-                                                              ? WebDarkColors.textPrimary
-                                                              : WebColors.textPrimary,
-                                                        ),
-                                                        isReadable: priceType ==
-                                                                    "Limit" ||
-                                                                priceType ==
-                                                                    "SL Limit"
-                                                            ? false
-                                                            : true,
-                                                        // prefixIcon: Container(
-                                                        //     margin:
-                                                        //         const EdgeInsets.all(
-                                                        //             12),
-                                                        //     decoration: BoxDecoration(
-                                                        //         borderRadius: BorderRadius.circular(20),
-                                                        //         color: theme.isDarkMode ? const Color(0xff555555) : colors.colorWhite),
-                                                        //     child: SvgPicture.asset(color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey, priceType == "Limit" || priceType == "SL Limit" ? assets.ruppeIcon : assets.lock, fit: BoxFit.scaleDown)),
-                                                        suffixIcon: Material(
-                                                          color: Colors
-                                                              .transparent,
-                                                          shape:
-                                                              const CircleBorder(),
-                                                          child: InkWell(
-                                                            customBorder:
-                                                                const CircleBorder(),
-                                                            splashColor: theme
-                                                                    .isDarkMode
-                                                                ? colors
-                                                                    .splashColorDark
-                                                                : colors
-                                                                    .splashColorLight,
-                                                            highlightColor: theme
-                                                                    .isDarkMode
-                                                                ? colors
-                                                                    .highlightDark
-                                                                : colors
-                                                                    .highlightLight,
-                                                            onTap: () {
-                                                              setState(() {
-                                                                _isMarketOrder =
-                                                                    !_isMarketOrder;
-                                                                updatePriceType();
-                                                                orderInput.chngPriceType(
-                                                                    priceType,
-                                                                    widget
-                                                                        .orderArg
-                                                                        .exchange);
-                                                                marginUpdate();
-                                                              });
-                                                            },
-                                                            child: Padding(
-                                                              padding:
-                                                                  const EdgeInsets
-                                                                      .all(
-                                                                      14.0),
-                                                              child: SvgPicture
-                                                                  .asset(
-                                                                assets
-                                                                    .switchIcon,
-                                                                width: 10,
-                                                                height: 10,
-                                                                fit: BoxFit
-                                                                    .contain,
+                                                    // Stoploss order
+                                                    Theme(
+                                                      data: ThemeData(
+                                                        unselectedWidgetColor:
+                                                            theme.isDarkMode
+                                                                ? WebDarkColors
+                                                                    .textPrimary
+                                                                : WebColors
+                                                                    .textPrimary,
+                                                      ),
+                                                      child: Container(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                                horizontal: 16,
+                                                                vertical: 5),
+                                                        child: Row(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .spaceBetween,
+                                                          children: [
+                                                            Flexible(
+                                                              child: Text(
+                                                                'Stoploss order',
+                                                                style:
+                                                                    WebTextStyles
+                                                                        .sub(
+                                                                  isDarkTheme: theme
+                                                                      .isDarkMode,
+                                                                  color: theme
+                                                                          .isDarkMode
+                                                                      ? WebDarkColors
+                                                                          .textSecondary
+                                                                      : WebColors
+                                                                          .textSecondary,
+                                                                ),
+                                                                overflow:
+                                                                    TextOverflow
+                                                                        .ellipsis,
                                                               ),
                                                             ),
-                                                          ),
+                                                            // Text(
+                                                            //   'Stoploss order',
+                                                            //   style: textStyle(
+                                                            //     theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                                                            //     14,
+                                                            //     FontWeight.w400,
+                                                            //   ),
+                                                            // ),
+                                                            Checkbox(
+                                                              value:
+                                                                  _isStoplossOrder,
+                                                              onChanged: (bool?
+                                                                  value) {
+                                                                setState(() {
+                                                                  _isStoplossOrder =
+                                                                      value ??
+                                                                          false;
+                                                                  updatePriceType();
+                                                                  orderInput.chngPriceType(
+                                                                      priceType,
+                                                                      widget
+                                                                          .orderArg
+                                                                          .exchange);
+                                                                  marginUpdate();
+                                                                });
+                                                              },
+                                                              activeColor: colors
+                                                                  .colorBlue,
+                                                              checkColor:
+                                                                  Colors.white,
+                                                            ),
+                                                          ],
                                                         ),
-                                                        textCtrl: priceCtrl,
-                                                        textAlign:
-                                                            TextAlign.start),
-                                                  )),
-                                              // const SizedBox(height: 8),
-                                              // Text(
-                                              //     "Cir Lv : ${widget.scripInfo.lc ?? 0.00} - ${widget.scripInfo.uc ?? 0.00}",
-                                              //     style: textStyle(
-                                              //         const Color(
-                                              //             0xff666666),
-                                              //         12,
-                                              //         FontWeight.w500))
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-
-                                  if ((priceType == "Market" ||
-                                      priceType == "SL MKT")) ...[
-                                    const SizedBox(height: 16),
-                                    marketProtectionDisclaimer(theme, context,
-                                        widget.scripInfo, mktProtCtrl.text),
-                                    // const SizedBox(height: 16),
-                                  ],
-
-                                  // if (orderType == "Delivery" || orderType == "Intraday" || orderType == "MTF" || orderType == "CO - BO") ...[
-                                  // Advance Option section
-                                  const SizedBox(height: 10),
-                                  Column(
-                                    children: [
-                                      Center(
-                                        child: SizedBox(
-                                          width: 150,
-                                          child: TextButton(
-                                            style: TextButton.styleFrom(
-                                              shape:
-                                                  const RoundedRectangleBorder(),
-                                              padding: const EdgeInsets.all(0),
-                                              backgroundColor: Colors.white,
-                                              foregroundColor: Colors.white,
-                                              elevation: 0.0,
-                                              minimumSize: const Size(0, 30),
-                                              side: BorderSide.none,
-                                            ),
-                                            onPressed: () {
-                                              setState(() {
-                                                if (!_isStoplossOrder &&
-                                                    !_afterMarketOrder &&
-                                                    !_addValidityAndDisclosedQty) {
-                                                  isAdvancedOptionClicked =
-                                                      !isAdvancedOptionClicked;
-                                                }
-                                                updatePriceType();
-                                              });
-                                            },
-                                            child: Container(
-                                              color: Colors
-                                                  .transparent, // To make the full width tappable
-                                              height: 40,
-                                              child: Center(
-                                                child: Row(
-                                                  mainAxisSize:
-                                                      MainAxisSize.min,
-                                                  children: [
-                                                    Text(
-                                                        'Advance',
-                                                        style: WebTextStyles.sub(
-                                                          isDarkTheme: theme.isDarkMode,
-                                                          color: theme.isDarkMode
-                                                              ? WebDarkColors.secondary
-                                                              : WebColors.secondary,
-                                                          fontWeight: WebFonts.semiBold,
-                                                        )),
-                                                    Padding(
-                                                      padding:
-                                                          const EdgeInsets.only(
-                                                              left: 4),
-                                                      child: Icon(
-                                                        isAdvancedOptionClicked
-                                                            ? Icons
-                                                                .keyboard_arrow_up
-                                                            : Icons
-                                                                .keyboard_arrow_down,
-                                                        color: theme.isDarkMode
-                                                            ? colors
-                                                                .secondaryDark
-                                                            : colors
-                                                                .secondaryLight,
                                                       ),
                                                     ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      Visibility(
-                                        visible: isAdvancedOptionClicked,
-                                        child: Column(
-                                          children: [
-                                            Divider(
-                                              color: theme.isDarkMode
-                                                  ? colors.darkColorDivider
-                                                  : colors.colorDivider,
-                                            ),
+                                                    // Trigger option (only if stoploss is on)
+                                                    if (priceType ==
+                                                            "SL Limit" ||
+                                                        priceType ==
+                                                            "SL MKT") ...[
+                                                      triggerOption(
+                                                          theme,
+                                                          context,
+                                                          widget.scripInfo),
+                                                    ],
+                                                    // Divider after Stoploss order
+                                                    Divider(
+                                                        color: theme.isDarkMode
+                                                            ? colors
+                                                                .darkColorDivider
+                                                            : colors
+                                                                .colorDivider),
 
-                                            // Column with Stoploss and Add validity (stacked vertically)
-                                            Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
-                                                // Stoploss order
-                                                Theme(
-                                                  data: ThemeData(
-                                                    unselectedWidgetColor: theme
-                                                            .isDarkMode
-                                                        ? WebDarkColors.textPrimary
-                                                        : WebColors.textPrimary,
-                                                  ),
-                                                  child: Container(
-                                                    padding: const EdgeInsets
-                                                        .symmetric(
-                                                        horizontal: 16,
-                                                        vertical: 5),
-                                                    child: Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .spaceBetween,
-                                                      children: [
-                                                        Flexible(
-                                                          child: Text(
-                                                            'Stoploss order',
-                                                            style: WebTextStyles.sub(
-                                                              isDarkTheme: theme.isDarkMode,
-                                                              color: theme.isDarkMode
-                                                                  ? WebDarkColors.textSecondary
-                                                                  : WebColors.textSecondary,
-                                                            ),
-                                                            overflow: TextOverflow.ellipsis,
+                                                    // Add validity & Disclosed Qty (only if not CO-BO)
+                                                    if (!(orderType ==
+                                                        "CO - BO")) ...[
+                                                      Theme(
+                                                        data: ThemeData(
+                                                          unselectedWidgetColor: theme
+                                                                  .isDarkMode
+                                                              ? colors
+                                                                  .textPrimaryDark
+                                                              : colors
+                                                                  .textPrimaryLight,
+                                                        ),
+                                                        child: Container(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .symmetric(
+                                                                  horizontal:
+                                                                      16,
+                                                                  vertical: 5),
+                                                          child: Row(
+                                                            mainAxisAlignment:
+                                                                MainAxisAlignment
+                                                                    .spaceBetween,
+                                                            children: [
+                                                              Flexible(
+                                                                child: Text(
+                                                                  'Add validity & Disclosed quantity',
+                                                                  style:
+                                                                      WebTextStyles
+                                                                          .sub(
+                                                                    isDarkTheme:
+                                                                        theme
+                                                                            .isDarkMode,
+                                                                    color: theme.isDarkMode
+                                                                        ? WebDarkColors
+                                                                            .textSecondary
+                                                                        : WebColors
+                                                                            .textSecondary,
+                                                                  ),
+                                                                  overflow:
+                                                                      TextOverflow
+                                                                          .ellipsis,
+                                                                ),
+                                                              ),
+                                                              // Text(
+                                                              //   'Add validity & Disclosed quantity',
+                                                              //   style: textStyle(
+                                                              //     theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                                                              //     14,
+                                                              //     FontWeight.w400,
+                                                              //   ),
+                                                              // ),
+                                                              Checkbox(
+                                                                value:
+                                                                    _addValidityAndDisclosedQty,
+                                                                onChanged:
+                                                                    (bool?
+                                                                        value) {
+                                                                  setState(() {
+                                                                    _addValidityAndDisclosedQty =
+                                                                        value ??
+                                                                            false;
+                                                                  });
+                                                                },
+                                                                activeColor: colors
+                                                                    .colorBlue,
+                                                                checkColor:
+                                                                    Colors
+                                                                        .white,
+                                                              ),
+                                                            ],
                                                           ),
                                                         ),
-                                                        // Text(
-                                                        //   'Stoploss order',
-                                                        //   style: textStyle(
-                                                        //     theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                                                        //     14,
-                                                        //     FontWeight.w400,
-                                                        //   ),
-                                                        // ),
-                                                        Checkbox(
-                                                          value: _isStoplossOrder,
-                                                          onChanged: (bool? value) {
-                                                            setState(() {
-                                                              _isStoplossOrder = value ?? false;
-                                                              updatePriceType();
-                                                              orderInput.chngPriceType(
-                                                                  priceType,
-                                                                  widget
-                                                                      .orderArg.exchange);
-                                                              marginUpdate();
-                                                            });
-                                                          },
-                                                          activeColor: colors.colorBlue,
-                                                          checkColor: Colors.white,
-                                                        ),
+                                                      ),
+                                                      // Validity options (only if enabled)
+                                                      if (_addValidityAndDisclosedQty) ...[
+                                                        addValidityAndDisclosedQtyOption(
+                                                            theme,
+                                                            context,
+                                                            widget.scripInfo),
                                                       ],
-                                                    ),
-                                                  ),
+                                                    ],
+                                                  ],
                                                 ),
-                                                // Trigger option (only if stoploss is on)
-                                                if (priceType == "SL Limit" || priceType == "SL MKT") ...[
-                                                  triggerOption(theme, context, widget.scripInfo),
-                                                ],
-                                                // Divider after Stoploss order
-                                                Divider(
-                                                    color: theme.isDarkMode
-                                                        ? colors.darkColorDivider
-                                                        : colors.colorDivider),
 
-                                                // Add validity & Disclosed Qty (only if not CO-BO)
-                                                if (!(orderType == "CO - BO")) ...[
+                                                if (!(orderType ==
+                                                    "CO - BO")) ...[
+                                                  // AMO switch section
+                                                  Divider(
+                                                      color: theme.isDarkMode
+                                                          ? colors
+                                                              .darkColorDivider
+                                                          : colors
+                                                              .colorDivider),
                                                   Theme(
                                                     data: ThemeData(
                                                       unselectedWidgetColor: theme
                                                               .isDarkMode
-                                                          ? colors.textPrimaryDark
-                                                          : colors.textPrimaryLight,
+                                                          ? colors
+                                                              .textPrimaryDark
+                                                          : colors
+                                                              .textPrimaryLight,
                                                     ),
                                                     child: Container(
                                                       padding: const EdgeInsets
@@ -4273,20 +4618,22 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                             MainAxisAlignment
                                                                 .spaceBetween,
                                                         children: [
-                                                          Flexible(
-                                                            child: Text(
-                                                              'Add validity & Disclosed quantity',
-                                                              style: WebTextStyles.sub(
-                                                                isDarkTheme: theme.isDarkMode,
-                                                                color: theme.isDarkMode
-                                                                    ? WebDarkColors.textSecondary
-                                                                    : WebColors.textSecondary,
-                                                              ),
-                                                              overflow: TextOverflow.ellipsis,
+                                                          Text(
+                                                            'After market order (AMO)',
+                                                            style: WebTextStyles
+                                                                .sub(
+                                                              isDarkTheme: theme
+                                                                  .isDarkMode,
+                                                              color: theme
+                                                                      .isDarkMode
+                                                                  ? WebDarkColors
+                                                                      .textSecondary
+                                                                  : WebColors
+                                                                      .textSecondary,
                                                             ),
                                                           ),
                                                           // Text(
-                                                          //   'Add validity & Disclosed quantity',
+                                                          //   'After market order (AMO)',
                                                           //   style: textStyle(
                                                           //     theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                                                           //     14,
@@ -4294,1958 +4641,1808 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                           //   ),
                                                           // ),
                                                           Checkbox(
-                                                            value: _addValidityAndDisclosedQty,
-                                                            onChanged: (bool? value) {
+                                                            value:
+                                                                _afterMarketOrder,
+                                                            onChanged:
+                                                                (bool? value) {
                                                               setState(() {
-                                                                _addValidityAndDisclosedQty = value ?? false;
+                                                                _afterMarketOrder =
+                                                                    value ??
+                                                                        false;
+                                                                // isAmo = !isAmo; // if needed
                                                               });
                                                             },
-                                                            activeColor: colors.colorBlue,
-                                                            checkColor: Colors.white,
+                                                            activeColor: colors
+                                                                .colorBlue,
+                                                            checkColor:
+                                                                Colors.white,
                                                           ),
                                                         ],
                                                       ),
                                                     ),
                                                   ),
-                                                  // Validity options (only if enabled)
-                                                  if (_addValidityAndDisclosedQty) ...[
-                                                    addValidityAndDisclosedQtyOption(
-                                                        theme,
-                                                        context,
-                                                        widget.scripInfo),
-                                                  ],
                                                 ],
-                                              ],
-                                            ),
 
-                                            if (!(orderType == "CO - BO")) ...[
-                                              // AMO switch section
-                                              Divider(
-                                                  color: theme.isDarkMode
-                                                      ? colors.darkColorDivider
-                                                      : colors.colorDivider),
-                                              Theme(
-                                                data: ThemeData(
-                                                  unselectedWidgetColor: theme
-                                                          .isDarkMode
-                                                      ? colors.textPrimaryDark
-                                                      : colors.textPrimaryLight,
-                                                ),
-                                                child: Container(
-                                                  padding: const EdgeInsets
-                                                      .symmetric(
-                                                      horizontal: 16,
-                                                      vertical: 5),
-                                                  child: Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .spaceBetween,
-                                                    children: [
-                                                      Text(
-                                                        'After market order (AMO)',
-                                                        style: WebTextStyles.sub(
-                                                          isDarkTheme: theme.isDarkMode,
-                                                          color: theme.isDarkMode
-                                                              ? WebDarkColors.textSecondary
-                                                              : WebColors.textSecondary,
-                                                        ),
-                                                      ),
-                                                      // Text(
-                                                      //   'After market order (AMO)',
-                                                      //   style: textStyle(
-                                                      //     theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                                                      //     14,
-                                                      //     FontWeight.w400,
-                                                      //   ),
-                                                      // ),
-                                                      Checkbox(
-                                                        value: _afterMarketOrder,
-                                                        onChanged: (bool? value) {
-                                                          setState(() {
-                                                            _afterMarketOrder = value ?? false;
-                                                            // isAmo = !isAmo; // if needed
-                                                          });
-                                                        },
-                                                        activeColor: colors.colorBlue,
-                                                        checkColor: Colors.white,
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-
-                                            Divider(
-                                                color: theme.isDarkMode
-                                                    ? colors.darkColorDivider
-                                                    : colors.colorDivider),
-                                            // SizedBox(
-                                            //     height: priceType == "Market"
-                                            //         ? 180
-                                            //         : 100)
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  // ],
-                                  if (orderType == "CO - BO") ...[
-                                    Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            Expanded(
-                                              child: Container(
-                                                padding: const EdgeInsets
-                                                    .symmetric(
-                                                    horizontal: 16,
-                                                    vertical: 12),
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceBetween,
-                                                  children: [
-                                                    Text(
-                                                      'Cover - Only SL',
-                                                      style: WebTextStyles.sub(
-                                                        isDarkTheme: theme.isDarkMode,
-                                                        color: theme.isDarkMode
-                                                            ? WebDarkColors.textPrimary
-                                                            : WebColors.textPrimary,
-                                                      ),
-                                                    ),
-                                                    // Text(
-                                                    //   'Cover - Only SL',
-                                                    //   style: textStyle(
-                                                    //     theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                                                    //     14,
-                                                    //     FontWeight.w400,
-                                                    //   ),
-                                                    // ),
-                                                    Checkbox(
-                                                      value: _isCoverOrderEnabled,
-                                                      onChanged: (bool? value) {
-                                                        setState(() {
-                                                          _isCoverOrderEnabled = value ?? false;
-                                                          _isBracketOrderEnabled = !_isCoverOrderEnabled;
-
-                                                          // updatePriceType();
-                                                          // orderInput.chngPriceType(priceType, widget.orderArg.exchange);
-                                                          orderInput.chngOrderType(
-                                                            orderType,
-                                                            _isCoverOrderEnabled,
-                                                            _isBracketOrderEnabled,
-                                                          );
-                                                          marginUpdate();
-                                                        });
-                                                      },
-                                                      activeColor: colors.colorBlue,
-                                                      checkColor: Colors.white,
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                            Expanded(
-                                              child: Container(
-                                                padding: const EdgeInsets
-                                                    .symmetric(
-                                                    horizontal: 8,
-                                                    vertical: 12),
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceBetween,
-                                                  children: [
-                                                    Text(
-                                                      'Bracket - TGT / SL',
-                                                      style: WebTextStyles.sub(
-                                                        isDarkTheme: theme.isDarkMode,
-                                                        color: theme.isDarkMode
-                                                            ? WebDarkColors.textPrimary
-                                                            : WebColors.textPrimary,
-                                                      ),
-                                                    ),
-                                                    // Text(
-                                                    Checkbox(
-                                                      value: _isBracketOrderEnabled,
-                                                      onChanged: (bool? value) {
-                                                        setState(() {
-                                                          _isBracketOrderEnabled = value ?? false;
-                                                          _isCoverOrderEnabled = !_isBracketOrderEnabled;
-
-                                                          orderInput.chngOrderType(
-                                                            orderType,
-                                                            _isCoverOrderEnabled,
-                                                            _isBracketOrderEnabled,
-                                                          );
-                                                          marginUpdate();
-                                                        });
-                                                      },
-                                                      activeColor: colors.colorBlue,
-                                                      checkColor: Colors.white,
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                            Divider(
-                                                color: theme.isDarkMode
-                                                    ? colors.darkColorDivider
-                                                    : colors.colorDivider),
-                                          ],
-                                        ),
-                                        if (_isBracketOrderEnabled) ...[
-                                          const SizedBox(height: 10),
-                                          targetOption(
-                                              theme, context, widget.scripInfo),
-                                          const SizedBox(height: 10)
-                                        ],
-
-                                        //    if (_isCoverOrderEnabled) ...[
-                                        stopLossOption(
-                                            theme, context, widget.scripInfo),
-                                        const SizedBox(height: 10),
-
-                                        if (_isBracketOrderEnabled) ...[
-                                          trailingTicksOption(
-                                              theme, context, widget.scripInfo),
-                                        ],
-                                        // const SizedBox(height: 30),
-                                        // ],
-                                        // Text( "Cover: ${_isCoverOrderEnabled} Bracket: ${_isBracketOrderEnabled}"),
-                                        // Text("Order Type: ${orderType}"),
-                                      ],
-                                    ),
-                                  ],
-
-                                  // if (priceType == "Market" || priceType == "SL MKT") ...[
-                                  //   const SizedBox(height: 8),
-                                  //   Padding(
-                                  //     padding: const EdgeInsets.symmetric(
-                                  //         horizontal: 16),
-                                  //     child: Text(
-                                  //         "A market order carries the risk of execution at a less advantageous price",
-                                  //         style: textStyle(
-                                  //             const Color(0xff666666),
-                                  //             12,
-                                  //             FontWeight.w500)),
-                                  //   ),
-                                  // ],
-                                  // Divider(
-                                  //     color: theme.isDarkMode
-                                  //         ? colors.darkColorDivider
-                                  //         : colors.colorDivider)
-                                ],
-                              ]
-                            ],
-                          ]),
-                        ),
-                      ),
-                      Container(
-                          color: theme.isDarkMode
-                              ? WebDarkColors.background
-                              : WebColors.background,
-                          child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                if (orderType != "GTT" &&
-                                    orderType != "SIP") ...[
-                                  if (orderType == "MTF" && !_isMTFEnabled) ...[
-                                    const SizedBox.shrink()
-                                  ] else ...[
-                                    Container(
-                                        width:
-                                            MediaQuery.of(context).size.width,
-                                        decoration: BoxDecoration(
-                                            color: theme.isDarkMode
-                                                ? colors.darkGrey
-                                                : const Color(0xfffafbff),
-                                            border: Border(
-                                                top: BorderSide(
+                                                Divider(
                                                     color: theme.isDarkMode
                                                         ? colors
                                                             .darkColorDivider
                                                         : colors.colorDivider),
-                                                bottom: BorderSide(
-                                                    color: theme.isDarkMode
-                                                        ? colors
-                                                            .darkColorDivider
-                                                        : colors
-                                                            .colorDivider))),
-                                        padding: const EdgeInsets.only(
-                                            left: 16.0, right: 3, top: 0),
-                                        child: Column(
+                                                // SizedBox(
+                                                //     height: priceType == "Market"
+                                                //         ? 180
+                                                //         : 100)
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      // ],
+                                      if (orderType == "CO - BO") ...[
+                                        Column(
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
                                           children: [
-                                            // if (isAvbSecu) ...[
-                                            //   AnimatedBuilder(
-                                            //     animation: anibuildctrl,
-                                            //     builder: (context, child) {
-                                            //       return Transform.translate(
-                                            //         offset: Offset(
-                                            //             _shakeAnimation.value *
-                                            //                 sin(DateTime.now().millisecondsSinceEpoch * 0.01),
-                                            //             0),
-                                            //         child: GestureDetector(
-                                            //           onTap: () {
-                                            //             final dynamic tooltip = tooltipKey.currentState;
-                                            //             tooltip?.ensureTooltipVisible(); // Manually show tooltip on tap
-                                            //           },
-                                            //           child: AnimatedContainer(
-                                            //               duration: const Duration(milliseconds: 300),
-                                            //               curve: Curves.easeInCubic,
-                                            //               margin: const EdgeInsets.only(right: 16, top: 16, bottom: 0),
-                                            //               padding: const EdgeInsets.all(0),
-                                            //               decoration: BoxDecoration(
-                                            //                 color: const Color(0xffFFF6E6),
-                                            //                 borderRadius: BorderRadius.circular(6),
-                                            //                 border: Border.all(
-                                            //                   color: anibuildctrl.isAnimating
-                                            //                       ? colors.darkred
-                                            //                       : const Color(0xffFFF6E6), // Border color
-                                            //                   width: anibuildctrl.isAnimating
-                                            //                       ? 1.0
-                                            //                       : 0.0, // Border width (1px)
-                                            //                 ),
-                                            //                 boxShadow: anibuildctrl.isAnimating
-                                            //                     ? [
-                                            //                         BoxShadow(
-                                            //                           color: colors.darkred.withOpacity(0.6),
-                                            //                           blurRadius: 10,
-                                            //                           spreadRadius: 3,
-                                            //                           offset: const Offset(0, 0),
-                                            //                         ),
-                                            //                       ]
-                                            //                     : [],
-                                            //               ),
-                                            //               child: Row(
-                                            //                 mainAxisAlignment: MainAxisAlignment.start,
-                                            //                 children: [
-                                            //                   IconButton(
-                                            //                       onPressed: () {
-                                            //                         setState(() {
-                                            //                           isSecu = !isSecu;
-                                            //                         });
-                                            //                       },
-                                            //                       icon: SvgPicture.asset(
-                                            //                           isSecu ? assets.checkedbox : assets.checkbox)),
-                                            //                   Expanded(
-                                            //                       // Ensures text takes available space and wraps
-                                            //                       child: Column(
-                                            //                     crossAxisAlignment: CrossAxisAlignment.start,
-                                            //                     children: [
-                                            //                       RichText(
-                                            //                         text: TextSpan(
-                                            //                           style: textStyle(
-                                            //                             const Color(0xffB37702),
-                                            //                             13,
-                                            //                             FontWeight.w500,
-                                            //                           ),
-                                            //                           children: [
-                                            //                             const WidgetSpan(
-                                            //                               child: Icon(Icons.warning_outlined,
-                                            //                                   color: Color.fromARGB(190, 255, 170, 0),
-                                            //                                   size: 16),
-                                            //                             ),
-                                            //                             const TextSpan(
-                                            //                                 text:
-                                            //                                     " Exchange surveillance active — confirm to proceed with your order."),
-                                            //                             WidgetSpan(
-                                            //                               child: Tooltip(
-                                            //                                 key: tooltipKey,
-                                            //                                 // enableTapToDismiss: false,
-                                            //                                 preferBelow: false,
-                                            //                                 message: quotemsg,
-                                            //                                 textStyle: const TextStyle(
-                                            //                                   color: Colors.white,
-                                            //                                   fontSize: 13,
-                                            //                                 ),
-                                            //                                 padding: const EdgeInsets.symmetric(
-                                            //                                     vertical: 8, horizontal: 16),
-                                            //                                 margin: const EdgeInsets.symmetric(
-                                            //                                     horizontal: 16),
-                                            //                                 decoration: BoxDecoration(
-                                            //                                   color: Colors.black,
-                                            //                                   borderRadius: BorderRadius.circular(8),
-                                            //                                 ),
-                                            //                                 child: Text(
-                                            //                                   " Know more",
-                                            //                                   style: textStyle(
-                                            //                                     !theme.isDarkMode
-                                            //                                         ? colors.colorBlue
-                                            //                                         : colors.colorLightBlue,
-                                            //                                     13,
-                                            //                                     FontWeight.w500,
-                                            //                                   ),
-                                            //                                 ),
-                                            //                               ),
-                                            //                             ),
-                                            //                           ],
-                                            //                         ),
-                                            //                         softWrap: true,
-                                            //                       ),
-                                            //                     ],
-                                            //                   ))
-                                            //                 ],
-                                            //               )),
-                                            //         ),
-                                            //       );
-                                            //     },
-                                            //   ),
+                                            Row(
+                                              children: [
+                                                Expanded(
+                                                  child: Container(
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        horizontal: 16,
+                                                        vertical: 12),
+                                                    child: Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .spaceBetween,
+                                                      children: [
+                                                        Text(
+                                                          'Cover - Only SL',
+                                                          style:
+                                                              WebTextStyles.sub(
+                                                            isDarkTheme: theme
+                                                                .isDarkMode,
+                                                            color: theme
+                                                                    .isDarkMode
+                                                                ? WebDarkColors
+                                                                    .textPrimary
+                                                                : WebColors
+                                                                    .textPrimary,
+                                                          ),
+                                                        ),
+                                                        // Text(
+                                                        //   'Cover - Only SL',
+                                                        //   style: textStyle(
+                                                        //     theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                                                        //     14,
+                                                        //     FontWeight.w400,
+                                                        //   ),
+                                                        // ),
+                                                        Checkbox(
+                                                          value:
+                                                              _isCoverOrderEnabled,
+                                                          onChanged:
+                                                              (bool? value) {
+                                                            setState(() {
+                                                              _isCoverOrderEnabled =
+                                                                  value ??
+                                                                      false;
+                                                              _isBracketOrderEnabled =
+                                                                  !_isCoverOrderEnabled;
+
+                                                              // updatePriceType();
+                                                              // orderInput.chngPriceType(priceType, widget.orderArg.exchange);
+                                                              orderInput
+                                                                  .chngOrderType(
+                                                                orderType,
+                                                                _isCoverOrderEnabled,
+                                                                _isBracketOrderEnabled,
+                                                              );
+                                                              marginUpdate();
+                                                            });
+                                                          },
+                                                          activeColor:
+                                                              colors.colorBlue,
+                                                          checkColor:
+                                                              Colors.white,
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                                Expanded(
+                                                  child: Container(
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        horizontal: 8,
+                                                        vertical: 12),
+                                                    child: Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .spaceBetween,
+                                                      children: [
+                                                        Text(
+                                                          'Bracket - TGT / SL',
+                                                          style:
+                                                              WebTextStyles.sub(
+                                                            isDarkTheme: theme
+                                                                .isDarkMode,
+                                                            color: theme
+                                                                    .isDarkMode
+                                                                ? WebDarkColors
+                                                                    .textPrimary
+                                                                : WebColors
+                                                                    .textPrimary,
+                                                          ),
+                                                        ),
+                                                        // Text(
+                                                        Checkbox(
+                                                          value:
+                                                              _isBracketOrderEnabled,
+                                                          onChanged:
+                                                              (bool? value) {
+                                                            setState(() {
+                                                              _isBracketOrderEnabled =
+                                                                  value ??
+                                                                      false;
+                                                              _isCoverOrderEnabled =
+                                                                  !_isBracketOrderEnabled;
+
+                                                              orderInput
+                                                                  .chngOrderType(
+                                                                orderType,
+                                                                _isCoverOrderEnabled,
+                                                                _isBracketOrderEnabled,
+                                                              );
+                                                              marginUpdate();
+                                                            });
+                                                          },
+                                                          activeColor:
+                                                              colors.colorBlue,
+                                                          checkColor:
+                                                              Colors.white,
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                                Divider(
+                                                    color: theme.isDarkMode
+                                                        ? colors
+                                                            .darkColorDivider
+                                                        : colors.colorDivider),
+                                              ],
+                                            ),
+                                            if (_isBracketOrderEnabled) ...[
+                                              const SizedBox(height: 10),
+                                              targetOption(theme, context,
+                                                  widget.scripInfo),
+                                              const SizedBox(height: 10)
+                                            ],
+
+                                            //    if (_isCoverOrderEnabled) ...[
+                                            stopLossOption(theme, context,
+                                                widget.scripInfo),
+                                            const SizedBox(height: 10),
+
+                                            if (_isBracketOrderEnabled) ...[
+                                              trailingTicksOption(theme,
+                                                  context, widget.scripInfo),
+                                            ],
+                                            // const SizedBox(height: 30),
                                             // ],
-                                            SingleChildScrollView(
-                                              padding: const EdgeInsets.all(0),
-                                              scrollDirection: Axis.horizontal,
-                                              child: Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceBetween,
-                                                  children: [
-                                                    Row(children: [
-                                                      CustomWidgetButton(
-                                                          onPress: internet
-                                                                      .connectionStatus ==
-                                                                  ConnectivityResult
-                                                                      .none
-                                                              ? () {}
-                                                              : () {
-                                                                  marginUpdate();
-                                                                  BrokerageInput brokerageInput = BrokerageInput(
-                                                                      exch:
-                                                                          "${widget.scripInfo.exch}",
-                                                                      prc: priceCtrl
-                                                                          .text,
-                                                                      prd: orderInput
-                                                                          .orderType,
-                                                                      qty:
-                                                                          "${widget.scripInfo.ls}",
-                                                                      trantype: isBuy!
-                                                                          ? "B"
-                                                                          : "S",
-                                                                      tsym:
-                                                                          "${widget.scripInfo.tsym}");
-                                                                  ref
-                                                                      .read(
-                                                                          orderProvider)
-                                                                      .fetchGetBrokerage(
+                                            // Text( "Cover: ${_isCoverOrderEnabled} Bracket: ${_isBracketOrderEnabled}"),
+                                            // Text("Order Type: ${orderType}"),
+                                          ],
+                                        ),
+                                      ],
+
+                                      // if (priceType == "Market" || priceType == "SL MKT") ...[
+                                      //   const SizedBox(height: 8),
+                                      //   Padding(
+                                      //     padding: const EdgeInsets.symmetric(
+                                      //         horizontal: 16),
+                                      //     child: Text(
+                                      //         "A market order carries the risk of execution at a less advantageous price",
+                                      //         style: textStyle(
+                                      //             const Color(0xff666666),
+                                      //             12,
+                                      //             FontWeight.w500)),
+                                      //   ),
+                                      // ],
+                                      // Divider(
+                                      //     color: theme.isDarkMode
+                                      //         ? colors.darkColorDivider
+                                      //         : colors.colorDivider)
+                                    ],
+                                  ]
+                                ],
+                              ]),
+                            ),
+                          ),
+                          Container(
+                              color: theme.isDarkMode
+                                  ? WebDarkColors.background
+                                  : WebColors.background,
+                              child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    if (orderType != "GTT" &&
+                                        orderType != "SIP") ...[
+                                      if (orderType == "MTF" &&
+                                          !_isMTFEnabled) ...[
+                                        const SizedBox.shrink()
+                                      ] else ...[
+                                        Container(
+                                            width: MediaQuery.of(context)
+                                                .size
+                                                .width,
+                                            decoration: BoxDecoration(
+                                                color: theme.isDarkMode
+                                                    ? colors.darkGrey
+                                                    : const Color(0xfffafbff),
+                                                border: Border(
+                                                    top: BorderSide(
+                                                        color: theme.isDarkMode
+                                                            ? colors
+                                                                .darkColorDivider
+                                                            : colors
+                                                                .colorDivider),
+                                                    bottom: BorderSide(
+                                                        color: theme.isDarkMode
+                                                            ? colors
+                                                                .darkColorDivider
+                                                            : colors
+                                                                .colorDivider))),
+                                            padding: const EdgeInsets.only(
+                                                left: 16.0, right: 3, top: 0),
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                // if (isAvbSecu) ...[
+                                                //   AnimatedBuilder(
+                                                //     animation: anibuildctrl,
+                                                //     builder: (context, child) {
+                                                //       return Transform.translate(
+                                                //         offset: Offset(
+                                                //             _shakeAnimation.value *
+                                                //                 sin(DateTime.now().millisecondsSinceEpoch * 0.01),
+                                                //             0),
+                                                //         child: GestureDetector(
+                                                //           onTap: () {
+                                                //             final dynamic tooltip = tooltipKey.currentState;
+                                                //             tooltip?.ensureTooltipVisible(); // Manually show tooltip on tap
+                                                //           },
+                                                //           child: AnimatedContainer(
+                                                //               duration: const Duration(milliseconds: 300),
+                                                //               curve: Curves.easeInCubic,
+                                                //               margin: const EdgeInsets.only(right: 16, top: 16, bottom: 0),
+                                                //               padding: const EdgeInsets.all(0),
+                                                //               decoration: BoxDecoration(
+                                                //                 color: const Color(0xffFFF6E6),
+                                                //                 borderRadius: BorderRadius.circular(6),
+                                                //                 border: Border.all(
+                                                //                   color: anibuildctrl.isAnimating
+                                                //                       ? colors.darkred
+                                                //                       : const Color(0xffFFF6E6), // Border color
+                                                //                   width: anibuildctrl.isAnimating
+                                                //                       ? 1.0
+                                                //                       : 0.0, // Border width (1px)
+                                                //                 ),
+                                                //                 boxShadow: anibuildctrl.isAnimating
+                                                //                     ? [
+                                                //                         BoxShadow(
+                                                //                           color: colors.darkred.withOpacity(0.6),
+                                                //                           blurRadius: 10,
+                                                //                           spreadRadius: 3,
+                                                //                           offset: const Offset(0, 0),
+                                                //                         ),
+                                                //                       ]
+                                                //                     : [],
+                                                //               ),
+                                                //               child: Row(
+                                                //                 mainAxisAlignment: MainAxisAlignment.start,
+                                                //                 children: [
+                                                //                   IconButton(
+                                                //                       onPressed: () {
+                                                //                         setState(() {
+                                                //                           isSecu = !isSecu;
+                                                //                         });
+                                                //                       },
+                                                //                       icon: SvgPicture.asset(
+                                                //                           isSecu ? assets.checkedbox : assets.checkbox)),
+                                                //                   Expanded(
+                                                //                       // Ensures text takes available space and wraps
+                                                //                       child: Column(
+                                                //                     crossAxisAlignment: CrossAxisAlignment.start,
+                                                //                     children: [
+                                                //                       RichText(
+                                                //                         text: TextSpan(
+                                                //                           style: textStyle(
+                                                //                             const Color(0xffB37702),
+                                                //                             13,
+                                                //                             FontWeight.w500,
+                                                //                           ),
+                                                //                           children: [
+                                                //                             const WidgetSpan(
+                                                //                               child: Icon(Icons.warning_outlined,
+                                                //                                   color: Color.fromARGB(190, 255, 170, 0),
+                                                //                                   size: 16),
+                                                //                             ),
+                                                //                             const TextSpan(
+                                                //                                 text:
+                                                //                                     " Exchange surveillance active — confirm to proceed with your order."),
+                                                //                             WidgetSpan(
+                                                //                               child: Tooltip(
+                                                //                                 key: tooltipKey,
+                                                //                                 // enableTapToDismiss: false,
+                                                //                                 preferBelow: false,
+                                                //                                 message: quotemsg,
+                                                //                                 textStyle: const TextStyle(
+                                                //                                   color: Colors.white,
+                                                //                                   fontSize: 13,
+                                                //                                 ),
+                                                //                                 padding: const EdgeInsets.symmetric(
+                                                //                                     vertical: 8, horizontal: 16),
+                                                //                                 margin: const EdgeInsets.symmetric(
+                                                //                                     horizontal: 16),
+                                                //                                 decoration: BoxDecoration(
+                                                //                                   color: Colors.black,
+                                                //                                   borderRadius: BorderRadius.circular(8),
+                                                //                                 ),
+                                                //                                 child: Text(
+                                                //                                   " Know more",
+                                                //                                   style: textStyle(
+                                                //                                     !theme.isDarkMode
+                                                //                                         ? colors.colorBlue
+                                                //                                         : colors.colorLightBlue,
+                                                //                                     13,
+                                                //                                     FontWeight.w500,
+                                                //                                   ),
+                                                //                                 ),
+                                                //                               ),
+                                                //                             ),
+                                                //                           ],
+                                                //                         ),
+                                                //                         softWrap: true,
+                                                //                       ),
+                                                //                     ],
+                                                //                   ))
+                                                //                 ],
+                                                //               )),
+                                                //         ),
+                                                //       );
+                                                //     },
+                                                //   ),
+                                                // ],
+                                                SingleChildScrollView(
+                                                  padding:
+                                                      const EdgeInsets.all(0),
+                                                  scrollDirection:
+                                                      Axis.horizontal,
+                                                  child: Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .spaceBetween,
+                                                      children: [
+                                                        Row(children: [
+                                                          CustomWidgetButton(
+                                                              onPress: internet
+                                                                          .connectionStatus ==
+                                                                      ConnectivityResult
+                                                                          .none
+                                                                  ? () {}
+                                                                  : () {
+                                                                      marginUpdate();
+                                                                      BrokerageInput brokerageInput = BrokerageInput(
+                                                                          exch:
+                                                                              "${widget.scripInfo.exch}",
+                                                                          prc: priceCtrl
+                                                                              .text,
+                                                                          prd: orderInput
+                                                                              .orderType,
+                                                                          qty:
+                                                                              "${widget.scripInfo.ls}",
+                                                                          trantype: isBuy!
+                                                                              ? "B"
+                                                                              : "S",
+                                                                          tsym:
+                                                                              "${widget.scripInfo.tsym}");
+                                                                      ref.read(orderProvider).fetchGetBrokerage(
                                                                           brokerageInput,
                                                                           context);
 
-                                                                  {
-                                                                    // On web, show dialog as overlay entry above the order screen
-                                                                    final overlay = Overlay.of(context, rootOverlay: true);
-                                                                    late OverlayEntry dialogOverlayEntry;
-                                                                    
-                                                                    dialogOverlayEntry = OverlayEntry(
-                                                                      builder: (overlayContext) => Stack(
-                                                                        children: [
-                                                                          // Backdrop
-                                                                          Positioned.fill(
-                                                                            child: GestureDetector(
-                                                                              onTap: () {
-                                                                                dialogOverlayEntry.remove();
-                                                                              },
-                                                                              child: Container(
-                                                                                color: Colors.black.withOpacity(0.5),
+                                                                      {
+                                                                        // On web, show dialog as overlay entry above the order screen
+                                                                        final overlay = Overlay.of(
+                                                                            context,
+                                                                            rootOverlay:
+                                                                                true);
+                                                                        late OverlayEntry
+                                                                            dialogOverlayEntry;
+
+                                                                        dialogOverlayEntry =
+                                                                            OverlayEntry(
+                                                                          builder: (overlayContext) =>
+                                                                              Stack(
+                                                                            children: [
+                                                                              // Backdrop
+                                                                              Positioned.fill(
+                                                                                child: GestureDetector(
+                                                                                  onTap: () {
+                                                                                    dialogOverlayEntry.remove();
+                                                                                  },
+                                                                                  child: Container(
+                                                                                    color: Colors.black.withOpacity(0.5),
+                                                                                  ),
+                                                                                ),
                                                                               ),
-                                                                            ),
-                                                                          ),
-                                                                          // Dialog centered
-                                                                          Center(
-                                                                            child: Material(
-                                                                              color: Colors.transparent,
-                                                                              child: MarginDetailsDialogWeb(
-                                                                                onClose: () {
-                                                                                  dialogOverlayEntry.remove();
-                                                                                },
+                                                                              // Dialog centered
+                                                                              Center(
+                                                                                child: Material(
+                                                                                  color: Colors.transparent,
+                                                                                  child: MarginDetailsDialogWeb(
+                                                                                    onClose: () {
+                                                                                      dialogOverlayEntry.remove();
+                                                                                    },
+                                                                                  ),
+                                                                                ),
                                                                               ),
-                                                                            ),
+                                                                            ],
                                                                           ),
-                                                                        ],
+                                                                        );
+
+                                                                        overlay.insert(
+                                                                            dialogOverlayEntry);
+                                                                      }
+                                                                    },
+                                                              widget: Row(
+                                                                  children: [
+                                                                    Text(
+                                                                      "Required ",
+                                                                      style: WebTextStyles
+                                                                          .para(
+                                                                        isDarkTheme:
+                                                                            theme.isDarkMode,
+                                                                        color: theme.isDarkMode
+                                                                            ? WebDarkColors.textSecondary
+                                                                            : WebColors.textSecondary,
                                                                       ),
-                                                                    );
-                                                                    
-                                                                    overlay.insert(dialogOverlayEntry);
-                                                                  }
-                                                                },
-                                                          widget:
-                                                              Row(children: [
-                                                            Text(
-                                                              "Required ",
-                                                              style: WebTextStyles.para(
-                                                                isDarkTheme: theme.isDarkMode,
-                                                                color: theme.isDarkMode
-                                                                    ? WebDarkColors.textSecondary
-                                                                    : WebColors.textSecondary,
+                                                                    ),
+
+                                                                    Text(
+                                                                      "${orderProvide.orderMarginModel == null ? 0.00 : orderProvide.orderMarginModel!.ordermargin}  + ${orderProvide.getBrokerageModel == null ? 0.00 : orderProvide.getBrokerageModel!.brkageAmt ?? 0.00}",
+                                                                      style: WebTextStyles
+                                                                          .para(
+                                                                        isDarkTheme:
+                                                                            theme.isDarkMode,
+                                                                        color: !theme.isDarkMode
+                                                                            ? WebColors.primary
+                                                                            : WebDarkColors.primary,
+                                                                        fontWeight:
+                                                                            WebFonts.semiBold,
+                                                                      ),
+                                                                    ),
+
+                                                                    // Text(
+                                                                    //     "${orderProvide.orderMarginModel == null ? 0.00 : orderProvide.orderMarginModel!.ordermargin}  + ${orderProvide.getBrokerageModel == null ? 0.00 : orderProvide.getBrokerageModel!.brkageAmt ?? 0.00}",
+                                                                    //     style: textStyle(
+                                                                    //         !theme.isDarkMode ? colors.colorBlue : colors.colorLightBlue,
+                                                                    //         12,
+                                                                    //         FontWeight.bold)),
+                                                                    Icon(
+                                                                        Icons
+                                                                            .arrow_drop_down,
+                                                                        color: !theme.isDarkMode
+                                                                            ? colors.colorBlue
+                                                                            : colors.colorLightBlue)
+                                                                  ])),
+
+                                                          const SizedBox(
+                                                              width: 16),
+                                                          Row(
+                                                            children: [
+                                                              Text(
+                                                                "Balance ",
+                                                                style:
+                                                                    WebTextStyles
+                                                                        .para(
+                                                                  isDarkTheme: theme
+                                                                      .isDarkMode,
+                                                                  color: theme
+                                                                          .isDarkMode
+                                                                      ? WebDarkColors
+                                                                          .textSecondary
+                                                                      : WebColors
+                                                                          .textSecondary,
+                                                                ),
                                                               ),
-                                                            ),
-
-                                                            Text(
-                                                              "${orderProvide.orderMarginModel == null ? 0.00 : orderProvide.orderMarginModel!.ordermargin}  + ${orderProvide.getBrokerageModel == null ? 0.00 : orderProvide.getBrokerageModel!.brkageAmt ?? 0.00}",
-                                                              style: WebTextStyles.para(
-                                                                isDarkTheme: theme.isDarkMode,
-                                                                color: !theme.isDarkMode
-                                                                    ? WebColors.primary
-                                                                    : WebDarkColors.primary,
-                                                                fontWeight: WebFonts.semiBold,
+                                                              // const SizedBox(width: 4),
+                                                              Text(
+                                                                " ${clientFundDetail?.avlMrg ?? ''}",
+                                                                style:
+                                                                    WebTextStyles
+                                                                        .para(
+                                                                  isDarkTheme: theme
+                                                                      .isDarkMode,
+                                                                  color: theme
+                                                                          .isDarkMode
+                                                                      ? WebDarkColors
+                                                                          .textPrimary
+                                                                      : WebColors
+                                                                          .textPrimary,
+                                                                ),
                                                               ),
-                                                            ),
-
-                                                            // Text(
-                                                            //     "${orderProvide.orderMarginModel == null ? 0.00 : orderProvide.orderMarginModel!.ordermargin}  + ${orderProvide.getBrokerageModel == null ? 0.00 : orderProvide.getBrokerageModel!.brkageAmt ?? 0.00}",
-                                                            //     style: textStyle(
-                                                            //         !theme.isDarkMode ? colors.colorBlue : colors.colorLightBlue,
-                                                            //         12,
-                                                            //         FontWeight.bold)),
-                                                            Icon(
-                                                                Icons
-                                                                    .arrow_drop_down,
-                                                                color: !theme
-                                                                        .isDarkMode
-                                                                    ? colors
-                                                                        .colorBlue
-                                                                    : colors
-                                                                        .colorLightBlue)
-                                                          ])),
-
-                                                      const SizedBox(width: 16),
-                                                      Row(
-                                                        children: [
-                                                          Text(
-                                                            "Balance ",
-                                                            style: WebTextStyles.para(
-                                                              isDarkTheme: theme.isDarkMode,
-                                                              color: theme.isDarkMode
-                                                                  ? WebDarkColors.textSecondary
-                                                                  : WebColors.textSecondary,
-                                                            ),
-                                                          ),
-                                                          // const SizedBox(width: 4),
-                                                          Text(
-                                                            " ${clientFundDetail?.avlMrg ?? ''}",
-                                                            style: WebTextStyles.para(
-                                                              isDarkTheme: theme.isDarkMode,
-                                                              color: theme.isDarkMode
-                                                                  ? WebDarkColors.textPrimary
-                                                                  : WebColors.textPrimary,
-                                                            ),
+                                                              const SizedBox(
+                                                                  width: 4),
+                                                            ],
                                                           ),
                                                           const SizedBox(
-                                                              width: 4),
-                                                        ],
-                                                      ),
-                                                      const SizedBox(width: 8),
-                                                      orderProvide.orderMarginModel !=
-                                                              null
-                                                          ? orderProvide
-                                                                      .orderMarginModel!
-                                                                      .remarks ==
-                                                                  "Insufficient Balance"
-                                                              ? InkWell(
-                                                                  onTap: () {
-                                                                    ref
-                                                                        .read(
-                                                                            transcationProvider)
-                                                                        .fetchValidateToken(
+                                                              width: 8),
+                                                          orderProvide.orderMarginModel !=
+                                                                  null
+                                                              ? orderProvide
+                                                                          .orderMarginModel!
+                                                                          .remarks ==
+                                                                      "Insufficient Balance"
+                                                                  ? InkWell(
+                                                                      onTap:
+                                                                          () {
+                                                                        ref.read(transcationProvider).fetchValidateToken(
                                                                             context);
-                                                                    Future.delayed(
-                                                                        const Duration(
-                                                                            milliseconds:
-                                                                                100),
-                                                                        () async {
-                                                                      await trancation
-                                                                          .ip();
-                                                                      await trancation.fetchupiIdView(
-                                                                          trancation.bankdetails!.dATA![trancation.indexss]
-                                                                              [
-                                                                              1],
-                                                                          trancation
-                                                                              .bankdetails!
-                                                                              .dATA![trancation.indexss][2]);
-                                                                      await trancation
-                                                                          .fetchcwithdraw(
-                                                                              context);
-                                                                    });
+                                                                        Future.delayed(
+                                                                            const Duration(milliseconds: 100),
+                                                                            () async {
+                                                                          await trancation
+                                                                              .ip();
+                                                                          await trancation.fetchupiIdView(
+                                                                              trancation.bankdetails!.dATA![trancation.indexss][1],
+                                                                              trancation.bankdetails!.dATA![trancation.indexss][2]);
+                                                                          await trancation
+                                                                              .fetchcwithdraw(context);
+                                                                        });
 
-                                                                    trancation
-                                                                        .changebool(
-                                                                            true);
-                                                                    showDialog(
-                                                                        context:
-                                                                            context,
-                                                                        builder:
-                                                                            (context) =>
+                                                                        trancation
+                                                                            .changebool(true);
+                                                                        showDialog(
+                                                                            context:
+                                                                                context,
+                                                                            builder: (context) =>
                                                                                 FundScreenWeb(dd: trancation));
+                                                                      },
+                                                                      child:
+                                                                          Row(
+                                                                        children: [
+                                                                          // Red circular icon with white exclamation mark
+                                                                          // Container(
+                                                                          //   width: 20,
+                                                                          //   height: 20,
+                                                                          //   decoration: const BoxDecoration(
+                                                                          //     color: Colors.white,
+                                                                          //     shape: BoxShape.circle,
+                                                                          //   ),
+                                                                          //   child: const Center(
+                                                                          //     child: Icon(
+                                                                          //       Icons.error, // Exclamation icon
+                                                                          //       color: Colors.red,
+                                                                          //       size: 20,
+                                                                          //     ),
+                                                                          //   ),
+                                                                          // ),
+
+                                                                          // "+ Add fund" text in blue
+                                                                          Text(
+                                                                              '+ Add fund',
+                                                                              style: WebTextStyles.para(
+                                                                                isDarkTheme: theme.isDarkMode,
+                                                                                color: theme.isDarkMode ? WebDarkColors.secondary : WebColors.secondary,
+                                                                                fontWeight: WebFonts.semiBold,
+                                                                              )),
+                                                                          const SizedBox(
+                                                                              width: 8),
+                                                                        ],
+                                                                      ),
+                                                                    )
+                                                                  : const SizedBox()
+                                                              : const SizedBox(),
+
+                                                          // CustomWidgetButton(
+                                                          //     onPress: internet
+                                                          //                 .connectionStatus ==
+                                                          //             ConnectivityResult
+                                                          //                 .none
+                                                          //         ? () {}
+                                                          //         : () {
+                                                          //             BrokerageInput brokerageInput = BrokerageInput(
+                                                          //                 exch:"${widget.scripInfo.exch}",
+                                                          //                 prc: priceCtrl.text,
+                                                          //                 prd: orderInput.orderType,
+                                                          //                 qty:"${widget.scripInfo.ls}",
+                                                          //                 trantype: isBuy!? "B": "S",
+                                                          //                 tsym:"${widget.scripInfo.tsym}");
+                                                          //                 ref.read(orderProvider)
+                                                          //                 .fetchGetBrokerage(brokerageInput,context);
+                                                          //             showModalBottomSheet(useSafeArea:true,
+                                                          //                 isScrollControlled:true,
+                                                          //                 shape: const RoundedRectangleBorder(
+                                                          //                 borderRadius: BorderRadius.vertical(
+                                                          //                 top: Radius.circular(16))),
+                                                          //                 context:context,
+                                                          //                 builder:(context) {
+                                                          //                   return const ChargesDetailsBottomsheet();
+                                                          //                 });
+                                                          //           },
+                                                          //     widget: Row(
+                                                          //         children: [
+                                                          //           Text(
+                                                          //               "Charges: ",
+                                                          //               style: textStyle(
+                                                          //                   const Color(
+                                                          //                       0xff666666),
+                                                          //                   12,
+                                                          //                   FontWeight
+                                                          //                       .w500)),
+                                                          //           Text(
+                                                          //               "₹${orderProvide.getBrokerageModel == null ? 0.00 : orderProvide.getBrokerageModel!.brkageAmt ?? 0.00}",
+                                                          //               style: textStyle(
+                                                          //                   !theme.isDarkMode
+                                                          //                       ? colors.colorBlue
+                                                          //                       : colors.colorLightBlue,
+                                                          //                   12,
+                                                          //                   FontWeight.w600)),
+                                                          //           Icon(
+                                                          //               Icons
+                                                          //                   .arrow_drop_down,
+                                                          //               color: !theme.isDarkMode
+                                                          //                   ? colors
+                                                          //                       .colorBlue
+                                                          //                   : colors
+                                                          //                       .colorLightBlue)
+                                                          //         ]))
+                                                        ]),
+                                                        IconButton(
+                                                            onPressed: internet
+                                                                        .connectionStatus ==
+                                                                    ConnectivityResult
+                                                                        .none
+                                                                ? null
+                                                                : () {
+                                                                    marginUpdate();
                                                                   },
-                                                                  child: Row(
-                                                                    children: [
-                                                                      // Red circular icon with white exclamation mark
-                                                                      // Container(
-                                                                      //   width: 20,
-                                                                      //   height: 20,
-                                                                      //   decoration: const BoxDecoration(
-                                                                      //     color: Colors.white,
-                                                                      //     shape: BoxShape.circle,
-                                                                      //   ),
-                                                                      //   child: const Center(
-                                                                      //     child: Icon(
-                                                                      //       Icons.error, // Exclamation icon
-                                                                      //       color: Colors.red,
-                                                                      //       size: 20,
-                                                                      //     ),
-                                                                      //   ),
-                                                                      // ),
-
-                                                                      // "+ Add fund" text in blue
-                                                                      Text(
-                                                                          '+ Add fund',
-                                                                          style: WebTextStyles.para(
-                                                                            isDarkTheme: theme.isDarkMode,
-                                                                            color: theme.isDarkMode
-                                                                                ? WebDarkColors.secondary
-                                                                                : WebColors.secondary,
-                                                                            fontWeight: WebFonts.semiBold,
-                                                                          )),
-                                                                      const SizedBox(
-                                                                          width:
-                                                                              8),
-                                                                    ],
-                                                                  ),
-                                                                )
-                                                              : const SizedBox()
-                                                          : const SizedBox(),
-
-                                                      // CustomWidgetButton(
-                                                      //     onPress: internet
-                                                      //                 .connectionStatus ==
-                                                      //             ConnectivityResult
-                                                      //                 .none
-                                                      //         ? () {}
-                                                      //         : () {
-                                                      //             BrokerageInput brokerageInput = BrokerageInput(
-                                                      //                 exch:"${widget.scripInfo.exch}",
-                                                      //                 prc: priceCtrl.text,
-                                                      //                 prd: orderInput.orderType,
-                                                      //                 qty:"${widget.scripInfo.ls}",
-                                                      //                 trantype: isBuy!? "B": "S",
-                                                      //                 tsym:"${widget.scripInfo.tsym}");
-                                                      //                 ref.read(orderProvider)
-                                                      //                 .fetchGetBrokerage(brokerageInput,context);
-                                                      //             showModalBottomSheet(useSafeArea:true,
-                                                      //                 isScrollControlled:true,
-                                                      //                 shape: const RoundedRectangleBorder(
-                                                      //                 borderRadius: BorderRadius.vertical(
-                                                      //                 top: Radius.circular(16))),
-                                                      //                 context:context,
-                                                      //                 builder:(context) {
-                                                      //                   return const ChargesDetailsBottomsheet();
-                                                      //                 });
-                                                      //           },
-                                                      //     widget: Row(
-                                                      //         children: [
-                                                      //           Text(
-                                                      //               "Charges: ",
-                                                      //               style: textStyle(
-                                                      //                   const Color(
-                                                      //                       0xff666666),
-                                                      //                   12,
-                                                      //                   FontWeight
-                                                      //                       .w500)),
-                                                      //           Text(
-                                                      //               "₹${orderProvide.getBrokerageModel == null ? 0.00 : orderProvide.getBrokerageModel!.brkageAmt ?? 0.00}",
-                                                      //               style: textStyle(
-                                                      //                   !theme.isDarkMode
-                                                      //                       ? colors.colorBlue
-                                                      //                       : colors.colorLightBlue,
-                                                      //                   12,
-                                                      //                   FontWeight.w600)),
-                                                      //           Icon(
-                                                      //               Icons
-                                                      //                   .arrow_drop_down,
-                                                      //               color: !theme.isDarkMode
-                                                      //                   ? colors
-                                                      //                       .colorBlue
-                                                      //                   : colors
-                                                      //                       .colorLightBlue)
-                                                      //         ]))
-                                                    ]),
-                                                    IconButton(
-                                                        onPressed: internet
-                                                                    .connectionStatus ==
-                                                                ConnectivityResult
-                                                                    .none
-                                                            ? null
-                                                            : () {
-                                                                marginUpdate();
-                                                              },
-                                                        icon: SvgPicture.asset(
-                                                            assets.reloadIcon)),
-                                                  ]),
-                                            ),
-                                          ],
-                                        ))
-                                  ],
-                                ],
-                                if (orderType == "MTF" && !_isMTFEnabled) ...[
-                                  const SizedBox.shrink()
-                                ] else ...[
-                                  Builder(
-                                    builder: (context) {
-                                      final closeNotifier = _PlaceOrderDialogCloseNotifier.of(context);
-                                      return Padding(
-                                        padding: const EdgeInsets.all(10.0),
-                                        child: Row(
-                                          children: [
-                                            Expanded(
-                                         
-                                              child: Container(
-                                                height: 40,
-                                                decoration: BoxDecoration(
-                                                  border: theme.isDarkMode
-                                                      ? null
-                                                      : Border.all(
-                                                          color: colors.primaryLight,
-                                                          width: 1),
-                                                  color: theme.isDarkMode
-                                                      ? colors.textSecondaryDark
-                                                          .withOpacity(0.6)
-                                                      : colors.btnBg,
-                                                  borderRadius:
-                                                      BorderRadius.circular(5),
+                                                            icon: SvgPicture
+                                                                .asset(assets
+                                                                    .reloadIcon)),
+                                                      ]),
                                                 ),
-                                                child: Material(
-                                                  color: Colors.transparent,
-                                                  shape:
-                                                      const BeveledRectangleBorder(),
-                                                  child: InkWell(
-                                                    customBorder:
-                                                        const BeveledRectangleBorder(),
-                                                    splashColor: theme.isDarkMode
-                                                        ? colors.splashColorDark
-                                                        : colors.splashColorLight,
-                                                    highlightColor: theme.isDarkMode
-                                                        ? colors.highlightDark
-                                                        : colors.highlightLight,
-                                                    onTap: closeNotifier?.onClose,
-                                                    child: Center(
-                                                      child: Text(
-                                                        "Close",
-                                                        style: WebTextStyles.buttonMd(
-                                                          isDarkTheme: theme.isDarkMode,
-                                                          color: theme.isDarkMode
-                                                              ? colors.colorWhite
-                                                              : colors.primaryLight,
+                                              ],
+                                            ))
+                                      ],
+                                    ],
+                                    if (orderType == "MTF" &&
+                                        !_isMTFEnabled) ...[
+                                      const SizedBox.shrink()
+                                    ] else ...[
+                                      Builder(
+                                        builder: (context) {
+                                          final closeNotifier =
+                                              _PlaceOrderDialogCloseNotifier.of(
+                                                  context);
+                                          return Padding(
+                                            padding: const EdgeInsets.all(10.0),
+                                            child: Row(
+                                              children: [
+                                                Expanded(
+                                                  child: Container(
+                                                    height: 40,
+                                                    decoration: BoxDecoration(
+                                                      border: theme.isDarkMode
+                                                          ? null
+                                                          : Border.all(
+                                                              color: colors
+                                                                  .primaryLight,
+                                                              width: 1),
+                                                      color: theme.isDarkMode
+                                                          ? colors
+                                                              .textSecondaryDark
+                                                              .withOpacity(0.6)
+                                                          : colors.btnBg,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              5),
+                                                    ),
+                                                    child: Material(
+                                                      color: Colors.transparent,
+                                                      shape:
+                                                          const BeveledRectangleBorder(),
+                                                      child: InkWell(
+                                                        customBorder:
+                                                            const BeveledRectangleBorder(),
+                                                        splashColor: theme
+                                                                .isDarkMode
+                                                            ? colors
+                                                                .splashColorDark
+                                                            : colors
+                                                                .splashColorLight,
+                                                        highlightColor: theme
+                                                                .isDarkMode
+                                                            ? colors
+                                                                .highlightDark
+                                                            : colors
+                                                                .highlightLight,
+                                                        onTap: closeNotifier
+                                                            ?.onClose,
+                                                        child: Center(
+                                                          child: Text(
+                                                            "Close",
+                                                            style: WebTextStyles
+                                                                .buttonMd(
+                                                              isDarkTheme: theme
+                                                                  .isDarkMode,
+                                                              color: theme.isDarkMode
+                                                                  ? colors
+                                                                      .colorWhite
+                                                                  : colors
+                                                                      .primaryLight,
+                                                            ),
+                                                          ),
                                                         ),
                                                       ),
                                                     ),
                                                   ),
                                                 ),
-                                              ),
-                                            ),
-                                            const SizedBox(width: 8),
-                                            Expanded(
-                                       
-                                              child: Container(
-                                          
-                                                height: 40,
-                                                child: ElevatedButton(
-                                                  onPressed: internet.connectionStatus ==
-                                                      ConnectivityResult.none
+                                                const SizedBox(width: 8),
+                                                Expanded(
+                                                  child: Container(
+                                                    height: 40,
+                                                    child: ElevatedButton(
+                                                      onPressed: internet
+                                                                  .connectionStatus ==
+                                                              ConnectivityResult
+                                                                  .none
                                                           ? null
                                                           : () async {
-                                                if (!orderProvide.orderloader) {
-                                                  if (orderType == "SIP") {
-                                                    if (sipqtyctrl.text.isEmpty ||
-                                                        sipqtyctrl.text == "0") {
-                                                      ResponsiveSnackBar.showWarning(
-                                                          context,
-                                                          sipqtyctrl.text.isEmpty
-                                                              ? "Quantity cannot be empty"
-                                                              : "Quantity cannot be 0");
-                                                    } else if (sip.numberofSips
-                                                            .text.isEmpty ||
-                                                        sip.numberofSips.text ==
-                                                            "0") {
-                                                      ResponsiveSnackBar.showWarning(
-                                                          context,
-                                                          sip.numberofSips.text
-                                                                  .isEmpty
-                                                              ? "Number of SIP cannot be empty"
-                                                              : "Number of SIP cannot be 0");
-                                                    } else {
-                                                      bool sipQty = int.tryParse(
-                                                                  sipqtyctrl
-                                                                      .text) !=
-                                                              null
-                                                          ? true
-                                                          : false;
-                                                      bool numberOfSips =
-                                                          int.tryParse(sip
-                                                                      .numberofSips
-                                                                      .text) !=
-                                                                  null
-                                                              ? true
-                                                              : false;
-                                        
-                                                      if (!sipQty ||
-                                                          !numberOfSips) {
-                                                        ResponsiveSnackBar.showWarning(context,
-                                                            "Provide a valid value for SIP");
-                                                      } else {
-                                                        sipOrder(ref);
-                                                      }
-                                                    }
-                                                  } else if (orderType == "GTT") {
-                                                    if (orderInput
-                                                        .disableGTTCond) {
-                                                      if ((orderInput.val1Ctrl.text.isNotEmpty &&
-                                                              orderInput
-                                                                  .val2Ctrl
-                                                                  .text
-                                                                  .isNotEmpty &&
-                                                              orderInput
-                                                                  .priceCtrl
-                                                                  .text
-                                                                  .isNotEmpty &&
-                                                              orderInput
-                                                                  .ocoPriceCtrl
-                                                                  .text
-                                                                  .isNotEmpty &&
-                                                              orderInput
-                                                                  .ocoQtyCtrl
-                                                                  .text
-                                                                  .isNotEmpty) &&
-                                                          orderInput.qtyCtrl.text
-                                                              .isNotEmpty &&
-                                                          double.tryParse(orderInput.val1Ctrl.text) !=
-                                                              null &&
-                                                          double.tryParse(orderInput.val1Ctrl.text)! >
-                                                              0 &&
-                                                          double.tryParse(orderInput.val2Ctrl.text) !=
-                                                              null &&
-                                                          double.tryParse(orderInput.val2Ctrl.text)! >
-                                                              0 &&
-                                                          double.tryParse(orderInput.qtyCtrl.text) !=
-                                                              null &&
-                                                          double.tryParse(orderInput.qtyCtrl.text)! >
-                                                              0 &&
-                                                          double.tryParse(orderInput.ocoQtyCtrl.text) !=
-                                                              null &&
-                                                          double.tryParse(orderInput.ocoQtyCtrl.text)! >
-                                                              0 &&
-                                                          (orderInput.priceCtrl.text == "Market" ||
-                                                              (double.tryParse(orderInput.priceCtrl.text) != null &&
-                                                                  double.tryParse(orderInput.priceCtrl.text)! > 0)) &&
-                                                          (orderInput.ocoPriceCtrl.text == "Market" || (double.tryParse(orderInput.ocoPriceCtrl.text) != null && double.tryParse(orderInput.ocoPriceCtrl.text)! > 0))) {
-                                                        // if (orderInput
-                                                        //             .actOcoPrcType == "SL Limit" ||
-                                                        //     orderInput
-                                                        //             .actOcoPrcType == "SL MKT") {
-                                                        //   if (orderInput
-                                                        //       .ocoTrgPrcCtrl
-                                                        //       .text
-                                                        //       .isEmpty) {
-                                                        //     ScaffoldMessenger.of(
-                                                        //             context)
-                                                        //         .showSnackBar(ResponsiveSnackBar.showWarning(
-                                                        //             context,
-                                                        //             "Trigger cannot be empty"));
-                                                        //   } else {
-                                                        //     prepareToPlaceOCOOrder(orderInput);
-                                                        //   }
-                                                        // }
-                                                        // else {
-                                                        double ltp = double.parse(
-                                                            widget.orderArg.ltp ??
-                                                                "0.00");
-                                                        double val1 =
-                                                            double.parse(
-                                                                orderInput
-                                                                    .val1Ctrl
-                                                                    .text);
-                                                        double val2 =
-                                                            double.parse(
-                                                                orderInput
-                                                                    .val2Ctrl
-                                                                    .text);
-                                        
-                                                        if (val1 > ltp &&
-                                                            val2 < ltp) {
-                                                          prepareToPlaceOCOOrder(
-                                                              orderInput);
-                                                        } else {
-                                                          ResponsiveSnackBar.showWarning(
-                                                              context,
-                                                              val1 <= ltp
-                                                                  ? "Target trigger price cannot be less than LTP"
-                                                                  : val2 >= ltp
-                                                                      ? "Stoploss trigger price cannot be greater than LTP"
-                                                                      : "Target trigger price cannot be equal to LTP");
-                                                        }
-                                                        // }
-                                                      } else {
-                                                        if (orderInput.val1Ctrl
-                                                            .text.isEmpty) {
-                                                          ResponsiveSnackBar.showWarning(context,
-                                                              "Target trigger price cannot be empty");
-                                                        } else if (double.parse(orderInput.val1Ctrl.text) <=
-                                                            0) {
-                                                          ResponsiveSnackBar.showWarning(context,
-                                                              "Target trigger price cannot be 0");
-                                                        } else if (orderInput
-                                                            .qtyCtrl
-                                                            .text
-                                                            .isEmpty) {
-                                                          ResponsiveSnackBar.showWarning(context,
-                                                              "Quantity cannot be empty");
-                                                        } else if (double.parse(orderInput.qtyCtrl.text) <=
-                                                            0) {
-                                                          ResponsiveSnackBar.showWarning(context,
-                                                              "Quantity cannot be 0");
-                                                        } else if (orderInput
-                                                            .priceCtrl
-                                                            .text
-                                                            .isEmpty) {
-                                                          ResponsiveSnackBar.showWarning(context,
-                                                              "Price cannot be empty");
-                                                        } else if (orderInput
-                                                                    .priceCtrl
-                                                                    .text !=
-                                                                "Market" &&
-                                                            double.tryParse(orderInput.priceCtrl.text) !=
-                                                                null &&
-                                                            double.parse(orderInput.priceCtrl.text) <=
-                                                                0) {
-                                                          ResponsiveSnackBar.showWarning(context,
-                                                              "Price cannot be 0");
-                                                        } else if (orderInput
-                                                            .val2Ctrl
-                                                            .text
-                                                            .isEmpty) {
-                                                          ResponsiveSnackBar.showWarning(context,
-                                                              "Stoploss trigger price cannot be empty");
-                                                        } else if (double.parse(orderInput.val2Ctrl.text) <=
-                                                            0) {
-                                                          ResponsiveSnackBar.showWarning(context,
-                                                              "Stoploss trigger price cannot be 0");
-                                                        } else if (orderInput
-                                                            .ocoQtyCtrl
-                                                            .text
-                                                            .isEmpty) {
-                                                          ResponsiveSnackBar.showWarning(context,
-                                                              "OCO quantity cannot be empty");
-                                                        } else if (double.parse(orderInput.ocoQtyCtrl.text) <=
-                                                            0) {
-                                                          ResponsiveSnackBar.showWarning(context,
-                                                              "OCO quantity cannot be 0");
-                                                        } else if (orderInput
-                                                            .ocoPriceCtrl
-                                                            .text
-                                                            .isEmpty) {
-                                                          ResponsiveSnackBar.showWarning(context,
-                                                              "OCO price cannot be empty");
-                                                        } else if (orderInput.ocoPriceCtrl.text !=
-                                                            "Market") {
-                                                          final ocoPrice = double
-                                                              .tryParse(orderInput
-                                                                  .ocoPriceCtrl
-                                                                  .text);
-                                                          if (ocoPrice == null) {
-                                                            ResponsiveSnackBar.showWarning(
-                                                                context,
-                                                                "Invalid OCO price");
-                                                          } else if (ocoPrice <=
-                                                              0) {
-                                                            ResponsiveSnackBar.showWarning(
-                                                                context,
-                                                                "OCO price cannot be 0");
-                                                          }
-                                                        } else {
-                                                          ResponsiveSnackBar.showWarning(context,
-                                                              "Enter all Input fields");
-                                                        }
-                                                      }
-                                                    } else {
-                                                      if ((orderInput
-                                                                  .val1Ctrl
-                                                                  .text
-                                                                  .isNotEmpty &&
-                                                              orderInput
-                                                                  .priceCtrl
-                                                                  .text
-                                                                  .isNotEmpty) &&
-                                                          orderInput.qtyCtrl.text
-                                                              .isNotEmpty &&
-                                                          double.parse(orderInput
-                                                                  .val1Ctrl
-                                                                  .text) >
-                                                              0 &&
-                                                          double.parse(orderInput.qtyCtrl.text) >
-                                                              0 &&
-                                                          (orderInput.priceCtrl
-                                                                      .text ==
-                                                                  "Market" ||
-                                                              double.parse(
-                                                                      orderInput
+                                                              if (!orderProvide
+                                                                  .orderloader) {
+                                                                if (orderType ==
+                                                                    "SIP") {
+                                                                  if (sipqtyctrl
+                                                                          .text
+                                                                          .isEmpty ||
+                                                                      sipqtyctrl
+                                                                              .text ==
+                                                                          "0") {
+                                                                    ResponsiveSnackBar.showWarning(
+                                                                        context,
+                                                                        sipqtyctrl.text.isEmpty
+                                                                            ? "Quantity cannot be empty"
+                                                                            : "Quantity cannot be 0");
+                                                                  } else if (sip
+                                                                          .numberofSips
+                                                                          .text
+                                                                          .isEmpty ||
+                                                                      sip.numberofSips
+                                                                              .text ==
+                                                                          "0") {
+                                                                    ResponsiveSnackBar.showWarning(
+                                                                        context,
+                                                                        sip.numberofSips.text.isEmpty
+                                                                            ? "Number of SIP cannot be empty"
+                                                                            : "Number of SIP cannot be 0");
+                                                                  } else {
+                                                                    bool sipQty = int.tryParse(sipqtyctrl.text) !=
+                                                                            null
+                                                                        ? true
+                                                                        : false;
+                                                                    bool numberOfSips = int.tryParse(sip.numberofSips.text) !=
+                                                                            null
+                                                                        ? true
+                                                                        : false;
+
+                                                                    if (!sipQty ||
+                                                                        !numberOfSips) {
+                                                                      ResponsiveSnackBar.showWarning(
+                                                                          context,
+                                                                          "Provide a valid value for SIP");
+                                                                    } else {
+                                                                      sipOrder(
+                                                                          ref);
+                                                                    }
+                                                                  }
+                                                                } else if (orderType ==
+                                                                    "GTT") {
+                                                                  if (orderInput
+                                                                      .disableGTTCond) {
+                                                                    if ((orderInput.val1Ctrl.text.isNotEmpty &&
+                                                                            orderInput
+                                                                                .val2Ctrl.text.isNotEmpty &&
+                                                                            orderInput
+                                                                                .priceCtrl.text.isNotEmpty &&
+                                                                            orderInput
+                                                                                .ocoPriceCtrl.text.isNotEmpty &&
+                                                                            orderInput
+                                                                                .ocoQtyCtrl.text.isNotEmpty) &&
+                                                                        orderInput
+                                                                            .qtyCtrl
+                                                                            .text
+                                                                            .isNotEmpty &&
+                                                                        double.tryParse(orderInput.val1Ctrl.text) !=
+                                                                            null &&
+                                                                        double.tryParse(orderInput.val1Ctrl.text)! >
+                                                                            0 &&
+                                                                        double.tryParse(orderInput.val2Ctrl.text) !=
+                                                                            null &&
+                                                                        double.tryParse(orderInput.val2Ctrl.text)! >
+                                                                            0 &&
+                                                                        double.tryParse(orderInput.qtyCtrl.text) !=
+                                                                            null &&
+                                                                        double.tryParse(orderInput.qtyCtrl.text)! >
+                                                                            0 &&
+                                                                        double.tryParse(orderInput.ocoQtyCtrl.text) !=
+                                                                            null &&
+                                                                        double.tryParse(orderInput.ocoQtyCtrl.text)! >
+                                                                            0 &&
+                                                                        (orderInput.priceCtrl.text ==
+                                                                                "Market" ||
+                                                                            (double.tryParse(orderInput.priceCtrl.text) != null &&
+                                                                                double.tryParse(orderInput.priceCtrl.text)! >
+                                                                                    0)) &&
+                                                                        (orderInput.ocoPriceCtrl.text ==
+                                                                                "Market" ||
+                                                                            (double.tryParse(orderInput.ocoPriceCtrl.text) != null &&
+                                                                                double.tryParse(orderInput.ocoPriceCtrl.text)! > 0))) {
+                                                                      // if (orderInput
+                                                                      //             .actOcoPrcType == "SL Limit" ||
+                                                                      //     orderInput
+                                                                      //             .actOcoPrcType == "SL MKT") {
+                                                                      //   if (orderInput
+                                                                      //       .ocoTrgPrcCtrl
+                                                                      //       .text
+                                                                      //       .isEmpty) {
+                                                                      //     ScaffoldMessenger.of(
+                                                                      //             context)
+                                                                      //         .showSnackBar(ResponsiveSnackBar.showWarning(
+                                                                      //             context,
+                                                                      //             "Trigger cannot be empty"));
+                                                                      //   } else {
+                                                                      //     prepareToPlaceOCOOrder(orderInput);
+                                                                      //   }
+                                                                      // }
+                                                                      // else {
+                                                                      double
+                                                                          ltp =
+                                                                          double.parse(widget.orderArg.ltp ??
+                                                                              "0.00");
+                                                                      double
+                                                                          val1 =
+                                                                          double.parse(orderInput
+                                                                              .val1Ctrl
+                                                                              .text);
+                                                                      double
+                                                                          val2 =
+                                                                          double.parse(orderInput
+                                                                              .val2Ctrl
+                                                                              .text);
+
+                                                                      if (val1 >
+                                                                              ltp &&
+                                                                          val2 <
+                                                                              ltp) {
+                                                                        prepareToPlaceOCOOrder(
+                                                                            orderInput);
+                                                                      } else {
+                                                                        ResponsiveSnackBar.showWarning(
+                                                                            context,
+                                                                            val1 <= ltp
+                                                                                ? "Target trigger price cannot be less than LTP"
+                                                                                : val2 >= ltp
+                                                                                    ? "Stoploss trigger price cannot be greater than LTP"
+                                                                                    : "Target trigger price cannot be equal to LTP");
+                                                                      }
+                                                                      // }
+                                                                    } else {
+                                                                      if (orderInput
+                                                                          .val1Ctrl
+                                                                          .text
+                                                                          .isEmpty) {
+                                                                        ResponsiveSnackBar.showWarning(
+                                                                            context,
+                                                                            "Target trigger price cannot be empty");
+                                                                      } else if (double.parse(orderInput.val1Ctrl.text) <=
+                                                                          0) {
+                                                                        ResponsiveSnackBar.showWarning(
+                                                                            context,
+                                                                            "Target trigger price cannot be 0");
+                                                                      } else if (orderInput
+                                                                          .qtyCtrl
+                                                                          .text
+                                                                          .isEmpty) {
+                                                                        ResponsiveSnackBar.showWarning(
+                                                                            context,
+                                                                            "Quantity cannot be empty");
+                                                                      } else if (double.parse(orderInput.qtyCtrl.text) <=
+                                                                          0) {
+                                                                        ResponsiveSnackBar.showWarning(
+                                                                            context,
+                                                                            "Quantity cannot be 0");
+                                                                      } else if (orderInput
                                                                           .priceCtrl
-                                                                          .text) >
-                                                                  0)) {
-                                                        // if (orderInput
-                                                        //             .actPrcType == "SL Limit" ||
-                                                        //     orderInput
-                                                        //             .actPrcType == "SL MKT") {
-                                                        //   if (orderInput
-                                                        //       .trgPrcCtrl
-                                                        //       .text
-                                                        //       .isEmpty) {
-                                                        //     ScaffoldMessenger.of(
-                                                        //             context)
-                                                        //         .showSnackBar(ResponsiveSnackBar.showWarning(
-                                                        //             context,
-                                                        //             "Trigger cannot be empty"));
-                                                        //   } else {
-                                                        //     prepareToPlaceGttOrder(orderInput);
-                                                        //   }
-                                                        // } else {
-                                        
-                                                        double ltp = double.parse(
-                                                            widget.orderArg.ltp ??
-                                                                "0.00");
-                                                        double val1 =
-                                                            double.parse(
-                                                                orderInput
-                                                                    .val1Ctrl
-                                                                    .text);
-                                                        // double val2 = double.parse(orderInput.val2Ctrl.text);
-                                        
-                                                        if (val1 > ltp) {
-                                                          orderInput.chngCond(
-                                                              "Greater than");
-                                                          orderInput
-                                                              .chngAlert("LTP");
-                                                          prepareToPlaceGttOrder(
-                                                              orderInput);
-                                                        } else if (val1 < ltp) {
-                                                          orderInput.chngCond(
-                                                              "Less than");
-                                                          orderInput
-                                                              .chngAlert("LTP");
-                                                          prepareToPlaceGttOrder(
-                                                              orderInput);
-                                                        } else {
-                                                          ResponsiveSnackBar.showWarning(context,
-                                                              "Target trigger price cannot be equal to LTP");
-                                                        }
-                                                        // }
-                                                      } else {
-                                                        if (orderInput.val1Ctrl
-                                                            .text.isEmpty) {
-                                                          ResponsiveSnackBar.showWarning(context,
-                                                              "Target trigger price cannot be empty");
-                                                        } else if (double.parse(orderInput.val1Ctrl.text) <=
-                                                            0) {
-                                                          ResponsiveSnackBar.showWarning(context,
-                                                              "Target trigger price cannot be 0");
-                                                        } else if (orderInput
-                                                            .qtyCtrl
-                                                            .text
-                                                            .isEmpty) {
-                                                          ResponsiveSnackBar.showWarning(context,
-                                                              "Quantity cannot be empty");
-                                                        } else if (double.parse(orderInput.qtyCtrl.text) <=
-                                                            0) {
-                                                          ResponsiveSnackBar.showWarning(context,
-                                                              "Quantity cannot be 0");
-                                                        } else if (orderInput
-                                                            .priceCtrl
-                                                            .text
-                                                            .isEmpty) {
-                                                          ResponsiveSnackBar.showWarning(context,
-                                                              "Price cannot be empty");
-                                                        } else if (double.parse(orderInput.priceCtrl.text) <=
-                                                            0) {
-                                                          ResponsiveSnackBar.showWarning(context,
-                                                              "Price cannot be 0");
-                                                        } else if (orderInput
-                                                            .val2Ctrl
-                                                            .text
-                                                            .isEmpty) {
-                                                          ResponsiveSnackBar.showWarning(context,
-                                                              "Stoploss trigger price cannot be empty");
-                                                        } else if (double.parse(orderInput.val2Ctrl.text) <=
-                                                            0) {
-                                                          ResponsiveSnackBar.showWarning(context,
-                                                              "Stoploss trigger price cannot be 0");
-                                                        } else if (orderInput
-                                                            .ocoQtyCtrl
-                                                            .text
-                                                            .isEmpty) {
-                                                          ResponsiveSnackBar.showWarning(context,
-                                                              "OCO quantity cannot be empty");
-                                                        } else if (double.parse(orderInput
-                                                                .ocoQtyCtrl
-                                                                .text) <=
-                                                            0) {
-                                                          ResponsiveSnackBar.showWarning(context,
-                                                              "OCO quantity cannot be 0");
-                                                        } else if (orderInput
-                                                            .ocoPriceCtrl
-                                                            .text
-                                                            .isEmpty) {
-                                                          ResponsiveSnackBar.showWarning(context,
-                                                              "OCO price cannot be empty");
-                                                        } else if (double.parse(
-                                                                orderInput.ocoPriceCtrl.text) <=
-                                                            0) {
-                                                          ResponsiveSnackBar.showWarning(context,
-                                                              "OCO price cannot be 0");
-                                                        } else {
-                                                          ResponsiveSnackBar.showWarning(context,
-                                                              "Enter all Input fields");
-                                                        }
-                                                      }
-                                                    }
-                                                  } else {
-                                                    setState(() {
-                                                      if (frezQty == 0) {
-                                                        quantity = int.parse(
-                                                            getFinalQuantity(
-                                                                        qtyCtrl
-                                                                            .text)
-                                                                    .isEmpty
-                                                                ? "0"
-                                                                : getFinalQuantity(
-                                                                    qtyCtrl
-                                                                        .text));
-                                                        // frezQty;
-                                                      } else {
-                                                        quantity = int.parse(getFinalQuantity(
-                                                                        qtyCtrl
-                                                                            .text)
-                                                                    .isEmpty
-                                                                ? "0"
-                                                                : getFinalQuantity(
-                                                                    qtyCtrl
-                                                                        .text)) ~/
-                                                            frezQty;
-                                                      }
-                                                      reminder = int.parse(
-                                                              getFinalQuantity(
-                                                                          qtyCtrl
-                                                                              .text)
-                                                                      .isEmpty
-                                                                  ? "0"
-                                                                  : getFinalQuantity(
-                                                                      qtyCtrl
-                                                                          .text)) -
-                                                          (frezQty * quantity);
-                                                      maxQty = frezQty *
-                                                          frezQtyOrderSliceMaxLimit;
-                                                    });
-                                                    if (getFinalQuantity(qtyCtrl.text).trim().isEmpty ||
-                                                        priceCtrl.text
-                                                            .trim()
-                                                            .isEmpty) {
-                                                      String fieldName =
-                                                          (_isStock)
-                                                              ? (_isQtyToAmount
-                                                                  ? "Amount"
-                                                                  : "Quantity")
-                                                              : (_isLotToQty
-                                                                  ? "Quantity"
-                                                                  : "Lot");
-                                                      ResponsiveSnackBar.showWarning(
-                                                          context,
-                                                          getFinalQuantity(qtyCtrl
-                                                                      .text)
-                                                                  .isEmpty
-                                                              ? "$fieldName cannot be empty"
-                                                              : "Price cannot be empty");
-                                                    } else if ((getFinalQuantity(qtyCtrl.text).trim()) == "0" ||
-                                                        priceCtrl.text.trim() ==
-                                                            "0") {
-                                                      String fieldName =
-                                                          (_isStock)
-                                                              ? (_isQtyToAmount
-                                                                  ? "Amount"
-                                                                  : "Quantity")
-                                                              : (_isLotToQty
-                                                                  ? "Quantity"
-                                                                  : "Lot");
-                                                      ResponsiveSnackBar.showWarning(
-                                                          context,
-                                                          getFinalQuantity(qtyCtrl
-                                                                      .text) ==
-                                                                  "0"
-                                                              ? (_isStock)
-                                                                  ? (_isQtyToAmount
-                                                                      ? (qtyCtrl.text !=
-                                                                              "0"
-                                                                          ? "Minimum Allowed Amount should be greater than ${widget.orderArg.ltp}"
-                                                                          : "Amount cannot be 0")
-                                                                      : "Quantity cannot be 0")
-                                                                  : "$fieldName cannot be 0"
-                                                              : "Price cannot be 0");
-                                                    } else if (frezQty > lotSize &&
-                                                        int.parse(getFinalQuantity(qtyCtrl.text).trim()) >
-                                                            frezQtyOrderSliceMaxLimit *
-                                                                frezQty) {
-                                                      ResponsiveSnackBar.showWarning(context,
-                                                          "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}");
-                                                    } else if ((priceType == "Limit" || priceType == "SL Limit") &&
-                                                        _hasValidCircuitBreakerValues &&
-                                                        ((double.parse(ordPrice) < double.parse(widget.scripInfo.lc!)) ||
-                                                            (double.parse(ordPrice) >
-                                                                double.parse(widget
-                                                                    .scripInfo
-                                                                    .uc!)))) {
-                                                      ResponsiveSnackBar.showWarning(
-                                                          context,
-                                                          double.parse(ordPrice) <
-                                                                  double.parse(
-                                                                      widget
-                                                                          .scripInfo
-                                                                          .lc!)
-                                                              ? "Price cannot be lesser than Lower Circuit Limit ${widget.scripInfo.lc}"
-                                                              : "Price cannot be greater than Upper Circuit Limit ${widget.scripInfo.uc}");
-                                                    } else if ((orderType == "Delivery" || orderType == "Intraday") &&
-                                                        (priceType == "SL Limit" ||
-                                                            priceType ==
-                                                                "SL MKT")) {
-                                                      if (triggerPriceCtrl
-                                                              .text.isEmpty ||
-                                                          triggerPriceCtrl.text ==
-                                                              "0") {
-                                                        ResponsiveSnackBar.showWarning(
-                                                            context,
-                                                            triggerPriceCtrl
-                                                                    .text.isEmpty
-                                                                ? "Trigger cannot be empty"
-                                                                : "Trigger cannot be 0");
-                                                      } else {
-                                                        if (isBuy!) {
-                                                          if (priceType ==
-                                                              "SL MKT") {
-                                                            if (double.parse(
-                                                                    triggerPriceCtrl
-                                                                        .text) <
-                                                                double.parse(widget
-                                                                        .orderArg
-                                                                        .ltp ??
-                                                                    "0.00")) {
-                                                              ResponsiveSnackBar.showWarning(
-                                                                  context,
-                                                                  "Trigger should be greater than LTP");
-                                                            } else if (_hasValidCircuitBreakerValues &&
-                                                                double.parse(
-                                                                        triggerPriceCtrl
-                                                                            .text) >
-                                                                    double.parse(widget
-                                                                        .scripInfo
-                                                                        .uc!)) {
-                                                              ResponsiveSnackBar.showWarning(
-                                                                  context,
-                                                                  "Trigger cannot be greater than upper circuit limit of ${widget.scripInfo.uc}");
-                                                            } else {
-                                                              if ((int.parse(getFinalQuantity(qtyCtrl.text)
+                                                                          .text
+                                                                          .isEmpty) {
+                                                                        ResponsiveSnackBar.showWarning(
+                                                                            context,
+                                                                            "Price cannot be empty");
+                                                                      } else if (orderInput.priceCtrl.text != "Market" &&
+                                                                          double.tryParse(orderInput.priceCtrl.text) !=
+                                                                              null &&
+                                                                          double.parse(orderInput.priceCtrl.text) <=
+                                                                              0) {
+                                                                        ResponsiveSnackBar.showWarning(
+                                                                            context,
+                                                                            "Price cannot be 0");
+                                                                      } else if (orderInput
+                                                                          .val2Ctrl
+                                                                          .text
+                                                                          .isEmpty) {
+                                                                        ResponsiveSnackBar.showWarning(
+                                                                            context,
+                                                                            "Stoploss trigger price cannot be empty");
+                                                                      } else if (double.parse(orderInput.val2Ctrl.text) <=
+                                                                          0) {
+                                                                        ResponsiveSnackBar.showWarning(
+                                                                            context,
+                                                                            "Stoploss trigger price cannot be 0");
+                                                                      } else if (orderInput
+                                                                          .ocoQtyCtrl
+                                                                          .text
+                                                                          .isEmpty) {
+                                                                        ResponsiveSnackBar.showWarning(
+                                                                            context,
+                                                                            "OCO quantity cannot be empty");
+                                                                      } else if (double.parse(orderInput
+                                                                              .ocoQtyCtrl
+                                                                              .text) <=
+                                                                          0) {
+                                                                        ResponsiveSnackBar.showWarning(
+                                                                            context,
+                                                                            "OCO quantity cannot be 0");
+                                                                      } else if (orderInput
+                                                                          .ocoPriceCtrl
+                                                                          .text
+                                                                          .isEmpty) {
+                                                                        ResponsiveSnackBar.showWarning(
+                                                                            context,
+                                                                            "OCO price cannot be empty");
+                                                                      } else if (orderInput
+                                                                              .ocoPriceCtrl
+                                                                              .text !=
+                                                                          "Market") {
+                                                                        final ocoPrice = double.tryParse(orderInput
+                                                                            .ocoPriceCtrl
+                                                                            .text);
+                                                                        if (ocoPrice ==
+                                                                            null) {
+                                                                          ResponsiveSnackBar.showWarning(
+                                                                              context,
+                                                                              "Invalid OCO price");
+                                                                        } else if (ocoPrice <=
+                                                                            0) {
+                                                                          ResponsiveSnackBar.showWarning(
+                                                                              context,
+                                                                              "OCO price cannot be 0");
+                                                                        }
+                                                                      } else {
+                                                                        ResponsiveSnackBar.showWarning(
+                                                                            context,
+                                                                            "Enter all Input fields");
+                                                                      }
+                                                                    }
+                                                                  } else {
+                                                                    if ((orderInput.val1Ctrl.text.isNotEmpty &&
+                                                                            orderInput
+                                                                                .priceCtrl.text.isNotEmpty) &&
+                                                                        orderInput
+                                                                            .qtyCtrl
+                                                                            .text
+                                                                            .isNotEmpty &&
+                                                                        double.parse(orderInput.val1Ctrl.text) >
+                                                                            0 &&
+                                                                        double.parse(orderInput.qtyCtrl.text) >
+                                                                            0 &&
+                                                                        (orderInput.priceCtrl.text ==
+                                                                                "Market" ||
+                                                                            double.parse(orderInput.priceCtrl.text) >
+                                                                                0)) {
+                                                                      // if (orderInput
+                                                                      //             .actPrcType == "SL Limit" ||
+                                                                      //     orderInput
+                                                                      //             .actPrcType == "SL MKT") {
+                                                                      //   if (orderInput
+                                                                      //       .trgPrcCtrl
+                                                                      //       .text
+                                                                      //       .isEmpty) {
+                                                                      //     ScaffoldMessenger.of(
+                                                                      //             context)
+                                                                      //         .showSnackBar(ResponsiveSnackBar.showWarning(
+                                                                      //             context,
+                                                                      //             "Trigger cannot be empty"));
+                                                                      //   } else {
+                                                                      //     prepareToPlaceGttOrder(orderInput);
+                                                                      //   }
+                                                                      // } else {
+
+                                                                      double
+                                                                          ltp =
+                                                                          double.parse(widget.orderArg.ltp ??
+                                                                              "0.00");
+                                                                      double
+                                                                          val1 =
+                                                                          double.parse(orderInput
+                                                                              .val1Ctrl
+                                                                              .text);
+                                                                      // double val2 = double.parse(orderInput.val2Ctrl.text);
+
+                                                                      if (val1 >
+                                                                          ltp) {
+                                                                        orderInput
+                                                                            .chngCond("Greater than");
+                                                                        orderInput
+                                                                            .chngAlert("LTP");
+                                                                        prepareToPlaceGttOrder(
+                                                                            orderInput);
+                                                                      } else if (val1 <
+                                                                          ltp) {
+                                                                        orderInput
+                                                                            .chngCond("Less than");
+                                                                        orderInput
+                                                                            .chngAlert("LTP");
+                                                                        prepareToPlaceGttOrder(
+                                                                            orderInput);
+                                                                      } else {
+                                                                        ResponsiveSnackBar.showWarning(
+                                                                            context,
+                                                                            "Target trigger price cannot be equal to LTP");
+                                                                      }
+                                                                      // }
+                                                                    } else {
+                                                                      if (orderInput
+                                                                          .val1Ctrl
+                                                                          .text
+                                                                          .isEmpty) {
+                                                                        ResponsiveSnackBar.showWarning(
+                                                                            context,
+                                                                            "Target trigger price cannot be empty");
+                                                                      } else if (double.parse(orderInput.val1Ctrl.text) <=
+                                                                          0) {
+                                                                        ResponsiveSnackBar.showWarning(
+                                                                            context,
+                                                                            "Target trigger price cannot be 0");
+                                                                      } else if (orderInput
+                                                                          .qtyCtrl
+                                                                          .text
+                                                                          .isEmpty) {
+                                                                        ResponsiveSnackBar.showWarning(
+                                                                            context,
+                                                                            "Quantity cannot be empty");
+                                                                      } else if (double.parse(orderInput.qtyCtrl.text) <=
+                                                                          0) {
+                                                                        ResponsiveSnackBar.showWarning(
+                                                                            context,
+                                                                            "Quantity cannot be 0");
+                                                                      } else if (orderInput
+                                                                          .priceCtrl
+                                                                          .text
+                                                                          .isEmpty) {
+                                                                        ResponsiveSnackBar.showWarning(
+                                                                            context,
+                                                                            "Price cannot be empty");
+                                                                      } else if (double.parse(orderInput.priceCtrl.text) <=
+                                                                          0) {
+                                                                        ResponsiveSnackBar.showWarning(
+                                                                            context,
+                                                                            "Price cannot be 0");
+                                                                      } else if (orderInput
+                                                                          .val2Ctrl
+                                                                          .text
+                                                                          .isEmpty) {
+                                                                        ResponsiveSnackBar.showWarning(
+                                                                            context,
+                                                                            "Stoploss trigger price cannot be empty");
+                                                                      } else if (double.parse(orderInput
+                                                                              .val2Ctrl
+                                                                              .text) <=
+                                                                          0) {
+                                                                        ResponsiveSnackBar.showWarning(
+                                                                            context,
+                                                                            "Stoploss trigger price cannot be 0");
+                                                                      } else if (orderInput
+                                                                          .ocoQtyCtrl
+                                                                          .text
+                                                                          .isEmpty) {
+                                                                        ResponsiveSnackBar.showWarning(
+                                                                            context,
+                                                                            "OCO quantity cannot be empty");
+                                                                      } else if (double.parse(orderInput
+                                                                              .ocoQtyCtrl
+                                                                              .text) <=
+                                                                          0) {
+                                                                        ResponsiveSnackBar.showWarning(
+                                                                            context,
+                                                                            "OCO quantity cannot be 0");
+                                                                      } else if (orderInput
+                                                                          .ocoPriceCtrl
+                                                                          .text
+                                                                          .isEmpty) {
+                                                                        ResponsiveSnackBar.showWarning(
+                                                                            context,
+                                                                            "OCO price cannot be empty");
+                                                                      } else if (double.parse(orderInput
+                                                                              .ocoPriceCtrl
+                                                                              .text) <=
+                                                                          0) {
+                                                                        ResponsiveSnackBar.showWarning(
+                                                                            context,
+                                                                            "OCO price cannot be 0");
+                                                                      } else {
+                                                                        ResponsiveSnackBar.showWarning(
+                                                                            context,
+                                                                            "Enter all Input fields");
+                                                                      }
+                                                                    }
+                                                                  }
+                                                                } else {
+                                                                  setState(() {
+                                                                    if (frezQty ==
+                                                                        0) {
+                                                                      quantity = int.parse(getFinalQuantity(qtyCtrl.text)
                                                                               .isEmpty
                                                                           ? "0"
-                                                                          : getFinalQuantity(qtyCtrl
-                                                                              .text)) >
-                                                                      frezQty &&
-                                                                  widget.scripInfo
-                                                                          .frzqty !=
-                                                                      null)) {
-                                                                placeOrder(
-                                                                    orderInput,
-                                                                    true,
-                                                                    theme);
-                                                              } else {
-                                                                placeOrder(
-                                                                    orderInput,
-                                                                    false,
-                                                                    theme);
+                                                                          : getFinalQuantity(
+                                                                              qtyCtrl.text));
+                                                                      // frezQty;
+                                                                    } else {
+                                                                      quantity = int.parse(getFinalQuantity(qtyCtrl.text).isEmpty
+                                                                              ? "0"
+                                                                              : getFinalQuantity(qtyCtrl.text)) ~/
+                                                                          frezQty;
+                                                                    }
+                                                                    reminder = int.parse(getFinalQuantity(qtyCtrl.text).isEmpty
+                                                                            ? "0"
+                                                                            : getFinalQuantity(qtyCtrl
+                                                                                .text)) -
+                                                                        (frezQty *
+                                                                            quantity);
+                                                                    maxQty =
+                                                                        frezQty *
+                                                                            frezQtyOrderSliceMaxLimit;
+                                                                  });
+                                                                  if (getFinalQuantity(qtyCtrl.text)
+                                                                          .trim()
+                                                                          .isEmpty ||
+                                                                      priceCtrl.text
+                                                                          .trim()
+                                                                          .isEmpty) {
+                                                                    String fieldName = (_isStock)
+                                                                        ? (_isQtyToAmount
+                                                                            ? "Amount"
+                                                                            : "Quantity")
+                                                                        : (_isLotToQty
+                                                                            ? "Quantity"
+                                                                            : "Lot");
+                                                                    ResponsiveSnackBar.showWarning(
+                                                                        context,
+                                                                        getFinalQuantity(qtyCtrl.text).isEmpty
+                                                                            ? "$fieldName cannot be empty"
+                                                                            : "Price cannot be empty");
+                                                                  } else if ((getFinalQuantity(qtyCtrl.text).trim()) == "0" ||
+                                                                      priceCtrl.text.trim() ==
+                                                                          "0") {
+                                                                    String fieldName = (_isStock)
+                                                                        ? (_isQtyToAmount
+                                                                            ? "Amount"
+                                                                            : "Quantity")
+                                                                        : (_isLotToQty
+                                                                            ? "Quantity"
+                                                                            : "Lot");
+                                                                    ResponsiveSnackBar.showWarning(
+                                                                        context,
+                                                                        getFinalQuantity(qtyCtrl.text) == "0"
+                                                                            ? (_isStock)
+                                                                                ? (_isQtyToAmount ? (qtyCtrl.text != "0" ? "Minimum Allowed Amount should be greater than ${widget.orderArg.ltp}" : "Amount cannot be 0") : "Quantity cannot be 0")
+                                                                                : "$fieldName cannot be 0"
+                                                                            : "Price cannot be 0");
+                                                                  } else if (frezQty > lotSize &&
+                                                                      int.parse(getFinalQuantity(qtyCtrl.text).trim()) >
+                                                                          frezQtyOrderSliceMaxLimit *
+                                                                              frezQty) {
+                                                                    ResponsiveSnackBar.showWarning(
+                                                                        context,
+                                                                        "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}");
+                                                                  } else if ((priceType == "Limit" || priceType == "SL Limit") &&
+                                                                      _hasValidCircuitBreakerValues &&
+                                                                      ((double.parse(ordPrice) < double.parse(widget.scripInfo.lc!)) ||
+                                                                          (double.parse(ordPrice) >
+                                                                              double.parse(widget
+                                                                                  .scripInfo.uc!)))) {
+                                                                    ResponsiveSnackBar.showWarning(
+                                                                        context,
+                                                                        double.parse(ordPrice) <
+                                                                                double.parse(widget.scripInfo.lc!)
+                                                                            ? "Price cannot be lesser than Lower Circuit Limit ${widget.scripInfo.lc}"
+                                                                            : "Price cannot be greater than Upper Circuit Limit ${widget.scripInfo.uc}");
+                                                                  } else if ((orderType == "Delivery" || orderType == "Intraday") &&
+                                                                      (priceType == "SL Limit" ||
+                                                                          priceType ==
+                                                                              "SL MKT")) {
+                                                                    if (triggerPriceCtrl
+                                                                            .text
+                                                                            .isEmpty ||
+                                                                        triggerPriceCtrl.text ==
+                                                                            "0") {
+                                                                      ResponsiveSnackBar.showWarning(
+                                                                          context,
+                                                                          triggerPriceCtrl.text.isEmpty
+                                                                              ? "Trigger cannot be empty"
+                                                                              : "Trigger cannot be 0");
+                                                                    } else {
+                                                                      if (isBuy!) {
+                                                                        if (priceType ==
+                                                                            "SL MKT") {
+                                                                          if (double.parse(triggerPriceCtrl.text) <
+                                                                              double.parse(widget.orderArg.ltp ??
+                                                                                  "0.00")) {
+                                                                            ResponsiveSnackBar.showWarning(context,
+                                                                                "Trigger should be greater than LTP");
+                                                                          } else if (_hasValidCircuitBreakerValues &&
+                                                                              double.parse(triggerPriceCtrl.text) > double.parse(widget.scripInfo.uc!)) {
+                                                                            ResponsiveSnackBar.showWarning(context,
+                                                                                "Trigger cannot be greater than upper circuit limit of ${widget.scripInfo.uc}");
+                                                                          } else {
+                                                                            if ((int.parse(getFinalQuantity(qtyCtrl.text).isEmpty ? "0" : getFinalQuantity(qtyCtrl.text)) > frezQty &&
+                                                                                widget.scripInfo.frzqty != null)) {
+                                                                              placeOrder(orderInput, true, theme);
+                                                                            } else {
+                                                                              placeOrder(orderInput, false, theme);
+                                                                            }
+                                                                          }
+                                                                        } else {
+                                                                          if (_hasValidCircuitBreakerValues &&
+                                                                              double.parse(triggerPriceCtrl.text) < double.parse(widget.scripInfo.lc!)) {
+                                                                            ResponsiveSnackBar.showWarning(context,
+                                                                                "Trigger cannot be lesser than lower circuit limit of ${widget.scripInfo.lc}");
+                                                                          } else if (double.parse(ordPrice) < double.parse(triggerPriceCtrl.text)) {
+                                                                            ResponsiveSnackBar.showWarning(context,
+                                                                                "Trigger should be less than price");
+                                                                          } else if (_hasValidCircuitBreakerValues && double.parse(triggerPriceCtrl.text) > double.parse(widget.scripInfo.uc!)) {
+                                                                            ResponsiveSnackBar.showWarning(context,
+                                                                                "Trigger cannot be greater than upper circuit limit of ${widget.scripInfo.uc}");
+                                                                          } else {
+                                                                            if ((int.parse(getFinalQuantity(qtyCtrl.text).isEmpty ? "0" : getFinalQuantity(qtyCtrl.text)) > frezQty &&
+                                                                                widget.scripInfo.frzqty != null)) {
+                                                                              placeOrder(orderInput, true, theme);
+                                                                            } else {
+                                                                              placeOrder(orderInput, false, theme);
+                                                                            }
+                                                                          }
+                                                                        }
+                                                                      } else {
+                                                                        if (priceType ==
+                                                                            "SL MKT") {
+                                                                          if (double.parse(triggerPriceCtrl.text) >
+                                                                              double.parse(widget.orderArg.ltp ??
+                                                                                  "0.00")) {
+                                                                            ResponsiveSnackBar.showWarning(context,
+                                                                                "Trigger should be lesser than LTP");
+                                                                          } else if (_hasValidCircuitBreakerValues &&
+                                                                              double.parse(triggerPriceCtrl.text) < double.parse(widget.scripInfo.lc!)) {
+                                                                            ResponsiveSnackBar.showWarning(context,
+                                                                                "Trigger cannot be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}");
+                                                                          } else {
+                                                                            if ((int.parse(getFinalQuantity(qtyCtrl.text).isEmpty ? "0" : getFinalQuantity(qtyCtrl.text)) > frezQty &&
+                                                                                widget.scripInfo.frzqty != null)) {
+                                                                              placeOrder(orderInput, true, theme);
+                                                                            } else {
+                                                                              placeOrder(orderInput, false, theme);
+                                                                            }
+                                                                          }
+                                                                        } else {
+                                                                          if (_hasValidCircuitBreakerValues &&
+                                                                              double.parse(triggerPriceCtrl.text) > double.parse(widget.scripInfo.uc!)) {
+                                                                            ResponsiveSnackBar.showWarning(context,
+                                                                                "Trigger cannot be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}");
+                                                                          } else if (double.parse(ordPrice) > double.parse(triggerPriceCtrl.text)) {
+                                                                            ResponsiveSnackBar.showWarning(context,
+                                                                                "Trigger should be greater than price");
+                                                                          } else if (_hasValidCircuitBreakerValues && double.parse(triggerPriceCtrl.text) < double.parse(widget.scripInfo.lc!)) {
+                                                                            ResponsiveSnackBar.showWarning(context,
+                                                                                "Trigger cannot be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}");
+                                                                          } else {
+                                                                            if ((int.parse(getFinalQuantity(qtyCtrl.text).isEmpty ? "0" : getFinalQuantity(qtyCtrl.text)) > frezQty &&
+                                                                                widget.scripInfo.frzqty != null)) {
+                                                                              placeOrder(orderInput, true, theme);
+                                                                            } else {
+                                                                              placeOrder(orderInput, false, theme);
+                                                                            }
+                                                                          }
+                                                                        }
+                                                                      }
+                                                                    }
+                                                                  } else if (_isCoverOrderEnabled &&
+                                                                      orderType == "CO - BO" &&
+                                                                      (priceType == "Limit" || priceType == "Market")) {
+                                                                    if (stopLossCtrl
+                                                                            .text
+                                                                            .isEmpty ||
+                                                                        stopLossCtrl.text ==
+                                                                            "0") {
+                                                                      ResponsiveSnackBar.showWarning(
+                                                                          context,
+                                                                          stopLossCtrl.text.isEmpty
+                                                                              ? "Stoploss cannot be empty"
+                                                                              : "Stoploss cannot be 0");
+                                                                    } else {
+                                                                      if (isBuy!) {
+                                                                        if (_hasValidCircuitBreakerValues &&
+                                                                            (double.parse(ordPrice) - double.parse(stopLossCtrl.text)) <
+                                                                                double.parse(widget.scripInfo.lc!)) {
+                                                                          ResponsiveSnackBar.showWarning(
+                                                                              context,
+                                                                              "Price(Order price - Stoploss = ${(double.parse(ordPrice) - double.parse(stopLossCtrl.text)).toStringAsFixed(2)}) Stoploss cannot be lower than ${widget.scripInfo.lc}");
+                                                                        } else {
+                                                                          if ((int.parse(getFinalQuantity(qtyCtrl.text).isEmpty ? "0" : getFinalQuantity(qtyCtrl.text)) > frezQty &&
+                                                                              widget.scripInfo.frzqty != null)) {
+                                                                            placeOrder(
+                                                                                orderInput,
+                                                                                true,
+                                                                                theme);
+                                                                          } else {
+                                                                            placeOrder(
+                                                                                orderInput,
+                                                                                false,
+                                                                                theme);
+                                                                          }
+                                                                        }
+                                                                      } else {
+                                                                        if (_hasValidCircuitBreakerValues &&
+                                                                            (double.parse(ordPrice) + double.parse(stopLossCtrl.text)) >
+                                                                                double.parse(widget.scripInfo.uc!)) {
+                                                                          ResponsiveSnackBar.showWarning(
+                                                                              context,
+                                                                              "Price(Order price + Stoploss = ${(double.parse(ordPrice) + double.parse(stopLossCtrl.text))}) Stoploss cannot be greater than ${widget.scripInfo.uc}");
+                                                                        } else {
+                                                                          if ((int.parse(getFinalQuantity(qtyCtrl.text).isEmpty ? "0" : getFinalQuantity(qtyCtrl.text)) > frezQty &&
+                                                                              widget.scripInfo.frzqty != null)) {
+                                                                            placeOrder(
+                                                                                orderInput,
+                                                                                true,
+                                                                                theme);
+                                                                          } else {
+                                                                            placeOrder(
+                                                                                orderInput,
+                                                                                false,
+                                                                                theme);
+                                                                          }
+                                                                        }
+                                                                      }
+                                                                    }
+                                                                  } else if (_isCoverOrderEnabled && orderType == "CO - BO" && (priceType == "SL Limit")) {
+                                                                    double
+                                                                        userOrderPrice =
+                                                                        double.tryParse(ordPrice) ??
+                                                                            0;
+                                                                    double
+                                                                        userStopLoss =
+                                                                        double.tryParse(stopLossCtrl.text) ??
+                                                                            0;
+                                                                    double
+                                                                        userTriggerPrice =
+                                                                        double.tryParse(triggerPriceCtrl.text) ??
+                                                                            0;
+                                                                    double lc =
+                                                                        double.tryParse(widget.scripInfo.lc ??
+                                                                                "0") ??
+                                                                            0;
+                                                                    double uc =
+                                                                        double.tryParse(widget.scripInfo.uc ??
+                                                                                "0") ??
+                                                                            0;
+
+                                                                    if (stopLossCtrl
+                                                                            .text
+                                                                            .isEmpty ||
+                                                                        stopLossCtrl.text ==
+                                                                            "0") {
+                                                                      ResponsiveSnackBar.showWarning(
+                                                                          context,
+                                                                          stopLossCtrl.text.isEmpty
+                                                                              ? "Stoploss cannot be empty"
+                                                                              : "Stoploss cannot be 0");
+                                                                    } else if (isBuy! &&
+                                                                        (userOrderPrice -
+                                                                                userStopLoss) <
+                                                                            lc) {
+                                                                      ResponsiveSnackBar.showWarning(
+                                                                          context,
+                                                                          "Price(Order price - Stoploss = ${(double.parse(ordPrice) - double.parse(stopLossCtrl.text)).toStringAsFixed(2)}) Stoploss cannot be lower than ${widget.scripInfo.lc ?? 0.00}");
+                                                                    } else if (!isBuy! &&
+                                                                        (userOrderPrice +
+                                                                                userStopLoss) >
+                                                                            uc) {
+                                                                      ResponsiveSnackBar.showWarning(
+                                                                          context,
+                                                                          "Price(Order price + Stoploss = ${(double.parse(ordPrice) + double.parse(stopLossCtrl.text))}) Stoploss cannot be greater than ${widget.scripInfo.uc ?? 0.00}");
+                                                                    } else if ((triggerPriceCtrl.text.isEmpty ||
+                                                                            triggerPriceCtrl.text ==
+                                                                                "0") &&
+                                                                        priceType ==
+                                                                            "SL Limit") {
+                                                                      ResponsiveSnackBar.showWarning(
+                                                                          context,
+                                                                          triggerPriceCtrl.text.isEmpty
+                                                                              ? "Trigger cannot be empty"
+                                                                              : "Trigger cannot be 0");
+                                                                    } else {
+                                                                      if (isBuy!) {
+                                                                        if (userTriggerPrice <
+                                                                            lc) {
+                                                                          ResponsiveSnackBar.showWarning(
+                                                                              context,
+                                                                              "Trigger cannot be lesser than lower circuit limit of $lc");
+                                                                        } else if (userOrderPrice <
+                                                                            userTriggerPrice) {
+                                                                          ResponsiveSnackBar.showWarning(
+                                                                              context,
+                                                                              "Trigger should be less than price");
+                                                                        } else if (userTriggerPrice >
+                                                                            uc) {
+                                                                          ResponsiveSnackBar.showWarning(
+                                                                              context,
+                                                                              "Trigger cannot be greater than upper circuit limit of $uc");
+                                                                        } else {
+                                                                          if (int.parse(getFinalQuantity(qtyCtrl.text).isEmpty ? "0" : getFinalQuantity(qtyCtrl.text)) > frezQty &&
+                                                                              widget.scripInfo.frzqty != null) {
+                                                                            placeOrder(
+                                                                                orderInput,
+                                                                                true,
+                                                                                theme);
+                                                                          } else {
+                                                                            placeOrder(
+                                                                                orderInput,
+                                                                                false,
+                                                                                theme);
+                                                                          }
+                                                                        }
+                                                                      } else {
+                                                                        if (userTriggerPrice >
+                                                                            uc) {
+                                                                          ResponsiveSnackBar.showWarning(
+                                                                              context,
+                                                                              "Trigger cannot be greater than upper circuit limit of $uc");
+                                                                        } else if (userOrderPrice >
+                                                                            userTriggerPrice) {
+                                                                          ResponsiveSnackBar.showWarning(
+                                                                              context,
+                                                                              "Trigger should be greater than price");
+                                                                        } else if (userTriggerPrice <
+                                                                            lc) {
+                                                                          ResponsiveSnackBar.showWarning(
+                                                                              context,
+                                                                              "Trigger cannot be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}");
+                                                                        } else {
+                                                                          if (int.parse(getFinalQuantity(qtyCtrl.text).isEmpty ? "0" : getFinalQuantity(qtyCtrl.text)) > frezQty &&
+                                                                              widget.scripInfo.frzqty != null) {
+                                                                            placeOrder(
+                                                                                orderInput,
+                                                                                true,
+                                                                                theme);
+                                                                          } else {
+                                                                            placeOrder(
+                                                                                orderInput,
+                                                                                false,
+                                                                                theme);
+                                                                          }
+                                                                        }
+                                                                      }
+                                                                    }
+                                                                  } else if (_isBracketOrderEnabled && orderType == "CO - BO" && (priceType == "Limit" || priceType == "Market")) {
+                                                                    double
+                                                                        tickSize =
+                                                                        double.parse(widget
+                                                                            .scripInfo
+                                                                            .ti
+                                                                            .toString());
+                                                                    double
+                                                                        enteredValue =
+                                                                        double.tryParse(trailingTicksCtrl.text) ??
+                                                                            0;
+                                                                    double
+                                                                        trailTicksQuotient =
+                                                                        enteredValue /
+                                                                            tickSize;
+                                                                    double
+                                                                        trailTicksRemainder =
+                                                                        (trailTicksQuotient -
+                                                                                trailTicksQuotient.round())
+                                                                            .abs();
+
+                                                                    if (stopLossCtrl
+                                                                            .text
+                                                                            .isEmpty ||
+                                                                        targetCtrl
+                                                                            .text
+                                                                            .isEmpty) {
+                                                                      ResponsiveSnackBar.showWarning(
+                                                                          context,
+                                                                          "${targetCtrl.text.isEmpty ? "Target" : "Stoploss"} cannot be empty");
+                                                                    } else if (double.parse(stopLossCtrl.text) <= 0 ||
+                                                                        double.parse(targetCtrl.text) <=
+                                                                            0) {
+                                                                      ResponsiveSnackBar.showWarning(
+                                                                          context,
+                                                                          "${double.parse(targetCtrl.text) <= 0 ? "Target" : "Stoploss"} cannot be 0");
+                                                                    } else if (isBuy! &&
+                                                                        _hasValidCircuitBreakerValues &&
+                                                                        (double.parse(ordPrice) - double.parse(stopLossCtrl.text)) <
+                                                                            double.parse(widget
+                                                                                .scripInfo.lc!)) {
+                                                                      ResponsiveSnackBar.showWarning(
+                                                                          context,
+                                                                          "Price(Order price - Stoploss = ${(double.parse(ordPrice) - double.parse(stopLossCtrl.text)).toStringAsFixed(2)}) Stoploss cannot be lower than ${widget.scripInfo.lc}");
+                                                                    } else if (!isBuy! &&
+                                                                        _hasValidCircuitBreakerValues &&
+                                                                        (double.parse(ordPrice) + double.parse(stopLossCtrl.text)) >
+                                                                            double.parse(widget
+                                                                                .scripInfo.uc!)) {
+                                                                      ResponsiveSnackBar.showWarning(
+                                                                          context,
+                                                                          "Price(Order price + Stoploss = ${(double.parse(ordPrice) + double.parse(stopLossCtrl.text))}) Stoploss cannot be greater than ${widget.scripInfo.uc}");
+                                                                    } else if (trailingTicksCtrl
+                                                                            .text
+                                                                            .isNotEmpty &&
+                                                                        (trailTicksRemainder >
+                                                                            0.0001)) {
+                                                                      ResponsiveSnackBar.showWarning(
+                                                                          context,
+                                                                          "Trailing SL should be in multiples of tick size: $tickSize");
+                                                                    } else if (trailingTicksCtrl
+                                                                            .text
+                                                                            .isNotEmpty &&
+                                                                        (enteredValue <=
+                                                                            0)) {
+                                                                      ResponsiveSnackBar.showWarning(
+                                                                          context,
+                                                                          "Trailing SL should be positive value");
+                                                                    } else {
+                                                                      if ((int.parse(getFinalQuantity(qtyCtrl.text).isEmpty ? "0" : getFinalQuantity(qtyCtrl.text)) >
+                                                                              frezQty &&
+                                                                          widget.scripInfo.frzqty !=
+                                                                              null)) {
+                                                                        placeOrder(
+                                                                            orderInput,
+                                                                            true,
+                                                                            theme);
+                                                                      } else {
+                                                                        placeOrder(
+                                                                            orderInput,
+                                                                            false,
+                                                                            theme);
+                                                                      }
+                                                                    }
+                                                                  } else if (_isBracketOrderEnabled && orderType == "CO - BO" && (priceType == "SL Limit")) {
+                                                                    double
+                                                                        userOrderPrice =
+                                                                        double.tryParse(ordPrice) ??
+                                                                            0;
+                                                                    double
+                                                                        userStopLoss =
+                                                                        double.tryParse(stopLossCtrl.text) ??
+                                                                            0;
+                                                                    double
+                                                                        userTriggerPrice =
+                                                                        double.tryParse(triggerPriceCtrl.text) ??
+                                                                            0;
+                                                                    double lc =
+                                                                        double.tryParse(widget.scripInfo.lc ??
+                                                                                "0") ??
+                                                                            0;
+                                                                    double uc =
+                                                                        double.tryParse(widget.scripInfo.uc ??
+                                                                                "0") ??
+                                                                            0;
+
+                                                                    if (stopLossCtrl
+                                                                            .text
+                                                                            .isEmpty ||
+                                                                        targetCtrl
+                                                                            .text
+                                                                            .isEmpty) {
+                                                                      ResponsiveSnackBar.showWarning(
+                                                                          context,
+                                                                          "${stopLossCtrl.text.isEmpty ? "Stoploss" : "Target"} cannot be empty");
+                                                                    } else if (isBuy! &&
+                                                                        (userOrderPrice -
+                                                                                userStopLoss) <
+                                                                            lc) {
+                                                                      ResponsiveSnackBar.showWarning(
+                                                                          context,
+                                                                          "Price(Order price - Stoploss = ${(double.parse(ordPrice) - double.parse(stopLossCtrl.text)).toStringAsFixed(2)}) Stoploss cannot be lower than ${widget.scripInfo.lc ?? 0.00}");
+                                                                    } else if (!isBuy! &&
+                                                                        (userOrderPrice +
+                                                                                userStopLoss) >
+                                                                            uc) {
+                                                                      ResponsiveSnackBar.showWarning(
+                                                                          context,
+                                                                          "Price(Order price + Stoploss = ${(double.parse(ordPrice) + double.parse(stopLossCtrl.text))}) Stoploss cannot be greater than ${widget.scripInfo.uc ?? 0.00}");
+                                                                    } else if (triggerPriceCtrl
+                                                                            .text
+                                                                            .isEmpty &&
+                                                                        priceType ==
+                                                                            "SL Limit") {
+                                                                      ResponsiveSnackBar.showWarning(
+                                                                          context,
+                                                                          "Trigger cannot be empty");
+                                                                    } else {
+                                                                      if (isBuy!) {
+                                                                        if (userTriggerPrice <
+                                                                            lc) {
+                                                                          ResponsiveSnackBar.showWarning(
+                                                                              context,
+                                                                              "Trigger cannot be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}");
+                                                                        } else if (userOrderPrice <
+                                                                            userTriggerPrice) {
+                                                                          ResponsiveSnackBar.showWarning(
+                                                                              context,
+                                                                              "Trigger should be less than price");
+                                                                        } else if (userTriggerPrice >
+                                                                            uc) {
+                                                                          ResponsiveSnackBar.showWarning(
+                                                                              context,
+                                                                              "Trigger cannot be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}");
+                                                                        } else {
+                                                                          if ((int.parse(getFinalQuantity(qtyCtrl.text).isEmpty ? "0" : getFinalQuantity(qtyCtrl.text)) > frezQty &&
+                                                                              widget.scripInfo.frzqty != null)) {
+                                                                            placeOrder(
+                                                                                orderInput,
+                                                                                true,
+                                                                                theme);
+                                                                          } else {
+                                                                            placeOrder(
+                                                                                orderInput,
+                                                                                false,
+                                                                                theme);
+                                                                          }
+                                                                        }
+                                                                      } else {
+                                                                        if (userTriggerPrice >
+                                                                            uc) {
+                                                                          ResponsiveSnackBar.showWarning(
+                                                                              context,
+                                                                              "Trigger cannot be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}");
+                                                                        } else if (userOrderPrice >
+                                                                            userTriggerPrice) {
+                                                                          ResponsiveSnackBar.showWarning(
+                                                                              context,
+                                                                              "Trigger should be greater than price");
+                                                                        } else if (userTriggerPrice <
+                                                                            lc) {
+                                                                          ResponsiveSnackBar.showWarning(
+                                                                              context,
+                                                                              "Trigger cannot be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}");
+                                                                        } else {
+                                                                          if ((int.parse(getFinalQuantity(qtyCtrl.text).isEmpty ? "0" : getFinalQuantity(qtyCtrl.text)) > frezQty &&
+                                                                              widget.scripInfo.frzqty != null)) {
+                                                                            placeOrder(
+                                                                                orderInput,
+                                                                                true,
+                                                                                theme);
+                                                                          } else {
+                                                                            placeOrder(
+                                                                                orderInput,
+                                                                                false,
+                                                                                theme);
+                                                                          }
+                                                                        }
+                                                                      }
+                                                                    }
+                                                                  } else {
+                                                                    if ((int.parse(getFinalQuantity(qtyCtrl.text).isEmpty ? "0" : getFinalQuantity(qtyCtrl.text)) >
+                                                                            frezQty &&
+                                                                        widget.scripInfo.frzqty !=
+                                                                            null)) {
+                                                                      placeOrder(
+                                                                          orderInput,
+                                                                          true,
+                                                                          theme);
+                                                                    } else {
+                                                                      placeOrder(
+                                                                          orderInput,
+                                                                          false,
+                                                                          theme);
+                                                                    }
+                                                                  }
+                                                                }
                                                               }
-                                                            }
-                                                          } else {
-                                                            if (_hasValidCircuitBreakerValues &&
-                                                                double.parse(
-                                                                        triggerPriceCtrl
-                                                                            .text) <
-                                                                    double.parse(widget
-                                                                        .scripInfo
-                                                                        .lc!)) {
-                                                              ResponsiveSnackBar.showWarning(
-                                                                  context,
-                                                                  "Trigger cannot be lesser than lower circuit limit of ${widget.scripInfo.lc}");
-                                                            } else if (double
-                                                                    .parse(
-                                                                        ordPrice) <
-                                                                double.parse(
-                                                                    triggerPriceCtrl
-                                                                        .text)) {
-                                                              ResponsiveSnackBar.showWarning(
-                                                                  context,
-                                                                  "Trigger should be less than price");
-                                                            } else if (_hasValidCircuitBreakerValues &&
-                                                                double.parse(
-                                                                        triggerPriceCtrl
-                                                                            .text) >
-                                                                    double.parse(widget
-                                                                        .scripInfo
-                                                                        .uc!)) {
-                                                              ResponsiveSnackBar.showWarning(
-                                                                  context,
-                                                                  "Trigger cannot be greater than upper circuit limit of ${widget.scripInfo.uc}");
-                                                            } else {
-                                                              if ((int.parse(getFinalQuantity(qtyCtrl.text)
-                                                                              .isEmpty
-                                                                          ? "0"
-                                                                          : getFinalQuantity(qtyCtrl
-                                                                              .text)) >
-                                                                      frezQty &&
-                                                                  widget.scripInfo
-                                                                          .frzqty !=
-                                                                      null)) {
-                                                                placeOrder(
-                                                                    orderInput,
-                                                                    true,
-                                                                    theme);
-                                                              } else {
-                                                                placeOrder(
-                                                                    orderInput,
-                                                                    false,
-                                                                    theme);
-                                                              }
-                                                            }
-                                                          }
-                                                        } else {
-                                                          if (priceType ==
-                                                              "SL MKT") {
-                                                            if (double.parse(
-                                                                    triggerPriceCtrl
-                                                                        .text) >
-                                                                double.parse(widget
-                                                                        .orderArg
-                                                                        .ltp ??
-                                                                    "0.00")) {
-                                                              ResponsiveSnackBar.showWarning(
-                                                                  context,
-                                                                  "Trigger should be lesser than LTP");
-                                                            } else if (_hasValidCircuitBreakerValues &&
-                                                                double.parse(
-                                                                        triggerPriceCtrl
-                                                                            .text) <
-                                                                    double.parse(widget
-                                                                        .scripInfo
-                                                                        .lc!)) {
-                                                              ResponsiveSnackBar.showWarning(
-                                                                  context,
-                                                                  "Trigger cannot be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}");
-                                                            } else {
-                                                              if ((int.parse(getFinalQuantity(qtyCtrl.text)
-                                                                              .isEmpty
-                                                                          ? "0"
-                                                                          : getFinalQuantity(qtyCtrl
-                                                                              .text)) >
-                                                                      frezQty &&
-                                                                  widget.scripInfo
-                                                                          .frzqty !=
-                                                                      null)) {
-                                                                placeOrder(
-                                                                    orderInput,
-                                                                    true,
-                                                                    theme);
-                                                              } else {
-                                                                placeOrder(
-                                                                    orderInput,
-                                                                    false,
-                                                                    theme);
-                                                              }
-                                                            }
-                                                          } else {
-                                                            if (_hasValidCircuitBreakerValues &&
-                                                                double.parse(
-                                                                        triggerPriceCtrl
-                                                                            .text) >
-                                                                    double.parse(widget
-                                                                        .scripInfo
-                                                                        .uc!)) {
-                                                              ResponsiveSnackBar.showWarning(
-                                                                  context,
-                                                                  "Trigger cannot be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}");
-                                                            } else if (double
-                                                                    .parse(
-                                                                        ordPrice) >
-                                                                double.parse(
-                                                                    triggerPriceCtrl
-                                                                        .text)) {
-                                                              ResponsiveSnackBar.showWarning(
-                                                                  context,
-                                                                  "Trigger should be greater than price");
-                                                            } else if (_hasValidCircuitBreakerValues &&
-                                                                double.parse(
-                                                                        triggerPriceCtrl
-                                                                            .text) <
-                                                                    double.parse(widget
-                                                                        .scripInfo
-                                                                        .lc!)) {
-                                                              ResponsiveSnackBar.showWarning(
-                                                                  context,
-                                                                  "Trigger cannot be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}");
-                                                            } else {
-                                                              if ((int.parse(getFinalQuantity(qtyCtrl.text)
-                                                                              .isEmpty
-                                                                          ? "0"
-                                                                          : getFinalQuantity(qtyCtrl
-                                                                              .text)) >
-                                                                      frezQty &&
-                                                                  widget.scripInfo
-                                                                          .frzqty !=
-                                                                      null)) {
-                                                                placeOrder(
-                                                                    orderInput,
-                                                                    true,
-                                                                    theme);
-                                                              } else {
-                                                                placeOrder(
-                                                                    orderInput,
-                                                                    false,
-                                                                    theme);
-                                                              }
-                                                            }
-                                                          }
-                                                        }
-                                                      }
-                                                    } else if (_isCoverOrderEnabled &&
-                                                        orderType == "CO - BO" &&
-                                                        (priceType == "Limit" || priceType == "Market")) {
-                                                      if (stopLossCtrl
-                                                              .text.isEmpty ||
-                                                          stopLossCtrl.text ==
-                                                              "0") {
-                                                        ResponsiveSnackBar.showWarning(
-                                                            context,
-                                                            stopLossCtrl
-                                                                    .text.isEmpty
-                                                                ? "Stoploss cannot be empty"
-                                                                : "Stoploss cannot be 0");
-                                                      } else {
-                                                        if (isBuy!) {
-                                                          if (_hasValidCircuitBreakerValues &&
-                                                              (double.parse(
-                                                                          ordPrice) -
-                                                                      double.parse(
-                                                                          stopLossCtrl
-                                                                              .text)) <
-                                                                  double.parse(
-                                                                      widget
-                                                                          .scripInfo
-                                                                          .lc!)) {
-                                                            ResponsiveSnackBar.showWarning(
-                                                                context,
-                                                                "Price(Order price - Stoploss = ${(double.parse(ordPrice) - double.parse(stopLossCtrl.text)).toStringAsFixed(2)}) Stoploss cannot be lower than ${widget.scripInfo.lc}");
-                                                          } else {
-                                                            if ((int.parse(getFinalQuantity(qtyCtrl
-                                                                                .text)
-                                                                            .isEmpty
-                                                                        ? "0"
-                                                                        : getFinalQuantity(
-                                                                            qtyCtrl
-                                                                                .text)) >
-                                                                    frezQty &&
-                                                                widget.scripInfo
-                                                                        .frzqty !=
-                                                                    null)) {
-                                                              placeOrder(
-                                                                  orderInput,
-                                                                  true,
-                                                                  theme);
-                                                            } else {
-                                                              placeOrder(
-                                                                  orderInput,
-                                                                  false,
-                                                                  theme);
-                                                            }
-                                                          }
-                                                        } else {
-                                                          if (_hasValidCircuitBreakerValues &&
-                                                              (double.parse(
-                                                                          ordPrice) +
-                                                                      double.parse(
-                                                                          stopLossCtrl
-                                                                              .text)) >
-                                                                  double.parse(
-                                                                      widget
-                                                                          .scripInfo
-                                                                          .uc!)) {
-                                                            ResponsiveSnackBar.showWarning(
-                                                                context,
-                                                                "Price(Order price + Stoploss = ${(double.parse(ordPrice) + double.parse(stopLossCtrl.text))}) Stoploss cannot be greater than ${widget.scripInfo.uc}");
-                                                          } else {
-                                                            if ((int.parse(getFinalQuantity(qtyCtrl
-                                                                                .text)
-                                                                            .isEmpty
-                                                                        ? "0"
-                                                                        : getFinalQuantity(
-                                                                            qtyCtrl
-                                                                                .text)) >
-                                                                    frezQty &&
-                                                                widget.scripInfo
-                                                                        .frzqty !=
-                                                                    null)) {
-                                                              placeOrder(
-                                                                  orderInput,
-                                                                  true,
-                                                                  theme);
-                                                            } else {
-                                                              placeOrder(
-                                                                  orderInput,
-                                                                  false,
-                                                                  theme);
-                                                            }
-                                                          }
-                                                        }
-                                                      }
-                                                    } else if (_isCoverOrderEnabled && orderType == "CO - BO" && (priceType == "SL Limit")) {
-                                                      double userOrderPrice =
-                                                          double.tryParse(
-                                                                  ordPrice) ??
-                                                              0;
-                                                      double userStopLoss =
-                                                          double.tryParse(
-                                                                  stopLossCtrl
-                                                                      .text) ??
-                                                              0;
-                                                      double userTriggerPrice =
-                                                          double.tryParse(
-                                                                  triggerPriceCtrl
-                                                                      .text) ??
-                                                              0;
-                                                      double lc = double.tryParse(
-                                                              widget.scripInfo
-                                                                      .lc ??
-                                                                  "0") ??
-                                                          0;
-                                                      double uc = double.tryParse(
-                                                              widget.scripInfo
-                                                                      .uc ??
-                                                                  "0") ??
-                                                          0;
-                                        
-                                                      if (stopLossCtrl
-                                                              .text.isEmpty ||
-                                                          stopLossCtrl.text ==
-                                                              "0") {
-                                                        ResponsiveSnackBar.showWarning(
-                                                            context,
-                                                            stopLossCtrl
-                                                                    .text.isEmpty
-                                                                ? "Stoploss cannot be empty"
-                                                                : "Stoploss cannot be 0");
-                                                      } else if (isBuy! &&
-                                                          (userOrderPrice -
-                                                                  userStopLoss) <
-                                                              lc) {
-                                                        ResponsiveSnackBar.showWarning(context,
-                                                            "Price(Order price - Stoploss = ${(double.parse(ordPrice) - double.parse(stopLossCtrl.text)).toStringAsFixed(2)}) Stoploss cannot be lower than ${widget.scripInfo.lc ?? 0.00}");
-                                                      } else if (!isBuy! &&
-                                                          (userOrderPrice +
-                                                                  userStopLoss) >
-                                                              uc) {
-                                                        ResponsiveSnackBar.showWarning(context,
-                                                            "Price(Order price + Stoploss = ${(double.parse(ordPrice) + double.parse(stopLossCtrl.text))}) Stoploss cannot be greater than ${widget.scripInfo.uc ?? 0.00}");
-                                                      } else if ((triggerPriceCtrl
-                                                                  .text.isEmpty ||
-                                                              triggerPriceCtrl
-                                                                      .text ==
-                                                                  "0") &&
-                                                          priceType ==
-                                                              "SL Limit") {
-                                                        ResponsiveSnackBar.showWarning(
-                                                            context,
-                                                            triggerPriceCtrl
-                                                                    .text.isEmpty
-                                                                ? "Trigger cannot be empty"
-                                                                : "Trigger cannot be 0");
-                                                      } else {
-                                                        if (isBuy!) {
-                                                          if (userTriggerPrice <
-                                                              lc) {
-                                                            ResponsiveSnackBar.showWarning(
-                                                                context,
-                                                                "Trigger cannot be lesser than lower circuit limit of $lc");
-                                                          } else if (userOrderPrice <
-                                                              userTriggerPrice) {
-                                                            ResponsiveSnackBar.showWarning(
-                                                                context,
-                                                                "Trigger should be less than price");
-                                                          } else if (userTriggerPrice >
-                                                              uc) {
-                                                            ResponsiveSnackBar.showWarning(
-                                                                context,
-                                                                "Trigger cannot be greater than upper circuit limit of $uc");
-                                                          } else {
-                                                            if (int.parse(getFinalQuantity(qtyCtrl
-                                                                                .text)
-                                                                            .isEmpty
-                                                                        ? "0"
-                                                                        : getFinalQuantity(
-                                                                            qtyCtrl
-                                                                                .text)) >
-                                                                    frezQty &&
-                                                                widget.scripInfo
-                                                                        .frzqty !=
-                                                                    null) {
-                                                              placeOrder(
-                                                                  orderInput,
-                                                                  true,
-                                                                  theme);
-                                                            } else {
-                                                              placeOrder(
-                                                                  orderInput,
-                                                                  false,
-                                                                  theme);
-                                                            }
-                                                          }
-                                                        } else {
-                                                          if (userTriggerPrice >
-                                                              uc) {
-                                                            ResponsiveSnackBar.showWarning(
-                                                                context,
-                                                                "Trigger cannot be greater than upper circuit limit of $uc");
-                                                          } else if (userOrderPrice >
-                                                              userTriggerPrice) {
-                                                            ResponsiveSnackBar.showWarning(
-                                                                context,
-                                                                "Trigger should be greater than price");
-                                                          } else if (userTriggerPrice <
-                                                              lc) {
-                                                            ResponsiveSnackBar.showWarning(
-                                                                context,
-                                                                "Trigger cannot be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}");
-                                                          } else {
-                                                            if (int.parse(getFinalQuantity(qtyCtrl
-                                                                                .text)
-                                                                            .isEmpty
-                                                                        ? "0"
-                                                                        : getFinalQuantity(
-                                                                            qtyCtrl
-                                                                                .text)) >
-                                                                    frezQty &&
-                                                                widget.scripInfo
-                                                                        .frzqty !=
-                                                                    null) {
-                                                              placeOrder(
-                                                                  orderInput,
-                                                                  true,
-                                                                  theme);
-                                                            } else {
-                                                              placeOrder(
-                                                                  orderInput,
-                                                                  false,
-                                                                  theme);
-                                                            }
-                                                          }
-                                                        }
-                                                      }
-                                                    } else if (_isBracketOrderEnabled && orderType == "CO - BO" && (priceType == "Limit" || priceType == "Market")) {
-                                                      double tickSize =
-                                                          double.parse(widget
-                                                              .scripInfo.ti
-                                                              .toString());
-                                                      double enteredValue =
-                                                          double.tryParse(
-                                                                  trailingTicksCtrl
-                                                                      .text) ??
-                                                              0;
-                                                      double trailTicksQuotient =
-                                                          enteredValue / tickSize;
-                                                      double trailTicksRemainder =
-                                                          (trailTicksQuotient -
-                                                                  trailTicksQuotient
-                                                                      .round())
-                                                              .abs();
-                                        
-                                                      if (stopLossCtrl.text.isEmpty ||
-                                                          targetCtrl
-                                                              .text.isEmpty) {
-                                                        ResponsiveSnackBar.showWarning(context,
-                                                            "${targetCtrl.text.isEmpty ? "Target" : "Stoploss"} cannot be empty");
-                                                      } else if (double.parse(stopLossCtrl.text) <=
-                                                              0 ||
-                                                          double.parse(targetCtrl.text) <=
-                                                              0) {
-                                                        ResponsiveSnackBar.showWarning(context,
-                                                            "${double.parse(targetCtrl.text) <= 0 ? "Target" : "Stoploss"} cannot be 0");
-                                                      } else if (isBuy! &&
-                                                          _hasValidCircuitBreakerValues &&
-                                                          (double.parse(ordPrice) - double.parse(stopLossCtrl.text)) <
-                                                              double.parse(widget
-                                                                  .scripInfo
-                                                                  .lc!)) {
-                                                        ResponsiveSnackBar.showWarning(context,
-                                                            "Price(Order price - Stoploss = ${(double.parse(ordPrice) - double.parse(stopLossCtrl.text)).toStringAsFixed(2)}) Stoploss cannot be lower than ${widget.scripInfo.lc}");
-                                                      } else if (!isBuy! &&
-                                                          _hasValidCircuitBreakerValues &&
-                                                          (double.parse(ordPrice) + double.parse(stopLossCtrl.text)) >
-                                                              double.parse(widget
-                                                                  .scripInfo
-                                                                  .uc!)) {
-                                                        ResponsiveSnackBar.showWarning(context,
-                                                            "Price(Order price + Stoploss = ${(double.parse(ordPrice) + double.parse(stopLossCtrl.text))}) Stoploss cannot be greater than ${widget.scripInfo.uc}");
-                                                      } else if (trailingTicksCtrl
-                                                              .text.isNotEmpty &&
-                                                          (trailTicksRemainder >
-                                                              0.0001)) {
-                                                        ResponsiveSnackBar.showWarning(context,
-                                                            "Trailing SL should be in multiples of tick size: $tickSize");
-                                                      } else if (trailingTicksCtrl
-                                                              .text.isNotEmpty &&
-                                                          (enteredValue <= 0)) {
-                                                        ResponsiveSnackBar.showWarning(context,
-                                                            "Trailing SL should be positive value");
-                                                      } else {
-                                                        if ((int.parse(getFinalQuantity(
-                                                                            qtyCtrl
-                                                                                .text)
-                                                                        .isEmpty
-                                                                    ? "0"
-                                                                    : getFinalQuantity(
-                                                                        qtyCtrl
-                                                                            .text)) >
-                                                                frezQty &&
-                                                            widget.scripInfo
-                                                                    .frzqty !=
-                                                                null)) {
-                                                          placeOrder(orderInput,
-                                                              true, theme);
-                                                        } else {
-                                                          placeOrder(orderInput,
-                                                              false, theme);
-                                                        }
-                                                      }
-                                                    } else if (_isBracketOrderEnabled && orderType == "CO - BO" && (priceType == "SL Limit")) {
-                                                      double userOrderPrice =
-                                                          double.tryParse(
-                                                                  ordPrice) ??
-                                                              0;
-                                                      double userStopLoss =
-                                                          double.tryParse(
-                                                                  stopLossCtrl
-                                                                      .text) ??
-                                                              0;
-                                                      double userTriggerPrice =
-                                                          double.tryParse(
-                                                                  triggerPriceCtrl
-                                                                      .text) ??
-                                                              0;
-                                                      double lc = double.tryParse(
-                                                              widget.scripInfo
-                                                                      .lc ??
-                                                                  "0") ??
-                                                          0;
-                                                      double uc = double.tryParse(
-                                                              widget.scripInfo
-                                                                      .uc ??
-                                                                  "0") ??
-                                                          0;
-                                        
-                                                      if (stopLossCtrl
-                                                              .text.isEmpty ||
-                                                          targetCtrl
-                                                              .text.isEmpty) {
-                                                        ResponsiveSnackBar.showWarning(context,
-                                                            "${stopLossCtrl.text.isEmpty ? "Stoploss" : "Target"} cannot be empty");
-                                                      } else if (isBuy! &&
-                                                          (userOrderPrice -
-                                                                  userStopLoss) <
-                                                              lc) {
-                                                        ResponsiveSnackBar.showWarning(context,
-                                                            "Price(Order price - Stoploss = ${(double.parse(ordPrice) - double.parse(stopLossCtrl.text)).toStringAsFixed(2)}) Stoploss cannot be lower than ${widget.scripInfo.lc ?? 0.00}");
-                                                      } else if (!isBuy! &&
-                                                          (userOrderPrice +
-                                                                  userStopLoss) >
-                                                              uc) {
-                                                        ResponsiveSnackBar.showWarning(context,
-                                                            "Price(Order price + Stoploss = ${(double.parse(ordPrice) + double.parse(stopLossCtrl.text))}) Stoploss cannot be greater than ${widget.scripInfo.uc ?? 0.00}");
-                                                      } else if (triggerPriceCtrl
-                                                              .text.isEmpty &&
-                                                          priceType ==
-                                                              "SL Limit") {
-                                                        ResponsiveSnackBar.showWarning(context,
-                                                            "Trigger cannot be empty");
-                                                      } else {
-                                                        if (isBuy!) {
-                                                          if (userTriggerPrice <
-                                                              lc) {
-                                                            ResponsiveSnackBar.showWarning(
-                                                                context,
-                                                                "Trigger cannot be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}");
-                                                          } else if (userOrderPrice <
-                                                              userTriggerPrice) {
-                                                            ResponsiveSnackBar.showWarning(
-                                                                context,
-                                                                "Trigger should be less than price");
-                                                          } else if (userTriggerPrice >
-                                                              uc) {
-                                                            ResponsiveSnackBar.showWarning(
-                                                                context,
-                                                                "Trigger cannot be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}");
-                                                          } else {
-                                                            if ((int.parse(getFinalQuantity(qtyCtrl
-                                                                                .text)
-                                                                            .isEmpty
-                                                                        ? "0"
-                                                                        : getFinalQuantity(
-                                                                            qtyCtrl
-                                                                                .text)) >
-                                                                    frezQty &&
-                                                                widget.scripInfo
-                                                                        .frzqty !=
-                                                                    null)) {
-                                                              placeOrder(
-                                                                  orderInput,
-                                                                  true,
-                                                                  theme);
-                                                            } else {
-                                                              placeOrder(
-                                                                  orderInput,
-                                                                  false,
-                                                                  theme);
-                                                            }
-                                                          }
-                                                        } else {
-                                                          if (userTriggerPrice >
-                                                              uc) {
-                                                            ResponsiveSnackBar.showWarning(
-                                                                context,
-                                                                "Trigger cannot be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}");
-                                                          } else if (userOrderPrice >
-                                                              userTriggerPrice) {
-                                                            ResponsiveSnackBar.showWarning(
-                                                                context,
-                                                                "Trigger should be greater than price");
-                                                          } else if (userTriggerPrice <
-                                                              lc) {
-                                                            ResponsiveSnackBar.showWarning(
-                                                                context,
-                                                                "Trigger cannot be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}");
-                                                          } else {
-                                                            if ((int.parse(getFinalQuantity(qtyCtrl
-                                                                                .text)
-                                                                            .isEmpty
-                                                                        ? "0"
-                                                                        : getFinalQuantity(
-                                                                            qtyCtrl
-                                                                                .text)) >
-                                                                    frezQty &&
-                                                                widget.scripInfo
-                                                                        .frzqty !=
-                                                                    null)) {
-                                                              placeOrder(
-                                                                  orderInput,
-                                                                  true,
-                                                                  theme);
-                                                            } else {
-                                                              placeOrder(
-                                                                  orderInput,
-                                                                  false,
-                                                                  theme);
-                                                            }
-                                                          }
-                                                        }
-                                                      }
-                                                    } else {
-                                                      if ((int.parse(getFinalQuantity(
-                                                                          qtyCtrl
-                                                                              .text)
-                                                                      .isEmpty
-                                                                  ? "0"
-                                                                  : getFinalQuantity(
-                                                                      qtyCtrl
-                                                                          .text)) >
-                                                              frezQty &&
-                                                          widget.scripInfo
-                                                                  .frzqty !=
-                                                              null)) {
-                                                        placeOrder(orderInput,
-                                                            true, theme);
-                                                      } else {
-                                                        placeOrder(orderInput,
-                                                            false, theme);
-                                                      }
-                                                    }
-                                                  }
-                                                }
-                                              },
-                                        style: ElevatedButton.styleFrom(
-                                          minimumSize: const Size(0, 40),
-                                          // padding: const EdgeInsets.symmetric(vertical: 15),
-                                          backgroundColor: (widget.isBasket ==
-                                                      "Basket" ||
-                                                  widget.isBasket ==
-                                                      "BasketEdit" ||
-                                                  widget.isBasket == "BasketMode")
-                                              ? colors
-                                                  .primary // Use primary color for basket mode
-                                              : isBuy!
-                                                  ? colors.primary
-                                                  : colors.tertiary,
-                                          // shape: const StadiumBorder()
-                                        ),
-                                        child: orderProvide.orderloader
-                                            ? const SizedBox(
-                                                width: 18,
-                                                height: 20,
-                                                child: CircularProgressIndicator(
-                                                    strokeWidth: 2,
-                                                    color: Color(0xffffffff)),
-                                              )
-                                            : Text(
-                                                (widget.isBasket ==
-                                                            "Basket" ||
-                                                        widget.isBasket ==
-                                                            "BasketEdit" ||
-                                                        widget.isBasket ==
-                                                            "BasketMode")
-                                                    ? widget.isBasket ==
-                                                            "BasketEdit"
-                                                        ? "Edit to Basket"
-                                                        : "Add to Basket"
-                                                    : orderType == "SIP"
-                                                        ? "Create SIP"
-                                                        : isBuy!
-                                                            ? 'Buy'
-                                                            : "Sell",
-                                                style: WebTextStyles.buttonMd(
-                                                  isDarkTheme: theme.isDarkMode,
-                                                  color: theme.isDarkMode
-                                                      ? orderType == "SIP"
-                                                          ? WebDarkColors.background
-                                                          : WebDarkColors.textPrimary
-                                                      : WebColors.background,
-                                                )),
-                                              ),
+                                                            },
+                                                      style: ElevatedButton
+                                                          .styleFrom(
+                                                        minimumSize:
+                                                            const Size(0, 40),
+                                                        // padding: const EdgeInsets.symmetric(vertical: 15),
+                                                        backgroundColor: (widget
+                                                                        .isBasket ==
+                                                                    "Basket" ||
+                                                                widget.isBasket ==
+                                                                    "BasketEdit" ||
+                                                                widget.isBasket ==
+                                                                    "BasketMode")
+                                                            ? colors
+                                                                .primary // Use primary color for basket mode
+                                                            : isBuy!
+                                                                ? colors.primary
+                                                                : colors
+                                                                    .tertiary,
+                                                        // shape: const StadiumBorder()
+                                                      ),
+                                                      child: orderProvide
+                                                              .orderloader
+                                                          ? const SizedBox(
+                                                              width: 18,
+                                                              height: 20,
+                                                              child: CircularProgressIndicator(
+                                                                  strokeWidth:
+                                                                      2,
+                                                                  color: Color(
+                                                                      0xffffffff)),
+                                                            )
+                                                          : Text(
+                                                              (widget.isBasket == "Basket" ||
+                                                                      widget.isBasket ==
+                                                                          "BasketEdit" ||
+                                                                      widget.isBasket ==
+                                                                          "BasketMode")
+                                                                  ? widget.isBasket ==
+                                                                          "BasketEdit"
+                                                                      ? "Edit to Basket"
+                                                                      : "Add to Basket"
+                                                                  : orderType ==
+                                                                          "SIP"
+                                                                      ? "Create SIP"
+                                                                      : isBuy!
+                                                                          ? 'Buy'
+                                                                          : "Sell",
+                                                              style:
+                                                                  WebTextStyles
+                                                                      .buttonMd(
+                                                                isDarkTheme: theme
+                                                                    .isDarkMode,
+                                                                color: theme
+                                                                        .isDarkMode
+                                                                    ? orderType ==
+                                                                            "SIP"
+                                                                        ? WebDarkColors
+                                                                            .background
+                                                                        : WebDarkColors
+                                                                            .textPrimary
+                                                                    : WebColors
+                                                                        .background,
+                                                              )),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
                                             ),
-                                          ),
-                                        ],
-                                                                            ),
-                                      );
-                                  },
-                                ),
-                                  // if (defaultTargetPlatform ==
-                                  //     TargetPlatform.iOS)
-                                  // const SizedBox(height: 10)
-                                ]
-                              ]))
-                    ]),
-                // bottomNavigationBar:
-              )),
+                                          );
+                                        },
+                                      ),
+                                      // if (defaultTargetPlatform ==
+                                      //     TargetPlatform.iOS)
+                                      // const SizedBox(height: 10)
+                                    ]
+                                  ]))
+                        ]),
+                    // bottomNavigationBar:
+                  )),
             ],
           );
         },
@@ -6291,27 +6488,26 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                       ? WebDarkColors.secondary
                                       : WebColors.secondary,
                           shape: const RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.all(Radius.circular(5)),
+                            borderRadius: BorderRadius.all(Radius.circular(5)),
                           )
                           //   const StadiumBorder()
                           ),
                       child: Text(
-                          validityTypes[index],
-                          style: WebTextStyles.formInput(
-                            isDarkTheme: theme.isDarkMode,
-                            color: !theme.isDarkMode
-                                ? validityType != validityTypes[index]
-                                    ? WebColors.textSecondary
-                                    : WebColors.background
-                                : validityType != validityTypes[index]
-                                    ? WebDarkColors.textSecondary
-                                    : WebDarkColors.background,
-                            fontWeight: validityType == validityTypes[index]
-                                ? WebFonts.medium
-                                : WebFonts.regular,
-                          ),
-                          overflow: TextOverflow.ellipsis,
+                        validityTypes[index],
+                        style: WebTextStyles.formInput(
+                          isDarkTheme: theme.isDarkMode,
+                          color: !theme.isDarkMode
+                              ? validityType != validityTypes[index]
+                                  ? WebColors.textSecondary
+                                  : WebColors.background
+                              : validityType != validityTypes[index]
+                                  ? WebDarkColors.textSecondary
+                                  : WebDarkColors.background,
+                          fontWeight: validityType == validityTypes[index]
+                              ? WebFonts.medium
+                              : WebFonts.regular,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     );
                   },
@@ -6332,97 +6528,96 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
             child: Semantics(
               identifier: "Disclosed Qty",
               child: CustomTextFormField(
-                        fillColor: theme.isDarkMode
-                                                            ? colors.darkGrey
-                                                            : const Color(
-                                                                0xffF1F3F8),
-                        hintText: "0",
-                        hintStyle: WebTextStyles.formInput(
-                          isDarkTheme: theme.isDarkMode,
-                          color: theme.isDarkMode
-                              ? WebDarkColors.textSecondary
-                              : WebColors.textSecondary,
-                        ),
-                        inputFormate: [FilteringTextInputFormatter.digitsOnly],
-                        keyboardType: TextInputType.number,
-                        style: WebTextStyles.formInput(
-                          isDarkTheme: theme.isDarkMode,
-                          color: theme.isDarkMode
-                              ? WebDarkColors.textPrimary
-                              : WebColors.textPrimary,
-                        ),
-                        // prefixIcon: InkWell(
-                        //   onTap: () {
-                        //     setState(() {
-                        //       if (discQtyCtrl
-                        //           .text
-                        //           .isNotEmpty) {
-                        //         if (int.parse(
-                        //                 discQtyCtrl
-                        //                     .text) >
-                        //             0) {
-                        //           discQtyCtrl
-                        //                   .text =
-                        //               (int.parse(discQtyCtrl.text) -
-                        //                       1)
-                        //                   .toString();
-                        //         } else {
-                        //           discQtyCtrl
-                        //                   .text =
-                        //               "0";
-                        //         }
-                        //       } else {
-                        //         discQtyCtrl
-                        //             .text = "0";
-                        //       }
-                        //     });
-                        //   },
-                        //   child: SvgPicture.asset(
-                        //       theme.isDarkMode
-                        //           ? assets
-                        //               .darkCMinus
-                        //           : assets
-                        //               .minusIcon,
-                        //       fit: BoxFit
-                        //           .scaleDown),
-                        // ),
-                        // suffixIcon: InkWell(
-                        //   onTap: () {
-                        //     setState(() {
-                        //       int number =
-                        //           int.parse(
-                        //               discQtyCtrl
-                        //                   .text);
-                        //       if (discQtyCtrl
-                        //           .text
-                        //           .isNotEmpty) {
-                        //         if (number <
-                        //             9999999999) {
-                        //           discQtyCtrl
-                        //                   .text =
-                        //               (int.parse(discQtyCtrl.text) +
-                        //                       1)
-                        //                   .toString();
-                        //         }
-                        //       } else {
-                        //         discQtyCtrl
-                        //             .text = "0";
-                        //       }
-                        //     });
-                        //   },
-                        //   child: SvgPicture.asset(
-                        //       theme.isDarkMode
-                        //           ? assets
-                        //               .darkAdd
-                        //           : assets
-                        //               .addIcon,
-                        //       fit: BoxFit
-                        //           .scaleDown),
-                        // ),
-                        textCtrl: discQtyCtrl,
-                        textAlign: TextAlign.start),
+                  fillColor: theme.isDarkMode
+                      ? colors.darkGrey
+                      : const Color(0xffF1F3F8),
+                  hintText: "0",
+                  hintStyle: WebTextStyles.formInput(
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode
+                        ? WebDarkColors.textSecondary
+                        : WebColors.textSecondary,
                   ),
-                ),
+                  inputFormate: [FilteringTextInputFormatter.digitsOnly],
+                  keyboardType: TextInputType.number,
+                  style: WebTextStyles.formInput(
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode
+                        ? WebDarkColors.textPrimary
+                        : WebColors.textPrimary,
+                  ),
+                  // prefixIcon: InkWell(
+                  //   onTap: () {
+                  //     setState(() {
+                  //       if (discQtyCtrl
+                  //           .text
+                  //           .isNotEmpty) {
+                  //         if (int.parse(
+                  //                 discQtyCtrl
+                  //                     .text) >
+                  //             0) {
+                  //           discQtyCtrl
+                  //                   .text =
+                  //               (int.parse(discQtyCtrl.text) -
+                  //                       1)
+                  //                   .toString();
+                  //         } else {
+                  //           discQtyCtrl
+                  //                   .text =
+                  //               "0";
+                  //         }
+                  //       } else {
+                  //         discQtyCtrl
+                  //             .text = "0";
+                  //       }
+                  //     });
+                  //   },
+                  //   child: SvgPicture.asset(
+                  //       theme.isDarkMode
+                  //           ? assets
+                  //               .darkCMinus
+                  //           : assets
+                  //               .minusIcon,
+                  //       fit: BoxFit
+                  //           .scaleDown),
+                  // ),
+                  // suffixIcon: InkWell(
+                  //   onTap: () {
+                  //     setState(() {
+                  //       int number =
+                  //           int.parse(
+                  //               discQtyCtrl
+                  //                   .text);
+                  //       if (discQtyCtrl
+                  //           .text
+                  //           .isNotEmpty) {
+                  //         if (number <
+                  //             9999999999) {
+                  //           discQtyCtrl
+                  //                   .text =
+                  //               (int.parse(discQtyCtrl.text) +
+                  //                       1)
+                  //                   .toString();
+                  //         }
+                  //       } else {
+                  //         discQtyCtrl
+                  //             .text = "0";
+                  //       }
+                  //     });
+                  //   },
+                  //   child: SvgPicture.asset(
+                  //       theme.isDarkMode
+                  //           ? assets
+                  //               .darkAdd
+                  //           : assets
+                  //               .addIcon,
+                  //       fit: BoxFit
+                  //           .scaleDown),
+                  // ),
+                  textCtrl: discQtyCtrl,
+                  textAlign: TextAlign.start),
+            ),
+          ),
         ],
       ),
     );
@@ -6449,10 +6644,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                           FilteringTextInputFormatter.allow(
                               RegExp(r'^\d*\.?\d{0,2}$'))
                         ],
-                       fillColor: theme.isDarkMode
-                                                            ? colors.darkGrey
-                                                            : const Color(
-                                                                0xffF1F3F8),
+                        fillColor: theme.isDarkMode
+                            ? colors.darkGrey
+                            : const Color(0xffF1F3F8),
                         hintText: "0.00",
                         hintStyle: WebTextStyles.formInput(
                           isDarkTheme: theme.isDarkMode,
@@ -6479,9 +6673,11 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                           if (value.isNotEmpty && value != "0") {
                             marginUpdate();
                           } else if (value == "0") {
-                            ResponsiveSnackBar.showWarning(context, "Trigger cannot be 0");
+                            ResponsiveSnackBar.showWarning(
+                                context, "Trigger cannot be 0");
                           } else {
-                            ResponsiveSnackBar.showWarning(context, "Trigger cannot be empty");
+                            ResponsiveSnackBar.showWarning(
+                                context, "Trigger cannot be empty");
                           }
                         },
                         keyboardType: const TextInputType.numberWithOptions(
@@ -6527,9 +6723,8 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                           RegExp(r'^\d*\.?\d{0,2}$'))
                     ],
                     fillColor: theme.isDarkMode
-                                                            ? colors.darkGrey
-                                                            : const Color(
-                                                                0xffF1F3F8),
+                        ? colors.darkGrey
+                        : const Color(0xffF1F3F8),
                     hintText: "0.00",
                     onChanged: (value) {
                       if (value.isNotEmpty && double.parse(value) > 0) {
@@ -6547,9 +6742,11 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                       }
 
                       if (value.isEmpty) {
-                        ResponsiveSnackBar.showWarning(context, "Target cannot be empty");
+                        ResponsiveSnackBar.showWarning(
+                            context, "Target cannot be empty");
                       } else if (value.isNotEmpty && double.parse(value) <= 0) {
-                        ResponsiveSnackBar.showWarning(context, "Target cannot be 0");
+                        ResponsiveSnackBar.showWarning(
+                            context, "Target cannot be 0");
                       }
                     },
                     hintStyle: WebTextStyles.formInput(
@@ -6599,10 +6796,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                       FilteringTextInputFormatter.allow(
                           RegExp(r'^\d*\.?\d{0,2}$'))
                     ],
-                   fillColor: theme.isDarkMode
-                                                            ? colors.darkGrey
-                                                            : const Color(
-                                                                0xffF1F3F8),
+                    fillColor: theme.isDarkMode
+                        ? colors.darkGrey
+                        : const Color(0xffF1F3F8),
                     onChanged: (value) {
                       if (value.isNotEmpty && double.parse(value) > 0) {
                         final regex = RegExp(
@@ -6618,9 +6814,11 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                         }
                       }
                       if (value.isEmpty) {
-                        ResponsiveSnackBar.showWarning(context, "Stoploss cannot be empty");
+                        ResponsiveSnackBar.showWarning(
+                            context, "Stoploss cannot be empty");
                       } else if (value.isNotEmpty && double.parse(value) <= 0) {
-                        ResponsiveSnackBar.showWarning(context, "Stoploss cannot be 0");
+                        ResponsiveSnackBar.showWarning(
+                            context, "Stoploss cannot be 0");
                       }
                     },
                     hintText: "0.00",
@@ -6671,10 +6869,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                       FilteringTextInputFormatter.allow(
                           RegExp(r'^\d*\.?\d{0,2}$'))
                     ],
-                   fillColor: theme.isDarkMode
-                                                            ? colors.darkGrey
-                                                            : const Color(
-                                                                0xffF1F3F8),
+                    fillColor: theme.isDarkMode
+                        ? colors.darkGrey
+                        : const Color(0xffF1F3F8),
                     hintText: "0.00",
                     onChanged: (value) {
                       if (value.isNotEmpty) {
@@ -6698,7 +6895,8 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                         }
                       }
                       if (value.isEmpty) {
-                        ResponsiveSnackBar.showWarning(context, "Trailing SL cannot be empty");
+                        ResponsiveSnackBar.showWarning(
+                            context, "Trailing SL cannot be empty");
                       }
                     },
                     hintStyle: WebTextStyles.formInput(
@@ -6732,8 +6930,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
         children: [
           Row(
             children: [
-              Text(
-                  "Market Protected by",
+              Text("Market Protected by",
                   style: WebTextStyles.sub(
                     isDarkTheme: theme.isDarkMode,
                     color: theme.isDarkMode
@@ -6807,8 +7004,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                               content: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                      'Enter Market Protection',
+                                  Text('Enter Market Protection',
                                       style: WebTextStyles.formLabel(
                                         isDarkTheme: theme.isDarkMode,
                                         color: theme.isDarkMode
@@ -6956,8 +7152,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                       backgroundColor: colors
                                           .primaryDark, // Transparent background
                                     ),
-                                    child: Text(
-                                        "OK",
+                                    child: Text("OK",
                                         style: WebTextStyles.buttonMd(
                                           isDarkTheme: theme.isDarkMode,
                                           color: WebColors.background,
@@ -7101,7 +7296,8 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                 double.parse(mktProtCtrl.text.toString()) > 20 ||
                 double.parse(mktProtCtrl.text.toString()) < 1)) {
           placeorder = false;
-          ResponsiveSnackBar.showWarning(context, "Market Protection between 1% to 20%");
+          ResponsiveSnackBar.showWarning(
+              context, "Market Protection between 1% to 20%");
         }
         if (!isSecu) {
           placeorder = false;
@@ -7245,7 +7441,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
     // Show surveillance dialog as overlay entry above the order screen
     final overlay = Overlay.of(context, rootOverlay: true);
     late OverlayEntry surveillanceOverlayEntry;
-    
+
     surveillanceOverlayEntry = OverlayEntry(
       builder: (overlayContext) => Consumer(
         builder: (context, ref, _) {
@@ -7353,7 +7549,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                quotemsg.isNotEmpty ? quotemsg : 'Security is under surveillance. Would you like to continue?',
+                                quotemsg.isNotEmpty
+                                    ? quotemsg
+                                    : 'Security is under surveillance. Would you like to continue?',
                                 style: WebTextStyles.custom(
                                   fontSize: 13,
                                   isDarkTheme: currentTheme.isDarkMode,
@@ -7377,10 +7575,14 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                       });
                                       await action();
                                       // Close the place order dialog after order is placed
-                                      final closeNotifier = _PlaceOrderDialogCloseNotifier.of(context);
+                                      final closeNotifier =
+                                          _PlaceOrderDialogCloseNotifier.of(
+                                              context);
                                       if (closeNotifier != null) {
                                         // Add a small delay to allow order confirmation dialog to appear first
-                                        Future.delayed(const Duration(milliseconds: 300), () {
+                                        Future.delayed(
+                                            const Duration(milliseconds: 300),
+                                            () {
                                           if (mounted) {
                                             closeNotifier.onClose();
                                           }
@@ -7421,9 +7623,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
         },
       ),
     );
-    
+
     overlay.insert(surveillanceOverlayEntry);
-    
+
     setState(() {
       _pendingSurveillanceAction = () async {
         setState(() {
@@ -7456,16 +7658,16 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
             ? orderInput.trgPrcCtrl.text
             : "",
         alid: '');
-    
+
     // Get close callback before async call
     final closeNotifier = _PlaceOrderDialogCloseNotifier.of(context);
-    
+
     await ref.read(orderProvider).placeGTTOrder(input, context);
-    
+
     // Check if placement was successful
     final placeResult = ref.read(orderProvider).placeGttOrderModel;
     final wasSuccessful = placeResult?.stat == "OI created";
-    
+
     // Close the draggable dialog immediately if placement was successful
     if (wasSuccessful && closeNotifier != null && mounted) {
       // Close immediately - don't wait
@@ -7506,16 +7708,16 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
             ? orderInput.ocoTrgPrcCtrl.text
             : "",
         alid: '');
-    
+
     // Get close callback before async call
     final closeNotifier = _PlaceOrderDialogCloseNotifier.of(context);
-    
+
     await ref.read(orderProvider).placeOCOOrder(input, context);
-    
+
     // Check if placement was successful
     final placeResult = ref.read(orderProvider).placeGttOrderModel;
     final wasSuccessful = placeResult?.stat == "OI created";
-    
+
     // Close the draggable dialog immediately if placement was successful
     if (wasSuccessful && closeNotifier != null && mounted) {
       // Close immediately - don't wait
@@ -7525,6 +7727,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
 
   addBasketScrip(
       OrderInputProvider orderInput, String bsktName, bool stay) async {
+    // Get close callback before async operations
+    final closeNotifier = _PlaceOrderDialogCloseNotifier.of(context);
+    
     Map<String, dynamic> data = {};
     String curDate = convDateWithTime();
 
@@ -7533,8 +7738,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
     final lotSizeVal = lotSize;
 
     if (quantity % lotSizeVal != 0) {
-      ResponsiveSnackBar.showError(
-          context,
+      ResponsiveSnackBar.showError(context,
           "Quantity must be multiple of lot size ($lotSizeVal). Current: $quantity");
       return; // Exit the function without adding to basket
     }
@@ -7581,8 +7785,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
     int newOrders = splitQuantities.length;
 
     if (currentBasketOrders + newOrders > frezQtyOrderSliceMaxLimit) {
-      ResponsiveSnackBar.showError(
-          context,
+      ResponsiveSnackBar.showError(context,
           "Cannot add to basket. Total orders would be ${currentBasketOrders + newOrders}, which exceeds the maximum limit of $frezQtyOrderSliceMaxLimit orders.");
       return; // Exit the function without adding to basket
     }
@@ -7672,9 +7875,10 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
     }
 
     await ref.read(orderProvider).fetchBasketMargin();
-    Navigator.pop(context);
-    if (stay) {
-      Navigator.pop(context);
+    
+    // Close the order screen overlay (not the basket dialog)
+    if (closeNotifier != null && mounted) {
+      closeNotifier.onClose();
     }
   }
 
@@ -7797,10 +8001,12 @@ class _DraggablePlaceOrderScreenDialog extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<_DraggablePlaceOrderScreenDialog> createState() => _DraggablePlaceOrderScreenDialogState();
+  ConsumerState<_DraggablePlaceOrderScreenDialog> createState() =>
+      _DraggablePlaceOrderScreenDialogState();
 }
 
-class _DraggablePlaceOrderScreenDialogState extends ConsumerState<_DraggablePlaceOrderScreenDialog> {
+class _DraggablePlaceOrderScreenDialogState
+    extends ConsumerState<_DraggablePlaceOrderScreenDialog> {
   late Offset _position;
   bool _isDragging = false;
 
@@ -7808,7 +8014,7 @@ class _DraggablePlaceOrderScreenDialogState extends ConsumerState<_DraggablePlac
   void initState() {
     super.initState();
     _position = widget.initialPosition;
-    
+
     // Listen for navigation changes (when confirmation screen appears)
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _listenForNavigationChanges();
@@ -7822,25 +8028,26 @@ class _DraggablePlaceOrderScreenDialogState extends ConsumerState<_DraggablePlac
         timer.cancel();
         return;
       }
-      
+
       // Stop checking after 30 seconds to prevent memory leaks
-      if (timer.tick > 150) { // 30 seconds
+      if (timer.tick > 150) {
+        // 30 seconds
         timer.cancel();
         return;
       }
-      
+
       // Check if a new route has been pushed (like confirmation screen)
       final navigator = Navigator.of(context, rootNavigator: true);
       if (navigator.canPop()) {
         // Get the current route to check if it's a confirmation screen
         final currentRoute = ModalRoute.of(context);
         final routeName = currentRoute?.settings.name;
-        
+
         // Don't close for surveillance dialogs or other temporary dialogs
         // Only close for actual confirmation screens or permanent navigation
-        if (routeName != null && 
-            (routeName.contains('confirmation') || 
-             routeName.contains('order_confirmation'))) {
+        if (routeName != null &&
+            (routeName.contains('confirmation') ||
+                routeName.contains('order_confirmation'))) {
           // Close this dialog after a short delay to allow the confirmation to fully appear
           Timer(const Duration(milliseconds: 300), () {
             if (mounted) {
@@ -7878,14 +8085,18 @@ class _DraggablePlaceOrderScreenDialogState extends ConsumerState<_DraggablePlac
             child: Material(
               elevation: _isDragging ? 16 : 8,
               borderRadius: BorderRadius.circular(5),
-              color: theme.isDarkMode ? WebDarkColors.background : WebColors.background,
+              color: theme.isDarkMode
+                  ? WebDarkColors.background
+                  : WebColors.background,
               child: Container(
                 width: dialogWidth,
                 height: dialogHeight,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(5),
                   border: Border.all(
-                    color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
+                    color: theme.isDarkMode
+                        ? WebDarkColors.divider
+                        : WebColors.divider,
                   ),
                 ),
                 child: _PlaceOrderDialogCloseNotifier(
