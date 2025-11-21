@@ -600,7 +600,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                 Row(
                                   crossAxisAlignment: CrossAxisAlignment.end, mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                  children: [
-                                  OrderScreenHeader(headerData: (stockExchangeSelected.exch == null)? widget.orderArg:widget.orderArg),
+                                  OrderScreenHeader(headerData: (stockExchangeSelected.exch == null)? widget.orderArg:selectedStockSubscribe),
                               
                                 ])
                               ]),
@@ -621,6 +621,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                   selectedStockSubscribe.exchange=stockExchangeSelected.exch??"";
                                                   selectedStockSubscribe.token=stockExchangeSelected.token??"";
                                                   selectedStockSubscribe.tSym=stockExchangeSelected.tsym??"";
+                                                  widget.scripInfo.exch = stockExchangeSelected.exch??"";
+                                                  widget.scripInfo.token = stockExchangeSelected.token??"";
+                                                  widget.scripInfo.tsym = stockExchangeSelected.tsym??"";
                                                   _subscribeSelectedStock(context);
                                                 });
                                               },
