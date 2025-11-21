@@ -875,13 +875,13 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     singlePageloader(false);
     await fetchScripQuote("${flow ? raw['token'] : raw.token}",
         "${flow ? raw['exch'] : raw.exch}", context);
-    if (getOptionawait(
-        flow ? raw['exch'] : raw.exch, flow ? raw['token'] : raw.token)) {
+    // if (getOptionawait(
+    //     flow ? raw['exch'] : raw.exch, flow ? raw['token'] : raw.token)) {
       await fetchScripInfo("${flow ? raw['token'] : raw.token}",
           "${flow ? raw['exch'] : raw.exch}", context);
       await fetchLinkeScrip("${flow ? raw['token'] : raw.token}",
           "${flow ? raw['exch'] : raw.exch}", context);
-    }
+    // }
 
     if (((flow ? raw['exch'] : raw.exch) == "NSE" ||
         (flow ? raw['exch'] : raw.exch) == "BSE")) {
@@ -2236,7 +2236,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       //   }
       // ];
       if (storeQuotes.containsKey(token) && storeQuotes[token]?['l'] != null) {
-        print('qqq ls if ');
+        print('[fetchLinkeScrip] storeQuotes has script ');
         ConstantName.sessCheck = true;
         _linkedScrips = storeQuotes[token]?['l']['all'];
         _equls = storeQuotes[token]?['l']['eq'];
@@ -2254,7 +2254,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           __futExch = "${_fut![0].exch}";
         }
       } else {
-        print('qqq ls else');
+        print('[fetchLinkeScrip] on storeQuotes script not found');
         _linkedScrips = await api.getLinkedScrip(token, exch);
         if (_linkedScrips!.stat == "Ok") {
           ConstantName.sessCheck = true;

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
+import 'package:mynt_plus/models/marketwatch_model/linked_scrips.dart';
 import '../../utils/url_utils.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -64,6 +65,12 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
   bool isAvbSecu = false;
   bool isSecu = false;
 
+    // final quote = ref.read(marketWatchProvider).getQuotes?.ordMsg;
+  List<Equls> _stockExchangesList = [];
+  Equls stockExchangeSelected = Equls();
+  OrderScreenArgs selectedStockSubscribe = OrderScreenArgs(exchange:"",token:"",tSym:"",prd:"",transType:true,perChange:"",lotSize:"",ltp:"",isExit:false,orderTpye:"",isModify:false,raw:{},holdQty:"");
+
+
   late AnimationController anibuildctrl;
   // late Animation<double> _shakeAnimation;
   TextEditingController priceCtrl = TextEditingController();
@@ -102,7 +109,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
   bool isGtt = true;
 
   // List<String> validityTypesGTT = ["DAY", "GTT"];
-  bool _isStock =true;
+  bool _isStock = true;
   int lotSize = 0;
   int multiplayer = 0;
   String ordPrice = "0.00";
@@ -138,6 +145,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
   @override
   void initState() {
     ref.read(fundProvider).fetchFunds(context);
+    _stockExchangesList = ref.read(marketWatchProvider).equls??[];
 
     userOrderPreference = ref.read(authProvider).savedOrderPreference;
     if (userOrderPreference.isNotEmpty && !widget.orderArg.isModify) {
@@ -150,7 +158,17 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
     bool prdcheck = widget.orderArg.prd?.isNotEmpty ?? false;
     
     _isStock = widget.scripInfo.exch == "NSE" || widget.scripInfo.exch == "BSE";
-
+      if(_isStock && _stockExchangesList.isNotEmpty){
+        // Filter the exchange list to find the matching exchange
+        final matchingExchange = _stockExchangesList.firstWhere(
+          (exchange) => exchange.exch == widget.scripInfo.exch,
+          orElse: () => _stockExchangesList[0],
+        );
+        stockExchangeSelected = matchingExchange;
+        selectedStockSubscribe.exchange=stockExchangeSelected.exch??"";
+        selectedStockSubscribe.token=stockExchangeSelected.token??"";
+        selectedStockSubscribe.tSym=stockExchangeSelected.tsym??"";
+      }
     orderType = prdcheck // ① honour prd
         ? {"C": "Delivery", "I": "Intraday", "F": "MTF"}[widget.orderArg.prd] ?? "Delivery"
         : checkRawValue // ② old logic
@@ -522,120 +540,143 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                       elevation: .4,
                       title: Container(
                         margin: const EdgeInsets.only(right: 10),
-                        child: Column(children: [
-                          Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
-                            TextWidget.titleText(
-                              text: "${widget.scripInfo.symbol!.replaceAll("-EQ", "")} ",
-                              theme: theme.isDarkMode,
-                              color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                              maxLines: 1,
-                              textOverflow: TextOverflow.ellipsis,
-                              fw: 0,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                children: [
+                                Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                  TextWidget.titleText(
+                                    text: (stockExchangeSelected.tsym == null)? widget.scripInfo.symbol!.replaceAll("-EQ", "") : stockExchangeSelected.tsym!.replaceAll("-EQ", ""),
+                                    theme: theme.isDarkMode,
+                                    color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                                    maxLines: 1,
+                                    textOverflow: TextOverflow.ellipsis,
+                                    fw: 0,
+                                  ),
+                                  if (widget.scripInfo.expDate!.isNotEmpty)
+                                    TextWidget.titleText(
+                                      text: " ${widget.scripInfo.expDate} ",
+                                      theme: theme.isDarkMode,
+                                      color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                                      maxLines: 1,
+                                      textOverflow: TextOverflow.ellipsis,
+                                      fw: 0,
+                                    ),
+                              
+                                  if (widget.scripInfo.option!.isNotEmpty)
+                                    TextWidget.titleText(
+                                      text: widget.scripInfo.option!,
+                                      theme: theme.isDarkMode,
+                                      color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                                      maxLines: 1,
+                                      textOverflow: TextOverflow.ellipsis,
+                                      fw: 0,
+                                    ),
+                              
+                                  // Text(widget.scripInfo.option!,
+                                  //     style: textStyle(
+                                  //         theme.isDarkMode
+                                  //             ? colors.colorWhite
+                                  //             : colors.colorBlack,
+                                  //         14,
+                                  //         FontWeight.w400),
+                                  //     overflow: TextOverflow.ellipsis,
+                                  //     maxLines: 1),
+                                  // CustomExchBadge(
+                                  //     exch: " ${widget.scripInfo.exch}"),
+                              
+                                  TextWidget.titleText(
+                                    fw: 0,
+                                    text: (stockExchangeSelected.tsym == null)?" ${widget.scripInfo.exch}":' ${stockExchangeSelected.exch??""}',
+                                    textOverflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                    color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                                    theme: false,
+                                  ),
+                                ]),
+                                const SizedBox(height: 4),
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.end, mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                 children: [
+                                  OrderScreenHeader(headerData: (stockExchangeSelected.exch == null)? widget.orderArg:widget.orderArg),
+                              
+                                ])
+                              ]),
                             ),
-
-                            // Text(
-                            //     "${widget.scripInfo.symbol!.replaceAll("-EQ", "")} ",
-                            //     style: textStyle(
-                            //         theme.isDarkMode
-                            //             ? colors.colorWhite
-                            //             : colors.colorBlack,
-                            //         14,
-                            //         FontWeight.w400),
-                            //     overflow: TextOverflow.ellipsis,
-                            //     maxLines: 1),
-                            if (widget.scripInfo.expDate!.isNotEmpty)
-                              TextWidget.titleText(
-                                text: " ${widget.scripInfo.expDate} ",
-                                theme: theme.isDarkMode,
-                                color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                                maxLines: 1,
-                                textOverflow: TextOverflow.ellipsis,
-                                fw: 0,
-                              ),
-
-                            // Text(" ${widget.scripInfo.expDate} ",
-                            //     style: textStyle(
-                            //         theme.isDarkMode
-                            //             ? colors.colorWhite
-                            //             : colors.colorBlack,
-                            //         14,
-                            //         FontWeight.w400)),
-                            if (widget.scripInfo.option!.isNotEmpty)
-                              TextWidget.titleText(
-                                text: widget.scripInfo.option!,
-                                theme: theme.isDarkMode,
-                                color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                                maxLines: 1,
-                                textOverflow: TextOverflow.ellipsis,
-                                fw: 0,
-                              ),
-
-                            // Text(widget.scripInfo.option!,
-                            //     style: textStyle(
-                            //         theme.isDarkMode
-                            //             ? colors.colorWhite
-                            //             : colors.colorBlack,
-                            //         14,
-                            //         FontWeight.w400),
-                            //     overflow: TextOverflow.ellipsis,
-                            //     maxLines: 1),
-                            // CustomExchBadge(
-                            //     exch: " ${widget.scripInfo.exch}"),
-
-                            TextWidget.titleText(
-                              fw: 0,
-                              text: " ${widget.scripInfo.exch}",
-                              textOverflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                              color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                              theme: false,
-                            ),
-                          ]),
-                          const SizedBox(height: 4),
-                          Row(crossAxisAlignment: CrossAxisAlignment.end, mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                            OrderScreenHeader(headerData: widget.orderArg),
-                            // if (orderType == "Regular" ||
-                            //     orderType == "Cover" ||
-                            //     orderType == "Bracket" ||
-                            //     orderType == "GTT") ...[
-                            //   Row(children: [
-                            //     InkWell(
-                            //         onTap: () {
-                            //           setState(() {
-                            //             isBuy = true;
-                            //           });
-                            //         },
-                            //         child:
-                            //             SvgPicture.asset(assets.buyIcon)),
-                            //     const SizedBox(width: 6),
-                            //     CustomSwitch(
-                            //         onChanged: (bool value) {
-                            //           setState(() {
-                            //             isBuy = value;
-                            //           });
-                            //           marginUpdate();
-                            //         },
-                            //         value: isBuy!),
-                            //     const SizedBox(width: 6),
-                            //     InkWell(
-                            //         onTap: () {
-                            //           setState(() {
-                            //             isBuy = false;
-                            //           });
-                            //         },
-                            //         child:
-                            //             SvgPicture.asset(assets.sellIcon))
-                            //   ])
-                            // ]
-                          ])
-                        ]),
+                            if(_isStock && (orderType == "Delivery" || orderType == "Intraday" || orderType == "CO - BO" ) )
+                            Column(
+                              children: [
+                                  Row(
+                                    children: List.generate(
+                                      _stockExchangesList.length,
+                                      (index) {
+                                        return Padding(
+                                          padding: const EdgeInsets.only(right: 8),
+                                          child:ElevatedButton(
+                                              onPressed: () {
+                                                setState(() {
+                                                  stockExchangeSelected = _stockExchangesList[index];
+                                                  selectedStockSubscribe.exchange=stockExchangeSelected.exch??"";
+                                                  selectedStockSubscribe.token=stockExchangeSelected.token??"";
+                                                  selectedStockSubscribe.tSym=stockExchangeSelected.tsym??"";
+                                                  _subscribeSelectedStock(context);
+                                                });
+                                              },
+                                              style: ElevatedButton.styleFrom(
+                                                  elevation: 0,
+                                                  minimumSize: const Size(0, 0),
+                                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                                  backgroundColor: !theme.isDarkMode
+                                                      ? stockExchangeSelected.exch != _stockExchangesList[index].exch
+                                                          ? const Color(0xffF1F3F8)
+                                                          : theme.isDarkMode
+                                                        ? colors.secondaryDark
+                                                        : colors.secondaryLight
+                                                            : stockExchangeSelected.exch != _stockExchangesList[index].exch
+                                                                ? colors.darkGrey
+                                                                : theme.isDarkMode
+                                              ? colors.secondaryDark
+                                              : colors.secondaryLight,
+                                                  shape: const RoundedRectangleBorder(
+                                                    borderRadius: BorderRadius.all(Radius.circular(5)),
+                                                  )
+                                                  //   const StadiumBorder()
+                                                  ),
+                                              child: TextWidget.subText(
+                                                  text: _stockExchangesList[index].exch??"",
+                                                  color: !theme.isDarkMode
+                                                      ? stockExchangeSelected.exch != _stockExchangesList[index].exch
+                                                          ? theme.isDarkMode
+                                                      ? colors.textSecondaryDark
+                                                      : colors.textSecondaryLight
+                                                          : colors.colorWhite
+                                                      : stockExchangeSelected.exch != _stockExchangesList[index].exch
+                                                          ? theme.isDarkMode
+                                                        ? colors.textSecondaryDark
+                                                        : colors.textSecondaryLight
+                                                          : colors.colorWhite,
+                                                  textOverflow: TextOverflow.ellipsis,
+                                                  theme: theme.isDarkMode,
+                                                  fw: stockExchangeSelected.exch == _stockExchangesList[index].exch ? 1 : 0),
+                                            )
+                                        );
+                                      },
+                                    ),
+                                  ),
+                              
+                              ],
+                            )
+                          ],
+                        ),
                       ),
                       // Tab section starts here
                       bottom: PreferredSize(
                           preferredSize: const Size.fromHeight(50), // widget.orderArg.exchange == "NCOM" ? 10 :
                           child: Column(children: [
                             // if (widget.orderArg.exchange != "NCOM") ...[
-                            Container(
+                            SizedBox(
                                 height: 46,
                                 // decoration: BoxDecoration(
                                 //     border: (Border(
@@ -5169,7 +5210,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
               blprc: orderType == "CO - BO" ? stopLossCtrl.text : '',
               bpprc: orderType == "CO - BO" && _isBracketOrderEnabled ? targetCtrl.text : '',
               dscqty: discQtyCtrl.text,
-              exch: widget.scripInfo.exch!,
+              exch:  stockExchangeSelected.exch == null? widget.scripInfo.exch! : stockExchangeSelected.exch??"",
               prc: ordPrice,
               prctype: orderInput.prcType,
               prd: orderInput.orderType,
@@ -5182,7 +5223,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                   : '',
               trantype: isBuy! ? 'B' : 'S',
               trgprc: priceType == "SL Limit" || priceType == "SL MKT" ? triggerPriceCtrl.text : "",
-              tsym: widget.scripInfo.tsym!,
+              tsym:  stockExchangeSelected.tsym == null ? widget.scripInfo.tsym! : stockExchangeSelected.tsym??"",
               mktProt: priceType == "Market" || priceType == "SL MKT" ? mktProtCtrl.text : '',
               channel: '');
           await ref.read(orderProvider).fetchPlaceOrder(context, placeOrderInput, widget.orderArg.isExit);
@@ -5236,7 +5277,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
 
   void marginUpdate() {
     OrderMarginInput input = OrderMarginInput(
-        exch: "${widget.scripInfo.exch}",
+        exch: stockExchangeSelected.exch == null ? "${widget.scripInfo.exch}" : stockExchangeSelected.exch??"",
         prc: (priceType == "Market" || priceType == "SL MKT") ? "0" : ordPrice,
         prctyp: ref.read(ordInputProvider).prcType,
         prd: ref.read(ordInputProvider).orderType,
@@ -5246,20 +5287,20 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
         rorgprc: '0',
         rorgqty: '0',
         trantype: isBuy! ? "B" : "S",
-        tsym: "${widget.scripInfo.tsym}",
+        tsym: stockExchangeSelected.tsym == null ?"${widget.scripInfo.tsym}" : stockExchangeSelected.tsym??"",
         blprc: orderType == "CO - BO" ? stopLossCtrl.text : '',
         bpprc: orderType == "CO - BO" ? targetCtrl.text : '',
         trgprc: priceType == "SL Limit" || priceType == "SL MKT" ? triggerPriceCtrl.text : "");
     ref.read(orderProvider).fetchOrderMargin(input, context);
     BrokerageInput brokerageInput = BrokerageInput(
-        exch: "${widget.scripInfo.exch}",
+        exch:  stockExchangeSelected.exch == null ? "${widget.scripInfo.exch}" : stockExchangeSelected.exch??"",
         prc: (priceType == "Market" || priceType == "SL MKT") ? "0" : ordPrice,
         prd: ref.read(ordInputProvider).orderType,
         qty: widget.scripInfo.exch == 'MCX'
             ? (double.parse(getFinalQuantity(qtyCtrl.text)).toInt() * lotSize).toString()
             : getFinalQuantity(qtyCtrl.text),
         trantype: isBuy! ? "B" : "S",
-        tsym: "${widget.scripInfo.tsym}");
+        tsym: stockExchangeSelected.tsym == null ? "${widget.scripInfo.tsym}" : stockExchangeSelected.tsym??"");
     ref.read(orderProvider).fetchGetBrokerage(brokerageInput, context);
   }
 
@@ -5497,7 +5538,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
         "blprc": orderType == "CO - BO" ? stopLossCtrl.text : '',
         "bpprc": orderType == "CO - BO" && _isBracketOrderEnabled ? targetCtrl.text : '',
         "dscqty": discQtyCtrl.text,
-        "exch": widget.scripInfo.exch!,
+        "exch":  stockExchangeSelected.exch == null ? "${widget.scripInfo.exch}" : stockExchangeSelected.exch??"",
         "prc": ordPrice,
         "prctype": orderInput.prcType,
         "prd": orderInput.orderType,
@@ -5517,7 +5558,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
             : '',
         "trantype": isBuy! ? 'B' : 'S',
         "trgprc": priceType == "SL Limit" || priceType == "SL MKT" ? triggerPriceCtrl.text : "",
-        "tsym": widget.scripInfo.tsym != null ? UrlUtils.encodeParameter(widget.scripInfo.tsym!) : '',
+        "tsym":  stockExchangeSelected.tsym == null ? UrlUtils.encodeParameter(widget.scripInfo.tsym!) : UrlUtils.encodeParameter(stockExchangeSelected.tsym?? ""),
         "mktProt": priceType == "Market" || priceType == "SL MKT" ? mktProtCtrl.text : ''
       });
     }
@@ -5645,4 +5686,15 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
       return _isLotToQty ? value : (inputValue * lotSize).toString();
     }
   }
+
+    void _subscribeSelectedStock(BuildContext context) {
+
+      if ((stockExchangeSelected.token?.isNotEmpty??false) && (stockExchangeSelected.exch?.isNotEmpty??false)) {
+           ref.read(websocketProvider).establishConnection(
+              channelInput: '${stockExchangeSelected.exch}|${stockExchangeSelected.token}',
+              task: 't',
+              context: context);
+        }
+        }
+
 }
