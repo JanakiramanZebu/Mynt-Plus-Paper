@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/provider/index_list_provider.dart';
 import 'package:mynt_plus/provider/portfolio_provider.dart';
+import 'package:mynt_plus/provider/stocks_provider.dart';
 import 'package:mynt_plus/sharedWidget/loader_ui.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import '../../provider/fund_provider.dart';
@@ -107,7 +108,20 @@ class _MfHoldNewScreenState extends ConsumerState<MfHoldNewScreen> with TickerPr
                            mfData.mfholdingnew!.data!.isNotEmpty;
 
     if(!hasHoldingsData) {
-      return Center(child: NoDataFound());
+      return ListView(
+        children: [
+          Center(child: NoDataFound(
+            title: "No MF Holdings Found",
+            subtitle: "There's nothing here yet. Buy some MF to see them here.",
+            onSecondary: () {
+                ref.read(indexListProvider).setDashboardTab(1);
+              ref.read(indexListProvider).bottomMenu(0, context);
+            },
+            secondaryEnabled: ref.read(indexListProvider).selectedBtmIndx != 0 ? true : false,
+            secondaryLabel: "Buy MF",
+          )),
+        ],
+      );
     }
     
     return TransparentLoaderScreen(
@@ -580,7 +594,12 @@ class _MfHoldNewScreenState extends ConsumerState<MfHoldNewScreen> with TickerPr
     if (showSearch && searchText.isNotEmpty && items.isEmpty) {
       return const SizedBox(
         height: 400,
-        child: Center(child: NoDataFound()),
+        child: Center(child: NoDataFound(
+          title: "No Results Found",
+          subtitle: "Try searching with different keywords",
+          primaryEnabled: false,
+          secondaryEnabled: false,
+        )),
       );
     }
 

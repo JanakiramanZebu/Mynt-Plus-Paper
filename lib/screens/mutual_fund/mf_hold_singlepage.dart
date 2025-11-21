@@ -110,7 +110,9 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
                   controller: scrollController,
                   child: hasData
                       ? _buildHoldingDetails(context, theme, mfdata)
-                      : const Center(child: NoDataFound()),
+                      : const Center(child: NoDataFound(
+                          secondaryEnabled: false,
+                        )),
                 ),
               );
             },

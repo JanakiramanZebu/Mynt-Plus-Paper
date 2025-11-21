@@ -93,7 +93,9 @@ class _NoDataWidget extends StatelessWidget {
         SizedBox(height: 10),
         Padding(
           padding: EdgeInsets.symmetric(vertical: 250),
-          child: NoDataFound(),
+          child: NoDataFound(
+            secondaryEnabled: false,
+          ),
         ),
       ],
     );

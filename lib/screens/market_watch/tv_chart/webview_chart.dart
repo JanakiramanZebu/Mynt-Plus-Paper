@@ -427,9 +427,16 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                   customBorder: const CircleBorder(),
                   splashColor: Colors.grey.withOpacity(0.4),
                   highlightColor: Colors.grey.withOpacity(0.2),
-                  onTap: () {
-                    // Simply hide the chart - let PopScope in ChartOverlayWidget handle navigation
-                    ref.read(chartProvider.notifier).hideChart();
+                  onTap: () async {
+                  ref.read(chartProvider.notifier).hideChart();
+                  ref.read(chartUpdateProvider).changeOrientation('portrait');
+                  final mktwth = ref.read(marketWatchProvider);
+                  mktwth.chngDephBtn("Overview");
+                  final safeContext = rootNavigatorKey.currentContext ?? context;
+                  await Future.delayed(Duration.zero);
+                  await mktwth.calldepthApis(safeContext, mktwth.getQuotes, "");
+                  if (mounted) setState(() {});
+                  mktwth.setChartScript('ABC', '0123', 'ABCD');
                   },
                   child: Container(
                     width: 44,

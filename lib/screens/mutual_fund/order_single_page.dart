@@ -65,7 +65,9 @@ class _mforderdetscreen extends State<mforderdetscreen>
             final hasData = mfdata.mforderdet?.data != null;
 
             if(!hasData){
-              return const Center(child: NoDataFound());
+              return const Center(child: NoDataFound(
+                secondaryEnabled: false,
+              ));
             }
 
             return SafeArea(

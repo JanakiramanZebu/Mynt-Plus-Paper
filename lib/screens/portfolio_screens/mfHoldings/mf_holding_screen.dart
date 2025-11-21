@@ -419,7 +419,9 @@ class _MFHoldingScreen extends State<MFHoldingScreen> {
                               },
                             ),
                           )
-                        : const Center(child: NoDataFound()),
+                        : const Center(child: NoDataFound(
+                          secondaryEnabled: false,
+                        )),
                   )
                 : Expanded(
                     child: ListView.separated(

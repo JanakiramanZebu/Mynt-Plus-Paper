@@ -480,13 +480,23 @@ class _MfCommonSearchState extends ConsumerState<MfCommonSearch> {
                       )
                       : Expanded(
                         child: const Center(
-                            child: NoDataFound(),
+                            child: NoDataFound(
+                              title: "No Results Found",
+                              subtitle: "Try searching with different keywords",
+                              primaryEnabled: false,
+                              secondaryEnabled: false,
+                            ),
                           ),
                       )
                 ] else ...[
                   Expanded(
                     child: const Center(
-                      child: NoDataFound(),
+                      child: NoDataFound(
+                        title: "No Results Found",
+                        subtitle: "Try searching with different keywords",
+                        primaryEnabled: false,
+                        secondaryEnabled: false,
+                      ),
                     ),
                   )
                 ]

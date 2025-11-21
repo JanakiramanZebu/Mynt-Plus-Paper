@@ -31,32 +31,12 @@ class _StocksScreenState extends State<StocksScreen> {
       return ref.watch(portfolioProvider).loading
           ? const Center(child: CircularProgressIndicator())
           : holdingProvide!.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment:
-                        MainAxisAlignment.center, // vertically center
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      TextWidget.subText(
-                          text: "No Holdings ",
-                          color: colors.colorBlack,
-                          theme: theme.isDarkMode,
-                          align: TextAlign.center,
-                          fw: 0),
-                      const SizedBox(
-                        height: 8,
-                      ),
-                      SizedBox(
-                        width: 250,
-                        child: TextWidget.paraText(
-                            text:
-                                "You haven't made any investments yet. Build your portfolio today!",
-                            color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                            theme: theme.isDarkMode,
-                            align: TextAlign.center,
-                            fw: 0),
-                      ),
-                    ],
+              ? const Center(
+                  child: NoDataFound(
+                    title: "No Holdings Found",
+                    subtitle:
+                        "You haven't made any investments yet. Build your portfolio today!",
+                        secondaryEnabled: false,
                   ),
                 )
               : ListView.builder(

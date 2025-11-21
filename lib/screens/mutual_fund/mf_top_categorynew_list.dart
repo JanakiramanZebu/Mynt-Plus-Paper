@@ -57,7 +57,9 @@ class MFCategoryListScreen extends ConsumerWidget {
       body: TransparentLoaderScreen(
         isLoading: mfData.bestmfloader ?? false,
         child: mfData.catnewlist?.isEmpty ?? true
-            ? const Center(child: NoDataFound())
+            ? const Center(child: NoDataFound(
+              secondaryEnabled: false,
+            ))
             : Column(
                 children: [
                   _buildCategoryChips(context, ref, theme, title, mfData),

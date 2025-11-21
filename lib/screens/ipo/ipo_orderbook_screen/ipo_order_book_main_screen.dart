@@ -50,8 +50,17 @@ class _IpoOrderbookMainScreenState extends ConsumerState<IpoOrderbookMainScreen>
     final hasOrders =
         filteredOpenOrders.isNotEmpty || filteredCloseOrders.isNotEmpty;
 
-    if (!hasOrders) {
+    if (!hasOrders && ipo.ipocommonsearchcontroller.text.isNotEmpty) {
       return _buildNoDataState(devHeight);
+    }
+
+    if(!hasOrders){
+      return NoDataFound(
+        title: "No Open or Closed Orders Found",
+        subtitle: "",
+        primaryEnabled: false,
+        secondaryEnabled: false,
+      );
     }
 
     return SingleChildScrollView(
@@ -109,17 +118,12 @@ class _IpoOrderbookMainScreenState extends ConsumerState<IpoOrderbookMainScreen>
   }
 
   Widget _buildNoDataState(double devHeight) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.only(top: 225),
-        child: SizedBox(
-          height: devHeight - 140,
-          child: const Column(
-            children: [
-              NoDataFound(),
-            ],
-          ),
-        ),
+    return const Center(
+      child: NoDataFound(
+        title: "No Results Found",
+        subtitle: "Try searching with different keywords",
+        primaryEnabled: false,
+        secondaryEnabled: false,
       ),
     );
   }

@@ -148,6 +148,9 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
 
   Widget _buildOrdersTab(
       MFProvider mforderbook, ThemesProvider theme, BuildContext context) {
+        if (mforderbook.mfOrderbookfilter == "All" &&
+                  mforderbook.mflumpsumorderbook?.data != null &&
+                  mforderbook.mflumpsumorderbook?.stat != "Not Ok"){
     return TransparentLoaderScreen(
       isLoading: mforderbook.mforderloader,
       child: RefreshIndicator(
@@ -157,20 +160,22 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
         child: SingleChildScrollView(
           child: Column(
             children: [
-              if (mforderbook.mfOrderbookfilter == "All" &&
-                  mforderbook.mflumpsumorderbook?.data != null &&
-                  mforderbook.mflumpsumorderbook?.stat != "Not Ok")
+              
                 _buildOrderList(mforderbook, theme, context)
-              else
-                const Padding(
-                  padding: EdgeInsets.only(top: 300),
-                  child: Center(child: NoDataFound()),
-                ),
+               
             ],
           ),
         ),
       ),
     );
+    }
+
+   return Center(child: NoDataFound(
+                  title: "No Orders Found",
+                  subtitle: "There's nothing here yet. Buy some funds to see them here.",
+                  primaryEnabled: false,
+                  secondaryEnabled: false,
+                ));
   }
 
   Widget _buildOrderList(

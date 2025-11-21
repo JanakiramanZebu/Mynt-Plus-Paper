@@ -712,7 +712,9 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
             ),
           ),
           body: const Center(
-            child: NoDataFound(),
+            child: NoDataFound(
+              secondaryEnabled: false,
+            ),
           ),
         );
       }
@@ -955,17 +957,20 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
         // color:   Color(0xff777777)
         // ),
         // const SizedBox(height: 2),
-        SizedBox(
-          width: 250,
-          child: TextWidget.subText(
-              text: "Data not available",
-              color: theme.isDarkMode
-                  ? colors.textSecondaryDark
-                  : colors.textSecondaryLight,
-                  fw:0,
-                  align: TextAlign.center,
-              theme: theme.isDarkMode),
-        )
+        // SizedBox(
+        //   width: 250,
+        //   child: TextWidget.subText(
+        //       text: "Data not available",
+        //       color: theme.isDarkMode
+        //           ? colors.textSecondaryDark
+        //           : colors.textSecondaryLight,
+        //           fw:0,
+        //           align: TextAlign.center,
+        //       theme: theme.isDarkMode),
+        // )
+        NoDataFound(
+          secondaryEnabled: false,
+        ),
       ]
     ))),
           ],
@@ -1394,17 +1399,20 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
         // color:   Color(0xff777777)
         // ),
         // const SizedBox(height: 2),
-        SizedBox(
-          width: 250,
-          child: TextWidget.subText(
-              text: "Data not available",
-              color: theme.isDarkMode
-                  ? colors.textSecondaryDark
-                  : colors.textSecondaryLight,
-                  fw:0,
-                  align: TextAlign.center,
-              theme: theme.isDarkMode),
-        )
+        // SizedBox(
+        //   width: 250,
+        //   child: TextWidget.subText(
+        //       text: "Data not available",
+        //       color: theme.isDarkMode
+        //           ? colors.textSecondaryDark
+        //           : colors.textSecondaryLight,
+        //           fw:0,
+        //           align: TextAlign.center,
+        //       theme: theme.isDarkMode),
+        // )
+        NoDataFound(
+          secondaryEnabled: false,
+        ),
       ]
     )))
         ],
@@ -1459,17 +1467,20 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
         // color:   Color(0xff777777)
         // ),
         // const SizedBox(height: 2),
-        SizedBox(
-          width: 250,
-          child: TextWidget.subText(
-              text: "Data not available",
-              color: theme.isDarkMode
-                  ? colors.textSecondaryDark
-                  : colors.textSecondaryLight,
-                  fw:0,
-                  align: TextAlign.center,
-              theme: theme.isDarkMode),
-        )
+        // SizedBox(
+        //   width: 250,
+        //   child: TextWidget.subText(
+        //       text: "Data not available",
+        //       color: theme.isDarkMode
+        //           ? colors.textSecondaryDark
+        //           : colors.textSecondaryLight,
+        //           fw:0,
+        //           align: TextAlign.center,
+        //       theme: theme.isDarkMode),
+        // )
+        NoDataFound(
+          secondaryEnabled: false,
+        ),
       ]
     ))),
               ],
@@ -1651,7 +1662,9 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
   Widget _buildFinancialTab(
       MarketWatchProvider marketWatch, ThemesProvider theme) {
     if (marketWatch.fundamentalData?.msg == "no data found") {
-      return const Center(child: NoDataFound());
+      return const Center(child: NoDataFound(
+        secondaryEnabled: false,
+      ));
     }
 
     return const SingleChildScrollView(
@@ -1737,14 +1750,17 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                       )
                     : priceData.isEmpty
                         ? Center(
-                            child: TextWidget.paraText(
-                              text: "No Data Available",
-                              theme: theme.isDarkMode,
-                              fw: 0,
-                              color: theme.isDarkMode
-                                  ? colors.textSecondaryDark
-                                  : colors.textSecondaryLight,
-                            ),
+                            child: NoDataFound(
+                              secondaryEnabled: false,
+                            )
+                            // TextWidget.paraText(
+                            //   text: "No Data Available",
+                            //   theme: theme.isDarkMode,
+                            //   fw: 0,
+                            //   color: theme.isDarkMode
+                            //       ? colors.textSecondaryDark
+                            //       : colors.textSecondaryLight,
+                            // ),
                           )
                         : _buildScrollablePriceChart(theme, marketWatch),
               ),

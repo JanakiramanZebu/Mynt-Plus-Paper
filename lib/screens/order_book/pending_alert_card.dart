@@ -93,6 +93,21 @@ class _PendingAlertState extends ConsumerState<PendingAlert> {
       ...(triggeredAlerts ?? [])
     ];
 
+    if (allAlerts.isEmpty) {
+      return ListView(
+        children: const [
+          Padding(
+            padding: EdgeInsets.symmetric(vertical: 20),
+            child: NoDataFound(
+              title: "No Alerts Found",
+              subtitle: "There's nothing here yet. Create some alerts to see them here.",
+              secondaryEnabled: false,
+            ),
+          ),
+        ],
+      );
+    }
+
     return RefreshIndicator(
       onRefresh: _refreshData,
       child: SingleChildScrollView(
@@ -116,12 +131,6 @@ class _PendingAlertState extends ConsumerState<PendingAlert> {
   }
 
   Widget _buildAlertList(List<dynamic> alerts, theme, double angleInRadians) {
-    if (alerts.isEmpty) {
-      return const SizedBox(
-        height: 400,
-        child: Center(child: NoDataFound()),
-      );
-    }
     return ListView.builder(
       padding: EdgeInsets.only(bottom: 80),
       shrinkWrap: true,

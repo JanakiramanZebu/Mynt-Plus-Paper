@@ -78,21 +78,26 @@ class _IpoCloseOrderDetailsState extends ConsumerState<IpoCloseOrderDetails> {
                     ),
                   ),
                   child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       const CustomDragHandler(),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        child: TextWidget.headText(
-                          text:
-                              "${widget.ipoclose.companyName.toString()} ${widget.ipoclose.symbol.toString()}",
-                          theme: false,
-                          color: theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack,
-                          maxLines: 2,
-                          fw: 0,
-                          textOverflow: TextOverflow.ellipsis,
-                        ),
+                      Row(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            child: TextWidget.headText(
+                              text:
+                                  "${widget.ipoclose.companyName.toString()} ${widget.ipoclose.symbol.toString()}",
+                              theme: false,
+                              color: theme.isDarkMode
+                                  ? colors.colorWhite
+                                  : colors.colorBlack,
+                              maxLines: 2,
+                              fw: 0,
+                              textOverflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
                       ),
                       if (currentDate.isBetween(
                               convertIpoDates(widget.ipoclose.biddingstartdate!,

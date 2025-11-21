@@ -25,9 +25,7 @@ class TransparentLoaderScreen extends ConsumerWidget {
         if (isLoading)
           Positioned.fill(
             child: Container(
-              color: ref.watch(userProfileProvider).profileloader
-                  ? theme.isDarkMode ? Colors.black : Colors.white
-                  : Colors.black.withOpacity(0.5),
+              color:  theme.isDarkMode ? Colors.black : Colors.white,
               child: Center(
                 child: Stack(
                   alignment: Alignment.center,

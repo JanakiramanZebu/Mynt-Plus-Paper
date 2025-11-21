@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_swipe_action_cell/flutter_swipe_action_cell.dart';
 import 'package:mynt_plus/res/colors.dart';
+import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import '../../models/marketwatch_model/get_quotes.dart';
 import '../../models/order_book_model/order_book_model.dart';
 import '../../provider/market_watch_provider.dart';
@@ -415,7 +416,22 @@ void _initializeWithStoredData() {
     }
 
     if (scrips.isEmpty) {
-      return _buildEmptyState(theme, ref.read(marketWatchProvider));
+      return NoDataFound(
+        title: 'No symbol Found',
+        subtitle: 'Use the search box above to find and add stocks, indices, futures or options.',
+        secondaryEnabled: true,
+         onSecondary: (){
+          WidgetsBinding.instance.addPostFrameCallback((_) async {
+                  await ref.read(marketWatchProvider).requestMWScrip(context: context, isSubscribe: false);
+                });
+                Navigator.pushNamed(
+                  context,
+                  Routes.searchScrip,
+                  arguments: ref.read(marketWatchProvider).wlName,
+                );
+         },
+        secondaryLabel: 'Add Symbol',
+      );
     }
 
     return _buildWatchlistView(scrips, sortBy);
@@ -691,14 +707,7 @@ void _initializeWithStoredData() {
               label: 'Add Symbol',
               icon: assets.addCircleIcon,
               onPress: () {
-                WidgetsBinding.instance.addPostFrameCallback((_) async {
-                  await mw.requestMWScrip(context: context, isSubscribe: false);
-                });
-                Navigator.pushNamed(
-                  context,
-                  Routes.searchScrip,
-                  arguments: mw.wlName,
-                );
+                
               },
             ),
             const SizedBox(height: 8),

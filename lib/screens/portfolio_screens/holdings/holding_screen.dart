@@ -529,9 +529,21 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> with TickerProvid
       if (isLoading) {
         return const Center(child: CircularProgressIndicator());
       }
+      
 
       if (holdingProvider.holdingsModel!.isEmpty) {
-        return const Center(child: const NoDataFound());
+        return ListView(
+          children: [
+            Center(child:NoDataFound(
+                              title: "No Holdings Found",
+                              subtitle: "There's nothing here yet. Buy some stocks to see them here.",
+                              primaryEnabled: false,
+                              onSecondary: () {
+                                ref.read(indexListProvider).bottomMenu(1, context);
+                              },
+                            )),
+          ],
+        );
       }
 
       return RefreshIndicator(
@@ -1431,9 +1443,14 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> with TickerProvid
       // Show "No Data Found" only when search is active with text and no results found
       if (showSearch && searchText.isNotEmpty && items.isEmpty) {
         if (_cachedEmptyState == null) {
-          _cachedEmptyState = const SizedBox(
+          _cachedEmptyState = SizedBox(
             height: 400,
-            child: Center(child: NoDataFound()),
+            child: Center(child: NoDataFound(
+                          title: "No Results Found",
+                          subtitle: "Try searching with different keywords",
+                          primaryEnabled: false,
+                          secondaryEnabled: false,
+                        ),),
           );
         }
         return _cachedEmptyState!;

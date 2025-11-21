@@ -24,14 +24,24 @@ class MFSipdetScreen extends ConsumerWidget {
     final theme = ref.watch(themeProvider);
     final mfData = ref.watch(mfProvider);
 
+    if (mfData.mfsiporderlist?.data?.isEmpty ?? true) {
+      return Center(child: NoDataFound(
+                title: "No SIP Orders Found",
+                subtitle: "There's nothing here yet. Buy some SIP to see them here.",
+                // onSecondary: () {
+                //   ref.read(mfProvider).mfExTabchange(0);
+                // },
+                secondaryEnabled: false,
+                // secondaryLabel: "Buy SIP",
+              ));
+    }
+
     return Scaffold(
-    body: Stack(
+    body: Column(
       children: [
         TransparentLoaderScreen(
           isLoading: mfData.bestmfloader ?? false,
-          child: mfData.mfsiporderlist?.data?.isEmpty ?? true
-              ? const Center(child: NoDataFound())
-              : RefreshIndicator(
+          child: RefreshIndicator(
                   onRefresh: () async {
                     await mfData.fetchmfsipnotlivelist();
                     await mfData.fetchmfsiplist();

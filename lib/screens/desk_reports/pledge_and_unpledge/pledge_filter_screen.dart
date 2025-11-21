@@ -199,6 +199,14 @@ class _PledgeFilterState extends State<PledgeFilter>
 
       final List<dynamic> displaypledgedvalue = pledgedvalue;
 
+      if (showlist.length == 0 || showlist.isEmpty){
+        // Handle the null or empty case
+        return Center(
+            child: NoDataFound(
+              secondaryEnabled: false,
+            ));
+      }
+
       return Scaffold(
         backgroundColor: Colors.transparent,
         body: RefreshIndicator(
@@ -362,14 +370,7 @@ class _PledgeFilterState extends State<PledgeFilter>
 
   _mainpage(LDProvider ledgerprovider, ThemesProvider theme,
       BuildContext context, dataval, String tab) {
-    return dataval.length == 0 || dataval.isEmpty
-        // Handle the null or empty case
-        ? Center(
-            child: Padding(
-            padding: EdgeInsets.only(top: 60),
-            child: NoDataFound(),
-          ))
-        : Expanded(
+    return Expanded(
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
               child: Padding(

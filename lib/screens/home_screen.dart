@@ -1132,12 +1132,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
       final mktwth = ref.read(marketWatchProvider);
       mktwth.chngDephBtn("Overview");
-      mktwth.singlePageloader(true);
+      // mktwth.singlePageloader(true);
 
       // Ensure context is passed if needed by calldepthApis
       mktwth.calldepthApis(context, mktwth.getQuotes, "");
 
-      mktwth.singlePageloader(false);
+      // mktwth.singlePageloader(false);
 
             if(ref.read(marketWatchProvider).scripsize){
               Navigator.pop(context);
