@@ -108,6 +108,8 @@ class _TextNuggetWidgetState extends ConsumerState<TextNuggetWidget>
       _isDismissing = true;
       _textNuggets.removeAt(indexToRemove);
 
+      ref.read(textNuggetProvider).markTextAsShown(cardId);
+
       // Reset index if needed
       if (_textNuggets.isEmpty) {
         _currentIndex = 0;
@@ -228,11 +230,6 @@ class _TextNuggetWidgetState extends ConsumerState<TextNuggetWidget>
         // Set controller value based on drag direction
         controller.value = dragProgress * (_dragOffsets[cardId]!.sign);
 
-        // Trigger haptic feedback at 50% threshold
-        // if (dragProgress >= 0.5 && !_hasTriggeredHaptic) {
-        //   HapticFeedback.mediumImpact();
-        //   _hasTriggeredHaptic = true;
-        // }
       },
       onHorizontalDragEnd: (details) {
         final velocity = details.primaryVelocity ?? 0;
@@ -240,7 +237,6 @@ class _TextNuggetWidgetState extends ConsumerState<TextNuggetWidget>
         
         // Dismiss if dragged more than 40% or with sufficient velocity
         if (dragProgress > 0.4 || velocity.abs() > 500) {
-          HapticFeedback.lightImpact();
           _animateDismiss(cardId);
         } else {
           // Snap back
@@ -489,7 +485,9 @@ class _AutoLoadTextNuggetWidgetState extends ConsumerState<AutoLoadTextNuggetWid
   @override
   void initState() {
     super.initState();
-    _loadTextNuggets();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadTextNuggets();
+    });
   }
 
   Future<void> _loadTextNuggets() async {

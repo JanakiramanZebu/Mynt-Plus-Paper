@@ -73,6 +73,7 @@ class TopListStocks {
 
 class TopGainers {
   String? c;
+  String? cname;
   String? exch;
   String? lp;
   String? ls;
@@ -87,6 +88,7 @@ class TopGainers {
 
   TopGainers(
       {this.c,
+      this.cname,
       this.exch,
       this.lp,
       this.ls,
@@ -101,6 +103,7 @@ class TopGainers {
 
   TopGainers.fromJson(Map<String, dynamic> json) {
     c = json['c'];
+    cname = json['cname'];
     exch = json['exch'];
     lp = json['lp'];
     ls = json['ls'];
@@ -117,6 +120,7 @@ class TopGainers {
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['c'] = c;
+    data['cname'] = cname;
     data['exch'] = exch;
     data['lp'] = lp;
     data['ls'] = ls;

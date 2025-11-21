@@ -24,8 +24,17 @@ class UpcomingIpo extends StatelessWidget {
       List<dynamic> filteredUpcomingIPOs = _getFilteredUpcomingIPOs(ipos);
       final hasUpcomingIPOs = filteredUpcomingIPOs.isNotEmpty;
 
-      if (!hasUpcomingIPOs) {
+      if (!hasUpcomingIPOs && ipos.ipocommonsearchcontroller.text.isNotEmpty) {
         return _NoDataSection(devHeight: devHeight);
+      }
+
+      if(!hasUpcomingIPOs){
+        return NoDataFound(
+          title: "No Upcoming IPOs Found",
+          subtitle: "",
+          primaryEnabled: false,
+          secondaryEnabled: false,
+        );
       }
 
       return SingleChildScrollView(
@@ -68,15 +77,14 @@ class _NoDataSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 225),
-      child: SizedBox(
-        height: devHeight - 140,
-        child: const Column(
-          children: [NoDataFound()],
-        ),
+    return Center(
+      child: NoDataFound(
+        title: "No Results Found",
+        subtitle: "Try searching with different keywords",
+        primaryEnabled: false,
+        secondaryEnabled: false,
       ),
-    );
+        );
   }
 }
 

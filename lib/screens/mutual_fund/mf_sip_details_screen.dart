@@ -73,7 +73,9 @@ class _mfSipdetScren extends State<mfSipdetScren>
                   child: TransparentLoaderScreen(
                     isLoading: mfdata.bestmfloader ?? false,
                     child: widget.data == null
-                        ? const Center(child: NoDataFound())
+                        ? const Center(child: NoDataFound(
+                          secondaryEnabled: false,
+                        ))
                         : Column(
                           children: [
                             Expanded(

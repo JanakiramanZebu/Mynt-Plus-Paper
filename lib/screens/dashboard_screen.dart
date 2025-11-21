@@ -14,6 +14,7 @@ import '../provider/iop_provider.dart';
 import '../provider/ledger_provider.dart';
 import '../provider/market_watch_provider.dart';
 import '../provider/mf_provider.dart';
+import '../provider/index_list_provider.dart';
 // import '../provider/portfolio_provider.dart';
 import 'package:mynt_plus/main.dart';
 import '../provider/stocks_provider.dart';
@@ -129,7 +130,16 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        ref.read(stocksProvide).syncTabIndex(0);
+        // Check if a specific tab was requested via the provider
+        final requestedTab = ref.read(indexListProvider).dashboardTabIndex;
+        if (requestedTab != 0 && requestedTab != _currentMainTab) {
+          // Switch to the requested tab with animation
+          _switchToParentTab(requestedTab);
+          // Reset the provider's tab index back to 0 for next time
+          ref.read(indexListProvider).setDashboardTab(0);
+        }
+        
+        ref.read(stocksProvide).syncTabIndex(_currentMainTab);
       }
       ref
           .read(marketWatchProvider)
@@ -254,6 +264,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
     return Consumer(builder: (context, WidgetRef ref, _) {
       final theme = ref.watch(themeProvider);
       final stocks = ref.watch(stocksProvide);
+      
+      // Listen for dashboard tab changes from other screens
+      ref.listen(indexListProvider.select((p) => p.dashboardTabIndex), (previous, next) {
+        if (!_isInitializing && next != _currentMainTab) {
+          _switchToParentTab(next);
+        }
+      });
 
       return Scaffold(
         extendBodyBehindAppBar: true,
@@ -427,6 +444,22 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                                             borderSide: BorderSide.none,
                                             borderRadius: BorderRadius.circular(20))),
                                     onChanged: (value) {
+                                      if(value.isEmpty){
+                                        stocks.clearsearchlist(context);
+                                      
+                                      if (_mainTabController.index == 2) {
+                                                          ref
+                                                              .read(ipoProvide)
+                                                              .setIpoSearchQuery("");
+                                                          ;
+                                                        } else if (_mainTabController.index ==
+                                                            3) {
+                                                          ref
+                                                              .read(bondsProvider)
+                                                              .bondscommonsearchcontroller
+                                                              .clear();
+                                                        }
+                                      }
                                       stocks.searchdashboard(value, context,
                                           tabIndex: _mainTabController.index);
                                     },

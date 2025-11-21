@@ -58,7 +58,9 @@ class PledgeHistoryScreen extends StatelessWidget {
                 ? Center(
                     child: Padding(
                     padding: EdgeInsets.only(top: 60),
-                    child: NoDataFound(),
+                    child: NoDataFound(
+                      secondaryEnabled: false,
+                    ),
                   ))
                 : Expanded(
                     child: SingleChildScrollView(

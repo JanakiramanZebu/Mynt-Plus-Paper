@@ -208,7 +208,9 @@ class _PortfolioDashboardScreenState
                 if (portfolio.portfolioAnalysis == null &&
                     portfolio.isPortfolioLoading == false) {
                   return const Center(
-                    child: NoDataFound(),
+                    child: NoDataFound(
+                      secondaryEnabled: false,
+                    ),
                   );
                 }
 
@@ -865,7 +867,9 @@ class _PortfolioDashboardScreenState
           child: Container(
             color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
             child: const Center(
-              child: NoDataFound(),
+              child: NoDataFound(
+                secondaryEnabled: false,
+              ),
             ),
           ),
         ),
@@ -880,7 +884,9 @@ class _PortfolioDashboardScreenState
           }
           final itemIndex = index ~/ 2;
           if (itemIndex >= validFundamentals.length) {
-            return NoDataFound();
+            return NoDataFound(
+              secondaryEnabled: false,
+            );
           }
           final entry = validFundamentals[itemIndex];
           return _buildSectorPerformanceItem(
@@ -923,7 +929,9 @@ class _PortfolioDashboardScreenState
       return Container(
         color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
         child: const Center(
-          child: NoDataFound(),
+          child: NoDataFound(
+            secondaryEnabled: false,
+          ),
         ),
       );
     }

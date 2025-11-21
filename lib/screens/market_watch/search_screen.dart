@@ -355,6 +355,7 @@ class _AddScripState extends ConsumerState<SearchScreen>
                               SearchScripList(
                                   wlName: widget.wlName,
                                   searchValue: searchScrip.allSearchScrip!,
+                                  searchText: textCtrl.text,
                                   isBasket: widget.isBasket),
                           // SearchScripList(
                           //     wlName: widget.wlName,

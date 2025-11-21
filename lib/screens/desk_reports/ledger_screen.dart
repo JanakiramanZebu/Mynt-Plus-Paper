@@ -926,11 +926,12 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                         // ),
                         const ListDivider(),
                         ledgerprovider.ledgerAllData?.fullStat?.isEmpty ?? true
-                            ? Center(
-                                child: Padding(
-                                padding: EdgeInsets.only(top: 220),
-                                child: NoDataFound(),
-                              ))
+                            ? Expanded(
+                              child: Center(
+                                  child: NoDataFound(
+                                    secondaryEnabled: false,
+                                  )),
+                            )
                             : Expanded(
                                 child: SingleChildScrollView(
                                   physics: const AlwaysScrollableScrollPhysics(),

@@ -22,7 +22,9 @@ class ExchangeMessage extends ConsumerWidget {
             child: noftification.exchangemessage![0].exchMsg == null
                 ? const Padding(
                     padding: EdgeInsets.symmetric(vertical: 220),
-                    child: NoDataFound(),
+                    child: NoDataFound(
+                      secondaryEnabled: false,
+                    ),
                   )
                 : ListView.separated(
                     padding: const EdgeInsets.symmetric(vertical: 20),

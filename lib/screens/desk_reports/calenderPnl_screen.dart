@@ -402,7 +402,9 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                                 ? const Center(
                                     child: Padding(
                                     padding: EdgeInsets.only(top: 60),
-                                    child: NoDataFound(),
+                                    child: NoDataFound(
+                                      secondaryEnabled: false,
+                                    ),
                                   ))
                                 : Expanded(
                                     child: SingleChildScrollView(
@@ -704,7 +706,9 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                                                               top: 30),
                                                       child: Column(
                                                         children: [
-                                                          const NoDataFound(),
+                                                          const NoDataFound(
+                                                              secondaryEnabled:
+                                                                  false),
                                                           if (ledgerprovider
                                                               .profitlossSearchCtrl
                                                               .text

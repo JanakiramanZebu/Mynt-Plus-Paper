@@ -58,14 +58,26 @@ class MainSmeListCard extends StatelessWidget {
           preOpenIpos.isNotEmpty ||
           (ipos.ipoPreClose?.msg?.isNotEmpty ?? false);
 
+
+     if(ref.watch(stocksProvide).searchController.text.isNotEmpty &&
+       ipos.ipoCommonSearchList.isEmpty){
+      return Center(
+          child: NoDataFound(
+            title: "No Results Found",
+            subtitle: "Try searching with different keywords",
+            primaryEnabled: false,
+            secondaryEnabled: false,
+          ),
+        );
+       }
+
       if (!hasAnyData) {
-        return Padding(
-          padding: const EdgeInsets.only(top: 225),
-          child: SizedBox(
-            height: devHeight - 140,
-            child: const Column(
-              children: [NoDataFound()],
-            ),
+        return Center(
+          child: NoDataFound(
+            title: "No Open IPOs Found",
+            subtitle: "",
+            primaryEnabled: false,
+            secondaryEnabled: false,
           ),
         );
       }
@@ -117,9 +129,6 @@ class MainSmeListCard extends StatelessWidget {
     if (ref.watch(stocksProvide).searchController.text.isNotEmpty &&
         ipos.ipoCommonSearchList.isNotEmpty) {
       return ipos.ipoCommonSearchList;
-    }else if(ref.watch(stocksProvide).searchController.text.isNotEmpty &&
-       ipos.ipoCommonSearchList.isEmpty){
-      return [const NoDataFound()];
     }
     // Otherwise, use the original mainsme list
     return mainstreamipo.mainsme;

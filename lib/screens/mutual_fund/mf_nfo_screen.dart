@@ -54,8 +54,12 @@ class MFNFOScreen extends ConsumerWidget {
 
   Widget _buildContent(BuildContext context, MFProvider mf,
       ThemesProvider theme, WidgetRef ref, FundProvider fund) {
-    if (mf.mfNFOList!.mutualFundList!.isEmpty) {
-      return const Center(child: NoDataFound());
+    final nfoList = mf.mfNFOList?.mutualFundList;
+
+    if (nfoList == null || nfoList.isEmpty) {
+      return const Center(child: NoDataFound(
+        secondaryEnabled: false,
+      ));
     } else {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -66,9 +70,9 @@ class MFNFOScreen extends ConsumerWidget {
               physics: const AlwaysScrollableScrollPhysics(),
               separatorBuilder: (_, __) => const ListDivider(),
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              itemCount: mf.mfNFOList!.mutualFundList!.length,
+              itemCount: nfoList.length,
               itemBuilder: (BuildContext context, int index) {
-                final nfoItem = mf.mfNFOList!.mutualFundList![index];
+                final nfoItem = nfoList[index];
 
                 return InkWell(
                   onTap: () async {

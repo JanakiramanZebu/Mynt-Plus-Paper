@@ -452,7 +452,12 @@ class _StockSearchScreenState extends ConsumerState<StockSearchScreen> {
 
   Widget _buildNoResultsState(ThemesProvider theme) {
     return const Center(
-      child: NoDataFound(),
+      child: NoDataFound(
+        title: "No Results Found",
+        subtitle: "Try searching with different keywords",
+        primaryEnabled: false,
+        secondaryEnabled: false,
+      ),
     );
   }
 

@@ -422,7 +422,9 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
     }
 
     if (sortedList == null || sortedList.isEmpty) {
-      return const Center(child: NoDataFound());
+      return const Center(child: NoDataFound(
+        secondaryEnabled: false,
+      ));
     }
 
     return ListView.separated(

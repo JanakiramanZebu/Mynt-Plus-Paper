@@ -57,7 +57,9 @@ class _PledgeHistoryDetails extends State<PledgeHistoryDetails> {
                   ? Center(
                       child: Padding(
                       padding: EdgeInsets.only(top: 60),
-                      child: NoDataFound(),
+                      child: NoDataFound(
+                        secondaryEnabled: false,
+                      ),
                     ))
                   : Expanded(
                       // height: screenheight * 0.5,

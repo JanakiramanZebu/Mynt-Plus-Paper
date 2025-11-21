@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:mynt_plus/provider/index_list_provider.dart';
 import 'package:mynt_plus/provider/ledger_provider.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/sharedWidget/custom_drag_handler.dart';
@@ -427,10 +428,19 @@ class _PositionScreen extends State<PositionScreen>
                 // ),
                 // Position list section
                 _getFilteredPositions(ledgerprovider).isEmpty
-                    ? const Expanded(
+                    ?  Expanded(
                       child: Center(
-                          child: NoDataFound()),
-                    )
+                          child: NoDataFound(
+                              title: "No positions Found",
+                              subtitle: "There's nothing here yet. Buy some stocks to see them here.",
+                              secondaryLabel: "Explore",
+                              secondaryEnabled: true,
+                              onSecondary: () {
+                                ref.read(indexListProvider).bottomMenu(1, context);
+                              },
+                              tipText: '',
+                            ),
+        ))
                     : Expanded(
                         child: SingleChildScrollView(
                           physics: const AlwaysScrollableScrollPhysics(),

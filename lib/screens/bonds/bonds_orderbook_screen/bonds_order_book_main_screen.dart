@@ -52,8 +52,17 @@ class _BondsOrderbookMainScreenState
 
     final bool isEmpty = (filteredOpen.isEmpty) && (filteredClose.isEmpty);
 
-    if (isEmpty) {
+    if (isEmpty && bonds.bondscommonsearchcontroller.text.isNotEmpty) {
       return _buildEmptyState(devHeight);
+    }
+
+    if(bonds.bondsOrderBook!.isEmpty){
+      return NoDataFound(
+        title: "No Open or Closed Orders Found",
+        subtitle: "",
+        primaryEnabled: false,
+        secondaryEnabled: false,
+      );
     }
 
     return SingleChildScrollView(
@@ -79,17 +88,12 @@ class _BondsOrderbookMainScreenState
   }
 
   Widget _buildEmptyState(double devHeight) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.only(top: 225),
-        child: SizedBox(
-          height: devHeight - 140,
-          child: const Column(
-            children: [
-              NoDataFound(),
-            ],
-          ),
-        ),
+    return const Center(
+      child: NoDataFound(
+        title: "No Results Found",
+        subtitle: "Try searching with different keywords",
+        primaryEnabled: false,
+        secondaryEnabled: false,
       ),
     );
   }

@@ -166,7 +166,9 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
         child: TransparentLoaderScreen(
           isLoading: mfData.bestmfloader ?? false,
           child: tabTitles.isEmpty
-              ? const Center(child: NoDataFound())
+              ? const Center(child: NoDataFound(
+                secondaryEnabled: false,
+              ))
               : Column(
                   children: [
                     // Custom tabs section
@@ -402,7 +404,9 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
     }
 
     if (sortedList == null || sortedList.isEmpty) {
-      return const Center(child: NoDataFound());
+      return const Center(child: NoDataFound(
+        secondaryEnabled: false,
+      ));
     }
 
     return ListView.separated(

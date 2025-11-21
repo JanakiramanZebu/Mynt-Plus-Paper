@@ -280,7 +280,9 @@ class _TradeActionState extends ConsumerState<TradeAction>
         }
 
         if (topStocks.isEmpty) {
-          return const Center(child: NoDataFound());
+          return Center(child: NoDataFound(
+            secondaryEnabled: false,
+          ));
         }
 
         return ListView.separated(

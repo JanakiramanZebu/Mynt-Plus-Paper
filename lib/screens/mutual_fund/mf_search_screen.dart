@@ -115,7 +115,9 @@ class MfCommonSearch extends ConsumerWidget {
               else
                 const Padding(
                   padding: EdgeInsets.only(top: 250),
-                  child: NoDataFound(),
+                  child: NoDataFound(
+                    secondaryEnabled: false,
+                  ),
                 )
             ],
           ),

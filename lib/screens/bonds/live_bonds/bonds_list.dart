@@ -104,7 +104,12 @@ class BondsListScreen extends StatelessWidget {
           height: devHeight - 140,
           child: const Column(
             children: [
-              NoDataFound(),
+              NoDataFound(
+                title: "No Results Found",
+                subtitle: "Try searching with different keywords",
+                primaryEnabled: false,
+                secondaryEnabled: false,
+              ),
             ],
           ),
         ),
@@ -120,7 +125,12 @@ class BondsListScreen extends StatelessWidget {
           height: devHeight - 140,
           child: const Column(
             children: [
-              NoDataFound(),
+              NoDataFound(
+                title: "No Bonds Found",
+                subtitle: "",
+                primaryEnabled: false,
+                secondaryEnabled: false,
+              ),
             ],
           ),
         ),

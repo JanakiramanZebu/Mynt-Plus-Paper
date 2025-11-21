@@ -1120,11 +1120,11 @@ class MFProvider extends DefaultChangeNotifier {
             .toList();
       }
 
-      if (_mfHoldingSearchItems!.isEmpty) {
-        warningMessage(context, 'No Data Found');
-      } else {
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      }
+      // if (_mfHoldingSearchItems!.isEmpty) {
+      //   warningMessage(context, 'No Data Found');
+      // } else {
+      //   ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      // }
     } else {
       // When search text is empty, show all items (don't filter)
       _mfHoldingSearchItems = _mfholdingnew?.data ?? [];

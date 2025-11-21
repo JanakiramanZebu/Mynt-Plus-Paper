@@ -61,6 +61,16 @@ class IndexListProvider extends DefaultChangeNotifier {
 
   int _selectedBtmIndx = 1;
   int get selectedBtmIndx => _selectedBtmIndx;
+  
+  // Dashboard internal tab index (0: Stocks, 1: MF, 2: Bonds, 3: IPO)
+  int _dashboardTabIndex = 0;
+  int get dashboardTabIndex => _dashboardTabIndex;
+  
+  void setDashboardTab(int index) {
+    _dashboardTabIndex = index;
+    notifyListeners();
+  }
+  
   List<String> indexExch = ["NSE", "MCX", "BSE"];
   List<IndexValue> _indValuesList = [];
   List<IndexValue> get indValuesList => _indValuesList;

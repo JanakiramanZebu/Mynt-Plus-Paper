@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mynt_plus/provider/index_list_provider.dart';
 import 'package:mynt_plus/screens/portfolio_screens/positions/position_detail_screen.dart';
 // import 'package:remove_emoji_input_formatter/remove_emoji_input_formatter.dart';
 import '../../../models/portfolio_model/position_book_model.dart';
@@ -170,6 +171,10 @@ class _PositionScreenState extends ConsumerState<PositionScreen> with TickerProv
       builder: (context, watch, _) {
         final positionBook = ref.watch(portfolioProvider);
         final theme = ref.read(themeProvider);
+        final isSearchActive = positionBook.showSearchPosition;
+    final searchText = positionBook.positionSearchCtrl.text;
+
+    final itemsToDisplay = widget.listofPosition;
 
         if (positionBook.posloader) {
           return const Center(child: CircularProgressIndicator());
@@ -186,6 +191,21 @@ class _PositionScreenState extends ConsumerState<PositionScreen> with TickerProv
                 // Scrollable content
                 LayoutBuilder(
                   builder: (context, constraints) {
+                    if (itemsToDisplay.isEmpty) {
+                        return Center(
+                          child: NoDataFound(
+                              title: "No Positions Found",
+                              subtitle: "There's nothing here yet. Buy some stocks to see them here.",
+                              secondaryLabel: "Explore",
+                              secondaryEnabled: true,
+                              onSecondary: () {
+                                ref.read(indexListProvider).bottomMenu(1, context);
+                              },
+                              tipText: '',
+                            ),
+        );
+    }
+
                     return SingleChildScrollView(
                       controller: _scrollController,
                       physics: const AlwaysScrollableScrollPhysics(
@@ -770,11 +790,19 @@ class _PositionScreenState extends ConsumerState<PositionScreen> with TickerProv
     }
 
     if (itemsToDisplay.isEmpty) {
-      return const Center(
-        child: SizedBox(height: 600, child: NoDataFound()),
+      return SizedBox(
+        height: 500,
+        child: const Center(
+          child: NoDataFound(
+            title: "No Results Found",
+            subtitle: "Try searching with different keywords",
+            primaryEnabled: false,
+            secondaryEnabled: false,
+          ),
+        ),
       );
     }
-
+    
     return ListView.builder(
       padding: EdgeInsets.only(bottom: 0),
       physics: const NeverScrollableScrollPhysics(),

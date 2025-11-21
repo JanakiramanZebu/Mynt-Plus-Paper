@@ -22,7 +22,9 @@ class InformationMessage extends ConsumerWidget {
                     notification.informationMessages!.isEmpty
                 ? const Padding(
                     padding: EdgeInsets.symmetric(vertical: 220),
-                    child: NoDataFound(),
+                    child: NoDataFound(
+                        secondaryEnabled: false,
+                    ),
                   )
                 : ListView.separated(
                     padding: const EdgeInsets.symmetric(vertical: 20),

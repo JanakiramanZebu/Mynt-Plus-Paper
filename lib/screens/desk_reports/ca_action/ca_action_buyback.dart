@@ -328,7 +328,9 @@ class _CABuybackState extends State<CABuyback> with TickerProviderStateMixin {
                   ),
                   const ListDivider(),
                   datalist.isEmpty
-                      ? const Expanded(child: Center(child: NoDataFound()))
+                      ? const Expanded(child: Center(child: NoDataFound(
+                        secondaryEnabled: false,
+                      )))
                       : Expanded(
                           child: SingleChildScrollView(
                           child: ListView.separated(

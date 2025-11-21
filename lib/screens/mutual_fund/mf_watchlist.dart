@@ -64,7 +64,12 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
       body: TransparentLoaderScreen(
         isLoading: mfData.bestmfloader ?? false,
         child: sortedList?.isEmpty ?? true
-            ? const Center(child: NoDataFound())
+            ? const Center(child: NoDataFound(
+              title: "No Funds Found",
+              subtitle: "Add your favorite funds to your watchlist",
+              primaryEnabled: false,
+              secondaryEnabled: false,
+            ))
             : Column(
                 children: [
                   _buildHeader(theme),

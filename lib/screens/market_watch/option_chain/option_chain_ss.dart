@@ -1183,7 +1183,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
       },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        height: _sheetHeight,
+        // height: _sheetHeight,
         decoration: BoxDecoration(
           color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
           borderRadius: const BorderRadius.only(
@@ -1466,32 +1466,41 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
         children: [
           Column(
             children: [
-              SvgPicture.asset(assets.noDatafound,
-                  color: Color(0xff777777)),
-              const SizedBox(height: 2),
-              Text("No Data Found",
-                  style:
-                      textStyle(const Color(0xff777777), 15, FontWeight.w500)),
+              NoDataFound(
+                secondaryEnabled: true,
+                title: 'No Baskets Found',
+                subtitle: null,
+                secondaryLabel: 'Create basket',
+                onSecondary: (){
+                  _showCreateBasket(context);
+                },
+              ),
+              // SvgPicture.asset(assets.noDatafound,
+              //     color: Color(0xff777777)),
+              // const SizedBox(height: 2),
+              // Text("No Data Found",
+              //     style:
+              //         textStyle(const Color(0xff777777), 15, FontWeight.w500)),
               //       SizedBox(height: 16),
               // TextWidget.subText(
               //   text: "No baskets found",
               //   theme: theme.isDarkMode,
               //   color: colors.colorGrey,
               // ),
-              SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () => _showCreateBasket(context),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: colors.primaryLight,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                ),
-                child: TextWidget.subText(
-                  text: "Create Basket",
-                  color: colors.colorWhite,
-                  theme: false,
-                ),
-              ),
+              // SizedBox(height: 16),
+              // ElevatedButton(
+              //   onPressed: () => ,
+              //   style: ElevatedButton.styleFrom(
+              //     backgroundColor: colors.primaryLight,
+              //     padding:
+              //         const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              //   ),
+              //   child: TextWidget.subText(
+              //     text: "Create Basket",
+              //     color: colors.colorWhite,
+              //     theme: false,
+              //   ),
+              // ),
             ],
           ),
         ],

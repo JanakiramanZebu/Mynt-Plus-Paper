@@ -153,7 +153,12 @@ class BondsCommonSearch extends ConsumerWidget {
     return SingleChildScrollView(
       child: bonds.bondsCommonSearchList.isNotEmpty
           ? _buildSearchResults(bonds, theme)
-          : const Center(child: NoDataFound()),
+          : const Center(child: NoDataFound(
+            title: "No Results Found",
+            subtitle: "Try searching with different keywords",
+            primaryEnabled: false,
+            secondaryEnabled: false,
+          )),
     );
   }
 

@@ -46,7 +46,9 @@ class MFSipOrderHistoryScreen extends ConsumerWidget {
             TransparentLoaderScreen(
               isLoading: mfData.bestmfloader ?? false,
               child: mfData.mfnotlivesiporderlist?.data?.isEmpty ?? true
-                  ? const Center(child: NoDataFound())
+                  ? const Center(child: NoDataFound(
+                    secondaryEnabled: false,
+                  ))
                   : Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [

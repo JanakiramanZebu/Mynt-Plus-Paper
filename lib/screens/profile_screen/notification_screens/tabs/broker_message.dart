@@ -54,7 +54,9 @@ class BrokerMsg extends ConsumerWidget {
             child: noftification.brokermsg![0].dmsg == null
                 ? const Padding(
                     padding: EdgeInsets.symmetric(vertical: 220),
-                    child: NoDataFound(),
+                    child: NoDataFound(
+                      secondaryEnabled: false,
+                    ),
                   )
                 : ListView.separated(
                     padding: const EdgeInsets.symmetric(vertical: 20),
