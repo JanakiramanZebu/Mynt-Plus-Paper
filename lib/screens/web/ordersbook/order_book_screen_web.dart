@@ -42,24 +42,27 @@ class OrderBookScreenWeb extends ConsumerStatefulWidget {
 class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     with TickerProviderStateMixin {
   final Set<int> _selectedOrders = <int>{};
-  TabController? _tabController; // Make nullable to allow deferred initialization
+  TabController?
+      _tabController; // Make nullable to allow deferred initialization
   StreamSubscription? _socketSubscription;
   final ScrollController _horizontalScrollController = ScrollController();
-  final ScrollController _orderBookVerticalScrollController = ScrollController();
-  final ScrollController _tradeBookVerticalScrollController = ScrollController();
+  final ScrollController _orderBookVerticalScrollController =
+      ScrollController();
+  final ScrollController _tradeBookVerticalScrollController =
+      ScrollController();
   final ScrollController _gttVerticalScrollController = ScrollController();
   final ScrollController _tabScrollController = ScrollController();
   String? _hoveredRowToken; // Track which row is being hovered
-  
+
   // Track processing states for order actions
   bool _isProcessingCancel = false;
   bool _isProcessingModify = false;
   String? _processingOrderToken; // Track which order is being processed
-  
+
   // Draggable dialog positions
   Offset _modifyDialogPosition = const Offset(100, 100);
   Offset _placeOrderDialogPosition = const Offset(150, 150);
-  
+
   // Sort state per table
   int? _orderSortColumnIndex;
   bool _orderSortAscending = true;
@@ -68,12 +71,11 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
   int? _gttSortColumnIndex;
   bool _gttSortAscending = true;
 
-
   // GTT new implementation -------------
 
   // Scroll controllers for vertical and horizontal scroll
 // final ScrollController _gttVerticalScrollController = ScrollController();
-final ScrollController _gttHorizontalScrollController = ScrollController();
+  final ScrollController _gttHorizontalScrollController = ScrollController();
 
 // Hover + processing tokens (you already have similar; keep or override)
 // String? _hoveredRowToken;
@@ -89,32 +91,32 @@ final ScrollController _gttHorizontalScrollController = ScrollController();
 // final Set<int> _selectedOrders = {};
 
 // -------------------------------------------------------------gtt new implementation end -------------
-  
+
   // MF tab state
   int _mfTabIndex = 0; // 0 for Orders, 1 for SIP
-  
+
   // Track initialization state
   bool _isInitialized = false;
 
   @override
   void initState() {
     super.initState();
-    
+
     // Initialize non-blocking components immediately
     FirebaseAnalytics.instance.logScreenView(
       screenName: 'Order Book Screen Web',
       screenClass: 'OrderBookScreenWeb',
     );
-    
+
     // Defer heavy operations until after UI renders
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeHeavyComponents();
     });
   }
-  
+
   void _initializeHeavyComponents() async {
     if (!mounted) return;
-    
+
     try {
       // Initialize TabController after UI renders
       final orderProviderRef = ref.read(orderProvider);
@@ -127,13 +129,15 @@ final ScrollController _gttHorizontalScrollController = ScrollController();
       _tabController!.addListener(() {
         if (!_tabController!.indexIsChanging) {
           // Only call when tab change is complete, not during animation
-          ref.read(orderProvider).changeTabIndex(_tabController!.index, context);
+          ref
+              .read(orderProvider)
+              .changeTabIndex(_tabController!.index, context);
         }
       });
 
       // Set up WebSocket subscription
       _setupSocketSubscription();
-      
+
       if (mounted) {
         setState(() {
           _isInitialized = true;
@@ -166,10 +170,11 @@ final ScrollController _gttHorizontalScrollController = ScrollController();
   void _setupSocketSubscription() {
     Future.microtask(() {
       final socketProvider = ref.read(websocketProvider);
-      
-      _socketSubscription = socketProvider.socketDataStream.listen((socketDatas) {
+
+      _socketSubscription =
+          socketProvider.socketDataStream.listen((socketDatas) {
         if (socketDatas.isEmpty) return;
-        
+
         if (mounted) {
           _processUpdates(socketDatas);
         }
@@ -180,7 +185,7 @@ final ScrollController _gttHorizontalScrollController = ScrollController();
   void _processUpdates(Map socketDatas) {
     bool hasUpdates = false;
     final orderBook = ref.read(orderProvider);
-    
+
     // Helper function to check if a string is a valid numeric price
     bool isValidNumeric(String? value) {
       if (value == null || value == "null") {
@@ -188,44 +193,48 @@ final ScrollController _gttHorizontalScrollController = ScrollController();
       }
       return double.tryParse(value) != null;
     }
-    
+
     // Update order book with LTP changes
-    _updateOrderBook(orderBook, socketDatas, isValidNumeric, (updated) => hasUpdates = hasUpdates || updated);
-    
+    _updateOrderBook(orderBook, socketDatas, isValidNumeric,
+        (updated) => hasUpdates = hasUpdates || updated);
+
     // Update trade book with LTP changes
-    _updateTradeBook(orderBook, socketDatas, isValidNumeric, (updated) => hasUpdates = hasUpdates || updated);
-    
+    _updateTradeBook(orderBook, socketDatas, isValidNumeric,
+        (updated) => hasUpdates = hasUpdates || updated);
+
     // Update GTT order book with LTP changes
-    _updateGttOrderBook(orderBook, socketDatas, isValidNumeric, (updated) => hasUpdates = hasUpdates || updated);
-    
+    _updateGttOrderBook(orderBook, socketDatas, isValidNumeric,
+        (updated) => hasUpdates = hasUpdates || updated);
+
     // Notify listener if there were updates
     if (hasUpdates && mounted) {
       setState(() {});
     }
   }
-  
-  void _updateOrderBook(OrderProvider orderBook, Map socketDatas, bool Function(String?) isValidNumeric, Function(bool) setHasUpdates) {
+
+  void _updateOrderBook(OrderProvider orderBook, Map socketDatas,
+      bool Function(String?) isValidNumeric, Function(bool) setHasUpdates) {
     // Update open orders
     if (orderBook.openOrder != null) {
       for (var order in orderBook.openOrder!) {
         if (order.token == null || order.token!.isEmpty) continue;
         if (!socketDatas.containsKey(order.token)) continue;
-        
+
         final socketData = socketDatas[order.token];
         if (socketData == null || socketData.isEmpty) continue;
-        
+
         final lp = socketData['lp']?.toString();
         if (isValidNumeric(lp) && lp != order.ltp) {
           order.ltp = lp;
           setHasUpdates(true);
         }
-        
+
         final chng = socketData['chng']?.toString();
         if (isValidNumeric(chng) && chng != order.change) {
           order.change = chng;
           setHasUpdates(true);
         }
-        
+
         final pc = socketData['pc']?.toString();
         if (isValidNumeric(pc) && pc != order.perChange) {
           order.perChange = pc;
@@ -233,16 +242,16 @@ final ScrollController _gttHorizontalScrollController = ScrollController();
         }
       }
     }
-    
+
     // Update executed orders
     if (orderBook.executedOrder != null) {
       for (var order in orderBook.executedOrder!) {
         if (order.token == null || order.token!.isEmpty) continue;
         if (!socketDatas.containsKey(order.token)) continue;
-        
+
         final socketData = socketDatas[order.token];
         if (socketData == null || socketData.isEmpty) continue;
-        
+
         final lp = socketData['lp']?.toString();
         if (isValidNumeric(lp) && lp != order.ltp) {
           order.ltp = lp;
@@ -250,16 +259,16 @@ final ScrollController _gttHorizontalScrollController = ScrollController();
         }
       }
     }
-    
+
     // Update search items
     if (orderBook.orderSearchItem != null) {
       for (var order in orderBook.orderSearchItem!) {
         if (order.token == null || order.token!.isEmpty) continue;
         if (!socketDatas.containsKey(order.token)) continue;
-        
+
         final socketData = socketDatas[order.token];
         if (socketData == null || socketData.isEmpty) continue;
-        
+
         final lp = socketData['lp']?.toString();
         if (isValidNumeric(lp) && lp != order.ltp) {
           order.ltp = lp;
@@ -268,28 +277,29 @@ final ScrollController _gttHorizontalScrollController = ScrollController();
       }
     }
   }
-  
-  void _updateTradeBook(OrderProvider orderBook, Map socketDatas, bool Function(String?) isValidNumeric, Function(bool) setHasUpdates) {
+
+  void _updateTradeBook(OrderProvider orderBook, Map socketDatas,
+      bool Function(String?) isValidNumeric, Function(bool) setHasUpdates) {
     if (orderBook.tradeBook != null) {
       for (var trade in orderBook.tradeBook!) {
         if (trade.token == null || trade.token!.isEmpty) continue;
         if (!socketDatas.containsKey(trade.token)) continue;
-        
+
         final socketData = socketDatas[trade.token];
         if (socketData == null || socketData.isEmpty) continue;
-        
+
         final lp = socketData['lp']?.toString();
         if (isValidNumeric(lp) && lp != trade.ltp) {
           trade.ltp = lp;
           setHasUpdates(true);
         }
-        
+
         final chng = socketData['chng']?.toString();
         if (isValidNumeric(chng) && chng != trade.change) {
           trade.change = chng;
           setHasUpdates(true);
         }
-        
+
         final pc = socketData['pc']?.toString();
         if (isValidNumeric(pc) && pc != trade.perChange) {
           trade.perChange = pc;
@@ -297,27 +307,27 @@ final ScrollController _gttHorizontalScrollController = ScrollController();
         }
       }
     }
-    
+
     if (orderBook.tradeBooksearch != null) {
       for (var trade in orderBook.tradeBooksearch!) {
         if (trade.token == null || trade.token!.isEmpty) continue;
         if (!socketDatas.containsKey(trade.token)) continue;
-        
+
         final socketData = socketDatas[trade.token];
         if (socketData == null || socketData.isEmpty) continue;
-        
+
         final lp = socketData['lp']?.toString();
         if (isValidNumeric(lp) && lp != trade.ltp) {
           trade.ltp = lp;
           setHasUpdates(true);
         }
-        
+
         final chng = socketData['chng']?.toString();
         if (isValidNumeric(chng) && chng != trade.change) {
           trade.change = chng;
           setHasUpdates(true);
         }
-        
+
         final pc = socketData['pc']?.toString();
         if (isValidNumeric(pc) && pc != trade.perChange) {
           trade.perChange = pc;
@@ -326,28 +336,29 @@ final ScrollController _gttHorizontalScrollController = ScrollController();
       }
     }
   }
-  
-  void _updateGttOrderBook(OrderProvider orderBook, Map socketDatas, bool Function(String?) isValidNumeric, Function(bool) setHasUpdates) {
+
+  void _updateGttOrderBook(OrderProvider orderBook, Map socketDatas,
+      bool Function(String?) isValidNumeric, Function(bool) setHasUpdates) {
     if (orderBook.gttOrderBookModel != null) {
       for (var gttOrder in orderBook.gttOrderBookModel!) {
         if (gttOrder.token == null || gttOrder.token!.isEmpty) continue;
         if (!socketDatas.containsKey(gttOrder.token)) continue;
-        
+
         final socketData = socketDatas[gttOrder.token];
         if (socketData == null || socketData.isEmpty) continue;
-        
+
         final lp = socketData['lp']?.toString();
         if (isValidNumeric(lp) && lp != gttOrder.ltp) {
           gttOrder.ltp = lp;
           setHasUpdates(true);
         }
-        
+
         final chng = socketData['chng']?.toString();
         if (isValidNumeric(chng) && chng != gttOrder.change) {
           gttOrder.change = chng;
           setHasUpdates(true);
         }
-        
+
         final pc = socketData['pc']?.toString();
         if (isValidNumeric(pc) && pc != gttOrder.perChange) {
           gttOrder.perChange = pc;
@@ -355,27 +366,27 @@ final ScrollController _gttHorizontalScrollController = ScrollController();
         }
       }
     }
-    
+
     if (orderBook.gttOrderBookSearch != null) {
       for (var gttOrder in orderBook.gttOrderBookSearch!) {
         if (gttOrder.token == null || gttOrder.token!.isEmpty) continue;
         if (!socketDatas.containsKey(gttOrder.token)) continue;
-        
+
         final socketData = socketDatas[gttOrder.token];
         if (socketData == null || socketData.isEmpty) continue;
-        
+
         final lp = socketData['lp']?.toString();
         if (isValidNumeric(lp) && lp != gttOrder.ltp) {
           gttOrder.ltp = lp;
           setHasUpdates(true);
         }
-        
+
         final chng = socketData['chng']?.toString();
         if (isValidNumeric(chng) && chng != gttOrder.change) {
           gttOrder.change = chng;
           setHasUpdates(true);
         }
-        
+
         final pc = socketData['pc']?.toString();
         if (isValidNumeric(pc) && pc != gttOrder.perChange) {
           gttOrder.perChange = pc;
@@ -391,19 +402,21 @@ final ScrollController _gttHorizontalScrollController = ScrollController();
 
     // Always show the UI structure immediately for better UX
     return Container(
-        width: double.infinity,
+      width: double.infinity,
       height: double.infinity,
       color: theme.isDarkMode ? WebDarkColors.background : Colors.white,
       child: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
-        child: _isInitialized ? _buildInitializedContent(theme) : _buildLoadingContent(theme),
+        child: _isInitialized
+            ? _buildInitializedContent(theme)
+            : _buildLoadingContent(theme),
       ),
     );
   }
-  
+
   Widget _buildInitializedContent(ThemesProvider theme) {
     final orderBook = ref.watch(orderProvider);
-    
+
     return RefreshIndicator(
       onRefresh: () async {
         await orderBook.fetchOrderBook(context, true);
@@ -423,7 +436,7 @@ final ScrollController _gttHorizontalScrollController = ScrollController();
       ),
     );
   }
-  
+
   Widget _buildLoadingContent(ThemesProvider theme) {
     return const CircularLoaderImage();
   }
@@ -439,9 +452,9 @@ final ScrollController _gttHorizontalScrollController = ScrollController();
       children: [
         // Tabs and Search Bar in same row
         _buildTabsAndActionBar(theme, orderBook),
-    
+
         const SizedBox(height: 16),
-        
+
         // Content Area
         _buildContentArea(theme, orderBook),
       ],
@@ -461,13 +474,17 @@ final ScrollController _gttHorizontalScrollController = ScrollController();
           child: Container(
             height: 40,
             decoration: BoxDecoration(
-                color: theme.isDarkMode ? WebDarkColors.inputBackground : WebColors.inputBackground,
-                borderRadius: BorderRadius.circular(5),
-                border: Border.all(
-                  color: theme.isDarkMode ? WebDarkColors.inputBorder : WebColors.inputBorder,
-                  width: 1,
-                ),
+              color: theme.isDarkMode
+                  ? WebDarkColors.inputBackground
+                  : WebColors.inputBackground,
+              borderRadius: BorderRadius.circular(5),
+              border: Border.all(
+                color: theme.isDarkMode
+                    ? WebDarkColors.inputBorder
+                    : WebColors.inputBorder,
+                width: 1,
               ),
+            ),
             child: Row(
               children: [
                 const SizedBox(width: 12),
@@ -476,7 +493,9 @@ final ScrollController _gttHorizontalScrollController = ScrollController();
                   width: 20,
                   height: 20,
                   fit: BoxFit.scaleDown,
-                  color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                  color: theme.isDarkMode
+                      ? colors.textSecondaryDark
+                      : colors.textSecondaryLight,
                 ),
                 const SizedBox(width: 8),
                 Expanded(
@@ -486,19 +505,19 @@ final ScrollController _gttHorizontalScrollController = ScrollController();
                     textCapitalization: TextCapitalization.characters,
                     inputFormatters: [UpperCaseTextFormatter()],
                     style: WebTextStyles.formInput(
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
-                ),
+                      isDarkTheme: theme.isDarkMode,
+                      color: theme.isDarkMode
+                          ? WebDarkColors.textPrimary
+                          : WebColors.textPrimary,
+                    ),
                     decoration: InputDecoration(
                       hintText: 'Search orders',
-                     hintStyle: WebTextStyles.formInput(
-                    isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode
-                        ? WebDarkColors.textSecondary
-                        : WebColors.textSecondary,
-                  ),
+                      hintStyle: WebTextStyles.formInput(
+                        isDarkTheme: theme.isDarkMode,
+                        color: theme.isDarkMode
+                            ? WebDarkColors.textSecondary
+                            : WebColors.textSecondary,
+                      ),
                       border: InputBorder.none,
                       isDense: true,
                       contentPadding: const EdgeInsets.symmetric(vertical: 12),
@@ -531,7 +550,9 @@ final ScrollController _gttHorizontalScrollController = ScrollController();
                           width: 20,
                           height: 20,
                           fit: BoxFit.scaleDown,
-                          color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                          color: theme.isDarkMode
+                              ? colors.textSecondaryDark
+                              : colors.textSecondaryLight,
                         ),
                       ),
                     ),
@@ -570,11 +591,11 @@ final ScrollController _gttHorizontalScrollController = ScrollController();
                 final tabString = entry.value;
                 final isSelected = (_tabController?.index ?? 0) == index;
                 final isLast = index == orderBook.orderTabName.length - 1;
-                
+
                 final parts = tabString.text?.split(' ') ?? [];
                 final title = parts.first;
                 final badge = parts.length > 1 ? parts[1] : null;
-                
+
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 6),
                   child: _buildSegmentedTab(
@@ -662,12 +683,12 @@ final ScrollController _gttHorizontalScrollController = ScrollController();
                   style: WebTextStyles.tab(
                     isDarkTheme: theme.isDarkMode,
                     color: isSelected
-                    ? (theme.isDarkMode
-                        ? WebDarkColors.textPrimary
-                        : WebColors.textPrimary)
-                    : (theme.isDarkMode
-                        ? WebDarkColors.navItem
-                        : WebColors.navItem),
+                        ? (theme.isDarkMode
+                            ? WebDarkColors.textPrimary
+                            : WebColors.textPrimary)
+                        : (theme.isDarkMode
+                            ? WebDarkColors.navItem
+                            : WebColors.navItem),
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                   ),
                 ),
@@ -690,12 +711,15 @@ final ScrollController _gttHorizontalScrollController = ScrollController();
         final headerHeight = 50.0; // Header height (tabs + search bar)
         final spacing = 16.0; // Spacing between header and content
         final bottomMargin = 20.0; // Bottom margin to prevent overflow
-        final tableHeight = screenHeight - padding - headerHeight - spacing - bottomMargin;
-        
+        final tableHeight =
+            screenHeight - padding - headerHeight - spacing - bottomMargin;
+
         // Ensure we don't exceed 75% of screen height to prevent overflow
         final maxHeight = screenHeight * 0.75;
-        final calculatedHeight = tableHeight > maxHeight ? maxHeight : (tableHeight > 400 ? tableHeight : 400.0);
-        
+        final calculatedHeight = tableHeight > maxHeight
+            ? maxHeight
+            : (tableHeight > 400 ? tableHeight : 400.0);
+
         return SizedBox(
           height: calculatedHeight.toDouble(),
           child: IndexedStack(
@@ -706,8 +730,8 @@ final ScrollController _gttHorizontalScrollController = ScrollController();
                 child: _buildOrderBookTable(
                   theme,
                   (orderBook.orderSearchCtrl.text.isNotEmpty
-                          ? (orderBook.orderSearchItem ?? [])
-                          : (orderBook.openOrder ?? [])),
+                      ? (orderBook.orderSearchItem ?? [])
+                      : (orderBook.openOrder ?? [])),
                   'Open Orders',
                 ),
               ),
@@ -716,8 +740,8 @@ final ScrollController _gttHorizontalScrollController = ScrollController();
                 child: _buildOrderBookTable(
                   theme,
                   (orderBook.orderSearchCtrl.text.isNotEmpty
-                          ? (orderBook.orderSearchItem ?? [])
-                          : (orderBook.executedOrder ?? [])),
+                      ? (orderBook.orderSearchItem ?? [])
+                      : (orderBook.executedOrder ?? [])),
                   'Executed Orders',
                 ),
               ),
@@ -726,8 +750,8 @@ final ScrollController _gttHorizontalScrollController = ScrollController();
                 child: _buildTradeBookTable(
                   theme,
                   (orderBook.orderSearchCtrl.text.isNotEmpty
-                          ? (orderBook.tradeBooksearch ?? [])
-                          : (orderBook.tradeBook ?? [])),
+                      ? (orderBook.tradeBooksearch ?? [])
+                      : (orderBook.tradeBook ?? [])),
                 ),
               ),
               Align(
@@ -735,8 +759,8 @@ final ScrollController _gttHorizontalScrollController = ScrollController();
                 child: _buildGttOrderBookTable(
                   theme,
                   (orderBook.orderSearchCtrl.text.isNotEmpty
-                          ? (orderBook.gttOrderBookSearch ?? [])
-                          : (orderBook.gttOrderBookModel ?? [])),
+                      ? (orderBook.gttOrderBookSearch ?? [])
+                      : (orderBook.gttOrderBookModel ?? [])),
                 ),
               ),
               // MF tab with sub tabs: Orders and SIP
@@ -801,7 +825,7 @@ final ScrollController _gttHorizontalScrollController = ScrollController();
                 mainAxisSize: MainAxisSize.min,
                 children: List.generate(tabs.length, (index) {
                   final isSelected = _mfTabIndex == index;
-                  
+
                   return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 6),
                     child: _buildMFSegmentedTab(
@@ -877,9 +901,10 @@ final ScrollController _gttHorizontalScrollController = ScrollController();
     );
   }
 
-  Widget _buildOrderBookTable(ThemesProvider theme, List<OrderBookModel> orders, String title) {
+  Widget _buildOrderBookTable(
+      ThemesProvider theme, List<OrderBookModel> orders, String title) {
     final orderBook = ref.watch(orderProvider);
-    
+
     // Show loading indicator if data is being fetched and no existing data
     if (orders.isEmpty) {
       if (orderBook.loading) {
@@ -921,7 +946,8 @@ final ScrollController _gttHorizontalScrollController = ScrollController();
             scrollDirection: Axis.vertical,
             physics: const AlwaysScrollableScrollPhysics(),
             child: Padding(
-              padding: const EdgeInsets.only(right: 16), // Space for vertical scrollbar
+              padding: const EdgeInsets.only(
+                  right: 16), // Space for vertical scrollbar
               child: SizedBox(
                 width: constraints.maxWidth,
                 child: Padding(
@@ -932,7 +958,8 @@ final ScrollController _gttHorizontalScrollController = ScrollController();
                     sortColumnIndex: _orderSortColumnIndex,
                     sortAscending: _orderSortAscending,
                     headingRowHeight: 44,
-                    headingRowColor: WidgetStateProperty.all(Colors.transparent),
+                    headingRowColor:
+                        WidgetStateProperty.all(Colors.transparent),
                     dataRowColor: WidgetStateProperty.resolveWith<Color?>(
                       (Set<WidgetState> states) {
                         if (states.contains(WidgetState.hovered)) {
@@ -953,64 +980,81 @@ final ScrollController _gttHorizontalScrollController = ScrollController();
                     columns: [
                       DataColumn(
                         numeric: false, // Left-align text column
-                        label: _buildSortableColumnHeader('Instrument', theme, 0),
-                        onSort: (columnIndex, ascending) => _onSortOrderTable(columnIndex, ascending),
+                        label:
+                            _buildSortableColumnHeader('Instrument', theme, 0),
+                        onSort: (columnIndex, ascending) =>
+                            _onSortOrderTable(columnIndex, ascending),
                       ),
                       DataColumn(
                         numeric: false, // Left-align text column
                         label: _buildSortableColumnHeader('Product', theme, 1),
-                        onSort: (columnIndex, ascending) => _onSortOrderTable(columnIndex, ascending),
+                        onSort: (columnIndex, ascending) =>
+                            _onSortOrderTable(columnIndex, ascending),
                       ),
                       DataColumn(
                         numeric: false, // Left-align text column
                         label: _buildSortableColumnHeader('Type', theme, 2),
-                        onSort: (columnIndex, ascending) => _onSortOrderTable(columnIndex, ascending),
+                        onSort: (columnIndex, ascending) =>
+                            _onSortOrderTable(columnIndex, ascending),
                       ),
                       DataColumn(
                         numeric: true, // Right-align numeric column
                         label: _buildSortableColumnHeader('Qty', theme, 3),
-                        onSort: (columnIndex, ascending) => _onSortOrderTable(columnIndex, ascending),
+                        onSort: (columnIndex, ascending) =>
+                            _onSortOrderTable(columnIndex, ascending),
                       ),
                       DataColumn(
                         numeric: true, // Right-align numeric column
-                        label: _buildSortableColumnHeader('Avg price', theme, 4),
-                        onSort: (columnIndex, ascending) => _onSortOrderTable(columnIndex, ascending),
+                        label:
+                            _buildSortableColumnHeader('Avg price', theme, 4),
+                        onSort: (columnIndex, ascending) =>
+                            _onSortOrderTable(columnIndex, ascending),
                       ),
                       DataColumn(
                         numeric: true, // Right-align numeric column
                         label: _buildSortableColumnHeader('LTP', theme, 5),
-                        onSort: (columnIndex, ascending) => _onSortOrderTable(columnIndex, ascending),
+                        onSort: (columnIndex, ascending) =>
+                            _onSortOrderTable(columnIndex, ascending),
                       ),
                       DataColumn(
                         numeric: true, // Right-align numeric column
                         label: _buildSortableColumnHeader('Price', theme, 6),
-                        onSort: (columnIndex, ascending) => _onSortOrderTable(columnIndex, ascending),
+                        onSort: (columnIndex, ascending) =>
+                            _onSortOrderTable(columnIndex, ascending),
                       ),
                       DataColumn(
                         numeric: true, // Right-align numeric column
-                        label: _buildSortableColumnHeader('Trigger price', theme, 7),
-                        onSort: (columnIndex, ascending) => _onSortOrderTable(columnIndex, ascending),
+                        label: _buildSortableColumnHeader(
+                            'Trigger price', theme, 7),
+                        onSort: (columnIndex, ascending) =>
+                            _onSortOrderTable(columnIndex, ascending),
                       ),
                       DataColumn(
                         numeric: true, // Right-align numeric column
-                        label: _buildSortableColumnHeader('Order value', theme, 8),
-                        onSort: (columnIndex, ascending) => _onSortOrderTable(columnIndex, ascending),
+                        label:
+                            _buildSortableColumnHeader('Order value', theme, 8),
+                        onSort: (columnIndex, ascending) =>
+                            _onSortOrderTable(columnIndex, ascending),
                       ),
                       DataColumn(
                         numeric: false, // Left-align text column
                         label: _buildSortableColumnHeader('Status', theme, 9),
-                        onSort: (columnIndex, ascending) => _onSortOrderTable(columnIndex, ascending),
+                        onSort: (columnIndex, ascending) =>
+                            _onSortOrderTable(columnIndex, ascending),
                       ),
                       DataColumn(
                         numeric: false, // Left-align text column
                         label: _buildSortableColumnHeader('Time', theme, 10),
-                        onSort: (columnIndex, ascending) => _onSortOrderTable(columnIndex, ascending),
+                        onSort: (columnIndex, ascending) =>
+                            _onSortOrderTable(columnIndex, ascending),
                       ),
                     ],
                     rows: _sortedOrders(orders).map((order) {
                       // Use order number as unique identifier for hover (not token, which is shared across orders)
-                      final uniqueId = order.norenordno?.toString() ?? order.token?.toString() ?? '';
-                      
+                      final uniqueId = order.norenordno?.toString() ??
+                          order.token?.toString() ??
+                          '';
+
                       return DataRow(
                         onSelectChanged: (bool? selected) {
                           _openOrderDetail(order);
@@ -1019,25 +1063,45 @@ final ScrollController _gttHorizontalScrollController = ScrollController();
                           // Instrument - text (left aligned)
                           _buildInstrumentCellWithHover(order, theme, uniqueId),
                           // Product - text (left aligned)
-                          _buildCellWithHover(order, theme, uniqueId, _buildProductCell(order, theme), alignment: Alignment.centerLeft),
+                          _buildCellWithHover(order, theme, uniqueId,
+                              _buildProductCell(order, theme),
+                              alignment: Alignment.centerLeft),
                           // Type - text (left aligned)
-                          _buildCellWithHover(order, theme, uniqueId, _buildTypeCell(order, theme), alignment: Alignment.centerLeft),
+                          _buildCellWithHover(order, theme, uniqueId,
+                              _buildTypeCell(order, theme),
+                              alignment: Alignment.centerLeft),
                           // Qty - numeric (right aligned)
-                          _buildCellWithHover(order, theme, uniqueId, _buildQtyCell(order, theme), alignment: Alignment.centerRight),
+                          _buildCellWithHover(order, theme, uniqueId,
+                              _buildQtyCell(order, theme),
+                              alignment: Alignment.centerRight),
                           // Avg price - numeric (right aligned)
-                          _buildCellWithHover(order, theme, uniqueId, _buildAvgPriceCell(order, theme), alignment: Alignment.centerRight),
+                          _buildCellWithHover(order, theme, uniqueId,
+                              _buildAvgPriceCell(order, theme),
+                              alignment: Alignment.centerRight),
                           // LTP - numeric (right aligned)
-                          _buildCellWithHover(order, theme, uniqueId, _buildLTPCell(order, theme), alignment: Alignment.centerRight),
+                          _buildCellWithHover(order, theme, uniqueId,
+                              _buildLTPCell(order, theme),
+                              alignment: Alignment.centerRight),
                           // Price - numeric (right aligned)
-                          _buildCellWithHover(order, theme, uniqueId, _buildPriceCell(order, theme), alignment: Alignment.centerRight),
+                          _buildCellWithHover(order, theme, uniqueId,
+                              _buildPriceCell(order, theme),
+                              alignment: Alignment.centerRight),
                           // Trigger price - numeric (right aligned)
-                          _buildCellWithHover(order, theme, uniqueId, _buildTriggerPriceCell(order, theme), alignment: Alignment.centerRight),
+                          _buildCellWithHover(order, theme, uniqueId,
+                              _buildTriggerPriceCell(order, theme),
+                              alignment: Alignment.centerRight),
                           // Order value - numeric (right aligned)
-                          _buildCellWithHover(order, theme, uniqueId, _buildOrderValueCell(order, theme), alignment: Alignment.centerRight),
+                          _buildCellWithHover(order, theme, uniqueId,
+                              _buildOrderValueCell(order, theme),
+                              alignment: Alignment.centerRight),
                           // Status - text (left aligned)
-                          _buildCellWithHover(order, theme, uniqueId, _buildStatusCell(order, theme), alignment: Alignment.centerLeft),
+                          _buildCellWithHover(order, theme, uniqueId,
+                              _buildStatusCell(order, theme),
+                              alignment: Alignment.centerLeft),
                           // Time - text (left aligned)
-                          _buildCellWithHover(order, theme, uniqueId, _buildTimeCell(order, theme), alignment: Alignment.centerLeft),
+                          _buildCellWithHover(order, theme, uniqueId,
+                              _buildTimeCell(order, theme),
+                              alignment: Alignment.centerLeft),
                         ],
                       );
                     }).toList(),
@@ -1051,9 +1115,10 @@ final ScrollController _gttHorizontalScrollController = ScrollController();
     );
   }
 
-  Widget _buildTradeBookTable(ThemesProvider theme, List<TradeBookModel> trades) {
+  Widget _buildTradeBookTable(
+      ThemesProvider theme, List<TradeBookModel> trades) {
     final orderBook = ref.watch(orderProvider);
-    
+
     // Show loading indicator if data is being fetched and no existing data
     if (trades.isEmpty) {
       if (orderBook.loading) {
@@ -1095,7 +1160,8 @@ final ScrollController _gttHorizontalScrollController = ScrollController();
             scrollDirection: Axis.vertical,
             physics: const AlwaysScrollableScrollPhysics(),
             child: Padding(
-              padding: const EdgeInsets.only(right: 16), // Space for vertical scrollbar
+              padding: const EdgeInsets.only(
+                  right: 16), // Space for vertical scrollbar
               child: SizedBox(
                 width: constraints.maxWidth,
                 child: Padding(
@@ -1107,7 +1173,8 @@ final ScrollController _gttHorizontalScrollController = ScrollController();
                     sortColumnIndex: _tradeSortColumnIndex,
                     sortAscending: _tradeSortAscending,
                     headingRowHeight: 44,
-                    headingRowColor: WidgetStateProperty.all(Colors.transparent),
+                    headingRowColor:
+                        WidgetStateProperty.all(Colors.transparent),
                     dataRowColor: WidgetStateProperty.resolveWith<Color?>(
                       (Set<WidgetState> states) {
                         if (states.contains(WidgetState.hovered)) {
@@ -1128,69 +1195,100 @@ final ScrollController _gttHorizontalScrollController = ScrollController();
                     columns: [
                       DataColumn(
                         numeric: false, // Left-align text column
-                        label: _buildTradeSortableColumnHeader('Instrument', theme, 0),
-                        onSort: (columnIndex, ascending) => _onSortTradeTable(columnIndex, ascending),
+                        label: _buildTradeSortableColumnHeader(
+                            'Instrument', theme, 0),
+                        onSort: (columnIndex, ascending) =>
+                            _onSortTradeTable(columnIndex, ascending),
                       ),
                       DataColumn(
                         numeric: false, // Left-align text column
-                        label: _buildTradeSortableColumnHeader('Product', theme, 1),
-                        onSort: (columnIndex, ascending) => _onSortTradeTable(columnIndex, ascending),
+                        label: _buildTradeSortableColumnHeader(
+                            'Product', theme, 1),
+                        onSort: (columnIndex, ascending) =>
+                            _onSortTradeTable(columnIndex, ascending),
                       ),
                       DataColumn(
                         numeric: false, // Left-align text column
-                        label: _buildTradeSortableColumnHeader('Type', theme, 2),
-                        onSort: (columnIndex, ascending) => _onSortTradeTable(columnIndex, ascending),
+                        label:
+                            _buildTradeSortableColumnHeader('Type', theme, 2),
+                        onSort: (columnIndex, ascending) =>
+                            _onSortTradeTable(columnIndex, ascending),
                       ),
                       DataColumn(
                         numeric: true, // Right-align numeric column
                         label: _buildTradeSortableColumnHeader('Qty', theme, 3),
-                        onSort: (columnIndex, ascending) => _onSortTradeTable(columnIndex, ascending),
+                        onSort: (columnIndex, ascending) =>
+                            _onSortTradeTable(columnIndex, ascending),
                       ),
                       DataColumn(
                         numeric: true, // Right-align numeric column
-                        label: _buildTradeSortableColumnHeader('Price', theme, 4),
-                        onSort: (columnIndex, ascending) => _onSortTradeTable(columnIndex, ascending),
+                        label:
+                            _buildTradeSortableColumnHeader('Price', theme, 4),
+                        onSort: (columnIndex, ascending) =>
+                            _onSortTradeTable(columnIndex, ascending),
                       ),
                       DataColumn(
                         numeric: true, // Right-align numeric column
-                        label: _buildTradeSortableColumnHeader('Trade value', theme, 5),
-                        onSort: (columnIndex, ascending) => _onSortTradeTable(columnIndex, ascending),
+                        label: _buildTradeSortableColumnHeader(
+                            'Trade value', theme, 5),
+                        onSort: (columnIndex, ascending) =>
+                            _onSortTradeTable(columnIndex, ascending),
                       ),
                       DataColumn(
                         numeric: false, // Left-align text column
-                        label: _buildTradeSortableColumnHeader('Order no', theme, 6),
-                        onSort: (columnIndex, ascending) => _onSortTradeTable(columnIndex, ascending),
+                        label: _buildTradeSortableColumnHeader(
+                            'Order no', theme, 6),
+                        onSort: (columnIndex, ascending) =>
+                            _onSortTradeTable(columnIndex, ascending),
                       ),
                       DataColumn(
                         numeric: false, // Left-align text column
-                        label: _buildTradeSortableColumnHeader('Time', theme, 7),
-                        onSort: (columnIndex, ascending) => _onSortTradeTable(columnIndex, ascending),
+                        label:
+                            _buildTradeSortableColumnHeader('Time', theme, 7),
+                        onSort: (columnIndex, ascending) =>
+                            _onSortTradeTable(columnIndex, ascending),
                       ),
                     ],
                     rows: _sortedTrades(trades).map((trade) {
                       final token = trade.token ?? '';
-                      
+
                       return DataRow(
                         onSelectChanged: (bool? selected) {
                           _openTradeDetail(trade);
                         },
                         cells: [
                           // Instrument - text (left aligned)
-                          _buildTradeCellWithHover(trade, theme, token, _buildSymbolCellForTrade(trade, theme), alignment: Alignment.centerLeft),
+                          _buildTradeCellWithHover(trade, theme, token,
+                              _buildSymbolCellForTrade(trade, theme),
+                              alignment: Alignment.centerLeft),
                           // Product - text (left aligned)
-                          _buildTradeCellWithHover(trade, theme, token, _buildProductCellForTrade(trade, theme), alignment: Alignment.centerLeft),
+                          _buildTradeCellWithHover(trade, theme, token,
+                              _buildProductCellForTrade(trade, theme),
+                              alignment: Alignment.centerLeft),
                           // Type - text (left aligned)
-                          _buildTradeCellWithHover(trade, theme, token, _buildTransactionCellForTrade(trade, theme), alignment: Alignment.centerLeft),
+                          _buildTradeCellWithHover(trade, theme, token,
+                              _buildTransactionCellForTrade(trade, theme),
+                              alignment: Alignment.centerLeft),
                           // Qty - numeric (right aligned)
-                          _buildTradeCellWithHover(trade, theme, token, _buildQtyCellForTrade(trade, theme), alignment: Alignment.centerRight),
+                          _buildTradeCellWithHover(trade, theme, token,
+                              _buildQtyCellForTrade(trade, theme),
+                              alignment: Alignment.centerRight),
                           // Price - numeric (right aligned)
-                          _buildTradeCellWithHover(trade, theme, token, _buildPriceCellForTrade(trade, theme), alignment: Alignment.centerRight),
+                          _buildTradeCellWithHover(trade, theme, token,
+                              _buildPriceCellForTrade(trade, theme),
+                              alignment: Alignment.centerRight),
                           // Trade value - numeric (right aligned)
-                          _buildTradeCellWithHover(trade, theme, token, _buildTradeValueCellForTrade(trade, theme), alignment: Alignment.centerRight),
+                          _buildTradeCellWithHover(trade, theme, token,
+                              _buildTradeValueCellForTrade(trade, theme),
+                              alignment: Alignment.centerRight),
                           // Order no - text (left aligned)
-                          _buildTradeCellWithHover(trade, theme, token, _buildOrderNoCellForTrade(trade, theme), alignment: Alignment.centerLeft),
+                          _buildTradeCellWithHover(trade, theme, token,
+                              _buildOrderNoCellForTrade(trade, theme),
+                              alignment: Alignment.centerLeft),
                           // Time - text (left aligned)
-                          _buildTradeCellWithHover(trade, theme, token, _buildTimeCellForTrade(trade, theme), alignment: Alignment.centerLeft),
+                          _buildTradeCellWithHover(trade, theme, token,
+                              _buildTimeCellForTrade(trade, theme),
+                              alignment: Alignment.centerLeft),
                         ],
                       );
                     }).toList(),
@@ -1204,97 +1302,250 @@ final ScrollController _gttHorizontalScrollController = ScrollController();
     );
   }
 
- Widget _buildGttOrderBookTable(ThemesProvider theme, List<GttOrderBookModel> gttOrders) {
-  final orderBook = ref.watch(orderProvider);
+  // Responsive breakpoints
+  static const double _mobileBreakpoint = 768;
+  static const double _tabletBreakpoint = 1024;
+  static const double _desktopBreakpoint = 1440;
 
-  // Show loading indicator if data is being fetched and no existing data
-  if (gttOrders.isEmpty) {
-    if (orderBook.loading) {
-      return const SizedBox(
-        height: 400,
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CircularProgressIndicator(),
-              SizedBox(height: 16),
-              Text('Loading GTT orders...', style: TextStyle(color: Colors.grey)),
-            ],
-          ),
-        ),
-      );
+  // Helper method to get responsive column configuration
+  Map<String, dynamic> _getResponsiveGttColumns(double screenWidth) {
+    if (screenWidth < _mobileBreakpoint) {
+      // Mobile: Show only essential columns
+      return {
+        'headers': ['Instrument', 'Type', 'Qty', 'LTP', 'Status'],
+        'columnFlex': {
+          'Instrument': 3,
+          'Type': 2,
+          'Qty': 1,
+          'LTP': 1,
+          'Status': 2,
+        },
+        'columnMinWidth': {
+          'Instrument': 120,
+          'Type': 70,
+          'Qty': 60,
+          'LTP': 80,
+          'Status': 90,
+        },
+      };
+    } else if (screenWidth < _tabletBreakpoint) {
+      // Tablet: Show most columns, hide less important ones
+      return {
+        'headers': ['Instrument', 'Product', 'Type', 'Qty', 'LTP', 'Status', 'Time'],
+        'columnFlex': {
+          'Instrument': 3,
+          'Product': 2,
+          'Type': 2,
+          'Qty': 1,
+          'LTP': 1,
+          'Status': 2,
+          'Time': 2,
+        },
+        'columnMinWidth': {
+          'Instrument': 130,
+          'Product': 100,
+          'Type': 80,
+          'Qty': 65,
+          'LTP': 85,
+          'Status': 100,
+          'Time': 120,
+        },
+      };
+    } else if (screenWidth < _desktopBreakpoint) {
+      // Small Desktop: Show all columns with reduced widths
+      return {
+        'headers': ['Instrument', 'Product', 'Type', 'Qty', 'LTP', 'Trigger', 'Status', 'Time'],
+        'columnFlex': {
+          'Instrument': 3,
+          'Product': 2,
+          'Type': 2,
+          'Qty': 1,
+          'LTP': 1,
+          'Trigger': 2,
+          'Status': 2,
+          'Time': 3,
+        },
+        'columnMinWidth': {
+          'Instrument': 135,
+          'Product': 105,
+          'Type': 85,
+          'Qty': 68,
+          'LTP': 88,
+          'Trigger': 95,
+          'Status': 105,
+          'Time': 135,
+        },
+      };
     } else {
-      return const SizedBox(
-        height: 400,
-        child: Align(
-          alignment: Alignment.center,
-          child: Padding(
-            padding: EdgeInsets.all(16.0),
-            child: NoDataFound(),
-          ),
-        ),
-      );
+      // Large Desktop: Full columns with optimal widths
+      return {
+        'headers': ['Instrument', 'Product', 'Type', 'Qty', 'LTP', 'Trigger', 'Status', 'Time'],
+        'columnFlex': {
+          'Instrument': 3,
+          'Product': 2,
+          'Type': 2,
+          'Qty': 1,
+          'LTP': 1,
+          'Trigger': 2,
+          'Status': 2,
+          'Time': 3,
+        },
+        'columnMinWidth': {
+          'Instrument': 140,
+          'Product': 110,
+          'Type': 90,
+          'Qty': 70,
+          'LTP': 90,
+          'Trigger': 100,
+          'Status': 110,
+          'Time': 140,
+        },
+      };
     }
   }
 
-  // Column ordering, flex weights and min widths (tweak as required)
-  final columnFlex = <String, int>{
-    'Instrument': 3,
-    'Product': 2,
-    'Type': 2,
-    'Qty': 1,
-    'LTP': 1,
-    'Trigger': 2,
-    'Status': 2,
-    'Time': 3,
-  };
+  Widget _buildGttOrderBookTable(
+      ThemesProvider theme, List<GttOrderBookModel> gttOrders) {
+    final orderBook = ref.watch(orderProvider);
 
-  // Minimum widths in pixels for each column (ensures data doesn't get clipped)
-  final columnMinWidth = <String, double>{
-    'Instrument': 140,
-    'Product': 110,
-    'Type': 90,
-    'Qty': 70,
-    'LTP': 90,
-    'Trigger': 100,
-    'Status': 110,
-    'Time': 140,
-  };
+    // Show loading indicator if data is being fetched and no existing data
+    if (gttOrders.isEmpty) {
+      if (orderBook.loading) {
+        return const SizedBox(
+          height: 400,
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text('Loading GTT orders...',
+                    style: TextStyle(color: Colors.grey)),
+              ],
+            ),
+          ),
+        );
+      } else {
+        return const SizedBox(
+          height: 400,
+          child: Align(
+            alignment: Alignment.center,
+            child: Padding(
+              padding: EdgeInsets.all(16.0),
+              child: NoDataFound(),
+            ),
+          ),
+        );
+      }
+    }
 
-  final headers = [
-    'Instrument',
-    'Product',
-    'Type',
-    'Qty',
-    'LTP',
-    'Trigger',
-    'Status',
-    'Time',
-  ];
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Get screen width for responsive design
+        final screenWidth = MediaQuery.of(context).size.width;
+        
+        // Get responsive column configuration based on screen width
+        final responsiveConfig = _getResponsiveGttColumns(screenWidth);
+        final headers = List<String>.from(responsiveConfig['headers'] as List);
+        final columnFlex = Map<String, int>.from(responsiveConfig['columnFlex'] as Map);
+        final columnMinWidth = Map<String, double>.from(responsiveConfig['columnMinWidth'] as Map);
+        
+        // Calculate total minimum width: sum of all columnMinWidth values
+        // This ensures header and body use the same totalMinWidth calculation
+        final totalMinWidth =
+            columnMinWidth.values.fold<double>(0.0, (a, b) => a + b);
+        // Determine whether horizontal scroll is needed by comparing available width with total min width
+        final needHorizontalScroll = constraints.maxWidth < totalMinWidth;
 
-  return LayoutBuilder(
-    builder: (context, constraints) {
-      // Calculate total minimum width: sum of all columnMinWidth values
-      // This ensures header and body use the same totalMinWidth calculation
-      final totalMinWidth = columnMinWidth.values.fold<double>(0.0, (a, b) => a + b);
-      // Determine whether horizontal scroll is needed by comparing available width with total min width
-      final needHorizontalScroll = constraints.maxWidth < totalMinWidth;
+        // Build the Column (header + body)
+        final tableColumn = Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // --- Sticky header (fixed) ---
+            Container(
+              height: 48,
+              decoration: BoxDecoration(
+                color:
+                    theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
+                border: Border(
+                  bottom: BorderSide(
+                    color: theme.isDarkMode
+                        ? WebDarkColors.divider
+                        : WebColors.divider,
+                    width: 1,
+                  ),
+                ),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: needHorizontalScroll
+                  ? IntrinsicWidth(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: headers.map((label) {
+                          final flex = columnFlex[label] ?? 1;
+                          final minW = columnMinWidth[label] ?? 80.0;
+                          final columnIndex = headers.indexOf(label);
 
-      // Build the Column (header + body)
-      final tableColumn = Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // --- Sticky header (fixed) ---
-          Container(
-            height: 48,
-            color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: needHorizontalScroll
-                ? UnconstrainedBox(
-                    alignment: Alignment.centerLeft,
-                    constrainedAxis: Axis.vertical,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
+                          return _buildGttColumnCell(
+                            needHorizontalScroll: needHorizontalScroll,
+                            flex: flex,
+                            minW: minW,
+                            child: InkWell(
+                              onTap: () => _onSortGttTable(
+                                  columnIndex, !_gttSortAscending),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 12.0, horizontal: 6),
+                                    child: Text(
+                                      label,
+                                      style: WebTextStyles.tableHeader(
+                                        isDarkTheme: theme.isDarkMode,
+                                        color: theme.isDarkMode
+                                            ? WebDarkColors.textPrimary
+                                            : WebColors.textPrimary,
+                                      ),
+                                      overflow: TextOverflow.visible,
+                                    ),
+                                  ),
+                                  // sort icon
+                                  if (_gttSortColumnIndex == columnIndex)
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 6.0),
+                                      child: Icon(
+                                        _gttSortAscending
+                                            ? Icons.arrow_upward
+                                            : Icons.arrow_downward,
+                                        size: 16,
+                                        color: theme.isDarkMode
+                                            ? WebDarkColors.iconPrimary
+                                            : WebColors.iconPrimary,
+                                      ),
+                                    )
+                                  else
+                                    Padding(
+                                      padding:
+                                          const EdgeInsets.only(right: 6.0),
+                                      child: Icon(
+                                        Icons.unfold_more,
+                                        size: 16,
+                                        color: theme.isDarkMode
+                                            ? WebDarkColors.iconSecondary
+                                            : WebColors.iconSecondary,
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    )
+                  : Row(
+                      mainAxisSize: MainAxisSize.max,
                       children: headers.map((label) {
                         final flex = columnFlex[label] ?? 1;
                         final minW = columnMinWidth[label] ?? 80.0;
@@ -1305,20 +1556,26 @@ final ScrollController _gttHorizontalScrollController = ScrollController();
                           flex: flex,
                           minW: minW,
                           child: InkWell(
-                            onTap: () => _onSortGttTable(columnIndex, !_gttSortAscending),
+                            onTap: () => _onSortGttTable(
+                                columnIndex, !_gttSortAscending),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.start,
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 6),
-                                  child: Text(
-                                    label,
-                                    style: WebTextStyles.tableHeader(
-                                      isDarkTheme: theme.isDarkMode,
-                                      color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                                Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 12.0, horizontal: 6),
+                                    child: Text(
+                                      label,
+                                      style: WebTextStyles.tableHeader(
+                                        isDarkTheme: theme.isDarkMode,
+                                        color: theme.isDarkMode
+                                            ? WebDarkColors.textPrimary
+                                            : WebColors.textPrimary,
+                                      ),
+                                      overflow: TextOverflow.visible,
                                     ),
-                                    overflow: TextOverflow.visible,
                                   ),
                                 ),
                                 // sort icon
@@ -1326,9 +1583,13 @@ final ScrollController _gttHorizontalScrollController = ScrollController();
                                   Padding(
                                     padding: const EdgeInsets.only(left: 6.0),
                                     child: Icon(
-                                      _gttSortAscending ? Icons.arrow_upward : Icons.arrow_downward,
+                                      _gttSortAscending
+                                          ? Icons.arrow_upward
+                                          : Icons.arrow_downward,
                                       size: 16,
-                                      color: theme.isDarkMode ? WebDarkColors.iconPrimary : WebColors.iconPrimary,
+                                      color: theme.isDarkMode
+                                          ? WebDarkColors.iconPrimary
+                                          : WebColors.iconPrimary,
                                     ),
                                   )
                                 else
@@ -1337,7 +1598,9 @@ final ScrollController _gttHorizontalScrollController = ScrollController();
                                     child: Icon(
                                       Icons.unfold_more,
                                       size: 16,
-                                      color: theme.isDarkMode ? WebDarkColors.iconSecondary : WebColors.iconSecondary,
+                                      color: theme.isDarkMode
+                                          ? WebDarkColors.iconSecondary
+                                          : WebColors.iconSecondary,
                                     ),
                                   ),
                               ],
@@ -1346,158 +1609,128 @@ final ScrollController _gttHorizontalScrollController = ScrollController();
                         );
                       }).toList(),
                     ),
-                  )
-                : Row(
-                    mainAxisSize: MainAxisSize.max,
-                    children: headers.map((label) {
-                      final flex = columnFlex[label] ?? 1;
-                      final minW = columnMinWidth[label] ?? 80.0;
-                      final columnIndex = headers.indexOf(label);
+            ),
 
-                      return _buildGttColumnCell(
-                        needHorizontalScroll: needHorizontalScroll,
-                        flex: flex,
-                        minW: minW,
-                        child: InkWell(
-                          onTap: () => _onSortGttTable(columnIndex, !_gttSortAscending),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Expanded(
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 6),
-                                  child: Text(
-                                    label,
-                                    style: WebTextStyles.tableHeader(
-                                      isDarkTheme: theme.isDarkMode,
-                                      color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
-                                    ),
-                                    overflow: TextOverflow.visible,
-                                  ),
-                                ),
-                              ),
-                              // sort icon
-                              if (_gttSortColumnIndex == columnIndex)
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 6.0),
-                                  child: Icon(
-                                    _gttSortAscending ? Icons.arrow_upward : Icons.arrow_downward,
-                                    size: 16,
-                                    color: theme.isDarkMode ? WebDarkColors.iconPrimary : WebColors.iconPrimary,
-                                  ),
-                                )
-                              else
-                                Padding(
-                                  padding: const EdgeInsets.only(right: 6.0),
-                                  child: Icon(
-                                    Icons.unfold_more,
-                                    size: 16,
-                                    color: theme.isDarkMode ? WebDarkColors.iconSecondary : WebColors.iconSecondary,
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-          ),
-
-          // --- Scrollable body (vertical) ---
-          Expanded(
-            child: Scrollbar(
-              controller: _gttVerticalScrollController,
-              thumbVisibility: true,
-              radius: Radius.zero,
-              child: _buildGttBodyList(
-                theme,
-                gttOrders,
-                headers,
-                columnFlex,
-                columnMinWidth,
-                needHorizontalScroll: needHorizontalScroll,
+            // --- Scrollable body (vertical) ---
+            Expanded(
+              child: Scrollbar(
+                controller: _gttVerticalScrollController,
+                thumbVisibility: true,
+                radius: Radius.zero,
+                child: _buildGttBodyList(
+                  theme,
+                  gttOrders,
+                  headers,
+                  columnFlex,
+                  columnMinWidth,
+                  totalMinWidth: totalMinWidth,
+                  needHorizontalScroll: needHorizontalScroll,
+                  screenWidth: screenWidth,
+                ),
               ),
             ),
-          ),
-        ],
-      );
+          ],
+        );
 
-      // If horizontal scroll needed, wrap the entire column inside SingleChildScrollView+IntrinsicWidth
-      if (needHorizontalScroll) {
+        // If horizontal scroll needed, wrap the entire column inside SingleChildScrollView
+        // THE REAL FIX: Use SizedBox with exact totalMinWidth - Flutter only scrolls when child width > viewport
+        if (needHorizontalScroll) {
+          return Padding(
+            padding: const EdgeInsets.only(right: 16.0, bottom: 8.0),
+            child: SizedBox(
+              width: constraints.maxWidth,
+              height: constraints.maxHeight,
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                controller: _gttHorizontalScrollController,
+                child: SizedBox(
+                  width: totalMinWidth, // THE REAL FIX - forces exact table width
+                  child: tableColumn,
+                ),
+              ),
+            ),
+          );
+        }
+
+        // else (no horizontal scroll) — just use normal layout (tableColumn uses Flexible columns)
         return Padding(
           padding: const EdgeInsets.only(right: 16.0, bottom: 8.0),
           child: SizedBox(
             width: constraints.maxWidth,
             height: constraints.maxHeight,
-            child: SingleChildScrollView(
-              controller: _gttHorizontalScrollController,
-              scrollDirection: Axis.horizontal,
-              child: IntrinsicWidth(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    minWidth: totalMinWidth,
-                    minHeight: constraints.maxHeight,
-                  ),
-                  child: tableColumn, // header + body share same width - IntrinsicWidth will measure actual width
-                ),
-              ),
-            ),
+            child: tableColumn,
           ),
         );
-      }
+      },
+    );
+  }
 
-      // else (no horizontal scroll) — just use normal layout (tableColumn uses Flexible columns)
-      return Padding(
-        padding: const EdgeInsets.only(right: 16.0, bottom: 8.0),
-        child: SizedBox(
-          width: constraints.maxWidth,
-          height: constraints.maxHeight,
-          child: tableColumn,
-        ),
-      );
-    },
-  );
-}
+// --- new imple
+  Widget _buildGttBodyList(
+    ThemesProvider theme,
+    List<GttOrderBookModel> gttOrders,
+    List<String> headers,
+    Map<String, int> columnFlex,
+    Map<String, double> columnMinWidth, {
+    required double totalMinWidth,
+    required bool needHorizontalScroll,
+    required double screenWidth,
+  }) {
+    final sorted = _sortedGtt(gttOrders);
+    return ListView.builder(
+      controller: _gttVerticalScrollController,
+      physics: const AlwaysScrollableScrollPhysics(),
+      itemCount: sorted.length,
+      itemBuilder: (context, index) {
+        final gttOrder = sorted[index];
+        final uniqueId = '${gttOrder.alId ?? ''}_${gttOrder.tsym ?? ''}_$index';
+        final isHovered = _hoveredRowToken == uniqueId;
+        final status = gttOrder.gttOrderCurrentStatus?.toUpperCase() ?? '';
+        final isPending = status == 'PENDING' || status == 'TRIGGER_PENDING';
 
-// --- new imple  
-Widget _buildGttBodyList(
-  ThemesProvider theme,
-  List<GttOrderBookModel> gttOrders,
-  List<String> headers,
-  Map<String, int> columnFlex,
-  Map<String, double> columnMinWidth, {
-  required bool needHorizontalScroll,
-}) {
-  final sorted = _sortedGtt(gttOrders);
-  return ListView.builder(
-    controller: _gttVerticalScrollController,
-    physics: const AlwaysScrollableScrollPhysics(),
-    itemCount: sorted.length,
-    itemBuilder: (context, index) {
-      final gttOrder = sorted[index];
-      final uniqueId = '${gttOrder.alId ?? ''}_${gttOrder.tsym ?? ''}_$index';
-      final isHovered = _hoveredRowToken == uniqueId;
-      final status = gttOrder.gttOrderCurrentStatus?.toUpperCase() ?? '';
-      final isPending = status == 'PENDING' || status == 'TRIGGER_PENDING';
-
-      return MouseRegion(
-        onEnter: (_) => setState(() => _hoveredRowToken = uniqueId),
-        onExit: (_) => setState(() => _hoveredRowToken = null),
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: () => _openGttOrderDetail(gttOrder),
-          child: Container(
-            color: isHovered
-                ? (theme.isDarkMode ? WebDarkColors.primary.withOpacity(0.12) : WebColors.primary.withOpacity(0.08))
-                : Colors.transparent,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            child: needHorizontalScroll
-                ? UnconstrainedBox(
-                    alignment: Alignment.centerLeft,
-                    constrainedAxis: Axis.vertical,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
+        return MouseRegion(
+          onEnter: (_) => setState(() => _hoveredRowToken = uniqueId),
+          onExit: (_) => setState(() => _hoveredRowToken = null),
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => _openGttOrderDetail(gttOrder),
+            child: Container(
+              decoration: BoxDecoration(
+                color: isHovered
+                    ? (theme.isDarkMode
+                        ? WebDarkColors.primary.withOpacity(0.12)
+                        : WebColors.primary.withOpacity(0.08))
+                    : Colors.transparent,
+                border: Border(
+                  bottom: BorderSide(
+                    color: theme.isDarkMode
+                        ? WebDarkColors.divider
+                        : WebColors.divider,
+                    width: 1,
+                  ),
+                ),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              child: needHorizontalScroll
+                  ? IntrinsicWidth(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: headers.map((label) {
+                          final flex = columnFlex[label] ?? 1;
+                          final minW = columnMinWidth[label] ?? 80.0;
+                          return _buildGttColumnCell(
+                            needHorizontalScroll: needHorizontalScroll,
+                            flex: flex,
+                            minW: minW,
+                            child: _buildGttCellWidget(
+                                label, gttOrder, theme, isHovered, isPending,
+                                needHorizontalScroll: needHorizontalScroll),
+                          );
+                        }).toList(),
+                      ),
+                    )
+                  : Row(
+                      mainAxisSize: MainAxisSize.max,
                       children: headers.map((label) {
                         final flex = columnFlex[label] ?? 1;
                         final minW = columnMinWidth[label] ?? 80.0;
@@ -1505,126 +1738,110 @@ Widget _buildGttBodyList(
                           needHorizontalScroll: needHorizontalScroll,
                           flex: flex,
                           minW: minW,
-                          child: _buildGttCellWidget(label, gttOrder, theme, isHovered, isPending, needHorizontalScroll: needHorizontalScroll),
+                          child: _buildGttCellWidget(
+                              label, gttOrder, theme, isHovered, isPending,
+                              needHorizontalScroll: needHorizontalScroll),
                         );
                       }).toList(),
                     ),
-                  )
-                : Row(
-                    mainAxisSize: MainAxisSize.max,
-                    children: headers.map((label) {
-                      final flex = columnFlex[label] ?? 1;
-                      final minW = columnMinWidth[label] ?? 80.0;
-                      return _buildGttColumnCell(
-                        needHorizontalScroll: needHorizontalScroll,
-                        flex: flex,
-                        minW: minW,
-                        child: _buildGttCellWidget(label, gttOrder, theme, isHovered, isPending, needHorizontalScroll: needHorizontalScroll),
-                      );
-                    }).toList(),
-                  ),
+            ),
           ),
-        ),
-      );
-    },
-  );
-}
-
-Widget _buildGttColumnCell({
-  required bool needHorizontalScroll,
-  required int flex,
-  required double minW,
-  required Widget child,
-}) {
-  if (needHorizontalScroll) {
-    // No Flexible when horizontal scroll is ON - use ConstrainedBox with minWidth
-    // This allows columns to expand beyond minWidth if content is larger, but never shrink below it
-    return ConstrainedBox(
-      constraints: BoxConstraints(
-        minWidth: minW,
-        maxWidth: double.infinity, // Allow expansion beyond minWidth
-      ),
-      child: child,
+        );
+      },
     );
   }
 
-  // Normal (no horizontal scroll) mode — use Flexible so columns expand to available space
-  return Flexible(
-    flex: flex,
-    fit: FlexFit.tight,
-    child: ConstrainedBox(
-      constraints: BoxConstraints(minWidth: minW),
-      child: child,
-    ),
-  );
-}
-
-
-Widget _buildGttCellWidget(String column, GttOrderBookModel item, ThemesProvider theme, bool isHovered, bool isPending, {required bool needHorizontalScroll}) {
-  switch (column) {
-    case 'Instrument':
-      return _buildGttInstrumentWidget(item, theme, isHovered, isPending, needHorizontalScroll: needHorizontalScroll);
-    case 'Product':
-      return _buildGttTextCell(item.placeOrderParams?.sPrdtAli ?? '', theme, Alignment.centerLeft);
-    case 'Type':
-      final isBuy = item.trantype == "B";
-      return _buildGttTextCell(
-        isBuy ? "BUY" : "SELL", 
-        theme, 
-        Alignment.centerLeft,
-        color: isBuy
-            ? (theme.isDarkMode ? colors.profitDark : colors.profitLight)
-            : (theme.isDarkMode ? colors.lossDark : colors.lossLight),
+  Widget _buildGttColumnCell({
+    required bool needHorizontalScroll,
+    required int flex,
+    required double minW,
+    required Widget child,
+  }) {
+    // When horizontal scrolling = ON
+    if (needHorizontalScroll) {
+      return SizedBox(
+        width: minW, // FIX: force exact width
+        child: child,
       );
-    case 'Qty':
-      return _buildGttTextCell(item.qty?.toString() ?? '0', theme, Alignment.centerRight);
-    case 'LTP':
-      return _buildGttTextCell(_getValidLTPForGtt(item), theme, Alignment.centerRight);
-    case 'Trigger':
-      return _buildGttTextCell(item.d ?? '0.00', theme, Alignment.centerRight);
-    case 'Status':
-      final status = item.gttOrderCurrentStatus?.toUpperCase() ?? '';
-      return _buildGttTextCell(_getGttStatusText(status), theme, Alignment.centerLeft, color: _getGttStatusColor(status, theme));
-    case 'Time':
-      return _buildGttTextCell(item.norentm != null ? formatDateTime(value: item.norentm!) : '', theme, Alignment.centerLeft);
-    default:
-      return const SizedBox.shrink();
-  }
-}
+    }
 
-
-Widget _buildGttInstrumentWidget(GttOrderBookModel gttOrder, ThemesProvider theme, bool isHovered, bool isPending, {required bool needHorizontalScroll}) {
-  String symbol = '${gttOrder.tsym?.replaceAll("-EQ", "") ?? 'N/A'}';
-  String exchange = gttOrder.exch ?? '';
-  String displayText = symbol.trim();
-  if (exchange.isNotEmpty && exchange.trim().isNotEmpty) {
-    displayText += '-${exchange.trim()}';
+    // When horizontal scrolling = OFF (large screens)
+    return Expanded(
+      flex: flex,
+      child: SizedBox(
+        width: minW,
+        child: child,
+      ),
+    );
   }
 
-  return Row(
-    mainAxisSize: needHorizontalScroll ? MainAxisSize.min : MainAxisSize.max,
-    children: [
-      if (needHorizontalScroll)
-        // When horizontal scroll: no Expanded, let text take natural width
-        Align(
-          alignment: Alignment.centerLeft,
-          child: Tooltip(
-            message: displayText,
-            child: Text(
-              displayText,
-              style: WebTextStyles.custom(
-                fontSize: 13,
-                isDarkTheme: theme.isDarkMode,
-                color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
-                fontWeight: WebFonts.medium,
-              ),
-              overflow: TextOverflow.visible,
-            ),
-          ),
-        )
-      else
-        // When no horizontal scroll: use Expanded to fill available space
+  Widget _buildGttCellWidget(String column, GttOrderBookModel item,
+      ThemesProvider theme, bool isHovered, bool isPending,
+      {required bool needHorizontalScroll}) {
+    switch (column) {
+      case 'Instrument':
+        return _buildGttInstrumentWidget(item, theme, isHovered, isPending,
+            needHorizontalScroll: needHorizontalScroll);
+      case 'Product':
+        return _buildGttTextCell(
+            item.placeOrderParams?.sPrdtAli ?? '', theme, Alignment.centerLeft,
+            needHorizontalScroll: needHorizontalScroll);
+      case 'Type':
+        final isBuy = item.trantype == "B";
+        return _buildGttTextCell(
+          isBuy ? "BUY" : "SELL",
+          theme,
+          Alignment.centerLeft,
+          color: isBuy
+              ? (theme.isDarkMode ? colors.profitDark : colors.profitLight)
+              : (theme.isDarkMode ? colors.lossDark : colors.lossLight),
+          needHorizontalScroll: needHorizontalScroll,
+        );
+      case 'Qty':
+        return _buildGttTextCell(
+            item.qty?.toString() ?? '0', theme, Alignment.centerRight,
+            needHorizontalScroll: needHorizontalScroll);
+      case 'LTP':
+        return _buildGttTextCell(
+            _getValidLTPForGtt(item), theme, Alignment.centerRight,
+            needHorizontalScroll: needHorizontalScroll);
+      case 'Trigger':
+        return _buildGttTextCell(
+            item.d ?? '0.00', theme, Alignment.centerRight,
+            needHorizontalScroll: needHorizontalScroll);
+      case 'Status':
+        final status = item.gttOrderCurrentStatus?.toUpperCase() ?? '';
+        return _buildGttTextCell(
+            _getGttStatusText(status), theme, Alignment.centerLeft,
+            color: _getGttStatusColor(status, theme),
+            needHorizontalScroll: needHorizontalScroll);
+      case 'Time':
+        return _buildGttTextCell(
+            item.norentm != null ? formatDateTime(value: item.norentm!) : '',
+            theme,
+            Alignment.centerLeft,
+            needHorizontalScroll: needHorizontalScroll);
+      default:
+        return const SizedBox.shrink();
+    }
+  }
+
+  Widget _buildGttInstrumentWidget(GttOrderBookModel gttOrder,
+      ThemesProvider theme, bool isHovered, bool isPending,
+      {required bool needHorizontalScroll}) {
+    String symbol = '${gttOrder.tsym?.replaceAll("-EQ", "") ?? 'N/A'}';
+    String exchange = gttOrder.exch ?? '';
+    String displayText = symbol.trim();
+    if (exchange.isNotEmpty && exchange.trim().isNotEmpty) {
+      displayText += '-${exchange.trim()}';
+    }
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Text that takes available space, similar to position screen
         Expanded(
+          flex: isHovered ? 1 : 2, // When hovered, text takes less space but still visible
           child: Align(
             alignment: Alignment.centerLeft,
             child: Tooltip(
@@ -1634,98 +1851,118 @@ Widget _buildGttInstrumentWidget(GttOrderBookModel gttOrder, ThemesProvider them
                 style: WebTextStyles.custom(
                   fontSize: 13,
                   isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                  color: theme.isDarkMode
+                      ? WebDarkColors.textPrimary
+                      : WebColors.textPrimary,
                   fontWeight: WebFonts.medium,
                 ),
+                maxLines: 1,
+                softWrap: false,
                 overflow: TextOverflow.visible,
               ),
             ),
           ),
         ),
-      // action buttons fade in on hover
-      IgnorePointer(
-        ignoring: !isHovered,
-        child: AnimatedOpacity(
-          opacity: isHovered ? 1 : 0,
-          duration: const Duration(milliseconds: 140),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (isPending) ...[
-                _buildOrderHoverButton(
-                  label: 'Cancel',
-                  color: Colors.white,
-                  backgroundColor: theme.isDarkMode ? WebDarkColors.error : WebColors.error,
-                  onPressed: (_processingOrderToken == null || _processingOrderToken == '${gttOrder.alId}_${gttOrder.tsym}') ? () => _handleCancelGttOrder(gttOrder) : null,
-                  theme: theme,
-                ),
-                const SizedBox(width: 6),
-                _buildOrderHoverButton(
-                  label: 'Modify',
-                  color: Colors.white,
-                  backgroundColor: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
-                  onPressed: (_processingOrderToken == null || _processingOrderToken == '${gttOrder.alId}_${gttOrder.tsym}') ? () => _handleModifyGttOrder(gttOrder) : null,
-                  theme: theme,
-                ),
+        // action buttons fade in on hover
+        IgnorePointer(
+          ignoring: !isHovered,
+          child: AnimatedOpacity(
+            opacity: isHovered ? 1 : 0,
+            duration: const Duration(milliseconds: 140),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (isPending) ...[
+                  _buildOrderHoverButton(
+                    label: 'Cancel',
+                    color: Colors.white,
+                    backgroundColor: theme.isDarkMode
+                        ? WebDarkColors.error
+                        : WebColors.error,
+                    onPressed: (_processingOrderToken == null ||
+                            _processingOrderToken ==
+                                '${gttOrder.alId}_${gttOrder.tsym}')
+                        ? () => _handleCancelGttOrder(gttOrder)
+                        : null,
+                    theme: theme,
+                  ),
+                  const SizedBox(width: 6),
+                  _buildOrderHoverButton(
+                    label: 'Modify',
+                    color: Colors.white,
+                    backgroundColor: theme.isDarkMode
+                        ? WebDarkColors.primary
+                        : WebColors.primary,
+                    onPressed: (_processingOrderToken == null ||
+                            _processingOrderToken ==
+                                '${gttOrder.alId}_${gttOrder.tsym}')
+                        ? () => _handleModifyGttOrder(gttOrder)
+                        : null,
+                    theme: theme,
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
-      ),
-    ],
-  );
-}
+      ],
+    );
+  }
 
-Widget _buildGttTextCell(String text, ThemesProvider theme, Alignment alignment, {Color? color}) {
-  return Align(
-    alignment: alignment,
-    child: Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 6.0),
-      child: Text(
-        text,
-        style: WebTextStyles.custom(
-          fontSize: 13,
-          isDarkTheme: theme.isDarkMode,
-          color: color ?? (theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary),
-          fontWeight: WebFonts.medium,
+  Widget _buildGttTextCell(
+      String text, ThemesProvider theme, Alignment alignment,
+      {Color? color, bool needHorizontalScroll = false}) {
+    return Align(
+      alignment: alignment,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 6.0),
+        child: Text(
+          text,
+          style: WebTextStyles.custom(
+            fontSize: 13,
+            isDarkTheme: theme.isDarkMode,
+            color: color ??
+                (theme.isDarkMode
+                    ? WebDarkColors.textPrimary
+                    : WebColors.textPrimary),
+            fontWeight: WebFonts.medium,
+          ),
+          maxLines: 1,
+          softWrap: false,
+          overflow: TextOverflow.visible,
         ),
-        overflow: TextOverflow.visible,
-        
       ),
-    ),
-  );
-}
+    );
+  }
 
-Widget _buildOrderHoverButton({
-  required String label,
-  required Color color,
-  required Color backgroundColor,
-  required VoidCallback? onPressed,
-  required ThemesProvider theme,
-}) {
-  return SizedBox(
-    height: 28,
-    child: ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        backgroundColor: backgroundColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-        elevation: 0,
+  Widget _buildOrderHoverButton({
+    required String label,
+    required Color color,
+    required Color backgroundColor,
+    required VoidCallback? onPressed,
+    required ThemesProvider theme,
+  }) {
+    return SizedBox(
+      height: 28,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          backgroundColor: backgroundColor,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+          elevation: 0,
+        ),
+        onPressed: onPressed,
+        child: Text(label,
+            style: WebTextStyles.custom(
+                fontSize: 12, isDarkTheme: theme.isDarkMode, color: color)),
       ),
-      onPressed: onPressed,
-      child: Text(label, style: WebTextStyles.custom(fontSize: 12, isDarkTheme: theme.isDarkMode, color: color)),
-    ),
-  );
-}
+    );
+  }
 
-
-
-
-
-
-  Widget _buildSortableColumnHeader(String label, ThemesProvider theme, int columnIndex) {
+  Widget _buildSortableColumnHeader(
+      String label, ThemesProvider theme, int columnIndex) {
     final isSorted = _orderSortColumnIndex == columnIndex;
-    
+
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -1743,11 +1980,13 @@ Widget _buildOrderHoverButton({
         SizedBox(
           width: 20,
           height: 16,
-          child: !isSorted 
+          child: !isSorted
               ? Icon(
                   Icons.unfold_more,
                   size: 16,
-                  color: theme.isDarkMode ? WebDarkColors.iconSecondary : WebColors.iconSecondary,
+                  color: theme.isDarkMode
+                      ? WebDarkColors.iconSecondary
+                      : WebColors.iconSecondary,
                 )
               : const SizedBox.shrink(),
         ),
@@ -1755,7 +1994,9 @@ Widget _buildOrderHoverButton({
     );
   }
 
-  DataCell _buildCellWithHover(OrderBookModel order, ThemesProvider theme, String token, DataCell cell, {Alignment alignment = Alignment.centerRight}) {
+  DataCell _buildCellWithHover(
+      OrderBookModel order, ThemesProvider theme, String token, DataCell cell,
+      {Alignment alignment = Alignment.centerRight}) {
     return DataCell(
       MouseRegion(
         onEnter: (_) => setState(() => _hoveredRowToken = token),
@@ -1782,6 +2023,7 @@ Widget _buildOrderHoverButton({
       if (b == null) return 1;
       return a.compareTo(b);
     }
+
     num parseNum(String? v) => double.tryParse(v ?? '') ?? 0;
     sorted.sort((a, b) {
       int r = 0;
@@ -1796,7 +2038,8 @@ Widget _buildOrderHoverButton({
           r = cmp(a.trantype, b.trantype);
           break;
         case 3: // Qty
-          r = cmp(num.tryParse(a.qty.toString()) ?? 0, num.tryParse(b.qty.toString()) ?? 0);
+          r = cmp(num.tryParse(a.qty.toString()) ?? 0,
+              num.tryParse(b.qty.toString()) ?? 0);
           break;
         case 4: // Avg price
           r = cmp(parseNum(a.avgprc), parseNum(b.avgprc));
@@ -1811,8 +2054,10 @@ Widget _buildOrderHoverButton({
           r = cmp(parseNum(a.trgprc), parseNum(b.trgprc));
           break;
         case 8: // Order value
-          final av = (parseNum(a.avgprc ?? "0") * (int.tryParse(a.qty.toString()) ?? 0));
-          final bv = (parseNum(b.avgprc ?? "0") * (int.tryParse(b.qty.toString()) ?? 0));
+          final av = (parseNum(a.avgprc ?? "0") *
+              (int.tryParse(a.qty.toString()) ?? 0));
+          final bv = (parseNum(b.avgprc ?? "0") *
+              (int.tryParse(b.qty.toString()) ?? 0));
           r = cmp(av, bv);
           break;
         case 9: // Status
@@ -1849,6 +2094,7 @@ Widget _buildOrderHoverButton({
       if (b == null) return 1;
       return a.compareTo(b);
     }
+
     num parseNum(String? v) => double.tryParse(v ?? '') ?? 0;
     sorted.sort((a, b) {
       int r = 0;
@@ -1863,14 +2109,17 @@ Widget _buildOrderHoverButton({
           r = cmp(a.trantype, b.trantype);
           break;
         case 3: // Qty
-          r = cmp(num.tryParse(a.qty.toString()) ?? 0, num.tryParse(b.qty.toString()) ?? 0);
+          r = cmp(num.tryParse(a.qty.toString()) ?? 0,
+              num.tryParse(b.qty.toString()) ?? 0);
           break;
         case 4: // Price
           r = cmp(parseNum(a.avgprc), parseNum(b.avgprc));
           break;
         case 5: // Trade value (flqty * flprc)
-          final av = (parseNum(a.flqty?.toString() ?? "0") * parseNum(a.flprc ?? "0"));
-          final bv = (parseNum(b.flqty?.toString() ?? "0") * parseNum(b.flprc ?? "0"));
+          final av =
+              (parseNum(a.flqty?.toString() ?? "0") * parseNum(a.flprc ?? "0"));
+          final bv =
+              (parseNum(b.flqty?.toString() ?? "0") * parseNum(b.flprc ?? "0"));
           r = cmp(av, bv);
           break;
         case 6: // Order no
@@ -1896,9 +2145,10 @@ Widget _buildOrderHoverButton({
     });
   }
 
-  Widget _buildTradeSortableColumnHeader(String label, ThemesProvider theme, int columnIndex) {
+  Widget _buildTradeSortableColumnHeader(
+      String label, ThemesProvider theme, int columnIndex) {
     final isSorted = _tradeSortColumnIndex == columnIndex;
-    
+
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -1915,11 +2165,13 @@ Widget _buildOrderHoverButton({
         SizedBox(
           width: 20,
           height: 16,
-          child: !isSorted 
+          child: !isSorted
               ? Icon(
                   Icons.unfold_more,
                   size: 16,
-                  color: theme.isDarkMode ? WebDarkColors.iconSecondary : WebColors.iconSecondary,
+                  color: theme.isDarkMode
+                      ? WebDarkColors.iconSecondary
+                      : WebColors.iconSecondary,
                 )
               : const SizedBox.shrink(),
         ),
@@ -1940,6 +2192,7 @@ Widget _buildOrderHoverButton({
       if (b == null) return 1;
       return a.compareTo(b);
     }
+
     num parseNum(String? v) => double.tryParse(v ?? '') ?? 0;
     sorted.sort((a, b) {
       int r = 0;
@@ -1954,7 +2207,8 @@ Widget _buildOrderHoverButton({
           r = cmp(a.trantype, b.trantype);
           break;
         case 3: // Qty
-          r = cmp(num.tryParse(a.qty.toString()) ?? 0, num.tryParse(b.qty.toString()) ?? 0);
+          r = cmp(num.tryParse(a.qty.toString()) ?? 0,
+              num.tryParse(b.qty.toString()) ?? 0);
           break;
         case 4: // LTP
           r = cmp(parseNum(a.ltp), parseNum(b.ltp));
@@ -1985,7 +2239,9 @@ Widget _buildOrderHoverButton({
     });
   }
 
-  DataCell _buildTradeCellWithHover(TradeBookModel trade, ThemesProvider theme, String token, DataCell cell, {Alignment alignment = Alignment.centerRight}) {
+  DataCell _buildTradeCellWithHover(
+      TradeBookModel trade, ThemesProvider theme, String token, DataCell cell,
+      {Alignment alignment = Alignment.centerRight}) {
     return DataCell(
       MouseRegion(
         onEnter: (_) => setState(() => _hoveredRowToken = token),
@@ -2000,7 +2256,9 @@ Widget _buildOrderHoverButton({
     );
   }
 
-  DataCell _buildGttCellWithHover(GttOrderBookModel gttOrder, ThemesProvider theme, String token, DataCell cell, {Alignment alignment = Alignment.centerRight}) {
+  DataCell _buildGttCellWithHover(GttOrderBookModel gttOrder,
+      ThemesProvider theme, String token, DataCell cell,
+      {Alignment alignment = Alignment.centerRight}) {
     return DataCell(
       MouseRegion(
         onEnter: (_) => setState(() => _hoveredRowToken = token),
@@ -2015,9 +2273,10 @@ Widget _buildOrderHoverButton({
     );
   }
 
-  Widget _buildGttSortableColumnHeader(String label, ThemesProvider theme, int columnIndex) {
+  Widget _buildGttSortableColumnHeader(
+      String label, ThemesProvider theme, int columnIndex) {
     final isSorted = _gttSortColumnIndex == columnIndex;
-    
+
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -2034,11 +2293,13 @@ Widget _buildOrderHoverButton({
         SizedBox(
           width: 20,
           height: 16,
-          child: !isSorted 
+          child: !isSorted
               ? Icon(
                   Icons.unfold_more,
                   size: 16,
-                  color: theme.isDarkMode ? WebDarkColors.iconSecondary : WebColors.iconSecondary,
+                  color: theme.isDarkMode
+                      ? WebDarkColors.iconSecondary
+                      : WebColors.iconSecondary,
                 )
               : const SizedBox.shrink(),
         ),
@@ -2057,7 +2318,8 @@ Widget _buildOrderHoverButton({
 
   // Order action handlers
   Future<void> _handleCancelOrder(OrderBookModel orderData) async {
-    final uniqueId = orderData.norenordno?.toString() ?? orderData.token?.toString() ?? '';
+    final uniqueId =
+        orderData.norenordno?.toString() ?? orderData.token?.toString() ?? '';
     if (_isProcessingCancel && _processingOrderToken == uniqueId) return;
 
     try {
@@ -2074,7 +2336,7 @@ Widget _buildOrderHoverButton({
           final symbol = orderData.tsym?.replaceAll("-EQ", "") ?? 'N/A';
           final exchange = orderData.exch ?? '';
           final displayText = '$symbol $exchange'.trim();
-          
+
           return Dialog(
             backgroundColor: Colors.transparent,
             child: Container(
@@ -2088,7 +2350,8 @@ Widget _buildOrderHoverButton({
                 children: [
                   // Header with close button
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 10),
                     margin: const EdgeInsets.only(bottom: 8),
                     decoration: BoxDecoration(
                       border: Border(
@@ -2142,7 +2405,8 @@ Widget _buildOrderHoverButton({
                   Flexible(
                     fit: FlexFit.loose,
                     child: SingleChildScrollView(
-                      padding: const EdgeInsets.only(top: 0, bottom: 20, left: 20, right: 20),
+                      padding: const EdgeInsets.only(
+                          top: 0, bottom: 20, left: 20, right: 20),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -2194,7 +2458,8 @@ Widget _buildOrderHoverButton({
                                   borderRadius: BorderRadius.circular(5),
                                   splashColor: Colors.white.withOpacity(0.2),
                                   highlightColor: Colors.white.withOpacity(0.1),
-                                  onTap: () => Navigator.of(dialogContext).pop(true),
+                                  onTap: () =>
+                                      Navigator.of(dialogContext).pop(true),
                                   child: Center(
                                     child: Text(
                                       'Cancel Order',
@@ -2234,10 +2499,10 @@ Widget _buildOrderHoverButton({
       // Pass false for loop to avoid Navigator.pop issues when canceling from table
       // The provider will not auto-pop dialogs, which is what we want when canceling from hover buttons
       final cancelResult = await ref.read(orderProvider).fetchOrderCancel(
-        "${orderData.norenordno}",
-        context,
-        false, // Changed to false to prevent unwanted Navigator.pop calls
-      );
+            "${orderData.norenordno}",
+            context,
+            false, // Changed to false to prevent unwanted Navigator.pop calls
+          );
 
       // Refresh order book after successful cancel
       if (cancelResult != null && cancelResult.stat == "Ok") {
@@ -2262,7 +2527,8 @@ Widget _buildOrderHoverButton({
   }
 
   Future<void> _handleModifyOrder(OrderBookModel orderData) async {
-    final uniqueId = orderData.norenordno?.toString() ?? orderData.token?.toString() ?? '';
+    final uniqueId =
+        orderData.norenordno?.toString() ?? orderData.token?.toString() ?? '';
     if (_isProcessingModify && _processingOrderToken == uniqueId) return;
 
     try {
@@ -2272,17 +2538,18 @@ Widget _buildOrderHoverButton({
       });
 
       await ref.read(marketWatchProvider).fetchScripInfo(
-        "${orderData.token}",
-        '${orderData.exch}',
-        context,
-        true,
-      );
+            "${orderData.token}",
+            '${orderData.exch}',
+            context,
+            true,
+          );
 
       if (!mounted) return;
 
       final scripInfo = ref.read(marketWatchProvider).scripInfoModel;
       if (scripInfo == null) {
-        ResponsiveSnackBar.showError(context, 'Unable to fetch scrip information');
+        ResponsiveSnackBar.showError(
+            context, 'Unable to fetch scrip information');
         return;
       }
 
@@ -2301,7 +2568,8 @@ Widget _buildOrderHoverButton({
     } catch (e) {
       // Handle error
       if (mounted) {
-        ResponsiveSnackBar.showError(context, 'Failed to open modify order: ${e.toString()}');
+        ResponsiveSnackBar.showError(
+            context, 'Failed to open modify order: ${e.toString()}');
       }
     } finally {
       if (mounted) {
@@ -2326,17 +2594,18 @@ Widget _buildOrderHoverButton({
   Future<void> _handleRepeatOrder(OrderBookModel orderData) async {
     try {
       await ref.read(marketWatchProvider).fetchScripInfo(
-        "${orderData.token}",
-        "${orderData.exch}",
-        context,
-        true,
-      );
+            "${orderData.token}",
+            "${orderData.exch}",
+            context,
+            true,
+          );
 
       if (!mounted) return;
 
       final scripInfo = ref.read(marketWatchProvider).scripInfoModel;
       if (scripInfo == null) {
-        ResponsiveSnackBar.showError(context, 'Unable to fetch scrip information');
+        ResponsiveSnackBar.showError(
+            context, 'Unable to fetch scrip information');
         return;
       }
 
@@ -2355,15 +2624,17 @@ Widget _buildOrderHoverButton({
     } catch (e) {
       // Handle error
       if (mounted) {
-        ResponsiveSnackBar.showError(context, 'Failed to open place order: ${e.toString()}');
+        ResponsiveSnackBar.showError(
+            context, 'Failed to open place order: ${e.toString()}');
       }
     }
   }
 
-  void _showDraggablePlaceOrderDialog(OrderBookModel orderData, dynamic scripInfo) {
+  void _showDraggablePlaceOrderDialog(
+      OrderBookModel orderData, dynamic scripInfo) {
     final overlay = Overlay.of(context);
     late OverlayEntry overlayEntry;
-    
+
     overlayEntry = OverlayEntry(
       builder: (context) => _DraggablePlaceOrderDialog(
         orderData: orderData,
@@ -2378,11 +2649,12 @@ Widget _buildOrderHoverButton({
         },
       ),
     );
-    
+
     overlay.insert(overlayEntry);
   }
 
-  void _showDraggableGttModifyDialog(GttOrderBookModel gttOrderData, dynamic scripInfo) {
+  void _showDraggableGttModifyDialog(
+      GttOrderBookModel gttOrderData, dynamic scripInfo) {
     // Show ModifyGttWeb as a draggable dialog
     ModifyGttWeb.showDraggable(
       context: context,
@@ -2428,7 +2700,8 @@ Widget _buildOrderHoverButton({
 
   // GTT order action handlers
   Future<void> _handleCancelGttOrder(GttOrderBookModel gttOrderData) async {
-    final uniqueId = gttOrderData.alId?.toString() ?? gttOrderData.tsym?.toString() ?? '';
+    final uniqueId =
+        gttOrderData.alId?.toString() ?? gttOrderData.tsym?.toString() ?? '';
     if (_isProcessingCancel && _processingOrderToken == uniqueId) return;
 
     try {
@@ -2445,7 +2718,7 @@ Widget _buildOrderHoverButton({
           final symbol = gttOrderData.tsym?.replaceAll("-EQ", "") ?? 'N/A';
           final exchange = gttOrderData.exch ?? '';
           final displayText = '$symbol $exchange'.trim();
-          
+
           return Dialog(
             backgroundColor: Colors.transparent,
             child: Container(
@@ -2459,7 +2732,8 @@ Widget _buildOrderHoverButton({
                 children: [
                   // Header with close button
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 10),
                     margin: const EdgeInsets.only(bottom: 8),
                     decoration: BoxDecoration(
                       border: Border(
@@ -2513,7 +2787,8 @@ Widget _buildOrderHoverButton({
                   Flexible(
                     fit: FlexFit.loose,
                     child: SingleChildScrollView(
-                      padding: const EdgeInsets.only(top: 0, bottom: 20, left: 20, right: 20),
+                      padding: const EdgeInsets.only(
+                          top: 0, bottom: 20, left: 20, right: 20),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -2565,7 +2840,8 @@ Widget _buildOrderHoverButton({
                                   borderRadius: BorderRadius.circular(5),
                                   splashColor: Colors.white.withOpacity(0.2),
                                   highlightColor: Colors.white.withOpacity(0.1),
-                                  onTap: () => Navigator.of(dialogContext).pop(true),
+                                  onTap: () =>
+                                      Navigator.of(dialogContext).pop(true),
                                   child: Center(
                                     child: Text(
                                       'Cancel Order',
@@ -2603,9 +2879,9 @@ Widget _buildOrderHoverButton({
 
       // Cancel the GTT order
       await ref.read(orderProvider).cancelGttOrder(
-        "${gttOrderData.alId}",
-        context,
-      );
+            "${gttOrderData.alId}",
+            context,
+          );
 
       // Refresh GTT order book after successful cancel
       await ref.read(orderProvider).fetchGTTOrderBook(context, "");
@@ -2626,7 +2902,8 @@ Widget _buildOrderHoverButton({
   }
 
   Future<void> _handleModifyGttOrder(GttOrderBookModel gttOrderData) async {
-    final uniqueId = gttOrderData.alId?.toString() ?? gttOrderData.tsym?.toString() ?? '';
+    final uniqueId =
+        gttOrderData.alId?.toString() ?? gttOrderData.tsym?.toString() ?? '';
     if (_isProcessingModify && _processingOrderToken == uniqueId) return;
 
     try {
@@ -2636,17 +2913,18 @@ Widget _buildOrderHoverButton({
       });
 
       await ref.read(marketWatchProvider).fetchScripInfo(
-        "${gttOrderData.token}",
-        '${gttOrderData.exch}',
-        context,
-        true,
-      );
+            "${gttOrderData.token}",
+            '${gttOrderData.exch}',
+            context,
+            true,
+          );
 
       if (!mounted) return;
 
       final scripInfo = ref.read(marketWatchProvider).scripInfoModel;
       if (scripInfo == null) {
-        ResponsiveSnackBar.showError(context, 'Unable to fetch scrip information');
+        ResponsiveSnackBar.showError(
+            context, 'Unable to fetch scrip information');
         return;
       }
 
@@ -2655,7 +2933,8 @@ Widget _buildOrderHoverButton({
     } catch (e) {
       // Handle error
       if (mounted) {
-        ResponsiveSnackBar.showError(context, 'Failed to open modify GTT order: ${e.toString()}');
+        ResponsiveSnackBar.showError(
+            context, 'Failed to open modify GTT order: ${e.toString()}');
       }
     } finally {
       if (mounted) {
@@ -2669,13 +2948,15 @@ Widget _buildOrderHoverButton({
 
   DataCell _buildTimeCell(OrderBookModel item, ThemesProvider theme) {
     String time = item.norentm != null ? item.norentm! : '0.00';
-    
+
     return DataCell(
       Text(
         formatDateTime(value: time),
         style: WebTextStyles.tableDataCompact(
           isDarkTheme: theme.isDarkMode,
-          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          color: theme.isDarkMode
+              ? WebDarkColors.textPrimary
+              : WebColors.textPrimary,
         ),
       ),
     );
@@ -2686,7 +2967,7 @@ Widget _buildOrderHoverButton({
     Color buttonColor = item.trantype == "S"
         ? (theme.isDarkMode ? colors.lossDark : colors.lossLight)
         : (theme.isDarkMode ? colors.profitDark : colors.profitLight);
-    
+
     return DataCell(
       Text(
         buySell,
@@ -2701,37 +2982,40 @@ Widget _buildOrderHoverButton({
   DataCell _buildInstrumentCell(OrderBookModel item, ThemesProvider theme) {
     String symbol = '${item.tsym}';
     String exchange = item.exch ?? '';
-    
+
     String displayText = symbol;
     if (exchange.isNotEmpty) {
       displayText += ' $exchange';
     }
-    
+
     return DataCell(
       Text(
         displayText,
         style: WebTextStyles.tableDataCompact(
           isDarkTheme: theme.isDarkMode,
-          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          color: theme.isDarkMode
+              ? WebDarkColors.textPrimary
+              : WebColors.textPrimary,
         ),
         overflow: TextOverflow.ellipsis,
       ),
     );
   }
 
-  DataCell _buildInstrumentCellWithHover(OrderBookModel order, ThemesProvider theme, String token) {
+  DataCell _buildInstrumentCellWithHover(
+      OrderBookModel order, ThemesProvider theme, String token) {
     final orderToken = token;
     final isHovered = _hoveredRowToken == orderToken;
     final isProcessing = _processingOrderToken == orderToken;
-    
+
     // Determine which buttons to show based on order status
-    final isPending = order.status == "PENDING" || 
-                     order.status == "OPEN" || 
-                     order.status == "TRIGGER_PENDING";
-    
+    final isPending = order.status == "PENDING" ||
+        order.status == "OPEN" ||
+        order.status == "TRIGGER_PENDING";
+
     String symbol = '${order.tsym ?? ''}';
     String exchange = order.exch ?? '';
-    
+
     String displayText = symbol.trim();
     if (exchange.isNotEmpty && exchange.trim().isNotEmpty) {
       displayText += ' ${exchange.trim()}';
@@ -2746,7 +3030,9 @@ Widget _buildOrderHoverButton({
             children: [
               // Text that takes at least 50% of width, leaves space for buttons
               Expanded(
-                flex: isHovered ? 1 : 2, // When hovered, text takes less space but still visible
+                flex: isHovered
+                    ? 1
+                    : 2, // When hovered, text takes less space but still visible
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: Tooltip(
@@ -2888,13 +3174,15 @@ Widget _buildOrderHoverButton({
 
   DataCell _buildProductCell(OrderBookModel item, ThemesProvider theme) {
     String product = item.sPrdtAli ?? 'N/A';
-    
+
     return DataCell(
       Text(
         product,
         style: WebTextStyles.tableDataCompact(
           isDarkTheme: theme.isDarkMode,
-          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          color: theme.isDarkMode
+              ? WebDarkColors.textPrimary
+              : WebColors.textPrimary,
         ),
       ),
     );
@@ -2902,13 +3190,15 @@ Widget _buildOrderHoverButton({
 
   DataCell _buildQtyCell(OrderBookModel item, ThemesProvider theme) {
     String qty = item.qty?.toString() ?? '0.00';
-    
+
     return DataCell(
       Text(
         qty,
         style: WebTextStyles.tableDataCompact(
           isDarkTheme: theme.isDarkMode,
-          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          color: theme.isDarkMode
+              ? WebDarkColors.textPrimary
+              : WebColors.textPrimary,
         ),
       ),
     );
@@ -2916,13 +3206,15 @@ Widget _buildOrderHoverButton({
 
   DataCell _buildAvgPriceCell(OrderBookModel item, ThemesProvider theme) {
     String avgPrice = item.avgprc ?? '0.00';
-    
+
     return DataCell(
       Text(
         avgPrice,
         style: WebTextStyles.tableDataCompact(
           isDarkTheme: theme.isDarkMode,
-          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          color: theme.isDarkMode
+              ? WebDarkColors.textPrimary
+              : WebColors.textPrimary,
         ),
       ),
     );
@@ -2930,7 +3222,7 @@ Widget _buildOrderHoverButton({
 
   DataCell _buildOrderValueCell(OrderBookModel item, ThemesProvider theme) {
     String orderValue = '0.00';
-    
+
     try {
       double price = double.tryParse(item.avgprc ?? "0") ?? 0.0;
       int qty = int.tryParse(item.qty.toString()) ?? 0;
@@ -2938,13 +3230,15 @@ Widget _buildOrderHoverButton({
     } catch (e) {
       orderValue = '0.00';
     }
-    
+
     return DataCell(
       Text(
         orderValue,
         style: WebTextStyles.tableDataCompact(
           isDarkTheme: theme.isDarkMode,
-          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          color: theme.isDarkMode
+              ? WebDarkColors.textPrimary
+              : WebColors.textPrimary,
         ),
       ),
     );
@@ -2952,13 +3246,15 @@ Widget _buildOrderHoverButton({
 
   DataCell _buildLTPCell(OrderBookModel item, ThemesProvider theme) {
     String ltpValue = _getValidLTP(item);
-    
+
     return DataCell(
       Text(
         ltpValue,
         style: WebTextStyles.tableDataCompact(
           isDarkTheme: theme.isDarkMode,
-          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          color: theme.isDarkMode
+              ? WebDarkColors.textPrimary
+              : WebColors.textPrimary,
         ),
       ),
     );
@@ -2966,13 +3262,15 @@ Widget _buildOrderHoverButton({
 
   DataCell _buildPriceCell(OrderBookModel item, ThemesProvider theme) {
     String displayText = _getValidPrice(item);
-    
+
     return DataCell(
       Text(
         displayText,
         style: WebTextStyles.tableDataCompact(
           isDarkTheme: theme.isDarkMode,
-          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          color: theme.isDarkMode
+              ? WebDarkColors.textPrimary
+              : WebColors.textPrimary,
         ),
       ),
     );
@@ -2981,7 +3279,7 @@ Widget _buildOrderHoverButton({
   DataCell _buildStatusCell(OrderBookModel item, ThemesProvider theme) {
     String statusText = _getStatusText(item);
     Color statusColor = _getStatusColor(statusText, theme);
-    
+
     return DataCell(
       Text(
         statusText,
@@ -2995,24 +3293,26 @@ Widget _buildOrderHoverButton({
 
   DataCell _buildTriggerPriceCell(OrderBookModel item, ThemesProvider theme) {
     String triggerPrice = '0.00';
-    
+
     if (item.trgprc != null && item.trgprc != '0' && item.trgprc != '0.00') {
       triggerPrice = item.trgprc!;
     }
-    
+
     return DataCell(
       Text(
         triggerPrice,
         style: WebTextStyles.tableDataCompact(
           isDarkTheme: theme.isDarkMode,
-          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          color: theme.isDarkMode
+              ? WebDarkColors.textPrimary
+              : WebColors.textPrimary,
         ),
       ),
     );
   }
 
   // Helper methods to match mobile UI exactly
-  
+
   // String _formatTimeForWeb(String timeString) {
   //   // Format time to match web UI: "10:09:44"
   //   try {
@@ -3025,7 +3325,7 @@ Widget _buildOrderHoverButton({
   //     return timeString;
   //   }
   // }
-  
+
   String _formatTime(String timeString) {
     // Format time to match mobile UI: "10:13 AM"
     try {
@@ -3035,10 +3335,10 @@ Widget _buildOrderHoverButton({
         List<String> parts = timePart.split(':');
         int hour = int.parse(parts[0]);
         int minute = int.parse(parts[1]);
-        
+
         String period = hour >= 12 ? 'PM' : 'AM';
         int displayHour = hour > 12 ? hour - 12 : (hour == 0 ? 12 : hour);
-        
+
         return '${displayHour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')} $period';
       }
       return timeString;
@@ -3052,7 +3352,7 @@ Widget _buildOrderHoverButton({
     String symbol = item.symbol?.replaceAll("-EQ", "") ?? item.tsym ?? 'N/A';
     String expDate = item.expDate ?? '';
     String option = item.option ?? '';
-    
+
     String displayText = symbol;
     if (expDate.isNotEmpty) {
       displayText += ' $expDate';
@@ -3060,14 +3360,16 @@ Widget _buildOrderHoverButton({
     if (option.isNotEmpty) {
       displayText += ' $option';
     }
-    
+
     return DataCell(
       Text(
         displayText,
         style: WebTextStyles.custom(
           fontSize: 13,
           isDarkTheme: theme.isDarkMode,
-          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          color: theme.isDarkMode
+              ? WebDarkColors.textPrimary
+              : WebColors.textPrimary,
           fontWeight: WebFonts.medium,
         ),
         overflow: TextOverflow.ellipsis,
@@ -3075,13 +3377,14 @@ Widget _buildOrderHoverButton({
     );
   }
 
-  DataCell _buildTransactionCellForTrade(TradeBookModel item, ThemesProvider theme) {
+  DataCell _buildTransactionCellForTrade(
+      TradeBookModel item, ThemesProvider theme) {
     String buySell = item.trantype == "S" ? "SELL" : "BUY";
-    
+
     Color textColor = item.trantype == "S"
         ? (theme.isDarkMode ? colors.lossDark : colors.lossLight)
         : (theme.isDarkMode ? colors.profitDark : colors.profitLight);
-    
+
     return DataCell(
       Text(
         buySell,
@@ -3097,30 +3400,35 @@ Widget _buildOrderHoverButton({
 
   DataCell _buildTimeCellForTrade(TradeBookModel item, ThemesProvider theme) {
     String time = item.norentm != null ? item.norentm! : 'N/A';
-    
+
     return DataCell(
       Text(
         formatDateTime(value: time),
         style: WebTextStyles.custom(
           fontSize: 13,
           isDarkTheme: theme.isDarkMode,
-          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          color: theme.isDarkMode
+              ? WebDarkColors.textPrimary
+              : WebColors.textPrimary,
           fontWeight: WebFonts.medium,
         ),
       ),
     );
   }
 
-  DataCell _buildProductCellForTrade(TradeBookModel item, ThemesProvider theme) {
+  DataCell _buildProductCellForTrade(
+      TradeBookModel item, ThemesProvider theme) {
     String product = item.sPrdtAli ?? 'N/A';
-    
+
     return DataCell(
       Text(
         product,
         style: WebTextStyles.custom(
           fontSize: 13,
           isDarkTheme: theme.isDarkMode,
-          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          color: theme.isDarkMode
+              ? WebDarkColors.textPrimary
+              : WebColors.textPrimary,
           fontWeight: WebFonts.medium,
         ),
       ),
@@ -3129,14 +3437,16 @@ Widget _buildOrderHoverButton({
 
   DataCell _buildQtyCellForTrade(TradeBookModel item, ThemesProvider theme) {
     String qty = item.qty?.toString() ?? 'N/A';
-    
+
     return DataCell(
       Text(
         qty,
         style: WebTextStyles.custom(
           fontSize: 13,
           isDarkTheme: theme.isDarkMode,
-          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          color: theme.isDarkMode
+              ? WebDarkColors.textPrimary
+              : WebColors.textPrimary,
           fontWeight: WebFonts.medium,
         ),
       ),
@@ -3145,61 +3455,69 @@ Widget _buildOrderHoverButton({
 
   DataCell _buildPriceCellForTrade(TradeBookModel item, ThemesProvider theme) {
     String price = item.avgprc?.toString() ?? 'N/A';
-    
+
     return DataCell(
       Text(
         price,
         style: WebTextStyles.custom(
           fontSize: 13,
           isDarkTheme: theme.isDarkMode,
-          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          color: theme.isDarkMode
+              ? WebDarkColors.textPrimary
+              : WebColors.textPrimary,
           fontWeight: WebFonts.medium,
         ),
       ),
     );
   }
 
-  DataCell _buildTradeValueCellForTrade(TradeBookModel item, ThemesProvider theme) {
+  DataCell _buildTradeValueCellForTrade(
+      TradeBookModel item, ThemesProvider theme) {
     String tradeValue = "0.00";
-    
+
     try {
       if (item.flqty != null && item.flprc != null) {
-        tradeValue = (double.parse(item.flqty!) * double.parse(item.flprc!)).toStringAsFixed(2);
+        tradeValue = (double.parse(item.flqty!) * double.parse(item.flprc!))
+            .toStringAsFixed(2);
       }
     } catch (e) {
       tradeValue = "0.00";
     }
-    
+
     return DataCell(
       Text(
         tradeValue,
         style: WebTextStyles.custom(
           fontSize: 13,
           isDarkTheme: theme.isDarkMode,
-          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          color: theme.isDarkMode
+              ? WebDarkColors.textPrimary
+              : WebColors.textPrimary,
           fontWeight: WebFonts.medium,
         ),
       ),
     );
   }
 
-  DataCell _buildOrderNoCellForTrade(TradeBookModel item, ThemesProvider theme) {
+  DataCell _buildOrderNoCellForTrade(
+      TradeBookModel item, ThemesProvider theme) {
     String orderNo = item.norenordno?.toString() ?? 'N/A';
-    
+
     return DataCell(
       Text(
         orderNo,
         style: WebTextStyles.custom(
           fontSize: 13,
           isDarkTheme: theme.isDarkMode,
-          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          color: theme.isDarkMode
+              ? WebDarkColors.textPrimary
+              : WebColors.textPrimary,
           fontWeight: WebFonts.medium,
         ),
       ),
     );
   }
 
-  
   String _getValidLTP(OrderBookModel item) {
     // Helper function to check if a string is a valid numeric price
     bool isValidPrice(String? value) {
@@ -3213,7 +3531,7 @@ Widget _buildOrderHoverButton({
     if (isValidPrice(item.ltp)) {
       return item.ltp!;
     }
-    
+
     // Fallback to other price fields if LTP is not available
     if (isValidPrice(item.avgprc)) {
       return item.avgprc!;
@@ -3224,7 +3542,7 @@ Widget _buildOrderHoverButton({
     } else if (isValidPrice(item.close)) {
       return item.close!;
     }
-    
+
     return "0.00";
   }
 
@@ -3242,7 +3560,7 @@ Widget _buildOrderHoverButton({
     if (isValidPrice(item.prc)) {
       return item.prc!;
     }
-    
+
     return "0.00";
   }
 
@@ -3272,7 +3590,9 @@ Widget _buildOrderHoverButton({
         style: WebTextStyles.custom(
           fontSize: 13,
           isDarkTheme: theme.isDarkMode,
-          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          color: theme.isDarkMode
+              ? WebDarkColors.textPrimary
+              : WebColors.textPrimary,
           fontWeight: WebFonts.medium,
         ),
       ),
@@ -3296,33 +3616,37 @@ Widget _buildOrderHoverButton({
     );
   }
 
-  DataCell _buildInstrumentCellForGtt(GttOrderBookModel item, ThemesProvider theme) {
+  DataCell _buildInstrumentCellForGtt(
+      GttOrderBookModel item, ThemesProvider theme) {
     return DataCell(
       Text(
         '${item.tsym?.replaceAll("-EQ", "") ?? 'N/A'}-${item.exch ?? ''}',
         style: WebTextStyles.custom(
           fontSize: 13,
           isDarkTheme: theme.isDarkMode,
-          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          color: theme.isDarkMode
+              ? WebDarkColors.textPrimary
+              : WebColors.textPrimary,
           fontWeight: WebFonts.medium,
         ),
       ),
     );
   }
 
-  DataCell _buildGttInstrumentCellWithHover(GttOrderBookModel gttOrder, ThemesProvider theme, String token) {
+  DataCell _buildGttInstrumentCellWithHover(
+      GttOrderBookModel gttOrder, ThemesProvider theme, String token) {
     final gttOrderToken = token;
     final isHovered = _hoveredRowToken == gttOrderToken;
     final isProcessing = _processingOrderToken == gttOrderToken;
-    
+
     // Determine which buttons to show based on GTT order status
     // GTT orders can be cancelled/modified if status is PENDING
     final status = gttOrder.gttOrderCurrentStatus?.toUpperCase() ?? '';
     final isPending = status == 'PENDING' || status == 'TRIGGER_PENDING';
-    
+
     String symbol = '${gttOrder.tsym?.replaceAll("-EQ", "") ?? 'N/A'}';
     String exchange = gttOrder.exch ?? '';
-    
+
     String displayText = symbol.trim();
     if (exchange.isNotEmpty && exchange.trim().isNotEmpty) {
       displayText += '-${exchange.trim()}';
@@ -3337,7 +3661,9 @@ Widget _buildOrderHoverButton({
             children: [
               // Text that takes at least 50% of width, leaves space for buttons
               Expanded(
-                flex: isHovered ? 1 : 2, // When hovered, text takes less space but still visible
+                flex: isHovered
+                    ? 1
+                    : 2, // When hovered, text takes less space but still visible
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: Tooltip(
@@ -3353,7 +3679,6 @@ Widget _buildOrderHoverButton({
                         fontWeight: WebFonts.medium,
                       ),
                       overflow: TextOverflow.visible,
-                      
                     ),
                   ),
                 ),
@@ -3405,14 +3730,17 @@ Widget _buildOrderHoverButton({
     );
   }
 
-  DataCell _buildProductCellForGtt(GttOrderBookModel item, ThemesProvider theme) {
+  DataCell _buildProductCellForGtt(
+      GttOrderBookModel item, ThemesProvider theme) {
     return DataCell(
       Text(
         item.placeOrderParams?.sPrdtAli ?? '',
         style: WebTextStyles.custom(
           fontSize: 13,
           isDarkTheme: theme.isDarkMode,
-          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          color: theme.isDarkMode
+              ? WebDarkColors.textPrimary
+              : WebColors.textPrimary,
           fontWeight: WebFonts.medium,
         ),
       ),
@@ -3426,13 +3754,14 @@ Widget _buildOrderHoverButton({
         style: WebTextStyles.custom(
           fontSize: 13,
           isDarkTheme: theme.isDarkMode,
-          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          color: theme.isDarkMode
+              ? WebDarkColors.textPrimary
+              : WebColors.textPrimary,
           fontWeight: WebFonts.medium,
         ),
       ),
     );
   }
-
 
   DataCell _buildLTPCellForGtt(GttOrderBookModel item, ThemesProvider theme) {
     return DataCell(
@@ -3441,30 +3770,34 @@ Widget _buildOrderHoverButton({
         style: WebTextStyles.custom(
           fontSize: 13,
           isDarkTheme: theme.isDarkMode,
-          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          color: theme.isDarkMode
+              ? WebDarkColors.textPrimary
+              : WebColors.textPrimary,
           fontWeight: WebFonts.medium,
         ),
       ),
     );
   }
 
-
-  DataCell _buildTriggerPriceCellForGtt(GttOrderBookModel item, ThemesProvider theme) {
+  DataCell _buildTriggerPriceCellForGtt(
+      GttOrderBookModel item, ThemesProvider theme) {
     return DataCell(
       Text(
         item.d ?? '0.00',
         style: WebTextStyles.custom(
           fontSize: 13,
           isDarkTheme: theme.isDarkMode,
-          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          color: theme.isDarkMode
+              ? WebDarkColors.textPrimary
+              : WebColors.textPrimary,
           fontWeight: WebFonts.medium,
         ),
       ),
     );
   }
 
-
-  DataCell _buildStatusCellForGtt(GttOrderBookModel item, ThemesProvider theme) {
+  DataCell _buildStatusCellForGtt(
+      GttOrderBookModel item, ThemesProvider theme) {
     final status = item.gttOrderCurrentStatus?.toUpperCase() ?? '';
     return DataCell(
       Text(
@@ -3486,6 +3819,7 @@ Widget _buildOrderHoverButton({
       }
       return double.tryParse(value) != null;
     }
+
     if (isValidPrice(item.ltp)) {
       return item.ltp!;
     }
@@ -3498,8 +3832,6 @@ Widget _buildOrderHoverButton({
     }
     return "0.00";
   }
-
-
 
   // GTT-specific helper methods
   String _getGttStatusText(String status) {
@@ -3554,10 +3886,12 @@ class _DraggablePlaceOrderDialog extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<_DraggablePlaceOrderDialog> createState() => _DraggablePlaceOrderDialogState();
+  ConsumerState<_DraggablePlaceOrderDialog> createState() =>
+      _DraggablePlaceOrderDialogState();
 }
 
-class _DraggablePlaceOrderDialogState extends ConsumerState<_DraggablePlaceOrderDialog> {
+class _DraggablePlaceOrderDialogState
+    extends ConsumerState<_DraggablePlaceOrderDialog> {
   late Offset _position;
   bool _isDragging = false;
 
@@ -3565,7 +3899,7 @@ class _DraggablePlaceOrderDialogState extends ConsumerState<_DraggablePlaceOrder
   void initState() {
     super.initState();
     _position = widget.initialPosition;
-    
+
     // Listen for navigation changes (when confirmation screen appears)
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _listenForNavigationChanges();
@@ -3579,25 +3913,26 @@ class _DraggablePlaceOrderDialogState extends ConsumerState<_DraggablePlaceOrder
         timer.cancel();
         return;
       }
-      
+
       // Stop checking after 30 seconds to prevent memory leaks
-      if (timer.tick > 150) { // 30 seconds
+      if (timer.tick > 150) {
+        // 30 seconds
         timer.cancel();
         return;
       }
-      
+
       // Check if a new route has been pushed (like confirmation screen)
       final navigator = Navigator.of(context, rootNavigator: true);
       if (navigator.canPop()) {
         // Get the current route to check if it's a confirmation screen
         final currentRoute = ModalRoute.of(context);
         final routeName = currentRoute?.settings.name;
-        
+
         // Don't close for surveillance dialogs or other temporary dialogs
         // Only close for actual confirmation screens or permanent navigation
-        if (routeName != null && 
-            (routeName.contains('confirmation') || 
-             routeName.contains('order_confirmation'))) {
+        if (routeName != null &&
+            (routeName.contains('confirmation') ||
+                routeName.contains('order_confirmation'))) {
           // Close this dialog after a short delay to allow the confirmation to fully appear
           Timer(const Duration(milliseconds: 300), () {
             if (mounted) {
@@ -3618,8 +3953,12 @@ class _DraggablePlaceOrderDialogState extends ConsumerState<_DraggablePlaceOrder
 
     // Constrain position to screen bounds
     final constrainedPosition = Offset(
-      _position.dx.clamp(0, screenSize.width - 520), // 520 = dialog width + padding
-      _position.dy.clamp(0, screenSize.height - (screenSize.height * 0.9 + 20)), // dialog height + padding
+      _position.dx
+          .clamp(0, screenSize.width - 520), // 520 = dialog width + padding
+      _position.dy.clamp(
+          0,
+          screenSize.height -
+              (screenSize.height * 0.9 + 20)), // dialog height + padding
     );
 
     return Stack(
@@ -3668,7 +4007,9 @@ class _DraggablePlaceOrderDialogState extends ConsumerState<_DraggablePlaceOrder
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(5),
                   border: Border.all(
-                    color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
+                    color: theme.isDarkMode
+                        ? WebDarkColors.divider
+                        : WebColors.divider,
                   ),
                 ),
                 child: Column(
@@ -3677,8 +4018,8 @@ class _DraggablePlaceOrderDialogState extends ConsumerState<_DraggablePlaceOrder
                     Container(
                       height: 40,
                       decoration: BoxDecoration(
-                        color: theme.isDarkMode 
-                            ? WebDarkColors.backgroundSecondary 
+                        color: theme.isDarkMode
+                            ? WebDarkColors.backgroundSecondary
                             : WebColors.backgroundSecondary,
                         borderRadius: const BorderRadius.only(
                           topLeft: Radius.circular(5),
@@ -3686,7 +4027,9 @@ class _DraggablePlaceOrderDialogState extends ConsumerState<_DraggablePlaceOrder
                         ),
                         border: Border(
                           bottom: BorderSide(
-                            color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
+                            color: theme.isDarkMode
+                                ? WebDarkColors.divider
+                                : WebColors.divider,
                           ),
                         ),
                       ),
@@ -3697,8 +4040,8 @@ class _DraggablePlaceOrderDialogState extends ConsumerState<_DraggablePlaceOrder
                           Icon(
                             Icons.drag_indicator,
                             size: 16,
-                            color: theme.isDarkMode 
-                                ? WebDarkColors.iconSecondary 
+                            color: theme.isDarkMode
+                                ? WebDarkColors.iconSecondary
                                 : WebColors.iconSecondary,
                           ),
                           const SizedBox(width: 8),
@@ -3761,4 +4104,3 @@ class _DraggablePlaceOrderDialogState extends ConsumerState<_DraggablePlaceOrder
     );
   }
 }
-
