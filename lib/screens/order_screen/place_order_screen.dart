@@ -168,6 +168,10 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
         selectedStockSubscribe.exchange=stockExchangeSelected.exch??"";
         selectedStockSubscribe.token=stockExchangeSelected.token??"";
         selectedStockSubscribe.tSym=stockExchangeSelected.tsym??"";
+        // ADD THIS: Subscribe to websocket for initial stock exchange
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    _subscribeSelectedStock(context);
+  });
       }
     orderType = prdcheck // ① honour prd
         ? {"C": "Delivery", "I": "Intraday", "F": "MTF"}[widget.orderArg.prd] ?? "Delivery"
