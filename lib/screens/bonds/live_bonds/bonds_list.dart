@@ -22,6 +22,12 @@ class BondsListScreen extends StatelessWidget {
       final bonds = ref.watch(bondsProvider);
       final devHeight = MediaQuery.of(context).size.height;
 
+       final bool isEmpty = _isBondsDataEmpty(bonds);
+
+    if (isEmpty) {
+      return _buildEmptyState();
+    }
+
       return SingleChildScrollView(
         child: Column(
           children: [
@@ -39,11 +45,11 @@ class BondsListScreen extends StatelessWidget {
     }
 
     // Safe null checks for all bond types
-    final bool isEmpty = _isBondsDataEmpty(bonds);
+    // final bool isEmpty = _isBondsDataEmpty(bonds);
 
-    if (isEmpty) {
-      return _buildEmptyState(devHeight);
-    }
+    // if (isEmpty) {
+    //   return _buildEmptyState(devHeight);
+    // }
 
     return const Column(
       children: [
@@ -117,23 +123,13 @@ class BondsListScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildEmptyState(double devHeight) {
+  Widget _buildEmptyState() {
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.only(top: 225),
-        child: SizedBox(
-          height: devHeight - 140,
-          child: const Column(
-            children: [
-              NoDataFound(
-                title: "No Bonds Found",
-                subtitle: "",
-                primaryEnabled: false,
-                secondaryEnabled: false,
-              ),
-            ],
-          ),
-        ),
+      child: NoDataFound(
+        title: "No Bonds Found",
+        subtitle: "There are no bond listings for today.",
+        primaryEnabled: false,
+        secondaryEnabled: false,
       ),
     );
   }

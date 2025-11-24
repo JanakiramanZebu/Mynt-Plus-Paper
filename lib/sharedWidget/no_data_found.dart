@@ -38,7 +38,7 @@ class NoDataFound extends ConsumerWidget {
     this.onSecondary,
     this.secondaryEnabled = true,
     this.assetIcon,
-    this.iconSize = 50,
+    this.iconSize = 100,
     this.showTip = false,
     this.tipText = "",
   });
@@ -81,8 +81,8 @@ class NoDataFound extends ConsumerWidget {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: accent.withOpacity(0.1),
+                // shape: BoxShape.circle,
+                // color: accent.withOpacity(0.1),
                 // boxShadow: [
                 //   BoxShadow(
                 //     color: accent.withOpacity(0.2),
@@ -91,12 +91,12 @@ class NoDataFound extends ConsumerWidget {
                 //   ),
                 // ],
               ),
-              padding: const EdgeInsets.all(18),
+              padding: const EdgeInsets.all(0),
               child: SvgPicture.asset(
                 iconAsset,
-                width: iconSize,
-                height: iconSize,
-                color: accent,
+                width: 100,
+                height: 100,
+                // color: accent,
               ),
             ),
 
@@ -105,7 +105,7 @@ class NoDataFound extends ConsumerWidget {
             // Title
             TextWidget.custmText(
               text: title,
-              fs: 18,
+              fs: 16,
               theme: isDark,
               color: textPrimary,
               fw: 2,
@@ -117,12 +117,15 @@ class NoDataFound extends ConsumerWidget {
             if (body != null)
               body!
             else if (subtitle != null)
-              TextWidget.subText(
-                text: subtitle!,
-                theme: isDark,
-                color: textSecondary,
-                align: TextAlign.center,
-                lineHeight: 1.4,
+              SizedBox(
+                width: MediaQuery.sizeOf(context).width * 0.7,
+                child: TextWidget.subText(
+                  text: subtitle!,
+                  theme: isDark,
+                  color: textSecondary,
+                  align: TextAlign.center,
+                  lineHeight: 1.2,
+                ),
               ),
 
             const SizedBox(height: 24),

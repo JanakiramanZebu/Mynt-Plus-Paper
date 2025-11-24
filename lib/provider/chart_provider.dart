@@ -25,10 +25,13 @@ class ChartState {
 
 class ChartNotifier extends StateNotifier<ChartState> {
   ChartNotifier() : super(const ChartState());
+  bool? isfromOption;
 
-  void showChart(ChartArgs chartArgs, {String? previousRoute, dynamic originalArgs}) {
+  void showChart(ChartArgs chartArgs, {String? previousRoute, dynamic originalArgs,bool? isfromoption}) {
     log("showChart called with: ${chartArgs.tsym}, previousRoute: $previousRoute");
     
+    isfromOption = isfromoption ?? false;
+
     // Always create fresh state with new navigation context - don't inherit old values
     state = ChartState(
       isVisible: true,

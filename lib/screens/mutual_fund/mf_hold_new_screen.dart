@@ -108,19 +108,17 @@ class _MfHoldNewScreenState extends ConsumerState<MfHoldNewScreen> with TickerPr
                            mfData.mfholdingnew!.data!.isNotEmpty;
 
     if(!hasHoldingsData) {
-      return ListView(
-        children: [
-          Center(child: NoDataFound(
-            title: "No MF Holdings Found",
-            subtitle: "There's nothing here yet. Buy some MF to see them here.",
-            onSecondary: () {
-                ref.read(indexListProvider).setDashboardTab(1);
-              ref.read(indexListProvider).bottomMenu(0, context);
-            },
-            secondaryEnabled: ref.read(indexListProvider).selectedBtmIndx != 0 ? true : false,
-            secondaryLabel: "Buy MF",
-          )),
-        ],
+      return Center(
+        child: NoDataFound(
+          title: "No MF Holdings Found",
+          subtitle: "There's nothing here yet. Buy some MF to see them here.",
+          onSecondary: () {
+              ref.read(indexListProvider).setDashboardTab(1);
+            ref.read(indexListProvider).bottomMenu(0, context);
+          },
+          secondaryEnabled: ref.read(indexListProvider).selectedBtmIndx != 0 ? true : false,
+          secondaryLabel: "Buy MF",
+        ),
       );
     }
     

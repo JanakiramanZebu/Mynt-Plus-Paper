@@ -59,7 +59,7 @@ class _BondsOrderbookMainScreenState
     if(bonds.bondsOrderBook!.isEmpty){
       return NoDataFound(
         title: "No Open or Closed Orders Found",
-        subtitle: "",
+        subtitle: "There's nothing here yet. Buy some Bonds to see them here.",
         primaryEnabled: false,
         secondaryEnabled: false,
       );

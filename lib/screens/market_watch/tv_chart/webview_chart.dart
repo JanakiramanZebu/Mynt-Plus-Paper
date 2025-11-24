@@ -7,6 +7,7 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/provider/chart_provider.dart';
+import 'package:mynt_plus/routes/app_routes.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../locator/constant.dart';
 import '../../../locator/locator.dart';
@@ -428,15 +429,29 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                   splashColor: Colors.grey.withOpacity(0.4),
                   highlightColor: Colors.grey.withOpacity(0.2),
                   onTap: () async {
-                  ref.read(chartProvider.notifier).hideChart();
-                  ref.read(chartUpdateProvider).changeOrientation('portrait');
                   final mktwth = ref.read(marketWatchProvider);
+                    if( ref.read(chartProvider.notifier).isfromOption == false){
+                      if(ref.read(chartUpdateProvider).orientation != 'portrait'){
+                  ref.read(chartUpdateProvider).changeOrientation('portrait');
+                  await Future.delayed(Duration(milliseconds: 700));
+                      }
+                  ref.read(chartProvider.notifier).hideChart();
                   mktwth.chngDephBtn("Overview");
                   final safeContext = rootNavigatorKey.currentContext ?? context;
-                  await Future.delayed(Duration.zero);
+                  if(ref.read(marketWatchProvider).scripsize){
+                Navigator.pop(context);
+                }
                   await mktwth.calldepthApis(safeContext, mktwth.getQuotes, "");
                   if (mounted) setState(() {});
+                  mktwth.setChartScript('ABC', '0123', 'ABCD');}
+                  else {
+                    if(ref.read(chartUpdateProvider).orientation != 'portrait'){
+                  ref.read(chartUpdateProvider).changeOrientation('portrait');
+                  await Future.delayed(Duration(milliseconds: 700));
+                    }
+                  ref.read(chartProvider.notifier).hideChart();
                   mktwth.setChartScript('ABC', '0123', 'ABCD');
+                  }
                   },
                   child: Container(
                     width: 44,

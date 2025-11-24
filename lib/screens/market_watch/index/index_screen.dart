@@ -327,7 +327,11 @@ class OptimizedIndexItem extends ConsumerWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () => _handleTap(context, marketWatch, token, exch),
+          onTap: () {
+            _handleTap(context, marketWatch, token, exch);
+            marketWatch.scripdepthsize(false);
+            marketWatch.setETF(false);
+          },
           onLongPress: () =>
               _handleLongPress(context, indexProvider, marketWatch),
           borderRadius: BorderRadius.circular(8),

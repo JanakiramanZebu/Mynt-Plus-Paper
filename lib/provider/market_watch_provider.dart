@@ -828,7 +828,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     return value;
   }
 
-  calldepthApis(BuildContext context, raw, basket) async {
+  calldepthApis(BuildContext context, raw, basket,
+      {bool? isOptionChain}) async {
     String? currentRoute = context.widget.runtimeType.toString();
 
     ref.read(userProfileProvider).setonloadChartdialog(true);
@@ -863,8 +864,10 @@ class MarketWatchProvider extends DefaultChangeNotifier {
             child: ScripDepthInfo(
               wlValue: depthArgs,
               isBasket: basket,
-              isfromOptionChain:
-                  currentRoute.toLowerCase().contains("option") ? true : false,
+              isfromOptionChain: isOptionChain ??
+                  (currentRoute.toLowerCase().contains("option")
+                      ? true
+                      : false),
             )));
 
     await ref.read(websocketProvider).establishConnection(

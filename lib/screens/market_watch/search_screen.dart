@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mynt_plus/provider/webview_chart_provider.dart';
 // import 'package:remove_emoji_input_formatter/remove_emoji_input_formatter.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../provider/network_state_provider.dart';
@@ -118,9 +119,24 @@ class _AddScripState extends ConsumerState<SearchScreen>
       final internet = ref.watch(networkStateProvider);
       final theme = ref.read(themeProvider);
       return PopScope(
-          canPop: true, // Allows back navigation
+          canPop: false, // Allows back navigation
           onPopInvokedWithResult: (didPop, result) async {
-            // if (didPop) return; // If system handled back, do nothing
+            if (didPop) return; // If system handled back, do nothing
+
+            if (ref.read(chartProvider).isVisible == false){
+            await searchScrip.searchClear();
+            Navigator.pop(context);
+          }
+        if (ref.read(chartProvider).isVisible) {
+            if(ref.read(chartUpdateProvider).orientation != 'portrait'){
+            ref.read(chartUpdateProvider).changeOrientation('portrait');
+            await Future.delayed(Duration(milliseconds: 700));
+            }
+            ref.read(chartProvider.notifier).hideChart();
+            final mktwth = ref.read(marketWatchProvider);
+            mktwth.chngDephBtn("Overview");
+            mktwth.calldepthApis(context, mktwth.getQuotes, "");
+        }
 
             if (!(["Option||Is", "Chart||Is"].contains(widget.isBasket))) {
               ref
@@ -139,10 +155,8 @@ class _AddScripState extends ConsumerState<SearchScreen>
               }
             }
             
-            await searchScrip.searchClear();
             currentRouteName = 'homeScreen';
             FocusScope.of(context).unfocus();
-            // Navigator.pop(context);
           },
           child: GestureDetector(
               onTap: () => FocusManager.instance.primaryFocus!.unfocus(),

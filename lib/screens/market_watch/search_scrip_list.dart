@@ -80,18 +80,40 @@ class _searchScripList extends State<SearchScripList> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 8),
                 Padding(
-                  padding: const EdgeInsets.only(left: 16.0),
-                  child: TextWidget.subText(
-                    fw: 2,
-                    text: "Indices",
-                    textOverflow: TextOverflow.ellipsis,
-                    maxLines: 1,
-                    color: theme.isDarkMode
-                        ? colors.textPrimaryDark
-                        : colors.textPrimaryLight,
-                    theme: false,
+                  padding: const EdgeInsets.only(top: 16.0,bottom: 12),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: theme.isDarkMode
+                              ? colors.dividerDark
+                              : colors.dividerLight,
+                        ),
+                        top: BorderSide(
+                          color: theme.isDarkMode
+                              ? colors.dividerDark
+                              : colors.dividerLight,
+                        ),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(left: 16.0, top: 4, bottom: 4),
+                          child: TextWidget.subText(
+                            fw: 2,
+                            text: "Indices",
+                            textOverflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                            color: theme.isDarkMode
+                                ? colors.textPrimaryDark
+                                : colors.textPrimaryLight,
+                            theme: false,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 ListView.separated(
@@ -112,17 +134,57 @@ class _searchScripList extends State<SearchScripList> {
                             ? Colors.white.withOpacity(0.08)
                             : Colors.black.withOpacity(0.08),
                         onTap: () async {
+                          final marketWatch = ref.read(marketWatchProvider);
                           searchScrip.scripdepthsize(false);
                           searchScrip.setETF(false);
+                            if (widget.isBasket == "Chart||Is") {
+                              await searchScrip.fetchScripQuoteIndex(
+                                stock.token.toString(),
+                                stock.exch.toString(),
+                                context,
+                              );
+                              final quots = marketWatch.getQuotes;
+                              if (quots == null) {
+                                return;
+                              }
+                        searchScrip.setChartScript(
+                          quots.exch.toString(),
+                          quots.token.toString(),
+                          quots.tsym.toString(),
+                        );
+                        
+                        // Show chart overlay with the selected script
+                        final chartArgs = ChartArgs(
+                          tsym: quots.tsym.toString(),
+                          token: quots.token.toString(),
+                          exch: quots.exch.toString(),
+                        );
+                        
+                        // Set search as the previous route for chart navigation
+                        ref.read(chartProvider.notifier).showChart(
+                          chartArgs, 
+                          previousRoute: null
+                          );
+                        
+                        currentRouteName = 'Chart';
+                        await searchScrip.searchClear();
+                        Navigator.of(context).pop();
+                        }else{
+                          await marketWatch.fetchScripQuoteIndex(stock.token ?? "", stock.exch ?? "", context);
+                          final quots = marketWatch.getQuotes;
+                          if (quots == null) {
+                            return;
+                          }
                           DepthInputArgs depthArgs = DepthInputArgs(
-                              exch: stock.exch.toString(),
-                              token: stock.token.toString(),
-                              tsym: stock.idxname.toString(),
-                              instname: "",
-                              symbol: stock.idxname.toString(),
-                              expDate: "",
-                              option: "");
-                          await searchScrip.calldepthApis(context, depthArgs, "");
+                              exch: quots.exch?.toString() ?? "",
+                              token: quots.token?.toString() ?? "",
+                              tsym: quots.tsym?.toString() ?? "",
+                              instname: quots.instname?.toString() ?? "",
+                              symbol: quots.symbol?.toString() ?? "",
+                              expDate: quots.expDate?.toString() ?? "",
+                              option: quots.option?.toString() ?? "");
+                          await searchScrip.calldepthApis(context, depthArgs, widget.isBasket);
+                  }
                         },
                         child: ListTile(
                           contentPadding:
@@ -277,26 +339,45 @@ class _searchScripList extends State<SearchScripList> {
                   },
                 ),
                 Padding(
-                  padding: const EdgeInsets.only(left: 16.0, top: 16),
-                  child: Row(
-                    children: [
-                      TextWidget.subText(
-                        fw: 2,
-                        text: "Trending Stocks",
-                        textOverflow: TextOverflow.ellipsis,
-                        maxLines: 1,
+                  padding: const EdgeInsets.only(top: 16.0,bottom: 12),
+                  child: Container(
+                    decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
                         color: theme.isDarkMode
-                            ? colors.textPrimaryDark
-                            : colors.textPrimaryLight,
-                        theme: false,
+                            ? colors.dividerDark
+                            : colors.dividerLight,
                       ),
-                      const SizedBox(width: 4),
-                      Icon(Icons.trending_up,
-                          color: theme.isDarkMode
-                              ? colors.textSecondaryDark
-                              : colors.textSecondaryLight,
-                          size: 18),
-                    ],
+                      top: BorderSide(
+                        color: theme.isDarkMode
+                            ? colors.dividerDark
+                            : colors.dividerLight,
+                      ),
+                    ),
+                  ),
+                    child: Row(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(left: 16.0, top: 4, bottom: 4),
+                          child: TextWidget.subText(
+                            fw: 2,
+                            text: "Trending Stocks",
+                            textOverflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                            color: theme.isDarkMode
+                                ? colors.textPrimaryDark
+                                : colors.textPrimaryLight,
+                            theme: false,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Icon(Icons.trending_up,
+                            color: theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight,
+                            size: 18),
+                      ],
+                    ),
                   ),
                 ),
                 ListView.separated(
@@ -318,8 +399,38 @@ class _searchScripList extends State<SearchScripList> {
                             : Colors.black.withOpacity(0.08),
                         onTap: () async {
                           // Handle tap on most active stock
+                          
                           searchScrip.scripdepthsize(false);
                           searchScrip.setETF(false);
+                          if (widget.isBasket == "Chart||Is") {
+                    await searchScrip.fetchScripQuoteIndex(
+                      stock.token.toString(),
+                      stock.exch.toString(),
+                      context,
+                    );
+                    searchScrip.setChartScript(
+                      stock.exch.toString(),
+                      stock.token.toString(),
+                      stock.tsym.toString(),
+                    );
+                    
+                    // Show chart overlay with the selected script
+                    final chartArgs = ChartArgs(
+                      tsym: stock.tsym.toString(),
+                      token: stock.token.toString(),
+                      exch: stock.exch.toString(),
+                    );
+                    
+                    // Set search as the previous route for chart navigation
+                    ref.read(chartProvider.notifier).showChart(
+                      chartArgs, 
+                      previousRoute: null
+                      );
+                    
+                    currentRouteName = 'Chart';
+                    await searchScrip.searchClear();
+                    Navigator.of(context).pop();
+                  }else{
                           DepthInputArgs depthArgs = DepthInputArgs(
                               exch: stock.exch.toString(),
                               token: stock.token.toString(),
@@ -329,7 +440,8 @@ class _searchScripList extends State<SearchScripList> {
                               expDate: "",
                               option: "");
                           await searchScrip.calldepthApis(
-                              context, depthArgs, "");
+                              context, depthArgs, widget.isBasket);
+                  }
                         },
                         child: ListTile(
                           contentPadding:

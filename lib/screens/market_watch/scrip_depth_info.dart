@@ -1544,7 +1544,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                          });
                             
                                                                         if (scripInfo
-                                                                            .scripsize) {
+                                                                            .scripsize && (widget.isfromOptionChain ?? false) == false) {
                                                                           Navigator.pop(
                                                                               context);
                                                                           Navigator.pop(
@@ -1559,12 +1559,12 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                           scripInfo.requestMWScrip(
                                                                               context: context,
                                                                               isSubscribe: true);
-                                                                          scripInfo
-                                                                              .searchClear();
+                                                                          // scripInfo
+                                                                          //     .searchClear();
                                                                           scripInfo
                                                                               .setpageName("");
-                                                                          Navigator.pop(
-                                                                              context);
+                                                                          // Navigator.pop(
+                                                                          //     context);
                                                                           currentRouteName =
                                                                               'homeScreen';
                                                                         }
@@ -1585,7 +1585,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                           originalArgs = widget.wlValue;
                                                                         }
                                                                         
-                                                                        ref.read(chartProvider.notifier).showChart(chartArgs, previousRoute: previousRoute, originalArgs: originalArgs);
+                                                                        ref.read(chartProvider.notifier).showChart(chartArgs, previousRoute: previousRoute, originalArgs: originalArgs, isfromoption: widget.isfromOptionChain);
                             
                                                                         scripInfo.setChartScript(
                                                                             widget.wlValue.exch,

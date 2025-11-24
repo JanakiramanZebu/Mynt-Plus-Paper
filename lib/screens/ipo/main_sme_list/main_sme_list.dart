@@ -75,7 +75,7 @@ class MainSmeListCard extends StatelessWidget {
         return Center(
           child: NoDataFound(
             title: "No Open IPOs Found",
-            subtitle: "",
+            subtitle: "There are no open IPO listings for today",
             primaryEnabled: false,
             secondaryEnabled: false,
           ),

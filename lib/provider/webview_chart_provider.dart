@@ -14,7 +14,7 @@ class ChartUpdateNotifier extends DefaultChangeNotifier {
   ChartUpdateNotifier(this.ref);
   String orientation = 'portrait';
 
-  void changeOrientation(String orientationData){
+  changeOrientation(String orientationData){
     if(orientationData == 'landscape'){
     if(Platform.isIOS){
     SystemChrome.setPreferredOrientations([
