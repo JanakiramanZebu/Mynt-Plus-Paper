@@ -213,6 +213,287 @@ class _BasketListState extends ConsumerState<BasketList> {
     );
   }
 
+  Widget _buildBasketTable(ThemesProvider theme, List<dynamic> baskets) {
+    final sortedBaskets = _getSortedBaskets(baskets);
+    final headers = ['Basket Name', 'Items', 'Created Date'];
+    final columnFlex = {'Basket Name': 3, 'Items': 1, 'Created Date': 2};
+    final columnMinWidth = {'Basket Name': 200.0, 'Items': 80.0, 'Created Date': 180.0};
+
+    final tableColumn = Container(
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: theme.isDarkMode
+              ? WebDarkColors.divider
+              : WebColors.divider,
+          width: 1,
+        ),
+        borderRadius: BorderRadius.circular(4),
+        color: theme.isDarkMode
+            ? WebDarkColors.background
+            : Colors.white,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // --- Sticky header (fixed) ---
+          Container(
+            height: 50,
+            decoration: BoxDecoration(
+              color: theme.isDarkMode
+                  ? WebDarkColors.primary
+                  : WebColors.primary.withOpacity(0.05),
+              border: Border(
+                bottom: BorderSide(
+                  color: theme.isDarkMode
+                      ? WebDarkColors.divider
+                      : WebColors.divider,
+                  width: 1,
+                ),
+              ),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(4),
+                topRight: Radius.circular(4),
+              ),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Row(
+              mainAxisSize: MainAxisSize.max,
+              children: headers.asMap().entries.map((entry) {
+                final index = entry.key;
+                final label = entry.value;
+                final flex = columnFlex[label] ?? 1;
+                final minW = columnMinWidth[label] ?? 80.0;
+
+                return Expanded(
+                  flex: flex,
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minWidth: minW),
+                    child: InkWell(
+                      onTap: () => _onSortTable(index, !_sortAscending),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 6),
+                              child: _buildSortableColumnHeader(label, theme, index),
+                            ),
+                          ),
+                          if (_sortColumnIndex == index)
+                            Padding(
+                              padding: const EdgeInsets.only(left: 6.0),
+                              child: Icon(
+                                _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
+                                size: 16,
+                                color: theme.isDarkMode
+                                    ? WebDarkColors.iconPrimary
+                                    : WebColors.iconPrimary,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+
+          // --- Scrollable body (vertical) ---
+          Expanded(
+            child: Scrollbar(
+              controller: _verticalScrollController,
+              thumbVisibility: true,
+              radius: Radius.zero,
+              child: _buildBasketBodyList(theme, sortedBaskets, headers, columnFlex, columnMinWidth),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    return tableColumn;
+  }
+
+  Widget _buildBasketBodyList(
+    ThemesProvider theme,
+    List<dynamic> baskets,
+    List<String> headers,
+    Map<String, int> columnFlex,
+    Map<String, double> columnMinWidth,
+  ) {
+    return ListView.builder(
+      controller: _verticalScrollController,
+      physics: const AlwaysScrollableScrollPhysics(),
+      itemCount: baskets.length,
+      itemBuilder: (context, index) {
+        final basketItem = baskets[index] as Map<String, dynamic>;
+        final uniqueId = '$index';
+        final isHovered = _hoveredRowIndex == uniqueId;
+
+        return MouseRegion(
+          onEnter: (_) => setState(() => _hoveredRowIndex = uniqueId),
+          onExit: (_) => setState(() => _hoveredRowIndex = null),
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => _handleBasketTap(context, basketItem),
+            child: Container(
+              decoration: BoxDecoration(
+                color: isHovered
+                    ? (theme.isDarkMode
+                        ? WebDarkColors.primary.withOpacity(0.06)
+                        : WebColors.primary.withOpacity(0.10))
+                    : Colors.transparent,
+                border: Border(
+                  bottom: BorderSide(
+                    color: theme.isDarkMode
+                        ? WebDarkColors.divider
+                        : WebColors.divider,
+                    width: 1,
+                  ),
+                ),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: Row(
+                mainAxisSize: MainAxisSize.max,
+                children: [
+                  // Basket Name
+                  Expanded(
+                    flex: columnFlex['Basket Name'] ?? 3,
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(minWidth: columnMinWidth['Basket Name'] ?? 200.0),
+                      child: _buildBasketNameWidget(basketItem, index, theme, uniqueId, isHovered),
+                    ),
+                  ),
+                  // Items
+                  Expanded(
+                    flex: columnFlex['Items'] ?? 1,
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(minWidth: columnMinWidth['Items'] ?? 80.0),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 6.0),
+                          child: Text(
+                            (basketItem['curLength'] ?? 0).toString(),
+                            style: WebTextStyles.tableDataCompact(
+                              isDarkTheme: theme.isDarkMode,
+                              color: theme.isDarkMode
+                                  ? WebDarkColors.textPrimary
+                                  : WebColors.textPrimary,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Created Date
+                  Expanded(
+                    flex: columnFlex['Created Date'] ?? 2,
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(minWidth: columnMinWidth['Created Date'] ?? 180.0),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 6.0),
+                          child: Text(
+                            basketItem['createdDate']?.toString() ?? '',
+                            style: WebTextStyles.tableDataCompact(
+                              isDarkTheme: theme.isDarkMode,
+                              color: theme.isDarkMode
+                                  ? WebDarkColors.textPrimary
+                                  : WebColors.textPrimary,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildBasketNameWidget(
+    Map<String, dynamic> basket,
+    int index,
+    ThemesProvider theme,
+    String token,
+    bool isHovered,
+  ) {
+    final bsktName = basket['bsketName'] ?? '';
+
+    return Row(
+      children: [
+        Expanded(
+          flex: isHovered ? 1 : 2,
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Tooltip(
+              message: bsktName,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SvgPicture.asset(
+                    assets.basketdashboard,
+                    width: 18,
+                    height: 18,
+                    color: theme.isDarkMode
+                        ? WebDarkColors.iconSecondary
+                        : WebColors.iconSecondary,
+                  ),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      bsktName,
+                      style: WebTextStyles.tableDataCompact(
+                        isDarkTheme: theme.isDarkMode,
+                        color: theme.isDarkMode
+                            ? WebDarkColors.textPrimary
+                            : WebColors.textPrimary,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        // Buttons on the right side - fade in/out
+        IgnorePointer(
+          ignoring: !isHovered,
+          child: AnimatedOpacity(
+            opacity: isHovered ? 1.0 : 0.0,
+            duration: const Duration(milliseconds: 150),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildHoverButton(
+                  label: 'Delete',
+                  color: Colors.white,
+                  backgroundColor: theme.isDarkMode
+                      ? WebDarkColors.tertiary
+                      : WebColors.tertiary,
+                  onPressed: () => _handleDeleteBasket(context, basket, index),
+                  theme: theme,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildHoverButton({
     String? label,
     required Color color,
@@ -540,165 +821,12 @@ class _BasketListState extends ConsumerState<BasketList> {
                 : Expanded(
                     child: LayoutBuilder(
                       builder: (context, constraints) {
-                        return Scrollbar(
-                          controller: _verticalScrollController,
-                          thumbVisibility: true,
-                          radius: Radius.zero,
-                          child: SingleChildScrollView(
-                            controller: _verticalScrollController,
-                            scrollDirection: Axis.vertical,
-                            physics: const AlwaysScrollableScrollPhysics(),
-                            child: Padding(
-                              padding: const EdgeInsets.only(right: 16),
-                              child: SizedBox(
-                                width: constraints.maxWidth,
-                                child: Padding(
-                                  padding: const EdgeInsets.only(bottom: 16),
-                                  child: DataTable(
-                                    columnSpacing: 10,
-                                    showCheckboxColumn: false,
-                                    sortColumnIndex: _sortColumnIndex,
-                                    sortAscending: _sortAscending,
-                                    headingRowHeight: 44,
-                                    headingRowColor:
-                                        WidgetStateProperty.all(
-                                            Colors.transparent),
-                                    dataRowColor:
-                                        WidgetStateProperty
-                                            .resolveWith<Color?>(
-                                      (Set<WidgetState> states) {
-                                        if (states.contains(
-                                            WidgetState.hovered)) {
-                                          return (theme.isDarkMode
-                                                  ? WebDarkColors.primary
-                                                  : WebColors.primary)
-                                              .withOpacity(0.15);
-                                        }
-                                        if (states.contains(
-                                            WidgetState.selected)) {
-                                          return (theme.isDarkMode
-                                                  ? WebDarkColors.primary
-                                                  : WebColors.primary)
-                                              .withOpacity(0.1);
-                                        }
-                                        return null;
-                                      },
-                                    ),
-                                    columns: [
-                                      DataColumn(
-                                        numeric: false,
-                                        label:
-                                            _buildSortableColumnHeader(
-                                                'Basket Name',
-                                                theme,
-                                                0),
-                                        onSort: (columnIndex,
-                                                ascending) =>
-                                            _onSortTable(
-                                                columnIndex,
-                                                ascending),
-                                      ),
-                                      DataColumn(
-                                        numeric: false,
-                                        label:
-                                            _buildSortableColumnHeader(
-                                                'Items',
-                                                theme,
-                                                1),
-                                        onSort: (columnIndex,
-                                                ascending) =>
-                                            _onSortTable(
-                                                columnIndex,
-                                                ascending),
-                                      ),
-                                      DataColumn(
-                                        numeric: false,
-                                        label:
-                                            _buildSortableColumnHeader(
-                                                'Created Date',
-                                                theme,
-                                                2),
-                                        onSort: (columnIndex,
-                                                ascending) =>
-                                            _onSortTable(
-                                                columnIndex,
-                                                ascending),
-                                      ),
-                                    ],
-                                    rows: _getSortedBaskets(basket.bsktList)
-                                        .asMap()
-                                        .entries
-                                        .map((entry) {
-                                      final index = entry.key;
-                                      final basketItem =
-                                          entry.value as Map<String, dynamic>;
-                                      final uniqueId = '$index';
-
-                                      return DataRow(
-                                        onSelectChanged:
-                                            (bool? selected) {
-                                          _handleBasketTap(context, basketItem);
-                                        },
-                                        cells: [
-                                          _buildBasketNameCellWithHover(
-                                              basketItem,
-                                              index,
-                                              theme,
-                                              uniqueId),
-                                          _buildCellWithHover(
-                                              basketItem,
-                                              index,
-                                              DataCell(
-                                                ConstrainedBox(
-                                                  constraints: const BoxConstraints(maxWidth: 80),
-                                                  child: Text(
-                                                    (basketItem['curLength'] ?? 0)
-                                                        .toString(),
-                                                    style: WebTextStyles
-                                                        .tableDataCompact(
-                                                      isDarkTheme:
-                                                          theme.isDarkMode,
-                                                      color: theme.isDarkMode
-                                                          ? WebDarkColors
-                                                              .textPrimary
-                                                          : WebColors.textPrimary,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              alignment: Alignment.centerLeft),
-                                          _buildCellWithHover(
-                                              basketItem,
-                                              index,
-                                              DataCell(
-                                                ConstrainedBox(
-                                                  constraints: const BoxConstraints(maxWidth: 180),
-                                                  child: Text(
-                                                    basketItem['createdDate']
-                                                            ?.toString() ??
-                                                        '',
-                                                    style: WebTextStyles
-                                                        .tableDataCompact(
-                                                      isDarkTheme:
-                                                          theme.isDarkMode,
-                                                      color: theme.isDarkMode
-                                                          ? WebDarkColors
-                                                              .textPrimary
-                                                          : WebColors.textPrimary,
-                                                    ),
-                                                    overflow: TextOverflow.ellipsis,
-                                                    maxLines: 1,
-                                                  ),
-                                                ),
-                                              ),
-                                              alignment: Alignment.centerLeft),
-                                        ],
-                                      );
-                                    }).toList(),
-                                  ),
-                                ),
-                              ),
-                            ),
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 16.0, bottom: 8.0),
+                          child: SizedBox(
+                            width: constraints.maxWidth,
+                            height: constraints.maxHeight,
+                            child: _buildBasketTable(theme, basket.bsktList),
                           ),
                         );
                       },
@@ -723,6 +851,7 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
   final ScrollController _tabScrollController = ScrollController();
   final ScrollController _searchScrollController = ScrollController();
   final ScrollController _verticalScrollController = ScrollController();
+  final ScrollController _horizontalScrollController = ScrollController();
   String _searchValue = "";
   late TabController _tabController;
   int _tabCount = 5; // For basket mode
@@ -730,6 +859,11 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
   String? _hoveredRowIndex;
   int? _sortColumnIndex;
   bool _sortAscending = true;
+  
+  // Responsive breakpoints
+  static const double _mobileBreakpoint = 768;
+  static const double _tabletBreakpoint = 1024;
+  static const double _desktopBreakpoint = 1440;
 
   @override
   void initState() {
@@ -752,8 +886,77 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
     _tabScrollController.dispose();
     _searchScrollController.dispose();
     _verticalScrollController.dispose();
+    _horizontalScrollController.dispose();
     _tabController.dispose();
     super.dispose();
+  }
+
+  // Helper method to get responsive column configuration for Basket Items
+  Map<String, dynamic> _getResponsiveBasketItemsColumns(double screenWidth) {
+    if (screenWidth < _mobileBreakpoint) {
+      // Mobile: Show only essential columns
+      return {
+        'headers': ['Instrument', 'Type', 'Qty', 'Price', 'Status'],
+        'columnFlex': {
+          'Instrument': 3,
+          'Type': 2,
+          'Qty': 1,
+          'Price': 2,
+          'Status': 2,
+        },
+        'columnMinWidth': {
+          'Instrument': 150,
+          'Type': 70,
+          'Qty': 60,
+          'Price': 85,
+          'Status': 90,
+        },
+      };
+    } else if (screenWidth < _tabletBreakpoint) {
+      // Tablet: Show most columns
+      return {
+        'headers': ['Instrument', 'Type', 'Qty', 'Price', 'LTP', 'Status'],
+        'columnFlex': {
+          'Instrument': 3,
+          'Type': 2,
+          'Qty': 1,
+          'Price': 2,
+          'LTP': 2,
+          'Status': 2,
+        },
+        'columnMinWidth': {
+          'Instrument': 160,
+          'Type': 75,
+          'Qty': 65,
+          'Price': 90,
+          'LTP': 90,
+          'Status': 100,
+        },
+      };
+    } else {
+      // Desktop: Full columns with optimal widths
+      return {
+        'headers': ['Instrument', 'Details', 'Type', 'Qty', 'Price', 'LTP', 'Status'],
+        'columnFlex': {
+          'Instrument': 3,
+          'Details': 3,
+          'Type': 2,
+          'Qty': 1,
+          'Price': 2,
+          'LTP': 2,
+          'Status': 2,
+        },
+        'columnMinWidth': {
+          'Instrument': 170,
+          'Details': 200,
+          'Type': 80,
+          'Qty': 68,
+          'Price': 95,
+          'LTP': 95,
+          'Status': 110,
+        },
+      };
+    }
   }
 
   void _onSortTable(int columnIndex, bool ascending) {
@@ -1794,303 +1997,149 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
 
                                 return LayoutBuilder(
                                   builder: (context, constraints) {
-                                    return Scrollbar(
-                                      controller: _verticalScrollController,
-                                      thumbVisibility: true,
-                                      radius: Radius.zero,
-                                      child: SingleChildScrollView(
-                                        controller: _verticalScrollController,
-                                        scrollDirection: Axis.vertical,
-                                        physics:
-                                            const AlwaysScrollableScrollPhysics(),
-                                        child: Padding(
-                                          padding:
-                                              const EdgeInsets.only(right: 16),
-                                          child: SizedBox(
-                                            width: constraints.maxWidth,
-                                            child: Padding(
-                                              padding: const EdgeInsets.only(
-                                                  bottom: 16),
-                                              child: DataTable(
-                                                columnSpacing: 15,
-                                                showCheckboxColumn: false,
-                                                sortColumnIndex:
-                                                    _sortColumnIndex,
-                                                sortAscending: _sortAscending,
-                                                headingRowHeight: 44,
-                                                headingRowColor:
-                                                    WidgetStateProperty.all(
-                                                        Colors.transparent),
-                                                dataRowColor:
-                                                    WidgetStateProperty
-                                                        .resolveWith<Color?>(
-                                                  (Set<WidgetState> states) {
-                                                    if (states.contains(
-                                                        WidgetState.hovered)) {
-                                                      return (theme.isDarkMode
-                                                              ? WebDarkColors
-                                                                  .primary
-                                                              : WebColors
-                                                                  .primary)
-                                                          .withOpacity(0.15);
-                                                    }
-                                                    if (states.contains(
-                                                        WidgetState.selected)) {
-                                                      return (theme.isDarkMode
-                                                              ? WebDarkColors
-                                                                  .primary
-                                                              : WebColors
-                                                                  .primary)
-                                                          .withOpacity(0.1);
-                                                    }
-                                                    return null;
-                                                  },
+                                    // Get screen width for responsive design
+                                    final screenWidth = MediaQuery.of(context).size.width;
+                                    
+                                    // Get responsive column configuration
+                                    final responsiveConfig = _getResponsiveBasketItemsColumns(screenWidth);
+                                    final headers = List<String>.from(responsiveConfig['headers'] as List);
+                                    final columnFlex = Map<String, int>.from(responsiveConfig['columnFlex'] as Map);
+                                    final columnMinWidth = Map<String, double>.from(responsiveConfig['columnMinWidth'] as Map);
+                                    
+                                    // Calculate total minimum width
+                                    final totalMinWidth =
+                                        columnMinWidth.values.fold<double>(0.0, (a, b) => a + b);
+                                    // Determine whether horizontal scroll is needed
+                                    final needHorizontalScroll = constraints.maxWidth < totalMinWidth;
+
+                                    // Build the Column (header + body)
+                                    final tableColumn = Container(
+                                      decoration: BoxDecoration(
+                                        border: Border.all(
+                                          color: theme.isDarkMode
+                                              ? WebDarkColors.divider
+                                              : WebColors.divider,
+                                          width: 1,
+                                        ),
+                                        borderRadius: BorderRadius.circular(4),
+                                        color: theme.isDarkMode
+                                            ? WebDarkColors.background
+                                            : Colors.white,
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                                        children: [
+                                          // --- Sticky header (fixed) ---
+                                          Container(
+                                            height: 50,
+                                            decoration: BoxDecoration(
+                                              color: theme.isDarkMode
+                                                  ? WebDarkColors.primary
+                                                  : WebColors.primary.withOpacity(0.05),
+                                              border: Border(
+                                                bottom: BorderSide(
+                                                  color: theme.isDarkMode
+                                                      ? WebDarkColors.divider
+                                                      : WebColors.divider,
+                                                  width: 1,
                                                 ),
-                                                columns: [
-                                                  DataColumn(
-                                                    numeric: false,
-                                                    label:
-                                                        _buildSortableColumnHeader(
-                                                            'Instrument',
-                                                            theme,
-                                                            0),
-                                                    onSort: (columnIndex,
-                                                            ascending) =>
-                                                        _onSortTable(
-                                                            columnIndex,
-                                                            ascending),
-                                                  ),
-                                                  DataColumn(
-                                                    numeric: false,
-                                                    label:
-                                                        _buildSortableColumnHeader(
-                                                            'Details',
-                                                            theme,
-                                                            1),
-                                                    onSort: (columnIndex,
-                                                            ascending) =>
-                                                        _onSortTable(
-                                                            columnIndex,
-                                                            ascending),
-                                                  ),
-                                                  DataColumn(
-                                                    numeric: false,
-                                                    label:
-                                                        _buildSortableColumnHeader(
-                                                            'Type', theme, 2),
-                                                    onSort: (columnIndex,
-                                                            ascending) =>
-                                                        _onSortTable(
-                                                            columnIndex,
-                                                            ascending),
-                                                  ),
-                                                  DataColumn(
-                                                    numeric: true,
-                                                    label:
-                                                        _buildSortableColumnHeader(
-                                                            'Qty', theme, 3),
-                                                    onSort: (columnIndex,
-                                                            ascending) =>
-                                                        _onSortTable(
-                                                            columnIndex,
-                                                            ascending),
-                                                  ),
-                                                  DataColumn(
-                                                    numeric: true,
-                                                    label:
-                                                        _buildSortableColumnHeader(
-                                                            'Price', theme, 4),
-                                                    onSort: (columnIndex,
-                                                            ascending) =>
-                                                        _onSortTable(
-                                                            columnIndex,
-                                                            ascending),
-                                                  ),
-                                                  DataColumn(
-                                                    numeric: true,
-                                                    label:
-                                                        _buildSortableColumnHeader(
-                                                            'LTP', theme, 5),
-                                                    onSort: (columnIndex,
-                                                            ascending) =>
-                                                        _onSortTable(
-                                                            columnIndex,
-                                                            ascending),
-                                                  ),
-                                                  DataColumn(
-                                                    numeric: false,
-                                                    label:
-                                                        _buildSortableColumnHeader(
-                                                            'Status', theme, 6),
-                                                    onSort: (columnIndex,
-                                                            ascending) =>
-                                                        _onSortTable(
-                                                            columnIndex,
-                                                            ascending),
-                                                  ),
-                                                ],
-                                                rows: _getSortedBasketScripts(
-                                                        processedItems)
-                                                    .asMap()
-                                                    .entries
-                                                    .map((entry) {
-                                                  final item = entry.value;
-                                                  final originalIndex =
-                                                      item['_originalIndex']
-                                                          as int;
-                                                  final uniqueId =
-                                                      'basket_$originalIndex';
-
-                                                  return DataRow(
-                                                    onSelectChanged:
-                                                        (bool? selected) async {
-                                                      // Handle tap - same as original onTap
-                                                      await ref
-                                                          .read(
-                                                              marketWatchProvider)
-                                                          .fetchScripInfo(
-                                                              "${item['token']}",
-                                                              '${item['exch']}',
-                                                              context,
-                                                              true);
-
-                                                      if (!context.mounted)
-                                                        return;
-
-                                                      basket.bsktScripList[
-                                                                  originalIndex]
-                                                              ['index'] =
-                                                          originalIndex;
-                                                      basket.bsktScripList[
-                                                                  originalIndex]
-                                                              ['prctyp'] =
-                                                          basket.bsktScripList[
-                                                                  originalIndex]
-                                                              ['prctype'];
-
-                                                      final ltp = item['lp']
-                                                              ?.toString() ??
-                                                          "0.00";
-                                                      final perChange = item[
-                                                                  'pc']
-                                                              ?.toString() ??
-                                                          "0.00";
-
-                                                      OrderScreenArgs orderArgs = OrderScreenArgs(
-                                                          exchange:
-                                                              '${item['exch']}',
-                                                          tSym:
-                                                              '${item['tsym']}',
-                                                          isExit: false,
-                                                          token:
-                                                              "${item['token']}",
-                                                          transType:
-                                                              item['trantype'] ==
-                                                                      'B'
-                                                                  ? true
-                                                                  : false,
-                                                          lotSize: ref
-                                                              .read(
-                                                                  marketWatchProvider)
-                                                              .scripInfoModel
-                                                              ?.ls
-                                                              .toString(),
-                                                          ltp: ltp,
-                                                          perChange: perChange,
-                                                          orderTpye: '',
-                                                          holdQty: '',
-                                                          isModify: true,
-                                                          prd: item['prd']
-                                                              ?.toString(),
-                                                          raw: item);
-
-                                                      final scripInfo = ref
-                                                          .read(
-                                                              marketWatchProvider)
-                                                          .scripInfoModel;
-                                                      if (scripInfo == null) {
-                                                        ResponsiveSnackBar
-                                                            .showError(context,
-                                                                'Unable to fetch scrip information');
-                                                        return;
-                                                      }
-
-                                                      PlaceOrderScreenWeb
-                                                          .showDraggable(
-                                                        context: context,
-                                                        orderArg: orderArgs,
-                                                        scripInfo: scripInfo,
-                                                        isBasket: 'BasketEdit',
-                                                      );
-                                                    },
-                                                    cells: [
-                                                      // Instrument cell with hover for delete
-                                                      _buildBasketInstrumentCellWithHover(
-                                                          item,
-                                                          originalIndex,
-                                                          theme,
-                                                          uniqueId),
-                                                      // Details cell
-                                                      _buildBasketCellWithHover(
-                                                          item,
-                                                          theme,
-                                                          uniqueId,
-                                                          _buildBasketDetailsCell(
-                                                              item, theme),
-                                                          alignment: Alignment
-                                                              .centerLeft),
-                                                      // Type cell
-                                                      _buildBasketCellWithHover(
-                                                          item,
-                                                          theme,
-                                                          uniqueId,
-                                                          _buildBasketTypeCell(
-                                                              item, theme),
-                                                          alignment: Alignment
-                                                              .centerLeft),
-                                                      // Qty cell
-                                                      _buildBasketCellWithHover(
-                                                          item,
-                                                          theme,
-                                                          uniqueId,
-                                                          _buildBasketQtyCell(
-                                                              item, theme),
-                                                          alignment: Alignment
-                                                              .centerRight),
-                                                      // Price cell
-                                                      _buildBasketCellWithHover(
-                                                          item,
-                                                          theme,
-                                                          uniqueId,
-                                                          _buildBasketPriceCell(
-                                                              item, theme),
-                                                          alignment: Alignment
-                                                              .centerRight),
-                                                      // LTP cell
-                                                      _buildBasketCellWithHover(
-                                                          item,
-                                                          theme,
-                                                          uniqueId,
-                                                          _buildBasketLTPCell(
-                                                              item, theme),
-                                                          alignment: Alignment
-                                                              .centerRight),
-                                                      // Status cell
-                                                      _buildBasketCellWithHover(
-                                                          item,
-                                                          theme,
-                                                          uniqueId,
-                                                          _buildBasketStatusCell(
-                                                              item, theme),
-                                                          alignment: Alignment
-                                                              .centerLeft),
-                                                    ],
-                                                  );
-                                                }).toList(),
                                               ),
+                                              borderRadius: const BorderRadius.only(
+                                                topLeft: Radius.circular(4),
+                                                topRight: Radius.circular(4),
+                                              ),
+                                            ),
+                                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                                          child: needHorizontalScroll
+                                              ? IntrinsicWidth(
+                                                  child: Row(
+                                                    mainAxisSize: MainAxisSize.min,
+                                                    children: headers.map((label) {
+                                                      final flex = columnFlex[label] ?? 1;
+                                                      final minW = columnMinWidth[label] ?? 80.0;
+                                                      final columnIndex = _getBasketColumnIndexForHeader(label);
+
+                                                      return _buildBasketColumnCell(
+                                                        needHorizontalScroll: needHorizontalScroll,
+                                                        flex: flex,
+                                                        minW: minW,
+                                                        child: _buildBasketHeaderWidget(
+                                                          label, 
+                                                          columnIndex, 
+                                                          theme, 
+                                                        ),
+                                                      );
+                                                    }).toList(),
+                                                  ),
+                                                )
+                                              : Row(
+                                                  mainAxisSize: MainAxisSize.max,
+                                                  children: headers.map((label) {
+                                                    final flex = columnFlex[label] ?? 1;
+                                                    final minW = columnMinWidth[label] ?? 80.0;
+                                                    final columnIndex = _getBasketColumnIndexForHeader(label);
+
+                                                    return _buildBasketColumnCell(
+                                                      needHorizontalScroll: needHorizontalScroll,
+                                                      flex: flex,
+                                                      minW: minW,
+                                                      child: _buildBasketHeaderWidget(
+                                                        label, 
+                                                        columnIndex, 
+                                                        theme, 
+                                                      ),
+                                                    );
+                                                  }).toList(),
+                                                ),
+                                        ),
+
+                                        // --- Scrollable body (vertical) ---
+                                        Expanded(
+                                          child: Scrollbar(
+                                            controller: _verticalScrollController,
+                                            thumbVisibility: true,
+                                            radius: Radius.zero,
+                                            child: _buildBasketBodyList(
+                                              theme,
+                                              processedItems,
+                                              headers,
+                                              columnFlex,
+                                              columnMinWidth,
+                                              totalMinWidth: totalMinWidth,
+                                              needHorizontalScroll: needHorizontalScroll,
                                             ),
                                           ),
                                         ),
+                                      ],
+                                      ),
+                                    );
+
+                                    // If horizontal scroll needed, wrap the entire column inside SingleChildScrollView
+                                    if (needHorizontalScroll) {
+                                      return Padding(
+                                        padding: const EdgeInsets.only(right: 16.0, bottom: 8.0),
+                                        child: SizedBox(
+                                          width: constraints.maxWidth,
+                                          height: constraints.maxHeight,
+                                          child: SingleChildScrollView(
+                                            scrollDirection: Axis.horizontal,
+                                            controller: _horizontalScrollController,
+                                            child: SizedBox(
+                                              width: totalMinWidth,
+                                              child: tableColumn,
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    }
+
+                                    // else (no horizontal scroll)
+                                    return Padding(
+                                      padding: const EdgeInsets.only(right: 16.0, bottom: 8.0),
+                                      child: SizedBox(
+                                        width: constraints.maxWidth,
+                                        height: constraints.maxHeight,
+                                        child: tableColumn,
                                       ),
                                     );
                                   },
@@ -2342,6 +2391,454 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
           child: Align(
             alignment: alignment,
             child: cell.child,
+          ),
+        ),
+      ),
+    );
+  }
+
+  int _getBasketColumnIndexForHeader(String header) {
+    switch (header) {
+      case 'Instrument': return 0;
+      case 'Details': return 1;
+      case 'Type': return 2;
+      case 'Qty': return 3;
+      case 'Price': return 4;
+      case 'LTP': return 5;
+      case 'Status': return 6;
+      default: return -1;
+    }
+  }
+
+  Widget _buildBasketHeaderWidget(
+    String label,
+    int columnIndex,
+    ThemesProvider theme,
+  ) {
+    return InkWell(
+      onTap: () => _onSortTable(columnIndex, !_sortAscending),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 6),
+              child: Text(
+                label,
+                style: WebTextStyles.tableHeader(
+                  isDarkTheme: theme.isDarkMode,
+                  color: theme.isDarkMode
+                      ? WebDarkColors.textPrimary
+                      : WebColors.textPrimary,
+                ),
+                overflow: TextOverflow.visible,
+              ),
+            ),
+          ),
+          // Sort icon
+          if (_sortColumnIndex == columnIndex)
+            Padding(
+              padding: const EdgeInsets.only(left: 6.0),
+              child: Icon(
+                _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
+                size: 16,
+                color: theme.isDarkMode
+                    ? WebDarkColors.iconPrimary
+                    : WebColors.iconPrimary,
+              ),
+            )
+          else
+            Padding(
+              padding: const EdgeInsets.only(right: 6.0),
+              child: Icon(
+                Icons.unfold_more,
+                size: 16,
+                color: theme.isDarkMode
+                    ? WebDarkColors.iconSecondary
+                    : WebColors.iconSecondary,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBasketColumnCell({
+    required bool needHorizontalScroll,
+    required int flex,
+    required double minW,
+    required Widget child,
+  }) {
+    if (needHorizontalScroll) {
+      return SizedBox(
+        width: minW,
+        child: child,
+      );
+    }
+
+    return Expanded(
+      flex: flex,
+      child: SizedBox(
+        width: minW,
+        child: child,
+      ),
+    );
+  }
+
+  Widget _buildBasketBodyList(
+    ThemesProvider theme,
+    List<Map<String, dynamic>> processedItems,
+    List<String> headers,
+    Map<String, int> columnFlex,
+    Map<String, double> columnMinWidth, {
+    required double totalMinWidth,
+    required bool needHorizontalScroll,
+  }) {
+    final sorted = _getSortedBasketScripts(processedItems);
+    return ListView.builder(
+      controller: _verticalScrollController,
+      physics: const AlwaysScrollableScrollPhysics(),
+      itemCount: sorted.length,
+      itemBuilder: (context, index) {
+        final item = sorted[index];
+        final originalIndex = item['_originalIndex'] as int;
+        final uniqueId = 'basket_$originalIndex';
+        final isHovered = _hoveredRowIndex == uniqueId;
+
+        return MouseRegion(
+          onEnter: (_) => setState(() => _hoveredRowIndex = uniqueId),
+          onExit: (_) => setState(() => _hoveredRowIndex = null),
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () async {
+              // Handle tap - same as original onTap
+              await ref
+                  .read(marketWatchProvider)
+                  .fetchScripInfo(
+                      "${item['token']}",
+                      '${item['exch']}',
+                      context,
+                      true);
+
+              if (!context.mounted) return;
+
+              final basket = ref.read(orderProvider);
+              basket.bsktScripList[originalIndex]['index'] = originalIndex;
+              basket.bsktScripList[originalIndex]['prctyp'] =
+                  basket.bsktScripList[originalIndex]['prctype'];
+
+              final ltp = item['lp']?.toString() ?? "0.00";
+              final perChange = item['pc']?.toString() ?? "0.00";
+
+              OrderScreenArgs orderArgs = OrderScreenArgs(
+                  exchange: '${item['exch']}',
+                  tSym: '${item['tsym']}',
+                  isExit: false,
+                  token: "${item['token']}",
+                  transType: item['trantype'] == 'B' ? true : false,
+                  lotSize: ref
+                      .read(marketWatchProvider)
+                      .scripInfoModel
+                      ?.ls
+                      .toString(),
+                  ltp: ltp,
+                  perChange: perChange,
+                  orderTpye: '',
+                  holdQty: '',
+                  isModify: true,
+                  prd: item['prd']?.toString(),
+                  raw: item);
+
+              final scripInfo = ref
+                  .read(marketWatchProvider)
+                  .scripInfoModel;
+              if (scripInfo == null) {
+                ResponsiveSnackBar.showError(context,
+                    'Unable to fetch scrip information');
+                return;
+              }
+
+              PlaceOrderScreenWeb.showDraggable(
+                context: context,
+                orderArg: orderArgs,
+                scripInfo: scripInfo,
+                isBasket: 'BasketEdit',
+              );
+            },
+            child: Container(
+              decoration: BoxDecoration(
+                color: isHovered
+                    ? (theme.isDarkMode
+                        ? WebDarkColors.primary.withOpacity(0.06)
+                        : WebColors.primary.withOpacity(0.10))
+                    : Colors.transparent,
+                border: Border(
+                  bottom: BorderSide(
+                    color: theme.isDarkMode
+                        ? WebDarkColors.divider
+                        : WebColors.divider,
+                    width: 1,
+                  ),
+                ),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: needHorizontalScroll
+                  ? IntrinsicWidth(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: headers.map((label) {
+                          final flex = columnFlex[label] ?? 1;
+                          final minW = columnMinWidth[label] ?? 80.0;
+                          return _buildBasketColumnCell(
+                            needHorizontalScroll: needHorizontalScroll,
+                            flex: flex,
+                            minW: minW,
+                            child: _buildBasketCellWidget(
+                              label,
+                              item,
+                              originalIndex,
+                              theme,
+                              isHovered,
+                              uniqueId,
+                              needHorizontalScroll: needHorizontalScroll,
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    )
+                  : Row(
+                      mainAxisSize: MainAxisSize.max,
+                      children: headers.map((label) {
+                        final flex = columnFlex[label] ?? 1;
+                        final minW = columnMinWidth[label] ?? 80.0;
+                        return _buildBasketColumnCell(
+                          needHorizontalScroll: needHorizontalScroll,
+                          flex: flex,
+                          minW: minW,
+                          child: _buildBasketCellWidget(
+                            label,
+                            item,
+                            originalIndex,
+                            theme,
+                            isHovered,
+                            uniqueId,
+                            needHorizontalScroll: needHorizontalScroll,
+                          ),
+                        );
+                      }).toList(),
+                    ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildBasketCellWidget(
+    String column,
+    Map<String, dynamic> item,
+    int originalIndex,
+    ThemesProvider theme,
+    bool isHovered,
+    String uniqueId, {
+    required bool needHorizontalScroll,
+  }) {
+    switch (column) {
+      case 'Instrument':
+        return _buildBasketInstrumentWidget(
+          item,
+          originalIndex,
+          theme,
+          isHovered,
+          uniqueId,
+          needHorizontalScroll: needHorizontalScroll,
+        );
+      case 'Details':
+        final details =
+            "${item["exch"]} - ${item["ordType"]} - ${item["prctype"]} - ${formatToTimeOnly(item["date"] ?? "")}";
+        return _buildBasketDetailsTextCell(
+          details,
+          theme,
+          needHorizontalScroll: needHorizontalScroll,
+        );
+      case 'Type':
+        final trantype = item["trantype"]?.toString();
+        final buySell = trantype == "S" ? "SELL" : "BUY";
+        final textColor = trantype == "S"
+            ? (theme.isDarkMode ? colors.lossDark : colors.lossLight)
+            : (theme.isDarkMode ? colors.profitDark : colors.profitLight);
+        return _buildBasketTextCell(
+          buySell,
+          theme,
+          Alignment.centerLeft,
+          color: textColor,
+          needHorizontalScroll: needHorizontalScroll,
+        );
+      case 'Qty':
+        final qty = item["qty"]?.toString() ?? '0';
+        final filledQty = item["filledQty"]?.toString() ?? '0';
+        final qtyText = "$filledQty/$qty";
+        return _buildBasketTextCell(
+          qtyText,
+          theme,
+          Alignment.centerRight,
+          needHorizontalScroll: needHorizontalScroll,
+        );
+      case 'Price':
+        return _buildBasketTextCell(
+          item["prc"]?.toString() ?? '0.00',
+          theme,
+          Alignment.centerRight,
+          needHorizontalScroll: needHorizontalScroll,
+        );
+      case 'LTP':
+        return _buildBasketTextCell(
+          item["lp"]?.toString() ?? '0.00',
+          theme,
+          Alignment.centerRight,
+          needHorizontalScroll: needHorizontalScroll,
+        );
+      case 'Status':
+        final status = item["orderStatus"]?.toString() ?? '-';
+        return _buildBasketTextCell(
+          status,
+          theme,
+          Alignment.centerLeft,
+          needHorizontalScroll: needHorizontalScroll,
+        );
+      default:
+        return const SizedBox.shrink();
+    }
+  }
+
+  Widget _buildBasketInstrumentWidget(
+    Map<String, dynamic> item,
+    int originalIndex,
+    ThemesProvider theme,
+    bool isHovered,
+    String uniqueId, {
+    required bool needHorizontalScroll,
+  }) {
+    final symbol = item['symbol']?.toString() ?? '';
+    final expDate = item['expDate']?.toString() ?? '';
+    final option = item['option']?.toString() ?? '';
+    
+    String displayText = symbol.trim();
+    if (expDate.isNotEmpty) {
+      displayText += ' $expDate';
+    }
+    if (option.isNotEmpty) {
+      displayText += ' $option';
+    }
+
+    return ClipRect(
+      child: Row(
+        mainAxisSize: MainAxisSize.max,
+        children: [
+          Flexible(
+            flex: isHovered ? 1 : 2,
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Tooltip(
+                message: displayText,
+                child: Text(
+                  displayText,
+                  style: WebTextStyles.custom(
+                    fontSize: 13,
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode
+                        ? WebDarkColors.textPrimary
+                        : WebColors.textPrimary,
+                    fontWeight: WebFonts.medium,
+                  ),
+                  maxLines: 1,
+                  softWrap: false,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ),
+          ),
+          // Delete button fade in on hover
+          IgnorePointer(
+            ignoring: !isHovered,
+            child: AnimatedOpacity(
+              opacity: isHovered ? 1 : 0,
+              duration: const Duration(milliseconds: 140),
+              child: _buildBasketHoverButton(
+                label: 'Delete',
+                color: Colors.white,
+                backgroundColor: theme.isDarkMode
+                    ? WebDarkColors.tertiary
+                    : WebColors.tertiary,
+                onPressed: () => _handleDeleteBasketScript(
+                  {'_originalIndex': originalIndex, ...item},
+                  originalIndex,
+                  theme,
+                ),
+                theme: theme,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBasketTextCell(
+    String text,
+    ThemesProvider theme,
+    Alignment alignment, {
+    Color? color,
+    bool needHorizontalScroll = false,
+  }) {
+    return Align(
+      alignment: alignment,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 6.0),
+        child: Text(
+          text,
+          style: WebTextStyles.custom(
+            fontSize: 13,
+            isDarkTheme: theme.isDarkMode,
+            color: color ??
+                (theme.isDarkMode
+                    ? WebDarkColors.textPrimary
+                    : WebColors.textPrimary),
+            fontWeight: WebFonts.medium,
+          ),
+          maxLines: 1,
+          softWrap: false,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBasketDetailsTextCell(
+    String text,
+    ThemesProvider theme, {
+    bool needHorizontalScroll = false,
+  }) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 6.0),
+        child: Tooltip(
+          message: text,
+          child: Text(
+            text,
+            style: WebTextStyles.custom(
+              fontSize: 13,
+              isDarkTheme: theme.isDarkMode,
+              color: theme.isDarkMode
+                  ? WebDarkColors.textSecondary
+                  : WebColors.textSecondary,
+              fontWeight: WebFonts.medium,
+            ),
+            maxLines: 1,
+            softWrap: false,
+            overflow: TextOverflow.ellipsis,
           ),
         ),
       ),

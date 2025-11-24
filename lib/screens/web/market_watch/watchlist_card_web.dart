@@ -151,7 +151,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                     ? WebDarkColors.primary
                     : WebColors.primary)
                     .withOpacity(0.15)
-                : (theme.isDarkMode ? WebDarkColors.surface : WebColors.surface),
+                : (theme.isDarkMode ? Colors.black : Colors.white),
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

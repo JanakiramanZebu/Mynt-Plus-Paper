@@ -79,25 +79,26 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
         onRefresh: () async {
           await mfData.fetchmfholdingnew();
         },
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Summary Cards Section (only if showSummaryCards is true)
-                if (widget.showSummaryCards) ...[
-                  _buildSummaryCards(theme, mfData),
-                  const SizedBox(height: 24),
-                ],
-
-                // Main Content Area
-                _buildMainContent(theme, mfData),
-              ],
-            ),
-          ),
-        ),
+        child: widget.showSummaryCards
+            ? Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Summary Cards Section
+                    _buildSummaryCards(theme, mfData),
+                    const SizedBox(height: 24),
+                    // Main Content Area - Expanded to fill remaining space
+                    Expanded(
+                      child: _buildMainContent(theme, mfData),
+                    ),
+                  ],
+                ),
+              )
+            : SizedBox.expand(
+                child: _buildMainContent(theme, mfData),
+              ),
       ),
     );
   }
@@ -209,12 +210,15 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
   Widget _buildMainContent(ThemesProvider theme, MFProvider mfData) {
     return Container(
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Action Bar - only show when standalone (with summary cards)
           if (widget.showSummaryCards) _buildActionBar(theme, mfData),
 
-          // Table
-          _buildHoldingsTable(theme, mfData),
+          // Table - Expanded to fill remaining space
+          Expanded(
+            child: _buildHoldingsTable(theme, mfData),
+          ),
         ],
       ),
     );
@@ -240,6 +244,82 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
     );
   }
 
+  // Responsive breakpoints
+  static const double _mobileBreakpoint = 768;
+  static const double _tabletBreakpoint = 1024;
+
+  // Helper method to get responsive column configuration
+  Map<String, dynamic> _getResponsiveMfHoldingColumns(double screenWidth) {
+    if (screenWidth < _mobileBreakpoint) {
+      // Mobile: Show only essential columns
+      return {
+        'headers': ['Fund Name', 'Units', 'Current NAV', 'P&L', 'P&L %'],
+        'columnFlex': {
+          'Fund Name': 4,
+          'Units': 2,
+          'Current NAV': 2,
+          'P&L': 2,
+          'P&L %': 1,
+        },
+        'columnMinWidth': {
+          'Fund Name': 220,
+          'Units': 90,
+          'Current NAV': 110,
+          'P&L': 100,
+          'P&L %': 90,
+        },
+      };
+    } else if (screenWidth < _tabletBreakpoint) {
+      // Tablet: Show most columns
+      return {
+        'headers': ['Fund Name', 'Units', 'Avg NAV', 'Current NAV', 'Current Value', 'P&L', 'P&L %'],
+        'columnFlex': {
+          'Fund Name': 4,
+          'Units': 1,
+          'Avg NAV': 2,
+          'Current NAV': 2,
+          'Current Value': 2,
+          'P&L': 2,
+          'P&L %': 1,
+        },
+        'columnMinWidth': {
+          'Fund Name': 220,
+          'Units': 85,
+          'Avg NAV': 95,
+          'Current NAV': 110,
+          'Current Value': 115,
+          'P&L': 100,
+          'P&L %': 90,
+        },
+      };
+    } else {
+      // Desktop: Full columns with optimal widths
+      return {
+        'headers': ['Fund Name', 'Units', 'Avg NAV', 'Current NAV', 'Invested', 'Current Value', 'P&L', 'P&L %'],
+        'columnFlex': {
+          'Fund Name': 4,
+          'Units': 1,
+          'Avg NAV': 2,
+          'Current NAV': 2,
+          'Invested': 2,
+          'Current Value': 2,
+          'P&L': 2,
+          'P&L %': 1,
+        },
+        'columnMinWidth': {
+          'Fund Name': 250,
+          'Units': 90,
+          'Avg NAV': 100,
+          'Current NAV': 115,
+          'Invested': 105,
+          'Current Value': 120,
+          'P&L': 100,
+          'P&L %': 95,
+        },
+      };
+    }
+  }
+
   Widget _buildHoldingsTable(ThemesProvider theme, MFProvider mfData) {
     final filteredHoldings = _getFilteredHoldings(mfData);
 
@@ -252,108 +332,518 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        return Container(
-          child: Scrollbar(
-            controller: _verticalScrollController,
-            thumbVisibility: true,
-            radius: Radius.zero,
-            child: SingleChildScrollView(
-              controller: _verticalScrollController,
-              scrollDirection: Axis.vertical,
-              physics: const AlwaysScrollableScrollPhysics(),
-              child: Padding(
-                padding: const EdgeInsets.only(right: 16), // Space for vertical scrollbar
-                child: SizedBox(
-                  width: constraints.maxWidth,
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: DataTable(
-              columnSpacing: 10,
-              horizontalMargin: 0,
-              showCheckboxColumn: false,
-              sortColumnIndex: _sortColumnIndex,
-              sortAscending: _sortAscending,
-              headingRowHeight: 44,
-              headingRowColor: WidgetStateProperty.all(Colors.transparent),
-              dataRowColor: WidgetStateProperty.resolveWith<Color?>(
-                (Set<WidgetState> states) {
-                  if (states.contains(WidgetState.hovered)) {
-                    return (theme.isDarkMode
-                            ? WebDarkColors.primary
-                            : WebColors.primary)
-                        .withOpacity(0.15);
-                  }
-                  if (states.contains(WidgetState.selected)) {
-                    return (theme.isDarkMode
-                            ? WebDarkColors.primary
-                            : WebColors.primary)
-                        .withOpacity(0.1);
-                  }
-                  return null;
-                },
-              ),
-              columns: [
-                DataColumn(
-                  label: _buildSortableColumnHeader('Fund Name', theme, 0),
-                  onSort: (columnIndex, ascending) => _onSortTable(columnIndex, ascending),
-                ),
-                DataColumn(
-                  label: _buildSortableColumnHeader('Units', theme, 1),
-                  onSort: (columnIndex, ascending) => _onSortTable(columnIndex, ascending),
-                ),
-                DataColumn(
-                  label: _buildSortableColumnHeader('Avg NAV', theme, 2),
-                  onSort: (columnIndex, ascending) => _onSortTable(columnIndex, ascending),
-                ),
-                DataColumn(
-                  label: _buildSortableColumnHeader('Current NAV', theme, 3),
-                  onSort: (columnIndex, ascending) => _onSortTable(columnIndex, ascending),
-                ),
-                DataColumn(
-                  label: _buildSortableColumnHeader('Invested', theme, 4),
-                  onSort: (columnIndex, ascending) => _onSortTable(columnIndex, ascending),
-                ),
-                DataColumn(
-                  label: _buildSortableColumnHeader('Current Value', theme, 5),
-                  onSort: (columnIndex, ascending) => _onSortTable(columnIndex, ascending),
-                ),
-                DataColumn(
-                  label: _buildSortableColumnHeader('P&L', theme, 6),
-                  onSort: (columnIndex, ascending) => _onSortTable(columnIndex, ascending),
-                ),
-                DataColumn(
-                  label: _buildSortableColumnHeader('P&L %', theme, 7),
-                  onSort: (columnIndex, ascending) => _onSortTable(columnIndex, ascending),
-                ),
-              ],
-              rows: filteredHoldings.map((holding) {
-                final holdingId = holding.name ?? '';
-                final token = holdingId;
-                
-                return DataRow(
-                  onSelectChanged: (bool? selected) {
-                    _showHoldingDetail(holding);
-                  },
-                  cells: [
-                    _buildInstrumentCellWithHover(holding, theme, token),
-                    _buildCellWithHover(holding, theme, token, _buildUnitsCell(holding, theme)),
-                    _buildCellWithHover(holding, theme, token, _buildAvgNavCell(holding, theme)),
-                    _buildCellWithHover(holding, theme, token, _buildCurrentNavCell(holding, theme)),
-                    _buildCellWithHover(holding, theme, token, _buildInvestedCell(holding, theme)),
-                    _buildCellWithHover(holding, theme, token, _buildCurrentValueCell(holding, theme)),
-                    _buildCellWithHover(holding, theme, token, _buildPnLCell(holding, theme)),
-                    _buildCellWithHover(holding, theme, token, _buildPnLPercentCell(holding, theme)),
-                  ],
-                );
-              }).toList(),
+        // Calculate available height
+        final screenHeight = MediaQuery.of(context).size.height;
+        final padding = widget.showSummaryCards ? 32.0 : 0.0; // Top and bottom padding
+        final headerHeight = widget.showSummaryCards ? 120.0 : 0.0; // Summary cards height
+        final actionBarHeight = widget.showSummaryCards ? 60.0 : 0.0; // Action bar height
+        final spacing = widget.showSummaryCards ? 24.0 : 0.0; // Spacing between sections
+        final bottomMargin = 20.0; // Bottom margin
+        final tableHeight =
+            screenHeight - padding - headerHeight - actionBarHeight - spacing - bottomMargin;
+
+        // Ensure we don't exceed 75% of screen height
+        final maxHeight = screenHeight * 0.75;
+        final calculatedHeight = tableHeight > maxHeight
+            ? maxHeight
+            : (tableHeight > 400 ? tableHeight : 400.0);
+
+        // Get screen width for responsive design
+        final screenWidth = MediaQuery.of(context).size.width;
+        
+        // Get responsive column configuration
+        final responsiveConfig = _getResponsiveMfHoldingColumns(screenWidth);
+        final headers = List<String>.from(responsiveConfig['headers'] as List);
+        final columnFlex = Map<String, int>.from(responsiveConfig['columnFlex'] as Map);
+        final columnMinWidth = Map<String, double>.from(responsiveConfig['columnMinWidth'] as Map);
+        
+        // Calculate total minimum width
+        final totalMinWidth =
+            columnMinWidth.values.fold<double>(0.0, (a, b) => a + b);
+        // Determine whether horizontal scroll is needed
+        final needHorizontalScroll = constraints.maxWidth < totalMinWidth;
+
+        // Build the Column (header + body)
+        final tableColumn = Container(
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: theme.isDarkMode
+                  ? WebDarkColors.divider
+                  : WebColors.divider,
+              width: 1,
+            ),
+            borderRadius: BorderRadius.circular(4),
+            color: theme.isDarkMode
+                ? WebDarkColors.background
+                : Colors.white,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // --- Sticky header (fixed) ---
+              Container(
+                height: 50,
+                decoration: BoxDecoration(
+                  color: theme.isDarkMode
+                      ? WebDarkColors.primary
+                      : WebColors.primary.withOpacity(0.05),
+                  border: Border(
+                    bottom: BorderSide(
+                      color: theme.isDarkMode
+                          ? WebDarkColors.divider
+                          : WebColors.divider,
+                      width: 1,
                     ),
+                  ),
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(4),
+                    topRight: Radius.circular(4),
+                  ),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: needHorizontalScroll
+                  ? IntrinsicWidth(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: headers.map((label) {
+                          final flex = columnFlex[label] ?? 1;
+                          final minW = columnMinWidth[label] ?? 80.0;
+                          final columnIndex = _getColumnIndexForHeader(label);
+
+                          return _buildMfHoldingColumnCell(
+                            needHorizontalScroll: needHorizontalScroll,
+                            flex: flex,
+                            minW: minW,
+                            child: _buildMfHoldingHeaderWidget(
+                              label, 
+                              columnIndex, 
+                              theme, 
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    )
+                  : Row(
+                      mainAxisSize: MainAxisSize.max,
+                      children: headers.map((label) {
+                        final flex = columnFlex[label] ?? 1;
+                        final minW = columnMinWidth[label] ?? 80.0;
+                        final columnIndex = _getColumnIndexForHeader(label);
+
+                        return _buildMfHoldingColumnCell(
+                          needHorizontalScroll: needHorizontalScroll,
+                          flex: flex,
+                          minW: minW,
+                          child: _buildMfHoldingHeaderWidget(
+                            label, 
+                            columnIndex, 
+                            theme, 
+                          ),
+                        );
+                      }).toList(),
+                    ),
+            ),
+
+              // --- Scrollable body (vertical) ---
+              Expanded(
+                child: Scrollbar(
+                  controller: _verticalScrollController,
+                  thumbVisibility: true,
+                  radius: Radius.zero,
+                  child: _buildMfHoldingBodyList(
+                    theme,
+                    filteredHoldings,
+                    headers,
+                    columnFlex,
+                    columnMinWidth,
+                    totalMinWidth: totalMinWidth,
+                    needHorizontalScroll: needHorizontalScroll,
                   ),
                 ),
               ),
+            ],
+          ),
+        );
+
+        // If horizontal scroll needed, wrap the entire column inside SingleChildScrollView
+        if (needHorizontalScroll) {
+          return Padding(
+            padding: const EdgeInsets.only(right: 16.0, bottom: 8.0),
+            child: SizedBox(
+              width: constraints.maxWidth,
+              height: calculatedHeight.toDouble(),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                controller: _horizontalScrollController,
+                child: SizedBox(
+                  width: totalMinWidth,
+                  child: tableColumn,
+                ),
+              ),
+            ),
+          );
+        }
+
+        // else (no horizontal scroll)
+        return Padding(
+          padding: const EdgeInsets.only(right: 16.0, bottom: 8.0),
+          child: SizedBox(
+            width: constraints.maxWidth,
+            height: calculatedHeight.toDouble(),
+            child: tableColumn,
+          ),
+        );
+      },
+    );
+  }
+
+  int _getColumnIndexForHeader(String header) {
+    switch (header) {
+      case 'Fund Name': return 0;
+      case 'Units': return 1;
+      case 'Avg NAV': return 2;
+      case 'Current NAV': return 3;
+      case 'Invested': return 4;
+      case 'Current Value': return 5;
+      case 'P&L': return 6;
+      case 'P&L %': return 7;
+      default: return -1;
+    }
+  }
+
+  Widget _buildMfHoldingHeaderWidget(
+    String label,
+    int columnIndex,
+    ThemesProvider theme,
+  ) {
+    return InkWell(
+      onTap: () => _onSortTable(columnIndex, !_sortAscending),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 6),
+              child: Text(
+                label,
+                style: WebTextStyles.tableHeader(
+                  isDarkTheme: theme.isDarkMode,
+                  color: theme.isDarkMode
+                      ? WebDarkColors.textPrimary
+                      : WebColors.textPrimary,
+                ),
+                overflow: TextOverflow.visible,
+              ),
+            ),
+          ),
+          // Sort icon
+          if (_sortColumnIndex == columnIndex)
+            Padding(
+              padding: const EdgeInsets.only(left: 6.0),
+              child: Icon(
+                _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
+                size: 16,
+                color: theme.isDarkMode
+                    ? WebDarkColors.iconPrimary
+                    : WebColors.iconPrimary,
+              ),
+            )
+          else
+            Padding(
+              padding: const EdgeInsets.only(right: 6.0),
+              child: Icon(
+                Icons.unfold_more,
+                size: 16,
+                color: theme.isDarkMode
+                    ? WebDarkColors.iconSecondary
+                    : WebColors.iconSecondary,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMfHoldingColumnCell({
+    required bool needHorizontalScroll,
+    required int flex,
+    required double minW,
+    required Widget child,
+  }) {
+    if (needHorizontalScroll) {
+      return SizedBox(
+        width: minW,
+        child: child,
+      );
+    }
+
+    return Expanded(
+      flex: flex,
+      child: SizedBox(
+        width: minW,
+        child: child,
+      ),
+    );
+  }
+
+  Widget _buildMfHoldingBodyList(
+    ThemesProvider theme,
+    List<dynamic> holdings,
+    List<String> headers,
+    Map<String, int> columnFlex,
+    Map<String, double> columnMinWidth, {
+    required double totalMinWidth,
+    required bool needHorizontalScroll,
+  }) {
+    return ListView.builder(
+      controller: _verticalScrollController,
+      physics: const AlwaysScrollableScrollPhysics(),
+      itemCount: holdings.length,
+      itemBuilder: (context, index) {
+        final holding = holdings[index];
+        final holdingId = holding.name ?? '';
+        final uniqueId = '$holdingId$index';
+        final isHovered = _hoveredRowToken == uniqueId;
+
+        return MouseRegion(
+          onEnter: (_) => setState(() => _hoveredRowToken = uniqueId),
+          onExit: (_) => setState(() => _hoveredRowToken = null),
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => _showHoldingDetail(holding),
+            child: Container(
+              decoration: BoxDecoration(
+                color: isHovered
+                    ? (theme.isDarkMode
+                        ? WebDarkColors.primary.withOpacity(0.06)
+                        : WebColors.primary.withOpacity(0.10))
+                    : Colors.transparent,
+                border: Border(
+                  bottom: BorderSide(
+                    color: theme.isDarkMode
+                        ? WebDarkColors.divider
+                        : WebColors.divider,
+                    width: 1,
+                  ),
+                ),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              child: needHorizontalScroll
+                  ? IntrinsicWidth(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: headers.map((label) {
+                          final flex = columnFlex[label] ?? 1;
+                          final minW = columnMinWidth[label] ?? 80.0;
+                          return _buildMfHoldingColumnCell(
+                            needHorizontalScroll: needHorizontalScroll,
+                            flex: flex,
+                            minW: minW,
+                            child: _buildMfHoldingCellWidget(
+                              label,
+                              holding,
+                              theme,
+                              isHovered,
+                              needHorizontalScroll: needHorizontalScroll,
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    )
+                  : Row(
+                      mainAxisSize: MainAxisSize.max,
+                      children: headers.map((label) {
+                        final flex = columnFlex[label] ?? 1;
+                        final minW = columnMinWidth[label] ?? 80.0;
+                        return _buildMfHoldingColumnCell(
+                          needHorizontalScroll: needHorizontalScroll,
+                          flex: flex,
+                          minW: minW,
+                          child: _buildMfHoldingCellWidget(
+                            label,
+                            holding,
+                            theme,
+                            isHovered,
+                            needHorizontalScroll: needHorizontalScroll,
+                          ),
+                        );
+                      }).toList(),
+                    ),
             ),
           ),
         );
       },
+    );
+  }
+
+  Widget _buildMfHoldingCellWidget(
+    String column,
+    dynamic holding,
+    ThemesProvider theme,
+    bool isHovered, {
+    required bool needHorizontalScroll,
+  }) {
+    switch (column) {
+      case 'Fund Name':
+        return _buildMfHoldingInstrumentWidget(
+          holding,
+          theme,
+          isHovered,
+          needHorizontalScroll: needHorizontalScroll,
+        );
+      case 'Units':
+        return _buildMfHoldingTextCell(
+          holding.avgQty ?? '0',
+          theme,
+          Alignment.centerRight,
+          needHorizontalScroll: needHorizontalScroll,
+        );
+      case 'Avg NAV':
+        return _buildMfHoldingTextCell(
+          holding.avgNav ?? '0.00',
+          theme,
+          Alignment.centerRight,
+          needHorizontalScroll: needHorizontalScroll,
+        );
+      case 'Current NAV':
+        return _buildMfHoldingTextCell(
+          holding.curNav ?? '0.00',
+          theme,
+          Alignment.centerRight,
+          needHorizontalScroll: needHorizontalScroll,
+        );
+      case 'Invested':
+        return _buildMfHoldingTextCell(
+          holding.investedValue ?? '0.00',
+          theme,
+          Alignment.centerRight,
+          needHorizontalScroll: needHorizontalScroll,
+        );
+      case 'Current Value':
+        return _buildMfHoldingTextCell(
+          holding.currentValue ?? '0.00',
+          theme,
+          Alignment.centerRight,
+          needHorizontalScroll: needHorizontalScroll,
+        );
+      case 'P&L':
+        final pnl = holding.profitLoss ?? '0.00';
+        return _buildMfHoldingTextCell(
+          pnl,
+          theme,
+          Alignment.centerRight,
+          color: _getValueColor(pnl, theme),
+          needHorizontalScroll: needHorizontalScroll,
+        );
+      case 'P&L %':
+        final pnlPercent = holding.changeprofitLoss ?? '0.00';
+        return _buildMfHoldingTextCell(
+          '${pnlPercent}%',
+          theme,
+          Alignment.centerRight,
+          color: _getValueColor(pnlPercent, theme),
+          needHorizontalScroll: needHorizontalScroll,
+        );
+      default:
+        return const SizedBox.shrink();
+    }
+  }
+
+  Widget _buildMfHoldingInstrumentWidget(
+    dynamic holding,
+    ThemesProvider theme,
+    bool isHovered, {
+    required bool needHorizontalScroll,
+  }) {
+    final holdingName = holding.name ?? 'N/A';
+    final avgQty = double.tryParse(holding.avgQty ?? '0') ?? 0.0;
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Expanded(
+          flex: isHovered ? 1 : 2,
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Tooltip(
+              message: holdingName,
+              waitDuration: const Duration(milliseconds: 500),
+              child: Text(
+                holdingName,
+                style: WebTextStyles.custom(
+                  fontSize: 13,
+                  isDarkTheme: theme.isDarkMode,
+                  color: theme.isDarkMode
+                      ? WebDarkColors.textPrimary
+                      : WebColors.textPrimary,
+                  fontWeight: WebFonts.medium,
+                ),
+                maxLines: 1,
+                softWrap: false,
+                overflow: TextOverflow.visible,
+              ),
+            ),
+          ),
+        ),
+        // Action buttons fade in on hover
+        IgnorePointer(
+          ignoring: !isHovered,
+          child: AnimatedOpacity(
+            opacity: isHovered ? 1 : 0,
+            duration: const Duration(milliseconds: 140),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Redeem button - only show if holding has units
+                if (avgQty > 0) ...[
+                  _buildHoverButton(
+                    label: 'Redeem',
+                    color: Colors.white,
+                    backgroundColor: theme.isDarkMode
+                        ? WebDarkColors.error
+                        : WebColors.error,
+                    onPressed: () async {
+                      await _handleRedeem(context, holding);
+                    },
+                    theme: theme,
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMfHoldingTextCell(
+    String text,
+    ThemesProvider theme,
+    Alignment alignment, {
+    Color? color,
+    bool needHorizontalScroll = false,
+  }) {
+    return Align(
+      alignment: alignment,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 6.0),
+        child: Text(
+          text,
+          style: WebTextStyles.custom(
+            fontSize: 13,
+            isDarkTheme: theme.isDarkMode,
+            color: color ??
+                (theme.isDarkMode
+                    ? WebDarkColors.textPrimary
+                    : WebColors.textPrimary),
+            fontWeight: WebFonts.medium,
+          ),
+          maxLines: 1,
+          softWrap: false,
+          overflow: TextOverflow.visible,
+        ),
+      ),
     );
   }
 

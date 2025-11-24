@@ -115,26 +115,20 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
         color: theme.isDarkMode ? WebDarkColors.background : Colors.white,
         child: GestureDetector(
           onTap: () => FocusScope.of(context).unfocus(),
-          child: RefreshIndicator(
-            onRefresh: () async {
-              await positionBook.fetchPositionBook(context, false);
-            },
-            child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Summary Cards Section (includes Trade Positions)
-                    _buildSummaryCards(theme, positionBook),
-                    const SizedBox(height: 24),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Summary Cards Section (includes Trade Positions)
+                _buildSummaryCards(theme, positionBook),
+                const SizedBox(height: 24),
 
-                    // Main Content Area
-                    _buildMainContent(theme, positionBook),
-                  ],
+                // Main Content Area - Expanded to take remaining space
+                Expanded(
+                  child: _buildMainContent(theme, positionBook),
                 ),
-              ),
+              ],
             ),
           ),
         ),
@@ -316,8 +310,10 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
           // Tabs and Action Bar in same row
           _buildTabsAndActionBar(theme, positionBook),
           const SizedBox(height: 16),
-          // Table
-          _buildPositionsTable(theme, positionBook),
+          // Table - Expanded to take remaining space
+          Expanded(
+            child: _buildPositionsTable(theme, positionBook),
+          ),
         ],
       ),
     );
@@ -773,445 +769,826 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
     );
   }
 
+  // Responsive breakpoints
+  static const double _mobileBreakpoint = 768;
+  static const double _tabletBreakpoint = 1024;
+  static const double _desktopBreakpoint = 1440;
+
+  // Helper method to get responsive column configuration
+  Map<String, dynamic> _getResponsivePositionColumns(double screenWidth) {
+    if (screenWidth < _mobileBreakpoint) {
+      // Mobile: Show only essential columns
+      return {
+        'headers': ['Select', 'Instrument', 'Qty', 'LTP', 'P&L'],
+        'columnFlex': {
+          'Select': 1,
+          'Instrument': 4,
+          'Qty': 2,
+          'LTP': 2,
+          'P&L': 2,
+        },
+        'columnMinWidth': {
+          'Select': 60,
+          'Instrument': 220,
+          'Qty': 80,
+          'LTP': 80,
+          'P&L': 90,
+        },
+      };
+    } else if (screenWidth < _tabletBreakpoint) {
+      // Tablet: Show most columns
+      return {
+        'headers': ['Select', 'Instrument', 'Product', 'Qty', 'LTP', 'P&L', 'MTM'],
+        'columnFlex': {
+          'Select': 1,
+          'Instrument': 4,
+          'Product': 2,
+          'Qty': 1,
+          'LTP': 1,
+          'P&L': 2,
+          'MTM': 2,
+        },
+        'columnMinWidth': {
+          'Select': 60,
+          'Instrument': 220,
+          'Product': 120,
+          'Qty': 70,
+          'LTP': 80,
+          'P&L': 90,
+          'MTM': 90,
+        },
+      };
+    } else if (screenWidth < _desktopBreakpoint) {
+      // Small Desktop: Show more columns
+      return {
+        'headers': ['Select', 'Instrument', 'Product', 'Qty', 'Act Avg Price', 'LTP', 'P&L', 'MTM', 'Avg Price'],
+        'columnFlex': {
+          'Select': 1,
+          'Instrument': 4,
+          'Product': 2,
+          'Qty': 1,
+          'Act Avg Price': 2,
+          'LTP': 1,
+          'P&L': 2,
+          'MTM': 2,
+          'Avg Price': 2,
+        },
+        'columnMinWidth': {
+          'Select': 60,
+          'Instrument': 220,
+          'Product': 120,
+          'Qty': 68,
+          'Act Avg Price': 110,
+          'LTP': 80,
+          'P&L': 90,
+          'MTM': 90,
+          'Avg Price': 95,
+        },
+      };
+    } else {
+      // Large Desktop: Full columns with optimal widths
+      return {
+        'headers': ['Select', 'Instrument', 'Product', 'Qty', 'Act Avg Price', 'LTP', 'P&L', 'MTM', 'Avg Price', 'Buy Qty', 'Sell Qty', 'Buy Avg', 'Sell Avg'],
+        'columnFlex': {
+          'Select': 1,
+          'Instrument': 4,
+          'Product': 2,
+          'Qty': 1,
+          'Act Avg Price': 2,
+          'LTP': 1,
+          'P&L': 2,
+          'MTM': 2,
+          'Avg Price': 2,
+          'Buy Qty': 1,
+          'Sell Qty': 1,
+          'Buy Avg': 2,
+          'Sell Avg': 2,
+        },
+        'columnMinWidth': {
+          'Select': 60,
+          'Instrument': 250,
+          'Product': 120,
+          'Qty': 70,
+          'Act Avg Price': 115,
+          'LTP': 85,
+          'P&L': 95,
+          'MTM': 95,
+          'Avg Price': 100,
+          'Buy Qty': 75,
+          'Sell Qty': 75,
+          'Buy Avg': 90,
+          'Sell Avg': 90,
+        },
+      };
+    }
+  }
+
   Widget _buildPositionsTable(
       ThemesProvider theme, PortfolioProvider positionBook) {
     final filteredPositions = _getFilteredPositions(positionBook);
 
     if (filteredPositions.isEmpty) {
-      return const SizedBox(
-        height: 400,
-        child: Center(child: NoDataFound()),
-      );
+      return const Center(child: NoDataFound());
     }
 
-    return Container(
-      // decoration: BoxDecoration(
-      //   border: Border.all(
-      //     color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
-      //   ),
-      //   borderRadius: BorderRadius.circular(8),
-      // ),
-      child: Scrollbar(
-        controller: _verticalScrollController,
-        thumbVisibility: true,
-        radius: Radius.zero,
-        child: SingleChildScrollView(
-          controller: _verticalScrollController,
-          scrollDirection: Axis.vertical,
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: Padding(
-            padding: const EdgeInsets.only(
-                right: 16), // Space for vertical scrollbar
-            child: Column(
-              children: [
-                Scrollbar(
-                  controller: _horizontalScrollController,
-                  thumbVisibility: true,
-                  radius: Radius.zero,
-                  child: SingleChildScrollView(
-                    controller: _horizontalScrollController,
-                    scrollDirection: Axis.horizontal,
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    child: Padding(
-                      padding: const EdgeInsets.only(
-                          bottom: 16), // Space at top of horizontal scrollbar
-                      child: DataTable(
-                        columnSpacing: 10,
-                        horizontalMargin: 0,
-                        showCheckboxColumn: false,
-                        sortColumnIndex: _sortColumnIndex,
-                        sortAscending: _sortAscending,
-                        headingRowHeight: 44,
-                        headingRowColor:
-                            WidgetStateProperty.all(Colors.transparent),
-                        dataRowColor: WidgetStateProperty.resolveWith<Color?>(
-                          (Set<WidgetState> states) {
-                            if (states.contains(WidgetState.hovered)) {
-                              return (theme.isDarkMode
-                                      ? WebDarkColors.primary
-                                      : WebColors.primary)
-                                  .withOpacity(0.15);
-                            }
-                            if (states.contains(WidgetState.selected)) {
-                              return (theme.isDarkMode
-                                      ? WebDarkColors.primary
-                                      : WebColors.primary)
-                                  .withOpacity(0.1);
-                            }
-                            return null;
-                          },
-                        ),
-                        columns: [
-                          DataColumn(
-                            label: Builder(
-                              builder: (context) {
-                                final theme = ref.read(themeProvider);
-                                return Theme(
-                                  data: Theme.of(context).copyWith(
-                                    checkboxTheme: CheckboxThemeData(
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(4),
-                                      ),
-                                      side: BorderSide(
-                                        color: theme.isDarkMode
-                                            ? WebDarkColors.textPrimary
-                                                .withOpacity(0.5)
-                                            : WebColors.textPrimary
-                                                .withOpacity(0.5),
-                                        width: 1.5,
-                                      ),
-                                    ),
-                                  ),
-                                  child: Checkbox(
-                                    value: positionBook.isExitAllPosition,
-                                    onChanged: filteredPositions.isNotEmpty
-                                        ? (bool? value) {
-                                            positionBook.selectExitAllPosition(
-                                                value ?? false);
-                                            setState(
-                                                () {}); // Trigger rebuild to update button count
-                                          }
-                                        : null,
-                                    activeColor: theme.isDarkMode
-                                        ? WebDarkColors.primary
-                                        : WebColors.primary,
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                          // Reordered: Instrument first (like order book)
-                          DataColumn(
-                            label: _buildSortableColumnHeader(
-                                'Instrument', theme, 1),
-                            onSort: (columnIndex, ascending) =>
-                                _onSortTable(columnIndex, ascending),
-                          ),
-                          DataColumn(
-                            label:
-                                _buildSortableColumnHeader('Product', theme, 2),
-                            onSort: (columnIndex, ascending) =>
-                                _onSortTable(columnIndex, ascending),
-                          ),
-                          DataColumn(
-                            label: _buildSortableColumnHeader('Qty', theme, 3),
-                            onSort: (columnIndex, ascending) =>
-                                _onSortTable(columnIndex, ascending),
-                          ),
-                          DataColumn(
-                            label: _buildSortableColumnHeader(
-                                'Act Avg Price', theme, 4),
-                            onSort: (columnIndex, ascending) =>
-                                _onSortTable(columnIndex, ascending),
-                          ),
-                          DataColumn(
-                            label: _buildSortableColumnHeader('LTP', theme, 5),
-                            onSort: (columnIndex, ascending) =>
-                                _onSortTable(columnIndex, ascending),
-                          ),
-                          DataColumn(
-                            label: _buildSortableColumnHeader('P&L', theme, 6),
-                            onSort: (columnIndex, ascending) =>
-                                _onSortTable(columnIndex, ascending),
-                          ),
-                          DataColumn(
-                            label: _buildSortableColumnHeader('MTM', theme, 7),
-                            onSort: (columnIndex, ascending) =>
-                                _onSortTable(columnIndex, ascending),
-                          ),
-                          DataColumn(
-                            label: _buildSortableColumnHeader(
-                                'Avg Price', theme, 8),
-                            onSort: (columnIndex, ascending) =>
-                                _onSortTable(columnIndex, ascending),
-                          ),
-                          DataColumn(
-                            label:
-                                _buildSortableColumnHeader('Buy Qty', theme, 9),
-                            onSort: (columnIndex, ascending) =>
-                                _onSortTable(columnIndex, ascending),
-                          ),
-                          DataColumn(
-                            label: _buildSortableColumnHeader(
-                                'Sell Qty', theme, 10),
-                            onSort: (columnIndex, ascending) =>
-                                _onSortTable(columnIndex, ascending),
-                          ),
-                          DataColumn(
-                            label: _buildSortableColumnHeader(
-                                'Buy Avg', theme, 11),
-                            onSort: (columnIndex, ascending) =>
-                                _onSortTable(columnIndex, ascending),
-                          ),
-                          DataColumn(
-                            label: _buildSortableColumnHeader(
-                                'Sell Avg', theme, 12),
-                            onSort: (columnIndex, ascending) =>
-                                _onSortTable(columnIndex, ascending),
-                          ),
-                        ],
-                        rows: filteredPositions.asMap().entries.map((entry) {
-                          final index = entry.key;
-                          final position = entry.value;
-                          final isClosed = _isPositionClosed(position);
-                          // Create unique identifier for each position row (combine token, exchange, product, and index)
-                          final uniqueId =
-                              '${position.token ?? ''}_${position.exch ?? ''}_${position.prd ?? ''}_${position.tsym ?? ''}_$index';
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Use the available height from parent constraints
+        final calculatedHeight = constraints.maxHeight > 0 
+            ? constraints.maxHeight 
+            : 400.0;
 
-                          return DataRow(
-                            onSelectChanged: (bool? selected) {
-                              _showPositionDetail(position);
-                            },
-                            cells: [
-                              // Checkbox - left aligned
-                              _buildCellWithHover(
-                                  position,
-                                  theme,
-                                  uniqueId,
-                                  DataCell(
-                                    Theme(
-                                      data: Theme.of(context).copyWith(
-                                        checkboxTheme: CheckboxThemeData(
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(4),
-                                          ),
-                                          side: BorderSide(
-                                            color: theme.isDarkMode
-                                                ? WebDarkColors.textPrimary
-                                                    .withOpacity(0.5)
-                                                : WebColors.textPrimary
-                                                    .withOpacity(0.5),
-                                            width: 1.5,
-                                          ),
-                                        ),
-                                      ),
-                                      child: Checkbox(
-                                        value:
-                                            position.isExitSelection ?? false,
-                                        onChanged: isClosed
-                                            ? null
-                                            : (bool? value) {
-                                                // Find the position in the open positions list
-                                                final openPositions =
-                                                    positionBook.openPosition ??
-                                                        [];
-                                                for (int i = 0;
-                                                    i < openPositions.length;
-                                                    i++) {
-                                                  if (openPositions[i].token ==
-                                                      position.token) {
-                                                    positionBook
-                                                        .selectExitPosition(i);
-                                                    setState(
-                                                        () {}); // Trigger rebuild to update button count
-                                                    break;
-                                                  }
-                                                }
-                                              },
-                                        activeColor: theme.isDarkMode
-                                            ? WebDarkColors.primary
-                                            : WebColors.primary,
-                                      ),
-                                    ),
-                                  ),
-                                  alignment: Alignment.centerLeft),
-                              // Instrument - text (left aligned)
-                              _buildInstrumentCellWithHover(
-                                  position, theme, uniqueId, positionBook),
-                              // Product - text (left aligned)
-                              _buildCellWithHover(
-                                  position,
-                                  theme,
-                                  uniqueId,
-                                  DataCell(
-                                    Text(
-                                      position.sPrdtAli ?? 'N/A',
-                                      style: WebTextStyles.tableDataCompact(
-                                        isDarkTheme: theme.isDarkMode,
-                                        color: _getPositionTextColor(
-                                            position, theme),
-                                      ),
-                                    ),
-                                  ),
-                                  alignment: Alignment.centerLeft),
-                              // Qty - numeric (right aligned)
-                              _buildCellWithHover(
-                                  position,
-                                  theme,
-                                  uniqueId,
-                                  DataCell(
-                                    Text(
-                                      _formatQty(position.qty ?? '0'),
-                                      style: WebTextStyles.tableDataCompact(
-                                        isDarkTheme: theme.isDarkMode,
-                                        color: isClosed
-                                            ? Colors.grey
-                                            : _getQtyColor(
-                                                position.qty ?? '0', theme),
-                                      ),
-                                    ),
-                                  ),
-                                  alignment: Alignment.centerRight),
-                              // Act Avg Price - numeric (right aligned)
-                              _buildCellWithHover(
-                                  position,
-                                  theme,
-                                  uniqueId,
-                                  DataCell(
-                                    Text(
-                                      position.avgPrc ?? '0.00',
-                                      style: WebTextStyles.tableDataCompact(
-                                        isDarkTheme: theme.isDarkMode,
-                                        color: _getPositionTextColor(
-                                            position, theme),
-                                      ),
-                                    ),
-                                  ),
-                                  alignment: Alignment.centerRight),
-                              // LTP - numeric (right aligned)
-                              _buildCellWithHover(
-                                  position,
-                                  theme,
-                                  uniqueId,
-                                  DataCell(
-                                    Text(
-                                      position.lp ?? '0.00',
-                                      style: WebTextStyles.tableDataCompact(
-                                        isDarkTheme: theme.isDarkMode,
-                                        color: _getPositionTextColor(
-                                            position, theme),
-                                      ),
-                                    ),
-                                  ),
-                                  alignment: Alignment.centerRight),
-                              // P&L - numeric (right aligned)
-                              _buildCellWithHover(
-                                  position,
-                                  theme,
-                                  uniqueId,
-                                  DataCell(
-                                    Text(
-                                      position.profitNloss ?? '0.00',
-                                      style: WebTextStyles.tableDataCompact(
-                                        isDarkTheme: theme.isDarkMode,
-                                        color: isClosed
-                                            ? Colors.grey
-                                            : _getValueColor(
-                                                position.profitNloss ?? '0.00',
-                                                theme),
-                                      ),
-                                    ),
-                                  ),
-                                  alignment: Alignment.centerRight),
-                              // MTM - numeric (right aligned)
-                              _buildCellWithHover(
-                                  position,
-                                  theme,
-                                  uniqueId,
-                                  DataCell(
-                                    Text(
-                                      position.mTm ?? '0.00',
-                                      style: WebTextStyles.tableDataCompact(
-                                        isDarkTheme: theme.isDarkMode,
-                                        color: isClosed
-                                            ? Colors.grey
-                                            : _getValueColor(
-                                                position.mTm ?? '0.00', theme),
-                                      ),
-                                    ),
-                                  ),
-                                  alignment: Alignment.centerRight),
-                              // Avg Price - numeric (right aligned)
-                              _buildCellWithHover(
-                                  position,
-                                  theme,
-                                  uniqueId,
-                                  DataCell(
-                                    Text(
-                                      position.avgPrc ?? '0.00',
-                                      style: WebTextStyles.tableDataCompact(
-                                        isDarkTheme: theme.isDarkMode,
-                                        color: _getPositionTextColor(
-                                            position, theme),
-                                      ),
-                                    ),
-                                  ),
-                                  alignment: Alignment.centerRight),
-                              // Buy Qty - numeric (right aligned)
-                              _buildCellWithHover(
-                                  position,
-                                  theme,
-                                  uniqueId,
-                                  DataCell(
-                                    Text(
-                                      position.daybuyqty ?? '0',
-                                      style: WebTextStyles.tableDataCompact(
-                                        isDarkTheme: theme.isDarkMode,
-                                        color: _getPositionTextColor(
-                                            position, theme),
-                                      ),
-                                    ),
-                                  ),
-                                  alignment: Alignment.centerRight),
-                              // Sell Qty - numeric (right aligned)
-                              _buildCellWithHover(
-                                  position,
-                                  theme,
-                                  uniqueId,
-                                  DataCell(
-                                    Text(
-                                      position.daysellqty ?? '0',
-                                      style: WebTextStyles.tableDataCompact(
-                                        isDarkTheme: theme.isDarkMode,
-                                        color: _getPositionTextColor(
-                                            position, theme),
-                                      ),
-                                    ),
-                                  ),
-                                  alignment: Alignment.centerRight),
-                              // Buy Avg - numeric (right aligned)
-                              _buildCellWithHover(
-                                  position,
-                                  theme,
-                                  uniqueId,
-                                  DataCell(
-                                    Text(
-                                      position.daybuyavgprc ?? '0.00',
-                                      style: WebTextStyles.tableDataCompact(
-                                        isDarkTheme: theme.isDarkMode,
-                                        color: _getPositionTextColor(
-                                            position, theme),
-                                      ),
-                                    ),
-                                  ),
-                                  alignment: Alignment.centerRight),
-                              // Sell Avg - numeric (right aligned)
-                              _buildCellWithHover(
-                                  position,
-                                  theme,
-                                  uniqueId,
-                                  DataCell(
-                                    Text(
-                                      position.daysellavgprc ?? '0.00',
-                                      style: WebTextStyles.tableDataCompact(
-                                        isDarkTheme: theme.isDarkMode,
-                                        color: _getPositionTextColor(
-                                            position, theme),
-                                      ),
-                                    ),
-                                  ),
-                                  alignment: Alignment.centerRight),
-                            ],
+        // Get screen width for responsive design
+        final screenWidth = MediaQuery.of(context).size.width;
+        
+        // Get responsive column configuration
+        final responsiveConfig = _getResponsivePositionColumns(screenWidth);
+        final headers = List<String>.from(responsiveConfig['headers'] as List);
+        final columnFlex = Map<String, int>.from(responsiveConfig['columnFlex'] as Map);
+        final columnMinWidth = Map<String, double>.from(responsiveConfig['columnMinWidth'] as Map);
+        
+        // Calculate total minimum width
+        final totalMinWidth =
+            columnMinWidth.values.fold<double>(0.0, (a, b) => a + b);
+        // Determine whether horizontal scroll is needed
+        final needHorizontalScroll = constraints.maxWidth < totalMinWidth;
+
+        // Build the Column (header + body)
+        final tableColumn = Container(
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: theme.isDarkMode
+                  ? WebDarkColors.divider
+                  : WebColors.divider,
+              width: 1,
+            ),
+            borderRadius: BorderRadius.circular(4),
+            color: theme.isDarkMode
+                ? WebDarkColors.background
+                : Colors.white,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // --- Sticky header (fixed) ---
+              Container(
+                height: 50,
+                decoration: BoxDecoration(
+                  color:theme.isDarkMode
+                    ? WebDarkColors.primary
+                    : WebColors.primary
+                    .withOpacity(0.05),
+                  border: Border(
+                    bottom: BorderSide(
+                      color: theme.isDarkMode
+                          ? WebDarkColors.divider
+                          : WebColors.divider,
+                      width: 1,
+                    ),
+                  ),
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(4),
+                    topRight: Radius.circular(4),
+                  ),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: needHorizontalScroll
+                  ? IntrinsicWidth(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: headers.map((label) {
+                          final flex = columnFlex[label] ?? 1;
+                          final minW = columnMinWidth[label] ?? 80.0;
+                          final columnIndex = _getColumnIndexForHeader(label);
+
+                          return _buildPositionColumnCell(
+                            needHorizontalScroll: needHorizontalScroll,
+                            flex: flex,
+                            minW: minW,
+                            child: _buildPositionHeaderWidget(
+                              label, 
+                              columnIndex, 
+                              theme, 
+                              positionBook, 
+                              filteredPositions
+                            ),
                           );
                         }).toList(),
                       ),
+                    )
+                  : Row(
+                      mainAxisSize: MainAxisSize.max,
+                      children: headers.map((label) {
+                        final flex = columnFlex[label] ?? 1;
+                        final minW = columnMinWidth[label] ?? 80.0;
+                        final columnIndex = _getColumnIndexForHeader(label);
+
+                        return _buildPositionColumnCell(
+                          needHorizontalScroll: needHorizontalScroll,
+                          flex: flex,
+                          minW: minW,
+                          child: _buildPositionHeaderWidget(
+                            label, 
+                            columnIndex, 
+                            theme, 
+                            positionBook, 
+                            filteredPositions
+                          ),
+                        );
+                      }).toList(),
                     ),
+            ),
+
+              // --- Scrollable body (vertical) ---
+              Expanded(
+                child: Scrollbar(
+                  controller: _verticalScrollController,
+                  thumbVisibility: true,
+                  radius: Radius.zero,
+                  child: _buildPositionBodyList(
+                    theme,
+                    filteredPositions,
+                    headers,
+                    columnFlex,
+                    columnMinWidth,
+                    totalMinWidth: totalMinWidth,
+                    needHorizontalScroll: needHorizontalScroll,
+                    positionBook: positionBook,
                   ),
                 ),
+              ),
+            ],
+          ),
+        );
+
+        // If horizontal scroll needed, wrap the entire column inside SingleChildScrollView
+        if (needHorizontalScroll) {
+          return Padding(
+            padding: const EdgeInsets.only(right: 16.0, bottom: 8.0),
+            child: SizedBox(
+              width: constraints.maxWidth,
+              height: calculatedHeight.toDouble(),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                controller: _horizontalScrollController,
+                child: SizedBox(
+                  width: totalMinWidth,
+                  child: tableColumn,
+                ),
+              ),
+            ),
+          );
+        }
+
+        // else (no horizontal scroll)
+        return Padding(
+          padding: const EdgeInsets.only(right: 16.0, bottom: 8.0),
+          child: SizedBox(
+            width: constraints.maxWidth,
+            height: calculatedHeight.toDouble(),
+            child: tableColumn,
+          ),
+        );
+      },
+    );
+  }
+
+  int _getColumnIndexForHeader(String header) {
+    switch (header) {
+      case 'Select': return 0;
+      case 'Instrument': return 1;
+      case 'Product': return 2;
+      case 'Qty': return 3;
+      case 'Act Avg Price': return 4;
+      case 'LTP': return 5;
+      case 'P&L': return 6;
+      case 'MTM': return 7;
+      case 'Avg Price': return 8;
+      case 'Buy Qty': return 9;
+      case 'Sell Qty': return 10;
+      case 'Buy Avg': return 11;
+      case 'Sell Avg': return 12;
+      default: return -1;
+    }
+  }
+
+  Widget _buildPositionHeaderWidget(
+    String label,
+    int columnIndex,
+    ThemesProvider theme,
+    PortfolioProvider positionBook,
+    List<PositionBookModel> filteredPositions,
+  ) {
+    // Special case for Select column (checkbox)
+    if (label == 'Select') {
+      return InkWell(
+        onTap: filteredPositions.isNotEmpty
+            ? () {
+                positionBook.selectExitAllPosition(!positionBook.isExitAllPosition);
+                setState(() {});
+              }
+            : null,
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 6.0),
+            child: Theme(
+              data: Theme.of(context).copyWith(
+                checkboxTheme: CheckboxThemeData(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  side: BorderSide(
+                    color: theme.isDarkMode
+                        ? WebDarkColors.textPrimary.withOpacity(0.5)
+                        : WebColors.textPrimary.withOpacity(0.5),
+                    width: 1.5,
+                  ),
+                ),
+              ),
+              child: Checkbox(
+                value: positionBook.isExitAllPosition,
+                onChanged: filteredPositions.isNotEmpty
+                    ? (bool? value) {
+                        positionBook.selectExitAllPosition(value ?? false);
+                        setState(() {});
+                      }
+                    : null,
+                activeColor: theme.isDarkMode
+                    ? WebDarkColors.primary
+                    : WebColors.primary,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    // Sortable header for other columns
+    return InkWell(
+      onTap: columnIndex > 0 ? () => _onSortTable(columnIndex, !_sortAscending) : null,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 6),
+              child: Text(
+                label,
+                style: WebTextStyles.tableHeader(
+                  isDarkTheme: theme.isDarkMode,
+                  color: theme.isDarkMode
+                      ? WebDarkColors.textPrimary
+                      : WebColors.textPrimary,
+                ),
+                overflow: TextOverflow.visible,
+              ),
+            ),
+          ),
+          // Sort icon
+          if (columnIndex > 0 && _sortColumnIndex == columnIndex)
+            Padding(
+              padding: const EdgeInsets.only(left: 6.0),
+              child: Icon(
+                _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
+                size: 16,
+                color: theme.isDarkMode
+                    ? WebDarkColors.iconPrimary
+                    : WebColors.iconPrimary,
+              ),
+            )
+          else if (columnIndex > 0)
+            Padding(
+              padding: const EdgeInsets.only(right: 6.0),
+              child: Icon(
+                Icons.unfold_more,
+                size: 16,
+                color: theme.isDarkMode
+                    ? WebDarkColors.iconSecondary
+                    : WebColors.iconSecondary,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPositionColumnCell({
+    required bool needHorizontalScroll,
+    required int flex,
+    required double minW,
+    required Widget child,
+  }) {
+    if (needHorizontalScroll) {
+      return SizedBox(
+        width: minW,
+        child: child,
+      );
+    }
+
+    return Expanded(
+      flex: flex,
+      child: SizedBox(
+        width: minW,
+        child: child,
+      ),
+    );
+  }
+
+  Widget _buildPositionBodyList(
+    ThemesProvider theme,
+    List<PositionBookModel> positions,
+    List<String> headers,
+    Map<String, int> columnFlex,
+    Map<String, double> columnMinWidth, {
+    required double totalMinWidth,
+    required bool needHorizontalScroll,
+    required PortfolioProvider positionBook,
+  }) {
+    final sorted = _getFilteredPositions(positionBook);
+    return ListView.builder(
+      controller: _verticalScrollController,
+      physics: const AlwaysScrollableScrollPhysics(),
+      itemCount: sorted.length,
+      itemBuilder: (context, index) {
+        final position = sorted[index];
+        final isClosed = _isPositionClosed(position);
+        final uniqueId =
+            '${position.token ?? ''}_${position.exch ?? ''}_${position.prd ?? ''}_${position.tsym ?? ''}_$index';
+        final isHovered = _hoveredRowToken == uniqueId;
+
+        return MouseRegion(
+          onEnter: (_) => setState(() => _hoveredRowToken = uniqueId),
+          onExit: (_) => setState(() => _hoveredRowToken = null),
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => _showPositionDetail(position),
+            child: Container(
+              decoration: BoxDecoration(
+                color: isHovered
+                    ? (theme.isDarkMode
+                        ? WebDarkColors.primary.withOpacity(0.06)
+                        : WebColors.primary.withOpacity(0.10))
+                    : Colors.transparent,
+                border: Border(
+                  bottom: BorderSide(
+                    color: theme.isDarkMode
+                        ? WebDarkColors.divider
+                        : WebColors.divider,
+                    width: 1,
+                  ),
+                ),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: needHorizontalScroll
+                  ? IntrinsicWidth(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: headers.map((label) {
+                          final flex = columnFlex[label] ?? 1;
+                          final minW = columnMinWidth[label] ?? 80.0;
+                          return _buildPositionColumnCell(
+                            needHorizontalScroll: needHorizontalScroll,
+                            flex: flex,
+                            minW: minW,
+                            child: _buildPositionCellWidget(
+                              label,
+                              position,
+                              theme,
+                              isHovered,
+                              isClosed,
+                              positionBook,
+                              needHorizontalScroll: needHorizontalScroll,
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    )
+                  : Row(
+                      mainAxisSize: MainAxisSize.max,
+                      children: headers.map((label) {
+                        final flex = columnFlex[label] ?? 1;
+                        final minW = columnMinWidth[label] ?? 80.0;
+                        return _buildPositionColumnCell(
+                          needHorizontalScroll: needHorizontalScroll,
+                          flex: flex,
+                          minW: minW,
+                          child: _buildPositionCellWidget(
+                            label,
+                            position,
+                            theme,
+                            isHovered,
+                            isClosed,
+                            positionBook,
+                            needHorizontalScroll: needHorizontalScroll,
+                          ),
+                        );
+                      }).toList(),
+                    ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildPositionCellWidget(
+    String column,
+    PositionBookModel position,
+    ThemesProvider theme,
+    bool isHovered,
+    bool isClosed,
+    PortfolioProvider positionBook, {
+    required bool needHorizontalScroll,
+  }) {
+    switch (column) {
+      case 'Select':
+        return _buildPositionCheckboxCell(position, theme, isClosed, positionBook);
+      case 'Instrument':
+        return _buildPositionInstrumentWidget(
+          position,
+          theme,
+          isHovered,
+          isClosed,
+          positionBook,
+          needHorizontalScroll: needHorizontalScroll,
+        );
+      case 'Product':
+        return _buildPositionTextCell(
+          position.sPrdtAli ?? 'N/A',
+          theme,
+          Alignment.centerLeft,
+          color: _getPositionTextColor(position, theme),
+          needHorizontalScroll: needHorizontalScroll,
+        );
+      case 'Qty':
+        return _buildPositionTextCell(
+          _formatQty(position.qty ?? '0'),
+          theme,
+          Alignment.centerRight,
+          color: isClosed ? Colors.grey : _getQtyColor(position.qty ?? '0', theme),
+          needHorizontalScroll: needHorizontalScroll,
+        );
+      case 'Act Avg Price':
+        return _buildPositionTextCell(
+          position.avgPrc ?? '0.00',
+          theme,
+          Alignment.centerRight,
+          color: _getPositionTextColor(position, theme),
+          needHorizontalScroll: needHorizontalScroll,
+        );
+      case 'LTP':
+        return _buildPositionTextCell(
+          position.lp ?? '0.00',
+          theme,
+          Alignment.centerRight,
+          color: _getPositionTextColor(position, theme),
+          needHorizontalScroll: needHorizontalScroll,
+        );
+      case 'P&L':
+        return _buildPositionTextCell(
+          position.profitNloss ?? '0.00',
+          theme,
+          Alignment.centerRight,
+          color: isClosed
+              ? Colors.grey
+              : _getValueColor(position.profitNloss ?? '0.00', theme),
+          needHorizontalScroll: needHorizontalScroll,
+        );
+      case 'MTM':
+        return _buildPositionTextCell(
+          position.mTm ?? '0.00',
+          theme,
+          Alignment.centerRight,
+          color: isClosed
+              ? Colors.grey
+              : _getValueColor(position.mTm ?? '0.00', theme),
+          needHorizontalScroll: needHorizontalScroll,
+        );
+      case 'Avg Price':
+        return _buildPositionTextCell(
+          position.avgPrc ?? '0.00',
+          theme,
+          Alignment.centerRight,
+          color: _getPositionTextColor(position, theme),
+          needHorizontalScroll: needHorizontalScroll,
+        );
+      case 'Buy Qty':
+        return _buildPositionTextCell(
+          position.daybuyqty ?? '0',
+          theme,
+          Alignment.centerRight,
+          color: _getPositionTextColor(position, theme),
+          needHorizontalScroll: needHorizontalScroll,
+        );
+      case 'Sell Qty':
+        return _buildPositionTextCell(
+          position.daysellqty ?? '0',
+          theme,
+          Alignment.centerRight,
+          color: _getPositionTextColor(position, theme),
+          needHorizontalScroll: needHorizontalScroll,
+        );
+      case 'Buy Avg':
+        return _buildPositionTextCell(
+          position.daybuyavgprc ?? '0.00',
+          theme,
+          Alignment.centerRight,
+          color: _getPositionTextColor(position, theme),
+          needHorizontalScroll: needHorizontalScroll,
+        );
+      case 'Sell Avg':
+        return _buildPositionTextCell(
+          position.daysellavgprc ?? '0.00',
+          theme,
+          Alignment.centerRight,
+          color: _getPositionTextColor(position, theme),
+          needHorizontalScroll: needHorizontalScroll,
+        );
+      default:
+        return const SizedBox.shrink();
+    }
+  }
+
+  Widget _buildPositionCheckboxCell(
+    PositionBookModel position,
+    ThemesProvider theme,
+    bool isClosed,
+    PortfolioProvider positionBook,
+  ) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 6.0),
+        child: Theme(
+          data: Theme.of(context).copyWith(
+            checkboxTheme: CheckboxThemeData(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(4),
+              ),
+              side: BorderSide(
+                color: theme.isDarkMode
+                    ? WebDarkColors.textPrimary.withOpacity(0.5)
+                    : WebColors.textPrimary.withOpacity(0.5),
+                width: 1.5,
+              ),
+            ),
+          ),
+          child: Checkbox(
+            value: position.isExitSelection ?? false,
+            onChanged: isClosed
+                ? null
+                : (bool? value) {
+                    final openPositions = positionBook.openPosition ?? [];
+                    for (int i = 0; i < openPositions.length; i++) {
+                      if (openPositions[i].token == position.token) {
+                        positionBook.selectExitPosition(i);
+                        setState(() {});
+                        break;
+                      }
+                    }
+                  },
+            activeColor: theme.isDarkMode
+                ? WebDarkColors.primary
+                : WebColors.primary,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPositionInstrumentWidget(
+    PositionBookModel position,
+    ThemesProvider theme,
+    bool isHovered,
+    bool isClosed,
+    PortfolioProvider positionBook, {
+    required bool needHorizontalScroll,
+  }) {
+    final displayText =
+        '${position.symbol ?? ''} ${position.exch ?? ''} ${position.expDate ?? ''} ${position.option ?? ''}';
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Expanded(
+          flex: isHovered ? 1 : 2,
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Tooltip(
+              message: displayText,
+              child: Text(
+                displayText,
+                style: WebTextStyles.custom(
+                  fontSize: 13,
+                  isDarkTheme: theme.isDarkMode,
+                  color: _getPositionTextColor(position, theme),
+                  fontWeight: WebFonts.medium,
+                ),
+                maxLines: 1,
+                softWrap: false,
+                overflow: TextOverflow.visible,
+              ),
+            ),
+          ),
+        ),
+        // Action buttons fade in on hover
+        IgnorePointer(
+          ignoring: !isHovered,
+          child: AnimatedOpacity(
+            opacity: isHovered ? 1 : 0,
+            duration: const Duration(milliseconds: 140),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (!isClosed &&
+                    position.qty != "0" &&
+                    position.sPrdtAli != "BO" &&
+                    position.sPrdtAli != "CO" &&
+                    !positionBook.isDay) ...[
+                  _buildHoverButton(
+                    label: 'Add',
+                    color: Colors.white,
+                    backgroundColor: theme.isDarkMode
+                        ? WebDarkColors.primary
+                        : WebColors.primary,
+                    onPressed: () async {
+                      await _handleAddPosition(context, position);
+                    },
+                    theme: theme,
+                  ),
+                  const SizedBox(width: 6),
+                  _buildHoverButton(
+                    label: 'Exit',
+                    color: Colors.white,
+                    backgroundColor: theme.isDarkMode
+                        ? WebDarkColors.tertiary
+                        : WebColors.tertiary,
+                    onPressed: () async {
+                      await _handleExitPosition(context, position);
+                    },
+                    theme: theme,
+                  ),
+                  const SizedBox(width: 6),
+                ],
+                _buildHoverButton(
+                  icon: Icons.bar_chart,
+                  color: Colors.black,
+                  backgroundColor: Colors.white,
+                  borderRadius: 5.0,
+                  onPressed: () async {
+                    await _handleChartTap(context, position);
+                  },
+                  theme: theme,
+                ),
+                if (!isClosed && position.qty != "0") ...[
+                  const SizedBox(width: 6),
+                  _buildHoverButton(
+                    icon: Icons.swap_horiz,
+                    color: Colors.black,
+                    backgroundColor: Colors.white,
+                    borderRadius: 5.0,
+                    iconWeight: 700,
+                    onPressed: () {
+                      _handleConvertPosition(context, position);
+                    },
+                    theme: theme,
+                  ),
+                ],
               ],
             ),
           ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPositionTextCell(
+    String text,
+    ThemesProvider theme,
+    Alignment alignment, {
+    Color? color,
+    bool needHorizontalScroll = false,
+  }) {
+    return Align(
+      alignment: alignment,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 6.0),
+        child: Text(
+          text,
+          style: WebTextStyles.custom(
+            fontSize: 13,
+            isDarkTheme: theme.isDarkMode,
+            color: color ??
+                (theme.isDarkMode
+                    ? WebDarkColors.textPrimary
+                    : WebColors.textPrimary),
+            fontWeight: WebFonts.medium,
+          ),
+          maxLines: 1,
+          softWrap: false,
+          overflow: TextOverflow.visible,
         ),
       ),
     );

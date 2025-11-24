@@ -32,6 +32,11 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb>
   int? _alertSortColumnIndex;
   bool _alertSortAscending = true;
   
+  // Responsive breakpoints
+  static const double _mobileBreakpoint = 768;
+  static const double _tabletBreakpoint = 1024;
+  static const double _desktopBreakpoint = 1440;
+  
   // WebSocket subscription for real-time updates
   StreamSubscription? _socketSubscription;
   
@@ -244,8 +249,9 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb>
 
     return RefreshIndicator(
       onRefresh: _refreshData,
-      child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
+      child: SizedBox(
+        width: double.infinity,
+        height: double.infinity,
         child: _buildAlertTable(_getSortedAlerts(allAlerts), theme),
       ),
     );
@@ -350,6 +356,68 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb>
     });
   }
 
+  // Helper method to get responsive column configuration for Alerts
+  Map<String, dynamic> _getResponsiveAlertColumns(double screenWidth) {
+    if (screenWidth < _mobileBreakpoint) {
+      // Mobile: Show only essential columns
+      return {
+        'headers': ['Instrument', 'Alert Type', 'Target', 'Status'],
+        'columnFlex': {
+          'Instrument': 3,
+          'Alert Type': 2,
+          'Target': 2,
+          'Status': 2,
+        },
+        'columnMinWidth': {
+          'Instrument': 150,
+          'Alert Type': 130,
+          'Target': 90,
+          'Status': 90,
+        },
+      };
+    } else if (screenWidth < _tabletBreakpoint) {
+      // Tablet: Show most columns
+      return {
+        'headers': ['Instrument', 'Alert Type', 'Target', 'LTP', 'Status'],
+        'columnFlex': {
+          'Instrument': 3,
+          'Alert Type': 2,
+          'Target': 2,
+          'LTP': 2,
+          'Status': 2,
+        },
+        'columnMinWidth': {
+          'Instrument': 160,
+          'Alert Type': 140,
+          'Target': 95,
+          'LTP': 100,
+          'Status': 100,
+        },
+      };
+    } else {
+      // Desktop: Full columns with optimal widths
+      return {
+        'headers': ['Instrument', 'Exchange', 'Alert Type', 'Target', 'LTP', 'Status'],
+        'columnFlex': {
+          'Instrument': 3,
+          'Exchange': 2,
+          'Alert Type': 2,
+          'Target': 2,
+          'LTP': 2,
+          'Status': 2,
+        },
+        'columnMinWidth': {
+          'Instrument': 170,
+          'Exchange': 100,
+          'Alert Type': 150,
+          'Target': 100,
+          'LTP': 110,
+          'Status': 110,
+        },
+      };
+    }
+  }
+
   Widget _buildAlertTable(List<dynamic> alerts, ThemesProvider theme) {
     if (alerts.isEmpty) {
       return SizedBox(
@@ -366,116 +434,658 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb>
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        return Container(
-          child: Scrollbar(
-            controller: _verticalScrollController,
-            thumbVisibility: true,
-            radius: Radius.zero,
-            child: SingleChildScrollView(
-              controller: _verticalScrollController,
-              scrollDirection: Axis.vertical,
-              physics: const AlwaysScrollableScrollPhysics(),
-              child: Padding(
-                padding: const EdgeInsets.only(right: 16), // Space for vertical scrollbar
-                child: SizedBox(
-                  width: constraints.maxWidth,
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: DataTable(
-                      columnSpacing: 10,
-                      horizontalMargin: 0,
-                      showCheckboxColumn: false,
-                      sortColumnIndex: _alertSortColumnIndex,
-                      sortAscending: _alertSortAscending,
-                      headingRowHeight: 44,
-                      headingRowColor: WidgetStateProperty.all(Colors.transparent),
-                      dataRowColor: WidgetStateProperty.resolveWith<Color?>(
-                        (Set<WidgetState> states) {
-                          if (states.contains(WidgetState.hovered)) {
-                            return (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary).withOpacity(0.15);
-                          }
-                          if (states.contains(WidgetState.selected)) {
-                            return (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary).withOpacity(0.1);
-                          }
-                          return null;
-                        },
+        // Get screen width for responsive design
+        final screenWidth = MediaQuery.of(context).size.width;
+        
+        // Get responsive column configuration
+        final responsiveConfig = _getResponsiveAlertColumns(screenWidth);
+        final headers = List<String>.from(responsiveConfig['headers'] as List);
+        final columnFlex = Map<String, int>.from(responsiveConfig['columnFlex'] as Map);
+        final columnMinWidth = Map<String, double>.from(responsiveConfig['columnMinWidth'] as Map);
+        
+        // Calculate total minimum width
+        final totalMinWidth =
+            columnMinWidth.values.fold<double>(0.0, (a, b) => a + b);
+        // Determine whether horizontal scroll is needed
+        final needHorizontalScroll = constraints.maxWidth < totalMinWidth;
+
+        // Build the Column (header + body)
+        final tableColumn = Container(
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: theme.isDarkMode
+                  ? WebDarkColors.divider
+                  : WebColors.divider,
+              width: 1,
+            ),
+            borderRadius: BorderRadius.circular(4),
+            color: theme.isDarkMode
+                ? WebDarkColors.background
+                : Colors.white,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // --- Sticky header (fixed) ---
+              Container(
+                height: 50,
+                decoration: BoxDecoration(
+                  color: theme.isDarkMode
+                      ? WebDarkColors.primary
+                      : WebColors.primary.withOpacity(0.05),
+                  border: Border(
+                    bottom: BorderSide(
+                      color: theme.isDarkMode
+                          ? WebDarkColors.divider
+                          : WebColors.divider,
+                      width: 1,
+                    ),
+                  ),
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(4),
+                    topRight: Radius.circular(4),
+                  ),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: needHorizontalScroll
+                  ? IntrinsicWidth(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: headers.map((label) {
+                          final flex = columnFlex[label] ?? 1;
+                          final minW = columnMinWidth[label] ?? 80.0;
+                          final columnIndex = _getAlertColumnIndexForHeader(label);
+
+                          return _buildAlertColumnCell(
+                            needHorizontalScroll: needHorizontalScroll,
+                            flex: flex,
+                            minW: minW,
+                            child: _buildAlertHeaderWidget(
+                              label, 
+                              columnIndex, 
+                              theme, 
+                            ),
+                          );
+                        }).toList(),
                       ),
-                      columns: [
-                        DataColumn(
-                          numeric: false, // Left-align text column
-                          label: _buildSortableColumnHeader('Instrument', theme, 0),
-                          onSort: (i, asc) => _onSortAlertTable(0),
-                        ),
-                        DataColumn(
-                          numeric: false, // Left-align text column
-                          label: _buildSortableColumnHeader('Exchange', theme, 1),
-                          onSort: (i, asc) => _onSortAlertTable(1),
-                        ),
-                        DataColumn(
-                          numeric: false, // Left-align text column
-                          label: _buildSortableColumnHeader('Alert Type', theme, 2),
-                          onSort: (i, asc) => _onSortAlertTable(2),
-                        ),
-                        DataColumn(
-                          numeric: true, // Right-align numeric column
-                          label: _buildSortableColumnHeader('Target', theme, 3),
-                          onSort: (i, asc) => _onSortAlertTable(3),
-                        ),
-                        DataColumn(
-                          numeric: true, // Right-align numeric column
-                          label: _buildSortableColumnHeader('LTP', theme, 4),
-                          onSort: (i, asc) => _onSortAlertTable(4),
-                        ),
-                        DataColumn(
-                          numeric: false, // Left-align text column
-                          label: _buildSortableColumnHeader('Status', theme, 5),
-                          onSort: (i, asc) => _onSortAlertTable(5),
-                        ),
-                      ],
-                      rows: alerts.asMap().entries.map((entry) {
-                        final index = entry.key;
-                        final alert = entry.value;
-                        
-                        // Create unique identifier for hover
-                        String uniqueId;
-                        if (alert is BrokerMessage) {
-                          uniqueId = 'triggered_${alert.norentm ?? index}';
-                        } else {
-                          uniqueId = '${alert.alId ?? alert.token ?? index}';
-                        }
-                        
-                        return DataRow(
-                          selected: _selectedAlerts.contains(index),
-                          onSelectChanged: (bool? selected) {
-                            // Only show detail dialog for pending alerts, not triggered ones
-                            if (alert is! BrokerMessage) {
-                              showDialog(
-                                context: context,
-                                builder: (context) => PendingAlertDetailScreenWeb(alert: alert),
-                              );
-                            }
-                          },
-                          cells: [
-                            // Instrument with hover buttons (only for pending alerts)
-                            alert is BrokerMessage
-                                ? _buildInstrumentCell(alert, theme)
-                                : _buildInstrumentCellWithHover(alert, theme, uniqueId),
-                            _buildCellWithHover(alert, theme, uniqueId, _buildExchangeCell(alert, theme), alignment: Alignment.centerLeft),
-                            _buildCellWithHover(alert, theme, uniqueId, _buildAlertTypeCell(alert, theme), alignment: Alignment.centerLeft),
-                            _buildCellWithHover(alert, theme, uniqueId, _buildTargetCell(alert, theme), alignment: Alignment.centerRight),
-                            _buildCellWithHover(alert, theme, uniqueId, _buildLTPCell(alert, theme), alignment: Alignment.centerRight),
-                            _buildCellWithHover(alert, theme, uniqueId, _buildStatusCell(alert, theme), alignment: Alignment.centerLeft),
-                          ],
+                    )
+                  : Row(
+                      mainAxisSize: MainAxisSize.max,
+                      children: headers.map((label) {
+                        final flex = columnFlex[label] ?? 1;
+                        final minW = columnMinWidth[label] ?? 80.0;
+                        final columnIndex = _getAlertColumnIndexForHeader(label);
+
+                        return _buildAlertColumnCell(
+                          needHorizontalScroll: needHorizontalScroll,
+                          flex: flex,
+                          minW: minW,
+                          child: _buildAlertHeaderWidget(
+                            label, 
+                            columnIndex, 
+                            theme, 
+                          ),
                         );
                       }).toList(),
                     ),
+            ),
+
+            // --- Scrollable body (vertical) ---
+            Expanded(
+              child: Scrollbar(
+                controller: _verticalScrollController,
+                thumbVisibility: true,
+                radius: Radius.zero,
+                child: _buildAlertBodyList(
+                  theme,
+                  alerts,
+                  headers,
+                  columnFlex,
+                  columnMinWidth,
+                  totalMinWidth: totalMinWidth,
+                  needHorizontalScroll: needHorizontalScroll,
+                ),
+              ),
+            ),
+          ],
+          ),
+        );
+
+        // If horizontal scroll needed, wrap the entire column inside SingleChildScrollView
+        if (needHorizontalScroll) {
+          return Padding(
+            padding: const EdgeInsets.only(right: 16.0, bottom: 8.0),
+            child: SizedBox(
+              width: constraints.maxWidth,
+              height: constraints.maxHeight,
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                controller: _horizontalScrollController,
+                child: SizedBox(
+                  width: totalMinWidth,
+                  child: tableColumn,
+                ),
+              ),
+            ),
+          );
+        }
+
+        // else (no horizontal scroll)
+        return Padding(
+          padding: const EdgeInsets.only(right: 16.0, bottom: 8.0),
+          child: SizedBox(
+            width: constraints.maxWidth,
+            height: constraints.maxHeight,
+            child: tableColumn,
+          ),
+        );
+      },
+    );
+  }
+
+  int _getAlertColumnIndexForHeader(String header) {
+    switch (header) {
+      case 'Instrument': return 0;
+      case 'Exchange': return 1;
+      case 'Alert Type': return 2;
+      case 'Target': return 3;
+      case 'LTP': return 4;
+      case 'Status': return 5;
+      default: return -1;
+    }
+  }
+
+  Widget _buildAlertHeaderWidget(
+    String label,
+    int columnIndex,
+    ThemesProvider theme,
+  ) {
+    return InkWell(
+      onTap: () => _onSortAlertTable(columnIndex),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 6),
+              child: Text(
+                label,
+                style: WebTextStyles.tableHeader(
+                  isDarkTheme: theme.isDarkMode,
+                  color: theme.isDarkMode
+                      ? WebDarkColors.textPrimary
+                      : WebColors.textPrimary,
+                ),
+                overflow: TextOverflow.visible,
+              ),
+            ),
+          ),
+          // Sort icon
+          if (_alertSortColumnIndex == columnIndex)
+            Padding(
+              padding: const EdgeInsets.only(left: 6.0),
+              child: Icon(
+                _alertSortAscending ? Icons.arrow_upward : Icons.arrow_downward,
+                size: 16,
+                color: theme.isDarkMode
+                    ? WebDarkColors.iconPrimary
+                    : WebColors.iconPrimary,
+              ),
+            )
+          else
+            Padding(
+              padding: const EdgeInsets.only(right: 6.0),
+              child: Icon(
+                Icons.unfold_more,
+                size: 16,
+                color: theme.isDarkMode
+                    ? WebDarkColors.iconSecondary
+                    : WebColors.iconSecondary,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAlertColumnCell({
+    required bool needHorizontalScroll,
+    required int flex,
+    required double minW,
+    required Widget child,
+  }) {
+    if (needHorizontalScroll) {
+      return SizedBox(
+        width: minW,
+        child: child,
+      );
+    }
+
+    return Expanded(
+      flex: flex,
+      child: SizedBox(
+        width: minW,
+        child: child,
+      ),
+    );
+  }
+
+  Widget _buildAlertBodyList(
+    ThemesProvider theme,
+    List<dynamic> alerts,
+    List<String> headers,
+    Map<String, int> columnFlex,
+    Map<String, double> columnMinWidth, {
+    required double totalMinWidth,
+    required bool needHorizontalScroll,
+  }) {
+    final sorted = _getSortedAlerts(alerts);
+    return ListView.builder(
+      controller: _verticalScrollController,
+      physics: const AlwaysScrollableScrollPhysics(),
+      itemCount: sorted.length,
+      itemBuilder: (context, index) {
+        final alert = sorted[index];
+        
+        // Create unique identifier for hover
+        String uniqueId;
+        if (alert is BrokerMessage) {
+          uniqueId = 'triggered_${alert.norentm ?? index}';
+        } else {
+          uniqueId = '${alert.alId ?? alert.token ?? index}';
+        }
+        final isHovered = _hoveredRowToken == uniqueId;
+
+        return MouseRegion(
+          onEnter: (_) => setState(() => _hoveredRowToken = uniqueId),
+          onExit: (_) => setState(() => _hoveredRowToken = null),
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () {
+              // Only show detail dialog for pending alerts, not triggered ones
+              if (alert is! BrokerMessage) {
+                showDialog(
+                  context: context,
+                  builder: (context) => PendingAlertDetailScreenWeb(alert: alert),
+                );
+              }
+            },
+            child: Container(
+              decoration: BoxDecoration(
+                color: isHovered
+                    ? (theme.isDarkMode
+                        ? WebDarkColors.primary.withOpacity(0.06)
+                        : WebColors.primary.withOpacity(0.10))
+                    : Colors.transparent,
+                border: Border(
+                  bottom: BorderSide(
+                    color: theme.isDarkMode
+                        ? WebDarkColors.divider
+                        : WebColors.divider,
+                    width: 1,
                   ),
                 ),
               ),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: needHorizontalScroll
+                  ? IntrinsicWidth(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: headers.map((label) {
+                          final flex = columnFlex[label] ?? 1;
+                          final minW = columnMinWidth[label] ?? 80.0;
+                          return _buildAlertColumnCell(
+                            needHorizontalScroll: needHorizontalScroll,
+                            flex: flex,
+                            minW: minW,
+                            child: _buildAlertCellWidget(
+                              label,
+                              alert,
+                              theme,
+                              isHovered,
+                              uniqueId,
+                              needHorizontalScroll: needHorizontalScroll,
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    )
+                  : Row(
+                      mainAxisSize: MainAxisSize.max,
+                      children: headers.map((label) {
+                        final flex = columnFlex[label] ?? 1;
+                        final minW = columnMinWidth[label] ?? 80.0;
+                        return _buildAlertColumnCell(
+                          needHorizontalScroll: needHorizontalScroll,
+                          flex: flex,
+                          minW: minW,
+                          child: _buildAlertCellWidget(
+                            label,
+                            alert,
+                            theme,
+                            isHovered,
+                            uniqueId,
+                            needHorizontalScroll: needHorizontalScroll,
+                          ),
+                        );
+                      }).toList(),
+                    ),
             ),
           ),
         );
       },
+    );
+  }
+
+  Widget _buildAlertCellWidget(
+    String column,
+    dynamic alert,
+    ThemesProvider theme,
+    bool isHovered,
+    String uniqueId, {
+    required bool needHorizontalScroll,
+  }) {
+    switch (column) {
+      case 'Instrument':
+        return _buildAlertInstrumentWidget(
+          alert,
+          theme,
+          isHovered,
+          uniqueId,
+          needHorizontalScroll: needHorizontalScroll,
+        );
+      case 'Exchange':
+        String exchange = '';
+        if (alert is BrokerMessage) {
+          final parsed = _parseBrokerMessage(alert);
+          exchange = parsed['exchange'] ?? '';
+          if (exchange.isEmpty) {
+            exchange = 'N/A';
+          }
+        } else {
+          exchange = alert.exch ?? '';
+        }
+        return _buildAlertTextCell(
+          exchange,
+          theme,
+          Alignment.centerLeft,
+          needHorizontalScroll: needHorizontalScroll,
+        );
+      case 'Alert Type':
+        String alertType = '';
+        Color alertColor = colors.pending;
+        
+        if (alert is BrokerMessage) {
+          alertType = 'TRIGGERED';
+          alertColor = theme.isDarkMode ? colors.primaryDark : colors.primaryLight;
+        } else {
+          switch (alert.aiT) {
+            case 'LTP_A':
+              alertType = 'LTP Above';
+              alertColor = theme.isDarkMode ? colors.profitDark : colors.profitLight;
+              break;
+            case 'LTP_B':
+              alertType = 'LTP Below';
+              alertColor = theme.isDarkMode ? colors.lossDark : colors.lossLight;
+              break;
+            case 'CH_PER_A':
+              alertType = 'Perc.Change Above';
+              alertColor = theme.isDarkMode ? colors.profitDark : colors.profitLight;
+              break;
+            case 'CH_PER_B':
+              alertType = 'Perc.Change Below';
+              alertColor = theme.isDarkMode ? colors.lossDark : colors.lossLight;
+              break;
+            default:
+              alertType = 'Unknown';
+          }
+        }
+        return _buildAlertTextCell(
+          alertType,
+          theme,
+          Alignment.centerLeft,
+          color: alertColor,
+          needHorizontalScroll: needHorizontalScroll,
+        );
+      case 'Target':
+        String target = '';
+        
+        if (alert is BrokerMessage) {
+          final parsed = _parseBrokerMessage(alert);
+          target = parsed['target'] ?? '';
+          if (target.isEmpty) {
+            target = 'N/A';
+          }
+        } else {
+          if (alert.aiT == "CH_PER_A" || alert.aiT == "CH_PER_B") {
+            target = "%${alert.d}";
+          } else {
+            target = "${alert.d}";
+          }
+        }
+        return _buildAlertTextCell(
+          target,
+          theme,
+          Alignment.centerRight,
+          needHorizontalScroll: needHorizontalScroll,
+        );
+      case 'LTP':
+        String ltp = '';
+        String change = '';
+        
+        if (alert is BrokerMessage) {
+          final parsed = _parseBrokerMessage(alert);
+          ltp = parsed['ltp'] ?? '';
+          if (ltp.isEmpty) {
+            ltp = 'N/A';
+          }
+        } else {
+          ltp = "${alert.ltp ?? alert.close ?? 0.00}";
+          change = " (${alert.perChange ?? 0.00}%)";
+        }
+        
+        return Align(
+          alignment: Alignment.centerRight,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 6.0),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  ltp,
+                  style: WebTextStyles.custom(
+                    fontSize: 13,
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode
+                        ? WebDarkColors.textPrimary
+                        : WebColors.textPrimary,
+                    fontWeight: WebFonts.medium,
+                  ),
+                  maxLines: 1,
+                  softWrap: false,
+                  overflow: TextOverflow.visible,
+                ),
+                if (change.isNotEmpty)
+                  Text(
+                    change,
+                    style: WebTextStyles.custom(
+                      fontSize: 13,
+                      isDarkTheme: theme.isDarkMode,
+                      color: theme.isDarkMode
+                          ? WebDarkColors.textSecondary
+                          : WebColors.textSecondary,
+                      fontWeight: WebFonts.medium,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        );
+      case 'Status':
+        String status = '';
+        Color statusColor = colors.pending;
+        
+        if (alert is BrokerMessage) {
+          status = 'TRIGGERED';
+          statusColor = theme.isDarkMode ? colors.primaryDark : colors.primaryLight;
+        } else {
+          status = 'PENDING';
+          statusColor = colors.pending;
+        }
+        return _buildAlertTextCell(
+          status,
+          theme,
+          Alignment.centerLeft,
+          color: statusColor,
+          needHorizontalScroll: needHorizontalScroll,
+        );
+      default:
+        return const SizedBox.shrink();
+    }
+  }
+
+  Widget _buildAlertInstrumentWidget(
+    dynamic alert,
+    ThemesProvider theme,
+    bool isHovered,
+    String uniqueId, {
+    required bool needHorizontalScroll,
+  }) {
+    String symbol = '';
+    String exchange = '';
+    
+    if (alert is BrokerMessage) {
+      final parsed = _parseBrokerMessage(alert);
+      symbol = parsed['instrument'] ?? '';
+      exchange = parsed['exchange'] ?? '';
+      
+      String displayText = symbol.trim();
+      if (exchange.isNotEmpty && exchange.trim().isNotEmpty) {
+        displayText += ' ${exchange.trim()}';
+      }
+      
+      // If we couldn't parse, show the notification time or a default
+      if (displayText.trim().isEmpty) {
+        displayText = alert.norentm ?? 'N/A';
+      }
+      
+      return _buildAlertTextCell(
+        displayText,
+        theme,
+        Alignment.centerLeft,
+        needHorizontalScroll: needHorizontalScroll,
+      );
+    } else {
+      // Pending alert - show with hover buttons
+      final isProcessing = _processingAlertToken == uniqueId;
+      
+      symbol = alert.tsym?.replaceAll("-EQ", "") ?? 'N/A';
+      exchange = alert.exch ?? '';
+      
+      String displayText = symbol.trim();
+      if (exchange.isNotEmpty && exchange.trim().isNotEmpty) {
+        displayText += ' ${exchange.trim()}';
+      }
+
+      return ClipRect(
+        child: Row(
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            Flexible(
+              flex: isHovered ? 1 : 2,
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Tooltip(
+                  message: displayText,
+                  child: Text(
+                    displayText,
+                    style: WebTextStyles.custom(
+                      fontSize: 13,
+                      isDarkTheme: theme.isDarkMode,
+                      color: theme.isDarkMode
+                          ? WebDarkColors.textPrimary
+                          : WebColors.textPrimary,
+                      fontWeight: WebFonts.medium,
+                    ),
+                    maxLines: 1,
+                    softWrap: false,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+            ),
+            // Action buttons fade in on hover
+            IgnorePointer(
+              ignoring: !isHovered,
+              child: AnimatedOpacity(
+                opacity: isHovered ? 1 : 0,
+                duration: const Duration(milliseconds: 140),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Cancel button
+                    _buildAlertHoverButton(
+                      label: 'Cancel',
+                      color: Colors.white,
+                      backgroundColor: theme.isDarkMode
+                          ? WebDarkColors.error
+                          : WebColors.error,
+                      onPressed: isProcessing && _isProcessingCancel
+                          ? null
+                          : () => _handleCancelAlert(alert),
+                      theme: theme,
+                    ),
+                    const SizedBox(width: 6),
+                    // Modify button
+                    _buildAlertHoverButton(
+                      label: 'Modify',
+                      color: Colors.white,
+                      backgroundColor: theme.isDarkMode
+                          ? WebDarkColors.primary
+                          : WebColors.primary,
+                      onPressed: isProcessing && _isProcessingModify
+                          ? null
+                          : () => _handleModifyAlert(alert),
+                      theme: theme,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
+  Widget _buildAlertTextCell(
+    String text,
+    ThemesProvider theme,
+    Alignment alignment, {
+    Color? color,
+    bool needHorizontalScroll = false,
+  }) {
+    return Align(
+      alignment: alignment,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 6.0),
+        child: Text(
+          text,
+          style: WebTextStyles.custom(
+            fontSize: 13,
+            isDarkTheme: theme.isDarkMode,
+            color: color ??
+                (theme.isDarkMode
+                    ? WebDarkColors.textPrimary
+                    : WebColors.textPrimary),
+            fontWeight: WebFonts.medium,
+          ),
+          maxLines: 1,
+          softWrap: false,
+          overflow: TextOverflow.visible,
+        ),
+      ),
     );
   }
 
