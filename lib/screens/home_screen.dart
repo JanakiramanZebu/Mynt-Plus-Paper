@@ -1127,8 +1127,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   Future<bool> showExitPopup() async {
     if (ref.read(chartProvider).isVisible) {
       // Use ref.read for calls that don't need a rebuild
-      ref.read(chartProvider.notifier).hideChart();
+      if( ref.read(chartProvider.notifier).isfromOption == false){
+        if(ref.read(chartUpdateProvider).orientation != 'portrait'){
       ref.read(chartUpdateProvider).changeOrientation('portrait');
+      await Future.delayed(Duration(milliseconds: 700));
+      }
+      ref.read(chartProvider.notifier).hideChart();
 
       final mktwth = ref.read(marketWatchProvider);
       mktwth.chngDephBtn("Overview");
@@ -1174,6 +1178,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
       ref.read(marketWatchProvider).setChartScript('ABC', '0123', 'ABCD');
       return false; // Prevent back navigation when chart is visible
+      }else{
+        if(ref.read(chartUpdateProvider).orientation != 'portrait'){
+        ref.read(chartUpdateProvider).changeOrientation('portrait');
+        await Future.delayed(Duration(milliseconds: 700));
+        }
+        ref.read(chartProvider.notifier).hideChart();
+        ref.read(marketWatchProvider).setChartScript('ABC', '0123', 'ABCD');
+        return false;
+      }
     } else {
       return await showDialog(
               context: context,

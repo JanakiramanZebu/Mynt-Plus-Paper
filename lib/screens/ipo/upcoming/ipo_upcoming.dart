@@ -31,7 +31,7 @@ class UpcomingIpo extends StatelessWidget {
       if(!hasUpcomingIPOs){
         return NoDataFound(
           title: "No Upcoming IPOs Found",
-          subtitle: "",
+          subtitle: "There are no Upcoming IPO listings for today",
           primaryEnabled: false,
           secondaryEnabled: false,
         );

@@ -57,7 +57,7 @@ class _IpoOrderbookMainScreenState extends ConsumerState<IpoOrderbookMainScreen>
     if(!hasOrders){
       return NoDataFound(
         title: "No Open or Closed Orders Found",
-        subtitle: "",
+        subtitle: "There's nothing here yet. Buy some IPO to see them here.",
         primaryEnabled: false,
         secondaryEnabled: false,
       );

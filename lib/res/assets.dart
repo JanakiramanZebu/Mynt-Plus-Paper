@@ -77,7 +77,7 @@ class Assets {
   final String switchIcon = "assets/icon/switchIcon.svg";
   final String minusIcon = "assets/icon/minus_btn.svg";
   final String addIcon = "assets/icon/add_btn.svg";
-  final String documentIcon = "assets/icon/document.svg";
+  final String documentIcon = "assets/icon/bull-svgrepo-com.svg";
   final String rankIcon = "assets/icon/ranking.svg";
   final String volumeIcon = "assets/icon/volume.svg";
   final String optChainIcon = "assets/icon/option_chain.svg";

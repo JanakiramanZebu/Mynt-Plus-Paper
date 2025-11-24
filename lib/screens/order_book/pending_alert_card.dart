@@ -94,17 +94,12 @@ class _PendingAlertState extends ConsumerState<PendingAlert> {
     ];
 
     if (allAlerts.isEmpty) {
-      return ListView(
-        children: const [
-          Padding(
-            padding: EdgeInsets.symmetric(vertical: 20),
-            child: NoDataFound(
-              title: "No Alerts Found",
-              subtitle: "There's nothing here yet. Create some alerts to see them here.",
-              secondaryEnabled: false,
-            ),
-          ),
-        ],
+      return Center(
+        child: NoDataFound(
+          title: "No Alerts Found",
+          subtitle: "There's nothing here yet. Create some alerts to see them here.",
+          secondaryEnabled: true,
+        ),
       );
     }
 

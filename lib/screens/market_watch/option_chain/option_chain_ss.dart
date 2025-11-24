@@ -7,6 +7,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_swipe_action_cell/flutter_swipe_action_cell.dart';
 import 'package:intl/intl.dart';
+import 'package:mynt_plus/provider/chart_provider.dart';
+import 'package:mynt_plus/provider/webview_chart_provider.dart';
 import '../../../../provider/websocket_provider.dart';
 import '../../../models/marketwatch_model/get_quotes.dart';
 import '../../../models/order_book_model/order_book_model.dart';
@@ -119,21 +121,34 @@ class _OptionChainSSState extends ConsumerState<OptionChainSS> {
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop: true,
+      canPop: false,
       onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return;
-        await ref
-            .read(marketWatchProvider)
-            .calldepthApis(context, widget.wlValue, "");
-        await ref
-            .read(marketWatchProvider)
-            .requestWSOptChain(context: context, isSubscribe: false);
-        await ref.read(websocketProvider).establishConnection(
-              channelInput: "${widget.wlValue.exch}|${widget.wlValue.token}",
-              task: "ud",
-              context: context,
-            );
+        await Future.delayed(const Duration(milliseconds: 150));
+
+        final wsProvider = ref.read(websocketProvider);
+        final scripInfo = ref.read(marketWatchProvider);
+        final currentContext = context;
+        if(ref.read(chartUpdateProvider).orientation != 'portrait'){
+        ref.read(chartUpdateProvider).changeOrientation('portrait');
+        await Future.delayed(const Duration(milliseconds: 700));
+        }
+        if(ref.watch(chartProvider).isVisible == false){
         Navigator.pop(context);
+        await scripInfo.calldepthApis(
+            currentContext, scripInfo.getQuotes!, "",
+            isOptionChain: false);
+        await scripInfo.requestWSOptChain(
+            context: currentContext, isSubscribe: false);
+        await wsProvider.establishConnection(
+          channelInput:
+            "${widget.wlValue.exch}|${widget.wlValue.token}",
+          task: "ud",
+          context: currentContext,
+        );
+        }
+        ref.read(chartProvider.notifier).hideChart();
+        scripInfo.setChartScript('ABC', '0123', 'ABCD');
       },
       child: Scaffold(
         appBar: AppBar(
@@ -156,7 +171,8 @@ class _OptionChainSSState extends ConsumerState<OptionChainSS> {
                   final currentContext = context;
                   Navigator.pop(context);
                   await scripInfo.calldepthApis(
-                      currentContext, scripInfo.getQuotes!, "");
+                      currentContext, scripInfo.getQuotes!, "",
+                      isOptionChain: false);
                   await scripInfo.requestWSOptChain(
                       context: currentContext, isSubscribe: false);
                   await wsProvider.establishConnection(
