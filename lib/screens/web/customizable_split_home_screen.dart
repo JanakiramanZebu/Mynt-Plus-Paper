@@ -553,12 +553,12 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
     bool enableResize = true; // Default to resizable
     
     if (hasWatchlistInFirstPanel) {
-      // Watchlist is in left panel, give it 25% width (same as when it was on right)
-      splitRatio = 0.20; // Watchlist gets 25%, other panel gets 75%
+      // Watchlist is in left panel, give it 25% width
+      splitRatio = 0.25; // Watchlist gets 25%, other panel gets 75%
       enableResize = false; // Disable resize to maintain fixed ratio
     } else if (hasWatchlistInSecondPanel) {
       // Watchlist is in right panel, give other panel 75% width
-      splitRatio = 0.80; // First panel gets 75%, watchlist gets 25%
+      splitRatio = 0.75; // First panel gets 75%, watchlist gets 25%
       enableResize = false; // Disable resize to maintain fixed ratio
     }
     

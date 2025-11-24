@@ -152,417 +152,270 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                     : WebColors.primary)
                     .withOpacity(0.15)
                 : (theme.isDarkMode ? WebDarkColors.surface : WebColors.surface),
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10), // Increased padding for web
-            child: Stack(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // First row: Symbol name | LTP
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // Left side - Symbol info
+                    // Left: Symbol name and option
                     Expanded(
-                      flex: 3,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          // Symbol name and option
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Text(
-                                widget.watchListData["symbol"]
-                                    .toString()
-                                    .replaceAll("-EQ", "")
-                                    .toUpperCase(),
+                          Text(
+                            widget.watchListData["symbol"]
+                                .toString()
+                                .replaceAll("-EQ", "")
+                                .toUpperCase(),
+                            style: WebTextStyles.symbolList(
+                              isDarkTheme: theme.isDarkMode,
+                              color: theme.isDarkMode
+                                  ? WebDarkColors.textPrimary
+                                  : WebColors.textPrimary,
+                            ),
+                          ),
+                          if (widget.watchListData["option"].toString().isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.only(left: 4),
+                              child: Text(
+                                "${widget.watchListData["option"]}",
                                 style: WebTextStyles.symbolList(
                                   isDarkTheme: theme.isDarkMode,
                                   color: theme.isDarkMode
                                       ? WebDarkColors.textPrimary
-                                      :  WebColors.textPrimary,
+                                      : WebColors.textPrimary,
                                 ),
-                              ),
-                              if (widget.watchListData["option"].toString().isNotEmpty)
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 4),
-                                  child: Text(
-                                    "${widget.watchListData["option"]}",
-                                    style: WebTextStyles.symbolList(
-                                      isDarkTheme: theme.isDarkMode,
-                                      color: theme.isDarkMode
-                                          ? WebDarkColors.textPrimary
-                                          :  WebColors.textPrimary,
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
-                          const SizedBox(height: 8), 
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Text(
-                              '${widget.watchListData["exch"]} ',
-                              
-                                style: WebTextStyles.exchText(
-                                    isDarkTheme: theme.isDarkMode,
-                                    color: WebColors.textSecondary),
-                              ),
-                            
-                              if (widget.watchListData['expDate'].toString().isNotEmpty)
-                                Text(
-                                  "${widget.watchListData['expDate']}",
-                                  style: WebTextStyles.symbolList(
-                                    isDarkTheme: theme.isDarkMode,
-                                    color: theme.isDarkMode
-                                        ? WebDarkColors.textPrimary
-                                        : WebColors.textPrimary,
-                                    // fontWeight: WebFonts.medium,
-                                  ),
-                                ),
-                              if (widget.watchListData['holdingQty'] != null &&
-                                  widget.watchListData['holdingQty']
-                                      .toString()
-                                      .isNotEmpty &&
-                                  widget.watchListData['holdingQty'] != "null") ...[
-                                // const SizedBox(width: 8),
-                                SvgPicture.asset(assets.suitcase,
-                                    height: 14, // Slightly larger for web
-                                    width: 18,
-                                    color: theme.isDarkMode
-                                        ? WebDarkColors.iconSecondary
-                                        : WebColors.iconSecondary),
-                                const SizedBox(width: 4),
-                                Text(
-                                  "${widget.watchListData['holdingQty']}",
-                                  style: WebTextStyles.symbolList(
-                                    isDarkTheme: theme.isDarkMode,
-                                    color: theme.isDarkMode
-                                        ? WebDarkColors.textSecondary
-                                        : WebColors.textSecondary,
-                                  ),
-                                ),
-                              ]
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    // Right side - Action buttons and price data
-                    ],
-                ),
-                Positioned(
-                      right: 0,
-                      top: -2,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // Action buttons with fade animation on hover
-                          IgnorePointer(
-                            ignoring: !_isHovered && !_isMenuOpen,
-                            child: AnimatedOpacity(
-                              opacity: (_isHovered || _isMenuOpen) ? 1.0 : 0.0,
-                              duration: const Duration(milliseconds: 150),
-                              child: Builder(
-                                builder: (context) {
-                                  // Check if this is an index or commodity
-                                  final instname = widget.watchListData["instname"]?.toString() ?? "";
-                                  final isIndexOrCommodity = instname == "UNDIND" || instname == "COM";
-                                  
-                                  // Get exchange and token for futures/fundamentals/options check
-                                  final exch = widget.watchListData["exch"]?.toString() ?? "";
-                                  final token = widget.watchListData["token"]?.toString() ?? "";
-                                  
-                                  // Check if futures available (same condition as scrip_depth_info_web)
-                                  // Pre-computed flags (reserved for future conditional buttons)
-                                  final hasFutures = marketWatch.getOptionawait(exch, token);
-                                  
-                                  // Check if fundamentals available (not for indices or commodities)
-                                  final hasFundamentals = instname != "UNDIND" && instname != "COM";
-                                  
-                                  // Check if options available (same condition as futures)
-                                  final hasOptions = marketWatch.getOptionawait(exch, token);
-                                  final bool isPredefined = marketWatch.isPreDefWLs == "Yes";
-                                  // hasFutures/hasFundamentals/hasOptions currently unused but kept for future conditional buttons
-                                  return Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      // Only show Buy/Sell buttons if not index or commodity
-                                      if (!isIndexOrCommodity) ...[
-                                        _buildHoverButton(
-                                          label: 'B',
-                                          color: Colors.white,
-                                          backgroundColor: theme.isDarkMode
-                                              ? WebDarkColors.primary
-                                              : WebColors.primary,
-                                          onPressed: () async {
-                                            try {
-                                              await _placeOrderInput(context, depthData, true);
-                                            } catch (e) {
-                                              // Additional safety catch at button level
-                                              print('Buy button error: $e');
-                                            }
-                                          },
-                                        ),
-                                        const SizedBox(width: 6),
-                                        _buildHoverButton(
-                                          label: 'S',
-                                          color: Colors.white,
-                                          backgroundColor: theme.isDarkMode
-                                              ? WebDarkColors.tertiary
-                                              : WebColors.tertiary,
-                                          onPressed: () async {
-                                            try {
-                                              await _placeOrderInput(context, depthData, false);
-                                            } catch (e) {
-                                              // Additional safety catch at button level
-                                              print('Sell button error: $e');
-                                            }
-                                          },
-                                        ),
-                                        const SizedBox(width: 6),
-                                  
-                                      ],
-                                      // Chart button always shows (icon only)
-                                      // _buildHoverButton(
-                                      //   iconAsset: assets.chart,
-                                      //   color: theme.isDarkMode
-                                      //       ? WebDarkColors.textSecondary
-                                      //       : WebColors.textSecondary,
-                                      //   backgroundColor: Colors.transparent,
-                                      //   borderColor: theme.isDarkMode
-                                      //       ? WebDarkColors.border
-                                      //       : WebColors.border,
-                                      //   onPressed: () async {
-                                      //    DepthInputArgs depthArgs = DepthInputArgs(
-                                      //             exch: widget.watchListData["exch"]
-                                      //                 .toString(),
-                                      //             token: widget.watchListData["token"]
-                                      //                 .toString(),
-                                      //             tsym: widget.watchListData["tsym"]
-                                      //                 .toString(),
-                                      //             instname: widget
-                                      //                     .watchListData["instname"]
-                                      //                     ?.toString() ??
-                                      //                 widget.watchListData["symbol"]
-                                      //                     .toString(),
-                                      //             symbol: widget
-                                      //                 .watchListData["symbol"]
-                                      //                 .toString(),
-                                      //             expDate: widget
-                                      //                     .watchListData["expDate"]
-                                      //                     ?.toString() ??
-                                      //                 "",
-                                      //             option: widget
-                                      //                     .watchListData["option"]
-                                      //                     ?.toString() ??
-                                      //                 "",
-                                      //             showDepthInitially: false);
-                                  
-                                      //         // Only call depth APIs for full navigation, not for expansion
-                                      //         marketWatch.scripdepthsize(false);
-                                      //         await marketWatch.calldepthApis(
-                                      //             context, depthArgs, "");
-                                  
-                                      //         // Open split view in 80% panel
-                                      //         ref.read(marketWatchProvider).openScripInWebPanel(context, depthArgs, "Watchlist");
-                                      //   },
-                                      // ),
-                                      _buildHoverButton(
-                                        iconAsset: assets.depthIcon,
-                                        color: Colors.black,
-                                        backgroundColor: Colors.white,
-                                        borderColor: theme.isDarkMode
-                                            ? WebDarkColors.border
-                                            : WebColors.border,
-                                        borderRadius: 5.0,
-                                        onPressed: () async {
-                                  
-                                          // Clicking the list item opens the chart
-                                                  if (_isNavigating) return;
-                                                  
-                                                  // Close any previously expanded item
-                                                  ref
-                                                      .read(expandedWatchlistItemProvider.notifier)
-                                                      .setExpandedToken(null);
-                                                  
-                                                  try {
-                                                    setState(() {
-                                                      _isNavigating = true;
-                                                    });
-                                                    WidgetsBinding.instance.addPostFrameCallback((_) async {
-                                                    ref.read(marketWatchProvider).setIsDepthVisibleWeb(true);
-                                  
-                                                    // Create proper DepthInputArgs object like in StocksScreen
-                                                    DepthInputArgs depthArgs = DepthInputArgs(
-                                                        exch: widget.watchListData["exch"].toString(),
-                                                        token: widget.watchListData["token"].toString(),
-                                                        tsym: widget.watchListData["tsym"].toString(),
-                                                        instname:
-                                                            widget.watchListData["instname"]?.toString() ??
-                                    widget.watchListData["symbol"].toString(),
-                                                        symbol: widget.watchListData["symbol"].toString(),
-                                                        expDate:
-                                                            widget.watchListData["expDate"]?.toString() ?? "",
-                                                        option:
-                                                            widget.watchListData["option"]?.toString() ?? "",
-                                                       );
-                                  
-                                                    // Call depth APIs for chart navigation
-                                                    marketWatch.scripdepthsize(false);
-                                                    await marketWatch.calldepthApis(context, depthArgs, "");
-                                                    });
-                                                    // Open in 80% panel as split Chart + Depth via tabs manager
-                                                  } catch (e) {
-                                                    // Handle any errors
-                                                    debugPrint('Error opening chart: $e');
-                                                  } finally {
-                                                    // Reset navigation lock after some delay to prevent immediate re-clicks
-                                                    if (mounted) {
-                                                      Future.delayed(const Duration(milliseconds: 500), () {
-                                                        if (mounted) {
-                                                          setState(() {
-                                                            _isNavigating = false;
-                                                          });
-                                                        }
-                                                      });
-                                                    }
-                                                  }                                   
-                                        },
-                                      ),
-                                      // const SizedBox(width: 6),
-                                      // Depth toggle button (opens with depth visible)
-                                    
-                                      // Expand/Collapse button
-                                      // SizedBox(
-                                      //   width: 28,
-                                      //   height: 28,
-                                      //   child: Material(
-                                      //     color: Colors.transparent,
-                                      //     child: InkWell(
-                                      //       borderRadius: BorderRadius.circular(5),
-                                      //       splashColor: theme.isDarkMode
-                                      //           ? Colors.white.withOpacity(0.15)
-                                      //           : Colors.black.withOpacity(0.15),
-                                      //       highlightColor: theme.isDarkMode
-                                      //           ? Colors.white.withOpacity(0.08)
-                                      //           : Colors.black.withOpacity(0.08),
-                                      //       onTap: () {
-                                      //         final currentToken = widget.watchListData['token']?.toString();
-                                      //         if (_isExpanded) {
-                                      //           // Collapse - just toggle the state
-                                      //           ref
-                                      //               .read(expandedWatchlistItemProvider.notifier)
-                                      //               .setExpandedToken(null);
-                                      //         } else {
-                                      //           // Expand - just toggle the state (data will load when expanded content renders)
-                                      //           ref
-                                      //               .read(expandedWatchlistItemProvider.notifier)
-                                      //               .setExpandedToken(currentToken);
-                                      //         }
-                                      //       },
-                                      //       child: Container(
-                                      //         decoration: BoxDecoration(
-                                      //           color: Colors.transparent,
-                                      //           borderRadius: BorderRadius.circular(5),
-                                      //           border: Border.all(
-                                      //             color: theme.isDarkMode
-                                      //                 ? WebDarkColors.border
-                                      //                 : WebColors.border,
-                                      //             width: 1,
-                                      //           ),
-                                      //         ),
-                                      //         child: Center(
-                                      //           child: Transform.rotate(
-                                      //             angle: _isExpanded ? 3.14159 : 0, // 180 degrees for up, 0 for down
-                                      //             child: SvgPicture.asset(
-                                      //               assets.downArrow,
-                                      //               width: 8,
-                                      //               height: 8,
-                                      //               colorFilter: ColorFilter.mode(
-                                      //                 theme.isDarkMode
-                                      //                     ? WebDarkColors.textSecondary
-                                      //                     : WebColors.textSecondary,
-                                      //                 BlendMode.srcIn,
-                                      //               ),
-                                      //             ),
-                                      //           ),
-                                      //         ),
-                                      //       ),
-                                      //     ),
-                                      //   ),
-                                      // ),
-                                        const SizedBox(width: 6),
-                                      // Delete-one button (only for non-predefined watchlists)
-                                      if (!isPredefined)
-                                        _buildHoverButton(
-                                          iconAsset: assets.trash,
-                                          color: Colors.black,
-                                          backgroundColor: Colors.white,
-                                          borderColor: theme.isDarkMode
-                                              ? WebDarkColors.border
-                                              : WebColors.border,
-                                          borderRadius: 5.0,
-                                          onPressed: () async {
-                                            try {
-                                              // Build single scrip token input: exch|token#
-                                              final String exch = widget.watchListData["exch"]?.toString() ?? "";
-                                              final String token = widget.watchListData["token"]?.toString() ?? "";
-                                              final String input = "$exch|$token#";
-                              
-                                              // Prevent multiple operations
-                                              if (_isNavigating) return;
-                                              setState(() { _isNavigating = true; });
-                              
-                                              // Call delete single scrip API
-                                              await ref
-                                                  .read(marketWatchProvider)
-                                                  .addDelMarketScrip(marketWatch.wlName, input, context, false, false, false, false);
-                                              if (mounted) {
-                                                showResponsiveSuccess(context, 'Scrip removed from watchlist');
-                                              }
-                                            } catch (e) {
-                                              if (mounted) {
-                                                showResponsiveError(context, 'Failed to delete scrip');
-                                              }
-                                            } finally {
-                                              if (mounted) {
-                                                Future.delayed(const Duration(milliseconds: 400), () {
-                                                  if (mounted) {
-                                                    setState(() { _isNavigating = false; });
-                                                  }
-                                                });
-                                              }
-                                            }
-                                          },
-                                        ),
-                                      if (!isPredefined) const SizedBox(width: 6),
-                                      // Three dots menu (only if has futures, fundamentals or options)
-                                      // if (hasFutures || hasFundamentals || hasOptions)
-                                      //   _buildThreeDotsMenu(
-                                      //     theme: theme,
-                                      //     hasFutures: hasFutures,
-                                      //     hasFundamentals: hasFundamentals,
-                                      //     hasOptions: hasOptions,
-                                      //     exch: exch,
-                                      //     token: token,
-                                      //     depthData: depthData,
-                                      //   ),
-                                    ],
-                                  );
-                                },
                               ),
                             ),
-                          ),
-                          // const SizedBox(width: 16), // Increased spacing for web
-                          // Price data
-                          RepaintBoundary(
-                            child: _PriceDataWidgetWeb(
-                                token: widget.watchListData['token'],
-                                initialData: widget.watchListData),
-                          ),
                         ],
                       ),
                     ),
-                  
+                    // Right: LTP only
+                    RepaintBoundary(
+                      child: _LTPWidgetWeb(
+                          token: widget.watchListData['token'],
+                          initialData: widget.watchListData),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                // Second row: Exchange | Action buttons | Price Change
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // Left: Exchange info
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '${widget.watchListData["exch"]} ',
+                          style: WebTextStyles.exchText(
+                              isDarkTheme: theme.isDarkMode,
+                              color: WebColors.textSecondary),
+                        ),
+                        if (widget.watchListData['expDate'].toString().isNotEmpty)
+                          Text(
+                            "${widget.watchListData['expDate']}",
+                            style: WebTextStyles.symbolList(
+                              isDarkTheme: theme.isDarkMode,
+                              color: theme.isDarkMode
+                                  ? WebDarkColors.textPrimary
+                                  : WebColors.textPrimary,
+                            ),
+                          ),
+                        if (widget.watchListData['holdingQty'] != null &&
+                            widget.watchListData['holdingQty']
+                                .toString()
+                                .isNotEmpty &&
+                            widget.watchListData['holdingQty'] != "null") ...[
+                          SvgPicture.asset(assets.suitcase,
+                              height: 14,
+                              width: 18,
+                              color: theme.isDarkMode
+                                  ? WebDarkColors.iconSecondary
+                                  : WebColors.iconSecondary),
+                          const SizedBox(width: 4),
+                          Text(
+                            "${widget.watchListData['holdingQty']}",
+                            style: WebTextStyles.symbolList(
+                              isDarkTheme: theme.isDarkMode,
+                              color: theme.isDarkMode
+                                  ? WebDarkColors.textSecondary
+                                  : WebColors.textSecondary,
+                            ),
+                          ),
+                        ]
+                      ],
+                    ),
+                    // Left spacer to push buttons toward center
+                    Expanded(
+                      child: Container(),
+                    ),
+                    // Fixed-width container for action buttons (centered in available space)
+                    Builder(
+                      builder: (context) {
+                        // Check if this is an index or commodity
+                        final instname = widget.watchListData["instname"]?.toString() ?? "";
+                        final isIndexOrCommodity = instname == "UNDIND" || instname == "COM";
+                        final bool isPredefined = marketWatch.isPreDefWLs == "Yes";
+                        
+                        return AnimatedOpacity(
+                          opacity: (_isHovered || _isMenuOpen) ? 1.0 : 0.0,
+                          duration: const Duration(milliseconds: 150),
+                          child: IgnorePointer(
+                            ignoring: !_isHovered && !_isMenuOpen,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // Only show Buy/Sell buttons if not index or commodity
+                                if (!isIndexOrCommodity) ...[
+                                  _buildHoverButton(
+                                    label: 'B',
+                                    color: Colors.white,
+                                    backgroundColor: theme.isDarkMode
+                                        ? WebDarkColors.primary
+                                        : WebColors.primary,
+                                    onPressed: () async {
+                                      try {
+                                        await _placeOrderInput(context, depthData, true);
+                                      } catch (e) {
+                                        print('Buy button error: $e');
+                                      }
+                                    },
+                                  ),
+                                  const SizedBox(width: 4),
+                                  _buildHoverButton(
+                                    label: 'S',
+                                    color: Colors.white,
+                                    backgroundColor: theme.isDarkMode
+                                        ? WebDarkColors.tertiary
+                                        : WebColors.tertiary,
+                                    onPressed: () async {
+                                      try {
+                                        await _placeOrderInput(context, depthData, false);
+                                      } catch (e) {
+                                        print('Sell button error: $e');
+                                      }
+                                    },
+                                  ),
+                                  const SizedBox(width: 4),
+                                ],
+                                _buildHoverButton(
+                                  iconAsset: assets.depthIcon,
+                                  color: Colors.black,
+                                  backgroundColor: Colors.white,
+                                  borderColor: theme.isDarkMode
+                                      ? WebDarkColors.border
+                                      : WebColors.border,
+                                  borderRadius: 5.0,
+                                  onPressed: () async {
+                                    if (_isNavigating) return;
+                                    
+                                    ref
+                                        .read(expandedWatchlistItemProvider.notifier)
+                                        .setExpandedToken(null);
+                                    
+                                    try {
+                                      setState(() {
+                                        _isNavigating = true;
+                                      });
+                                      WidgetsBinding.instance.addPostFrameCallback((_) async {
+                                        ref.read(marketWatchProvider).setIsDepthVisibleWeb(true);
+                                        
+                                        DepthInputArgs depthArgs = DepthInputArgs(
+                                            exch: widget.watchListData["exch"].toString(),
+                                            token: widget.watchListData["token"].toString(),
+                                            tsym: widget.watchListData["tsym"].toString(),
+                                            instname:
+                                                widget.watchListData["instname"]?.toString() ??
+                                                widget.watchListData["symbol"].toString(),
+                                            symbol: widget.watchListData["symbol"].toString(),
+                                            expDate:
+                                                widget.watchListData["expDate"]?.toString() ?? "",
+                                            option:
+                                                widget.watchListData["option"]?.toString() ?? "",
+                                        );
+                                        
+                                        marketWatch.scripdepthsize(false);
+                                        await marketWatch.calldepthApis(context, depthArgs, "");
+                                      });
+                                    } catch (e) {
+                                      debugPrint('Error opening chart: $e');
+                                    } finally {
+                                      if (mounted) {
+                                        Future.delayed(const Duration(milliseconds: 500), () {
+                                          if (mounted) {
+                                            setState(() {
+                                              _isNavigating = false;
+                                            });
+                                          }
+                                        });
+                                      }
+                                    }
+                                  },
+                                ),
+                                const SizedBox(width: 4),
+                                // Delete button (only for non-predefined watchlists)
+                                if (!isPredefined)
+                                  _buildHoverButton(
+                                    iconAsset: assets.trash,
+                                    color: Colors.black,
+                                    backgroundColor: Colors.white,
+                                    borderColor: theme.isDarkMode
+                                        ? WebDarkColors.border
+                                        : WebColors.border,
+                                    borderRadius: 5.0,
+                                    onPressed: () async {
+                                      try {
+                                        final String exch = widget.watchListData["exch"]?.toString() ?? "";
+                                        final String token = widget.watchListData["token"]?.toString() ?? "";
+                                        final String input = "$exch|$token#";
+                                        
+                                        if (_isNavigating) return;
+                                        setState(() { _isNavigating = true; });
+                                        
+                                        await ref
+                                            .read(marketWatchProvider)
+                                            .addDelMarketScrip(marketWatch.wlName, input, context, false, false, false, false);
+                                        if (mounted) {
+                                          showResponsiveSuccess(context, 'Scrip removed from watchlist');
+                                        }
+                                      } catch (e) {
+                                        if (mounted) {
+                                          showResponsiveError(context, 'Failed to delete scrip');
+                                        }
+                                      } finally {
+                                        if (mounted) {
+                                          Future.delayed(const Duration(milliseconds: 400), () {
+                                            if (mounted) {
+                                              setState(() { _isNavigating = false; });
+                                            }
+                                          });
+                                        }
+                                      }
+                                    },
+                                  ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    // Right spacer to push price change to right
+                    Expanded(
+                      child: Container(),
+                    ),
+                    // Right: Price change only
+                    RepaintBoundary(
+                      child: _PriceChangeWidgetWeb(
+                          token: widget.watchListData['token'],
+                          initialData: widget.watchListData),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
@@ -1295,8 +1148,8 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
     final theme = ref.read(themeProvider);
     final borderRadiusValue = borderRadius ?? 5.0;
     return SizedBox(
-      width: 28,
-      height: 28,
+      width: 24,
+      height: 24,
       child: Material(
         color: Colors.transparent,
         child: InkWell(
@@ -1319,8 +1172,8 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
               child: iconAsset != null
                   ? SvgPicture.asset(
                       iconAsset,
-                      width: 14,
-                      height: 14,
+                      width: 13,
+                      height: 13,
                       colorFilter: ColorFilter.mode(
                         color,
                         BlendMode.srcIn,
@@ -1329,7 +1182,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                   : icon != null
                       ? Icon(
                           icon,
-                          size: 14,
+                          size: 13,
                           color: color,
                         )
                       : Text(
@@ -2243,5 +2096,218 @@ class _PriceDataWidgetWebState extends ConsumerState<_PriceDataWidgetWeb> {
             ),
           ),
         ]);
+  }
+}
+
+// Widget for LTP only (used in first row)
+class _LTPWidgetWeb extends ConsumerStatefulWidget {
+  final String token;
+  final Map<String, dynamic> initialData;
+
+  const _LTPWidgetWeb({
+    required this.token,
+    required this.initialData,
+  });
+
+  @override
+  ConsumerState<_LTPWidgetWeb> createState() => _LTPWidgetWebState();
+}
+
+class _LTPWidgetWebState extends ConsumerState<_LTPWidgetWeb> {
+  late String ltp;
+  StreamSubscription? _subscription;
+
+  @override
+  void initState() {
+    super.initState();
+    ltp = widget.initialData['ltp']?.toString() ?? '0.00';
+
+    // Pre-load from current socket data if available
+    final socketData = ref.read(websocketProvider).socketDatas[widget.token];
+    if (socketData != null) {
+      ltp = socketData['lp']?.toString() ?? ltp;
+    }
+
+    _setupSubscription();
+  }
+
+  void _setupSubscription() {
+    _subscription =
+        ref.read(websocketProvider).socketDataStream.listen((rawData) {
+      if (!mounted) return;
+
+      final data = Map<String, dynamic>.from(rawData as Map? ?? {});
+      if (!data.containsKey(widget.token)) return;
+
+      final rawNewData = data[widget.token];
+      if (rawNewData == null) return;
+
+      final newData = Map<String, dynamic>.from(rawNewData as Map);
+      final newLtp = newData['lp']?.toString();
+
+      if (newLtp != null &&
+          newLtp != ltp &&
+          newLtp != '0.00' &&
+          newLtp != '0.0' &&
+          newLtp != 'null') {
+        setState(() {
+          ltp = newLtp;
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
+  }
+
+  String _safeFormatPrice(String value) {
+    if (value == 'null' ||
+        value.isEmpty ||
+        value == '0.0' ||
+        value == 'NaN' ||
+        value == 'Infinity') {
+      return '0.00';
+    }
+    return value;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = ref.read(themeProvider);
+    final displayLtp = _safeFormatPrice(ltp);
+
+    return Text(
+      displayLtp,
+      style: WebTextStyles.priceWatch(
+        isDarkTheme: theme.isDarkMode,
+        color: theme.isDarkMode
+            ? WebDarkColors.textPrimary
+            : WebColors.textPrimary,
+      ),
+    );
+  }
+}
+
+// Widget for Price Change only (used in second row)
+class _PriceChangeWidgetWeb extends ConsumerStatefulWidget {
+  final String token;
+  final Map<String, dynamic> initialData;
+
+  const _PriceChangeWidgetWeb({
+    required this.token,
+    required this.initialData,
+  });
+
+  @override
+  ConsumerState<_PriceChangeWidgetWeb> createState() =>
+      _PriceChangeWidgetWebState();
+}
+
+class _PriceChangeWidgetWebState extends ConsumerState<_PriceChangeWidgetWeb> {
+  late String change;
+  late String perChange;
+  StreamSubscription? _subscription;
+
+  @override
+  void initState() {
+    super.initState();
+    change = widget.initialData['change']?.toString() ?? '0.00';
+    perChange = widget.initialData['perChange']?.toString() ?? '0.00';
+
+    // Pre-load from current socket data if available
+    final socketData = ref.read(websocketProvider).socketDatas[widget.token];
+    if (socketData != null) {
+      change = socketData['chng']?.toString() ?? change;
+      perChange = socketData['pc']?.toString() ?? perChange;
+    }
+
+    _setupSubscription();
+  }
+
+  void _setupSubscription() {
+    _subscription =
+        ref.read(websocketProvider).socketDataStream.listen((rawData) {
+      if (!mounted) return;
+
+      final data = Map<String, dynamic>.from(rawData as Map? ?? {});
+      if (!data.containsKey(widget.token)) return;
+
+      final rawNewData = data[widget.token];
+      if (rawNewData == null) return;
+
+      final newData = Map<String, dynamic>.from(rawNewData as Map);
+      bool valueChanged = false;
+
+      final newChange = newData['chng']?.toString();
+      final newPerChange = newData['pc']?.toString();
+
+      if (newChange != null &&
+          newChange != change &&
+          newChange != '0.0' &&
+          newChange != 'null') {
+        change = newChange;
+        valueChanged = true;
+      }
+
+      if (newPerChange != null &&
+          newPerChange != perChange &&
+          newPerChange != '0.0' &&
+          newPerChange != 'null') {
+        perChange = newPerChange;
+        valueChanged = true;
+      }
+
+      if (valueChanged && mounted) {
+        setState(() {});
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
+  }
+
+  String _safeFormatPrice(String value) {
+    if (value == 'null' ||
+        value.isEmpty ||
+        value == '0.0' ||
+        value == 'NaN' ||
+        value == 'Infinity') {
+      return '0.00';
+    }
+    return value;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = ref.read(themeProvider);
+    final displayChange = _safeFormatPrice(change);
+    final displayPerChange = _safeFormatPrice(perChange);
+
+    final changeColor =
+        displayChange.startsWith("-") || displayPerChange.startsWith('-')
+            ? theme.isDarkMode
+                ? WebDarkColors.loss
+                : WebColors.loss
+            : (displayChange == "0.00" || displayPerChange == "0.00")
+                ? theme.isDarkMode
+                    ? WebDarkColors.textSecondary
+                    : WebColors.textSecondary
+                : theme.isDarkMode
+                    ? WebDarkColors.profit
+                    : WebColors.profit;
+
+    return Text(
+      "$displayChange ($displayPerChange%)",
+      style: WebTextStyles.pricePercent(
+        isDarkTheme: theme.isDarkMode,
+        color: changeColor,
+      ),
+    );
   }
 }
