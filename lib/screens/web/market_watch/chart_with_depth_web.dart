@@ -123,9 +123,9 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
           Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Chart area - 100% when depth hidden, 75% when visible
+              // Chart area - 100% when depth hidden, 70% when visible
               Expanded(
-                flex: mw.isDepthVisible ? 3 : 1,
+                flex: mw.isDepthVisible ? 7 : 1,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -458,10 +458,10 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
                   width: 1,
                   color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
                 ),
-              // Depth/Overview area - 25% (only when visible)
+              // Depth/Overview area - 30% (only when visible)
               if (mw.isDepthVisible)
                 Expanded(
-                  flex: 1,
+                  flex: 3,
                   child: ScripDepthInfoWeb(
                     wlValue: widget.wlValue,
                     isBasket: widget.isBasket,

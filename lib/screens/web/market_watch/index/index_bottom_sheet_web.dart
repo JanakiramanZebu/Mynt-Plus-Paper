@@ -706,21 +706,11 @@ class _StaticIndexContentWeb extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-              margin: const EdgeInsets.only(right: 8),
-              decoration: BoxDecoration(
-                color: isDarkMode
-                    ? WebDarkColors.primary
-                    : WebColors.primary.withOpacity(0.9),
-                borderRadius: BorderRadius.circular(5),
-              ),
-              child: Text(
-                exch ?? "",
-                style: WebTextStyles.exchText(
-                  isDarkTheme: isDarkMode,
-                  color: WebDarkColors.textPrimary,
-                ),
+            Text(
+              exch ?? "",
+              style: WebTextStyles.exchText(
+                isDarkTheme: isDarkMode,
+                color: WebColors.textSecondary,
               ),
             ),
           ],

@@ -591,8 +591,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                   ],
                                 ),
                               ),
-                            SizedBox(
-                              height: MediaQuery.of(context).size.height * 0.5,
+                            Expanded(
                               child: ScrollConfiguration(
                                 behavior: const MaterialScrollBehavior()
                                     .copyWith(scrollbars: false),
@@ -1301,17 +1300,72 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                       //     "${depthData.c != "null" ? depthData.c ?? 0.00 : '0.00'}",
                                                       //     theme),
 
-                                                      // New 4-column layout
-                                                      _buildInfoRow1(
-                                                          "Open",
-                                                          "${depthData.o != "null" ? depthData.o ?? 0.00 : '0.00'}",
-                                                          "High",
-                                                          "${depthData.h != "null" ? depthData.h ?? 0.00 : '0.00'}",
-                                                          "Low",
-                                                          "${depthData.l != "null" ? depthData.l ?? 0.00 : '0.00'}",
-                                                          "P.Close",
-                                                          "${depthData.c != "null" ? depthData.c ?? 0.00 : '0.00'}",
-                                                          theme),
+                                                      // Responsive 4-column layout (2x2 on small screens)
+                                                      LayoutBuilder(
+                                                        builder: (context, constraints) {
+                                                          // Use 2x2 layout if width is less than 600px
+                                                          final isSmallScreen = constraints.maxWidth < 300;
+                                                          
+                                                          if (isSmallScreen) {
+                                                            // 2 rows of 2 columns each
+                                                            return Column(
+                                                              children: [
+                                                                Row(
+                                                                  children: [
+                                                                    Expanded(
+                                                                      child: _buildInfoItem(
+                                                                        theme,
+                                                                        "Open",
+                                                                        "${depthData.o != "null" ? depthData.o ?? 0.00 : '0.00'}",
+                                                                      ),
+                                                                    ),
+                                                                    const SizedBox(width: 12),
+                                                                    Expanded(
+                                                                      child: _buildInfoItem(
+                                                                        theme,
+                                                                        "High",
+                                                                        "${depthData.h != "null" ? depthData.h ?? 0.00 : '0.00'}",
+                                                                      ),
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                                const SizedBox(height: 12),
+                                                                Row(
+                                                                  children: [
+                                                                    Expanded(
+                                                                      child: _buildInfoItem(
+                                                                        theme,
+                                                                        "Low",
+                                                                        "${depthData.l != "null" ? depthData.l ?? 0.00 : '0.00'}",
+                                                                      ),
+                                                                    ),
+                                                                    const SizedBox(width: 12),
+                                                                    Expanded(
+                                                                      child: _buildInfoItem(
+                                                                        theme,
+                                                                        "P.Close",
+                                                                        "${depthData.c != "null" ? depthData.c ?? 0.00 : '0.00'}",
+                                                                      ),
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                              ],
+                                                            );
+                                                          } else {
+                                                            // 1 row of 4 columns for larger screens
+                                                            return _buildInfoRow1(
+                                                                "Open",
+                                                                "${depthData.o != "null" ? depthData.o ?? 0.00 : '0.00'}",
+                                                                "High",
+                                                                "${depthData.h != "null" ? depthData.h ?? 0.00 : '0.00'}",
+                                                                "Low",
+                                                                "${depthData.l != "null" ? depthData.l ?? 0.00 : '0.00'}",
+                                                                "P.Close",
+                                                                "${depthData.c != "null" ? depthData.c ?? 0.00 : '0.00'}",
+                                                                theme);
+                                                          }
+                                                        },
+                                                      ),
                                                       const SizedBox(height: 4),
                                                       // Low-High section commented out since now included in 4-column layout above
                                                       // if (depthData.l != "null" &&
@@ -1743,118 +1797,166 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                           widget.wlValue
                                                                   .instname !=
                                                               "COM")) ...[
-                                                        // Trading Info Section - Grid layout with 2 items per row
+                                                        // Trading Info Section - Responsive layout with 300px breakpoint
                                                         const SizedBox(
                                                             height: 12),
-                                                        Column(
-                                                          children: [
-                                                            // Row 1: Avg Price, Volume
-                                                            Row(
-                                                              children: [
-                                                                Expanded(
-                                                                  child:
-                                                                      _buildInfoItem(
+                                                        LayoutBuilder(
+                                                          builder: (context, constraints) {
+                                                            // Use single column if width is less than 300px
+                                                            final isSmallScreen = constraints.maxWidth < 300;
+                                                            
+                                                            if (isSmallScreen) {
+                                                              // Single column layout (stacked)
+                                                              return Column(
+                                                                children: [
+                                                                  _buildInfoItem(
                                                                     theme,
                                                                     "Avg Price",
                                                                     "${depthData.ap ?? 0.00}",
                                                                   ),
-                                                                ),
-                                                                const SizedBox(
-                                                                    width: 16),
-                                                                Expanded(
-                                                                  child:
-                                                                      _buildInfoItem(
+                                                                  const SizedBox(height: 12),
+                                                                  _buildInfoItem(
                                                                     theme,
                                                                     "Volume",
                                                                     "${depthData.v != "null" ? depthData.v ?? 0.00 : '0'}",
                                                                   ),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                            const SizedBox(
-                                                                height: 12),
-                                                            // Row 2: LTQ, LTT
-                                                            Row(
-                                                              children: [
-                                                                Expanded(
-                                                                  child:
-                                                                      _buildInfoItem(
+                                                                  const SizedBox(height: 12),
+                                                                  _buildInfoItem(
                                                                     theme,
                                                                     "LTQ",
                                                                     "${depthData.ltq != "null" ? depthData.ltq ?? 0.00 : '0'}",
                                                                   ),
-                                                                ),
-                                                                const SizedBox(
-                                                                    width: 16),
-                                                                Expanded(
-                                                                  child:
-                                                                      _buildInfoItem(
+                                                                  const SizedBox(height: 12),
+                                                                  _buildInfoItem(
                                                                     theme,
                                                                     "LTT",
-                                                                    depthData.ltt !=
-                                                                            "null"
-                                                                        ? (depthData.ltt ??
-                                                                            "--")
+                                                                    depthData.ltt != "null"
+                                                                        ? (depthData.ltt ?? "--")
                                                                         : "--",
                                                                   ),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                            const SizedBox(
-                                                                height: 12),
-                                                            // Row 3: 52 Weeks High-Low, DPR
-                                                            Row(
-                                                              children: [
-                                                                Expanded(
-                                                                  child:
-                                                                      _buildInfoItem(
+                                                                  const SizedBox(height: 12),
+                                                                  _buildInfoItem(
                                                                     theme,
                                                                     "52 Weeks High-Low",
                                                                     "${(depthData.wk52H != "null" && depthData.wk52H != null) ? depthData.wk52H : 0.00} - ${(depthData.wk52L != "null" && depthData.wk52L != null) ? depthData.wk52L : 0.00}",
                                                                   ),
-                                                                ),
-                                                                const SizedBox(
-                                                                    width: 16),
-                                                                Expanded(
-                                                                  child:
-                                                                      _buildInfoItem(
+                                                                  const SizedBox(height: 12),
+                                                                  _buildInfoItem(
                                                                     theme,
                                                                     "DPR",
                                                                     "${depthData.uc != "null" ? depthData.uc ?? 0.00 : '0.00'} - ${depthData.lc != "null" ? depthData.lc ?? 0.00 : '0.00'}",
                                                                   ),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                            if (depthData.seg !=
-                                                                "EQT") ...[
-                                                              const SizedBox(
-                                                                  height: 12),
-                                                              // Row 4: Open Interest, Change in OI (for futures/options)
-                                                              Row(
-                                                                children: [
-                                                                  Expanded(
-                                                                    child:
-                                                                        _buildInfoItem(
+                                                                  if (depthData.seg != "EQT") ...[
+                                                                    const SizedBox(height: 12),
+                                                                    _buildInfoItem(
                                                                       theme,
                                                                       "Open Interest - OI",
                                                                       "${depthData.oi != "null" ? depthData.oi ?? 0.00 : '0'}",
                                                                     ),
-                                                                  ),
-                                                                  const SizedBox(
-                                                                      width:
-                                                                          16),
-                                                                  Expanded(
-                                                                    child:
-                                                                        _buildInfoItem(
+                                                                    const SizedBox(height: 12),
+                                                                    _buildInfoItem(
                                                                       theme,
                                                                       "Change in OI",
                                                                       "${depthData.poi != "null" ? depthData.poi ?? 0.00 : '0'}",
                                                                     ),
-                                                                  ),
+                                                                  ],
                                                                 ],
-                                                              ),
-                                                            ],
-                                                          ],
+                                                              );
+                                                            } else {
+                                                              // Two column layout (side by side)
+                                                              return Column(
+                                                                children: [
+                                                                  // Row 1: Avg Price, Volume
+                                                                  Row(
+                                                                    children: [
+                                                                      Expanded(
+                                                                        child: _buildInfoItem(
+                                                                          theme,
+                                                                          "Avg Price",
+                                                                          "${depthData.ap ?? 0.00}",
+                                                                        ),
+                                                                      ),
+                                                                      const SizedBox(width: 16),
+                                                                      Expanded(
+                                                                        child: _buildInfoItem(
+                                                                          theme,
+                                                                          "Volume",
+                                                                          "${depthData.v != "null" ? depthData.v ?? 0.00 : '0'}",
+                                                                        ),
+                                                                      ),
+                                                                    ],
+                                                                  ),
+                                                                  const SizedBox(height: 12),
+                                                                  // Row 2: LTQ, LTT
+                                                                  Row(
+                                                                    children: [
+                                                                      Expanded(
+                                                                        child: _buildInfoItem(
+                                                                          theme,
+                                                                          "LTQ",
+                                                                          "${depthData.ltq != "null" ? depthData.ltq ?? 0.00 : '0'}",
+                                                                        ),
+                                                                      ),
+                                                                      const SizedBox(width: 16),
+                                                                      Expanded(
+                                                                        child: _buildInfoItem(
+                                                                          theme,
+                                                                          "LTT",
+                                                                          depthData.ltt != "null"
+                                                                              ? (depthData.ltt ?? "--")
+                                                                              : "--",
+                                                                        ),
+                                                                      ),
+                                                                    ],
+                                                                  ),
+                                                                  const SizedBox(height: 12),
+                                                                  // Row 3: 52 Weeks High-Low, DPR
+                                                                  Row(
+                                                                    children: [
+                                                                      Expanded(
+                                                                        child: _buildInfoItem(
+                                                                          theme,
+                                                                          "52 Weeks High-Low",
+                                                                          "${(depthData.wk52H != "null" && depthData.wk52H != null) ? depthData.wk52H : 0.00} - ${(depthData.wk52L != "null" && depthData.wk52L != null) ? depthData.wk52L : 0.00}",
+                                                                        ),
+                                                                      ),
+                                                                      const SizedBox(width: 16),
+                                                                      Expanded(
+                                                                        child: _buildInfoItem(
+                                                                          theme,
+                                                                          "DPR",
+                                                                          "${depthData.uc != "null" ? depthData.uc ?? 0.00 : '0.00'} - ${depthData.lc != "null" ? depthData.lc ?? 0.00 : '0.00'}",
+                                                                        ),
+                                                                      ),
+                                                                    ],
+                                                                  ),
+                                                                  if (depthData.seg != "EQT") ...[
+                                                                    const SizedBox(height: 12),
+                                                                    // Row 4: Open Interest - OI, Change in OI
+                                                                    Row(
+                                                                      children: [
+                                                                        Expanded(
+                                                                          child: _buildInfoItem(
+                                                                            theme,
+                                                                            "Open Interest - OI",
+                                                                            "${depthData.oi != "null" ? depthData.oi ?? 0.00 : '0'}",
+                                                                          ),
+                                                                        ),
+                                                                        const SizedBox(width: 16),
+                                                                        Expanded(
+                                                                          child: _buildInfoItem(
+                                                                            theme,
+                                                                            "Change in OI",
+                                                                            "${depthData.poi != "null" ? depthData.poi ?? 0.00 : '0'}",
+                                                                          ),
+                                                                        ),
+                                                                      ],
+                                                                    ),
+                                                                  ],
+                                                                ],
+                                                              );
+                                                            }
+                                                          },
                                                         ),
                                                         // if (depthData
                                                         //         .seg !=
@@ -1880,74 +1982,81 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                           //     fw: 1),
                                                           const SizedBox(
                                                               height: 16),
-                                                          GridView.count(
-                                                              crossAxisCount: 3,
-                                                              physics:
-                                                                  const NeverScrollableScrollPhysics(),
-                                                              shrinkWrap: true,
-                                                              crossAxisSpacing:
-                                                                  12,
-                                                              mainAxisSpacing:
-                                                                  10,
-                                                              childAspectRatio:
-                                                                  1.8,
-                                                              children: List.generate(
-                                                                  scripInfo
-                                                                      .returnsGridview
-                                                                      .length,
-                                                                  (index) {
-                                                                return Container(
-                                                                    width: 120,
-                                                                    padding: const EdgeInsets
-                                                                        .symmetric(
-                                                                        vertical:
-                                                                            7,
-                                                                        horizontal:
-                                                                            8),
-                                                                    decoration: BoxDecoration(
-                                                                        color: theme.isDarkMode
-                                                                            ? WebDarkColors
-                                                                                .surfaceVariant
-                                                                            : WebColors
-                                                                                .surfaceVariant,
-                                                                        borderRadius:
-                                                                            BorderRadius.circular(
-                                                                                5)),
-                                                                    child: Column(
-                                                                        mainAxisAlignment:
-                                                                            MainAxisAlignment.center,
-                                                                        children: [
-                                                                          Text(
-                                                                            "${scripInfo.returnsGridview[index]['percent']}%",
-                                                                            style:
-                                                                                WebTextStyles.sub(
-                                                                              isDarkTheme: theme.isDarkMode,
-                                                                              color: scripInfo.returnsGridview[index]['percent'].toString().startsWith("-")
-                                                                                  ? theme.isDarkMode
-                                                                                      ? WebDarkColors.error
-                                                                                      : WebColors.error
-                                                                                  : theme.isDarkMode
-                                                                                      ? WebDarkColors.success
-                                                                                      : WebColors.success,
-                                                                              fontWeight: WebFonts.medium,
+                                                          LayoutBuilder(
+                                                            builder: (context, constraints) {
+                                                              // Calculate how many items can fit per row
+                                                              // Each item: 120px width + 12px spacing
+                                                              final itemWidth = 120.0;
+                                                              final spacing = 12.0;
+                                                              final availableWidth = constraints.maxWidth;
+                                                              final itemsPerRow = ((availableWidth + spacing) / (itemWidth + spacing)).floor();
+                                                              final calculatedWidth = itemsPerRow > 0 
+                                                                  ? (availableWidth - (spacing * (itemsPerRow - 1))) / itemsPerRow
+                                                                  : itemWidth;
+                                                              
+                                                              return Wrap(
+                                                                spacing: spacing,
+                                                                runSpacing: 10,
+                                                                children: List.generate(
+                                                                    scripInfo
+                                                                        .returnsGridview
+                                                                        .length,
+                                                                    (index) {
+                                                                  return Container(
+                                                                      width: calculatedWidth.clamp(100.0, 150.0), // Min 100px, Max 150px
+                                                                      padding: const EdgeInsets
+                                                                          .symmetric(
+                                                                          vertical:
+                                                                              14,
+                                                                          horizontal:
+                                                                              8),
+                                                                      decoration: BoxDecoration(
+                                                                          color: theme.isDarkMode
+                                                                              ? WebDarkColors
+                                                                                  .surfaceVariant
+                                                                              : WebColors
+                                                                                  .surfaceVariant,
+                                                                          borderRadius:
+                                                                              BorderRadius.circular(
+                                                                                  5)),
+                                                                      child: Column(
+                                                                          mainAxisAlignment:
+                                                                              MainAxisAlignment.center,
+                                                                          children: [
+                                                                            Text(
+                                                                              "${scripInfo.returnsGridview[index]['percent']}%",
+                                                                              style:
+                                                                                  WebTextStyles.sub(
+                                                                                isDarkTheme: theme.isDarkMode,
+                                                                                color: scripInfo.returnsGridview[index]['percent'].toString().startsWith("-")
+                                                                                    ? theme.isDarkMode
+                                                                                        ? WebDarkColors.error
+                                                                                        : WebColors.error
+                                                                                    : theme.isDarkMode
+                                                                                        ? WebDarkColors.success
+                                                                                        : WebColors.success,
+                                                                                fontWeight: WebFonts.medium,
+                                                                              ),
                                                                             ),
-                                                                          ),
-                                                                          const SizedBox(
-                                                                              height: 6),
-                                                                          Center(
-                                                                              child: Text(
-                                                                            "${scripInfo.returnsGridview[index]['duration']}",
-                                                                            textAlign:
-                                                                                TextAlign.center,
-                                                                            style:
-                                                                                WebTextStyles.para(
-                                                                              isDarkTheme: theme.isDarkMode,
-                                                                              color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
-                                                                              fontWeight: WebFonts.medium,
-                                                                            ),
-                                                                          ))
-                                                                        ]));
-                                                              })),
+                                                                            const SizedBox(
+                                                                                height: 6),
+                                                                            Center(
+                                                                                child: Text(
+                                                                              "${scripInfo.returnsGridview[index]['duration']}",
+                                                                              textAlign:
+                                                                                  TextAlign.center,
+                                                                              style:
+                                                                                  WebTextStyles.para(
+                                                                                isDarkTheme: theme.isDarkMode,
+                                                                                color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
+                                                                                fontWeight: WebFonts.medium,
+                                                                              ),
+                                                                            ))
+                                                                          ]));
+                                                                }),
+                                                              );
+                                                            },
+                                                          ),
                                                           const SizedBox(
                                                               height: 12),
                                                         ]
@@ -2359,10 +2468,9 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                   ? colors.darkColorDivider
                                   : colors.colorDivider,
                             ),
-                            // Quick Order embedded below scrip info
+                            // Quick Order embedded below scrip info - takes only what it needs
                             if (!isIndexOrCommodity)
-                              Expanded(
-                                child: Builder(builder: (context) {
+                              Builder(builder: (context) {
                                   final lotSize = _safeParseLotSize(
                                       ref
                                           .read(marketWatchProvider)
@@ -2395,7 +2503,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                     embedded: true,
                                   );
                                 }),
-                              ),
+                              
                           ],
                         ),
                       ),

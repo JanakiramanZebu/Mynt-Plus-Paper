@@ -554,7 +554,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb>
         // If horizontal scroll needed, wrap the entire column inside SingleChildScrollView
         if (needHorizontalScroll) {
           return Padding(
-            padding: const EdgeInsets.only(right: 16.0, bottom: 8.0),
+            padding: const EdgeInsets.only(bottom: 20.0),
             child: SizedBox(
               width: constraints.maxWidth,
               height: constraints.maxHeight,
@@ -572,7 +572,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb>
 
         // else (no horizontal scroll)
         return Padding(
-          padding: const EdgeInsets.only(right: 16.0, bottom: 8.0),
+          padding: const EdgeInsets.only(bottom: 20.0),
           child: SizedBox(
             width: constraints.maxWidth,
             height: constraints.maxHeight,

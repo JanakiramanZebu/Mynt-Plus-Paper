@@ -822,7 +822,7 @@ class _BasketListState extends ConsumerState<BasketList> {
                     child: LayoutBuilder(
                       builder: (context, constraints) {
                         return Padding(
-                          padding: const EdgeInsets.only(right: 16.0, bottom: 8.0),
+                          padding: const EdgeInsets.only(bottom: 8.0),
                           child: SizedBox(
                             width: constraints.maxWidth,
                             height: constraints.maxHeight,
@@ -2117,7 +2117,7 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
                                     // If horizontal scroll needed, wrap the entire column inside SingleChildScrollView
                                     if (needHorizontalScroll) {
                                       return Padding(
-                                        padding: const EdgeInsets.only(right: 16.0, bottom: 8.0),
+                                        padding: const EdgeInsets.only(bottom: 20.0),
                                         child: SizedBox(
                                           width: constraints.maxWidth,
                                           height: constraints.maxHeight,
@@ -2135,7 +2135,7 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
 
                                     // else (no horizontal scroll)
                                     return Padding(
-                                      padding: const EdgeInsets.only(right: 16.0, bottom: 8.0),
+                                      padding: const EdgeInsets.only(bottom: 20.0),
                                       child: SizedBox(
                                         width: constraints.maxWidth,
                                         height: constraints.maxHeight,

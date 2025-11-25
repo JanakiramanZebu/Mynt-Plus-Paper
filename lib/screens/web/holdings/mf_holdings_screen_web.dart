@@ -486,7 +486,7 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
 
         // else (no horizontal scroll)
         return Padding(
-          padding: const EdgeInsets.only(right: 16.0, bottom: 8.0),
+          padding: const EdgeInsets.only(right: 0.0, bottom: 20.0),
           child: SizedBox(
             width: constraints.maxWidth,
             height: calculatedHeight.toDouble(),

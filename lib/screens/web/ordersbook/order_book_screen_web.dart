@@ -465,15 +465,16 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
 
   Widget _buildTabsAndActionBar(ThemesProvider theme, OrderProvider orderBook) {
     return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         // Segmented Control Tabs on the left
         _buildSegmentedControl(theme, orderBook),
-        // Spacer to push action items to the right
-        const Spacer(),
-        // Search Bar
-        SizedBox(
-          width: 400,
+        // Fixed spacing instead of Spacer to avoid excessive gap
+        const SizedBox(width: 16),
+        // Search Bar with max width constraint
+        Flexible(
           child: Container(
+            constraints: const BoxConstraints(maxWidth: 400),
             height: 40,
             decoration: BoxDecoration(
               color: theme.isDarkMode
@@ -563,7 +564,6 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
             ),
           ),
         ),
-        const SizedBox(width: 16),
       ],
     );
   }
@@ -939,8 +939,8 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        // Get screen width for responsive design
-        final screenWidth = MediaQuery.of(context).size.width;
+        // Use the actual available width inside this layout for responsive rules
+        final screenWidth = constraints.maxWidth;
         
         // Get responsive column configuration
         final responsiveConfig = _getResponsiveOrderBookColumns(screenWidth);
@@ -1059,7 +1059,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
         // If horizontal scroll needed, wrap the entire column inside SingleChildScrollView
         if (needHorizontalScroll) {
           return Padding(
-            padding: const EdgeInsets.only(right: 16.0, bottom: 8.0),
+            padding: const EdgeInsets.only(bottom: 20.0),
             child: SizedBox(
               width: constraints.maxWidth,
               height: constraints.maxHeight,
@@ -1077,7 +1077,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
 
         // else (no horizontal scroll)
         return Padding(
-          padding: const EdgeInsets.only(right: 16.0, bottom: 8.0),
+          padding: const EdgeInsets.only(bottom: 20.0),
           child: SizedBox(
             width: constraints.maxWidth,
             height: constraints.maxHeight,
@@ -1691,7 +1691,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
         // If horizontal scroll needed, wrap the entire column inside SingleChildScrollView
         if (needHorizontalScroll) {
           return Padding(
-            padding: const EdgeInsets.only(right: 16.0, bottom: 8.0),
+            padding: const EdgeInsets.only(bottom: 20.0),
             child: SizedBox(
               width: constraints.maxWidth,
               height: constraints.maxHeight,
@@ -1709,7 +1709,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
 
         // else (no horizontal scroll)
         return Padding(
-          padding: const EdgeInsets.only(right: 16.0, bottom: 8.0),
+          padding: const EdgeInsets.only(bottom: 20.0),
           child: SizedBox(
             width: constraints.maxWidth,
             height: constraints.maxHeight,
@@ -2560,7 +2560,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
         // THE REAL FIX: Use SizedBox with exact totalMinWidth - Flutter only scrolls when child width > viewport
         if (needHorizontalScroll) {
           return Padding(
-            padding: const EdgeInsets.only(right: 16.0, bottom: 8.0),
+            padding: const EdgeInsets.only(bottom: 8.0),
             child: SizedBox(
               width: constraints.maxWidth,
               height: constraints.maxHeight,
@@ -2578,7 +2578,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
 
         // else (no horizontal scroll) — just use normal layout (tableColumn uses Flexible columns)
         return Padding(
-          padding: const EdgeInsets.only(right: 16.0, bottom: 8.0),
+          padding: const EdgeInsets.only(bottom: 20.0),
           child: SizedBox(
             width: constraints.maxWidth,
             height: constraints.maxHeight,
