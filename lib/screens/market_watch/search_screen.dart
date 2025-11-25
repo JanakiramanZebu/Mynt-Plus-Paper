@@ -35,6 +35,8 @@ class _AddScripState extends ConsumerState<SearchScreen>
   String _searchvalue = "";
   int tabcount = 5;
   final ScrollController _tabScrollController = ScrollController();
+  final FocusNode _searchFocusNode = FocusNode();
+  bool _isInitialEntry = true;
 
   // Simple fixed width for each tab for reliable calculations
   final double tabWidth = 75.0;
@@ -47,6 +49,11 @@ class _AddScripState extends ConsumerState<SearchScreen>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         ref.read(marketWatchProvider).searchClear();
+        // Request focus only on initial entry
+        if (_isInitialEntry) {
+          _searchFocusNode.requestFocus();
+          _isInitialEntry = false;
+        }
       }
     });
     super.initState();
@@ -67,6 +74,7 @@ class _AddScripState extends ConsumerState<SearchScreen>
   @override
   void dispose() {
     _tabScrollController.dispose();
+    _searchFocusNode.dispose();
     tabCtrl.dispose();
     super.dispose();
   }
@@ -118,6 +126,16 @@ class _AddScripState extends ConsumerState<SearchScreen>
       final searchScrip = ref.watch(marketWatchProvider);
       final internet = ref.watch(networkStateProvider);
       final theme = ref.read(themeProvider);
+      final chartState = ref.watch(chartProvider);
+      
+      // Unfocus the search field when chart becomes visible
+      if (chartState.isVisible && _searchFocusNode.hasFocus) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            _searchFocusNode.unfocus();
+          }
+        });
+      }
       return PopScope(
           canPop: false, // Allows back navigation
           onPopInvokedWithResult: (didPop, result) async {
@@ -244,7 +262,7 @@ class _AddScripState extends ConsumerState<SearchScreen>
                             // Text input
                             Expanded(
                               child: TextFormField(
-                                autofocus: true,
+                                focusNode: _searchFocusNode,
                                 controller: textCtrl,
                                 style: TextWidget.textStyle(
                                   fontSize: 16,

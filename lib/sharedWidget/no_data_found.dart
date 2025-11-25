@@ -51,7 +51,7 @@ class NoDataFound extends ConsumerWidget {
     final accent = isDark ? colors.primaryDark : colors.primaryLight;
     final textPrimary = isDark ? colors.textPrimaryDark : colors.textPrimaryLight;
     final textSecondary = isDark ? colors.textSecondaryDark : colors.textSecondaryLight;
-    final bgCard = isDark ? const Color(0xFF1E1E1E) : Colors.white;
+    final bgCard = isDark ? colors.colorBlack : colors.colorWhite;
     final borderColor = isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05);
 
     // Use a chart or document icon as default
