@@ -29,9 +29,9 @@ class _SecureFundState extends ConsumerState<SecureFund> {
     final theme = ref.watch(themeProvider);
     final trancation = ref.watch(transcationProvider);
 
-    return Scaffold(
-      backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-      body: ListView(
+    return Container(
+      color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+      child: ListView(
         padding: EdgeInsets.zero,
         children: [
           // Available Margin Section
@@ -99,6 +99,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                                   : colors.primaryLight,
                             ),
                             onPressed: () {
+                              print('🔵 Add Money button pressed!');
                               // trancation.changebool(true);
                               Navigator.pushNamed(context, Routes.fundscreen,
                                   arguments: trancation);
@@ -134,6 +135,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                                                           : colors.fundbuttonBg,
                             ),
                             onPressed: () async {
+                              print('🟢 Withdraw button pressed!');
                               await trancation.fetchValidateToken(context);
                               Future.delayed(
                                 const Duration(milliseconds: 100),

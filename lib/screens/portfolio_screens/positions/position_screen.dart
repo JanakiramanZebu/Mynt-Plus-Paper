@@ -225,7 +225,7 @@ class _PositionScreenState extends ConsumerState<PositionScreen> with TickerProv
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               // Header with P&L info - hide when scrolling up
-                              if (!_isScrollingUp)
+                              // if (!_isScrollingUp)
                                 _PositionHeaderSection(
                                   theme: theme,
                                   positionBook: positionBook,
@@ -253,13 +253,13 @@ class _PositionScreenState extends ConsumerState<PositionScreen> with TickerProv
                 ),
                 
                 // Fixed Total PNL card overlaying the content
-                if (_isScrollingUp && positionBook.postionBookModel!.isNotEmpty)
-                  Positioned(
-                    top: -1,
-                    left: 0,
-                    right: 0,
-                    child: _buildTotalPnlCard(theme, positionBook),
-                  ),
+                // if (_isScrollingUp && positionBook.postionBookModel!.isNotEmpty)
+                //   Positioned(
+                //     top: -1,
+                //     left: 0,
+                //     right: 0,
+                //     child: _buildTotalPnlCard(theme, positionBook),
+                //   ),
               ],
             ),
           ),

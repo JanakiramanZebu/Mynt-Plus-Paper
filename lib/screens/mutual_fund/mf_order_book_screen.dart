@@ -58,8 +58,7 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
     return Consumer(builder: (context, ref, child) {
       final theme = ref.watch(themeProvider);
       final mforderbook = ref.watch(mfProvider);
-      return Scaffold(
-        body: Stack(
+      return  Stack(
           children: [
             TransparentLoaderScreen(
               isLoading: mforderbook.bestmfloader == true,
@@ -141,8 +140,8 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
               ),
             ),
           ],
-        ),
-      );
+        );
+      // );
     });
   }
 

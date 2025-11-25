@@ -46,6 +46,10 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
     // Clear the text field when screen is initialized
     widget.withdarw.withdrawamount.clear();
 
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      widget.foucs.requestFocus();
+    });
+
     disable = (widget.withdarw.withdrawamount.text.isEmpty ||
         widget.withdarw.payoutdetails!.withdrawAmount == "0.00");
     super.initState();

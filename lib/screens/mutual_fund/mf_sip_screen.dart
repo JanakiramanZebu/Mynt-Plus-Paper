@@ -36,8 +36,7 @@ class MFSipdetScreen extends ConsumerWidget {
               ));
     }
 
-    return Scaffold(
-    body: Column(
+    return  Column(
       children: [
         TransparentLoaderScreen(
           isLoading: mfData.bestmfloader ?? false,
@@ -49,16 +48,14 @@ class MFSipdetScreen extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        child: _buildSipOrderList(context, mfData, theme),
-                      ),
+                      _buildSipOrderList(context, mfData, theme),
                     ],
                   ),
                 ),
         ),
       ],
-    ),
     );
+    // );
   }
 
   Widget _buildSipOrderList(

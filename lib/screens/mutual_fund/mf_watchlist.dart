@@ -60,8 +60,7 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
       });
     }
 
-    return Scaffold(
-      body: TransparentLoaderScreen(
+    return TransparentLoaderScreen(
         isLoading: mfData.bestmfloader ?? false,
         child: sortedList?.isEmpty ?? true
             ? const Center(child: NoDataFound(
@@ -90,8 +89,8 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
                   ),
                 ],
               ),
-      ),
-    );
+      );
+    // );
   }
 
   Widget _buildHeader(ThemesProvider theme) {

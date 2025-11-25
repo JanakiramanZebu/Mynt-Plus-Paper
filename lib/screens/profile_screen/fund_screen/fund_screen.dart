@@ -54,6 +54,9 @@ class _FundScreenState extends ConsumerState<FundScreen> {
     // WidgetsBinding.instance.addPostFrameCallback((_) {
     //   _setDefaultSegment(ref.read(transcationProvider));
     // });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(transcationProvider).focusNode.requestFocus();
+    });
   }
 
   bool _isDisposedIos = false;
