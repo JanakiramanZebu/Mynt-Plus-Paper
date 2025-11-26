@@ -135,7 +135,7 @@ class _MfHoldNewScreenState extends ConsumerState<MfHoldNewScreen> with TickerPr
                         builder: (context, constraints) {
                           return SingleChildScrollView(
                             controller: _scrollController,
-                            physics: const AlwaysScrollableScrollPhysics(),
+                            physics: const ClampingScrollPhysics(),
                             child: GestureDetector(
                               onTap: () => FocusScope.of(context).unfocus(),
                               behavior: HitTestBehavior.opaque,

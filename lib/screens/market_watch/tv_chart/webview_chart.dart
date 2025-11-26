@@ -306,8 +306,8 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
               _buildTopBar(tvChart, theme, userProfile, chartUpdate),
               _buildWebView(
                   tvChart, theme, userProfile.showchartof, chartUpdate, context),
+          if(chartUpdate.orientation != "landscape") ...[
               const SizedBox(height: 4),
-          
                if (transbtn) ...[
               Padding(
                 padding: EdgeInsets.fromLTRB(
@@ -398,7 +398,11 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                     ]),
               ) ,
                ]
+            ]
+            else...[
+             const SizedBox.shrink(),
             ],
+          ],
             ),
           ),
         );

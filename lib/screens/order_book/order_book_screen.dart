@@ -258,7 +258,7 @@ class _OrderBookScreenState extends ConsumerState<OrderBookScreen>
                     ),
                     border: InputBorder.none,
                     isDense: true,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 5),
                   ),
                   onChanged: (value) {
                     order.searchOrders(value, context);
@@ -464,6 +464,7 @@ class _CustomTabBarViewState extends State<_CustomTabBarView> {
                 target: portfolio.selectedTab - 1,
                 action: () {
                   portfolio.portTab.animateTo(portfolio.selectedTab - 1);
+                  FocusScope.of(context).unfocus();
                 },
               );
             }
@@ -476,6 +477,7 @@ class _CustomTabBarViewState extends State<_CustomTabBarView> {
                 target: portfolio.selectedTab + 1,
                 action: () {
                   portfolio.portTab.animateTo(portfolio.selectedTab + 1);
+                  FocusScope.of(context).unfocus();
                 },
               );
             }

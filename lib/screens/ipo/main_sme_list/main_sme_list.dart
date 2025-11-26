@@ -288,7 +288,7 @@ class _IPOListSection extends StatelessWidget {
   }
 }
 
-class _IPOListItem extends StatelessWidget {
+class _IPOListItem extends StatefulWidget {
   final dynamic ipo;
   final dynamic ipoProvider;
   final dynamic upiProvider;
@@ -302,6 +302,13 @@ class _IPOListItem extends StatelessWidget {
     required this.theme,
     required this.isPreOpen,
   });
+
+  @override
+  State<_IPOListItem> createState() => _IPOListItemState();
+}
+
+class _IPOListItemState extends State<_IPOListItem> {
+  bool _isBottomSheetOpen = false;
 
   @override
   Widget build(BuildContext context) {
@@ -320,10 +327,10 @@ class _IPOListItem extends StatelessWidget {
   }
 
   Widget _buildHeader(context) {
-    final dateText = isPreOpen ? "Opens on" : "Closes on";
-    final date = isPreOpen
-        ? _formatDate(ipo.biddingStartDate ?? "")
-        : (ipo.biddingEndDate?.substring(5, 11) ?? "");
+    final dateText = widget.isPreOpen ? "Opens on" : "Closes on";
+    final date = widget.isPreOpen
+        ? _formatDate(widget.ipo.biddingStartDate ?? "")
+        : (widget.ipo.biddingEndDate?.substring(5, 11) ?? "");
     String toTitleCase(String input) {
       return input
           .toLowerCase()
@@ -343,9 +350,9 @@ class _IPOListItem extends StatelessWidget {
               SizedBox(
                 width: MediaQuery.of(context).size.width * 0.6,
                 child: TextWidget.subText(
-                  text: toTitleCase(ipo.name ?? ""),
+                  text: toTitleCase(widget.ipo.name ?? ""),
                   theme: false,
-                  color: theme.isDarkMode
+                  color: widget.theme.isDarkMode
                       ? colors.textPrimaryDark
                       : colors.textPrimaryLight,
                   maxLines: 2,
@@ -355,10 +362,10 @@ class _IPOListItem extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               TextWidget.paraText(
-                text: "${ipo.key ?? ""} - $dateText $date",
+                text: "${widget.ipo.key ?? ""} - $dateText $date",
                 theme: false,
                 fw: 0,
-                color: theme.isDarkMode
+                color: widget.theme.isDarkMode
                     ? colors.textSecondaryDark
                     : colors.textSecondaryLight,
               ),
@@ -384,15 +391,15 @@ class _IPOListItem extends StatelessWidget {
           shape: const RoundedRectangleBorder(),
           child: InkWell(
             customBorder: const RoundedRectangleBorder(),
-            splashColor: theme.isDarkMode
+            splashColor: widget.theme.isDarkMode
                 ? colors.splashColorDark
                 : colors.splashColorLight,
             highlightColor:
-                theme.isDarkMode ? colors.highlightDark : colors.highlightLight,
+                widget.theme.isDarkMode ? colors.highlightDark : colors.highlightLight,
             onTap: () {
               if (isApplyButtonEnabled) {
                 isApplyButtonEnabled = false;
-                ipoProvider.setSinglepageapply(false);
+                widget.ipoProvider.setSinglepageapply(false);
                 _onApplyPressed(context);
               } else {
                 return;
@@ -401,21 +408,21 @@ class _IPOListItem extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
               child: TextWidget.subText(
-                text: isPreOpen ? 'Pre Apply' : 'Apply',
+                text: widget.isPreOpen ? 'Pre Apply' : 'Apply',
                 theme: false,
                 fw: 2,
                 color:
-                    theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
+                    widget.theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
               ),
             ),
           ),
         ),
         const SizedBox(height: 6),
         TextWidget.paraText(
-          text: ipo.totalsub != null && ipo.totalsub.toString().isNotEmpty ? "${ipo.totalsub?.toString() ?? ""}x Sub " : "",
+          text: widget.ipo.totalsub != null && widget.ipo.totalsub.toString().isNotEmpty ? "${widget.ipo.totalsub?.toString() ?? ""}x Sub " : "",
           theme: false,
           fw: 3,
-          color: theme.isDarkMode
+          color: widget.theme.isDarkMode
               ? colors.textSecondaryDark
               : colors.textSecondaryLight,
         ),
@@ -504,64 +511,73 @@ class _IPOListItem extends StatelessWidget {
   // }
 
   Future<void> _onIPOTap(BuildContext context) async {
-    await ipoProvider.getIpoSinglePage(ipoName: "${ipo.name}");
-    // if (isPreOpen) {
-    //   return;
-    // }
+    // Prevent multiple taps from opening multiple bottom sheets
+    if (_isBottomSheetOpen) {
+      return;
+    }
 
-    if (context.mounted) {
-      showModalBottomSheet(
-        isScrollControlled: true,
-        useSafeArea: true,
-        isDismissible: true,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-        ),
-        context: context,
-        builder: (context) => Container(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
+    _isBottomSheetOpen = true;
+
+    try {
+      await widget.ipoProvider.getIpoSinglePage(ipoName: "${widget.ipo.name}");
+
+      if (context.mounted) {
+        await showModalBottomSheet(
+          isScrollControlled: true,
+          useSafeArea: true,
+          isDismissible: true,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
           ),
-          child: MainSmeSinglePage(
-            pricerange:
-                "${double.parse(ipo.minPrice ?? "0").toInt()} - ${double.parse(ipo.maxPrice ?? "0").toInt()}",
-            mininv:
-                "${convertCurrencyINRStandard(mininv(double.parse(ipo.minPrice ?? "0").toDouble(), int.parse(ipo.minBidQuantity ?? "0").toInt()).toInt())}",
-            enddate: "${ipo.biddingEndDate ?? ""}",
-            startdate: "${ipo.biddingStartDate ?? ""}",
-            ipotype: "${ipo.key ?? ""}",
-            ipodetails: jsonEncode(ipo),
+          context: context,
+          builder: (context) => Container(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
+            child: MainSmeSinglePage(
+              pricerange:
+                  "${double.parse(widget.ipo.minPrice ?? "0").toInt()} - ${double.parse(widget.ipo.maxPrice ?? "0").toInt()}",
+              mininv:
+                  "${convertCurrencyINRStandard(mininv(double.parse(widget.ipo.minPrice ?? "0").toDouble(), int.parse(widget.ipo.minBidQuantity ?? "0").toInt()).toInt())}",
+              enddate: "${widget.ipo.biddingEndDate ?? ""}",
+              startdate: "${widget.ipo.biddingStartDate ?? ""}",
+              ipotype: "${widget.ipo.key ?? ""}",
+              ipodetails: jsonEncode(widget.ipo),
+            ),
           ),
-        ),
-      );
+        );
+      }
+    } finally {
+      // Reset the flag when bottom sheet is dismissed
+      _isBottomSheetOpen = false;
     }
   }
 
   Future<void> _onApplyPressed(BuildContext context) async {
-    ipoProvider.setisSMEPlaceOrderBtnActiveValue = false;
-    ipoProvider.setisMainIPOPlaceOrderBtnActiveValue = false;
+    widget.ipoProvider.setisSMEPlaceOrderBtnActiveValue = false;
+    widget.ipoProvider.setisMainIPOPlaceOrderBtnActiveValue = false;
 
-    await upiProvider.fetchupiIdView(
-      upiProvider.bankdetails?.dATA?[upiProvider.indexss][1] ?? "",
-      upiProvider.bankdetails?.dATA?[upiProvider.indexss][2] ?? "",
+    await widget.upiProvider.fetchupiIdView(
+      widget.upiProvider.bankdetails?.dATA?[widget.upiProvider.indexss][1] ?? "",
+      widget.upiProvider.bankdetails?.dATA?[widget.upiProvider.indexss][2] ?? "",
     );
 
-    if (ipo.key == "SME") {
-      await ipoProvider.smeipocategory();
+    if (widget.ipo.key == "SME") {
+      await widget.ipoProvider.smeipocategory();
       if (context.mounted) {
         Navigator.pushNamed(
           context,
           Routes.applyIPO,
-          arguments: ipo,
+          arguments: widget.ipo,
         );
       }
     } else {
-      await ipoProvider.mainipocategory();
+      await widget.ipoProvider.mainipocategory();
       if (context.mounted) {
         Navigator.pushNamed(
           context,
           Routes.applyIPO,
-          arguments: ipo,
+          arguments: widget.ipo,
         );
       }
     }

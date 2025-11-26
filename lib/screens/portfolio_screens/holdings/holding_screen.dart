@@ -574,7 +574,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> with TickerProvid
               builder: (context, constraints) {
                 return SingleChildScrollView(
                   controller: _scrollController,
-                  physics: const AlwaysScrollableScrollPhysics(),
+                  physics: const ClampingScrollPhysics(),
                   child: GestureDetector(
                     onTap: () => FocusScope.of(context).unfocus(),
                     behavior: HitTestBehavior.opaque,

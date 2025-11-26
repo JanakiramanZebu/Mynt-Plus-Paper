@@ -208,9 +208,7 @@ class _PositionScreenState extends ConsumerState<PositionScreen> with TickerProv
 
                     return SingleChildScrollView(
                       controller: _scrollController,
-                      physics: const AlwaysScrollableScrollPhysics(
-                          // parent: BouncingScrollPhysics(),
-                          ),
+                      physics: const ClampingScrollPhysics(),
                       child: GestureDetector(
                         onTap: () => FocusScope.of(context).unfocus(),
                         behavior: HitTestBehavior.opaque,
