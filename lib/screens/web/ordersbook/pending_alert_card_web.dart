@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:data_table_2/data_table_2.dart';
 
 import '../../../models/notification_model/broker_message_model.dart';
 import '../../../models/marketwatch_model/alert_model/alert_pending_model.dart';
@@ -31,11 +32,6 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb>
   // Sorting variables
   int? _alertSortColumnIndex;
   bool _alertSortAscending = true;
-  
-  // Responsive breakpoints
-  static const double _mobileBreakpoint = 768;
-  static const double _tabletBreakpoint = 1024;
-  static const double _desktopBreakpoint = 1440;
   
   // WebSocket subscription for real-time updates
   StreamSubscription? _socketSubscription;
@@ -357,72 +353,26 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb>
   }
 
   // Helper method to get responsive column configuration for Alerts
+  // Always show all columns - horizontal scroll handles overflow on small screens
   Map<String, dynamic> _getResponsiveAlertColumns(double screenWidth) {
-    if (screenWidth < _mobileBreakpoint) {
-      // Mobile: Show only essential columns
-      return {
-        'headers': ['Instrument', 'Alert Type', 'Target', 'Status'],
-        'columnFlex': {
-          'Instrument': 3,
-          'Alert Type': 2,
-          'Target': 2,
-          'Status': 2,
-        },
-        'columnMinWidth': {
-          'Instrument': 150,
-          'Alert Type': 130,
-          'Target': 90,
-          'Status': 90,
-        },
-      };
-    } else if (screenWidth < _tabletBreakpoint) {
-      // Tablet: Show most columns
-      return {
-        'headers': ['Instrument', 'Alert Type', 'Target', 'LTP', 'Status'],
-        'columnFlex': {
-          'Instrument': 3,
-          'Alert Type': 2,
-          'Target': 2,
-          'LTP': 2,
-          'Status': 2,
-        },
-        'columnMinWidth': {
-          'Instrument': 160,
-          'Alert Type': 140,
-          'Target': 95,
-          'LTP': 100,
-          'Status': 100,
-        },
-      };
-    } else {
-      // Desktop: Full columns with optimal widths
-      return {
-        'headers': ['Instrument', 'Exchange', 'Alert Type', 'Target', 'LTP', 'Status'],
-        'columnFlex': {
-          'Instrument': 3,
-          'Exchange': 2,
-          'Alert Type': 2,
-          'Target': 2,
-          'LTP': 2,
-          'Status': 2,
-        },
-        'columnMinWidth': {
-          'Instrument': 170,
-          'Exchange': 100,
-          'Alert Type': 150,
-          'Target': 100,
-          'LTP': 110,
-          'Status': 110,
-        },
-      };
-    }
+    return {
+      'headers': ['Instrument', 'Exchange', 'Alert Type', 'Target', 'LTP', 'Status'],
+      'columnMinWidth': {
+        'Instrument': 300,
+        'Exchange': 110,
+        'Alert Type': 160,
+        'Target': 120,
+        'LTP': 100,
+        'Status': 110,
+      },
+    };
   }
 
   Widget _buildAlertTable(List<dynamic> alerts, ThemesProvider theme) {
     if (alerts.isEmpty) {
-      return SizedBox(
+      return const SizedBox(
         height: 400,
-        child: const Align(
+        child: Align(
           alignment: Alignment.center,
           child: Padding(
             padding: EdgeInsets.all(16.0),
@@ -434,149 +384,134 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb>
 
     return LayoutBuilder(
       builder: (context, constraints) {
+        // Calculate available height
+        final screenHeight = MediaQuery.of(context).size.height;
+        final padding = 32.0; // Top and bottom padding (16 * 2)
+        final headerHeight = 50.0; // Header height (tabs + search bar)
+        final spacing = 16.0; // Spacing between header and content
+        final bottomMargin = 20.0; // Bottom margin
+        final tableHeight =
+            screenHeight - padding - headerHeight - spacing - bottomMargin;
+
+        // Ensure we don't exceed 75% of screen height
+        final maxHeight = screenHeight * 0.75;
+        final calculatedHeight = tableHeight > maxHeight
+            ? maxHeight
+            : (tableHeight > 400 ? tableHeight : 400.0);
+
         // Get screen width for responsive design
         final screenWidth = MediaQuery.of(context).size.width;
         
         // Get responsive column configuration
         final responsiveConfig = _getResponsiveAlertColumns(screenWidth);
         final headers = List<String>.from(responsiveConfig['headers'] as List);
-        final columnFlex = Map<String, int>.from(responsiveConfig['columnFlex'] as Map);
         final columnMinWidth = Map<String, double>.from(responsiveConfig['columnMinWidth'] as Map);
         
-        // Calculate total minimum width
-        final totalMinWidth =
-            columnMinWidth.values.fold<double>(0.0, (a, b) => a + b);
-        // Determine whether horizontal scroll is needed
-        final needHorizontalScroll = constraints.maxWidth < totalMinWidth;
-
-        // Build the Column (header + body)
-        final tableColumn = Container(
-          decoration: BoxDecoration(
-            border: Border.all(
-              color: theme.isDarkMode
-                  ? WebDarkColors.divider
-                  : WebColors.divider,
-              width: 1,
-            ),
-            borderRadius: BorderRadius.circular(4),
-            color: theme.isDarkMode
-                ? WebDarkColors.background
-                : Colors.white,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // --- Sticky header (fixed) ---
-              Container(
-                height: 50,
-                decoration: BoxDecoration(
-                  color: theme.isDarkMode
-                      ? WebDarkColors.primary
-                      : WebColors.primary.withOpacity(0.05),
-                  border: Border(
-                    bottom: BorderSide(
-                      color: theme.isDarkMode
-                          ? WebDarkColors.divider
-                          : WebColors.divider,
-                      width: 1,
-                    ),
-                  ),
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(4),
-                    topRight: Radius.circular(4),
-                  ),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: needHorizontalScroll
-                  ? IntrinsicWidth(
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: headers.map((label) {
-                          final flex = columnFlex[label] ?? 1;
-                          final minW = columnMinWidth[label] ?? 80.0;
-                          final columnIndex = _getAlertColumnIndexForHeader(label);
-
-                          return _buildAlertColumnCell(
-                            needHorizontalScroll: needHorizontalScroll,
-                            flex: flex,
-                            minW: minW,
-                            child: _buildAlertHeaderWidget(
-                              label, 
-                              columnIndex, 
-                              theme, 
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    )
-                  : Row(
-                      mainAxisSize: MainAxisSize.max,
-                      children: headers.map((label) {
-                        final flex = columnFlex[label] ?? 1;
-                        final minW = columnMinWidth[label] ?? 80.0;
-                        final columnIndex = _getAlertColumnIndexForHeader(label);
-
-                        return _buildAlertColumnCell(
-                          needHorizontalScroll: needHorizontalScroll,
-                          flex: flex,
-                          minW: minW,
-                          child: _buildAlertHeaderWidget(
-                            label, 
-                            columnIndex, 
-                            theme, 
-                          ),
-                        );
-                      }).toList(),
-                    ),
-            ),
-
-            // --- Scrollable body (vertical) ---
-            Expanded(
-              child: Scrollbar(
-                controller: _verticalScrollController,
-                thumbVisibility: true,
-                radius: Radius.zero,
-                child: _buildAlertBodyList(
-                  theme,
-                  alerts,
-                  headers,
-                  columnFlex,
-                  columnMinWidth,
-                  totalMinWidth: totalMinWidth,
-                  needHorizontalScroll: needHorizontalScroll,
-                ),
-              ),
-            ),
-          ],
-          ),
-        );
-
-        // If horizontal scroll needed, wrap the entire column inside SingleChildScrollView
-        if (needHorizontalScroll) {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 20.0),
-            child: SizedBox(
-              width: constraints.maxWidth,
-              height: constraints.maxHeight,
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                controller: _horizontalScrollController,
-                child: SizedBox(
-                  width: totalMinWidth,
-                  child: tableColumn,
-                ),
-              ),
-            ),
-          );
-        }
-
-        // else (no horizontal scroll)
         return Padding(
           padding: const EdgeInsets.only(bottom: 20.0),
-          child: SizedBox(
-            width: constraints.maxWidth,
-            height: constraints.maxHeight,
-            child: tableColumn,
+          child: Container(
+            height: calculatedHeight.toDouble(),
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: theme.isDarkMode
+                    ? WebDarkColors.divider
+                    : WebColors.divider,
+                width: 1,
+              ),
+              borderRadius: BorderRadius.circular(4),
+              color: theme.isDarkMode
+                  ? WebDarkColors.background
+                  : Colors.white,
+            ),
+            child: Theme(
+              data: Theme.of(context).copyWith(
+                scrollbarTheme: ScrollbarThemeData(
+                  // Make both scrollbars always visible
+                  thumbVisibility: MaterialStateProperty.all(true),
+                  trackVisibility: MaterialStateProperty.all(true),
+                  
+                  // Consistent thickness for both horizontal and vertical
+                  thickness: MaterialStateProperty.all(6.0),
+                  crossAxisMargin: 0.0,
+                  mainAxisMargin: 0.0,
+                  
+                  // Consistent radius
+                  radius: const Radius.circular(3),
+                  
+                  // Consistent colors for both scrollbars
+                  thumbColor: MaterialStateProperty.resolveWith((states) {
+                    return theme.isDarkMode 
+                        ? WebDarkColors.textSecondary.withOpacity(0.3)
+                        : WebColors.textSecondary.withOpacity(0.3);
+                  }),
+                  trackColor: MaterialStateProperty.resolveWith((states) {
+                    return theme.isDarkMode 
+                        ? WebDarkColors.divider.withOpacity(0.1)
+                        : WebColors.divider.withOpacity(0.1);
+                  }),
+                  
+                  trackBorderColor: MaterialStateProperty.all(Colors.transparent),
+                  minThumbLength: 48.0,
+                ),
+              ),
+              child: DataTable2(
+                columnSpacing: 12,
+                horizontalMargin: 12,
+                minWidth: 1200,
+                sortColumnIndex: _alertSortColumnIndex,
+                sortAscending: _alertSortAscending,
+                fixedLeftColumns: 1, // Fix the first column (Instrument)
+                fixedColumnsColor: theme.isDarkMode 
+                    ? WebDarkColors.backgroundSecondary.withOpacity(0.8)
+                    : WebColors.backgroundSecondary.withOpacity(0.8),
+                showBottomBorder: true,
+                horizontalScrollController: _horizontalScrollController,
+                scrollController: _verticalScrollController,
+                showCheckboxColumn: false,
+                headingRowColor: MaterialStateProperty.all(
+                  theme.isDarkMode
+                      ? WebDarkColors.primary
+                      : WebColors.primary.withOpacity(0.05),
+                ),
+                headingTextStyle: WebTextStyles.tableHeader(
+                  isDarkTheme: theme.isDarkMode,
+                  color: theme.isDarkMode
+                      ? WebDarkColors.textPrimary
+                      : WebColors.textPrimary,
+                ),
+                dataTextStyle: WebTextStyles.custom(
+                  fontSize: 13,
+                  isDarkTheme: theme.isDarkMode,
+                  color: theme.isDarkMode
+                      ? WebDarkColors.textPrimary
+                      : WebColors.textPrimary,
+                  fontWeight: WebFonts.medium,
+                ),
+                border: TableBorder(
+                  top: BorderSide(
+                    color: theme.isDarkMode
+                        ? WebDarkColors.divider
+                        : WebColors.divider,
+                    width: 1,
+                  ),
+                  bottom: BorderSide(
+                    color: theme.isDarkMode
+                        ? WebDarkColors.divider
+                        : WebColors.divider,
+                    width: 1,
+                  ),
+                  horizontalInside: BorderSide(
+                    color: theme.isDarkMode
+                        ? WebDarkColors.divider
+                        : WebColors.divider,
+                    width: 1,
+                  ),
+                  // Remove vertical lines
+                ),
+                columns: _buildAlertDataTable2Columns(headers, columnMinWidth, theme),
+                rows: _buildAlertDataTable2Rows(alerts, headers, theme),
+              ),
+            ),
           ),
         );
       },
@@ -595,466 +530,284 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb>
     }
   }
 
-  Widget _buildAlertHeaderWidget(
-    String label,
-    int columnIndex,
+  List<DataColumn2> _buildAlertDataTable2Columns(
+    List<String> headers,
+    Map<String, double> columnMinWidth,
     ThemesProvider theme,
   ) {
-    return InkWell(
-      onTap: () => _onSortAlertTable(columnIndex),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 6),
-              child: Text(
-                label,
-                style: WebTextStyles.tableHeader(
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
-                ),
-                overflow: TextOverflow.visible,
+    return headers.map((header) {
+      final columnIndex = _getAlertColumnIndexForHeader(header);
+      final isInstrument = header == 'Instrument';
+      
+      return DataColumn2(
+        label: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              header,
+              style: WebTextStyles.tableHeader(
+                isDarkTheme: theme.isDarkMode,
+                color: theme.isDarkMode
+                    ? WebDarkColors.textPrimary
+                    : WebColors.textPrimary,
               ),
             ),
-          ),
-          // Sort icon
-          if (_alertSortColumnIndex == columnIndex)
-            Padding(
-              padding: const EdgeInsets.only(left: 6.0),
-              child: Icon(
-                _alertSortAscending ? Icons.arrow_upward : Icons.arrow_downward,
-                size: 16,
-                color: theme.isDarkMode
-                    ? WebDarkColors.iconPrimary
-                    : WebColors.iconPrimary,
-              ),
-            )
-          else
-            Padding(
-              padding: const EdgeInsets.only(right: 6.0),
-              child: Icon(
-                Icons.unfold_more,
-                size: 16,
-                color: theme.isDarkMode
-                    ? WebDarkColors.iconSecondary
-                    : WebColors.iconSecondary,
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAlertColumnCell({
-    required bool needHorizontalScroll,
-    required int flex,
-    required double minW,
-    required Widget child,
-  }) {
-    if (needHorizontalScroll) {
-      return SizedBox(
-        width: minW,
-        child: child,
+            const SizedBox(width: 4),
+            _buildAlertSortIcon(columnIndex, theme),
+          ],
+        ),
+        size: isInstrument ? ColumnSize.L : ColumnSize.S,
+        fixedWidth: isInstrument ? 300.0 : null,
+        onSort: (index, ascending) => _onSortAlertTable(columnIndex),
       );
-    }
-
-    return Expanded(
-      flex: flex,
-      child: SizedBox(
-        width: minW,
-        child: child,
-      ),
-    );
+    }).toList();
   }
 
-  Widget _buildAlertBodyList(
-    ThemesProvider theme,
+  List<DataRow2> _buildAlertDataTable2Rows(
     List<dynamic> alerts,
     List<String> headers,
-    Map<String, int> columnFlex,
-    Map<String, double> columnMinWidth, {
-    required double totalMinWidth,
-    required bool needHorizontalScroll,
-  }) {
+    ThemesProvider theme,
+  ) {
     final sorted = _getSortedAlerts(alerts);
-    return ListView.builder(
-      controller: _verticalScrollController,
-      physics: const AlwaysScrollableScrollPhysics(),
-      itemCount: sorted.length,
-      itemBuilder: (context, index) {
-        final alert = sorted[index];
-        
-        // Create unique identifier for hover
-        String uniqueId;
-        if (alert is BrokerMessage) {
-          uniqueId = 'triggered_${alert.norentm ?? index}';
-        } else {
-          uniqueId = '${alert.alId ?? alert.token ?? index}';
-        }
-        final isHovered = _hoveredRowToken == uniqueId;
+    return sorted.map((alert) {
+      // Create unique identifier for hover
+      String uniqueId;
+      if (alert is BrokerMessage) {
+        uniqueId = 'triggered_${alert.norentm ?? sorted.indexOf(alert)}';
+      } else {
+        uniqueId = '${alert.alId ?? alert.token ?? sorted.indexOf(alert)}';
+      }
+      final isHovered = _hoveredRowToken == uniqueId;
 
-        return MouseRegion(
-          onEnter: (_) => setState(() => _hoveredRowToken = uniqueId),
-          onExit: (_) => setState(() => _hoveredRowToken = null),
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: () {
-              // Only show detail dialog for pending alerts, not triggered ones
-              if (alert is! BrokerMessage) {
-                showDialog(
-                  context: context,
-                  builder: (context) => PendingAlertDetailScreenWeb(alert: alert),
-                );
-              }
-            },
-            child: Container(
-              decoration: BoxDecoration(
-                color: isHovered
-                    ? (theme.isDarkMode
-                        ? WebDarkColors.primary.withOpacity(0.06)
-                        : WebColors.primary.withOpacity(0.10))
-                    : Colors.transparent,
-                border: Border(
-                  bottom: BorderSide(
-                    color: theme.isDarkMode
-                        ? WebDarkColors.divider
-                        : WebColors.divider,
-                    width: 1,
-                  ),
-                ),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              child: needHorizontalScroll
-                  ? IntrinsicWidth(
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: headers.map((label) {
-                          final flex = columnFlex[label] ?? 1;
-                          final minW = columnMinWidth[label] ?? 80.0;
-                          return _buildAlertColumnCell(
-                            needHorizontalScroll: needHorizontalScroll,
-                            flex: flex,
-                            minW: minW,
-                            child: _buildAlertCellWidget(
-                              label,
-                              alert,
-                              theme,
-                              isHovered,
-                              uniqueId,
-                              needHorizontalScroll: needHorizontalScroll,
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    )
-                  : Row(
-                      mainAxisSize: MainAxisSize.max,
-                      children: headers.map((label) {
-                        final flex = columnFlex[label] ?? 1;
-                        final minW = columnMinWidth[label] ?? 80.0;
-                        return _buildAlertColumnCell(
-                          needHorizontalScroll: needHorizontalScroll,
-                          flex: flex,
-                          minW: minW,
-                          child: _buildAlertCellWidget(
-                            label,
-                            alert,
-                            theme,
-                            isHovered,
-                            uniqueId,
-                            needHorizontalScroll: needHorizontalScroll,
-                          ),
-                        );
-                      }).toList(),
-                    ),
-            ),
-          ),
-        );
-      },
-    );
+      return DataRow2(
+        color: MaterialStateProperty.resolveWith((states) {
+          if (isHovered) {
+            return theme.isDarkMode
+                ? WebDarkColors.primary.withOpacity(0.06)
+                : WebColors.primary.withOpacity(0.10);
+          }
+          return null;
+        }),
+        cells: headers.map((header) {
+          return _buildAlertDataTable2Cell(
+            header,
+            alert,
+            theme,
+            isHovered,
+            uniqueId,
+          );
+        }).toList(),
+        onTap: () {
+          // Only show detail dialog for pending alerts, not triggered ones
+          if (alert is! BrokerMessage) {
+            showDialog(
+              context: context,
+              builder: (context) => PendingAlertDetailScreenWeb(alert: alert),
+            );
+          }
+        },
+      );
+    }).toList();
   }
 
-  Widget _buildAlertCellWidget(
+  DataCell _buildAlertDataTable2Cell(
     String column,
     dynamic alert,
     ThemesProvider theme,
     bool isHovered,
-    String uniqueId, {
-    required bool needHorizontalScroll,
-  }) {
+    String uniqueId,
+  ) {
+    Widget cellContent;
+    
     switch (column) {
       case 'Instrument':
-        return _buildAlertInstrumentWidget(
+        cellContent = _buildAlertInstrumentCellContent(
           alert,
           theme,
           isHovered,
           uniqueId,
-          needHorizontalScroll: needHorizontalScroll,
         );
+        break;
       case 'Exchange':
-        String exchange = '';
-        if (alert is BrokerMessage) {
-          final parsed = _parseBrokerMessage(alert);
-          exchange = parsed['exchange'] ?? '';
-          if (exchange.isEmpty) {
-            exchange = 'N/A';
-          }
-        } else {
-          exchange = alert.exch ?? '';
-        }
-        return _buildAlertTextCell(
+        final exchange = alert is BrokerMessage ? 'N/A' : (alert.exch ?? 'N/A');
+        cellContent = _buildAlertTextCell(
           exchange,
           theme,
           Alignment.centerLeft,
-          needHorizontalScroll: needHorizontalScroll,
         );
+        break;
       case 'Alert Type':
         String alertType = '';
-        Color alertColor = colors.pending;
-        
         if (alert is BrokerMessage) {
           alertType = 'TRIGGERED';
-          alertColor = theme.isDarkMode ? colors.primaryDark : colors.primaryLight;
         } else {
           switch (alert.aiT) {
-            case 'LTP_A':
-              alertType = 'LTP Above';
-              alertColor = theme.isDarkMode ? colors.profitDark : colors.profitLight;
-              break;
-            case 'LTP_B':
-              alertType = 'LTP Below';
-              alertColor = theme.isDarkMode ? colors.lossDark : colors.lossLight;
-              break;
-            case 'CH_PER_A':
-              alertType = 'Perc.Change Above';
-              alertColor = theme.isDarkMode ? colors.profitDark : colors.profitLight;
-              break;
-            case 'CH_PER_B':
-              alertType = 'Perc.Change Below';
-              alertColor = theme.isDarkMode ? colors.lossDark : colors.lossLight;
-              break;
-            default:
-              alertType = 'Unknown';
+            case 'LTP_A': alertType = 'LTP Above'; break;
+            case 'LTP_B': alertType = 'LTP Below'; break;
+            case 'CH_PER_A': alertType = 'Perc.Change Above'; break;
+            case 'CH_PER_B': alertType = 'Perc.Change Below'; break;
+            default: alertType = 'Unknown';
           }
         }
-        return _buildAlertTextCell(
+        cellContent = _buildAlertTextCell(
           alertType,
           theme,
           Alignment.centerLeft,
-          color: alertColor,
-          needHorizontalScroll: needHorizontalScroll,
         );
+        break;
       case 'Target':
         String target = '';
-        
         if (alert is BrokerMessage) {
-          final parsed = _parseBrokerMessage(alert);
-          target = parsed['target'] ?? '';
-          if (target.isEmpty) {
-            target = 'N/A';
-          }
+          target = 'N/A';
         } else {
           if (alert.aiT == "CH_PER_A" || alert.aiT == "CH_PER_B") {
-            target = "%${alert.d}";
+            target = "%${alert.d ?? '0.00'}";
           } else {
-            target = "${alert.d}";
+            target = "${alert.d ?? '0.00'}";
           }
         }
-        return _buildAlertTextCell(
+        cellContent = _buildAlertTextCell(
           target,
           theme,
           Alignment.centerRight,
-          needHorizontalScroll: needHorizontalScroll,
         );
+        break;
       case 'LTP':
-        String ltp = '';
-        String change = '';
-        
-        if (alert is BrokerMessage) {
-          final parsed = _parseBrokerMessage(alert);
-          ltp = parsed['ltp'] ?? '';
-          if (ltp.isEmpty) {
-            ltp = 'N/A';
-          }
-        } else {
-          ltp = "${alert.ltp ?? alert.close ?? 0.00}";
-          change = " (${alert.perChange ?? 0.00}%)";
-        }
-        
-        return Align(
-          alignment: Alignment.centerRight,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 6.0),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  ltp,
-                  style: WebTextStyles.custom(
-                    fontSize: 13,
-                    isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode
-                        ? WebDarkColors.textPrimary
-                        : WebColors.textPrimary,
-                    fontWeight: WebFonts.medium,
-                  ),
-                  maxLines: 1,
-                  softWrap: false,
-                  overflow: TextOverflow.visible,
-                ),
-                if (change.isNotEmpty)
-                  Text(
-                    change,
-                    style: WebTextStyles.custom(
-                      fontSize: 13,
-                      isDarkTheme: theme.isDarkMode,
-                      color: theme.isDarkMode
-                          ? WebDarkColors.textSecondary
-                          : WebColors.textSecondary,
-                      fontWeight: WebFonts.medium,
-                    ),
-                  ),
-              ],
-            ),
-          ),
+        final ltp = alert is BrokerMessage 
+            ? 'N/A' 
+            : "${alert.ltp ?? alert.close ?? '0.00'}";
+        cellContent = _buildAlertTextCell(
+          ltp,
+          theme,
+          Alignment.centerRight,
         );
+        break;
       case 'Status':
-        String status = '';
-        Color statusColor = colors.pending;
-        
-        if (alert is BrokerMessage) {
-          status = 'TRIGGERED';
-          statusColor = theme.isDarkMode ? colors.primaryDark : colors.primaryLight;
-        } else {
-          status = 'PENDING';
-          statusColor = colors.pending;
-        }
-        return _buildAlertTextCell(
+        final status = alert is BrokerMessage ? 'TRIGGERED' : 'PENDING';
+        final statusColor = _getAlertStatusColor(status, theme);
+        cellContent = _buildAlertTextCell(
           status,
           theme,
           Alignment.centerLeft,
           color: statusColor,
-          needHorizontalScroll: needHorizontalScroll,
         );
+        break;
       default:
-        return const SizedBox.shrink();
+        cellContent = const SizedBox.shrink();
     }
+
+    // Wrap with MouseRegion to detect hover anywhere on the cell
+    return DataCell(
+      MouseRegion(
+        onEnter: (_) => setState(() => _hoveredRowToken = uniqueId),
+        onExit: (_) => setState(() => _hoveredRowToken = null),
+        child: SizedBox.expand(
+          child: cellContent,
+        ),
+      ),
+    );
   }
 
-  Widget _buildAlertInstrumentWidget(
+  Widget _buildAlertInstrumentCellContent(
     dynamic alert,
     ThemesProvider theme,
     bool isHovered,
-    String uniqueId, {
-    required bool needHorizontalScroll,
-  }) {
+    String uniqueId,
+  ) {
+    final isProcessing = _processingAlertToken == uniqueId;
+    final isPending = alert is! BrokerMessage;
+
     String symbol = '';
     String exchange = '';
-    
     if (alert is BrokerMessage) {
-      final parsed = _parseBrokerMessage(alert);
-      symbol = parsed['instrument'] ?? '';
-      exchange = parsed['exchange'] ?? '';
-      
-      String displayText = symbol.trim();
-      if (exchange.isNotEmpty && exchange.trim().isNotEmpty) {
-        displayText += ' ${exchange.trim()}';
-      }
-      
-      // If we couldn't parse, show the notification time or a default
-      if (displayText.trim().isEmpty) {
-        displayText = alert.norentm ?? 'N/A';
-      }
-      
-      return _buildAlertTextCell(
-        displayText,
-        theme,
-        Alignment.centerLeft,
-        needHorizontalScroll: needHorizontalScroll,
-      );
+      symbol = 'N/A';
+      exchange = '';
     } else {
-      // Pending alert - show with hover buttons
-      final isProcessing = _processingAlertToken == uniqueId;
-      
       symbol = alert.tsym?.replaceAll("-EQ", "") ?? 'N/A';
       exchange = alert.exch ?? '';
-      
-      String displayText = symbol.trim();
-      if (exchange.isNotEmpty && exchange.trim().isNotEmpty) {
-        displayText += ' ${exchange.trim()}';
-      }
+    }
+    String displayText = symbol.trim();
+    if (exchange.isNotEmpty && exchange.trim().isNotEmpty) {
+      displayText += ' ${exchange.trim()}';
+    }
 
-      return ClipRect(
-        child: Row(
-          mainAxisSize: MainAxisSize.max,
-          children: [
-            Flexible(
-              flex: isHovered ? 1 : 2,
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Tooltip(
-                  message: displayText,
-                  child: Text(
-                    displayText,
-                    style: WebTextStyles.custom(
-                      fontSize: 13,
-                      isDarkTheme: theme.isDarkMode,
-                      color: theme.isDarkMode
-                          ? WebDarkColors.textPrimary
-                          : WebColors.textPrimary,
-                      fontWeight: WebFonts.medium,
-                    ),
-                    maxLines: 1,
-                    softWrap: false,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+    return Row(
+      children: [
+        Expanded(
+          flex: isHovered ? 1 : 2,
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Tooltip(
+              message: displayText,
+              child: Text(
+                displayText,
+                style: WebTextStyles.custom(
+                  fontSize: 13,
+                  isDarkTheme: theme.isDarkMode,
+                  color: theme.isDarkMode
+                      ? WebDarkColors.textPrimary
+                      : WebColors.textPrimary,
+                  fontWeight: WebFonts.medium,
                 ),
+                maxLines: 1,
+                softWrap: false,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
-            // Action buttons fade in on hover
-            IgnorePointer(
-              ignoring: !isHovered,
-              child: AnimatedOpacity(
-                opacity: isHovered ? 1 : 0,
-                duration: const Duration(milliseconds: 140),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Cancel button
-                    _buildAlertHoverButton(
-                      label: 'Cancel',
-                      color: Colors.white,
-                      backgroundColor: theme.isDarkMode
-                          ? WebDarkColors.error
-                          : WebColors.error,
-                      onPressed: isProcessing && _isProcessingCancel
-                          ? null
-                          : () => _handleCancelAlert(alert),
-                      theme: theme,
-                    ),
-                    const SizedBox(width: 6),
-                    // Modify button
-                    _buildAlertHoverButton(
-                      label: 'Modify',
-                      color: Colors.white,
-                      backgroundColor: theme.isDarkMode
-                          ? WebDarkColors.primary
-                          : WebColors.primary,
-                      onPressed: isProcessing && _isProcessingModify
-                          ? null
-                          : () => _handleModifyAlert(alert),
-                      theme: theme,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
+        // Action buttons fade in on hover
+        IgnorePointer(
+          ignoring: !isHovered,
+          child: AnimatedOpacity(
+            opacity: isHovered ? 1 : 0,
+            duration: const Duration(milliseconds: 140),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (isPending) ...[
+                  _buildAlertHoverButton(
+                    label: 'Modify',
+                    color: Colors.white,
+                    backgroundColor: theme.isDarkMode
+                        ? WebDarkColors.primary
+                        : WebColors.primary,
+                    onPressed: isProcessing && _isProcessingModify
+                        ? null
+                        : () => _handleModifyAlert(alert),
+                    theme: theme,
+                  ),
+                  const SizedBox(width: 6),
+                  _buildAlertHoverButton(
+                    label: 'Cancel',
+                    color: Colors.white,
+                    backgroundColor: theme.isDarkMode
+                        ? WebDarkColors.error
+                        : WebColors.error,
+                    onPressed: isProcessing && _isProcessingCancel
+                        ? null
+                        : () => _handleCancelAlert(alert),
+                    theme: theme,
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAlertSortIcon(int columnIndex, ThemesProvider theme) {
+    if (_alertSortColumnIndex == columnIndex) {
+      return const SizedBox(width: 16); // Reserve space for DataTable2's arrow
+    } else {
+      return Icon(
+        Icons.unfold_more,
+        size: 16,
+        color: theme.isDarkMode
+            ? WebDarkColors.iconSecondary
+            : WebColors.iconSecondary,
       );
     }
   }
@@ -1064,7 +817,6 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb>
     ThemesProvider theme,
     Alignment alignment, {
     Color? color,
-    bool needHorizontalScroll = false,
   }) {
     return Align(
       alignment: alignment,
@@ -1081,7 +833,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb>
                     : WebColors.textPrimary),
             fontWeight: WebFonts.medium,
           ),
-          maxLines: 1,
+          maxLines: 1, 
           softWrap: false,
           overflow: TextOverflow.visible,
         ),
@@ -1089,54 +841,49 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb>
     );
   }
 
-  Widget _buildSortableColumnHeader(String label, ThemesProvider theme, int columnIndex) {
-    final isSorted = _alertSortColumnIndex == columnIndex;
-    
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
+  Widget _buildAlertHoverButton({
+    required String label,
+    required Color color,
+    required Color backgroundColor,
+    required VoidCallback? onPressed,
+    required ThemesProvider theme,
+  }) {
+    return SizedBox(
+      height: 28,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          backgroundColor: backgroundColor,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+          elevation: 0,
+        ),
+        onPressed: onPressed,
+        child: Text(
           label,
-          style: WebTextStyles.tableHeader(
+          style: WebTextStyles.custom(
+            fontSize: 12,
             isDarkTheme: theme.isDarkMode,
-            color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+            color: color,
           ),
-        ),
-        const SizedBox(width: 4),
-        SizedBox(
-          width: 20,
-          height: 16,
-          child: !isSorted 
-              ? Icon(
-                  Icons.unfold_more,
-                  size: 16,
-                  color: theme.isDarkMode ? WebDarkColors.iconSecondary : WebColors.iconSecondary,
-                )
-              : const SizedBox.shrink(),
-        ),
-      ],
-    );
-  }
-
-  DataCell _buildTimeCell(dynamic alert, ThemesProvider theme) {
-    String timeText = '';
-    if (alert is BrokerMessage) {
-      timeText = alert.norentm ?? '';
-    } else {
-      // For pending alerts, we might not have time, use current time or empty
-      timeText = '';
-    }
-    
-    return DataCell(
-      Text(
-        timeText,
-        style: WebTextStyles.helperText(
-          isDarkTheme: theme.isDarkMode,
-          color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
         ),
       ),
     );
   }
+
+  Color _getAlertStatusColor(String status, ThemesProvider theme) {
+    switch (status.toUpperCase()) {
+      case 'TRIGGERED':
+        return theme.isDarkMode ? colors.profitDark : colors.profitLight;
+      case 'PENDING':
+        return colors.pending;
+      default:
+        return theme.isDarkMode
+            ? WebDarkColors.textPrimary
+            : WebColors.textPrimary;
+    }
+  }
+
+
 
   // Helper function to parse BrokerMessage dmsg
   Map<String, String> _parseBrokerMessage(BrokerMessage alert) {
@@ -1193,148 +940,6 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb>
     return result;
   }
 
-  DataCell _buildInstrumentCell(dynamic alert, ThemesProvider theme) {
-    String symbol = '';
-    String exchange = '';
-    
-    if (alert is BrokerMessage) {
-      final parsed = _parseBrokerMessage(alert);
-      symbol = parsed['instrument'] ?? '';
-      exchange = parsed['exchange'] ?? '';
-      
-      String displayText = symbol.trim();
-      if (exchange.isNotEmpty && exchange.trim().isNotEmpty) {
-        displayText += ' ${exchange.trim()}';
-      }
-      
-      // If we couldn't parse, show the notification time or a default
-      if (displayText.trim().isEmpty) {
-        displayText = alert.norentm ?? 'N/A';
-      }
-      
-      symbol = displayText;
-    } else {
-      symbol = alert.tsym?.replaceAll("-EQ", "") ?? 'N/A';
-      exchange = alert.exch ?? '';
-      
-      String displayText = symbol.trim();
-      if (exchange.isNotEmpty && exchange.trim().isNotEmpty) {
-        displayText += ' ${exchange.trim()}';
-      }
-      symbol = displayText;
-    }
-    
-    return DataCell(
-      Text(
-        symbol,
-        style: WebTextStyles.tableDataCompact(
-          isDarkTheme: theme.isDarkMode,
-          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
-        ),
-      ),
-    );
-  }
-
-  DataCell _buildInstrumentCellWithHover(AlertPendingModel alert, ThemesProvider theme, String token) {
-    final alertToken = token;
-    final isHovered = _hoveredRowToken == alertToken;
-    final isProcessing = _processingAlertToken == alertToken;
-    
-    String symbol = alert.tsym?.replaceAll("-EQ", "") ?? 'N/A';
-    String exchange = alert.exch ?? '';
-    
-    String displayText = symbol.trim();
-    if (exchange.isNotEmpty && exchange.trim().isNotEmpty) {
-      displayText += ' ${exchange.trim()}';
-    }
-
-    return DataCell(
-      MouseRegion(
-        onEnter: (_) => setState(() => _hoveredRowToken = alertToken),
-        onExit: (_) => setState(() => _hoveredRowToken = null),
-        child: SizedBox.expand(
-          child: Row(
-            children: [
-              // Text that takes at least 50% of width, leaves space for buttons
-              Expanded(
-                flex: isHovered ? 1 : 2, // When hovered, text takes less space but still visible
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Tooltip(
-                    message: displayText,
-                    child: Text(
-                      displayText,
-                      style: WebTextStyles.tableDataCompact(
-                        isDarkTheme: theme.isDarkMode,
-                        color: theme.isDarkMode
-                            ? WebDarkColors.textPrimary
-                            : WebColors.textPrimary,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                    ),
-                  ),
-                ),
-              ),
-              // Buttons on the right side - fade in/out
-              IgnorePointer(
-                ignoring: !isHovered,
-                child: AnimatedOpacity(
-                  opacity: isHovered ? 1.0 : 0.0,
-                  duration: const Duration(milliseconds: 150),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Cancel button
-                      _buildAlertHoverButton(
-                        label: 'Cancel',
-                        color: Colors.white,
-                        backgroundColor: theme.isDarkMode
-                            ? WebDarkColors.error
-                            : WebColors.error,
-                        onPressed: isProcessing && _isProcessingCancel
-                            ? null
-                            : () => _handleCancelAlert(alert),
-                        theme: theme,
-                      ),
-                      const SizedBox(width: 6),
-                      // Modify button
-                      _buildAlertHoverButton(
-                        label: 'Modify',
-                        color: Colors.white,
-                        backgroundColor: theme.isDarkMode
-                            ? WebDarkColors.primary
-                            : WebColors.primary,
-                        onPressed: isProcessing && _isProcessingModify
-                            ? null
-                            : () => _handleModifyAlert(alert),
-                        theme: theme,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  DataCell _buildCellWithHover(dynamic alert, ThemesProvider theme, String token, DataCell cell, {Alignment alignment = Alignment.centerLeft}) {
-    return DataCell(
-      MouseRegion(
-        onEnter: (_) => setState(() => _hoveredRowToken = token),
-        onExit: (_) => setState(() => _hoveredRowToken = null),
-        child: SizedBox.expand(
-          child: Align(
-            alignment: alignment,
-            child: cell.child,
-          ),
-        ),
-      ),
-    );
-  }
 
   DataCell _buildExchangeCell(dynamic alert, ThemesProvider theme) {
     String exchange = '';
@@ -1490,52 +1095,6 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb>
     );
   }
 
-  Widget _buildAlertHoverButton({
-    String? label,
-    required Color color,
-    Color? backgroundColor,
-    Color? borderColor,
-    double? borderRadius,
-    required VoidCallback? onPressed,
-    required ThemesProvider theme,
-  }) {
-    final borderRadiusValue = borderRadius ?? 5.0;
-    return SizedBox(
-      height: 28,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(borderRadiusValue),
-          splashColor: color.withOpacity(0.15),
-          highlightColor: color.withOpacity(0.08),
-          onTap: onPressed,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            decoration: BoxDecoration(
-              color: backgroundColor ?? Colors.transparent,
-              borderRadius: BorderRadius.circular(borderRadiusValue),
-              border: borderColor != null
-                  ? Border.all(
-                      color: borderColor,
-                      width: 1,
-                    )
-                  : null,
-            ),
-            child: Center(
-              child: Text(
-                label ?? "",
-                style: WebTextStyles.buttonXs(
-                  isDarkTheme: theme.isDarkMode,
-                  color: color,
-                  fontWeight: WebFonts.semiBold,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 
   // Action handlers
   Future<void> _handleCancelAlert(AlertPendingModel alert) async {

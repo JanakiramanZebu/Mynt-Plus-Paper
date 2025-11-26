@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:data_table_2/data_table_2.dart';
 import 'package:mynt_plus/screens/web/position/exit_all_positions_dialog_web.dart';
 import 'package:mynt_plus/screens/web/position/position_detail_screen_web.dart';
 import 'package:mynt_plus/screens/web/position/convert_position_dialogue_web.dart';
@@ -138,10 +139,6 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
 
   Widget _buildSummaryCards(
       ThemesProvider theme, PortfolioProvider positionBook) {
-    final positiveCount = _getPositivePositionsCount(positionBook);
-    final negativeCount = _getNegativePositionsCount(positionBook);
-    final closedCount = _getClosedPositionsCount(positionBook);
-
     return Container(
       height: 120,
       padding: const EdgeInsets.all(12),
@@ -780,104 +777,62 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
       // Mobile: Show only essential columns
       return {
         'headers': ['Select', 'Instrument', 'Qty', 'LTP', 'P&L'],
-        'columnFlex': {
-          'Select': 1,
-          'Instrument': 4,
-          'Qty': 2,
-          'LTP': 2,
-          'P&L': 2,
-        },
         'columnMinWidth': {
           'Select': 60,
-          'Instrument': 220,
-          'Qty': 80,
-          'LTP': 80,
-          'P&L': 90,
+          'Instrument': 250,
+          'Qty': 90,
+          'LTP': 100,
+          'P&L': 110,
         },
       };
     } else if (screenWidth < _tabletBreakpoint) {
       // Tablet: Show most columns
       return {
         'headers': ['Select', 'Instrument', 'Product', 'Qty', 'LTP', 'P&L', 'MTM'],
-        'columnFlex': {
-          'Select': 1,
-          'Instrument': 4,
-          'Product': 2,
-          'Qty': 1,
-          'LTP': 1,
-          'P&L': 2,
-          'MTM': 2,
-        },
         'columnMinWidth': {
           'Select': 60,
-          'Instrument': 220,
-          'Product': 120,
-          'Qty': 70,
-          'LTP': 80,
-          'P&L': 90,
-          'MTM': 90,
+          'Instrument': 250,
+          'Product': 130,
+          'Qty': 80,
+          'LTP': 100,
+          'P&L': 110,
+          'MTM': 110,
         },
       };
     } else if (screenWidth < _desktopBreakpoint) {
       // Small Desktop: Show more columns
       return {
         'headers': ['Select', 'Instrument', 'Product', 'Qty', 'Act Avg Price', 'LTP', 'P&L', 'MTM', 'Avg Price'],
-        'columnFlex': {
-          'Select': 1,
-          'Instrument': 4,
-          'Product': 2,
-          'Qty': 1,
-          'Act Avg Price': 2,
-          'LTP': 1,
-          'P&L': 2,
-          'MTM': 2,
-          'Avg Price': 2,
-        },
         'columnMinWidth': {
           'Select': 60,
-          'Instrument': 220,
-          'Product': 120,
-          'Qty': 68,
-          'Act Avg Price': 110,
-          'LTP': 80,
-          'P&L': 90,
-          'MTM': 90,
-          'Avg Price': 95,
+          'Instrument': 250,
+          'Product': 130,
+          'Qty': 80,
+          'Act Avg Price': 140,
+          'LTP': 100,
+          'P&L': 110,
+          'MTM': 110,
+          'Avg Price': 110,
         },
       };
     } else {
       // Large Desktop: Full columns with optimal widths
       return {
         'headers': ['Select', 'Instrument', 'Product', 'Qty', 'Act Avg Price', 'LTP', 'P&L', 'MTM', 'Avg Price', 'Buy Qty', 'Sell Qty', 'Buy Avg', 'Sell Avg'],
-        'columnFlex': {
-          'Select': 1,
-          'Instrument': 4,
-          'Product': 2,
-          'Qty': 1,
-          'Act Avg Price': 2,
-          'LTP': 1,
-          'P&L': 2,
-          'MTM': 2,
-          'Avg Price': 2,
-          'Buy Qty': 1,
-          'Sell Qty': 1,
-          'Buy Avg': 2,
-          'Sell Avg': 2,
-        },
         'columnMinWidth': {
           'Select': 60,
-          'Instrument': 250,
-          'Product': 120,
-          'Qty': 70,
-          'Act Avg Price': 115,
-          'LTP': 85,
-          'P&L': 95,
-          'MTM': 95,
-          'Avg Price': 100,
-          'Buy Qty': 75,
-          'Sell Qty': 75,
-          'Buy Avg': 90,
-          'Sell Avg': 90,
+          'Instrument': 300,
+          'Product': 130,
+          'Qty': 80,
+          'Act Avg Price': 180,
+          'LTP': 100,
+          'P&L': 110,
+          'MTM': 110,
+          'Avg Price': 130,
+          'Buy Qty': 95,
+          'Sell Qty': 95,
+          'Buy Avg': 111,
+          'Sell Avg': 105,
         },
       };
     }
@@ -893,10 +848,21 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        // Use the available height from parent constraints
-        final calculatedHeight = constraints.maxHeight > 0 
-            ? constraints.maxHeight 
-            : 400.0;
+        // Calculate available height: screen height minus all UI elements
+        final screenHeight = MediaQuery.of(context).size.height;
+        final padding = 32.0; // Top and bottom padding (16 * 2)
+        final headerHeight = 120.0; // Summary cards height
+        final tabsAndSearchHeight = 100.0; // Tabs and search bar
+        final spacing = 24.0 + 16.0; // Spacing between sections
+        final bottomMargin = 20.0; // Bottom margin
+        final tableHeight =
+            screenHeight - padding - headerHeight - tabsAndSearchHeight - spacing - bottomMargin;
+
+        // Ensure we don't exceed 75% of screen height
+        final maxHeight = screenHeight * 0.75;
+        final calculatedHeight = tableHeight > maxHeight
+            ? maxHeight
+            : (tableHeight > 400 ? tableHeight : 400.0);
 
         // Get screen width for responsive design
         final screenWidth = MediaQuery.of(context).size.width;
@@ -904,149 +870,114 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
         // Get responsive column configuration
         final responsiveConfig = _getResponsivePositionColumns(screenWidth);
         final headers = List<String>.from(responsiveConfig['headers'] as List);
-        final columnFlex = Map<String, int>.from(responsiveConfig['columnFlex'] as Map);
         final columnMinWidth = Map<String, double>.from(responsiveConfig['columnMinWidth'] as Map);
         
-        // Calculate total minimum width
-        final totalMinWidth =
-            columnMinWidth.values.fold<double>(0.0, (a, b) => a + b);
-        // Determine whether horizontal scroll is needed
-        final needHorizontalScroll = constraints.maxWidth < totalMinWidth;
-
-        // Build the Column (header + body)
-        final tableColumn = Container(
-          decoration: BoxDecoration(
-            border: Border.all(
-              color: theme.isDarkMode
-                  ? WebDarkColors.divider
-                  : WebColors.divider,
-              width: 1,
-            ),
-            borderRadius: BorderRadius.circular(4),
-            color: theme.isDarkMode
-                ? WebDarkColors.background
-                : Colors.white,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // --- Sticky header (fixed) ---
-              Container(
-                height: 50,
-                decoration: BoxDecoration(
-                  color:theme.isDarkMode
-                    ? WebDarkColors.primary
-                    : WebColors.primary
-                    .withOpacity(0.05),
-                  border: Border(
-                    bottom: BorderSide(
-                      color: theme.isDarkMode
-                          ? WebDarkColors.divider
-                          : WebColors.divider,
-                      width: 1,
-                    ),
-                  ),
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(4),
-                    topRight: Radius.circular(4),
-                  ),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: needHorizontalScroll
-                  ? IntrinsicWidth(
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: headers.map((label) {
-                          final flex = columnFlex[label] ?? 1;
-                          final minW = columnMinWidth[label] ?? 80.0;
-                          final columnIndex = _getColumnIndexForHeader(label);
-
-                          return _buildPositionColumnCell(
-                            needHorizontalScroll: needHorizontalScroll,
-                            flex: flex,
-                            minW: minW,
-                            child: _buildPositionHeaderWidget(
-                              label, 
-                              columnIndex, 
-                              theme, 
-                              positionBook, 
-                              filteredPositions
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    )
-                  : Row(
-                      mainAxisSize: MainAxisSize.max,
-                      children: headers.map((label) {
-                        final flex = columnFlex[label] ?? 1;
-                        final minW = columnMinWidth[label] ?? 80.0;
-                        final columnIndex = _getColumnIndexForHeader(label);
-
-                        return _buildPositionColumnCell(
-                          needHorizontalScroll: needHorizontalScroll,
-                          flex: flex,
-                          minW: minW,
-                          child: _buildPositionHeaderWidget(
-                            label, 
-                            columnIndex, 
-                            theme, 
-                            positionBook, 
-                            filteredPositions
-                          ),
-                        );
-                      }).toList(),
-                    ),
-            ),
-
-              // --- Scrollable body (vertical) ---
-              Expanded(
-                child: Scrollbar(
-                  controller: _verticalScrollController,
-                  thumbVisibility: true,
-                  radius: Radius.zero,
-                  child: _buildPositionBodyList(
-                    theme,
-                    filteredPositions,
-                    headers,
-                    columnFlex,
-                    columnMinWidth,
-                    totalMinWidth: totalMinWidth,
-                    needHorizontalScroll: needHorizontalScroll,
-                    positionBook: positionBook,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-
-        // If horizontal scroll needed, wrap the entire column inside SingleChildScrollView
-        if (needHorizontalScroll) {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 20.0),
-            child: SizedBox(
-              width: constraints.maxWidth,
-              height: calculatedHeight.toDouble(),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                controller: _horizontalScrollController,
-                child: SizedBox(
-                  width: totalMinWidth,
-                  child: tableColumn,
-                ),
-              ),
-            ),
-          );
-        }
-
-        // else (no horizontal scroll)
         return Padding(
           padding: const EdgeInsets.only(bottom: 20.0),
-          child: SizedBox(
-            width: constraints.maxWidth,
+          child: Container(
             height: calculatedHeight.toDouble(),
-            child: tableColumn,
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: theme.isDarkMode
+                    ? WebDarkColors.divider
+                    : WebColors.divider,
+                width: 1,
+              ),
+              borderRadius: BorderRadius.circular(4),
+              color: theme.isDarkMode
+                  ? WebDarkColors.background
+                  : Colors.white,
+            ),
+            child: Theme(
+              data: Theme.of(context).copyWith(
+                scrollbarTheme: ScrollbarThemeData(
+                  // Make both scrollbars always visible
+                  thumbVisibility: MaterialStateProperty.all(true),
+                  trackVisibility: MaterialStateProperty.all(true),
+                  
+                  // Consistent thickness for both horizontal and vertical
+                  thickness: MaterialStateProperty.all(6.0),
+                  crossAxisMargin: 0.0, // Remove margin to align scrollbars properly
+                  mainAxisMargin: 0.0,
+                  
+                  // Consistent radius
+                  radius: const Radius.circular(3),
+                  
+                  // Consistent colors for both scrollbars
+                  thumbColor: MaterialStateProperty.resolveWith((states) {
+                    return theme.isDarkMode 
+                        ? WebDarkColors.textSecondary.withOpacity(0.3)
+                        : WebColors.textSecondary.withOpacity(0.3);
+                  }),
+                  trackColor: MaterialStateProperty.resolveWith((states) {
+                    return theme.isDarkMode 
+                        ? WebDarkColors.divider.withOpacity(0.1)
+                        : WebColors.divider.withOpacity(0.1);
+                  }),
+                  
+                  // Ensure consistent behavior for both directions
+                  trackBorderColor: MaterialStateProperty.all(Colors.transparent),
+                  minThumbLength: 48.0, // Minimum thumb length for both scrollbars
+                ),
+              ),
+              child: DataTable2(
+                columnSpacing: 12,
+                horizontalMargin: 12,
+                minWidth: 1800, // Increased to accommodate wider columns
+                sortColumnIndex: _sortColumnIndex,
+                sortAscending: _sortAscending,
+                fixedLeftColumns: 2, // Fix the first two columns (Select and Instrument)
+                fixedColumnsColor: theme.isDarkMode 
+                    ? WebDarkColors.backgroundSecondary.withOpacity(0.8)
+                    : WebColors.backgroundSecondary.withOpacity(0.8),
+                showBottomBorder: true,
+                horizontalScrollController: _horizontalScrollController,
+                scrollController: _verticalScrollController,
+                showCheckboxColumn: false,
+                headingRowColor: MaterialStateProperty.all(
+                  theme.isDarkMode
+                      ? WebDarkColors.primary
+                      : WebColors.primary.withOpacity(0.05),
+                ),
+                headingTextStyle: WebTextStyles.tableHeader(
+                  isDarkTheme: theme.isDarkMode,
+                  color: theme.isDarkMode
+                      ? WebDarkColors.textPrimary
+                      : WebColors.textPrimary,
+                ),
+                dataTextStyle: WebTextStyles.custom(
+                  fontSize: 13,
+                  isDarkTheme: theme.isDarkMode,
+                  color: theme.isDarkMode
+                      ? WebDarkColors.textPrimary
+                      : WebColors.textPrimary,
+                  fontWeight: WebFonts.medium,
+                ),
+                border: TableBorder(
+                  top: BorderSide(
+                    color: theme.isDarkMode
+                        ? WebDarkColors.divider
+                        : WebColors.divider,
+                    width: 1,
+                  ),
+                  bottom: BorderSide(
+                    color: theme.isDarkMode
+                        ? WebDarkColors.divider
+                        : WebColors.divider,
+                    width: 1,
+                  ),
+                  horizontalInside: BorderSide(
+                    color: theme.isDarkMode
+                        ? WebDarkColors.divider
+                        : WebColors.divider,
+                    width: 1,
+                  ),
+                  // Remove vertical lines by not setting left, right, and verticalInside
+                ),
+                columns: _buildDataTable2Columns(headers, columnMinWidth, theme, positionBook, filteredPositions),
+                rows: _buildDataTable2Rows(filteredPositions, headers, theme, positionBook),
+              ),
+            ),
           ),
         );
       },
@@ -1072,400 +1003,211 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
     }
   }
 
-  Widget _buildPositionHeaderWidget(
-    String label,
-    int columnIndex,
+  List<DataColumn2> _buildDataTable2Columns(
+    List<String> headers,
+    Map<String, double> columnMinWidth,
     ThemesProvider theme,
     PortfolioProvider positionBook,
     List<PositionBookModel> filteredPositions,
   ) {
-    // Special case for Select column (checkbox)
-    if (label == 'Select') {
-      return InkWell(
-        onTap: filteredPositions.isNotEmpty
-            ? () {
-                positionBook.selectExitAllPosition(!positionBook.isExitAllPosition);
-                setState(() {});
-              }
-            : null,
-        child: Align(
-          alignment: Alignment.centerLeft,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 6.0),
-            child: Theme(
-              data: Theme.of(context).copyWith(
-                checkboxTheme: CheckboxThemeData(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  side: BorderSide(
-                    color: theme.isDarkMode
-                        ? WebDarkColors.textPrimary.withOpacity(0.5)
-                        : WebColors.textPrimary.withOpacity(0.5),
-                    width: 1.5,
-                  ),
-                ),
-              ),
-              child: Checkbox(
-                value: positionBook.isExitAllPosition,
-                onChanged: filteredPositions.isNotEmpty
-                    ? (bool? value) {
-                        positionBook.selectExitAllPosition(value ?? false);
-                        setState(() {});
-                      }
-                    : null,
-                activeColor: theme.isDarkMode
-                    ? WebDarkColors.primary
-                    : WebColors.primary,
-              ),
-            ),
-          ),
+    return headers.map((header) {
+      final columnIndex = _getColumnIndexForHeader(header);
+      
+      // Special handling for fixed columns (Select and Instrument)
+      final isSelect = header == 'Select';
+      final isInstrument = header == 'Instrument';
+      
+      return DataColumn2(
+        label: _buildPositionHeaderWidget(
+          header,
+          columnIndex,
+          theme,
+          positionBook,
+          filteredPositions,
         ),
+        size: isInstrument ? ColumnSize.L : ColumnSize.S,
+        fixedWidth: isSelect ? 60.0 : (isInstrument ? 300.0 : null),
+        onSort: columnIndex > 0 ? (index, ascending) => _onSortTable(columnIndex, ascending) : null,
       );
-    }
-
-    // Sortable header for other columns
-    return InkWell(
-      onTap: columnIndex > 0 ? () => _onSortTable(columnIndex, !_sortAscending) : null,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 6),
-              child: Text(
-                label,
-                style: WebTextStyles.tableHeader(
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
-                ),
-                overflow: TextOverflow.visible,
-              ),
-            ),
-          ),
-          // Sort icon
-          if (columnIndex > 0 && _sortColumnIndex == columnIndex)
-            Padding(
-              padding: const EdgeInsets.only(left: 6.0),
-              child: Icon(
-                _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
-                size: 16,
-                color: theme.isDarkMode
-                    ? WebDarkColors.iconPrimary
-                    : WebColors.iconPrimary,
-              ),
-            )
-          else if (columnIndex > 0)
-            Padding(
-              padding: const EdgeInsets.only(right: 6.0),
-              child: Icon(
-                Icons.unfold_more,
-                size: 16,
-                color: theme.isDarkMode
-                    ? WebDarkColors.iconSecondary
-                    : WebColors.iconSecondary,
-              ),
-            ),
-        ],
-      ),
-    );
+    }).toList();
   }
 
-  Widget _buildPositionColumnCell({
-    required bool needHorizontalScroll,
-    required int flex,
-    required double minW,
-    required Widget child,
-  }) {
-    if (needHorizontalScroll) {
-      return SizedBox(
-        width: minW,
-        child: child,
-      );
-    }
-
-    return Expanded(
-      flex: flex,
-      child: SizedBox(
-        width: minW,
-        child: child,
-      ),
-    );
-  }
-
-  Widget _buildPositionBodyList(
-    ThemesProvider theme,
+  List<DataRow2> _buildDataTable2Rows(
     List<PositionBookModel> positions,
     List<String> headers,
-    Map<String, int> columnFlex,
-    Map<String, double> columnMinWidth, {
-    required double totalMinWidth,
-    required bool needHorizontalScroll,
-    required PortfolioProvider positionBook,
-  }) {
-    final sorted = _getFilteredPositions(positionBook);
-    return ListView.builder(
-      controller: _verticalScrollController,
-      physics: const AlwaysScrollableScrollPhysics(),
-      itemCount: sorted.length,
-      itemBuilder: (context, index) {
-        final position = sorted[index];
-        final isClosed = _isPositionClosed(position);
-        final uniqueId =
-            '${position.token ?? ''}_${position.exch ?? ''}_${position.prd ?? ''}_${position.tsym ?? ''}_$index';
-        final isHovered = _hoveredRowToken == uniqueId;
+    ThemesProvider theme,
+    PortfolioProvider positionBook,
+  ) {
+    return positions.map((position) {
+      final isClosed = _isPositionClosed(position);
+      final uniqueId =
+          '${position.token ?? ''}_${position.exch ?? ''}_${position.prd ?? ''}_${position.tsym ?? ''}';
+      final isHovered = _hoveredRowToken == uniqueId;
 
-        return MouseRegion(
-          onEnter: (_) => setState(() => _hoveredRowToken = uniqueId),
-          onExit: (_) => setState(() => _hoveredRowToken = null),
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: () => _showPositionDetail(position),
-            child: Container(
-              decoration: BoxDecoration(
-                color: isHovered
-                    ? (theme.isDarkMode
-                        ? WebDarkColors.primary.withOpacity(0.06)
-                        : WebColors.primary.withOpacity(0.10))
-                    : Colors.transparent,
-                border: Border(
-                  bottom: BorderSide(
-                    color: theme.isDarkMode
-                        ? WebDarkColors.divider
-                        : WebColors.divider,
-                    width: 1,
-                  ),
-                ),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              child: needHorizontalScroll
-                  ? IntrinsicWidth(
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: headers.map((label) {
-                          final flex = columnFlex[label] ?? 1;
-                          final minW = columnMinWidth[label] ?? 80.0;
-                          return _buildPositionColumnCell(
-                            needHorizontalScroll: needHorizontalScroll,
-                            flex: flex,
-                            minW: minW,
-                            child: _buildPositionCellWidget(
-                              label,
-                              position,
-                              theme,
-                              isHovered,
-                              isClosed,
-                              positionBook,
-                              needHorizontalScroll: needHorizontalScroll,
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    )
-                  : Row(
-                      mainAxisSize: MainAxisSize.max,
-                      children: headers.map((label) {
-                        final flex = columnFlex[label] ?? 1;
-                        final minW = columnMinWidth[label] ?? 80.0;
-                        return _buildPositionColumnCell(
-                          needHorizontalScroll: needHorizontalScroll,
-                          flex: flex,
-                          minW: minW,
-                          child: _buildPositionCellWidget(
-                            label,
-                            position,
-                            theme,
-                            isHovered,
-                            isClosed,
-                            positionBook,
-                            needHorizontalScroll: needHorizontalScroll,
-                          ),
-                        );
-                      }).toList(),
-                    ),
-            ),
-          ),
-        );
-      },
-    );
+      return DataRow2(
+        color: MaterialStateProperty.resolveWith((states) {
+          if (isHovered) {
+            return theme.isDarkMode
+                ? WebDarkColors.primary.withOpacity(0.06)
+                : WebColors.primary.withOpacity(0.10);
+          }
+          return null;
+        }),
+        cells: headers.map((header) {
+          return _buildDataTable2Cell(
+            header,
+            position,
+            theme,
+            isHovered,
+            isClosed,
+            uniqueId,
+            positionBook,
+          );
+        }).toList(),
+        onTap: () => _showPositionDetail(position),
+      );
+    }).toList();
   }
 
-  Widget _buildPositionCellWidget(
+  DataCell _buildDataTable2Cell(
     String column,
     PositionBookModel position,
     ThemesProvider theme,
     bool isHovered,
     bool isClosed,
-    PortfolioProvider positionBook, {
-    required bool needHorizontalScroll,
-  }) {
+    String uniqueId,
+    PortfolioProvider positionBook,
+  ) {
+    Widget cellContent;
+    
     switch (column) {
       case 'Select':
-        return _buildPositionCheckboxCell(position, theme, isClosed, positionBook);
+        cellContent = _buildPositionCheckboxCell(position, theme, isClosed, positionBook);
+        break;
       case 'Instrument':
-        return _buildPositionInstrumentWidget(
+        cellContent = _buildInstrumentCellContent(
           position,
           theme,
           isHovered,
           isClosed,
           positionBook,
-          needHorizontalScroll: needHorizontalScroll,
         );
+        break;
       case 'Product':
-        return _buildPositionTextCell(
+        cellContent = _buildPositionTextCell(
           position.sPrdtAli ?? 'N/A',
           theme,
           Alignment.centerLeft,
           color: _getPositionTextColor(position, theme),
-          needHorizontalScroll: needHorizontalScroll,
         );
+        break;
       case 'Qty':
-        return _buildPositionTextCell(
+        cellContent = _buildPositionTextCell(
           _formatQty(position.qty ?? '0'),
           theme,
           Alignment.centerRight,
           color: isClosed ? Colors.grey : _getQtyColor(position.qty ?? '0', theme),
-          needHorizontalScroll: needHorizontalScroll,
         );
+        break;
       case 'Act Avg Price':
-        return _buildPositionTextCell(
+        cellContent = _buildPositionTextCell(
           position.avgPrc ?? '0.00',
           theme,
           Alignment.centerRight,
           color: _getPositionTextColor(position, theme),
-          needHorizontalScroll: needHorizontalScroll,
         );
+        break;
       case 'LTP':
-        return _buildPositionTextCell(
+        cellContent = _buildPositionTextCell(
           position.lp ?? '0.00',
           theme,
           Alignment.centerRight,
           color: _getPositionTextColor(position, theme),
-          needHorizontalScroll: needHorizontalScroll,
         );
+        break;
       case 'P&L':
-        return _buildPositionTextCell(
+        cellContent = _buildPositionTextCell(
           position.profitNloss ?? '0.00',
           theme,
           Alignment.centerRight,
           color: isClosed
               ? Colors.grey
               : _getValueColor(position.profitNloss ?? '0.00', theme),
-          needHorizontalScroll: needHorizontalScroll,
         );
+        break;
       case 'MTM':
-        return _buildPositionTextCell(
+        cellContent = _buildPositionTextCell(
           position.mTm ?? '0.00',
           theme,
           Alignment.centerRight,
           color: isClosed
               ? Colors.grey
               : _getValueColor(position.mTm ?? '0.00', theme),
-          needHorizontalScroll: needHorizontalScroll,
         );
+        break;
       case 'Avg Price':
-        return _buildPositionTextCell(
+        cellContent = _buildPositionTextCell(
           position.avgPrc ?? '0.00',
           theme,
           Alignment.centerRight,
           color: _getPositionTextColor(position, theme),
-          needHorizontalScroll: needHorizontalScroll,
         );
+        break;
       case 'Buy Qty':
-        return _buildPositionTextCell(
+        cellContent = _buildPositionTextCell(
           position.daybuyqty ?? '0',
           theme,
           Alignment.centerRight,
           color: _getPositionTextColor(position, theme),
-          needHorizontalScroll: needHorizontalScroll,
         );
+        break;
       case 'Sell Qty':
-        return _buildPositionTextCell(
+        cellContent = _buildPositionTextCell(
           position.daysellqty ?? '0',
           theme,
           Alignment.centerRight,
           color: _getPositionTextColor(position, theme),
-          needHorizontalScroll: needHorizontalScroll,
         );
+        break;
       case 'Buy Avg':
-        return _buildPositionTextCell(
+        cellContent = _buildPositionTextCell(
           position.daybuyavgprc ?? '0.00',
           theme,
           Alignment.centerRight,
           color: _getPositionTextColor(position, theme),
-          needHorizontalScroll: needHorizontalScroll,
         );
+        break;
       case 'Sell Avg':
-        return _buildPositionTextCell(
+        cellContent = _buildPositionTextCell(
           position.daysellavgprc ?? '0.00',
           theme,
           Alignment.centerRight,
           color: _getPositionTextColor(position, theme),
-          needHorizontalScroll: needHorizontalScroll,
         );
+        break;
       default:
-        return const SizedBox.shrink();
+        cellContent = const SizedBox.shrink();
     }
-  }
 
-  Widget _buildPositionCheckboxCell(
-    PositionBookModel position,
-    ThemesProvider theme,
-    bool isClosed,
-    PortfolioProvider positionBook,
-  ) {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 6.0),
-        child: Theme(
-          data: Theme.of(context).copyWith(
-            checkboxTheme: CheckboxThemeData(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(4),
-              ),
-              side: BorderSide(
-                color: theme.isDarkMode
-                    ? WebDarkColors.textPrimary.withOpacity(0.5)
-                    : WebColors.textPrimary.withOpacity(0.5),
-                width: 1.5,
-              ),
-            ),
-          ),
-          child: Checkbox(
-            value: position.isExitSelection ?? false,
-            onChanged: isClosed
-                ? null
-                : (bool? value) {
-                    final openPositions = positionBook.openPosition ?? [];
-                    for (int i = 0; i < openPositions.length; i++) {
-                      if (openPositions[i].token == position.token) {
-                        positionBook.selectExitPosition(i);
-                        setState(() {});
-                        break;
-                      }
-                    }
-                  },
-            activeColor: theme.isDarkMode
-                ? WebDarkColors.primary
-                : WebColors.primary,
-          ),
+    // Wrap with MouseRegion to detect hover anywhere on the cell
+    return DataCell(
+      MouseRegion(
+        onEnter: (_) => setState(() => _hoveredRowToken = uniqueId),
+        onExit: (_) => setState(() => _hoveredRowToken = null),
+        child: SizedBox.expand(
+          child: cellContent,
         ),
       ),
     );
   }
 
-  Widget _buildPositionInstrumentWidget(
+  Widget _buildInstrumentCellContent(
     PositionBookModel position,
     ThemesProvider theme,
     bool isHovered,
     bool isClosed,
-    PortfolioProvider positionBook, {
-    required bool needHorizontalScroll,
-  }) {
+    PortfolioProvider positionBook,
+  ) {
     final displayText =
         '${position.symbol ?? ''} ${position.exch ?? ''} ${position.expDate ?? ''} ${position.option ?? ''}';
 
@@ -1564,12 +1306,146 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
     );
   }
 
+  Widget _buildPositionHeaderWidget(
+    String label,
+    int columnIndex,
+    ThemesProvider theme,
+    PortfolioProvider positionBook,
+    List<PositionBookModel> filteredPositions,
+  ) {
+    // Special case for Select column (checkbox)
+    if (label == 'Select') {
+      return InkWell(
+        onTap: filteredPositions.isNotEmpty
+            ? () {
+                positionBook.selectExitAllPosition(!positionBook.isExitAllPosition);
+                setState(() {});
+              }
+            : null,
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 6.0),
+            child: Theme(
+              data: Theme.of(context).copyWith(
+                checkboxTheme: CheckboxThemeData(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  side: BorderSide(
+                    color: theme.isDarkMode
+                        ? WebDarkColors.textPrimary.withOpacity(0.5)
+                        : WebColors.textPrimary.withOpacity(0.5),
+                    width: 1.5,
+                  ),
+                ),
+              ),
+              child: Checkbox(
+                value: positionBook.isExitAllPosition,
+                onChanged: filteredPositions.isNotEmpty
+                    ? (bool? value) {
+                        positionBook.selectExitAllPosition(value ?? false);
+                        setState(() {});
+                      }
+                    : null,
+                activeColor: theme.isDarkMode
+                    ? WebDarkColors.primary
+                    : WebColors.primary,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    // Sortable header for other columns
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          label,
+          style: WebTextStyles.tableHeader(
+            isDarkTheme: theme.isDarkMode,
+            color: theme.isDarkMode
+                ? WebDarkColors.textPrimary
+                : WebColors.textPrimary,
+          ),
+        ),
+        const SizedBox(width: 4),
+        // Sort icon - show unfold_more when not sorted, reserve space when sorted
+        if (columnIndex > 0)
+          _buildSortIcon(columnIndex, theme),
+      ],
+    );
+  }
+
+  Widget _buildSortIcon(int columnIndex, ThemesProvider theme) {
+    if (_sortColumnIndex == columnIndex) {
+      return const SizedBox(width: 16); // Reserve space for DataTable2's arrow
+    } else {
+      return Icon(
+        Icons.unfold_more,
+        size: 16,
+        color: theme.isDarkMode
+            ? WebDarkColors.iconSecondary
+            : WebColors.iconSecondary,
+      );
+    }
+  }
+
+
+  Widget _buildPositionCheckboxCell(
+    PositionBookModel position,
+    ThemesProvider theme,
+    bool isClosed,
+    PortfolioProvider positionBook,
+  ) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 6.0),
+        child: Theme(
+          data: Theme.of(context).copyWith(
+            checkboxTheme: CheckboxThemeData(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(4),
+              ),
+              side: BorderSide(
+                color: theme.isDarkMode
+                    ? WebDarkColors.textPrimary.withOpacity(0.5)
+                    : WebColors.textPrimary.withOpacity(0.5),
+                width: 1.5,
+              ),
+            ),
+          ),
+          child: Checkbox(
+            value: position.isExitSelection ?? false,
+            onChanged: isClosed
+                ? null
+                : (bool? value) {
+                    final openPositions = positionBook.openPosition ?? [];
+                    for (int i = 0; i < openPositions.length; i++) {
+                      if (openPositions[i].token == position.token) {
+                        positionBook.selectExitPosition(i);
+                        setState(() {});
+                        break;
+                      }
+                    }
+                  },
+            activeColor: theme.isDarkMode
+                ? WebDarkColors.primary
+                : WebColors.primary,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildPositionTextCell(
     String text,
     ThemesProvider theme,
     Alignment alignment, {
     Color? color,
-    bool needHorizontalScroll = false,
   }) {
     return Align(
       alignment: alignment,
@@ -1591,174 +1467,6 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
           overflow: TextOverflow.visible,
         ),
       ),
-    );
-  }
-
-  DataCell _buildCellWithHover(PositionBookModel position, ThemesProvider theme,
-      String token, DataCell cell,
-      {Alignment alignment = Alignment.centerRight}) {
-    // Wrap the cell's child with MouseRegion to detect hover anywhere on the row
-    // Use SizedBox.expand to fill the entire cell area, not just the text content
-    return DataCell(
-      MouseRegion(
-        onEnter: (_) => setState(() => _hoveredRowToken = token),
-        onExit: (_) => setState(() => _hoveredRowToken = null),
-        child: SizedBox.expand(
-          child: Align(
-            alignment: alignment, // Align content based on parameter
-            child: cell.child,
-          ),
-        ),
-      ),
-    );
-  }
-
-  DataCell _buildInstrumentCellWithHover(PositionBookModel position,
-      ThemesProvider theme, String token, PortfolioProvider positionBook) {
-    final isClosed = _isPositionClosed(position);
-    final isHovered = _hoveredRowToken == token;
-    final displayText =
-        '${position.symbol ?? ''} ${position.exch ?? ''} ${position.expDate ?? ''} ${position.option ?? ''}';
-
-    return DataCell(
-      MouseRegion(
-        onEnter: (_) => setState(() => _hoveredRowToken = token),
-        onExit: (_) => setState(() => _hoveredRowToken = null),
-        child: SizedBox.expand(
-          child: Row(
-            children: [
-              // Text that takes at least 50% of width, leaves space for buttons
-              Expanded(
-                flex: isHovered
-                    ? 1
-                    : 2, // When hovered, text takes less space but still visible
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Tooltip(
-                    message: displayText,
-                    child: Text(
-                      displayText,
-                      style: WebTextStyles.tableDataCompact(
-                        isDarkTheme: theme.isDarkMode,
-                        color: _getPositionTextColor(position, theme),
-                      ),
-                      // overflow: TextOverflow.ellipsis,
-                      // maxLines: 1,
-                    ),
-                  ),
-                ),
-              ),
-              // Buttons on the right side - fade in/out
-              IgnorePointer(
-                ignoring: !isHovered,
-                child: AnimatedOpacity(
-                  opacity: isHovered ? 1.0 : 0.0,
-                  duration: const Duration(milliseconds: 150),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Add and Exit buttons for open positions
-                      if (!isClosed &&
-                          position.qty != "0" &&
-                          position.sPrdtAli != "BO" &&
-                          position.sPrdtAli != "CO" &&
-                          !positionBook.isDay) ...[
-                        _buildHoverButton(
-                          label: 'Add',
-                          color: Colors.white,
-                          backgroundColor: theme.isDarkMode
-                              ? WebDarkColors.primary
-                              : WebColors.primary,
-                          onPressed: () async {
-                            await _handleAddPosition(context, position);
-                          },
-                          theme: theme,
-                        ),
-                        const SizedBox(width: 6),
-                        _buildHoverButton(
-                          label: 'Exit',
-                          color: Colors.white,
-                          backgroundColor: theme.isDarkMode
-                              ? WebDarkColors.tertiary
-                              : WebColors.tertiary,
-                          onPressed: () async {
-                            await _handleExitPosition(context, position);
-                          },
-                          theme: theme,
-                        ),
-                        const SizedBox(width: 6),
-                      ],
-                      // Chart button
-                      _buildHoverButton(
-                        icon: Icons.bar_chart,
-                        color: Colors.black,
-                        backgroundColor: Colors.white,
-                        borderRadius: 5.0,
-                        onPressed: () async {
-                          await _handleChartTap(context, position);
-                        },
-                        theme: theme,
-                      ),
-                      // Convert Position button for open positions
-                      if (!isClosed && position.qty != "0") ...[
-                        const SizedBox(width: 6),
-                        _buildHoverButton(
-                          icon: Icons.swap_horiz,
-                          color: Colors.black,
-                          backgroundColor: Colors.white,
-                          borderRadius: 5.0,
-                          iconWeight: 700,
-                          onPressed: () {
-                            _handleConvertPosition(context, position);
-                          },
-                          theme: theme,
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSortableColumnHeader(
-      String label, ThemesProvider theme, int columnIndex) {
-    final isSorted = _sortColumnIndex == columnIndex;
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          label,
-          style: WebTextStyles.tableHeader(
-            isDarkTheme: theme.isDarkMode,
-            color: theme.isDarkMode
-                ? WebDarkColors.textPrimary
-                : WebColors.textPrimary,
-          ),
-        ),
-        const SizedBox(width: 4),
-        // Reserve fixed space for sort indicator
-        // Show custom icon when not sorted, DataTable will show its icon when sorted
-        SizedBox(
-          width: 20, // Fixed width to prevent layout shift
-          height: 16,
-          child: !isSorted
-              ? Icon(
-                  Icons.unfold_more,
-                  size: 16,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.iconSecondary
-                      : WebColors.iconSecondary,
-                )
-              : const SizedBox
-                  .shrink(), // Hide when sorted, DataTable will show its indicator
-        ),
-      ],
     );
   }
 

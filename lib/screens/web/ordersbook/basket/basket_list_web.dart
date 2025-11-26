@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
+import 'package:data_table_2/data_table_2.dart';
 
 import '../../../../models/order_book_model/order_book_model.dart';
 import '../../../../provider/market_watch_provider.dart';
@@ -32,11 +33,13 @@ class _BasketListState extends ConsumerState<BasketList> {
   String? _hoveredRowIndex;
   int? _sortColumnIndex;
   bool _sortAscending = true;
+  final ScrollController _horizontalScrollController = ScrollController();
   final ScrollController _verticalScrollController = ScrollController();
   bool _isDeleting = false;
 
   @override
   void dispose() {
+    _horizontalScrollController.dispose();
     _verticalScrollController.dispose();
     super.dispose();
   }
@@ -46,6 +49,15 @@ class _BasketListState extends ConsumerState<BasketList> {
       _sortColumnIndex = columnIndex;
       _sortAscending = ascending;
     });
+  }
+
+  int _getBasketColumnIndexForHeader(String header) {
+    switch (header) {
+      case 'Basket Name': return 0;
+      case 'Items': return 1;
+      case 'Created Date': return 2;
+      default: return -1;
+    }
   }
 
   List<dynamic> _getSortedBaskets(List<dynamic> baskets) {
@@ -80,355 +92,134 @@ class _BasketListState extends ConsumerState<BasketList> {
     return sorted;
   }
 
-  Widget _buildSortableColumnHeader(
-      String label, ThemesProvider theme, int columnIndex) {
-    final isSorted = _sortColumnIndex == columnIndex;
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          label,
-          style: WebTextStyles.tableHeader(
-            isDarkTheme: theme.isDarkMode,
-            color: theme.isDarkMode
-                ? WebDarkColors.textPrimary
-                : WebColors.textPrimary,
-          ),
+  List<DataColumn2> _buildBasketDataTable2Columns(
+    List<String> headers,
+    Map<String, double> columnMinWidth,
+    ThemesProvider theme,
+  ) {
+    return headers.map((header) {
+      final columnIndex = _getBasketColumnIndexForHeader(header);
+      final isBasketName = header == 'Basket Name';
+      final isCreatedDate = header == 'Created Date';
+      
+      return DataColumn2(
+        label: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              header,
+              style: WebTextStyles.tableHeader(
+                isDarkTheme: theme.isDarkMode,
+                color: theme.isDarkMode
+                    ? WebDarkColors.textPrimary
+                    : WebColors.textPrimary,
+              ),
+            ),
+            const SizedBox(width: 4),
+            _buildBasketSortIcon(columnIndex, theme),
+          ],
         ),
-        const SizedBox(width: 4),
-        SizedBox(
-          width: 20,
-          height: 16,
-          child: !isSorted
-              ? Icon(
-                  Icons.unfold_more,
-                  size: 16,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.iconSecondary
-                      : WebColors.iconSecondary,
-                )
-              : const SizedBox.shrink(),
-        ),
-      ],
-    );
+        size: isBasketName ? ColumnSize.L : ColumnSize.S,
+        fixedWidth: isBasketName ? 300.0 : (isCreatedDate ? 220.0 : null),
+        onSort: (index, ascending) => _onSortTable(columnIndex, ascending),
+      );
+    }).toList();
   }
 
-  DataCell _buildBasketNameCellWithHover(Map<String, dynamic> basket, int index,
-      ThemesProvider theme, String token) {
-    final bsktName = basket['bsketName'] ?? '';
-    final isHovered = _hoveredRowIndex == token;
+  List<DataRow2> _buildBasketDataTable2Rows(
+    List<dynamic> baskets,
+    List<String> headers,
+    ThemesProvider theme,
+  ) {
+    final sorted = _getSortedBaskets(baskets);
+    return sorted.asMap().entries.map((entry) {
+      final index = entry.key;
+      final basket = entry.value as Map<String, dynamic>;
+      final uniqueId = '$index';
+      final isHovered = _hoveredRowIndex == uniqueId;
 
-    return DataCell(
-      MouseRegion(
-        onEnter: (_) => setState(() => _hoveredRowIndex = token),
-        onExit: (_) => setState(() => _hoveredRowIndex = null),
-        child: SizedBox.expand(
-          child: Row(
-            children: [
-              // Text that takes at least 50% of width, leaves space for buttons
-              Expanded(
-                flex: isHovered
-                    ? 1
-                    : 2, // When hovered, text takes less space but still visible
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Tooltip(
-                    message: bsktName,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        SvgPicture.asset(
-                          assets.basketdashboard,
-                          width: 18,
-                          height: 18,
-                          color: theme.isDarkMode
-                              ? WebDarkColors.iconSecondary
-                              : WebColors.iconSecondary,
-                        ),
-                        const SizedBox(width: 8),
-                        Flexible(
-                          child: Text(
-                            bsktName,
-                            style: WebTextStyles.tableDataCompact(
-                              isDarkTheme: theme.isDarkMode,
-                              color: theme.isDarkMode
-                                  ? WebDarkColors.textPrimary
-                                  : WebColors.textPrimary,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              // Buttons on the right side - fade in/out
-              IgnorePointer(
-                ignoring: !isHovered,
-                child: AnimatedOpacity(
-                  opacity: isHovered ? 1.0 : 0.0,
-                  duration: const Duration(milliseconds: 150),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      _buildHoverButton(
-                        label: 'Delete',
-                        color: Colors.white,
-                        backgroundColor: theme.isDarkMode
-                            ? WebDarkColors.tertiary
-                            : WebColors.tertiary,
-                        onPressed: () =>
-                            _handleDeleteBasket(context, basket, index),
-                        theme: theme,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+      return DataRow2(
+        color: MaterialStateProperty.resolveWith((states) {
+          if (isHovered) {
+            return theme.isDarkMode
+                ? WebDarkColors.primary.withOpacity(0.06)
+                : WebColors.primary.withOpacity(0.10);
+          }
+          return null;
+        }),
+        cells: headers.map((header) {
+          return _buildBasketDataTable2Cell(
+            header,
+            basket,
+            theme,
+            isHovered,
+            uniqueId,
+            index,
+          );
+        }).toList(),
+        onTap: () => _handleBasketTap(context, basket),
+      );
+    }).toList();
   }
 
-  DataCell _buildCellWithHover(
-      Map<String, dynamic> basket, int index, DataCell cell,
-      {Alignment alignment = Alignment.centerLeft}) {
-    final uniqueId = '$index';
+  DataCell _buildBasketDataTable2Cell(
+    String column,
+    Map<String, dynamic> basket,
+    ThemesProvider theme,
+    bool isHovered,
+    String uniqueId,
+    int index,
+  ) {
+    Widget cellContent;
+    
+    switch (column) {
+      case 'Basket Name':
+        cellContent = _buildBasketNameCellContent(
+          basket,
+          theme,
+          isHovered,
+          uniqueId,
+          index,
+        );
+        break;
+      case 'Items':
+        cellContent = _buildBasketTextCell(
+          (basket['curLength'] ?? 0).toString(),
+          theme,
+          Alignment.centerLeft,
+        );
+        break;
+      case 'Created Date':
+        cellContent = _buildBasketTextCell(
+          basket['createdDate']?.toString() ?? '',
+          theme,
+          Alignment.centerLeft,
+        );
+        break;
+      default:
+        cellContent = const SizedBox.shrink();
+    }
+
+    // Wrap with MouseRegion to detect hover anywhere on the cell
     return DataCell(
       MouseRegion(
         onEnter: (_) => setState(() => _hoveredRowIndex = uniqueId),
         onExit: (_) => setState(() => _hoveredRowIndex = null),
         child: SizedBox.expand(
-          child: Align(
-            alignment: alignment,
-            child: cell.child,
-          ),
+          child: cellContent,
         ),
       ),
     );
   }
 
-  Widget _buildBasketTable(ThemesProvider theme, List<dynamic> baskets) {
-    final sortedBaskets = _getSortedBaskets(baskets);
-    final headers = ['Basket Name', 'Items', 'Created Date'];
-    final columnFlex = {'Basket Name': 3, 'Items': 1, 'Created Date': 2};
-    final columnMinWidth = {'Basket Name': 200.0, 'Items': 80.0, 'Created Date': 180.0};
-
-    final tableColumn = Container(
-      decoration: BoxDecoration(
-        border: Border.all(
-          color: theme.isDarkMode
-              ? WebDarkColors.divider
-              : WebColors.divider,
-          width: 1,
-        ),
-        borderRadius: BorderRadius.circular(4),
-        color: theme.isDarkMode
-            ? WebDarkColors.background
-            : Colors.white,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // --- Sticky header (fixed) ---
-          Container(
-            height: 50,
-            decoration: BoxDecoration(
-              color: theme.isDarkMode
-                  ? WebDarkColors.primary
-                  : WebColors.primary.withOpacity(0.05),
-              border: Border(
-                bottom: BorderSide(
-                  color: theme.isDarkMode
-                      ? WebDarkColors.divider
-                      : WebColors.divider,
-                  width: 1,
-                ),
-              ),
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(4),
-                topRight: Radius.circular(4),
-              ),
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Row(
-              mainAxisSize: MainAxisSize.max,
-              children: headers.asMap().entries.map((entry) {
-                final index = entry.key;
-                final label = entry.value;
-                final flex = columnFlex[label] ?? 1;
-                final minW = columnMinWidth[label] ?? 80.0;
-
-                return Expanded(
-                  flex: flex,
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(minWidth: minW),
-                    child: InkWell(
-                      onTap: () => _onSortTable(index, !_sortAscending),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 6),
-                              child: _buildSortableColumnHeader(label, theme, index),
-                            ),
-                          ),
-                          if (_sortColumnIndex == index)
-                            Padding(
-                              padding: const EdgeInsets.only(left: 6.0),
-                              child: Icon(
-                                _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
-                                size: 16,
-                                color: theme.isDarkMode
-                                    ? WebDarkColors.iconPrimary
-                                    : WebColors.iconPrimary,
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
-
-          // --- Scrollable body (vertical) ---
-          Expanded(
-            child: Scrollbar(
-              controller: _verticalScrollController,
-              thumbVisibility: true,
-              radius: Radius.zero,
-              child: _buildBasketBodyList(theme, sortedBaskets, headers, columnFlex, columnMinWidth),
-            ),
-          ),
-        ],
-      ),
-    );
-
-    return tableColumn;
-  }
-
-  Widget _buildBasketBodyList(
-    ThemesProvider theme,
-    List<dynamic> baskets,
-    List<String> headers,
-    Map<String, int> columnFlex,
-    Map<String, double> columnMinWidth,
-  ) {
-    return ListView.builder(
-      controller: _verticalScrollController,
-      physics: const AlwaysScrollableScrollPhysics(),
-      itemCount: baskets.length,
-      itemBuilder: (context, index) {
-        final basketItem = baskets[index] as Map<String, dynamic>;
-        final uniqueId = '$index';
-        final isHovered = _hoveredRowIndex == uniqueId;
-
-        return MouseRegion(
-          onEnter: (_) => setState(() => _hoveredRowIndex = uniqueId),
-          onExit: (_) => setState(() => _hoveredRowIndex = null),
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: () => _handleBasketTap(context, basketItem),
-            child: Container(
-              decoration: BoxDecoration(
-                color: isHovered
-                    ? (theme.isDarkMode
-                        ? WebDarkColors.primary.withOpacity(0.06)
-                        : WebColors.primary.withOpacity(0.10))
-                    : Colors.transparent,
-                border: Border(
-                  bottom: BorderSide(
-                    color: theme.isDarkMode
-                        ? WebDarkColors.divider
-                        : WebColors.divider,
-                    width: 1,
-                  ),
-                ),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              child: Row(
-                mainAxisSize: MainAxisSize.max,
-                children: [
-                  // Basket Name
-                  Expanded(
-                    flex: columnFlex['Basket Name'] ?? 3,
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(minWidth: columnMinWidth['Basket Name'] ?? 200.0),
-                      child: _buildBasketNameWidget(basketItem, index, theme, uniqueId, isHovered),
-                    ),
-                  ),
-                  // Items
-                  Expanded(
-                    flex: columnFlex['Items'] ?? 1,
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(minWidth: columnMinWidth['Items'] ?? 80.0),
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 6.0),
-                          child: Text(
-                            (basketItem['curLength'] ?? 0).toString(),
-                            style: WebTextStyles.tableDataCompact(
-                              isDarkTheme: theme.isDarkMode,
-                              color: theme.isDarkMode
-                                  ? WebDarkColors.textPrimary
-                                  : WebColors.textPrimary,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  // Created Date
-                  Expanded(
-                    flex: columnFlex['Created Date'] ?? 2,
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(minWidth: columnMinWidth['Created Date'] ?? 180.0),
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 6.0),
-                          child: Text(
-                            basketItem['createdDate']?.toString() ?? '',
-                            style: WebTextStyles.tableDataCompact(
-                              isDarkTheme: theme.isDarkMode,
-                              color: theme.isDarkMode
-                                  ? WebDarkColors.textPrimary
-                                  : WebColors.textPrimary,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildBasketNameWidget(
+  Widget _buildBasketNameCellContent(
     Map<String, dynamic> basket,
-    int index,
     ThemesProvider theme,
-    String token,
     bool isHovered,
+    String uniqueId,
+    int index,
   ) {
-    final bsktName = basket['bsketName'] ?? '';
+    final bsktName = basket['bsketName'] ?? 'N/A';
 
     return Row(
       children: [
@@ -453,14 +244,17 @@ class _BasketListState extends ConsumerState<BasketList> {
                   Flexible(
                     child: Text(
                       bsktName,
-                      style: WebTextStyles.tableDataCompact(
+                      style: WebTextStyles.custom(
+                        fontSize: 13,
                         isDarkTheme: theme.isDarkMode,
                         color: theme.isDarkMode
                             ? WebDarkColors.textPrimary
                             : WebColors.textPrimary,
+                        fontWeight: WebFonts.medium,
                       ),
-                      overflow: TextOverflow.ellipsis,
                       maxLines: 1,
+                      softWrap: false,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
@@ -468,12 +262,12 @@ class _BasketListState extends ConsumerState<BasketList> {
             ),
           ),
         ),
-        // Buttons on the right side - fade in/out
+        // Action buttons fade in on hover
         IgnorePointer(
           ignoring: !isHovered,
           child: AnimatedOpacity(
-            opacity: isHovered ? 1.0 : 0.0,
-            duration: const Duration(milliseconds: 150),
+            opacity: isHovered ? 1 : 0,
+            duration: const Duration(milliseconds: 140),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -494,48 +288,221 @@ class _BasketListState extends ConsumerState<BasketList> {
     );
   }
 
+  Widget _buildBasketSortIcon(int columnIndex, ThemesProvider theme) {
+    if (_sortColumnIndex == columnIndex) {
+      return const SizedBox(width: 16); // Reserve space for DataTable2's arrow
+    } else {
+      return Icon(
+        Icons.unfold_more,
+        size: 16,
+        color: theme.isDarkMode
+            ? WebDarkColors.iconSecondary
+            : WebColors.iconSecondary,
+      );
+    }
+  }
+
+  Widget _buildBasketTextCell(
+    String text,
+    ThemesProvider theme,
+    Alignment alignment,
+  ) {
+    return Align(
+      alignment: alignment,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 6.0),
+        child: Text(
+          text,
+          style: WebTextStyles.custom(
+            fontSize: 13,
+            isDarkTheme: theme.isDarkMode,
+            color: theme.isDarkMode
+                ? WebDarkColors.textPrimary
+                : WebColors.textPrimary,
+            fontWeight: WebFonts.medium,
+          ),
+          maxLines: 1, 
+          softWrap: false,
+          overflow: TextOverflow.visible,
+        ),
+      ),
+    );
+  }
+
+
+  Widget _buildBasketTable(ThemesProvider theme, List<dynamic> baskets) {
+    if (baskets.isEmpty) {
+      return const SizedBox(
+        height: 400,
+        child: Align(
+          alignment: Alignment.center,
+          child: Padding(
+            padding: EdgeInsets.all(16.0),
+            child: NoDataFound(),
+          ),
+        ),
+      );
+    }
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Calculate available height
+        final screenHeight = MediaQuery.of(context).size.height;
+        final padding = 32.0; // Top and bottom padding (16 * 2)
+        final headerHeight = 100.0; // Header height (button + spacing)
+        final spacing = 16.0; // Spacing between header and content
+        final bottomMargin = 20.0; // Bottom margin
+        final tableHeight =
+            screenHeight - padding - headerHeight - spacing - bottomMargin;
+
+        // Ensure we don't exceed 75% of screen height
+        final maxHeight = screenHeight * 0.75;
+        final calculatedHeight = tableHeight > maxHeight
+            ? maxHeight
+            : (tableHeight > 400 ? tableHeight : 400.0);
+
+        final headers = ['Basket Name', 'Items', 'Created Date'];
+        final columnMinWidth = {
+          'Basket Name': 300.0,
+          'Items': 100.0,
+          'Created Date': 220.0,
+        };
+
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 20.0),
+          child: Container(
+            height: calculatedHeight.toDouble(),
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: theme.isDarkMode
+                    ? WebDarkColors.divider
+                    : WebColors.divider,
+                width: 1,
+              ),
+              borderRadius: BorderRadius.circular(4),
+              color: theme.isDarkMode
+                  ? WebDarkColors.background
+                  : Colors.white,
+            ),
+            child: Theme(
+              data: Theme.of(context).copyWith(
+                scrollbarTheme: ScrollbarThemeData(
+                  // Make both scrollbars always visible
+                  thumbVisibility: MaterialStateProperty.all(true),
+                  trackVisibility: MaterialStateProperty.all(true),
+                  
+                  // Consistent thickness for both horizontal and vertical
+                  thickness: MaterialStateProperty.all(6.0),
+                  crossAxisMargin: 0.0,
+                  mainAxisMargin: 0.0,
+                  
+                  // Consistent radius
+                  radius: const Radius.circular(3),
+                  
+                  // Consistent colors for both scrollbars
+                  thumbColor: MaterialStateProperty.resolveWith((states) {
+                    return theme.isDarkMode 
+                        ? WebDarkColors.textSecondary.withOpacity(0.3)
+                        : WebColors.textSecondary.withOpacity(0.3);
+                  }),
+                  trackColor: MaterialStateProperty.resolveWith((states) {
+                    return theme.isDarkMode 
+                        ? WebDarkColors.divider.withOpacity(0.1)
+                        : WebColors.divider.withOpacity(0.1);
+                  }),
+                  
+                  trackBorderColor: MaterialStateProperty.all(Colors.transparent),
+                  minThumbLength: 48.0,
+                ),
+              ),
+              child: DataTable2(
+                columnSpacing: 12,
+                horizontalMargin: 12,
+                minWidth: 800,
+                sortColumnIndex: _sortColumnIndex,
+                sortAscending: _sortAscending,
+                fixedLeftColumns: 1, // Fix the first column (Basket Name)
+                fixedColumnsColor: theme.isDarkMode 
+                    ? WebDarkColors.backgroundSecondary.withOpacity(0.8)
+                    : WebColors.backgroundSecondary.withOpacity(0.8),
+                showBottomBorder: true,
+                horizontalScrollController: _horizontalScrollController,
+                scrollController: _verticalScrollController,
+                showCheckboxColumn: false,
+                headingRowColor: MaterialStateProperty.all(
+                  theme.isDarkMode
+                      ? WebDarkColors.primary
+                      : WebColors.primary.withOpacity(0.05),
+                ),
+                headingTextStyle: WebTextStyles.tableHeader(
+                  isDarkTheme: theme.isDarkMode,
+                  color: theme.isDarkMode
+                      ? WebDarkColors.textPrimary
+                      : WebColors.textPrimary,
+                ),
+                dataTextStyle: WebTextStyles.custom(
+                  fontSize: 13,
+                  isDarkTheme: theme.isDarkMode,
+                  color: theme.isDarkMode
+                      ? WebDarkColors.textPrimary
+                      : WebColors.textPrimary,
+                  fontWeight: WebFonts.medium,
+                ),
+                border: TableBorder(
+                  top: BorderSide(
+                    color: theme.isDarkMode
+                        ? WebDarkColors.divider
+                        : WebColors.divider,
+                    width: 1,
+                  ),
+                  bottom: BorderSide(
+                    color: theme.isDarkMode
+                        ? WebDarkColors.divider
+                        : WebColors.divider,
+                    width: 1,
+                  ),
+                  horizontalInside: BorderSide(
+                    color: theme.isDarkMode
+                        ? WebDarkColors.divider
+                        : WebColors.divider,
+                    width: 1,
+                  ),
+                  // Remove vertical lines
+                ),
+                columns: _buildBasketDataTable2Columns(headers, columnMinWidth, theme),
+                rows: _buildBasketDataTable2Rows(baskets, headers, theme),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+
   Widget _buildHoverButton({
-    String? label,
+    required String label,
     required Color color,
-    Color? backgroundColor,
-    Color? borderColor,
-    double? borderRadius,
+    required Color backgroundColor,
     required VoidCallback? onPressed,
     required ThemesProvider theme,
   }) {
-    final borderRadiusValue = borderRadius ?? 5.0;
     return SizedBox(
       height: 28,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(borderRadiusValue),
-          splashColor: color.withOpacity(0.15),
-          highlightColor: color.withOpacity(0.08),
-          onTap: onPressed,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            decoration: BoxDecoration(
-              color: backgroundColor ?? Colors.transparent,
-              borderRadius: BorderRadius.circular(borderRadiusValue),
-              border: borderColor != null
-                  ? Border.all(
-                      color: borderColor,
-                      width: 1,
-                    )
-                  : null,
-            ),
-            child: Center(
-              child: Text(
-                label ?? "",
-                style: WebTextStyles.custom(
-                  fontSize: 11,
-                  isDarkTheme: theme.isDarkMode,
-                  color: color,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          backgroundColor: backgroundColor,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+          elevation: 0,
+        ),
+        onPressed: onPressed,
+        child: Text(
+          label,
+          style: WebTextStyles.custom(
+            fontSize: 12,
+            isDarkTheme: theme.isDarkMode,
+            color: color,
           ),
         ),
       ),

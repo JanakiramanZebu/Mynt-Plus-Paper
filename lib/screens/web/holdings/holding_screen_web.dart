@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:data_table_2/data_table_2.dart';
 import 'package:mynt_plus/provider/mf_provider.dart';
 import 'package:mynt_plus/screens/web/holdings/holding_detail_screen_web.dart';
 import 'package:mynt_plus/screens/web/holdings/mf_holdings_screen_web.dart';
@@ -157,8 +158,8 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
 
   Widget _buildStocksSummaryCards(
       ThemesProvider theme, PortfolioProvider portfolioData) {
-    final positiveCount = _getPositiveHoldingsCount(portfolioData);
-    final negativeCount = _getNegativeHoldingsCount(portfolioData);
+    // final positiveCount = _getPositiveHoldingsCount(portfolioData);
+    // final negativeCount = _getNegativeHoldingsCount(portfolioData);
 
     return Container(
       height: 120,
@@ -330,8 +331,8 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
             _formatValue(summary?.absReturnPercent?.toString());
 
         // Calculate positive and negative mutual fund counts
-        final positiveCount = _getPositiveMutualFundsCount(mfData);
-        final negativeCount = _getNegativeMutualFundsCount(mfData);
+        // final positiveCount = _getPositiveMutualFundsCount(mfData);
+        // final negativeCount = _getNegativeMutualFundsCount(mfData);
 
         return Container(
           height: 120,
@@ -858,11 +859,11 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
           'Overall P&L': 2,
         },
         'columnMinWidth': {
-          'Instrument': 220,
-          'Net Qty': 90,
-          'LTP': 85,
-          'Day P&L': 100,
-          'Overall P&L': 110,
+          'Instrument': 280,
+          'Net Qty': 120,
+          'LTP': 110,
+          'Day P&L': 130,
+          'Overall P&L': 140,
         },
       };
     } else if (screenWidth < _tabletBreakpoint) {
@@ -879,13 +880,13 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
           'Overall P&L': 2,
         },
         'columnMinWidth': {
-          'Instrument': 220,
-          'Net Qty': 85,
-          'Avg Price': 95,
-          'LTP': 80,
-          'Current Value': 115,
-          'Day P&L': 100,
-          'Overall P&L': 110,
+          'Instrument': 280,
+          'Net Qty': 110,
+          'Avg Price': 120,
+          'LTP': 100,
+          'Current Value': 165,
+          'Day P&L': 120,
+          'Overall P&L': 155,
         },
       };
     } else if (screenWidth < _desktopBreakpoint) {
@@ -904,15 +905,15 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
           'Overall %': 1,
         },
         'columnMinWidth': {
-          'Instrument': 220,
-          'Net Qty': 85,
-          'Avg Price': 95,
-          'LTP': 80,
-          'Invested': 100,
-          'Current Value': 115,
-          'Day P&L': 100,
-          'Overall P&L': 110,
-          'Overall %': 90,
+          'Instrument': 280,
+          'Net Qty': 110,
+          'Avg Price': 120,
+          'LTP': 100,
+          'Invested': 120,
+          'Current Value': 165,
+          'Day P&L': 120,
+          'Overall P&L': 155,
+          'Overall %': 110,
         },
       };
     } else {
@@ -932,16 +933,16 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
           'Overall %': 1,
         },
         'columnMinWidth': {
-          'Instrument': 250,
-          'Net Qty': 90,
-          'Avg Price': 100,
-          'LTP': 85,
-          'Invested': 105,
-          'Current Value': 120,
-          'Day P&L': 100,
-          'Day %': 85,
-          'Overall P&L': 115,
-          'Overall %': 95,
+          'Instrument': 300,
+          'Net Qty': 120,
+          'Avg Price': 130,
+          'LTP': 110,
+          'Invested': 130,
+          'Current Value': 220,
+          'Day P&L': 150,
+          'Day %': 110,
+          'Overall P&L': 165,
+          'Overall %': 120,
         },
       };
     }
@@ -982,143 +983,115 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
         // Get responsive column configuration
         final responsiveConfig = _getResponsiveHoldingColumns(screenWidth);
         final headers = List<String>.from(responsiveConfig['headers'] as List);
-        final columnFlex = Map<String, int>.from(responsiveConfig['columnFlex'] as Map);
         final columnMinWidth = Map<String, double>.from(responsiveConfig['columnMinWidth'] as Map);
         
-        // Calculate total minimum width
-        final totalMinWidth =
-            columnMinWidth.values.fold<double>(0.0, (a, b) => a + b);
-        // Determine whether horizontal scroll is needed
-        final needHorizontalScroll = constraints.maxWidth < totalMinWidth;
-
-        // Build the Column (header + body)
-        final tableColumn = Container(
-          decoration: BoxDecoration(
-            border: Border.all(
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 20.0),
+          child: Container(
+            height: calculatedHeight.toDouble(),
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: theme.isDarkMode
+                    ? WebDarkColors.divider
+                    : WebColors.divider,
+                width: 1,
+              ),
+              borderRadius: BorderRadius.circular(4),
               color: theme.isDarkMode
-                  ? WebDarkColors.divider
-                  : WebColors.divider,
-              width: 1,
+                  ? WebDarkColors.background
+                  : Colors.white,
             ),
-            borderRadius: BorderRadius.circular(4),
-            color: theme.isDarkMode
-                ? WebDarkColors.background
-                : Colors.white,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // --- Sticky header (fixed) ---
-              Container(
-                height: 50,
-                decoration: BoxDecoration(
-                  color: theme.isDarkMode
-                      ? WebDarkColors.primary
-                      : WebColors.primary.withOpacity(0.05),
-                  border: Border(
+            child: Theme(
+              data: Theme.of(context).copyWith(
+                scrollbarTheme: ScrollbarThemeData(
+                  // Make both scrollbars always visible
+                  thumbVisibility: MaterialStateProperty.all(true),
+                  trackVisibility: MaterialStateProperty.all(true),
+                  
+                  // Consistent thickness for both horizontal and vertical
+                  thickness: MaterialStateProperty.all(6.0),
+                  crossAxisMargin: 0.0, // Remove margin to align scrollbars properly
+                  mainAxisMargin: 0.0,
+                  
+                  // Consistent radius
+                  radius: const Radius.circular(3),
+                  
+                  // Consistent colors for both scrollbars
+                  thumbColor: MaterialStateProperty.resolveWith((states) {
+                    return theme.isDarkMode 
+                        ? WebDarkColors.textSecondary.withOpacity(0.3)
+                        : WebColors.textSecondary.withOpacity(0.3);
+                  }),
+                  trackColor: MaterialStateProperty.resolveWith((states) {
+                    return theme.isDarkMode 
+                        ? WebDarkColors.divider.withOpacity(0.1)
+                        : WebColors.divider.withOpacity(0.1);
+                  }),
+                  
+                  // Ensure consistent behavior for both directions
+                  trackBorderColor: MaterialStateProperty.all(Colors.transparent),
+                  minThumbLength: 48.0, // Minimum thumb length for both scrollbars
+                ),
+              ),
+              child: DataTable2(
+              columnSpacing: 12,
+              horizontalMargin: 12,
+              minWidth: 1200, // Increased to accommodate wider columns
+              sortColumnIndex: _sortColumnIndex,
+              sortAscending: _sortAscending,
+              fixedLeftColumns: 1, // Fix the first column (Instrument)
+              fixedColumnsColor: theme.isDarkMode 
+                  ? WebDarkColors.backgroundSecondary.withOpacity(0.8)
+                  : WebColors.backgroundSecondary.withOpacity(0.8),
+              showBottomBorder: true,
+              horizontalScrollController: _horizontalScrollController,
+              scrollController: _verticalScrollController,
+              // Make scrollbars always visible
+              showCheckboxColumn: false,
+              headingRowColor: MaterialStateProperty.all(
+                theme.isDarkMode
+                    ? WebDarkColors.primary
+                    : WebColors.primary.withOpacity(0.05),
+              ),
+              headingTextStyle: WebTextStyles.tableHeader(
+                isDarkTheme: theme.isDarkMode,
+                color: theme.isDarkMode
+                    ? WebDarkColors.textPrimary
+                    : WebColors.textPrimary,
+              ),
+              dataTextStyle: WebTextStyles.custom(
+                fontSize: 13,
+                isDarkTheme: theme.isDarkMode,
+                color: theme.isDarkMode
+                    ? WebDarkColors.textPrimary
+                    : WebColors.textPrimary,
+                fontWeight: WebFonts.medium,
+              ),
+                  border: TableBorder(
+                    top: BorderSide(
+                      color: theme.isDarkMode
+                          ? WebDarkColors.divider
+                          : WebColors.divider,
+                      width: 1,
+                    ),
                     bottom: BorderSide(
                       color: theme.isDarkMode
                           ? WebDarkColors.divider
                           : WebColors.divider,
                       width: 1,
                     ),
-                  ),
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(4),
-                    topRight: Radius.circular(4),
-                  ),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: needHorizontalScroll
-                  ? IntrinsicWidth(
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: headers.map((label) {
-                          final flex = columnFlex[label] ?? 1;
-                          final minW = columnMinWidth[label] ?? 80.0;
-                          final columnIndex = _getColumnIndexForHeader(label);
-
-                          return _buildHoldingColumnCell(
-                            needHorizontalScroll: needHorizontalScroll,
-                            flex: flex,
-                            minW: minW,
-                            child: _buildHoldingHeaderWidget(
-                              label, 
-                              columnIndex, 
-                              theme, 
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    )
-                  : Row(
-                      mainAxisSize: MainAxisSize.max,
-                      children: headers.map((label) {
-                        final flex = columnFlex[label] ?? 1;
-                        final minW = columnMinWidth[label] ?? 80.0;
-                        final columnIndex = _getColumnIndexForHeader(label);
-
-                        return _buildHoldingColumnCell(
-                          needHorizontalScroll: needHorizontalScroll,
-                          flex: flex,
-                          minW: minW,
-                          child: _buildHoldingHeaderWidget(
-                            label, 
-                            columnIndex, 
-                            theme, 
-                          ),
-                        );
-                      }).toList(),
+                    horizontalInside: BorderSide(
+                      color: theme.isDarkMode
+                          ? WebDarkColors.divider
+                          : WebColors.divider,
+                      width: 1,
                     ),
-            ),
-
-              // --- Scrollable body (vertical) ---
-              Expanded(
-                child: Scrollbar(
-                  controller: _verticalScrollController,
-                  thumbVisibility: true,
-                  radius: Radius.zero,
-                  child: _buildHoldingBodyList(
-                    theme,
-                    filteredHoldings,
-                    headers,
-                    columnFlex,
-                    columnMinWidth,
-                    totalMinWidth: totalMinWidth,
-                    needHorizontalScroll: needHorizontalScroll,
+                    // Remove vertical lines by not setting left, right, and verticalInside
                   ),
-                ),
-              ),
-            ],
-          ),
-        );
-
-        // If horizontal scroll needed, wrap the entire column inside SingleChildScrollView
-        if (needHorizontalScroll) {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 20.0),
-            child: SizedBox(
-              width: constraints.maxWidth,
-              height: calculatedHeight.toDouble(),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                controller: _horizontalScrollController,
-                child: SizedBox(
-                  width: totalMinWidth,
-                  child: tableColumn,
-                ),
+              columns: _buildDataTable2Columns(headers, columnMinWidth, theme),
+              rows: _buildDataTable2Rows(filteredHoldings, headers, theme),
               ),
             ),
-          );
-        }
-
-        // else (no horizontal scroll)
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 20.0),
-          child: SizedBox(
-            width: constraints.maxWidth,
-            height: calculatedHeight.toDouble(),
-            child: tableColumn,
           ),
         );
       },
@@ -1141,326 +1114,218 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
     }
   }
 
-  Widget _buildHoldingHeaderWidget(
-    String label,
-    int columnIndex,
-    ThemesProvider theme,
-  ) {
-    return InkWell(
-      onTap: () => _onSortTable(columnIndex, !_sortAscending),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 6),
-              child: Text(
-                label,
-                style: WebTextStyles.tableHeader(
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
-                ),
-                overflow: TextOverflow.visible,
-              ),
-            ),
-          ),
-          // Sort icon
-          if (_sortColumnIndex == columnIndex)
-            Padding(
-              padding: const EdgeInsets.only(left: 6.0),
-              child: Icon(
-                _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
-                size: 16,
-                color: theme.isDarkMode
-                    ? WebDarkColors.iconPrimary
-                    : WebColors.iconPrimary,
-              ),
-            )
-          else
-            Padding(
-              padding: const EdgeInsets.only(right: 6.0),
-              child: Icon(
-                Icons.unfold_more,
-                size: 16,
-                color: theme.isDarkMode
-                    ? WebDarkColors.iconSecondary
-                    : WebColors.iconSecondary,
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHoldingColumnCell({
-    required bool needHorizontalScroll,
-    required int flex,
-    required double minW,
-    required Widget child,
-  }) {
-    if (needHorizontalScroll) {
-      return SizedBox(
-        width: minW,
-        child: child,
+  Widget _buildSortIcon(int columnIndex, ThemesProvider theme) {
+    if (_sortColumnIndex == columnIndex) {
+      // Column is currently sorted - DataTable2 shows its own arrows, so we show nothing
+      return const SizedBox(width: 16); // Reserve space to prevent layout shift
+    } else {
+      // Column is not sorted - show sortable indicator
+      return Icon(
+        Icons.unfold_more,
+        size: 16,
+        color: theme.isDarkMode
+            ? WebDarkColors.textSecondary.withOpacity(0.6)
+            : WebColors.textSecondary.withOpacity(0.6),
       );
     }
-
-    return Expanded(
-      flex: flex,
-      child: SizedBox(
-        width: minW,
-        child: child,
-      ),
-    );
   }
 
-  Widget _buildHoldingBodyList(
+  List<DataColumn2> _buildDataTable2Columns(
+    List<String> headers,
+    Map<String, double> columnMinWidth,
     ThemesProvider theme,
+  ) {
+    return headers.map((header) {
+      final columnIndex = _getColumnIndexForHeader(header);
+      
+      return DataColumn2(
+        label: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              header,
+              style: WebTextStyles.tableHeader(
+                isDarkTheme: theme.isDarkMode,
+                color: theme.isDarkMode
+                    ? WebDarkColors.textPrimary
+                    : WebColors.textPrimary,
+              ),
+            ),
+            const SizedBox(width: 4),
+            _buildSortIcon(columnIndex, theme),
+          ],
+        ),
+        size: header == 'Instrument' ? ColumnSize.L : ColumnSize.S,
+        fixedWidth: header == 'Instrument' ? 300.0 : null,
+        onSort: (index, ascending) => _onSortTable(columnIndex, ascending),
+      );
+    }).toList();
+  }
+
+  List<DataRow2> _buildDataTable2Rows(
     List<dynamic> holdings,
     List<String> headers,
-    Map<String, int> columnFlex,
-    Map<String, double> columnMinWidth, {
-    required double totalMinWidth,
-    required bool needHorizontalScroll,
-  }) {
-    // Holdings are already filtered and sorted by _getFilteredHoldings
-    return ListView.builder(
-      controller: _verticalScrollController,
-      physics: const AlwaysScrollableScrollPhysics(),
-      itemCount: holdings.length,
-      itemBuilder: (context, index) {
-        final holding = holdings[index];
-        final exchTsym = holding.exchTsym != null && holding.exchTsym!.isNotEmpty
-            ? holding.exchTsym![0]
-            : null;
-        final token = exchTsym?.token ?? '';
-        final uniqueId = '$token$index';
-        final isHovered = _hoveredRowToken == uniqueId;
+    ThemesProvider theme,
+  ) {
+    return holdings.asMap().entries.map((entry) {
+      final index = entry.key;
+      final holding = entry.value;
+      final exchTsym = holding.exchTsym != null && holding.exchTsym!.isNotEmpty
+          ? holding.exchTsym![0]
+          : null;
+      final token = exchTsym?.token ?? '';
+      final uniqueId = '$token$index';
+      // final isHovered = _hoveredRowToken == uniqueId;
 
-        return MouseRegion(
-          onEnter: (_) => setState(() => _hoveredRowToken = uniqueId),
-          onExit: (_) => setState(() => _hoveredRowToken = null),
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: () => _showHoldingDetail(holding),
-            child: Container(
-              decoration: BoxDecoration(
-                color: isHovered
-                    ? (theme.isDarkMode
-                        ? WebDarkColors.primary.withOpacity(0.06)
-                        : WebColors.primary.withOpacity(0.10))
-                    : Colors.transparent,
-                border: Border(
-                  bottom: BorderSide(
-                    color: theme.isDarkMode
-                        ? WebDarkColors.divider
-                        : WebColors.divider,
-                    width: 1,
-                  ),
+      return DataRow2(
+        onTap: () => _showHoldingDetail(holding),
+        color: MaterialStateProperty.resolveWith<Color>((states) {
+          if (states.contains(MaterialState.hovered) || _hoveredRowToken == uniqueId) {
+            return theme.isDarkMode
+                ? WebDarkColors.primary.withOpacity(0.06)
+                : WebColors.primary.withOpacity(0.10);
+          }
+          return Colors.transparent;
+        }),
+        cells: headers.map((header) {
+          return DataCell(
+            MouseRegion(
+              onEnter: (_) => setState(() => _hoveredRowToken = uniqueId),
+              onExit: (_) => setState(() => _hoveredRowToken = null),
+              child: SizedBox.expand(
+                child: Container(
+                  alignment: header == 'Instrument' ? Alignment.centerLeft : Alignment.centerRight,
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
+                  child: _buildDataTable2CellContent(header, holding, theme, exchTsym, uniqueId),
                 ),
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              child: needHorizontalScroll
-                  ? IntrinsicWidth(
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: headers.map((label) {
-                          final flex = columnFlex[label] ?? 1;
-                          final minW = columnMinWidth[label] ?? 80.0;
-                          return _buildHoldingColumnCell(
-                            needHorizontalScroll: needHorizontalScroll,
-                            flex: flex,
-                            minW: minW,
-                            child: _buildHoldingCellWidget(
-                              label,
-                              holding,
-                              theme,
-                              isHovered,
-                              exchTsym,
-                              needHorizontalScroll: needHorizontalScroll,
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    )
-                  : Row(
-                      mainAxisSize: MainAxisSize.max,
-                      children: headers.map((label) {
-                        final flex = columnFlex[label] ?? 1;
-                        final minW = columnMinWidth[label] ?? 80.0;
-                        return _buildHoldingColumnCell(
-                          needHorizontalScroll: needHorizontalScroll,
-                          flex: flex,
-                          minW: minW,
-                          child: _buildHoldingCellWidget(
-                            label,
-                            holding,
-                            theme,
-                            isHovered,
-                            exchTsym,
-                            needHorizontalScroll: needHorizontalScroll,
-                          ),
-                        );
-                      }).toList(),
-                    ),
             ),
-          ),
-        );
-      },
-    );
+          );
+        }).toList(),
+      );
+    }).toList();
   }
 
-  Widget _buildHoldingCellWidget(
+  Widget _buildDataTable2CellContent(
     String column,
     dynamic holding,
     ThemesProvider theme,
-    bool isHovered,
-    dynamic exchTsym, {
-    required bool needHorizontalScroll,
-  }) {
+    dynamic exchTsym,
+    String uniqueId,
+  ) {
     switch (column) {
       case 'Instrument':
-        return _buildHoldingInstrumentWidget(
-          holding,
-          theme,
-          isHovered,
-          exchTsym,
-          needHorizontalScroll: needHorizontalScroll,
-        );
+        return _buildInstrumentCellContent(holding, theme, exchTsym, uniqueId);
       case 'Net Qty':
         final qty = holding.currentQty ?? 0;
         final qtyText = qty > 0 ? '+$qty' : '$qty';
-        return _buildHoldingTextCell(
+        return Text(
           qtyText,
-          theme,
-          Alignment.centerRight,
-          color: _getQtyColor(qty, theme),
-          needHorizontalScroll: needHorizontalScroll,
+          style: WebTextStyles.custom(
+            fontSize: 13,
+            isDarkTheme: theme.isDarkMode,
+            color: _getQtyColor(qty, theme),
+            fontWeight: WebFonts.medium,
+          ),
         );
       case 'Avg Price':
         final avgPrc = holding.avgPrc != null && holding.avgPrc!.isNotEmpty
             ? holding.avgPrc!
             : '0.00';
-        return _buildHoldingTextCell(
-          avgPrc,
-          theme,
-          Alignment.centerRight,
-          needHorizontalScroll: needHorizontalScroll,
-        );
+        return Text(avgPrc);
       case 'LTP':
-        return _buildHoldingTextCell(
-          exchTsym?.lp ?? '0.00',
-          theme,
-          Alignment.centerRight,
-          needHorizontalScroll: needHorizontalScroll,
-        );
+        return Text(exchTsym?.lp ?? '0.00');
       case 'Invested':
-        return _buildHoldingTextCell(
-          holding.invested ?? '0.00',
-          theme,
-          Alignment.centerRight,
-          needHorizontalScroll: needHorizontalScroll,
-        );
+        return Text(holding.invested ?? '0.00');
       case 'Current Value':
-        return _buildHoldingTextCell(
-          holding.currentValue ?? '0.00',
-          theme,
-          Alignment.centerRight,
-          needHorizontalScroll: needHorizontalScroll,
-        );
+        return Text(holding.currentValue ?? '0.00');
       case 'Day P&L':
         final dayPnL = exchTsym?.oneDayChg ?? '0.00';
-        return _buildHoldingTextCell(
+        return Text(
           dayPnL,
-          theme,
-          Alignment.centerRight,
-          color: _getValueColor(dayPnL, theme),
-          needHorizontalScroll: needHorizontalScroll,
+          style: WebTextStyles.custom(
+            fontSize: 13,
+            isDarkTheme: theme.isDarkMode,
+            color: _getValueColor(dayPnL, theme),
+            fontWeight: WebFonts.medium,
+          ),
         );
       case 'Day %':
         final dayPercent = exchTsym?.perChange ?? '0.00';
-        return _buildHoldingTextCell(
+        return Text(
           '${dayPercent}%',
-          theme,
-          Alignment.centerRight,
-          color: _getValueColor(dayPercent, theme),
-          needHorizontalScroll: needHorizontalScroll,
+          style: WebTextStyles.custom(
+            fontSize: 13,
+            isDarkTheme: theme.isDarkMode,
+            color: _getValueColor(dayPercent, theme),
+            fontWeight: WebFonts.medium,
+          ),
         );
       case 'Overall P&L':
         final overallPnL = exchTsym?.profitNloss ?? '0.00';
-        return _buildHoldingTextCell(
+        return Text(
           overallPnL,
-          theme,
-          Alignment.centerRight,
-          color: _getValueColor(overallPnL, theme),
-          needHorizontalScroll: needHorizontalScroll,
+          style: WebTextStyles.custom(
+            fontSize: 13,
+            isDarkTheme: theme.isDarkMode,
+            color: _getValueColor(overallPnL, theme),
+            fontWeight: WebFonts.medium,
+          ),
         );
       case 'Overall %':
         final overallPercent = exchTsym?.pNlChng ?? '0.00';
-        return _buildHoldingTextCell(
+        return Text(
           '${overallPercent}%',
-          theme,
-          Alignment.centerRight,
-          color: _getValueColor(overallPercent, theme),
-          needHorizontalScroll: needHorizontalScroll,
+          style: WebTextStyles.custom(
+            fontSize: 13,
+            isDarkTheme: theme.isDarkMode,
+            color: _getValueColor(overallPercent, theme),
+            fontWeight: WebFonts.medium,
+          ),
         );
       default:
         return const SizedBox.shrink();
     }
   }
 
-  Widget _buildHoldingInstrumentWidget(
+  Widget _buildInstrumentCellContent(
     dynamic holding,
     ThemesProvider theme,
-    bool isHovered,
-    dynamic exchTsym, {
-    required bool needHorizontalScroll,
-  }) {
+    dynamic exchTsym,
+    String uniqueId,
+  ) {
     if (exchTsym == null) {
-      return _buildHoldingTextCell(
-        'N/A',
-        theme,
-        Alignment.centerLeft,
-        needHorizontalScroll: needHorizontalScroll,
-      );
+      return const Text('N/A');
     }
 
     final displayText = '${exchTsym.tsym ?? ''} ${exchTsym.exch ?? ''}';
-
+    final rowIsHovered = _hoveredRowToken == uniqueId;
+    
     return Row(
-      mainAxisSize: MainAxisSize.min,
       children: [
         Expanded(
-          flex: isHovered ? 1 : 2,
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: Tooltip(
-              message: displayText,
-              child: Text(
-                displayText,
-                style: WebTextStyles.custom(
-                  fontSize: 13,
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
-                  fontWeight: WebFonts.medium,
-                ),
-                maxLines: 1,
-                softWrap: false,
-                overflow: TextOverflow.visible,
+          flex: rowIsHovered ? 1 : 2,
+          child: Tooltip(
+            message: displayText,
+            child: Text(
+              displayText,
+              style: WebTextStyles.custom(
+                fontSize: 13,
+                isDarkTheme: theme.isDarkMode,
+                color: theme.isDarkMode
+                    ? WebDarkColors.textPrimary
+                    : WebColors.textPrimary,
+                fontWeight: WebFonts.medium,
               ),
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ),
         // Action buttons fade in on hover
         IgnorePointer(
-          ignoring: !isHovered,
+          ignoring: !rowIsHovered,
           child: AnimatedOpacity(
-            opacity: isHovered ? 1 : 0,
+            opacity: rowIsHovered ? 1 : 0,
             duration: const Duration(milliseconds: 140),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -1522,35 +1387,110 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
     );
   }
 
-  Widget _buildHoldingTextCell(
-    String text,
+  DataCell _buildInstrumentDataCell(
+    dynamic holding,
     ThemesProvider theme,
-    Alignment alignment, {
-    Color? color,
-    bool needHorizontalScroll = false,
-  }) {
-    return Align(
-      alignment: alignment,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 6.0),
-        child: Text(
-          text,
-          style: WebTextStyles.custom(
-            fontSize: 13,
-            isDarkTheme: theme.isDarkMode,
-            color: color ??
-                (theme.isDarkMode
-                    ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary),
-            fontWeight: WebFonts.medium,
+    dynamic exchTsym,
+    String uniqueId,
+  ) {
+    if (exchTsym == null) {
+      return const DataCell(Text('N/A'));
+    }
+
+    final displayText = '${exchTsym.tsym ?? ''} ${exchTsym.exch ?? ''}';
+    final rowIsHovered = _hoveredRowToken == uniqueId;
+    
+    return DataCell(
+      Row(
+        children: [
+          Expanded(
+            flex: rowIsHovered ? 1 : 2,
+            child: Tooltip(
+              message: displayText,
+              child: Text(
+                displayText,
+                style: WebTextStyles.custom(
+                  fontSize: 13,
+                  isDarkTheme: theme.isDarkMode,
+                  color: theme.isDarkMode
+                      ? WebDarkColors.textPrimary
+                      : WebColors.textPrimary,
+                  fontWeight: WebFonts.medium,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
           ),
-          maxLines: 1,
-          softWrap: false,
-          overflow: TextOverflow.visible,
-        ),
+          // Action buttons fade in on hover
+          IgnorePointer(
+            ignoring: !rowIsHovered,
+            child: AnimatedOpacity(
+              opacity: rowIsHovered ? 1 : 0,
+              duration: const Duration(milliseconds: 140),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if ((holding.currentQty ?? 0) > 0) ...[
+                    _buildHoverButton(
+                      label: 'Add',
+                      color: Colors.white,
+                      backgroundColor: theme.isDarkMode
+                          ? WebDarkColors.primary
+                          : WebColors.primary,
+                      onPressed: () async {
+                        await _handleAddHolding(context, holding, exchTsym);
+                      },
+                      theme: theme,
+                    ),
+                    const SizedBox(width: 6),
+                  ],
+                  if ((holding.saleableQty ?? 0) > 0) ...[
+                    _buildHoverButton(
+                      label: 'Exit',
+                      color: Colors.white,
+                      backgroundColor: theme.isDarkMode
+                          ? WebDarkColors.tertiary
+                          : WebColors.tertiary,
+                      onPressed: () async {
+                        await _handleExitHolding(context, holding, exchTsym);
+                      },
+                      theme: theme,
+                    ),
+                    const SizedBox(width: 6),
+                  ],
+                  _buildHoverButton(
+                    icon: Icons.bar_chart,
+                    color: Colors.black,
+                    backgroundColor: Colors.white,
+                    borderRadius: 5.0,
+                    onPressed: () async {
+                      await _handleChartTap(context, holding, exchTsym);
+                    },
+                    theme: theme,
+                  ),
+                  const SizedBox(width: 6),
+                  _buildHoverButton(
+                    label: 'Pledge',
+                    color: Colors.black,
+                    backgroundColor: Colors.white,
+                    borderRadius: 5.0,
+                    onPressed: () {
+                      _handlePledgeUnpledge(context);
+                    },
+                    theme: theme,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
+
+
+
+
 
   DataCell _buildInstrumentCellWithHover(
       dynamic holding, ThemesProvider theme, String token) {

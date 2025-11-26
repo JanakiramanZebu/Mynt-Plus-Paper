@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:data_table_2/data_table_2.dart';
 
 import '../../../../provider/mf_provider.dart';
 import '../../../../provider/thems.dart';
@@ -26,11 +27,6 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb>
   final ScrollController _verticalScrollController = ScrollController();
   bool _hasInitialized = false;
   String? _hoveredRowToken;
-  
-  // Responsive breakpoints
-  static const double _mobileBreakpoint = 768;
-  static const double _tabletBreakpoint = 1024;
-  static const double _desktopBreakpoint = 1440;
 
   @override
   bool get wantKeepAlive => true;
@@ -64,158 +60,150 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb>
 
     final orders = mf.mflumpsumorderbook?.data ?? [];
 
+    // Show loading indicator if data is being fetched and no existing data
     if (orders.isEmpty) {
       return const SizedBox(
         height: 400,
-        child: Center(child: NoDataFound()),
+        child: Align(
+          alignment: Alignment.center,
+          child: Padding(
+            padding: EdgeInsets.all(16.0),
+            child: NoDataFound(),
+          ),
+        ),
       );
     }
 
     return LayoutBuilder(
       builder: (context, constraints) {
+        // Calculate available height
+        final screenHeight = MediaQuery.of(context).size.height;
+        final padding = 32.0; // Top and bottom padding (16 * 2)
+        final headerHeight = 50.0; // Header height (tabs + search bar)
+        final spacing = 16.0; // Spacing between header and content
+        final bottomMargin = 20.0; // Bottom margin
+        final tableHeight =
+            screenHeight - padding - headerHeight - spacing - bottomMargin;
+
+        // Ensure we don't exceed 75% of screen height
+        final maxHeight = screenHeight * 0.75;
+        final calculatedHeight = tableHeight > maxHeight
+            ? maxHeight
+            : (tableHeight > 400 ? tableHeight : 400.0);
+
         // Get screen width for responsive design
         final screenWidth = MediaQuery.of(context).size.width;
         
         // Get responsive column configuration
         final responsiveConfig = _getResponsiveMfOrderColumns(screenWidth);
         final headers = List<String>.from(responsiveConfig['headers'] as List);
-        final columnFlex = Map<String, int>.from(responsiveConfig['columnFlex'] as Map);
         final columnMinWidth = Map<String, double>.from(responsiveConfig['columnMinWidth'] as Map);
         
-        // Calculate total minimum width
-        final totalMinWidth =
-            columnMinWidth.values.fold<double>(0.0, (a, b) => a + b);
-        // Determine whether horizontal scroll is needed
-        final needHorizontalScroll = constraints.maxWidth < totalMinWidth;
-
-        // Build the Column (header + body)
-        final tableColumn = Container(
-          decoration: BoxDecoration(
-            border: Border.all(
-              color: theme.isDarkMode
-                  ? WebDarkColors.divider
-                  : WebColors.divider,
-              width: 1,
-            ),
-            borderRadius: BorderRadius.circular(4),
-            color: theme.isDarkMode
-                ? WebDarkColors.background
-                : Colors.white,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // --- Sticky header (fixed) ---
-              Container(
-                height: 50,
-                decoration: BoxDecoration(
-                  color: theme.isDarkMode
-                      ? WebDarkColors.primary
-                      : WebColors.primary.withOpacity(0.05),
-                  border: Border(
-                    bottom: BorderSide(
-                      color: theme.isDarkMode
-                          ? WebDarkColors.divider
-                          : WebColors.divider,
-                      width: 1,
-                    ),
-                  ),
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(4),
-                    topRight: Radius.circular(4),
-                  ),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: needHorizontalScroll
-                  ? IntrinsicWidth(
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: headers.map((label) {
-                          final flex = columnFlex[label] ?? 1;
-                          final minW = columnMinWidth[label] ?? 80.0;
-                          final columnIndex = _getMfOrderColumnIndexForHeader(label);
-
-                          return _buildMfOrderColumnCell(
-                            needHorizontalScroll: needHorizontalScroll,
-                            flex: flex,
-                            minW: minW,
-                            child: _buildMfOrderHeaderWidget(
-                              label, 
-                              columnIndex, 
-                              theme, 
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    )
-                  : Row(
-                      mainAxisSize: MainAxisSize.max,
-                      children: headers.map((label) {
-                        final flex = columnFlex[label] ?? 1;
-                        final minW = columnMinWidth[label] ?? 80.0;
-                        final columnIndex = _getMfOrderColumnIndexForHeader(label);
-
-                        return _buildMfOrderColumnCell(
-                          needHorizontalScroll: needHorizontalScroll,
-                          flex: flex,
-                          minW: minW,
-                          child: _buildMfOrderHeaderWidget(
-                            label, 
-                            columnIndex, 
-                            theme, 
-                          ),
-                        );
-                      }).toList(),
-                    ),
-            ),
-
-            // --- Scrollable body (vertical) ---
-            Expanded(
-              child: Scrollbar(
-                controller: _verticalScrollController,
-                thumbVisibility: true,
-                radius: Radius.zero,
-                child: _buildMfOrderBodyList(
-                  theme,
-                  orders,
-                  headers,
-                  columnFlex,
-                  columnMinWidth,
-                  totalMinWidth: totalMinWidth,
-                  needHorizontalScroll: needHorizontalScroll,
-                ),
-              ),
-            ),
-          ],
-          ),
-        );
-
-        // If horizontal scroll needed, wrap the entire column inside SingleChildScrollView
-        if (needHorizontalScroll) {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 20.0),
-            child: SizedBox(
-              width: constraints.maxWidth,
-              height: constraints.maxHeight,
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                controller: _horizontalScrollController,
-                child: SizedBox(
-                  width: totalMinWidth,
-                  child: tableColumn,
-                ),
-              ),
-            ),
-          );
-        }
-
-        // else (no horizontal scroll)
         return Padding(
           padding: const EdgeInsets.only(bottom: 20.0),
-          child: SizedBox(
-            width: constraints.maxWidth,
-            height: constraints.maxHeight,
-            child: tableColumn,
+          child: Container(
+            height: calculatedHeight.toDouble(),
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: theme.isDarkMode
+                    ? WebDarkColors.divider
+                    : WebColors.divider,
+                width: 1,
+              ),
+              borderRadius: BorderRadius.circular(4),
+              color: theme.isDarkMode
+                  ? WebDarkColors.background
+                  : Colors.white,
+            ),
+            child: Theme(
+              data: Theme.of(context).copyWith(
+                scrollbarTheme: ScrollbarThemeData(
+                  // Make both scrollbars always visible
+                  thumbVisibility: MaterialStateProperty.all(true),
+                  trackVisibility: MaterialStateProperty.all(true),
+                  
+                  // Consistent thickness for both horizontal and vertical
+                  thickness: MaterialStateProperty.all(6.0),
+                  crossAxisMargin: 0.0,
+                  mainAxisMargin: 0.0,
+                  
+                  // Consistent radius
+                  radius: const Radius.circular(3),
+                  
+                  // Consistent colors for both scrollbars
+                  thumbColor: MaterialStateProperty.resolveWith((states) {
+                    return theme.isDarkMode 
+                        ? WebDarkColors.textSecondary.withOpacity(0.3)
+                        : WebColors.textSecondary.withOpacity(0.3);
+                  }),
+                  trackColor: MaterialStateProperty.resolveWith((states) {
+                    return theme.isDarkMode 
+                        ? WebDarkColors.divider.withOpacity(0.1)
+                        : WebColors.divider.withOpacity(0.1);
+                  }),
+                  
+                  trackBorderColor: MaterialStateProperty.all(Colors.transparent),
+                  minThumbLength: 48.0,
+                ),
+              ),
+              child: DataTable2(
+                columnSpacing: 12,
+                horizontalMargin: 12,
+                minWidth: 1200,
+                sortColumnIndex: _mfSortColumnIndex,
+                sortAscending: _mfSortAscending,
+                fixedLeftColumns: 1, // Fix the first column (Scheme)
+                fixedColumnsColor: theme.isDarkMode 
+                    ? WebDarkColors.backgroundSecondary.withOpacity(0.8)
+                    : WebColors.backgroundSecondary.withOpacity(0.8),
+                showBottomBorder: true,
+                horizontalScrollController: _horizontalScrollController,
+                scrollController: _verticalScrollController,
+                showCheckboxColumn: false,
+                headingRowColor: MaterialStateProperty.all(
+                  theme.isDarkMode
+                      ? WebDarkColors.primary
+                      : WebColors.primary.withOpacity(0.05),
+                ),
+                headingTextStyle: WebTextStyles.tableHeader(
+                  isDarkTheme: theme.isDarkMode,
+                  color: theme.isDarkMode
+                      ? WebDarkColors.textPrimary
+                      : WebColors.textPrimary,
+                ),
+                dataTextStyle: WebTextStyles.custom(
+                  fontSize: 13,
+                  isDarkTheme: theme.isDarkMode,
+                  color: theme.isDarkMode
+                      ? WebDarkColors.textPrimary
+                      : WebColors.textPrimary,
+                  fontWeight: WebFonts.medium,
+                ),
+                border: TableBorder(
+                  top: BorderSide(
+                    color: theme.isDarkMode
+                        ? WebDarkColors.divider
+                        : WebColors.divider,
+                    width: 1,
+                  ),
+                  bottom: BorderSide(
+                    color: theme.isDarkMode
+                        ? WebDarkColors.divider
+                        : WebColors.divider,
+                    width: 1,
+                  ),
+                  horizontalInside: BorderSide(
+                    color: theme.isDarkMode
+                        ? WebDarkColors.divider
+                        : WebColors.divider,
+                    width: 1,
+                  ),
+                  // Remove vertical lines
+                ),
+                columns: _buildMfOrderDataTable2Columns(headers, columnMinWidth, theme),
+                rows: _buildMfOrderDataTable2Rows(orders, headers, theme),
+              ),
+            ),
           ),
         );
       },
@@ -223,44 +211,18 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb>
   }
 
   // Helper method to get responsive column configuration for MF Orders
+  // Always show all columns - horizontal scroll handles overflow on small screens
   Map<String, dynamic> _getResponsiveMfOrderColumns(double screenWidth) {
-    if (screenWidth < _mobileBreakpoint) {
-      // Mobile: Show only essential columns
-      return {
-        'headers': ['Scheme', 'Type', 'Amount', 'Status'],
-        'columnFlex': {
-          'Scheme': 3,
-          'Type': 2,
-          'Amount': 2,
-          'Status': 2,
-        },
-        'columnMinWidth': {
-          'Scheme': 150,
-          'Type': 100,
-          'Amount': 100,
-          'Status': 90,
-        },
-      };
-    } else {
-      // Tablet/Desktop: Full columns with optimal widths
-      return {
-        'headers': ['Scheme', 'Type', 'Amount', 'Time', 'Status'],
-        'columnFlex': {
-          'Scheme': 3,
-          'Type': 2,
-          'Amount': 2,
-          'Time': 2,
-          'Status': 2,
-        },
-        'columnMinWidth': {
-          'Scheme': 180,
-          'Type': 110,
-          'Amount': 110,
-          'Time': 120,
-          'Status': 100,
-        },
-      };
-    }
+    return {
+      'headers': ['Scheme', 'Type', 'Amount', 'Time', 'Status'],
+      'columnMinWidth': {
+        'Scheme': 300,
+        'Type': 120,
+        'Amount': 120,
+        'Time': 220,
+        'Status': 110,
+      },
+    };
   }
 
   int _getMfOrderColumnIndexForHeader(String header) {
@@ -274,262 +236,197 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb>
     }
   }
 
-  Widget _buildMfOrderHeaderWidget(
-    String label,
-    int columnIndex,
+  List<DataColumn2> _buildMfOrderDataTable2Columns(
+    List<String> headers,
+    Map<String, double> columnMinWidth,
     ThemesProvider theme,
   ) {
-    final isNumeric = columnIndex == 2 || columnIndex == 3; // Amount (2) or Time (3)
-    
-    return InkWell(
-      onTap: () => _onSortMfTable(columnIndex, !_mfSortAscending),
-      child: Row(
-        mainAxisAlignment: isNumeric ? MainAxisAlignment.end : MainAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 6),
-              child: Text(
-                label,
-                style: WebTextStyles.tableHeader(
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
-                ),
-                overflow: TextOverflow.visible,
-                textAlign: isNumeric ? TextAlign.right : TextAlign.left,
+    return headers.map((header) {
+      final columnIndex = _getMfOrderColumnIndexForHeader(header);
+      final isScheme = header == 'Scheme';
+      final isTime = header == 'Time';
+      
+      return DataColumn2(
+        label: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              header,
+              style: WebTextStyles.tableHeader(
+                isDarkTheme: theme.isDarkMode,
+                color: theme.isDarkMode
+                    ? WebDarkColors.textPrimary
+                    : WebColors.textPrimary,
               ),
             ),
-          ),
-          // Sort icon
-          if (_mfSortColumnIndex == columnIndex)
-            Padding(
-              padding: const EdgeInsets.only(left: 6.0),
-              child: Icon(
-                _mfSortAscending ? Icons.arrow_upward : Icons.arrow_downward,
-                size: 16,
-                color: theme.isDarkMode
-                    ? WebDarkColors.iconPrimary
-                    : WebColors.iconPrimary,
-              ),
-            )
-          else
-            Padding(
-              padding: const EdgeInsets.only(right: 6.0),
-              child: Icon(
-                Icons.unfold_more,
-                size: 16,
-                color: theme.isDarkMode
-                    ? WebDarkColors.iconSecondary
-                    : WebColors.iconSecondary,
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMfOrderColumnCell({
-    required bool needHorizontalScroll,
-    required int flex,
-    required double minW,
-    required Widget child,
-  }) {
-    if (needHorizontalScroll) {
-      return SizedBox(
-        width: minW,
-        child: child,
+            const SizedBox(width: 4),
+            _buildMfOrderSortIcon(columnIndex, theme),
+          ],
+        ),
+        size: isScheme ? ColumnSize.L : ColumnSize.S,
+        fixedWidth: isScheme ? 300.0 : (isTime ? 220.0 : null),
+        onSort: (index, ascending) => _onSortMfTable(columnIndex, ascending),
       );
-    }
-
-    return Expanded(
-      flex: flex,
-      child: SizedBox(
-        width: minW,
-        child: child,
-      ),
-    );
+    }).toList();
   }
 
-  Widget _buildMfOrderBodyList(
-    ThemesProvider theme,
+  List<DataRow2> _buildMfOrderDataTable2Rows(
     List<dynamic> orders,
     List<String> headers,
-    Map<String, int> columnFlex,
-    Map<String, double> columnMinWidth, {
-    required double totalMinWidth,
-    required bool needHorizontalScroll,
-  }) {
+    ThemesProvider theme,
+  ) {
     final sorted = _sortedMfOrders(orders);
-    return ListView.builder(
-      controller: _verticalScrollController,
-      physics: const AlwaysScrollableScrollPhysics(),
-      itemCount: sorted.length,
-      itemBuilder: (context, index) {
-        final o = sorted[index];
-        final uniqueId = o.orderId?.toString() ?? (o.name ?? o.schemename ?? '') + index.toString();
-        final isHovered = _hoveredRowToken == uniqueId;
+    return sorted.map((order) {
+      final uniqueId = order.orderId?.toString() ?? 
+          (order.name ?? order.schemename ?? '') + sorted.indexOf(order).toString();
+      final isHovered = _hoveredRowToken == uniqueId;
 
-        return MouseRegion(
-          onEnter: (_) => setState(() => _hoveredRowToken = uniqueId),
-          onExit: (_) => setState(() => _hoveredRowToken = null),
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: () => _openMfOrderDetail(o),
-            child: Container(
-              decoration: BoxDecoration(
-                color: isHovered
-                    ? (theme.isDarkMode
-                        ? WebDarkColors.primary.withOpacity(0.06)
-                        : WebColors.primary.withOpacity(0.10))
-                    : Colors.transparent,
-                border: Border(
-                  bottom: BorderSide(
-                    color: theme.isDarkMode
-                        ? WebDarkColors.divider
-                        : WebColors.divider,
-                    width: 1,
-                  ),
-                ),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              child: needHorizontalScroll
-                  ? IntrinsicWidth(
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: headers.map((label) {
-                          final flex = columnFlex[label] ?? 1;
-                          final minW = columnMinWidth[label] ?? 80.0;
-                          return _buildMfOrderColumnCell(
-                            needHorizontalScroll: needHorizontalScroll,
-                            flex: flex,
-                            minW: minW,
-                            child: _buildMfOrderCellWidget(
-                              label,
-                              o,
-                              theme,
-                              needHorizontalScroll: needHorizontalScroll,
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    )
-                  : Row(
-                      mainAxisSize: MainAxisSize.max,
-                      children: headers.map((label) {
-                        final flex = columnFlex[label] ?? 1;
-                        final minW = columnMinWidth[label] ?? 80.0;
-                        return _buildMfOrderColumnCell(
-                          needHorizontalScroll: needHorizontalScroll,
-                          flex: flex,
-                          minW: minW,
-                          child: _buildMfOrderCellWidget(
-                            label,
-                            o,
-                            theme,
-                            needHorizontalScroll: needHorizontalScroll,
-                          ),
-                        );
-                      }).toList(),
-                    ),
-            ),
-          ),
-        );
-      },
-    );
+      return DataRow2(
+        color: MaterialStateProperty.resolveWith((states) {
+          if (isHovered) {
+            return theme.isDarkMode
+                ? WebDarkColors.primary.withOpacity(0.06)
+                : WebColors.primary.withOpacity(0.10);
+          }
+          return null;
+        }),
+        cells: headers.map((header) {
+          return _buildMfOrderDataTable2Cell(
+            header,
+            order,
+            theme,
+            isHovered,
+            uniqueId,
+          );
+        }).toList(),
+        onTap: () => _openMfOrderDetail(order),
+      );
+    }).toList();
   }
 
-  Widget _buildMfOrderCellWidget(
+  DataCell _buildMfOrderDataTable2Cell(
     String column,
-    dynamic o,
-    ThemesProvider theme, {
-    required bool needHorizontalScroll,
-  }) {
+    dynamic order,
+    ThemesProvider theme,
+    bool isHovered,
+    String uniqueId,
+  ) {
+    Widget cellContent;
+    
     switch (column) {
       case 'Scheme':
-        final scheme = o.name ?? o.schemename ?? '';
-        return _buildMfOrderTextCell(
+        final scheme = order.name ?? order.schemename ?? 'N/A';
+        cellContent = _buildMfOrderTextCell(
           scheme,
           theme,
           Alignment.centerLeft,
-          needHorizontalScroll: needHorizontalScroll,
         );
+        break;
       case 'Type':
-        final type = (o.orderType == 'NRM' ? 'ONE-TIME' : 'SIP');
-        return Align(
-          alignment: Alignment.centerLeft,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 6.0),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: type == 'ONE-TIME'
-                    ? Color.fromARGB(255, 88, 69, 147).withOpacity(0.1)
-                    : Color(0xff016B61).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(4),
-                border: Border.all(
-                  color: type == 'ONE-TIME'
-                      ? Color.fromARGB(255, 88, 69, 147)
-                      : Color(0xff016B61),
-                  width: 1,
-                ),
-              ),
-              child: Text(
-                type,
-                style: WebTextStyles.custom(
-                  fontSize: 13,
-                  isDarkTheme: theme.isDarkMode,
-                  color: type == 'ONE-TIME'
-                      ? Color.fromARGB(255, 88, 69, 147)
-                      : Color(0xff016B61),
-                  fontWeight: WebFonts.medium,
-                ),
-                maxLines: 1,
-                softWrap: false,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ),
-        );
+        final type = (order.orderType == 'NRM' ? 'ONE-TIME' : 'SIP');
+        cellContent = _buildMfOrderTypeCell(type, theme);
+        break;
       case 'Amount':
-        final amount = o.orderVal ?? o.amount ?? '0';
-        return _buildMfOrderTextCell(
-          double.tryParse(amount.toString())?.toStringAsFixed(2) ?? amount.toString(),
+        final amount = order.orderVal ?? order.amount ?? '0';
+        final amountText = double.tryParse(amount.toString())?.toStringAsFixed(2) ?? amount.toString();
+        cellContent = _buildMfOrderTextCell(
+          amountText,
           theme,
           Alignment.centerRight,
-          needHorizontalScroll: needHorizontalScroll,
         );
+        break;
       case 'Time':
-        final time = o.datetime ?? '';
-        return _buildMfOrderTextCell(
+        final time = order.datetime ?? '';
+        cellContent = _buildMfOrderTextCell(
           time,
           theme,
-          Alignment.centerRight,
-          needHorizontalScroll: needHorizontalScroll,
+          Alignment.centerLeft,
         );
+        break;
       case 'Status':
-        final status = (o.status ?? '').toUpperCase();
+        final status = (order.status ?? '').toUpperCase();
         final statusColor = _statusColor(status, theme);
-        return _buildMfOrderTextCell(
+        cellContent = _buildMfOrderTextCell(
           status,
           theme,
           Alignment.centerLeft,
           color: statusColor,
-          needHorizontalScroll: needHorizontalScroll,
         );
+        break;
       default:
-        return const SizedBox.shrink();
+        cellContent = const SizedBox.shrink();
+    }
+
+    // Wrap with MouseRegion to detect hover anywhere on the cell
+    return DataCell(
+      MouseRegion(
+        onEnter: (_) => setState(() => _hoveredRowToken = uniqueId),
+        onExit: (_) => setState(() => _hoveredRowToken = null),
+        child: SizedBox.expand(
+          child: cellContent,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMfOrderSortIcon(int columnIndex, ThemesProvider theme) {
+    if (_mfSortColumnIndex == columnIndex) {
+      return const SizedBox(width: 16); // Reserve space for DataTable2's arrow
+    } else {
+      return Icon(
+        Icons.unfold_more,
+        size: 16,
+        color: theme.isDarkMode
+            ? WebDarkColors.iconSecondary
+            : WebColors.iconSecondary,
+      );
     }
   }
+
+  Widget _buildMfOrderTypeCell(String type, ThemesProvider theme) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 6.0),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: type == 'ONE-TIME'
+                ? Color.fromARGB(255, 88, 69, 147).withOpacity(0.1)
+                : Color(0xff016B61).withOpacity(0.1),
+            borderRadius: BorderRadius.circular(4),
+            border: Border.all(
+              color: type == 'ONE-TIME'
+                  ? Color.fromARGB(255, 88, 69, 147)
+                  : Color(0xff016B61),
+              width: 1,
+            ),
+          ),
+          child: Text(
+            type,
+            style: WebTextStyles.custom(
+              fontSize: 13,
+              isDarkTheme: theme.isDarkMode,
+              color: type == 'ONE-TIME'
+                  ? Color.fromARGB(255, 88, 69, 147)
+                  : Color(0xff016B61),
+              fontWeight: WebFonts.medium,
+            ),
+            maxLines: 1,
+            softWrap: false,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ),
+    );
+  }
+
 
   Widget _buildMfOrderTextCell(
     String text,
     ThemesProvider theme,
     Alignment alignment, {
     Color? color,
-    bool needHorizontalScroll = false,
   }) {
     return Align(
       alignment: alignment,
@@ -546,9 +443,9 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb>
                     : WebColors.textPrimary),
             fontWeight: WebFonts.medium,
           ),
-          maxLines: 1,
+          maxLines: 1, 
           softWrap: false,
-          overflow: TextOverflow.ellipsis,
+          overflow: TextOverflow.visible,
         ),
       ),
     );
@@ -557,12 +454,8 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb>
 
   void _onSortMfTable(int columnIndex, bool ascending) {
     setState(() {
-      if (_mfSortColumnIndex == columnIndex) {
-        _mfSortAscending = !_mfSortAscending;
-      } else {
-        _mfSortColumnIndex = columnIndex;
-        _mfSortAscending = ascending;
-      }
+      _mfSortColumnIndex = columnIndex;
+      _mfSortAscending = ascending;
     });
   }
 

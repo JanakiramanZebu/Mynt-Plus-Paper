@@ -3,6 +3,7 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:data_table_2/data_table_2.dart';
 import 'package:mynt_plus/screens/web/ordersbook/basket/basket_list_web.dart';
 import 'package:mynt_plus/sharedWidget/functions.dart';
 
@@ -45,9 +46,11 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
   TabController?
       _tabController; // Make nullable to allow deferred initialization
   StreamSubscription? _socketSubscription;
-  final ScrollController _horizontalScrollController = ScrollController();
-  final ScrollController _orderBookVerticalScrollController =
-      ScrollController();
+  final ScrollController _openOrdersHorizontalScrollController = ScrollController();
+  final ScrollController _openOrdersVerticalScrollController = ScrollController();
+  final ScrollController _executedOrdersHorizontalScrollController = ScrollController();
+  final ScrollController _executedOrdersVerticalScrollController = ScrollController();
+  final ScrollController _tradeBookHorizontalScrollController = ScrollController();
   final ScrollController _tradeBookVerticalScrollController =
       ScrollController();
   final ScrollController _gttVerticalScrollController = ScrollController();
@@ -158,8 +161,11 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
   void dispose() {
     _socketSubscription?.cancel();
     _tabController?.dispose(); // Handle nullable TabController
-    _horizontalScrollController.dispose();
-    _orderBookVerticalScrollController.dispose();
+    _openOrdersHorizontalScrollController.dispose();
+    _openOrdersVerticalScrollController.dispose();
+    _executedOrdersHorizontalScrollController.dispose();
+    _executedOrdersVerticalScrollController.dispose();
+    _tradeBookHorizontalScrollController.dispose();
     _tradeBookVerticalScrollController.dispose();
     _gttVerticalScrollController.dispose();
     _gttHorizontalScrollController.dispose();
@@ -738,6 +744,8 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                       ? (orderBook.orderSearchItem ?? [])
                       : (orderBook.openOrder ?? [])),
                   'Open Orders',
+                  _openOrdersHorizontalScrollController,
+                  _openOrdersVerticalScrollController,
                 ),
               ),
               Align(
@@ -748,6 +756,8 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                       ? (orderBook.orderSearchItem ?? [])
                       : (orderBook.executedOrder ?? [])),
                   'Executed Orders',
+                  _executedOrdersHorizontalScrollController,
+                  _executedOrdersVerticalScrollController,
                 ),
               ),
               Align(
@@ -907,7 +917,11 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
   }
 
   Widget _buildOrderBookTable(
-      ThemesProvider theme, List<OrderBookModel> orders, String title) {
+      ThemesProvider theme, 
+      List<OrderBookModel> orders, 
+      String title,
+      ScrollController horizontalScrollController,
+      ScrollController verticalScrollController) {
     final orderBook = ref.watch(orderProvider);
 
     // Show loading indicator if data is being fetched and no existing data
@@ -942,144 +956,134 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        // Use the actual available width inside this layout for responsive rules
-        final screenWidth = constraints.maxWidth;
+        // Calculate available height
+        final screenHeight = MediaQuery.of(context).size.height;
+        final padding = 32.0; // Top and bottom padding (16 * 2)
+        final headerHeight = 50.0; // Header height (tabs + search bar)
+        final spacing = 16.0; // Spacing between header and content
+        final bottomMargin = 20.0; // Bottom margin
+        final tableHeight =
+            screenHeight - padding - headerHeight - spacing - bottomMargin;
+
+        // Ensure we don't exceed 75% of screen height
+        final maxHeight = screenHeight * 0.75;
+        final calculatedHeight = tableHeight > maxHeight
+            ? maxHeight
+            : (tableHeight > 400 ? tableHeight : 400.0);
+
+        // Get screen width for responsive design
+        final screenWidth = MediaQuery.of(context).size.width;
         
         // Get responsive column configuration
         final responsiveConfig = _getResponsiveOrderBookColumns(screenWidth);
         final headers = List<String>.from(responsiveConfig['headers'] as List);
-        final columnFlex = Map<String, int>.from(responsiveConfig['columnFlex'] as Map);
         final columnMinWidth = Map<String, double>.from(responsiveConfig['columnMinWidth'] as Map);
         
-        // Calculate total minimum width
-        // Add horizontal padding (12px on each side = 24px total)
-        // Add border width (1px on each side = 2px total)
-        // Add extra buffer for scrollbar and browser inconsistencies
-        const horizontalPadding = 24.0; // 12px left + 12px right
-        const borderWidth = 2.0; // 1px left + 1px right
-        const extraBuffer = 20.0; // Extra space for scrollbar and browser differences
-        final totalMinWidth =
-            columnMinWidth.values.fold<double>(0.0, (a, b) => a + b) + horizontalPadding + borderWidth + extraBuffer;
-        // Determine whether horizontal scroll is needed
-        final needHorizontalScroll = constraints.maxWidth < totalMinWidth;
-
-        // Build the Column (header + body)
-        final tableColumn = Container(
-          decoration: BoxDecoration(
-            border: Border.all(
-              color: theme.isDarkMode
-                  ? WebDarkColors.divider
-                  : WebColors.divider,
-              width: 1,
-            ),
-            borderRadius: BorderRadius.circular(4),
-            color: theme.isDarkMode
-                ? WebDarkColors.background
-                : Colors.white,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // --- Sticky header (fixed) ---
-              Container(
-                height: 50,
-                decoration: BoxDecoration(
-                  color: theme.isDarkMode
-                      ? WebDarkColors.primary
-                      : WebColors.primary.withOpacity(0.05),
-                  border: Border(
-                    bottom: BorderSide(
-                      color: theme.isDarkMode
-                          ? WebDarkColors.divider
-                          : WebColors.divider,
-                      width: 1,
-                    ),
-                  ),
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(4),
-                    topRight: Radius.circular(4),
-                  ),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Row(
-                  mainAxisSize: needHorizontalScroll ? MainAxisSize.min : MainAxisSize.max,
-                  children: headers.map((label) {
-                    final flex = columnFlex[label] ?? 1;
-                    final minW = columnMinWidth[label] ?? 80.0;
-                    final columnIndex = _getOrderBookColumnIndexForHeader(label);
-
-                    return _buildOrderBookColumnCell(
-                      needHorizontalScroll: needHorizontalScroll,
-                      flex: flex,
-                      minW: minW,
-                      child: _buildOrderBookHeaderWidget(
-                        label, 
-                        columnIndex, 
-                        theme,
-                        needHorizontalScroll: needHorizontalScroll,
-                      ),
-                    );
-                  }).toList(),
-                ),
-              ),
-
-              // --- Scrollable body (vertical) ---
-              Expanded(
-                child: Scrollbar(
-                  controller: _orderBookVerticalScrollController,
-                  thumbVisibility: true,
-                  radius: Radius.zero,
-                  child: _buildOrderBookBodyList(
-                    theme,
-                    orders,
-                    headers,
-                    columnFlex,
-                    columnMinWidth,
-                    totalMinWidth: totalMinWidth,
-                    needHorizontalScroll: needHorizontalScroll,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-
-        // If horizontal scroll needed, wrap the entire column inside SingleChildScrollView
-        if (needHorizontalScroll) {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 20.0),
-            child: SizedBox(
-              width: constraints.maxWidth,
-              height: constraints.maxHeight,
-              child: Scrollbar(
-                controller: _horizontalScrollController,
-                thumbVisibility: true,  // Always show horizontal scrollbar
-                trackVisibility: true,  // Show scrollbar track
-                thickness: 10,
-                radius: const Radius.circular(5),
-                // notificationPredicate: (ScrollNotification notification) {
-                //   return notification.depth == 1; // Only respond to horizontal scroll
-                // },
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  controller: _horizontalScrollController,
-                  child: SizedBox(
-                    width: totalMinWidth,
-                    child: tableColumn,
-                  ),
-                ),
-              ),
-            ),
-          );
-        }
-
-        // else (no horizontal scroll needed, but still wrap for consistency)
         return Padding(
           padding: const EdgeInsets.only(bottom: 20.0),
-          child: SizedBox(
-            width: constraints.maxWidth,
-            height: constraints.maxHeight,
-            child: tableColumn,
+          child: Container(
+            height: calculatedHeight.toDouble(),
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: theme.isDarkMode
+                    ? WebDarkColors.divider
+                    : WebColors.divider,
+                width: 1,
+              ),
+              borderRadius: BorderRadius.circular(4),
+              color: theme.isDarkMode
+                  ? WebDarkColors.background
+                  : Colors.white,
+            ),
+            child: Theme(
+              data: Theme.of(context).copyWith(
+                scrollbarTheme: ScrollbarThemeData(
+                  // Make both scrollbars always visible
+                  thumbVisibility: MaterialStateProperty.all(true),
+                  trackVisibility: MaterialStateProperty.all(true),
+                  
+                  // Consistent thickness for both horizontal and vertical
+                  thickness: MaterialStateProperty.all(6.0),
+                  crossAxisMargin: 0.0,
+                  mainAxisMargin: 0.0,
+                  
+                  // Consistent radius
+                  radius: const Radius.circular(3),
+                  
+                  // Consistent colors for both scrollbars
+                  thumbColor: MaterialStateProperty.resolveWith((states) {
+                    return theme.isDarkMode 
+                        ? WebDarkColors.textSecondary.withOpacity(0.3)
+                        : WebColors.textSecondary.withOpacity(0.3);
+                  }),
+                  trackColor: MaterialStateProperty.resolveWith((states) {
+                    return theme.isDarkMode 
+                        ? WebDarkColors.divider.withOpacity(0.1)
+                        : WebColors.divider.withOpacity(0.1);
+                  }),
+                  
+                  trackBorderColor: MaterialStateProperty.all(Colors.transparent),
+                  minThumbLength: 48.0,
+                ),
+              ),
+              child: DataTable2(
+                columnSpacing: 12,
+                horizontalMargin: 12,
+                minWidth: 1840,
+                sortColumnIndex: _orderSortColumnIndex,
+                sortAscending: _orderSortAscending,
+                fixedLeftColumns: 1, // Fix the first column (Instrument)
+                fixedColumnsColor: theme.isDarkMode 
+                    ? WebDarkColors.backgroundSecondary.withOpacity(0.8)
+                    : WebColors.backgroundSecondary.withOpacity(0.8),
+                showBottomBorder: true,
+                horizontalScrollController: horizontalScrollController,
+                scrollController: verticalScrollController,
+                showCheckboxColumn: false,
+                headingRowColor: MaterialStateProperty.all(
+                  theme.isDarkMode
+                      ? WebDarkColors.primary
+                      : WebColors.primary.withOpacity(0.05),
+                ),
+                headingTextStyle: WebTextStyles.tableHeader(
+                  isDarkTheme: theme.isDarkMode,
+                  color: theme.isDarkMode
+                      ? WebDarkColors.textPrimary
+                      : WebColors.textPrimary,
+                ),
+                dataTextStyle: WebTextStyles.custom(
+                  fontSize: 13,
+                  isDarkTheme: theme.isDarkMode,
+                  color: theme.isDarkMode
+                      ? WebDarkColors.textPrimary
+                      : WebColors.textPrimary,
+                  fontWeight: WebFonts.medium,
+                ),
+                border: TableBorder(
+                  top: BorderSide(
+                    color: theme.isDarkMode
+                        ? WebDarkColors.divider
+                        : WebColors.divider,
+                    width: 1,
+                  ),
+                  bottom: BorderSide(
+                    color: theme.isDarkMode
+                        ? WebDarkColors.divider
+                        : WebColors.divider,
+                    width: 1,
+                  ),
+                  horizontalInside: BorderSide(
+                    color: theme.isDarkMode
+                        ? WebDarkColors.divider
+                        : WebColors.divider,
+                    width: 1,
+                  ),
+                  // Remove vertical lines
+                ),
+                columns: _buildOrderBookDataTable2Columns(headers, columnMinWidth, theme),
+                rows: _buildOrderBookDataTable2Rows(orders, headers, theme),
+              ),
+            ),
           ),
         );
       },
@@ -1103,235 +1107,152 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     }
   }
 
-  Widget _buildOrderBookHeaderWidget(
-    String label,
-    int columnIndex,
-    ThemesProvider theme, {
-    bool needHorizontalScroll = false,
-  }) {
-    return InkWell(
-      onTap: () => _onSortOrderTable(columnIndex, !_orderSortAscending),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 6),
-              child: Text(
-                label,
-                style: WebTextStyles.tableHeader(
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
-                ),
-                overflow: needHorizontalScroll ? TextOverflow.clip : TextOverflow.ellipsis,
-                maxLines: 1,
-                softWrap: false,
-              ),
-            ),
-          ),
-          // Sort icon
-          if (_orderSortColumnIndex == columnIndex)
-            Padding(
-              padding: const EdgeInsets.only(left: 6.0),
-              child: Icon(
-                _orderSortAscending ? Icons.arrow_upward : Icons.arrow_downward,
-                size: 16,
-                color: theme.isDarkMode
-                    ? WebDarkColors.iconPrimary
-                    : WebColors.iconPrimary,
-              ),
-            )
-          else
-            Padding(
-              padding: const EdgeInsets.only(right: 6.0),
-              child: Icon(
-                Icons.unfold_more,
-                size: 16,
-                color: theme.isDarkMode
-                    ? WebDarkColors.iconSecondary
-                    : WebColors.iconSecondary,
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildOrderBookColumnCell({
-    required bool needHorizontalScroll,
-    required int flex,
-    required double minW,
-    required Widget child,
-  }) {
-    if (needHorizontalScroll) { 
-      return SizedBox(
-        width: minW,
-        child: ClipRect(
-          child: child,
-        ),
-      );
-    }
-
-    return Expanded(
-      flex: flex,
-      child: ConstrainedBox(
-        constraints: BoxConstraints(minWidth: minW),
-        child: child,
-      ),
-    );
-  }
-
-  Widget _buildOrderBookBodyList(
+  List<DataColumn2> _buildOrderBookDataTable2Columns(
+    List<String> headers,
+    Map<String, double> columnMinWidth,
     ThemesProvider theme,
+  ) {
+    return headers.map((header) {
+      final columnIndex = _getOrderBookColumnIndexForHeader(header);
+      final isInstrument = header == 'Instrument';
+      final isTime = header == 'Time';
+      
+      return DataColumn2(
+        label: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              header,
+              style: WebTextStyles.tableHeader(
+                isDarkTheme: theme.isDarkMode,
+                color: theme.isDarkMode
+                    ? WebDarkColors.textPrimary
+                    : WebColors.textPrimary,
+              ),
+            ),
+            const SizedBox(width: 4),
+            _buildOrderBookSortIcon(columnIndex, theme),
+          ],
+        ),
+        size: isInstrument ? ColumnSize.L : ColumnSize.S,
+        fixedWidth: isInstrument ? 300.0 : (isTime ? 220.0 : null),
+        onSort: (index, ascending) => _onSortOrderTable(columnIndex, ascending),
+      );
+    }).toList();
+  }
+
+  List<DataRow2> _buildOrderBookDataTable2Rows(
     List<OrderBookModel> orders,
     List<String> headers,
-    Map<String, int> columnFlex,
-    Map<String, double> columnMinWidth, {
-    required double totalMinWidth,
-    required bool needHorizontalScroll,
-  }) {
+    ThemesProvider theme,
+  ) {
     final sorted = _sortedOrders(orders);
-    return ListView.builder(
-      controller: _orderBookVerticalScrollController,
-      physics: const AlwaysScrollableScrollPhysics(),
-      itemCount: sorted.length,
-      itemBuilder: (context, index) {
-        final order = sorted[index];
-        // Use order number as unique identifier for hover
-        final uniqueId = order.norenordno?.toString() ??
-            order.token?.toString() ??
-            '';
-        final isHovered = _hoveredRowToken == uniqueId;
+    return sorted.map((order) {
+      final uniqueId = order.norenordno?.toString() ??
+          order.token?.toString() ??
+          '';
+      final isHovered = _hoveredRowToken == uniqueId;
 
-        return MouseRegion(
-          onEnter: (_) => setState(() => _hoveredRowToken = uniqueId),
-          onExit: (_) => setState(() => _hoveredRowToken = null),
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: () => _openOrderDetail(order),
-            child: Container(
-              decoration: BoxDecoration(
-                color: isHovered
-                    ? (theme.isDarkMode
-                        ? WebDarkColors.primary.withOpacity(0.06)
-                        : WebColors.primary.withOpacity(0.10))
-                    : Colors.transparent,
-                border: Border(
-                  bottom: BorderSide(
-                    color: theme.isDarkMode
-                        ? WebDarkColors.divider
-                        : WebColors.divider,
-                    width: 1,
-                  ),
-                ),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              child: Row(
-                mainAxisSize: needHorizontalScroll ? MainAxisSize.min : MainAxisSize.max,
-                children: headers.map((label) {
-                  final flex = columnFlex[label] ?? 1;
-                  final minW = columnMinWidth[label] ?? 80.0;
-                  return _buildOrderBookColumnCell(
-                    needHorizontalScroll: needHorizontalScroll,
-                    flex: flex,
-                    minW: minW,
-                    child: _buildOrderBookCellWidget(
-                      label,
-                      order,
-                      theme,
-                      isHovered,
-                      uniqueId,
-                      needHorizontalScroll: needHorizontalScroll,
-                    ),
-                  );
-                }).toList(),
-              ),
-            ),
-          ),
-        );
-      },
-    );
+      return DataRow2(
+        color: MaterialStateProperty.resolveWith((states) {
+          if (isHovered) {
+            return theme.isDarkMode
+                ? WebDarkColors.primary.withOpacity(0.06)
+                : WebColors.primary.withOpacity(0.10);
+          }
+          return null;
+        }),
+        cells: headers.map((header) {
+          return _buildOrderBookDataTable2Cell(
+            header,
+            order,
+            theme,
+            isHovered,
+            uniqueId,
+          );
+        }).toList(),
+        onTap: () => _openOrderDetail(order),
+      );
+    }).toList();
   }
 
-  Widget _buildOrderBookCellWidget(
+  DataCell _buildOrderBookDataTable2Cell(
     String column,
     OrderBookModel order,
     ThemesProvider theme,
     bool isHovered,
-    String uniqueId, {
-    required bool needHorizontalScroll,
-  }) {
+    String uniqueId,
+  ) {
+    Widget cellContent;
+    
     switch (column) {
       case 'Instrument':
-        return _buildOrderBookInstrumentWidget(
+        cellContent = _buildOrderBookInstrumentCellContent(
           order,
           theme,
           isHovered,
           uniqueId,
-          needHorizontalScroll: needHorizontalScroll,
         );
+        break;
       case 'Product':
-        return _buildOrderBookTextCell(
+        cellContent = _buildOrderBookTextCell(
           order.sPrdtAli ?? order.prd ?? 'N/A',
           theme,
           Alignment.centerLeft,
-          needHorizontalScroll: needHorizontalScroll,
         );
+        break;
       case 'Type':
         final buySell = order.trantype == "S" ? "SELL" : "BUY";
         final buttonColor = order.trantype == "S"
             ? (theme.isDarkMode ? colors.lossDark : colors.lossLight)
             : (theme.isDarkMode ? colors.profitDark : colors.profitLight);
-        return _buildOrderBookTextCell(
+        cellContent = _buildOrderBookTextCell(
           buySell,
           theme,
           Alignment.centerLeft,
           color: buttonColor,
-          needHorizontalScroll: needHorizontalScroll,
         );
+        break;
       case 'Qty':
-        return _buildOrderBookTextCell(
+        cellContent = _buildOrderBookTextCell(
           order.qty?.toString() ?? '0',
           theme,
           Alignment.centerRight,
-          needHorizontalScroll: needHorizontalScroll,
         );
+        break;
       case 'Avg price':
-        return _buildOrderBookTextCell(
+        cellContent = _buildOrderBookTextCell(
           order.avgprc ?? '0.00',
           theme,
           Alignment.centerRight,
-          needHorizontalScroll: needHorizontalScroll,
         );
+        break;
       case 'LTP':
-        return _buildOrderBookTextCell(
+        cellContent = _buildOrderBookTextCell(
           _getValidLTP(order),
           theme,
           Alignment.centerRight,
-          needHorizontalScroll: needHorizontalScroll,
         );
+        break;
       case 'Price':
-        return _buildOrderBookTextCell(
+        cellContent = _buildOrderBookTextCell(
           _getValidPrice(order),
           theme,
           Alignment.centerRight,
-          needHorizontalScroll: needHorizontalScroll,
         );
+        break;
       case 'Trigger price':
         final triggerPrice = (order.trgprc != null && 
             order.trgprc != '0' && 
             order.trgprc != '0.00') 
             ? order.trgprc! 
             : '0.00';
-        return _buildOrderBookTextCell(
+        cellContent = _buildOrderBookTextCell(
           triggerPrice,
           theme,
           Alignment.centerRight,
-          needHorizontalScroll: needHorizontalScroll,
         );
+        break;
       case 'Order value':
         String orderValue = '0.00';
         try {
@@ -1341,43 +1262,52 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
         } catch (e) {
           orderValue = '0.00';
         }
-        return _buildOrderBookTextCell(
+        cellContent = _buildOrderBookTextCell(
           orderValue,
           theme,
           Alignment.centerRight,
-          needHorizontalScroll: needHorizontalScroll,
         );
+        break;
       case 'Status':
         final statusText = _getStatusText(order);
         final statusColor = _getStatusColor(statusText, theme);
-        return _buildOrderBookTextCell(
+        cellContent = _buildOrderBookTextCell(
           statusText,
           theme,
           Alignment.centerLeft,
           color: statusColor,
-          needHorizontalScroll: needHorizontalScroll,
         );
+        break;
       case 'Time':
         final time = order.norentm != null ? order.norentm! : '0.00';
-        return _buildOrderBookTextCell(
+        cellContent = _buildOrderBookTextCell(
           formatDateTime(value: time),
           theme,
           Alignment.centerLeft,
-          needHorizontalScroll: needHorizontalScroll,
-          useEllipsis: false,
         );
+        break;
       default:
-        return const SizedBox.shrink();
+        cellContent = const SizedBox.shrink();
     }
+
+    // Wrap with MouseRegion to detect hover anywhere on the cell
+    return DataCell(
+      MouseRegion(
+        onEnter: (_) => setState(() => _hoveredRowToken = uniqueId),
+        onExit: (_) => setState(() => _hoveredRowToken = null),
+        child: SizedBox.expand(
+          child: cellContent,
+        ),
+      ),
+    );
   }
 
-  Widget _buildOrderBookInstrumentWidget(
+  Widget _buildOrderBookInstrumentCellContent(
     OrderBookModel order,
     ThemesProvider theme,
     bool isHovered,
-    String uniqueId, {
-    required bool needHorizontalScroll,
-  }) {
+    String uniqueId,
+  ) {
     final isProcessing = _processingOrderToken == uniqueId;
     final isPending = order.status == "PENDING" ||
         order.status == "OPEN" ||
@@ -1390,66 +1320,76 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
       displayText += ' ${exchange.trim()}';
     }
 
-    return ClipRect(
-      child: Row(
-        mainAxisSize: needHorizontalScroll ? MainAxisSize.min : MainAxisSize.max,
-        children: [
-          needHorizontalScroll
-              ? Expanded(
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Tooltip(
-                      message: displayText,
-                      child: Text(
-                        displayText,
-                        style: WebTextStyles.custom(
-                          fontSize: 13,
-                          isDarkTheme: theme.isDarkMode,
-                          color: theme.isDarkMode
-                              ? WebDarkColors.textPrimary
-                              : WebColors.textPrimary,
-                          fontWeight: WebFonts.medium,
-                        ),
-                        maxLines: 1,
-                        softWrap: false,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ),
-                )
-              : Flexible(
-                  flex: isHovered ? 1 : 2,
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Tooltip(
-                      message: displayText,
-                      child: Text(
-                        displayText,
-                        style: WebTextStyles.custom(
-                          fontSize: 13,
-                          isDarkTheme: theme.isDarkMode,
-                          color: theme.isDarkMode
-                              ? WebDarkColors.textPrimary
-                              : WebColors.textPrimary,
-                          fontWeight: WebFonts.medium,
-                        ),
-                        maxLines: 1,
-                        softWrap: false,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ),
+    return Row(
+      children: [
+        Expanded(
+          flex: isHovered ? 1 : 2,
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Tooltip(
+              message: displayText,
+              child: Text(
+                displayText,
+                style: WebTextStyles.custom(
+                  fontSize: 13,
+                  isDarkTheme: theme.isDarkMode,
+                  color: theme.isDarkMode
+                      ? WebDarkColors.textPrimary
+                      : WebColors.textPrimary,
+                  fontWeight: WebFonts.medium,
                 ),
-          // Action buttons fade in on hover
-          IgnorePointer(
-            ignoring: !isHovered,
-            child: AnimatedOpacity(
-              opacity: isHovered ? 1 : 0,
-              duration: const Duration(milliseconds: 140),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (isPending) ...[
+                maxLines: 1,
+                softWrap: false,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ),
+        ),
+        // Action buttons fade in on hover
+        IgnorePointer(
+          ignoring: !isHovered,
+          child: AnimatedOpacity(
+            opacity: isHovered ? 1 : 0,
+            duration: const Duration(milliseconds: 140),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (isPending) ...[
+                  _buildOrderHoverButton(
+                    label: 'Cancel',
+                    color: Colors.white,
+                    backgroundColor: theme.isDarkMode
+                        ? WebDarkColors.error
+                        : WebColors.error,
+                    onPressed: isProcessing && _isProcessingCancel
+                        ? null
+                        : () => _handleCancelOrder(order),
+                    theme: theme,
+                  ),
+                  const SizedBox(width: 6),
+                  _buildOrderHoverButton(
+                    label: 'Modify',
+                    color: Colors.white,
+                    backgroundColor: theme.isDarkMode
+                        ? WebDarkColors.primary
+                        : WebColors.primary,
+                    onPressed: isProcessing && _isProcessingModify
+                        ? null
+                        : () => _handleModifyOrder(order),
+                    theme: theme,
+                  ),
+                ] else ...[
+                  _buildOrderHoverButton(
+                    label: 'Repeat',
+                    color: Colors.white,
+                    backgroundColor: theme.isDarkMode
+                        ? WebDarkColors.primary
+                        : WebColors.primary,
+                    onPressed: () => _handleRepeatOrder(order),
+                    theme: theme,
+                  ),
+                  if (order.status == "OPEN") ...[
+                    const SizedBox(width: 6),
                     _buildOrderHoverButton(
                       label: 'Cancel',
                       color: Colors.white,
@@ -1461,59 +1401,37 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                           : () => _handleCancelOrder(order),
                       theme: theme,
                     ),
-                    const SizedBox(width: 6),
-                    _buildOrderHoverButton(
-                      label: 'Modify',
-                      color: Colors.white,
-                      backgroundColor: theme.isDarkMode
-                          ? WebDarkColors.primary
-                          : WebColors.primary,
-                      onPressed: isProcessing && _isProcessingModify
-                          ? null
-                          : () => _handleModifyOrder(order),
-                      theme: theme,
-                    ),
-                  ] else ...[
-                    _buildOrderHoverButton(
-                      label: 'Repeat',
-                      color: Colors.white,
-                      backgroundColor: theme.isDarkMode
-                          ? WebDarkColors.primary
-                          : WebColors.primary,
-                      onPressed: () => _handleRepeatOrder(order),
-                      theme: theme,
-                    ),
-                    if (order.status == "OPEN") ...[
-                      const SizedBox(width: 6),
-                      _buildOrderHoverButton(
-                        label: 'Cancel',
-                        color: Colors.white,
-                        backgroundColor: theme.isDarkMode
-                            ? WebDarkColors.error
-                            : WebColors.error,
-                        onPressed: isProcessing && _isProcessingCancel
-                            ? null
-                            : () => _handleCancelOrder(order),
-                        theme: theme,
-                      ),
-                    ],
                   ],
                 ],
-              ),
+              ],
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
+
+  Widget _buildOrderBookSortIcon(int columnIndex, ThemesProvider theme) {
+    if (_orderSortColumnIndex == columnIndex) {
+      return const SizedBox(width: 16); // Reserve space for DataTable2's arrow
+    } else {
+      return Icon(
+        Icons.unfold_more,
+        size: 16,
+        color: theme.isDarkMode
+            ? WebDarkColors.iconSecondary
+            : WebColors.iconSecondary,
+      );
+    }
+  }
+
+
 
   Widget _buildOrderBookTextCell(
     String text,
     ThemesProvider theme,
     Alignment alignment, {
     Color? color,
-    bool needHorizontalScroll = false,
-    bool useEllipsis = false,
   }) {
     return Align(
       alignment: alignment,
@@ -1532,9 +1450,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
           ),
           maxLines: 1, 
           softWrap: false,
-          overflow: useEllipsis 
-              ? TextOverflow.ellipsis 
-              : (needHorizontalScroll ? TextOverflow.clip : TextOverflow.visible),
+          overflow: TextOverflow.visible,
         ),
       ),
     );
@@ -1582,153 +1498,112 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
         // Get responsive column configuration
         final responsiveConfig = _getResponsiveTradeBookColumns(screenWidth);
         final headers = List<String>.from(responsiveConfig['headers'] as List);
-        final columnFlex = Map<String, int>.from(responsiveConfig['columnFlex'] as Map);
         final columnMinWidth = Map<String, double>.from(responsiveConfig['columnMinWidth'] as Map);
         
-        // Calculate total minimum width
-        final totalMinWidth =
-            columnMinWidth.values.fold<double>(0.0, (a, b) => a + b);
-        // Determine whether horizontal scroll is needed
-        final needHorizontalScroll = constraints.maxWidth < totalMinWidth;
-
-        // Build the Column (header + body)
-        final tableColumn = Container(
-          decoration: BoxDecoration(
-            border: Border.all(
-              color: theme.isDarkMode
-                  ? WebDarkColors.divider
-                  : WebColors.divider,
-              width: 1,
-            ),
-            borderRadius: BorderRadius.circular(4),
-            color: theme.isDarkMode
-                ? WebDarkColors.background
-                : Colors.white,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // --- Sticky header (fixed) ---
-              Container(
-                height: 50,
-                decoration: BoxDecoration(
-                  color: theme.isDarkMode
-                      ? WebDarkColors.primary
-                      : WebColors.primary.withOpacity(0.05),
-                  border: Border(
-                    bottom: BorderSide(
-                      color: theme.isDarkMode
-                          ? WebDarkColors.divider
-                          : WebColors.divider,
-                      width: 1,
-                    ),
-                  ),
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(4),
-                    topRight: Radius.circular(4),
-                  ),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: needHorizontalScroll
-                    ? IntrinsicWidth(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: headers.map((label) {
-                            final flex = columnFlex[label] ?? 1;
-                            final minW = columnMinWidth[label] ?? 80.0;
-                            final columnIndex = _getTradeBookColumnIndexForHeader(label);
-
-                          return _buildTradeBookColumnCell(
-                            needHorizontalScroll: needHorizontalScroll,
-                            flex: flex,
-                            minW: minW,
-                            child: _buildTradeBookHeaderWidget(
-                              label, 
-                              columnIndex, 
-                              theme, 
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    )
-                  : Row(
-                      mainAxisSize: MainAxisSize.max,
-                      children: headers.map((label) {
-                        final flex = columnFlex[label] ?? 1;
-                        final minW = columnMinWidth[label] ?? 80.0;
-                        final columnIndex = _getTradeBookColumnIndexForHeader(label);
-
-                        return _buildTradeBookColumnCell(
-                          needHorizontalScroll: needHorizontalScroll,
-                          flex: flex,
-                          minW: minW,
-                          child: _buildTradeBookHeaderWidget(
-                            label, 
-                            columnIndex, 
-                            theme, 
-                          ),
-                        );
-                      }).toList(),
-                    ),
-            ),
-
-              // --- Scrollable body (vertical) ---
-              Expanded(
-                child: Scrollbar(
-                  controller: _tradeBookVerticalScrollController,
-                  thumbVisibility: true,
-                  radius: Radius.zero,
-                  child: _buildTradeBookBodyList(
-                    theme,
-                    trades,
-                    headers,
-                    columnFlex,
-                    columnMinWidth,
-                    totalMinWidth: totalMinWidth,
-                    needHorizontalScroll: needHorizontalScroll,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-
-        // If horizontal scroll needed, wrap the entire column inside SingleChildScrollView
-        if (needHorizontalScroll) {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 20.0),
-            child: SizedBox(
-              width: constraints.maxWidth,
-              height: constraints.maxHeight,
-              child: Scrollbar(
-                controller: _horizontalScrollController,
-                thumbVisibility: true,  // Always show horizontal scrollbar
-                trackVisibility: true,  // Show scrollbar track
-                thickness: 10,
-                radius: const Radius.circular(5),
-                // notificationPredicate: (ScrollNotification notification) {
-                //   return notification.depth == 1; // Only respond to horizontal scroll
-                // },
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  controller: _horizontalScrollController,
-                  child: SizedBox(
-                    width: totalMinWidth,
-                    child: tableColumn,
-                  ),
-                ),
-              ),
-            ),
-          );
-        }
-
-        // else (no horizontal scroll needed, but still wrap for consistency)
+        // Calculate height based on available space
+        final calculatedHeight = constraints.maxHeight > 0
+            ? constraints.maxHeight
+            : 600.0;
+        
         return Padding(
           padding: const EdgeInsets.only(bottom: 20.0),
-          child: SizedBox(
-            width: constraints.maxWidth,
-            height: constraints.maxHeight,
-            child: tableColumn,
+          child: Container(
+            height: calculatedHeight.toDouble(),
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: theme.isDarkMode
+                    ? WebDarkColors.divider
+                    : WebColors.divider,
+                width: 1,
+              ),
+              borderRadius: BorderRadius.circular(4),
+              color: theme.isDarkMode
+                  ? WebDarkColors.background
+                  : Colors.white,
+            ),
+            child: Theme(
+              data: Theme.of(context).copyWith(
+                scrollbarTheme: ScrollbarThemeData(
+                  // Make both scrollbars always visible
+                  thumbVisibility: MaterialStateProperty.all(true),
+                  trackVisibility: MaterialStateProperty.all(true),
+                  
+                  // Consistent thickness for both horizontal and vertical
+                  thickness: MaterialStateProperty.all(6.0),
+                  crossAxisMargin: 0.0,
+                  mainAxisMargin: 0.0,
+                  
+                  // Consistent radius
+                  radius: const Radius.circular(3),
+                  
+                  // Consistent colors for both scrollbars
+                  thumbColor: MaterialStateProperty.resolveWith((states) {
+                    return theme.isDarkMode 
+                        ? WebDarkColors.textSecondary.withOpacity(0.3)
+                        : WebColors.textSecondary.withOpacity(0.3);
+                  }),
+                  trackColor: MaterialStateProperty.resolveWith((states) {
+                    return theme.isDarkMode 
+                        ? WebDarkColors.divider.withOpacity(0.1)
+                        : WebColors.divider.withOpacity(0.1);
+                  }),
+                  
+                  trackBorderColor: MaterialStateProperty.all(Colors.transparent),
+                  minThumbLength: 48.0,
+                ),
+              ),
+              child: DataTable2(
+                columns: _buildTradeBookDataTable2Columns(headers, columnMinWidth, theme),
+                rows: _buildTradeBookDataTable2Rows(trades, headers, theme),
+                columnSpacing: 12,
+                horizontalMargin: 12,
+                minWidth: 1200,
+                sortColumnIndex: _tradeSortColumnIndex,
+                sortAscending: _tradeSortAscending,
+                fixedLeftColumns: 1, // Fix Instrument column
+                fixedColumnsColor: theme.isDarkMode 
+                    ? WebDarkColors.backgroundSecondary.withOpacity(0.8)
+                    : WebColors.backgroundSecondary.withOpacity(0.8),
+                headingRowColor: MaterialStateProperty.all(
+                  theme.isDarkMode
+                      ? WebDarkColors.primary
+                      : WebColors.primary.withOpacity(0.05),
+                ),
+                headingTextStyle: WebTextStyles.tableHeader(
+                  isDarkTheme: theme.isDarkMode,
+                  color: theme.isDarkMode
+                      ? WebDarkColors.textPrimary
+                      : WebColors.textPrimary,
+                ),
+                dataTextStyle: WebTextStyles.custom(
+                  fontSize: 13,
+                  isDarkTheme: theme.isDarkMode,
+                  color: theme.isDarkMode
+                      ? WebDarkColors.textPrimary
+                      : WebColors.textPrimary,
+                  fontWeight: WebFonts.medium,
+                ),
+                border: TableBorder(
+                  top: BorderSide(
+                    color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
+                    width: 1,
+                  ),
+                  bottom: BorderSide(
+                    color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
+                    width: 1,
+                  ),
+                  horizontalInside: BorderSide(
+                    color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
+                    width: 1,
+                  ),
+                  // Removed verticalInside, left, right to remove vertical lines
+                ),
+                showBottomBorder: true,
+                horizontalScrollController: _tradeBookHorizontalScrollController,
+                scrollController: _tradeBookVerticalScrollController,
+                showCheckboxColumn: false,
+              ),
+            ),
           ),
         );
       },
@@ -1749,272 +1624,207 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     }
   }
 
-  Widget _buildTradeBookHeaderWidget(
-    String label,
-    int columnIndex,
+  List<DataColumn2> _buildTradeBookDataTable2Columns(
+    List<String> headers,
+    Map<String, double> columnMinWidth,
     ThemesProvider theme,
   ) {
-    return InkWell(
-      onTap: () => _onSortTradeTable(columnIndex, !_tradeSortAscending),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 6),
-              child: Text(
-                label,
-                style: WebTextStyles.tableHeader(
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
-                ),
-                overflow: TextOverflow.ellipsis,
-                maxLines: 1,
-                softWrap: false,
+    return headers.map((header) {
+      final columnIndex = _getTradeBookColumnIndexForHeader(header);
+      final isInstrument = header == 'Instrument';
+      final isTime = header == 'Time';
+      
+      return DataColumn2(
+        label: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              header,
+              style: WebTextStyles.tableHeader(
+                isDarkTheme: theme.isDarkMode,
+                color: theme.isDarkMode
+                    ? WebDarkColors.textPrimary
+                    : WebColors.textPrimary,
               ),
             ),
-          ),
-          // Sort icon
-          if (_tradeSortColumnIndex == columnIndex)
-            Padding(
-              padding: const EdgeInsets.only(left: 6.0),
-              child: Icon(
-                _tradeSortAscending ? Icons.arrow_upward : Icons.arrow_downward,
-                size: 16,
-                color: theme.isDarkMode
-                    ? WebDarkColors.iconPrimary
-                    : WebColors.iconPrimary,
-              ),
-            )
-          else
-            Padding(
-              padding: const EdgeInsets.only(right: 6.0),
-              child: Icon(
-                Icons.unfold_more,
-                size: 16,
-                color: theme.isDarkMode
-                    ? WebDarkColors.iconSecondary
-                    : WebColors.iconSecondary,
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTradeBookColumnCell({
-    required bool needHorizontalScroll,
-    required int flex,
-    required double minW,
-    required Widget child,
-  }) {
-    if (needHorizontalScroll) {
-      return SizedBox(
-        width: minW,
-        child: child,
+            const SizedBox(width: 4),
+            _buildTradeBookSortIcon(columnIndex, theme),
+          ],
+        ),
+        size: isInstrument ? ColumnSize.L : ColumnSize.S,
+        fixedWidth: isInstrument ? 300.0 : (isTime ? 220.0 : null),
+        onSort: (index, ascending) => _onSortTradeTable(columnIndex, ascending),
       );
-    }
-
-    return Expanded(
-      flex: flex,
-      child: SizedBox(
-        width: minW,
-        child: child,
-      ),
-    );
+    }).toList();
   }
 
-  Widget _buildTradeBookBodyList(
-    ThemesProvider theme,
+  List<DataRow2> _buildTradeBookDataTable2Rows(
     List<TradeBookModel> trades,
     List<String> headers,
-    Map<String, int> columnFlex,
-    Map<String, double> columnMinWidth, {
-    required double totalMinWidth,
-    required bool needHorizontalScroll,
-  }) {
+    ThemesProvider theme,
+  ) {
     final sorted = _sortedTrades(trades);
-    return ListView.builder(
-      controller: _tradeBookVerticalScrollController,
-      physics: const AlwaysScrollableScrollPhysics(),
-      itemCount: sorted.length,
-      itemBuilder: (context, index) {
-        final trade = sorted[index];
-        final token = trade.token ?? '';
-        final uniqueId = '$token$index';
-        final isHovered = _hoveredRowToken == uniqueId;
+    return sorted.map((trade) {
+      final token = trade.token ?? '';
+      final index = sorted.indexOf(trade);
+      final uniqueId = '$token$index';
+      final isHovered = _hoveredRowToken == uniqueId;
 
-        return MouseRegion(
-          onEnter: (_) => setState(() => _hoveredRowToken = uniqueId),
-          onExit: (_) => setState(() => _hoveredRowToken = null),
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: () => _openTradeDetail(trade),
-            child: Container(
-              decoration: BoxDecoration(
-                color: isHovered
-                    ? (theme.isDarkMode
-                        ? WebDarkColors.primary.withOpacity(0.06)
-                        : WebColors.primary.withOpacity(0.10))
-                    : Colors.transparent,
-                border: Border(
-                  bottom: BorderSide(
-                    color: theme.isDarkMode
-                        ? WebDarkColors.divider
-                        : WebColors.divider,
-                    width: 1,
-                  ),
-                ),
+      return DataRow2(
+        cells: headers.map((header) {
+          Widget cellContent;
+          switch (header) {
+            case 'Instrument':
+              cellContent = _buildTradeBookInstrumentCellContent(trade, theme, uniqueId);
+              break;
+            case 'Product':
+              cellContent = _buildTradeBookTextCell(
+                trade.sPrdtAli ?? 'N/A',
+                theme,
+                Alignment.centerLeft,
+              );
+              break;
+            case 'Type':
+              final buySell = trade.trantype == "S" ? "SELL" : "BUY";
+              final textColor = trade.trantype == "S"
+                  ? (theme.isDarkMode ? colors.lossDark : colors.lossLight)
+                  : (theme.isDarkMode ? colors.profitDark : colors.profitLight);
+              cellContent = _buildTradeBookTextCell(
+                buySell,
+                theme,
+                Alignment.centerLeft,
+                color: textColor,
+              );
+              break;
+            case 'Qty':
+              cellContent = _buildTradeBookTextCell(
+                trade.qty?.toString() ?? 'N/A',
+                theme,
+                Alignment.centerRight,
+              );
+              break;
+            case 'Price':
+              cellContent = _buildTradeBookTextCell(
+                trade.avgprc?.toString() ?? 'N/A',
+                theme,
+                Alignment.centerRight,
+              );
+              break;
+            case 'Trade value':
+              String tradeValue = "0.00";
+              try {
+                if (trade.flqty != null && trade.flprc != null) {
+                  tradeValue = (double.parse(trade.flqty!) * double.parse(trade.flprc!))
+                      .toStringAsFixed(2);
+                }
+              } catch (e) {
+                tradeValue = "0.00";
+              }
+              cellContent = _buildTradeBookTextCell(
+                tradeValue,
+                theme,
+                Alignment.centerRight,
+              );
+              break;
+            case 'Order no':
+              cellContent = _buildTradeBookTextCell(
+                trade.norenordno?.toString() ?? 'N/A',
+                theme,
+                Alignment.centerLeft,
+              );
+              break;
+            case 'Time':
+              final time = trade.norentm != null ? trade.norentm! : 'N/A';
+              cellContent = _buildTradeBookTextCell(
+                formatDateTime(value: time),
+                theme,
+                Alignment.centerLeft,
+              );
+              break;
+            default:
+              cellContent = const SizedBox.shrink();
+          }
+          
+          return DataCell(
+            MouseRegion(
+              onEnter: (_) => setState(() => _hoveredRowToken = uniqueId),
+              onExit: (_) => setState(() => _hoveredRowToken = null),
+              child: SizedBox.expand(
+                child: cellContent,
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-              child: needHorizontalScroll
-                  ? IntrinsicWidth(
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: headers.map((label) {
-                          final flex = columnFlex[label] ?? 1;
-                          final minW = columnMinWidth[label] ?? 80.0;
-                          return _buildTradeBookColumnCell(
-                            needHorizontalScroll: needHorizontalScroll,
-                            flex: flex,
-                            minW: minW,
-                            child: _buildTradeBookCellWidget(
-                              label,
-                              trade,
-                              theme,
-                              needHorizontalScroll: needHorizontalScroll,
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    )
-                  : Row(
-                      mainAxisSize: MainAxisSize.max,
-                      children: headers.map((label) {
-                        final flex = columnFlex[label] ?? 1;
-                        final minW = columnMinWidth[label] ?? 80.0;
-                        return _buildTradeBookColumnCell(
-                          needHorizontalScroll: needHorizontalScroll,
-                          flex: flex,
-                          minW: minW,
-                          child: _buildTradeBookCellWidget(
-                            label,
-                            trade,
-                            theme,
-                            needHorizontalScroll: needHorizontalScroll,
-                          ),
-                        );
-                      }).toList(),
-                    ),
             ),
+          );
+        }).toList(),
+        color: MaterialStateProperty.resolveWith((states) {
+          if (isHovered) {
+            return theme.isDarkMode
+                ? WebDarkColors.primary.withOpacity(0.06)
+                : WebColors.primary.withOpacity(0.10);
+          }
+          return null;
+        }),
+        onTap: () => _openTradeDetail(trade),
+      );
+    }).toList();
+  }
+
+  Widget _buildTradeBookSortIcon(int columnIndex, ThemesProvider theme) {
+    if (_tradeSortColumnIndex == columnIndex) {
+      return const SizedBox(width: 16); // Reserve space for DataTable2's arrow
+    } else {
+      return Icon(
+        Icons.unfold_more,
+        size: 16,
+        color: theme.isDarkMode ? WebDarkColors.iconSecondary : WebColors.iconSecondary,
+      );
+    }
+  }
+
+  Widget _buildTradeBookInstrumentCellContent(
+    TradeBookModel trade,
+    ThemesProvider theme,
+    String uniqueId,
+  ) {
+    final symbol = trade.symbol?.replaceAll("-EQ", "") ?? trade.tsym ?? 'N/A';
+    final expDate = trade.expDate ?? '';
+    final option = trade.option ?? '';
+    String displayText = symbol;
+    if (expDate.isNotEmpty) {
+      displayText += ' $expDate';
+    }
+    if (option.isNotEmpty) {
+      displayText += ' $option';
+    }
+    
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Tooltip(
+        message: displayText,
+        child: Text(
+          displayText,
+          style: WebTextStyles.custom(
+            fontSize: 13,
+            isDarkTheme: theme.isDarkMode,
+            color: theme.isDarkMode
+                ? WebDarkColors.textPrimary
+                : WebColors.textPrimary,
+            fontWeight: WebFonts.medium,
           ),
-        );
-      },
+          maxLines: 1,
+          softWrap: false,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
     );
   }
 
-  Widget _buildTradeBookCellWidget(
-    String column,
-    TradeBookModel trade,
-    ThemesProvider theme, {
-    required bool needHorizontalScroll,
-  }) {
-    switch (column) {
-      case 'Instrument':
-        final symbol = trade.symbol?.replaceAll("-EQ", "") ?? trade.tsym ?? 'N/A';
-        final expDate = trade.expDate ?? '';
-        final option = trade.option ?? '';
-        String displayText = symbol;
-        if (expDate.isNotEmpty) {
-          displayText += ' $expDate';
-        }
-        if (option.isNotEmpty) {
-          displayText += ' $option';
-        }
-        return _buildTradeBookTextCell(
-          displayText,
-          theme,
-          Alignment.centerLeft,
-          needHorizontalScroll: needHorizontalScroll,
-        );
-      case 'Product':
-        return _buildTradeBookTextCell(
-          trade.sPrdtAli ?? 'N/A',
-          theme,
-          Alignment.centerLeft,
-          needHorizontalScroll: needHorizontalScroll,
-        );
-      case 'Type':
-        final buySell = trade.trantype == "S" ? "SELL" : "BUY";
-        final textColor = trade.trantype == "S"
-            ? (theme.isDarkMode ? colors.lossDark : colors.lossLight)
-            : (theme.isDarkMode ? colors.profitDark : colors.profitLight);
-        return _buildTradeBookTextCell(
-          buySell,
-          theme,
-          Alignment.centerLeft,
-          color: textColor,
-          needHorizontalScroll: needHorizontalScroll,
-        );
-      case 'Qty':
-        return _buildTradeBookTextCell(
-          trade.qty?.toString() ?? 'N/A',
-          theme,
-          Alignment.centerRight,
-          needHorizontalScroll: needHorizontalScroll,
-        );
-      case 'Price':
-        return _buildTradeBookTextCell(
-          trade.avgprc?.toString() ?? 'N/A',
-          theme,
-          Alignment.centerRight,
-          needHorizontalScroll: needHorizontalScroll,
-        );
-      case 'Trade value':
-        String tradeValue = "0.00";
-        try {
-          if (trade.flqty != null && trade.flprc != null) {
-            tradeValue = (double.parse(trade.flqty!) * double.parse(trade.flprc!))
-                .toStringAsFixed(2);
-          }
-        } catch (e) {
-          tradeValue = "0.00";
-        }
-        return _buildTradeBookTextCell(
-          tradeValue,
-          theme,
-          Alignment.centerRight,
-          needHorizontalScroll: needHorizontalScroll,
-        );
-      case 'Order no':
-        return _buildTradeBookTextCell(
-          trade.norenordno?.toString() ?? 'N/A',
-          theme,
-          Alignment.centerLeft,
-          needHorizontalScroll: needHorizontalScroll,
-        );
-      case 'Time':
-        final time = trade.norentm != null ? trade.norentm! : 'N/A';
-        return _buildTradeBookTextCell(
-          formatDateTime(value: time),
-          theme,
-          Alignment.centerLeft,
-          needHorizontalScroll: needHorizontalScroll,
-        );
-      default:
-        return const SizedBox.shrink();
-    }
-  }
+
 
   Widget _buildTradeBookTextCell(
     String text,
     ThemesProvider theme,
     Alignment alignment, {
     Color? color,
-    bool needHorizontalScroll = false,
   }) {
     return Align(
       alignment: alignment,
@@ -2031,7 +1841,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                     : WebColors.textPrimary),
             fontWeight: WebFonts.medium,
           ),
-          maxLines: 1,
+          maxLines: 1, 
           softWrap: false,
           overflow: TextOverflow.visible,
         ),
@@ -2055,14 +1865,14 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
         'Time': 2,
       },
       'columnMinWidth': {
-        'Instrument': 160,
-        'Product': 95,
-        'Type': 75,
-        'Qty': 70,
-        'Price': 90,
-        'Trade value': 115,
-        'Order no': 110,
-        'Time': 180,
+        'Instrument': 300,
+        'Product': 110,
+        'Type': 90,
+        'Qty': 80,
+        'Price': 100,
+        'Trade value': 130,
+        'Order no': 120,
+        'Time': 220,
       },
     };
   }
@@ -2072,31 +1882,18 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
   Map<String, dynamic> _getResponsiveOrderBookColumns(double screenWidth) {
     return {
       'headers': ['Instrument', 'Product', 'Type', 'Qty', 'Avg price', 'LTP', 'Price', 'Trigger price', 'Order value', 'Status', 'Time'],
-      'columnFlex': {
-        'Instrument': 3,
-        'Product': 2,
-        'Type': 2,
-        'Qty': 1,
-        'Avg price': 2,
-        'LTP': 1,
-        'Price': 1,
-        'Trigger price': 2,
-        'Order value': 2,
-        'Status': 2,
-        'Time': 2,
-      },
       'columnMinWidth': {
-        'Instrument': 360,
-        'Product': 100,
-        'Type': 80,
-        'Qty': 70,
-        'Avg price': 110,
-        'LTP': 95,
-        'Price': 95,
-        'Trigger price': 140,
-        'Order value': 120,
-        'Status': 100,
-        'Time': 340,
+        'Instrument': 300,
+        'Product': 110,
+        'Type': 90,
+        'Qty': 80,
+        'Avg price': 120,
+        'LTP': 100,
+        'Price': 100,
+        'Trigger price': 150,
+        'Order value': 130,
+        'Status': 110,
+        'Time': 220,
       },
     };
   }
@@ -2106,27 +1903,288 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
   Map<String, dynamic> _getResponsiveGttColumns(double screenWidth) {
     return {
       'headers': ['Instrument', 'Product', 'Type', 'Qty', 'LTP', 'Trigger', 'Status', 'Time'],
-      'columnFlex': {
-        'Instrument': 3,
-        'Product': 2,
-        'Type': 2,
-        'Qty': 1,
-        'LTP': 1,
-        'Trigger': 2,
-        'Status': 2,
-        'Time': 3,
-      },
       'columnMinWidth': {
-        'Instrument': 160,
-        'Product': 105,
-        'Type': 80,
-        'Qty': 70,
-        'LTP': 90,
-        'Trigger': 105,
-        'Status': 105,
-        'Time': 180,
+        'Instrument': 300,
+        'Product': 110,
+        'Type': 90,
+        'Qty': 80,
+        'LTP': 100,
+        'Trigger': 120,
+        'Status': 110,
+        'Time': 220,
       },
     };
+  }
+
+  int _getGttColumnIndexForHeader(String header) {
+    switch (header) {
+      case 'Instrument': return 0;
+      case 'Product': return 1;
+      case 'Type': return 2;
+      case 'Qty': return 3;
+      case 'LTP': return 4;
+      case 'Trigger': return 5;
+      case 'Status': return 6;
+      case 'Time': return 7;
+      default: return -1;
+    }
+  }
+
+  List<DataColumn2> _buildGttDataTable2Columns(
+    List<String> headers,
+    Map<String, double> columnMinWidth,
+    ThemesProvider theme,
+  ) {
+    return headers.map((header) {
+      final columnIndex = _getGttColumnIndexForHeader(header);
+      final isInstrument = header == 'Instrument';
+      final isTime = header == 'Time';
+      
+      return DataColumn2(
+        label: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              header,
+              style: WebTextStyles.tableHeader(
+                isDarkTheme: theme.isDarkMode,
+                color: theme.isDarkMode
+                    ? WebDarkColors.textPrimary
+                    : WebColors.textPrimary,
+              ),
+            ),
+            const SizedBox(width: 4),
+            _buildGttSortIcon(columnIndex, theme),
+          ],
+        ),
+        size: isInstrument ? ColumnSize.L : ColumnSize.S,
+        fixedWidth: isInstrument ? 300.0 : (isTime ? 220.0 : null),
+        onSort: (index, ascending) => _onSortGttTable(columnIndex, ascending),
+      );
+    }).toList();
+  }
+
+  List<DataRow2> _buildGttDataTable2Rows(
+    List<GttOrderBookModel> gttOrders,
+    List<String> headers,
+    ThemesProvider theme,
+  ) {
+    final sorted = _sortedGtt(gttOrders);
+    return sorted.map((gttOrder) {
+      final uniqueId = '${gttOrder.alId ?? ''}_${gttOrder.tsym ?? ''}';
+      final isHovered = _hoveredRowToken == uniqueId;
+
+      return DataRow2(
+        color: MaterialStateProperty.resolveWith((states) {
+          if (isHovered) {
+            return theme.isDarkMode
+                ? WebDarkColors.primary.withOpacity(0.06)
+                : WebColors.primary.withOpacity(0.10);
+          }
+          return null;
+        }),
+        cells: headers.map((header) {
+          return _buildGttDataTable2Cell(
+            header,
+            gttOrder,
+            theme,
+            isHovered,
+            uniqueId,
+          );
+        }).toList(),
+        onTap: () => _openGttOrderDetail(gttOrder),
+      );
+    }).toList();
+  }
+
+  DataCell _buildGttDataTable2Cell(
+    String column,
+    GttOrderBookModel gttOrder,
+    ThemesProvider theme,
+    bool isHovered,
+    String uniqueId,
+  ) {
+    Widget cellContent;
+    
+    switch (column) {
+      case 'Instrument':
+        cellContent = _buildGttInstrumentCellContent(
+          gttOrder,
+          theme,
+          isHovered,
+          uniqueId,
+        );
+        break;
+      case 'Product':
+        cellContent = _buildGttTextCell(
+          gttOrder.placeOrderParams?.sPrdtAli ?? 'N/A',
+          theme,
+          Alignment.centerLeft,
+        );
+        break;
+      case 'Type':
+        final isBuy = gttOrder.trantype == "B";
+        final buttonColor = isBuy
+            ? (theme.isDarkMode ? colors.profitDark : colors.profitLight)
+            : (theme.isDarkMode ? colors.lossDark : colors.lossLight);
+        cellContent = _buildGttTextCell(
+          isBuy ? "BUY" : "SELL",
+          theme,
+          Alignment.centerLeft,
+          color: buttonColor,
+        );
+        break;
+      case 'Qty':
+        cellContent = _buildGttTextCell(
+          gttOrder.qty?.toString() ?? '0',
+          theme,
+          Alignment.centerRight,
+        );
+        break;
+      case 'LTP':
+        cellContent = _buildGttTextCell(
+          _getValidLTPForGtt(gttOrder),
+          theme,
+          Alignment.centerRight,
+        );
+        break;
+      case 'Trigger':
+        cellContent = _buildGttTextCell(
+          gttOrder.d ?? '0.00',
+          theme,
+          Alignment.centerRight,
+        );
+        break;
+      case 'Status':
+        final status = gttOrder.gttOrderCurrentStatus?.toUpperCase() ?? '';
+        final statusColor = _getGttStatusColor(status, theme);
+        cellContent = _buildGttTextCell(
+          _getGttStatusText(status),
+          theme,
+          Alignment.centerLeft,
+          color: statusColor,
+        );
+        break;
+      case 'Time':
+        final time = gttOrder.norentm != null ? gttOrder.norentm! : '';
+        cellContent = _buildGttTextCell(
+          time.isNotEmpty ? formatDateTime(value: time) : '',
+          theme,
+          Alignment.centerLeft,
+        );
+        break;
+      default:
+        cellContent = const SizedBox.shrink();
+    }
+
+    // Wrap with MouseRegion to detect hover anywhere on the cell
+    return DataCell(
+      MouseRegion(
+        onEnter: (_) => setState(() => _hoveredRowToken = uniqueId),
+        onExit: (_) => setState(() => _hoveredRowToken = null),
+        child: SizedBox.expand(
+          child: cellContent,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGttInstrumentCellContent(
+    GttOrderBookModel gttOrder,
+    ThemesProvider theme,
+    bool isHovered,
+    String uniqueId,
+  ) {
+    final isProcessing = _processingOrderToken == uniqueId;
+    final status = gttOrder.gttOrderCurrentStatus?.toUpperCase() ?? '';
+    final isPending = status == 'PENDING' || status == 'TRIGGER_PENDING';
+
+    String symbol = '${gttOrder.tsym?.replaceAll("-EQ", "") ?? 'N/A'}';
+    String exchange = gttOrder.exch ?? '';
+    String displayText = symbol.trim();
+    if (exchange.isNotEmpty && exchange.trim().isNotEmpty) {
+      displayText += ' ${exchange.trim()}';
+    }
+
+    return Row(
+      children: [
+        Expanded(
+          flex: isHovered ? 1 : 2,
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Tooltip(
+              message: displayText,
+              child: Text(
+                displayText,
+                style: WebTextStyles.custom(
+                  fontSize: 13,
+                  isDarkTheme: theme.isDarkMode,
+                  color: theme.isDarkMode
+                      ? WebDarkColors.textPrimary
+                      : WebColors.textPrimary,
+                  fontWeight: WebFonts.medium,
+                ),
+                maxLines: 1,
+                softWrap: false,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ),
+        ),
+        // Action buttons fade in on hover
+        IgnorePointer(
+          ignoring: !isHovered,
+          child: AnimatedOpacity(
+            opacity: isHovered ? 1 : 0,
+            duration: const Duration(milliseconds: 140),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (isPending) ...[
+                  _buildOrderHoverButton(
+                    label: 'Cancel',
+                    color: Colors.white,
+                    backgroundColor: theme.isDarkMode
+                        ? WebDarkColors.error
+                        : WebColors.error,
+                    onPressed: isProcessing && _isProcessingCancel
+                        ? null
+                        : () => _handleCancelGttOrder(gttOrder),
+                    theme: theme,
+                  ),
+                  const SizedBox(width: 6),
+                  _buildOrderHoverButton(
+                    label: 'Modify',
+                    color: Colors.white,
+                    backgroundColor: theme.isDarkMode
+                        ? WebDarkColors.primary
+                        : WebColors.primary,
+                    onPressed: isProcessing && _isProcessingModify
+                        ? null
+                        : () => _handleModifyGttOrder(gttOrder),
+                    theme: theme,
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGttSortIcon(int columnIndex, ThemesProvider theme) {
+    if (_gttSortColumnIndex == columnIndex) {
+      return const SizedBox(width: 16); // Reserve space for DataTable2's arrow
+    } else {
+      return Icon(
+        Icons.unfold_more,
+        size: 16,
+        color: theme.isDarkMode
+            ? WebDarkColors.iconSecondary
+            : WebColors.iconSecondary,
+      );
+    }
   }
 
   Widget _buildGttOrderBookTable(
@@ -2144,8 +2202,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
               children: [
                 CircularProgressIndicator(),
                 SizedBox(height: 16),
-                Text('Loading GTT orders...',
-                    style: TextStyle(color: Colors.grey)),
+                Text('Loading GTT orders...', style: TextStyle(color: Colors.grey)),
               ],
             ),
           ),
@@ -2166,440 +2223,102 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
 
     return LayoutBuilder(
       builder: (context, constraints) {
+        // Calculate available height
+        final screenHeight = MediaQuery.of(context).size.height;
+        final padding = 32.0; // Top and bottom padding (16 * 2)
+        final headerHeight = 50.0; // Header height (tabs + search bar)
+        final spacing = 16.0; // Spacing between header and content
+        final bottomMargin = 20.0; // Bottom margin
+        final tableHeight =
+            screenHeight - padding - headerHeight - spacing - bottomMargin;
+
+        // Ensure we don't exceed 75% of screen height
+        final maxHeight = screenHeight * 0.75;
+        final calculatedHeight = tableHeight > maxHeight
+            ? maxHeight
+            : (tableHeight > 400 ? tableHeight : 400.0);
+
         // Get screen width for responsive design
         final screenWidth = MediaQuery.of(context).size.width;
         
-        // Get responsive column configuration based on screen width
+        // Get responsive column configuration
         final responsiveConfig = _getResponsiveGttColumns(screenWidth);
         final headers = List<String>.from(responsiveConfig['headers'] as List);
-        final columnFlex = Map<String, int>.from(responsiveConfig['columnFlex'] as Map);
         final columnMinWidth = Map<String, double>.from(responsiveConfig['columnMinWidth'] as Map);
         
-        // Calculate total minimum width: sum of all columnMinWidth values
-        // This ensures header and body use the same totalMinWidth calculation
-        final totalMinWidth =
-            columnMinWidth.values.fold<double>(0.0, (a, b) => a + b);
-        // Determine whether horizontal scroll is needed by comparing available width with total min width
-        final needHorizontalScroll = constraints.maxWidth < totalMinWidth;
-
-        // Build the Column (header + body)
-        final tableColumn = Container(
-          decoration: BoxDecoration(
-            border: Border.all(
-              color: theme.isDarkMode
-                  ? WebDarkColors.divider
-                  : WebColors.divider,
-              width: 1,
-            ),
-            borderRadius: BorderRadius.circular(4),
-            color: theme.isDarkMode
-                ? WebDarkColors.background
-                : Colors.white,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // --- Sticky header (fixed) ---
-              Container(
-                height: 50,
-                decoration: BoxDecoration(
-                  color: theme.isDarkMode
-                      ? WebDarkColors.primary
-                      : WebColors.primary.withOpacity(0.05),
-                  border: Border(
-                    bottom: BorderSide(
-                      color: theme.isDarkMode
-                          ? WebDarkColors.divider
-                          : WebColors.divider,
-                      width: 1,
-                    ),
-                  ),
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(4),
-                    topRight: Radius.circular(4),
-                  ),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: needHorizontalScroll
-                    ? IntrinsicWidth(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: headers.map((label) {
-                            final flex = columnFlex[label] ?? 1;
-                            final minW = columnMinWidth[label] ?? 80.0;
-                            final columnIndex = headers.indexOf(label);
-
-                          return _buildGttColumnCell(
-                            needHorizontalScroll: needHorizontalScroll,
-                            flex: flex,
-                            minW: minW,
-                            child: InkWell(
-                              onTap: () => _onSortGttTable(
-                                  columnIndex, !_gttSortAscending),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 12.0, horizontal: 6),
-                                    child: Text(
-                                      label,
-                                      style: WebTextStyles.tableHeader(
-                                        isDarkTheme: theme.isDarkMode,
-                                        color: theme.isDarkMode
-                                            ? WebDarkColors.textPrimary
-                                            : WebColors.textPrimary,
-                                      ),
-                                      overflow: TextOverflow.visible,
-                                    ),
-                                  ),
-                                  // sort icon
-                                  if (_gttSortColumnIndex == columnIndex)
-                                    Padding(
-                                      padding: const EdgeInsets.only(left: 6.0),
-                                      child: Icon(
-                                        _gttSortAscending
-                                            ? Icons.arrow_upward
-                                            : Icons.arrow_downward,
-                                        size: 16,
-                                        color: theme.isDarkMode
-                                            ? WebDarkColors.iconPrimary
-                                            : WebColors.iconPrimary,
-                                      ),
-                                    )
-                                  else
-                                    Padding(
-                                      padding:
-                                          const EdgeInsets.only(right: 6.0),
-                                      child: Icon(
-                                        Icons.unfold_more,
-                                        size: 16,
-                                        color: theme.isDarkMode
-                                            ? WebDarkColors.iconSecondary
-                                            : WebColors.iconSecondary,
-                                      ),
-                                    ),
-                                ],
-                              ),
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    )
-                  : Row(
-                      mainAxisSize: MainAxisSize.max,
-                      children: headers.map((label) {
-                        final flex = columnFlex[label] ?? 1;
-                        final minW = columnMinWidth[label] ?? 80.0;
-                        final columnIndex = headers.indexOf(label);
-
-                        return _buildGttColumnCell(
-                          needHorizontalScroll: needHorizontalScroll,
-                          flex: flex,
-                          minW: minW,
-                          child: InkWell(
-                            onTap: () => _onSortGttTable(
-                                columnIndex, !_gttSortAscending),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Expanded(
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 12.0, horizontal: 6),
-                                    child: Text(
-                                      label,
-                                      style: WebTextStyles.tableHeader(
-                                        isDarkTheme: theme.isDarkMode,
-                                        color: theme.isDarkMode
-                                            ? WebDarkColors.textPrimary
-                                            : WebColors.textPrimary,
-                                      ),
-                                      overflow: TextOverflow.visible,
-                                    ),
-                                  ),
-                                ),
-                                // sort icon
-                                if (_gttSortColumnIndex == columnIndex)
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 6.0),
-                                    child: Icon(
-                                      _gttSortAscending
-                                          ? Icons.arrow_upward
-                                          : Icons.arrow_downward,
-                                      size: 16,
-                                      color: theme.isDarkMode
-                                          ? WebDarkColors.iconPrimary
-                                          : WebColors.iconPrimary,
-                                    ),
-                                  )
-                                else
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 6.0),
-                                    child: Icon(
-                                      Icons.unfold_more,
-                                      size: 16,
-                                      color: theme.isDarkMode
-                                          ? WebDarkColors.iconSecondary
-                                          : WebColors.iconSecondary,
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-            ),
-
-              // --- Scrollable body (vertical) ---
-              Expanded(
-                child: Scrollbar(
-                  controller: _gttVerticalScrollController,
-                  thumbVisibility: true,
-                  radius: Radius.zero,
-                  child: _buildGttBodyList(
-                    theme,
-                    gttOrders,
-                    headers,
-                    columnFlex,
-                    columnMinWidth,
-                    totalMinWidth: totalMinWidth,
-                    needHorizontalScroll: needHorizontalScroll,
-                    screenWidth: screenWidth,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-
-        // If horizontal scroll needed, wrap the entire column inside SingleChildScrollView
-        // THE REAL FIX: Use SizedBox with exact totalMinWidth - Flutter only scrolls when child width > viewport
-        if (needHorizontalScroll) {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 8.0),
-            child: SizedBox(
-              width: constraints.maxWidth,
-              height: constraints.maxHeight,
-              child: Scrollbar(
-                controller: _gttHorizontalScrollController,
-                thumbVisibility: true,  // Always show horizontal scrollbar
-                trackVisibility: true,  // Show scrollbar track
-                thickness: 12,
-                radius: const Radius.circular(6),
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  controller: _gttHorizontalScrollController,
-                  child: SizedBox(
-                    width: totalMinWidth, // THE REAL FIX - forces exact table width
-                    child: tableColumn,
-                  ),
-                ),
-              ),
-            ),
-          );
-        }
-
-        // else (no horizontal scroll) — just use normal layout (tableColumn uses Flexible columns)
         return Padding(
           padding: const EdgeInsets.only(bottom: 20.0),
-          child: SizedBox(
-            width: constraints.maxWidth,
-            height: constraints.maxHeight,
-            child: tableColumn,
-          ),
-        );
-      },
-    );
-  }
-
-// --- new imple
-  Widget _buildGttBodyList(
-    ThemesProvider theme,
-    List<GttOrderBookModel> gttOrders,
-    List<String> headers,
-    Map<String, int> columnFlex,
-    Map<String, double> columnMinWidth, {
-    required double totalMinWidth,
-    required bool needHorizontalScroll,
-    required double screenWidth,
-  }) {
-    final sorted = _sortedGtt(gttOrders);
-    return ListView.builder(
-      controller: _gttVerticalScrollController,
-      physics: const AlwaysScrollableScrollPhysics(),
-      itemCount: sorted.length,
-      itemBuilder: (context, index) {
-        final gttOrder = sorted[index];
-        final uniqueId = '${gttOrder.alId ?? ''}_${gttOrder.tsym ?? ''}_$index';
-        final isHovered = _hoveredRowToken == uniqueId;
-        final status = gttOrder.gttOrderCurrentStatus?.toUpperCase() ?? '';
-        final isPending = status == 'PENDING' || status == 'TRIGGER_PENDING';
-
-        return MouseRegion(
-          onEnter: (_) => setState(() => _hoveredRowToken = uniqueId),
-          onExit: (_) => setState(() => _hoveredRowToken = null),
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: () => _openGttOrderDetail(gttOrder),
-            child: Container(
-              decoration: BoxDecoration(
-                color: isHovered
-                    ? (theme.isDarkMode
-                        ? WebDarkColors.primary.withOpacity(0.06)
-                        : WebColors.primary.withOpacity(0.10))
-                    : Colors.transparent,
-                border: Border(
-                  bottom: BorderSide(
-                    color: theme.isDarkMode
-                        ? WebDarkColors.divider
-                        : WebColors.divider,
-                    width: 1,
-                  ),
+          child: Container(
+            height: calculatedHeight.toDouble(),
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: theme.isDarkMode
+                    ? WebDarkColors.divider
+                    : WebColors.divider,
+                width: 1,
+              ),
+              borderRadius: BorderRadius.circular(4),
+              color: theme.isDarkMode
+                  ? WebDarkColors.background
+                  : Colors.white,
+            ),
+            child: Theme(
+              data: Theme.of(context).copyWith(
+                scrollbarTheme: ScrollbarThemeData(
+                  // Make both scrollbars always visible
+                  thumbVisibility: MaterialStateProperty.all(true),
+                  trackVisibility: MaterialStateProperty.all(true),
+                  
+                  // Consistent thickness for both horizontal and vertical
+                  thickness: MaterialStateProperty.all(6.0),
+                  crossAxisMargin: 0.0,
+                  mainAxisMargin: 0.0,
+                  
+                  // Consistent radius
+                  radius: const Radius.circular(3),
+                  
+                  // Consistent colors for both scrollbars
+                  thumbColor: MaterialStateProperty.resolveWith((states) {
+                    return theme.isDarkMode 
+                        ? WebDarkColors.textSecondary.withOpacity(0.3)
+                        : WebColors.textSecondary.withOpacity(0.3);
+                  }),
+                  trackColor: MaterialStateProperty.resolveWith((states) {
+                    return theme.isDarkMode 
+                        ? WebDarkColors.divider.withOpacity(0.1)
+                        : WebColors.divider.withOpacity(0.1);
+                  }),
+                  
+                  trackBorderColor: MaterialStateProperty.all(Colors.transparent),
+                  minThumbLength: 48.0,
                 ),
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              child: needHorizontalScroll
-                  ? IntrinsicWidth(
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: headers.map((label) {
-                          final flex = columnFlex[label] ?? 1;
-                          final minW = columnMinWidth[label] ?? 80.0;
-                          return _buildGttColumnCell(
-                            needHorizontalScroll: needHorizontalScroll,
-                            flex: flex,
-                            minW: minW,
-                            child: _buildGttCellWidget(
-                                label, gttOrder, theme, isHovered, isPending,
-                                needHorizontalScroll: needHorizontalScroll),
-                          );
-                        }).toList(),
-                      ),
-                    )
-                  : Row(
-                      mainAxisSize: MainAxisSize.max,
-                      children: headers.map((label) {
-                        final flex = columnFlex[label] ?? 1;
-                        final minW = columnMinWidth[label] ?? 80.0;
-                        return _buildGttColumnCell(
-                          needHorizontalScroll: needHorizontalScroll,
-                          flex: flex,
-                          minW: minW,
-                          child: _buildGttCellWidget(
-                              label, gttOrder, theme, isHovered, isPending,
-                              needHorizontalScroll: needHorizontalScroll),
-                        );
-                      }).toList(),
-                    ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildGttColumnCell({
-    required bool needHorizontalScroll,
-    required int flex,
-    required double minW,
-    required Widget child,
-  }) {
-    // When horizontal scrolling = ON
-    if (needHorizontalScroll) {
-      return SizedBox(
-        width: minW, // FIX: force exact width
-        child: child,
-      );
-    }
-
-    // When horizontal scrolling = OFF (large screens)
-    return Expanded(
-      flex: flex,
-      child: SizedBox(
-        width: minW,
-        child: child,
-      ),
-    );
-  }
-
-  Widget _buildGttCellWidget(String column, GttOrderBookModel item,
-      ThemesProvider theme, bool isHovered, bool isPending,
-      {required bool needHorizontalScroll}) {
-    switch (column) {
-      case 'Instrument':
-        return _buildGttInstrumentWidget(item, theme, isHovered, isPending,
-            needHorizontalScroll: needHorizontalScroll);
-      case 'Product':
-        return _buildGttTextCell(
-            item.placeOrderParams?.sPrdtAli ?? '', theme, Alignment.centerLeft,
-            needHorizontalScroll: needHorizontalScroll);
-      case 'Type':
-        final isBuy = item.trantype == "B";
-        return _buildGttTextCell(
-          isBuy ? "BUY" : "SELL",
-          theme,
-          Alignment.centerLeft,
-          color: isBuy
-              ? (theme.isDarkMode ? colors.profitDark : colors.profitLight)
-              : (theme.isDarkMode ? colors.lossDark : colors.lossLight),
-          needHorizontalScroll: needHorizontalScroll,
-        );
-      case 'Qty':
-        return _buildGttTextCell(
-            item.qty?.toString() ?? '0', theme, Alignment.centerRight,
-            needHorizontalScroll: needHorizontalScroll);
-      case 'LTP':
-        return _buildGttTextCell(
-            _getValidLTPForGtt(item), theme, Alignment.centerRight,
-            needHorizontalScroll: needHorizontalScroll);
-      case 'Trigger':
-        return _buildGttTextCell(
-            item.d ?? '0.00', theme, Alignment.centerRight,
-            needHorizontalScroll: needHorizontalScroll);
-      case 'Status':
-        final status = item.gttOrderCurrentStatus?.toUpperCase() ?? '';
-        return _buildGttTextCell(
-            _getGttStatusText(status), theme, Alignment.centerLeft,
-            color: _getGttStatusColor(status, theme),
-            needHorizontalScroll: needHorizontalScroll);
-      case 'Time':
-        return _buildGttTextCell(
-            item.norentm != null ? formatDateTime(value: item.norentm!) : '',
-            theme,
-            Alignment.centerLeft,
-            needHorizontalScroll: needHorizontalScroll);
-      default:
-        return const SizedBox.shrink();
-    }
-  }
-
-  Widget _buildGttInstrumentWidget(GttOrderBookModel gttOrder,
-      ThemesProvider theme, bool isHovered, bool isPending,
-      {required bool needHorizontalScroll}) {
-    String symbol = '${gttOrder.tsym?.replaceAll("-EQ", "") ?? 'N/A'}';
-    String exchange = gttOrder.exch ?? '';
-    String displayText = symbol.trim();
-    if (exchange.isNotEmpty && exchange.trim().isNotEmpty) {
-      displayText += '-${exchange.trim()}';
-    }
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // Text that takes available space, similar to position screen
-        Expanded(
-          flex: isHovered ? 1 : 2, // When hovered, text takes less space but still visible
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: Tooltip(
-              message: displayText,
-              child: Text(
-                displayText,
-                style: WebTextStyles.custom(
+              child: DataTable2(
+                columnSpacing: 12,
+                horizontalMargin: 12,
+                minWidth: 1200,
+                sortColumnIndex: _gttSortColumnIndex,
+                sortAscending: _gttSortAscending,
+                fixedLeftColumns: 1, // Fix the first column (Instrument)
+                fixedColumnsColor: theme.isDarkMode 
+                    ? WebDarkColors.backgroundSecondary.withOpacity(0.8)
+                    : WebColors.backgroundSecondary.withOpacity(0.8),
+                showBottomBorder: true,
+                horizontalScrollController: _gttHorizontalScrollController,
+                scrollController: _gttVerticalScrollController,
+                showCheckboxColumn: false,
+                headingRowColor: MaterialStateProperty.all(
+                  theme.isDarkMode
+                      ? WebDarkColors.primary
+                      : WebColors.primary.withOpacity(0.05),
+                ),
+                headingTextStyle: WebTextStyles.tableHeader(
+                  isDarkTheme: theme.isDarkMode,
+                  color: theme.isDarkMode
+                      ? WebDarkColors.textPrimary
+                      : WebColors.textPrimary,
+                ),
+                dataTextStyle: WebTextStyles.custom(
                   fontSize: 13,
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
@@ -2607,62 +2326,44 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                       : WebColors.textPrimary,
                   fontWeight: WebFonts.medium,
                 ),
-                maxLines: 1,
-                softWrap: false,
-                overflow: TextOverflow.visible,
+                border: TableBorder(
+                  top: BorderSide(
+                    color: theme.isDarkMode
+                        ? WebDarkColors.divider
+                        : WebColors.divider,
+                    width: 1,
+                  ),
+                  bottom: BorderSide(
+                    color: theme.isDarkMode
+                        ? WebDarkColors.divider
+                        : WebColors.divider,
+                    width: 1,
+                  ),
+                  horizontalInside: BorderSide(
+                    color: theme.isDarkMode
+                        ? WebDarkColors.divider
+                        : WebColors.divider,
+                    width: 1,
+                  ),
+                  // Remove vertical lines
+                ),
+                columns: _buildGttDataTable2Columns(headers, columnMinWidth, theme),
+                rows: _buildGttDataTable2Rows(gttOrders, headers, theme),
               ),
             ),
           ),
-        ),
-        // action buttons fade in on hover
-        IgnorePointer(
-          ignoring: !isHovered,
-          child: AnimatedOpacity(
-            opacity: isHovered ? 1 : 0,
-            duration: const Duration(milliseconds: 140),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (isPending) ...[
-                  _buildOrderHoverButton(
-                    label: 'Cancel',
-                    color: Colors.white,
-                    backgroundColor: theme.isDarkMode
-                        ? WebDarkColors.error
-                        : WebColors.error,
-                    onPressed: (_processingOrderToken == null ||
-                            _processingOrderToken ==
-                                '${gttOrder.alId}_${gttOrder.tsym}')
-                        ? () => _handleCancelGttOrder(gttOrder)
-                        : null,
-                    theme: theme,
-                  ),
-                  const SizedBox(width: 6),
-                  _buildOrderHoverButton(
-                    label: 'Modify',
-                    color: Colors.white,
-                    backgroundColor: theme.isDarkMode
-                        ? WebDarkColors.primary
-                        : WebColors.primary,
-                    onPressed: (_processingOrderToken == null ||
-                            _processingOrderToken ==
-                                '${gttOrder.alId}_${gttOrder.tsym}')
-                        ? () => _handleModifyGttOrder(gttOrder)
-                        : null,
-                    theme: theme,
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ),
-      ],
+        );
+      },
     );
   }
 
+
   Widget _buildGttTextCell(
-      String text, ThemesProvider theme, Alignment alignment,
-      {Color? color, bool needHorizontalScroll = false}) {
+    String text,
+    ThemesProvider theme,
+    Alignment alignment, {
+    Color? color,
+  }) {
     return Align(
       alignment: alignment,
       child: Padding(
@@ -2678,7 +2379,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                     : WebColors.textPrimary),
             fontWeight: WebFonts.medium,
           ),
-          maxLines: 1,
+          maxLines: 1, 
           softWrap: false,
           overflow: TextOverflow.visible,
         ),
@@ -2825,12 +2526,8 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
 
   void _onSortOrderTable(int columnIndex, bool ascending) {
     setState(() {
-      if (_orderSortColumnIndex == columnIndex) {
-        _orderSortAscending = !_orderSortAscending;
-      } else {
-        _orderSortColumnIndex = columnIndex;
-        _orderSortAscending = ascending;
-      }
+      _orderSortColumnIndex = columnIndex;
+      _orderSortAscending = ascending;
     });
   }
 
@@ -2981,12 +2678,8 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
 
   void _onSortGttTable(int columnIndex, bool ascending) {
     setState(() {
-      if (_gttSortColumnIndex == columnIndex) {
-        _gttSortAscending = !_gttSortAscending;
-      } else {
-        _gttSortColumnIndex = columnIndex;
-        _gttSortAscending = ascending;
-      }
+      _gttSortColumnIndex = columnIndex;
+      _gttSortAscending = ascending;
     });
   }
 
@@ -3007,56 +2700,6 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     );
   }
 
-  DataCell _buildGttCellWithHover(GttOrderBookModel gttOrder,
-      ThemesProvider theme, String token, DataCell cell,
-      {Alignment alignment = Alignment.centerRight}) {
-    return DataCell(
-      MouseRegion(
-        onEnter: (_) => setState(() => _hoveredRowToken = token),
-        onExit: (_) => setState(() => _hoveredRowToken = null),
-        child: SizedBox.expand(
-          child: Align(
-            alignment: alignment,
-            child: cell.child,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGttSortableColumnHeader(
-      String label, ThemesProvider theme, int columnIndex) {
-    final isSorted = _gttSortColumnIndex == columnIndex;
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          label,
-          style: WebTextStyles.tableHeader(
-            isDarkTheme: theme.isDarkMode,
-            color: theme.isDarkMode
-                ? WebDarkColors.textPrimary
-                : WebColors.textPrimary,
-          ),
-        ),
-        const SizedBox(width: 4),
-        SizedBox(
-          width: 20,
-          height: 16,
-          child: !isSorted
-              ? Icon(
-                  Icons.unfold_more,
-                  size: 16,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.iconSecondary
-                      : WebColors.iconSecondary,
-                )
-              : const SizedBox.shrink(),
-        ),
-      ],
-    );
-  }
 
   void _openOrderDetail(OrderBookModel order) {
     showDialog(
@@ -3451,8 +3094,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
 
   // GTT order action handlers
   Future<void> _handleCancelGttOrder(GttOrderBookModel gttOrderData) async {
-    final uniqueId =
-        gttOrderData.alId?.toString() ?? gttOrderData.tsym?.toString() ?? '';
+    final uniqueId = '${gttOrderData.alId ?? ''}_${gttOrderData.tsym ?? ''}';
     if (_isProcessingCancel && _processingOrderToken == uniqueId) return;
 
     try {
@@ -3653,8 +3295,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
   }
 
   Future<void> _handleModifyGttOrder(GttOrderBookModel gttOrderData) async {
-    final uniqueId =
-        gttOrderData.alId?.toString() ?? gttOrderData.tsym?.toString() ?? '';
+    final uniqueId = '${gttOrderData.alId ?? ''}_${gttOrderData.tsym ?? ''}';
     if (_isProcessingModify && _processingOrderToken == uniqueId) return;
 
     try {
@@ -4855,3 +4496,4 @@ class _DraggablePlaceOrderDialogState
     );
   }
 }
+
