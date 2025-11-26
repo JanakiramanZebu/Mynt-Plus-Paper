@@ -183,9 +183,6 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
   }
 
   void _processUpdates(Map socketDatas) {
-    // Check if widget is still mounted before accessing providers
-    if (!mounted) return;
-
     bool hasUpdates = false;
     final orderBook = ref.read(orderProvider);
 
@@ -952,14 +949,8 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
         final columnMinWidth = Map<String, double>.from(responsiveConfig['columnMinWidth'] as Map);
         
         // Calculate total minimum width
-        // Add horizontal padding (12px on each side = 24px total)
-        // Add border width (1px on each side = 2px total)
-        // Add extra buffer for scrollbar and browser inconsistencies
-        const horizontalPadding = 24.0; // 12px left + 12px right
-        const borderWidth = 2.0; // 1px left + 1px right
-        const extraBuffer = 20.0; // Extra space for scrollbar and browser differences
         final totalMinWidth =
-            columnMinWidth.values.fold<double>(0.0, (a, b) => a + b) + horizontalPadding + borderWidth + extraBuffer;
+            columnMinWidth.values.fold<double>(0.0, (a, b) => a + b);
         // Determine whether horizontal scroll is needed
         final needHorizontalScroll = constraints.maxWidth < totalMinWidth;
 
@@ -1001,26 +992,47 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                   ),
                 ),
                 padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Row(
-                  mainAxisSize: needHorizontalScroll ? MainAxisSize.min : MainAxisSize.max,
-                  children: headers.map((label) {
-                    final flex = columnFlex[label] ?? 1;
-                    final minW = columnMinWidth[label] ?? 80.0;
-                    final columnIndex = _getOrderBookColumnIndexForHeader(label);
+                child: needHorizontalScroll
+                    ? IntrinsicWidth(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: headers.map((label) {
+                            final flex = columnFlex[label] ?? 1;
+                            final minW = columnMinWidth[label] ?? 80.0;
+                            final columnIndex = _getOrderBookColumnIndexForHeader(label);
 
-                    return _buildOrderBookColumnCell(
-                      needHorizontalScroll: needHorizontalScroll,
-                      flex: flex,
-                      minW: minW,
-                      child: _buildOrderBookHeaderWidget(
-                        label, 
-                        columnIndex, 
-                        theme,
-                        needHorizontalScroll: needHorizontalScroll,
+                          return _buildOrderBookColumnCell(
+                            needHorizontalScroll: needHorizontalScroll,
+                            flex: flex,
+                            minW: minW,
+                            child: _buildOrderBookHeaderWidget(
+                              label, 
+                              columnIndex, 
+                              theme, 
+                            ),
+                          );
+                        }).toList(),
                       ),
-                    );
-                  }).toList(),
-                ),
+                    )
+                  : Row(
+                      mainAxisSize: MainAxisSize.max,
+                      children: headers.map((label) {
+                        final flex = columnFlex[label] ?? 1;
+                        final minW = columnMinWidth[label] ?? 80.0;
+                        final columnIndex = _getOrderBookColumnIndexForHeader(label);
+
+                        return _buildOrderBookColumnCell(
+                          needHorizontalScroll: needHorizontalScroll,
+                          flex: flex,
+                          minW: minW,
+                          child: _buildOrderBookHeaderWidget(
+                            label, 
+                            columnIndex, 
+                            theme, 
+                          ),
+                        );
+                      }).toList(),
+                    ),
               ),
 
               // --- Scrollable body (vertical) ---
@@ -1051,29 +1063,19 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
             child: SizedBox(
               width: constraints.maxWidth,
               height: constraints.maxHeight,
-              child: Scrollbar(
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
                 controller: _horizontalScrollController,
-                thumbVisibility: true,  // Always show horizontal scrollbar
-                trackVisibility: true,  // Show scrollbar track
-                thickness: 10,
-                radius: const Radius.circular(5),
-                // notificationPredicate: (ScrollNotification notification) {
-                //   return notification.depth == 1; // Only respond to horizontal scroll
-                // },
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  controller: _horizontalScrollController,
-                  child: SizedBox(
-                    width: totalMinWidth,
-                    child: tableColumn,
-                  ),
+                child: SizedBox(
+                  width: totalMinWidth,
+                  child: tableColumn,
                 ),
               ),
             ),
           );
         }
 
-        // else (no horizontal scroll needed, but still wrap for consistency)
+        // else (no horizontal scroll)
         return Padding(
           padding: const EdgeInsets.only(bottom: 20.0),
           child: SizedBox(
@@ -1106,9 +1108,8 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
   Widget _buildOrderBookHeaderWidget(
     String label,
     int columnIndex,
-    ThemesProvider theme, {
-    bool needHorizontalScroll = false,
-  }) {
+    ThemesProvider theme,
+  ) {
     return InkWell(
       onTap: () => _onSortOrderTable(columnIndex, !_orderSortAscending),
       child: Row(
@@ -1126,9 +1127,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                       ? WebDarkColors.textPrimary
                       : WebColors.textPrimary,
                 ),
-                overflow: needHorizontalScroll ? TextOverflow.clip : TextOverflow.ellipsis,
-                maxLines: 1,
-                softWrap: false,
+                overflow: TextOverflow.visible,
               ),
             ),
           ),
@@ -1166,12 +1165,10 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     required double minW,
     required Widget child,
   }) {
-    if (needHorizontalScroll) { 
+    if (needHorizontalScroll) {
       return SizedBox(
         width: minW,
-        child: ClipRect(
-          child: child,
-        ),
+        child: child,
       );
     }
 
@@ -1229,26 +1226,49 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                 ),
               ),
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              child: Row(
-                mainAxisSize: needHorizontalScroll ? MainAxisSize.min : MainAxisSize.max,
-                children: headers.map((label) {
-                  final flex = columnFlex[label] ?? 1;
-                  final minW = columnMinWidth[label] ?? 80.0;
-                  return _buildOrderBookColumnCell(
-                    needHorizontalScroll: needHorizontalScroll,
-                    flex: flex,
-                    minW: minW,
-                    child: _buildOrderBookCellWidget(
-                      label,
-                      order,
-                      theme,
-                      isHovered,
-                      uniqueId,
-                      needHorizontalScroll: needHorizontalScroll,
+              child: needHorizontalScroll
+                  ? IntrinsicWidth(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: headers.map((label) {
+                          final flex = columnFlex[label] ?? 1;
+                          final minW = columnMinWidth[label] ?? 80.0;
+                          return _buildOrderBookColumnCell(
+                            needHorizontalScroll: needHorizontalScroll,
+                            flex: flex,
+                            minW: minW,
+                            child: _buildOrderBookCellWidget(
+                              label,
+                              order,
+                              theme,
+                              isHovered,
+                              uniqueId,
+                              needHorizontalScroll: needHorizontalScroll,
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    )
+                  : Row(
+                      mainAxisSize: MainAxisSize.max,
+                      children: headers.map((label) {
+                        final flex = columnFlex[label] ?? 1;
+                        final minW = columnMinWidth[label] ?? 80.0;
+                        return _buildOrderBookColumnCell(
+                          needHorizontalScroll: needHorizontalScroll,
+                          flex: flex,
+                          minW: minW,
+                          child: _buildOrderBookCellWidget(
+                            label,
+                            order,
+                            theme,
+                            isHovered,
+                            uniqueId,
+                            needHorizontalScroll: needHorizontalScroll,
+                          ),
+                        );
+                      }).toList(),
                     ),
-                  );
-                }).toList(),
-              ),
             ),
           ),
         );
@@ -1364,7 +1384,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
           theme,
           Alignment.centerLeft,
           needHorizontalScroll: needHorizontalScroll,
-          useEllipsis: false,
+          useEllipsis: true,
         );
       default:
         return const SizedBox.shrink();
@@ -1392,54 +1412,31 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
 
     return ClipRect(
       child: Row(
-        mainAxisSize: needHorizontalScroll ? MainAxisSize.min : MainAxisSize.max,
+        mainAxisSize: MainAxisSize.max,
         children: [
-          needHorizontalScroll
-              ? Expanded(
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Tooltip(
-                      message: displayText,
-                      child: Text(
-                        displayText,
-                        style: WebTextStyles.custom(
-                          fontSize: 13,
-                          isDarkTheme: theme.isDarkMode,
-                          color: theme.isDarkMode
-                              ? WebDarkColors.textPrimary
-                              : WebColors.textPrimary,
-                          fontWeight: WebFonts.medium,
-                        ),
-                        maxLines: 1,
-                        softWrap: false,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
+          Flexible(
+            flex: isHovered ? 1 : 2,
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Tooltip(
+                message: displayText,
+                child: Text(
+                  displayText,
+                  style: WebTextStyles.custom(
+                    fontSize: 13,
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode
+                        ? WebDarkColors.textPrimary
+                        : WebColors.textPrimary,
+                    fontWeight: WebFonts.medium,
                   ),
-                )
-              : Flexible(
-                  flex: isHovered ? 1 : 2,
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Tooltip(
-                      message: displayText,
-                      child: Text(
-                        displayText,
-                        style: WebTextStyles.custom(
-                          fontSize: 13,
-                          isDarkTheme: theme.isDarkMode,
-                          color: theme.isDarkMode
-                              ? WebDarkColors.textPrimary
-                              : WebColors.textPrimary,
-                          fontWeight: WebFonts.medium,
-                        ),
-                        maxLines: 1,
-                        softWrap: false,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ),
+                  maxLines: 1,
+                  softWrap: false,
+                  overflow: TextOverflow.ellipsis,
                 ),
+              ),
+            ),
+          ),
           // Action buttons fade in on hover
           IgnorePointer(
             ignoring: !isHovered,
@@ -1530,11 +1527,9 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                     : WebColors.textPrimary),
             fontWeight: WebFonts.medium,
           ),
-          maxLines: 1, 
+          maxLines: 1,
           softWrap: false,
-          overflow: useEllipsis 
-              ? TextOverflow.ellipsis 
-              : (needHorizontalScroll ? TextOverflow.clip : TextOverflow.visible),
+          overflow: useEllipsis ? TextOverflow.ellipsis : TextOverflow.visible,
         ),
       ),
     );
@@ -1700,29 +1695,19 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
             child: SizedBox(
               width: constraints.maxWidth,
               height: constraints.maxHeight,
-              child: Scrollbar(
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
                 controller: _horizontalScrollController,
-                thumbVisibility: true,  // Always show horizontal scrollbar
-                trackVisibility: true,  // Show scrollbar track
-                thickness: 10,
-                radius: const Radius.circular(5),
-                // notificationPredicate: (ScrollNotification notification) {
-                //   return notification.depth == 1; // Only respond to horizontal scroll
-                // },
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  controller: _horizontalScrollController,
-                  child: SizedBox(
-                    width: totalMinWidth,
-                    child: tableColumn,
-                  ),
+                child: SizedBox(
+                  width: totalMinWidth,
+                  child: tableColumn,
                 ),
               ),
             ),
           );
         }
 
-        // else (no horizontal scroll needed, but still wrap for consistency)
+        // else (no horizontal scroll)
         return Padding(
           padding: const EdgeInsets.only(bottom: 20.0),
           child: SizedBox(
@@ -1771,9 +1756,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                       ? WebDarkColors.textPrimary
                       : WebColors.textPrimary,
                 ),
-                overflow: TextOverflow.ellipsis,
-                maxLines: 1,
-                softWrap: false,
+                overflow: TextOverflow.visible,
               ),
             ),
           ),
@@ -2039,94 +2022,291 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     );
   }
 
+  // Responsive breakpoints
+  static const double _mobileBreakpoint = 768;
+  static const double _tabletBreakpoint = 1024;
+  static const double _desktopBreakpoint = 1440;
+
   // Helper method to get responsive column configuration for Trade Book
-  // Always show all columns - horizontal scroll handles overflow on small screens
   Map<String, dynamic> _getResponsiveTradeBookColumns(double screenWidth) {
-    return {
-      'headers': ['Instrument', 'Product', 'Type', 'Qty', 'Price', 'Trade value', 'Order no', 'Time'],
-      'columnFlex': {
-        'Instrument': 3,
-        'Product': 2,
-        'Type': 2,
-        'Qty': 1,
-        'Price': 2,
-        'Trade value': 2,
-        'Order no': 2,
-        'Time': 2,
-      },
-      'columnMinWidth': {
-        'Instrument': 160,
-        'Product': 95,
-        'Type': 75,
-        'Qty': 70,
-        'Price': 90,
-        'Trade value': 115,
-        'Order no': 110,
-        'Time': 180,
-      },
-    };
+    if (screenWidth < _mobileBreakpoint) {
+      // Mobile: Show only essential columns
+      return {
+        'headers': ['Instrument', 'Type', 'Qty', 'Price', 'Time'],
+        'columnFlex': {
+          'Instrument': 3,
+          'Type': 2,
+          'Qty': 1,
+          'Price': 2,
+          'Time': 2,
+        },
+        'columnMinWidth': {
+          'Instrument': 150,
+          'Type': 70,
+          'Qty': 60,
+          'Price': 80,
+          'Time': 100,
+        },
+      };
+    } else if (screenWidth < _tabletBreakpoint) {
+      // Tablet: Show most columns
+      return {
+        'headers': ['Instrument', 'Product', 'Type', 'Qty', 'Price', 'Trade value', 'Time'],
+        'columnFlex': {
+          'Instrument': 3,
+          'Product': 2,
+          'Type': 2,
+          'Qty': 1,
+          'Price': 2,
+          'Trade value': 2,
+          'Time': 2,
+        },
+        'columnMinWidth': {
+          'Instrument': 150,
+          'Product': 90,
+          'Type': 75,
+          'Qty': 65,
+          'Price': 85,
+          'Trade value': 110,
+          'Time': 110,
+        },
+      };
+    } else {
+      // Desktop: Full columns with optimal widths
+      return {
+        'headers': ['Instrument', 'Product', 'Type', 'Qty', 'Price', 'Trade value', 'Order no', 'Time'],
+        'columnFlex': {
+          'Instrument': 3,
+          'Product': 2,
+          'Type': 2,
+          'Qty': 1,
+          'Price': 2,
+          'Trade value': 2,
+          'Order no': 2,
+          'Time': 2,
+        },
+        'columnMinWidth': {
+          'Instrument': 160,
+          'Product': 95,
+          'Type': 80,
+          'Qty': 68,
+          'Price': 90,
+          'Trade value': 115,
+          'Order no': 100,
+          'Time': 120,
+        },
+      };
+    }
   }
 
   // Helper method to get responsive column configuration for Order Book
-  // Always show all columns - horizontal scroll handles overflow on small screens
   Map<String, dynamic> _getResponsiveOrderBookColumns(double screenWidth) {
-    return {
-      'headers': ['Instrument', 'Product', 'Type', 'Qty', 'Avg price', 'LTP', 'Price', 'Trigger price', 'Order value', 'Status', 'Time'],
-      'columnFlex': {
-        'Instrument': 3,
-        'Product': 2,
-        'Type': 2,
-        'Qty': 1,
-        'Avg price': 2,
-        'LTP': 1,
-        'Price': 1,
-        'Trigger price': 2,
-        'Order value': 2,
-        'Status': 2,
-        'Time': 2,
-      },
-      'columnMinWidth': {
-        'Instrument': 360,
-        'Product': 100,
-        'Type': 80,
-        'Qty': 70,
-        'Avg price': 110,
-        'LTP': 95,
-        'Price': 95,
-        'Trigger price': 140,
-        'Order value': 120,
-        'Status': 100,
-        'Time': 340,
-      },
-    };
+    if (screenWidth < _mobileBreakpoint) {
+      // Mobile: Show only essential columns
+      return {
+        'headers': ['Instrument', 'Type', 'Qty', 'LTP', 'Status', 'Time'],
+        'columnFlex': {
+          'Instrument': 3,
+          'Type': 2,
+          'Qty': 1,
+          'LTP': 1,
+          'Status': 2,
+          'Time': 2,
+        },
+        'columnMinWidth': {
+          'Instrument': 150,
+          'Type': 60,
+          'Qty': 60,
+          'LTP': 80,
+          'Status': 75,
+          'Time': 160,
+        },
+      };
+    } else if (screenWidth < _tabletBreakpoint) {
+      // Tablet: Show most columns
+      return {
+        'headers': ['Instrument', 'Product', 'Type', 'Qty', 'Avg price', 'LTP', 'Price', 'Status', 'Time'],
+        'columnFlex': {
+          'Instrument': 3,
+          'Product': 2,
+          'Type': 2,
+          'Qty': 1,
+          'Avg price': 2,
+          'LTP': 1,
+          'Price': 1,
+          'Status': 2,
+          'Time': 2,
+        },
+        'columnMinWidth': {
+          'Instrument': 150,
+          'Product': 70,
+          'Type': 65,
+          'Qty': 65,
+          'Avg price': 95,
+          'LTP': 80,
+          'Price': 80,
+          'Status': 75,
+          'Time': 170,
+        },
+      };
+    } else if (screenWidth < _desktopBreakpoint) {
+      // Small Desktop: Show all columns except some less important ones
+      return {
+        'headers': ['Instrument', 'Product', 'Type', 'Qty', 'Avg price', 'LTP', 'Price', 'Trigger price', 'Status', 'Time'],
+        'columnFlex': {
+          'Instrument': 3,
+          'Product': 2,
+          'Type': 2,
+          'Qty': 1,
+          'Avg price': 2,
+          'LTP': 1,
+          'Price': 1,
+          'Trigger price': 2,
+          'Status': 2,
+          'Time': 2,
+        },
+        'columnMinWidth': {
+          'Instrument': 160,
+          'Product': 75,
+          'Type': 70,
+          'Qty': 68,
+          'Avg price': 100,
+          'LTP': 85,
+          'Price': 85,
+          'Trigger price': 110,
+          'Status': 80,
+          'Time': 180,
+        },
+      };
+    } else {
+      // Large Desktop: Full columns with optimal widths
+      return {
+        'headers': ['Instrument', 'Product', 'Type', 'Qty', 'Avg price', 'LTP', 'Price', 'Trigger price', 'Order value', 'Status', 'Time'],
+        'columnFlex': {
+          'Instrument': 3,
+          'Product': 2,
+          'Type': 2,
+          'Qty': 1,
+          'Avg price': 2,
+          'LTP': 1,
+          'Price': 1,
+          'Trigger price': 2,
+          'Order value': 2,
+          'Status': 2,
+          'Time': 2,
+        },
+        'columnMinWidth': {
+          'Instrument': 170,
+          'Product': 80,
+          'Type': 75,
+          'Qty': 70,
+          'Avg price': 105,
+          'LTP': 90,
+          'Price': 90,
+          'Trigger price': 115,
+          'Order value': 110,
+          'Status': 85,
+          'Time': 180,
+        },
+      };
+    }
   }
 
-  // Helper method to get responsive column configuration for GTT
-  // Always show all columns - horizontal scroll handles overflow on small screens
+  // Helper method to get responsive column configuration
   Map<String, dynamic> _getResponsiveGttColumns(double screenWidth) {
-    return {
-      'headers': ['Instrument', 'Product', 'Type', 'Qty', 'LTP', 'Trigger', 'Status', 'Time'],
-      'columnFlex': {
-        'Instrument': 3,
-        'Product': 2,
-        'Type': 2,
-        'Qty': 1,
-        'LTP': 1,
-        'Trigger': 2,
-        'Status': 2,
-        'Time': 3,
-      },
-      'columnMinWidth': {
-        'Instrument': 160,
-        'Product': 105,
-        'Type': 80,
-        'Qty': 70,
-        'LTP': 90,
-        'Trigger': 105,
-        'Status': 105,
-        'Time': 180,
-      },
-    };
+    if (screenWidth < _mobileBreakpoint) {
+      // Mobile: Show only essential columns
+      return {
+        'headers': ['Instrument', 'Type', 'Qty', 'LTP', 'Status'],
+        'columnFlex': {
+          'Instrument': 3,
+          'Type': 2,
+          'Qty': 1,
+          'LTP': 1,
+          'Status': 2,
+        },
+        'columnMinWidth': {
+          'Instrument': 120,
+          'Type': 70,
+          'Qty': 60,
+          'LTP': 80,
+          'Status': 90,
+        },
+      };
+    } else if (screenWidth < _tabletBreakpoint) {
+      // Tablet: Show most columns, hide less important ones
+      return {
+        'headers': ['Instrument', 'Product', 'Type', 'Qty', 'LTP', 'Status', 'Time'],
+        'columnFlex': {
+          'Instrument': 3,
+          'Product': 2,
+          'Type': 2,
+          'Qty': 1,
+          'LTP': 1,
+          'Status': 2,
+          'Time': 2,
+        },
+        'columnMinWidth': {
+          'Instrument': 130,
+          'Product': 100,
+          'Type': 80,
+          'Qty': 65,
+          'LTP': 85,
+          'Status': 100,
+          'Time': 120,
+        },
+      };
+    } else if (screenWidth < _desktopBreakpoint) {
+      // Small Desktop: Show all columns with reduced widths
+      return {
+        'headers': ['Instrument', 'Product', 'Type', 'Qty', 'LTP', 'Trigger', 'Status', 'Time'],
+        'columnFlex': {
+          'Instrument': 3,
+          'Product': 2,
+          'Type': 2,
+          'Qty': 1,
+          'LTP': 1,
+          'Trigger': 2,
+          'Status': 2,
+          'Time': 3,
+        },
+        'columnMinWidth': {
+          'Instrument': 135,
+          'Product': 105,
+          'Type': 85,
+          'Qty': 68,
+          'LTP': 88,
+          'Trigger': 95,
+          'Status': 105,
+          'Time': 135,
+        },
+      };
+    } else {
+      // Large Desktop: Full columns with optimal widths
+      return {
+        'headers': ['Instrument', 'Product', 'Type', 'Qty', 'LTP', 'Trigger', 'Status', 'Time'],
+        'columnFlex': {
+          'Instrument': 3,
+          'Product': 2,
+          'Type': 2,
+          'Qty': 1,
+          'LTP': 1,
+          'Trigger': 2,
+          'Status': 2,
+          'Time': 3,
+        },
+        'columnMinWidth': {
+          'Instrument': 140,
+          'Product': 110,
+          'Type': 90,
+          'Qty': 70,
+          'LTP': 90,
+          'Trigger': 100,
+          'Status': 110,
+          'Time': 140,
+        },
+      };
+    }
   }
 
   Widget _buildGttOrderBookTable(
@@ -2384,19 +2564,12 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
             child: SizedBox(
               width: constraints.maxWidth,
               height: constraints.maxHeight,
-              child: Scrollbar(
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
                 controller: _gttHorizontalScrollController,
-                thumbVisibility: true,  // Always show horizontal scrollbar
-                trackVisibility: true,  // Show scrollbar track
-                thickness: 12,
-                radius: const Radius.circular(6),
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  controller: _gttHorizontalScrollController,
-                  child: SizedBox(
-                    width: totalMinWidth, // THE REAL FIX - forces exact table width
-                    child: tableColumn,
-                  ),
+                child: SizedBox(
+                  width: totalMinWidth, // THE REAL FIX - forces exact table width
+                  child: tableColumn,
                 ),
               ),
             ),
@@ -4824,7 +4997,7 @@ class _DraggablePlaceOrderDialogState
                               child: Padding(
                                 padding: const EdgeInsets.all(6.0),
                                 child: Icon(
-                                  Icons.close,
+                                  Icons.close_rounded,
                                   size: 16,
                                   color: theme.isDarkMode
                                       ? WebDarkColors.iconSecondary
