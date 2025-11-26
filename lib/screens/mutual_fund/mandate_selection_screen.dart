@@ -112,6 +112,7 @@ class _MandateSelectionScreenState extends State<MandateSelectionScreen> {
                   child: mfOrder.mandateData != null &&
                           mfOrder.mandateData!.isNotEmpty
                       ? ListView.separated(
+                        physics: ClampingScrollPhysics(),
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                           itemCount: mfOrder.mandateData!.length,
                           separatorBuilder: (context, index) =>

@@ -507,7 +507,7 @@ class _OrderBookState extends ConsumerState<OrderBook> {
     // }
     return ListView.separated(
       padding: EdgeInsets.only(bottom: 80),
-      physics: const AlwaysScrollableScrollPhysics(),
+      physics: const ClampingScrollPhysics(),
       shrinkWrap: false,
       itemBuilder: (context, index) {
         final itemIndex = index;

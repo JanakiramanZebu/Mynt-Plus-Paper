@@ -32,6 +32,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
     return Container(
       color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
       child: ListView(
+        physics: ClampingScrollPhysics(),
         padding: EdgeInsets.zero,
         children: [
           // Available Margin Section

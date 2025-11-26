@@ -66,7 +66,7 @@ class UnpledgeHistoryScreen extends StatelessWidget {
                 : Expanded(
                     child: SingleChildScrollView(
                       child: ListView.separated(
-                        physics: ScrollPhysics(),
+                        physics: ClampingScrollPhysics(),
                         itemCount:
                             ledgerprovider.unPledgeHistoryData?.data?.length ??
                                 0,

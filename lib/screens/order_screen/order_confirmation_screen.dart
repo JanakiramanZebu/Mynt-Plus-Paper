@@ -139,6 +139,7 @@ class _OrderConfirmationScreenState extends ConsumerState<OrderConfirmationScree
         ),
         body: SafeArea(
           child: SingleChildScrollView(
+            physics: ClampingScrollPhysics(),
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

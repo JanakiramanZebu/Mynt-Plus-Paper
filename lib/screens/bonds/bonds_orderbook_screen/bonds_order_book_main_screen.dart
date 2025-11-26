@@ -66,6 +66,7 @@ class _BondsOrderbookMainScreenState
     }
 
     return SingleChildScrollView(
+      physics: ClampingScrollPhysics(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

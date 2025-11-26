@@ -69,6 +69,7 @@ class _ReferAndEarnScreenState extends ConsumerState<ReferAndEarnScreen> {
         child: dashboard.isReferralRewardsLoading
             ? _buildLoadingState(theme)
             : SingleChildScrollView(
+              physics: ClampingScrollPhysics(),
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -753,6 +754,7 @@ class _ReferAndEarnScreenState extends ConsumerState<ReferAndEarnScreen> {
           else
             Expanded(
               child: ListView.separated(
+                physics: ClampingScrollPhysics(),
                 controller: scrollController,
                 itemCount: completedReferrals.length,
                 separatorBuilder: (context, index) =>  Divider(
@@ -811,6 +813,7 @@ class _ReferAndEarnScreenState extends ConsumerState<ReferAndEarnScreen> {
           else
             Expanded(
               child: ListView.separated(
+                physics: ClampingScrollPhysics(),
                 controller: scrollController,
                 itemCount: pendingReferrals.length,
                 separatorBuilder: (context, index) =>  Divider(

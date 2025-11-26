@@ -240,6 +240,7 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                   child: Stack(
                     children: [
                       SingleChildScrollView(
+                        physics: ClampingScrollPhysics(),
                           reverse: true,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,

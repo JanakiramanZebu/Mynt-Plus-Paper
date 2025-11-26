@@ -52,6 +52,7 @@ class _RedemptionBottomScreenState extends ConsumerState<RedemptionBottomScreen>
     final theme = ref.watch(themeProvider);
     final mf = ref.watch(mfProvider);
     return SingleChildScrollView(
+      physics: ClampingScrollPhysics(),
         child: Container(
           decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),

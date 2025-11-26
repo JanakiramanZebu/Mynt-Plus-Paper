@@ -780,6 +780,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                         return true;
                       },
                       child: SingleChildScrollView(
+                        physics: ClampingScrollPhysics(),
                         padding: const EdgeInsets.all(8),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1668,6 +1669,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
     }
 
     return const SingleChildScrollView(
+      physics: ClampingScrollPhysics(),
       // padding: EdgeInsets.all(16),
       child: FinancialWidget(),
     );

@@ -1174,6 +1174,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                   //                     ),
                   Expanded(
                     child: ListView.separated(
+                      physics: ClampingScrollPhysics(),
                       controller: scrollController,
                       itemCount: trade.length,
                       itemBuilder: (context, index) {

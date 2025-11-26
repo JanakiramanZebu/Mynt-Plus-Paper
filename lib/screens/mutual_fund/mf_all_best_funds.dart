@@ -428,6 +428,7 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
     }
 
     return ListView.separated(
+      physics: ClampingScrollPhysics(),
       itemCount: sortedList.length,
       separatorBuilder: (_, __) => const ListDivider(),
       itemBuilder: (BuildContext context, int index) {

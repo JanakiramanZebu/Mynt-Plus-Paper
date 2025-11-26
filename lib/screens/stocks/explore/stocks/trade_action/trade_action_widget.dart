@@ -200,7 +200,7 @@ class _TradeActionState extends ConsumerState<TradeAction>
       child: ListView.builder(
         controller: _tabScrollController,
         scrollDirection: Axis.horizontal,
-        physics: const BouncingScrollPhysics(),
+        physics: ClampingScrollPhysics(),
         itemCount: tradeAction.length,
         itemBuilder: (context, index) {
           final action = tradeAction[index];

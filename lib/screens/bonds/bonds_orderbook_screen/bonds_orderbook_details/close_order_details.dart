@@ -115,6 +115,7 @@ class BondsCloseOrderDetails extends ConsumerWidget {
                                   theme: theme),
                               Expanded(
                                 child: SingleChildScrollView(
+                                  physics: ClampingScrollPhysics(),
                                   controller: scrollController,
                                   child: Column(
                                     crossAxisAlignment:

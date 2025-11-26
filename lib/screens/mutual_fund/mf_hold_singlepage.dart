@@ -107,6 +107,7 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
               return Scaffold(
                 backgroundColor: Colors.transparent,
                 body: SingleChildScrollView(
+                  physics: ClampingScrollPhysics(),
                   controller: scrollController,
                   child: hasData
                       ? _buildHoldingDetails(context, theme, mfdata)

@@ -63,6 +63,7 @@ class _IpoOrderbookMainScreenState extends ConsumerState<IpoOrderbookMainScreen>
     }
 
     return SingleChildScrollView(
+      physics: ClampingScrollPhysics(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

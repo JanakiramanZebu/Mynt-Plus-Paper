@@ -79,6 +79,7 @@ class _MarginCalculatorScreenState
         ),
         body: SafeArea(
           child: SingleChildScrollView(
+            physics: ClampingScrollPhysics(),
             child: Column(
               children: [
                 // _buildHeaderSection(),
@@ -276,6 +277,7 @@ class _MarginCalculatorScreenState
                   child: StatefulBuilder(
                     builder: (context, setBottomSheetState) {
                       return SingleChildScrollView(
+                        physics: ClampingScrollPhysics(),
                         controller: scrollController,
                         padding: const EdgeInsets.symmetric(horizontal: 20),
                         child: Column(

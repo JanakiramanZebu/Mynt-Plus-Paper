@@ -92,6 +92,7 @@ class _LedgerBillBottomState extends State<LedgerBillBottom> {
                     : Expanded(
                         // height: screenheight * 0.5,
                         child: SingleChildScrollView(
+                          physics: ClampingScrollPhysics(),
                            controller: scrollController,
                           child: Column(
                             children: [
@@ -136,7 +137,7 @@ class _LedgerBillBottomState extends State<LedgerBillBottom> {
                               ),
                                 ListDivider(),
                               ListView.separated(
-                                physics: ScrollPhysics(),
+                                physics: ClampingScrollPhysics(),
                                 itemCount: ledgerdata
                                     .ledgerBillData!.transactions!.length,
                                 shrinkWrap: true,

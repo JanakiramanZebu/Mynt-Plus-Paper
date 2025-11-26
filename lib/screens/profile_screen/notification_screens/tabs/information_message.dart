@@ -18,6 +18,7 @@ class InformationMessage extends ConsumerWidget {
     return notification.loading
         ? const Center(child: CircularProgressIndicator())
         : SingleChildScrollView(
+          physics: ClampingScrollPhysics(),
             child: notification.informationMessages == null ||
                     notification.informationMessages!.isEmpty
                 ? const Padding(
@@ -29,7 +30,7 @@ class InformationMessage extends ConsumerWidget {
                 : ListView.separated(
                     padding: const EdgeInsets.symmetric(vertical: 20),
                     shrinkWrap: true,
-                    physics: const BouncingScrollPhysics(),
+                    physics: ClampingScrollPhysics(),
                     itemCount: notification.informationMessages!.length,
                     itemBuilder: (BuildContext context, int index) {
                       final item = notification.informationMessages![index];

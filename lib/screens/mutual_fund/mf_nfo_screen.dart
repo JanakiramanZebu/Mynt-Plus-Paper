@@ -67,7 +67,7 @@ class MFNFOScreen extends ConsumerWidget {
           Expanded(
             child: ListView.separated(
               shrinkWrap: true,
-              physics: const AlwaysScrollableScrollPhysics(),
+              physics: const ClampingScrollPhysics(),
               separatorBuilder: (_, __) => const ListDivider(),
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               itemCount: nfoList.length,

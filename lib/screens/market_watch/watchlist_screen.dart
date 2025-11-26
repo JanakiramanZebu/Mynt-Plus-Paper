@@ -347,7 +347,7 @@ void _initializeWithStoredData() {
 
       return SafeArea(
         child: NestedScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
+          physics: const ClampingScrollPhysics(),
           headerSliverBuilder: (_, inner) => [
             _buildSearchBar(ref, theme, wlName, isPreDef, watchList?.values?.length ?? 0),
             _buildPinnedTabs(ref, theme, watchList, wlName),
@@ -634,7 +634,7 @@ void _initializeWithStoredData() {
         key: const PageStorageKey<String>('watchlistTabs'),
         controller: _tabScrollController,
         scrollDirection: Axis.horizontal,
-        physics: const BouncingScrollPhysics(),
+        physics: ClampingScrollPhysics(),
         itemCount: watchList.values.length,
         itemBuilder: (_, i) {
           final name = watchList.values[i];
@@ -747,6 +747,7 @@ void _initializeWithStoredData() {
   Widget _buildWatchlistView(List scrips, String sortBy) {
     return ListView.separated(
       key: ValueKey('${scrips.length}_$sortBy'),
+      physics: ClampingScrollPhysics(),
       itemCount: scrips.length,
       cacheExtent: 500,
       separatorBuilder: (_, __) => const ListDivider(),

@@ -125,7 +125,7 @@ class BasketList extends ConsumerWidget {
                 height: 400, child: Center(child: CircularProgressIndicator()))                
                 : ListView.separated(
                   padding: EdgeInsets.only(bottom: 80),
-                  physics: const AlwaysScrollableScrollPhysics(),
+                  physics: const ClampingScrollPhysics(),
                   shrinkWrap: true,
                   itemCount: basket.bsktList.length,
                   itemBuilder: (BuildContext context, int index) {
@@ -617,6 +617,7 @@ class BasketScripList extends ConsumerWidget {
                             }
                 
                             return ListView.separated(
+                              physics: ClampingScrollPhysics(),
                               padding: EdgeInsets.only(bottom: 80),
                               shrinkWrap: true,
                               itemCount: basket.bsktScripList.length,

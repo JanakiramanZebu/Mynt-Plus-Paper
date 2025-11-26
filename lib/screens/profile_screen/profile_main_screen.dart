@@ -528,6 +528,7 @@ class _UserAccountScreenState extends ConsumerState<UserAccountScreen> {
           /// 🔹 Menu List
           Expanded(
             child: ListView.separated(
+              physics: ClampingScrollPhysics(),
               controller: _scrollController,
               padding: const EdgeInsets.only(top: 0),
               itemCount: filteredMenu.length,
@@ -2749,6 +2750,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
               /// Expandable List View
               Expanded(
                 child: ListView.separated(
+                  physics: ClampingScrollPhysics(),
                   itemCount: accountItems.length,
                   itemBuilder: (context, index) {
                     final item = accountItems[index];
@@ -4328,6 +4330,7 @@ class ReportsScreen extends ConsumerWidget {
             // ),
             Expanded(
               child: SingleChildScrollView(
+                physics: ClampingScrollPhysics(),
                 child: ListView.separated(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),

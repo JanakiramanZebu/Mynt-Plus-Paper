@@ -147,6 +147,7 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                             0.6, // Max 60% of screen height
                       ),
                       child: ListView.separated(
+                        physics: ClampingScrollPhysics(),
                           shrinkWrap: true,
                           padding: EdgeInsets.zero,
                           itemCount: () {

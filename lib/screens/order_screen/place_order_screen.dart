@@ -806,6 +806,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                   body: SafeArea(
                     child: Stack(children: [
                       SingleChildScrollView(
+                        physics: ClampingScrollPhysics(),
                         padding: EdgeInsets.only(bottom: ((priceType == "Market" || priceType == "SL MKT") && isAvbSecu) ? 120 : 90),
                         // reverse: true,
                         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

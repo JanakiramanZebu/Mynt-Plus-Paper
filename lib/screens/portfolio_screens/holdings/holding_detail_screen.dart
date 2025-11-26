@@ -539,6 +539,7 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                         return true;
                       },
                       child: ListView(
+                        physics: ClampingScrollPhysics(),
                         controller: scrollController,
                         children: [
                           // Header section (previously fixed, now part of scrollable content)

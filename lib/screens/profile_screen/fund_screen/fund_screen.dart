@@ -207,6 +207,7 @@ class _FundScreenState extends ConsumerState<FundScreen> {
             MediaQuery.of(context).viewInsets.bottom, // Add keyboard padding
       ),
       child: SingleChildScrollView(
+        physics: ClampingScrollPhysics(),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -462,6 +463,7 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                   fund.focusNode.unfocus();
                                 },
                                 child: SingleChildScrollView(
+                                  physics: ClampingScrollPhysics(),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [

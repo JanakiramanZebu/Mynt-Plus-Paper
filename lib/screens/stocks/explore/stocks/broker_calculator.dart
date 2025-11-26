@@ -376,6 +376,7 @@ class _BrokerageCalculatorScreenState
         ),
         body: SafeArea(
           child: SingleChildScrollView(
+            physics: ClampingScrollPhysics(),
             child: Column(
               children: [
                 _buildInputSection(),
@@ -736,7 +737,7 @@ class _BrokerageCalculatorScreenState
               padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8),
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
-                physics: const BouncingScrollPhysics(),
+                physics: ClampingScrollPhysics(),
                 itemCount: _subSegments[_selectedSegment].length,
                 itemBuilder: (context, index) {
                   final subSegment = _subSegments[_selectedSegment][index];

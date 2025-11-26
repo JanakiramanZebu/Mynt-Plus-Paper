@@ -330,6 +330,7 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                 children: [
                   Expanded(
                     child: SingleChildScrollView(
+                      physics: ClampingScrollPhysics(),
                       child: Column(
                         children: [
                           const SizedBox(height: 20),

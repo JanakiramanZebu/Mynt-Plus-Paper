@@ -1243,11 +1243,11 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
           ))
         : Expanded(
             child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
+              physics: const ClampingScrollPhysics(),
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 16.0),
                 child: ListView.separated(
-                  physics: ScrollPhysics(),
+                  physics: ClampingScrollPhysics(),
                   itemCount:
                       ledgerprovider.pledgeandunpledge?.data?.length ?? 0,
                   shrinkWrap: true,

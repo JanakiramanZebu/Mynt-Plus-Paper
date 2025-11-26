@@ -466,6 +466,7 @@ class _BasketSelectionBottomSheetState
             // Available baskets
             Flexible(
               child: ListView.separated(
+                physics: ClampingScrollPhysics(),
                 shrinkWrap: true,
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 itemCount: availableBaskets.length,

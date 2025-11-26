@@ -163,7 +163,7 @@ class SipOrderBook extends ConsumerWidget {
                 ),
               Expanded(
                 child: SingleChildScrollView(
-                  physics: const ScrollPhysics(),
+                  physics: const ClampingScrollPhysics(),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [

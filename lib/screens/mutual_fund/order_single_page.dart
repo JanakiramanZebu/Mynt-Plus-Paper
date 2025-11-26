@@ -76,6 +76,7 @@ class _mforderdetscreen extends State<mforderdetscreen>
                 body: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: SingleChildScrollView(
+                        physics: ClampingScrollPhysics(),
                         controller: scrollController,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,

@@ -256,7 +256,7 @@ class _IndexBottomSheetState extends ConsumerState<IndexBottomSheet> {
                                           controller: controller,
                                           physics: const BouncingScrollPhysics(
                                               parent:
-                                                  AlwaysScrollableScrollPhysics()),
+                                                  ClampingScrollPhysics()),
                                           itemCount: indexProvide
                                                       .indValuesList.length *
                                                   2 -

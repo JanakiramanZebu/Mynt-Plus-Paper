@@ -106,7 +106,7 @@ class _PendingAlertState extends ConsumerState<PendingAlert> {
     return RefreshIndicator(
       onRefresh: _refreshData,
       child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
+        physics: const ClampingScrollPhysics(),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

@@ -141,6 +141,7 @@ class _SipOrderDetailsState extends ConsumerState<SipOrderDetails> {
           ]),
         ),
         body: SingleChildScrollView(
+          physics: ClampingScrollPhysics(),
           child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,

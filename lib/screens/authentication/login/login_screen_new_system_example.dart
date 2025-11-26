@@ -30,6 +30,7 @@ class LoginScreenNewSystemExample extends StatelessWidget {
         ),
       ),
       body: SingleChildScrollView(
+        physics: ClampingScrollPhysics(),
         padding: AppSpacing.screenPaddingAll,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

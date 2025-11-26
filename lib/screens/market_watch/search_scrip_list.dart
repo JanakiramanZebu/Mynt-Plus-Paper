@@ -76,7 +76,7 @@ class _searchScripList extends State<SearchScripList> {
           final indices = indexProvider.defaultIndexList?.indValues ?? [];
 
           return SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
+            physics: const ClampingScrollPhysics(),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -636,7 +636,7 @@ class _searchScripList extends State<SearchScripList> {
         }
 
         return ListView.separated(
-          physics: const BouncingScrollPhysics(),
+          physics: ClampingScrollPhysics(),
           itemCount: widget.searchValue.length,
           separatorBuilder: (context, index) => const ListDivider(),
           itemBuilder: (BuildContext context, int index) {

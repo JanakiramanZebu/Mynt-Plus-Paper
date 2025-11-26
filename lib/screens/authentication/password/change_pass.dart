@@ -109,6 +109,7 @@ class _ChangePassState extends ConsumerState<ChangePass> {
             Navigator.of(context).pop();
           },
           child: SingleChildScrollView(
+            physics: ClampingScrollPhysics(),
             reverse: false,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

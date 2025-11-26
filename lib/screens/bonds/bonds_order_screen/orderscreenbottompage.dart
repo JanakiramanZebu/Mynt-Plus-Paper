@@ -87,6 +87,7 @@ class _BondOrderScreenbottomPageState
       }
       return SafeArea(
         child: SingleChildScrollView(
+          physics: ClampingScrollPhysics(),
             // initialChildSize: 0.50,
             // maxChildSize: .99,
             // expand: false,

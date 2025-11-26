@@ -254,6 +254,7 @@ class _BondsSinglePageState extends State<BondsSinglePage> {
     BuildContext context
   ) {
     return ListView(
+      physics: ClampingScrollPhysics(),
       padding: EdgeInsets.zero,
       shrinkWrap: true,
       controller: scrollController,

@@ -117,6 +117,7 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
                         child: Column(
                           children: <Widget>[
                             SingleChildScrollView(
+                              physics: ClampingScrollPhysics(),
                               controller: scrollController,
                               child: Padding(
                                 padding: const EdgeInsets.symmetric(

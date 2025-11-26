@@ -151,6 +151,7 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                         children: [
                           Expanded(
                             child: SingleChildScrollView(
+                              physics: ClampingScrollPhysics(),
                               controller: scrollController,
                               child: Column(
                                 children: [

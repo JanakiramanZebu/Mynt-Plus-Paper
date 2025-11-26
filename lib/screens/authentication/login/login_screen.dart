@@ -263,6 +263,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     children: [
                       Expanded(
                         child: SingleChildScrollView(
+                          physics: ClampingScrollPhysics(),
                           // reverse: true,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,

@@ -64,6 +64,7 @@ class PledgeHistoryScreen extends StatelessWidget {
                   ))
                 : Expanded(
                     child: SingleChildScrollView(
+                      physics: ClampingScrollPhysics(),
                       child:
                           // ListView.separated(
                           //   physics: ScrollPhysics(),
@@ -297,7 +298,7 @@ class PledgeHistoryScreen extends StatelessWidget {
                           //   },
                           // ),
                           ListView.separated(
-                        physics: ScrollPhysics(),
+                        physics: ClampingScrollPhysics(),
                         itemCount: ledgerprovider.historyalterlist.length,
                         shrinkWrap: true,
                         itemBuilder: (context, index) {

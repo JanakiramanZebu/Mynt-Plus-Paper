@@ -164,6 +164,7 @@ class _IpoOpenOrderDetailsState extends ConsumerState<IpoOpenOrderDetails> {
                             const SizedBox(height: 20),
                             Expanded(
                               child: SingleChildScrollView(
+                                physics: ClampingScrollPhysics(),
                                 controller: scrollController,
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,

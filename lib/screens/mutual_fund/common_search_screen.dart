@@ -223,7 +223,7 @@ class _MfCommonSearchState extends ConsumerState<MfCommonSearch> {
                             // padding: const EdgeInsets.symmetric(horizontal: 8),
                             separatorBuilder: (context, index) =>
                                 const ListDivider(),
-                            physics: const BouncingScrollPhysics(),
+                            physics: ClampingScrollPhysics(),
                             itemCount: mfData.mutualFundsearchdata!.length,
                             itemBuilder: (BuildContext context, int index) {
                               final fund = mfData.mutualFundsearchdata![index];

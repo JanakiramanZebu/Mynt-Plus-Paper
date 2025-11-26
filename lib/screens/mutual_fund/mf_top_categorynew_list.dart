@@ -65,6 +65,7 @@ class MFCategoryListScreen extends ConsumerWidget {
                   _buildCategoryChips(context, ref, theme, title, mfData),
                   Expanded(
                     child: ListView.separated(
+                      physics: ClampingScrollPhysics(),
                       shrinkWrap: true,
                       // padding: const EdgeInsets.all(8),
                       itemCount: sortedList?.length ?? 0,

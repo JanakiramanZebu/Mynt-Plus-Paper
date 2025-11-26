@@ -87,6 +87,7 @@ class LoggedUserBottomSheet extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SingleChildScrollView(
+                  physics: ClampingScrollPhysics(),
                   controller: controller,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

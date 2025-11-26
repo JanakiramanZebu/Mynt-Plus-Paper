@@ -171,6 +171,7 @@ class _IPODetailsContainer extends StatelessWidget {
                   const SizedBox(height: 16),
                   Expanded(
             child: SingleChildScrollView(
+              physics: ClampingScrollPhysics(),
               controller: scrollController,
               child: Column(
                 children: [

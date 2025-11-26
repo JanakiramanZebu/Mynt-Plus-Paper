@@ -121,6 +121,7 @@ class _CreateMandateDialogueState extends ConsumerState<CreateMandateDialogue> {
               const ListDivider(),
               Flexible(
                 child: SingleChildScrollView(
+                  physics: ClampingScrollPhysics(),
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

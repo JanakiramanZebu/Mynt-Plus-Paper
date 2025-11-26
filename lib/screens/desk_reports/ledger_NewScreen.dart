@@ -581,9 +581,9 @@ Padding(
                       ))
                     : Expanded(
                         child: SingleChildScrollView(
-                          physics: const AlwaysScrollableScrollPhysics(),
+                          physics: const ClampingScrollPhysics(),
                           child: ListView.separated(
-                            physics: ScrollPhysics(),
+                            physics: ClampingScrollPhysics(),
                             itemCount: ledgerprovider
                                     .ledgerAllData?.fullStat?.length ??
                                 0,

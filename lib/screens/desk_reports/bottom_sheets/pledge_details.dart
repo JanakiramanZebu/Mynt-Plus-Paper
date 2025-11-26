@@ -210,6 +210,7 @@ class _PledgeDeytails extends State<PledgeDeytails> {
           return true;
         },
         child: SingleChildScrollView(
+          physics: ClampingScrollPhysics(),
           child: Container(
             decoration: BoxDecoration(
               borderRadius: const BorderRadius.only(

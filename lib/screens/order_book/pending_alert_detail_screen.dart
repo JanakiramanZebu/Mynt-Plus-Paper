@@ -145,6 +145,7 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
                       children: [
                         Expanded(
                           child: SingleChildScrollView(
+                            physics: ClampingScrollPhysics(),
                             controller: scrollController,
                             child: Padding(
                               padding:

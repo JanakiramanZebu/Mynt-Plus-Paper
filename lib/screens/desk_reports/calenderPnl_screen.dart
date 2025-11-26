@@ -409,7 +409,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                                 : Expanded(
                                     child: SingleChildScrollView(
                                       physics:
-                                          const AlwaysScrollableScrollPhysics(),
+                                          const ClampingScrollPhysics(),
                                       child: Column(
                                         children: [
                                           Padding(
@@ -1332,6 +1332,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                     ),
                     Expanded(
                       child: ListView.separated(
+                        physics: ClampingScrollPhysics(),
                         controller: scrollController,
                         itemCount: trade.length,
                         itemBuilder: (context, index) {

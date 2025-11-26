@@ -145,6 +145,7 @@ class _OrderBookDetailState extends ConsumerState<OrderBookDetail> {
                           children: <Widget>[
                             Expanded(
                               child: SingleChildScrollView(
+                                physics: ClampingScrollPhysics(),
                                 controller: scrollController,
                                 child: Column(
                                   children: [

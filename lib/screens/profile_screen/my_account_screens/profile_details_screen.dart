@@ -116,6 +116,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
           //           FontWeight.w600)),
           // ),
           body: SingleChildScrollView(
+            physics: ClampingScrollPhysics(),
             // padding: EdgeInsets.all(0.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

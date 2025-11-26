@@ -107,6 +107,7 @@ class _RedemptionBottomScreenNewState extends State<RedemptionBottomScreenNew> {
                 children: [
                   Expanded(
                     child: SingleChildScrollView(
+                      physics: ClampingScrollPhysics(),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: Column(

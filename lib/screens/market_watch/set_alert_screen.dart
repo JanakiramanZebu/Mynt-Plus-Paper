@@ -85,6 +85,7 @@ class _SetAlertState extends State<SetAlert> {
         children: [
           Expanded(
             child: SingleChildScrollView(
+              physics: ClampingScrollPhysics(),
               child: Padding(
                 padding: EdgeInsets.fromLTRB(
                     16, 0, 16, MediaQuery.of(context).viewInsets.bottom),

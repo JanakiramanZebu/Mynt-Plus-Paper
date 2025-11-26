@@ -502,7 +502,7 @@ class GttOrderBook extends ConsumerWidget {
                   ListView.separated(
                         padding: const EdgeInsets.only(bottom: 80),
                         primary: true,
-                        physics: const AlwaysScrollableScrollPhysics(),
+                        physics: const ClampingScrollPhysics(),
                         shrinkWrap: true,
                         itemBuilder: (context, index) {
                           return InkWell(
@@ -936,7 +936,7 @@ class GttOrderBook extends ConsumerWidget {
               ListView.separated(
                   padding: const EdgeInsets.only(bottom: 80),
                   primary: true,
-                  physics: const AlwaysScrollableScrollPhysics(),
+                  physics: const ClampingScrollPhysics(),
                   shrinkWrap: true,
                   itemBuilder: (context, index) {
                     return InkWell(

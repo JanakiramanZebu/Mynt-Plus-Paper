@@ -720,6 +720,7 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                     return true;
                   },
                   child: ListView(
+                    physics: ClampingScrollPhysics(),
                     controller: scrollController,
                     children: [
               Container(

@@ -64,8 +64,9 @@ class _PledgeHistoryDetails extends State<PledgeHistoryDetails> {
                   : Expanded(
                       // height: screenheight * 0.5,
                       child: SingleChildScrollView(
+                        physics: ClampingScrollPhysics(),
                         child: ListView.separated(
-                          physics: ScrollPhysics(),
+                          physics: ClampingScrollPhysics(),
                           itemCount: widget.data.reqList!.length ?? 0,
                           shrinkWrap: true,
                           itemBuilder: (context, index) {

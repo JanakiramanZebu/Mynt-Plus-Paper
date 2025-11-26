@@ -214,6 +214,7 @@ class _ETFCategoryDetailScreenState extends ConsumerState<ETFCategoryDetailScree
                   ),
                 ),
                 child: SingleChildScrollView(
+                  physics: ClampingScrollPhysics(),
                   controller: _scrollController,
                   scrollDirection: Axis.horizontal,
                   child: Row(
@@ -483,6 +484,7 @@ class _ETFListViewState extends ConsumerState<_ETFListView> {
   Widget build(BuildContext context) {
     final theme = ref.watch(themeProvider);
     return ListView.separated(
+      physics: ClampingScrollPhysics(),
       itemCount: widget.etfList.length,
       separatorBuilder: (_, __) => const ListDivider(),
       itemBuilder: (context, index) {

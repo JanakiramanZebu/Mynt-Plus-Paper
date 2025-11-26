@@ -372,7 +372,7 @@ class _PledgeFilterState extends State<PledgeFilter>
       BuildContext context, dataval, String tab) {
     return Expanded(
             child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
+              physics: const ClampingScrollPhysics(),
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 16.0),
                 child: ListView.separated(

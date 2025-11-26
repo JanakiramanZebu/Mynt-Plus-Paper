@@ -29,6 +29,7 @@ class BondsListScreen extends StatelessWidget {
     }
 
       return SingleChildScrollView(
+        physics: ClampingScrollPhysics(),
         child: Column(
           children: [
             _buildContent(bonds, devHeight, ref),

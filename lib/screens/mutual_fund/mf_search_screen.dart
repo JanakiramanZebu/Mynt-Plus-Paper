@@ -46,6 +46,7 @@ class MfCommonSearch extends ConsumerWidget {
                         ? colors.colorWhite
                         : colors.colorBlack))),
         body: SingleChildScrollView(
+          physics: ClampingScrollPhysics(),
           child: Column(
             children: [
               Container(

@@ -1582,6 +1582,7 @@ void CallUpiNetbanking(BuildContext context, MFProvider mfOrder,
     isScrollControlled: true,
     builder: (context) {
       return SingleChildScrollView(
+        physics: ClampingScrollPhysics(),
         padding: EdgeInsets.only(
           top: 22.0,
           bottom: MediaQuery.of(context).viewInsets.bottom + 16.0,

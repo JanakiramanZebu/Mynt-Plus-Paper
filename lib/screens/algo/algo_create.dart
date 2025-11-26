@@ -74,6 +74,7 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
               fw: 1),
         ),
         body: SingleChildScrollView(
+          physics: ClampingScrollPhysics(),
           padding: EdgeInsets.all(16.0),
           child: Column(
             children: [

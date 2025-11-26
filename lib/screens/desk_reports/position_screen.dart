@@ -443,9 +443,9 @@ class _PositionScreen extends State<PositionScreen>
         ))
                     : Expanded(
                         child: SingleChildScrollView(
-                          physics: const AlwaysScrollableScrollPhysics(),
+                          physics: const ClampingScrollPhysics(),
                           child: ListView.separated(
-                            physics: ScrollPhysics(),
+                            physics: ClampingScrollPhysics(),
                             itemCount: _getFilteredPositions(ledgerprovider).length,
                             shrinkWrap: true,
                             itemBuilder: (context, index) {

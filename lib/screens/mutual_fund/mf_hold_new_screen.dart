@@ -151,7 +151,7 @@ class _MfHoldNewScreenState extends ConsumerState<MfHoldNewScreen> with TickerPr
                                   children: [
                                     
                                     // Summary container - hide when scrolling up
-                                    // if (!_isScrollingUp)
+                                    if (!_isScrollingUp)
                                       Container(
                             padding: const EdgeInsets.only(left: 16, right: 16, top: 0, bottom: 16),
                             child: Column(
@@ -492,13 +492,13 @@ class _MfHoldNewScreenState extends ConsumerState<MfHoldNewScreen> with TickerPr
                       ),
                       
                       // Fixed Returns card overlaying the content
-                      // if (_isScrollingUp && hasHoldingsData)
-                      //   Positioned(
-                      //     top: -1,
-                      //     left: 0,
-                      //     right: 0,
-                      //     child: _buildReturnsCard(theme, mfData),
-                      //   ),
+                      if (_isScrollingUp && hasHoldingsData)
+                        Positioned(
+                          top: -1,
+                          left: 0,
+                          right: 0,
+                          child: _buildReturnsCard(theme, mfData),
+                        ),
                     ],
                   ),
                 ),

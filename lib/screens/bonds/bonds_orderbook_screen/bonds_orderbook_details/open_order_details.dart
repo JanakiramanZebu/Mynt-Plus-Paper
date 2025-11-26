@@ -108,6 +108,7 @@ class BondsOpenOrderDetails extends ConsumerWidget {
                         const CustomDragHandler(),
                         Expanded(
                           child: SingleChildScrollView(
+                            physics: ClampingScrollPhysics(),
                             controller: scrollController,
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,

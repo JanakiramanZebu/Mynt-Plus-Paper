@@ -402,7 +402,7 @@ class PledgenUnpledgeResponse extends StatelessWidget {
                     : Expanded(
                         child: SingleChildScrollView(
                           child: ListView.separated(
-                            physics: ScrollPhysics(),
+                            physics: ClampingScrollPhysics(),
                             itemCount: ledgerprovider
                                     .cdslresponsedata
                                     ?.cDSLResp

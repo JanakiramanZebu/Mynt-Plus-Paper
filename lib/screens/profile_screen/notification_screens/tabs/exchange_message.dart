@@ -19,6 +19,7 @@ class ExchangeMessage extends ConsumerWidget {
     return noftification.loading
         ? const Center(child: CircularProgressIndicator())
         : SingleChildScrollView(
+          physics: ClampingScrollPhysics(),
             child: noftification.exchangemessage![0].exchMsg == null
                 ? const Padding(
                     padding: EdgeInsets.symmetric(vertical: 220),
@@ -29,7 +30,7 @@ class ExchangeMessage extends ConsumerWidget {
                 : ListView.separated(
                     padding: const EdgeInsets.symmetric(vertical: 20),
                     shrinkWrap: true,
-                    physics: const BouncingScrollPhysics(),
+                    physics: ClampingScrollPhysics(),
                     itemCount: noftification.exchangemessage!.length,
                     itemBuilder: (BuildContext context, int index) {
                       return Padding(

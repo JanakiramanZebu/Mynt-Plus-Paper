@@ -185,6 +185,7 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
                         ),
                       ),
                       child: SingleChildScrollView(
+                        physics: ClampingScrollPhysics(),
                         controller: _scrollController,
                         scrollDirection: Axis.horizontal,
                         child: Row(
@@ -410,6 +411,7 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
     }
 
     return ListView.separated(
+      physics: ClampingScrollPhysics(),
       itemCount: sortedList.length,
       separatorBuilder: (_, __) => const ListDivider(),
       itemBuilder: (BuildContext context, int index) {

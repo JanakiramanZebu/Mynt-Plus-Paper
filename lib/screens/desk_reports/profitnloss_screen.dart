@@ -761,7 +761,7 @@ class PnlScreen extends StatelessWidget {
                         child: SingleChildScrollView(
                           physics: const AlwaysScrollableScrollPhysics(),
                           child: ListView.separated(
-                            physics: ScrollPhysics(),
+                            physics: ClampingScrollPhysics(),
                             itemCount: ledgerprovider
                                     .pnlAllData?.transactions?.length ??
                                 0,

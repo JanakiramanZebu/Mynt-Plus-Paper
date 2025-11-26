@@ -323,6 +323,7 @@ class _PortfolioDashboardScreenState
       height: screenHeight,
       color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
       child: SingleChildScrollView(
+        physics: ClampingScrollPhysics(),
         child: Padding(
           padding: const EdgeInsets.all(20),
           child: Column(
@@ -398,6 +399,7 @@ class _PortfolioDashboardScreenState
     final validFundamentals = displayList.toList();
 
     return CustomScrollView(
+      physics: ClampingScrollPhysics(),
       controller: _scrollController,
       slivers: [
         // Main content section
@@ -939,6 +941,7 @@ class _PortfolioDashboardScreenState
     return Container(
       color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
       child: ListView.separated(
+        physics: ClampingScrollPhysics(),
         // padding: const EdgeInsets.symmetric(horizontal: 16),
         separatorBuilder: (_, __) => ListDivider(),
         itemCount: validFundamentals.length,
@@ -2327,6 +2330,7 @@ class _PortfolioDashboardScreenState
             // Filter Sections
             Expanded(
               child: SingleChildScrollView(
+                physics: ClampingScrollPhysics(),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Column(

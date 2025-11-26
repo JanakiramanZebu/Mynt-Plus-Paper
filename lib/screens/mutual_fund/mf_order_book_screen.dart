@@ -157,6 +157,7 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
           await mforderbook.fetchMfOrderbook(context);
         },
         child: SingleChildScrollView(
+          physics: ClampingScrollPhysics(),
           child: Column(
             children: [
               

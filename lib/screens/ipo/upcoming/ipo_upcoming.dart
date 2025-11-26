@@ -38,6 +38,7 @@ class UpcomingIpo extends StatelessWidget {
       }
 
       return SingleChildScrollView(
+        physics: ClampingScrollPhysics(),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

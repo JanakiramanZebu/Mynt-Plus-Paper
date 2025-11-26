@@ -146,6 +146,7 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                               // Tab Content - Scrollable
                               Expanded(
                                 child: SingleChildScrollView(
+                                  physics: ClampingScrollPhysics(),
                                   controller: scrollController,
                                   child: Column(
                                     children: [

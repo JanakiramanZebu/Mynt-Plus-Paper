@@ -87,6 +87,7 @@ class MainSmeListCard extends StatelessWidget {
           // _SearchField(ipoProvider: ipos, theme: theme),
           Expanded(
             child: SingleChildScrollView(
+              physics: ClampingScrollPhysics(),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

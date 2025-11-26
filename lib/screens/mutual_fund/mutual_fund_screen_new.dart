@@ -55,6 +55,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
 
 
     return SingleChildScrollView(
+      physics: ClampingScrollPhysics(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -350,6 +351,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
 
           // const SizedBox(height: 24),
           SingleChildScrollView(
+            physics: ClampingScrollPhysics(),
             child: Column(
               children: [
                 Builder(
@@ -773,6 +775,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
 
   Widget buildCategoriesTab(MFProvider mfData, ThemesProvider theme) {
     return SingleChildScrollView(
+      physics: ClampingScrollPhysics(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

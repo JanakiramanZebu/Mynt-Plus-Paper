@@ -125,6 +125,7 @@ class _PledgeList extends State<PledgeList> {
                       ListDivider(),
                       Expanded(
                         child: SingleChildScrollView(
+                          physics: ClampingScrollPhysics(),
                           child: Padding(
                             padding: const EdgeInsets.only(
                                 left: 16.0, right: 16.0, top: 8.0),

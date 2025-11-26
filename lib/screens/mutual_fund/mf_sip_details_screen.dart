@@ -118,6 +118,7 @@ class _mfSipdetScren extends State<mfSipdetScren>
                               
                                       Expanded(
                                         child: SingleChildScrollView(
+                                          physics: ClampingScrollPhysics(),
                                         controller: scrollController,
                                         child: Column(
                                           children: [

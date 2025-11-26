@@ -212,7 +212,7 @@ class _IPOListSection extends StatelessWidget {
     return ListView.separated(
         padding: EdgeInsets.zero,
         shrinkWrap: true,
-        physics: const ScrollPhysics(),
+        physics: ClampingScrollPhysics(),
         itemCount: displayCount,
         itemBuilder: (context, index) {
           return _IPOListItem(

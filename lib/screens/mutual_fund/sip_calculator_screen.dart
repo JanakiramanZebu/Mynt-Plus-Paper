@@ -136,6 +136,7 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
           child: Padding(
             padding: const EdgeInsets.only(left: 16, right: 16, top: 16),
             child: SingleChildScrollView(
+              physics: ClampingScrollPhysics(),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

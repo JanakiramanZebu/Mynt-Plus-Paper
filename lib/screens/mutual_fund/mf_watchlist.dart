@@ -74,6 +74,7 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
                   _buildHeader(theme),
                   Expanded(
                     child: ListView.separated(
+                      physics: ClampingScrollPhysics(),
                       padding: EdgeInsets.zero,
                       // padding: const EdgeInsets.all(8),
                       itemCount: sortedList?.length ?? 0,

@@ -162,6 +162,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
           children: [
             Expanded(
               child: SingleChildScrollView(
+                physics: ClampingScrollPhysics(),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.start,

@@ -173,6 +173,7 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                   
                 ),
               child: SingleChildScrollView(
+                physics: ClampingScrollPhysics(),
                 padding: EdgeInsets.only(
                   top: 22.0,
                   bottom: MediaQuery.of(context).viewInsets.bottom + 16.0,

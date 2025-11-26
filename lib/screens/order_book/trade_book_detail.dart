@@ -143,6 +143,7 @@ class _TradeBookDetailState extends ConsumerState<TradeBookDetail> {
                     children: [
                       Expanded(
                         child: SingleChildScrollView(
+                          physics: ClampingScrollPhysics(),
                           controller: scrollController,
                           child: Padding(
                             padding:

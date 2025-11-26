@@ -333,8 +333,9 @@ class _CABuybackState extends State<CABuyback> with TickerProviderStateMixin {
                       )))
                       : Expanded(
                           child: SingleChildScrollView(
+                            physics: ClampingScrollPhysics(),
                           child: ListView.separated(
-                            physics: ScrollPhysics(),
+                            physics: ClampingScrollPhysics(),
                             itemCount: datalist.length,
                             shrinkWrap: true,
                             itemBuilder: (context, index) {

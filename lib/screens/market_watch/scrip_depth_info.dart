@@ -1502,7 +1502,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                 },
                                                 child: ListView(
                                                     physics:
-                                                        const AlwaysScrollableScrollPhysics(),
+                                                        const ClampingScrollPhysics(),
                                                     controller:
                                                         scrollController,
                                                     children: [

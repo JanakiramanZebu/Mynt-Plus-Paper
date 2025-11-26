@@ -228,6 +228,7 @@ class _StockScreenState extends ConsumerState<StockScreen>
       },
       child: Consumer(builder: (context, ref, child) {
         return SingleChildScrollView(
+          physics: ClampingScrollPhysics(),
           child: Padding(
             padding: EdgeInsets.only(top:MediaQuery.of(context).padding.top, bottom: MediaQuery.of(context).padding.bottom),
             child: Column(

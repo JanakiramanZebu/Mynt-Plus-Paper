@@ -441,6 +441,7 @@ class _BrokerageCalculatorScreenState
         ),
         body: SafeArea(
           child: SingleChildScrollView(
+            physics: ClampingScrollPhysics(),
             child: Column(
               children: [
                 _buildInputSection(),

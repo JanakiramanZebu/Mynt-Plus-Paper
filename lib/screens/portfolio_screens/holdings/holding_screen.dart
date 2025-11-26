@@ -589,7 +589,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> with TickerProvid
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           // Summary section with all stats (original UI) - hide when scrolling up
-                          // if (!_isScrollingUp && !holdingProvider.holdingsModel!.isEmpty)
+                          if (!_isScrollingUp && !holdingProvider.holdingsModel!.isEmpty)
                             _buildSummarySection(),
 
                           // Action buttons section - using cached buttons when possible
@@ -610,13 +610,13 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> with TickerProvid
             ),
             
             // Fixed Total PNL card overlaying the content - show until search bar becomes visible
-            // if (_isScrollingUp && !holdingProvider.holdingsModel!.isEmpty)
-            //   Positioned(
-            //     top: -1,
-            //     left: 0,
-            //     right: 0,
-            //     child: _buildTotalPnlCard(),
-            //   ),
+            if (_isScrollingUp && !holdingProvider.holdingsModel!.isEmpty)
+              Positioned(
+                top: -1,
+                left: 0,
+                right: 0,
+                child: _buildTotalPnlCard(),
+              ),
           ],
         ),
       );

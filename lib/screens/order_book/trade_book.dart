@@ -161,7 +161,7 @@ class TradeBook extends ConsumerWidget {
         child: order.orderSearchCtrl.text.isEmpty ? tradeBook.isNotEmpty
                 ? ListView.separated(
                     padding: EdgeInsets.only(bottom: 80),
-                    physics: const AlwaysScrollableScrollPhysics(),
+                    physics: const ClampingScrollPhysics(),
                     shrinkWrap: false,
                     itemBuilder: (context, index) {
                       return InkWell(
@@ -386,7 +386,7 @@ class TradeBook extends ConsumerWidget {
             : order.tradeBooksearch!.isNotEmpty
                 ? ListView.separated(
                     padding: EdgeInsets.only(bottom: 80),
-                    physics: const AlwaysScrollableScrollPhysics(),
+                    physics: const ClampingScrollPhysics(),
                     shrinkWrap: false,
                     itemBuilder: (context, index) {
                       return InkWell(

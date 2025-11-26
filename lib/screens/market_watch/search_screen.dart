@@ -427,7 +427,7 @@ class _AddScripState extends ConsumerState<SearchScreen>
     return ListView.builder(
       controller: _tabScrollController,
       scrollDirection: Axis.horizontal,
-      physics: const BouncingScrollPhysics(),
+      physics: ClampingScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 0),
       itemCount: searchTabList.length,
       itemBuilder: (context, index) {

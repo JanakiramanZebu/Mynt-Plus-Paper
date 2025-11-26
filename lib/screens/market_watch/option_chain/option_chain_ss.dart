@@ -907,7 +907,7 @@ class _OptionChainContent extends ConsumerWidget {
     }
 
     return SingleChildScrollView(
-      physics: const AlwaysScrollableScrollPhysics(),
+      physics: const ClampingScrollPhysics(),
       controller: mainScrollController,
       child: Column(children: [
         RepaintBoundary(
@@ -2499,6 +2499,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
               ),
               Expanded(
                 child: ListView.separated(
+                  physics: ClampingScrollPhysics(),
                   itemCount: orderProv.bsktList.length,
                   separatorBuilder: (_, __) => const ListDivider(),
                   itemBuilder: (context, index) {

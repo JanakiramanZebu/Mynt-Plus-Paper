@@ -81,6 +81,7 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
           widget.foucs.unfocus();
         },
         child: SingleChildScrollView(
+          physics: ClampingScrollPhysics(),
           child: SafeArea(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

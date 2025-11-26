@@ -62,6 +62,7 @@ class MFSipdetScreen extends ConsumerWidget {
       BuildContext context, dynamic mfData, dynamic theme) {
     return ListView.separated(
       // padding: EdgeInsets.only(bottom: 80),
+      physics: ClampingScrollPhysics(),
       shrinkWrap: true,
       separatorBuilder: (context, index) => const ListDivider(),
       padding: EdgeInsets.zero,

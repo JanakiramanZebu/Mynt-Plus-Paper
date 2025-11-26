@@ -346,7 +346,7 @@ class Tradebook extends StatelessWidget {
                         child: SingleChildScrollView(
                           physics: const AlwaysScrollableScrollPhysics(),
                           child: ListView.separated(
-                            physics: ScrollPhysics(),
+                            physics: ClampingScrollPhysics(),
                             itemCount:
                                 ledgerprovider.tradebookdata?.trades?.length ??
                                     0,
