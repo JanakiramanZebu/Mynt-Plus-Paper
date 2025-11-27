@@ -88,10 +88,24 @@ class MFSipOrderHistoryScreen extends ConsumerWidget {
 
               // if (mfData.mfsinglepageres?.stat == "Ok") {
               showModalBottomSheet(
-                  context: context,
                   isScrollControlled: true,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    topRight: Radius.circular(16),
+                  ),
+                ),
+                isDismissible: true,
+                enableDrag: false,
+                useSafeArea: true,
+                context: context,
                   // backgroundColor: Colors.transparent,
-                  builder: (context) => mfSipdetScren(data: item));
+                  builder: (context) => Container(
+                    padding: EdgeInsets.only(
+                      bottom:
+                          MediaQuery.of(context).viewInsets.bottom,
+                    ),
+                    child: mfSipdetScren(data: item)));
               // Navigator.pushNamed(context, Routes.mfSipdetScren);
               // } else {
               // final errorMsg = mfData.mfsinglepageres?.Msg ?? "Failed to fetch SIP details";

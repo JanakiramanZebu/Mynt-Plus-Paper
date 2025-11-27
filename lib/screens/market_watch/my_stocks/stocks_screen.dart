@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:mynt_plus/screens/market_watch/stock_events_dialog.dart';
 import '../../../models/marketwatch_model/get_quotes.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/portfolio_provider.dart';
@@ -48,6 +49,9 @@ class _StocksScreenState extends State<StocksScreen> {
                     if (idx.isOdd) {
                       return const ListDivider();
                     }
+                    
+                    final events = marketWatch.filterStockEventsByToken(holdingProvide[index].exchTsym![0].token ?? "");
+                    
                     return StreamBuilder<Map>(
                         stream: ref.watch(websocketProvider).socketDataStream,
                         builder: (context, snapshot) {
@@ -199,6 +203,83 @@ class _StocksScreenState extends State<StocksScreen> {
                                             theme: theme.isDarkMode,
                                             fw: 0,
                                           ),
+                                          if (marketWatch.hasStockEvents(events,holdingProvide[index].exchTsym![0].token ?? '')) ...[
+                                          const SizedBox(width: 6),
+                                          Material(
+                                            color: Colors.transparent,
+                                            child: InkWell(
+                                              onTap: () {
+                                                showModalBottomSheet(
+                                                  context: context,
+                                                  isScrollControlled: true,
+                                                  useSafeArea: true,
+                                                  isDismissible: true,
+                                                  shape: const RoundedRectangleBorder(
+                                                    borderRadius: BorderRadius.only(
+                                                      topLeft: Radius.circular(16),
+                                                      topRight: Radius.circular(16),
+                                                    ),
+                                                  ),
+                                                  enableDrag: true,
+                                                  builder: (context) => Container(
+                                                    padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+                                                    child: DraggableScrollableSheet(
+                                                      initialChildSize: 0.6,
+                                                      expand: false,
+                                                      minChildSize: 0.4,
+                                                      maxChildSize: 0.9,
+                                                      builder: (context, scrollController) => StockEventsDialog(
+                                                        stockToken: holdingProvide[index].exchTsym![0].token!,
+                                                        stockName: holdingProvide[index].exchTsym![0].symbol!,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                );
+                                              },
+                                              borderRadius: BorderRadius.circular(8),
+                                              splashColor: theme.isDarkMode
+                                                  ? Colors.white.withOpacity(0.15)
+                                                  : Colors.black.withOpacity(0.15),
+                                              highlightColor: theme.isDarkMode
+                                                  ? Colors.white.withOpacity(0.08)
+                                                  : Colors.black.withOpacity(0.08),
+                                              child: Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                                                decoration: BoxDecoration(
+                                                  color: theme.isDarkMode
+                                                      ? colors.darkiconcolor.withOpacity(0.2)
+                                                      : colors.darkiconcolor.withOpacity(0.15),
+                                                  borderRadius: BorderRadius.circular(4),
+                                                  border: Border.all(
+                                                    color: theme.isDarkMode
+                                                        ? colors.darkiconcolor.withOpacity(0.3)
+                                                        : colors.darkiconcolor.withOpacity(0.3),
+                                                    width: 1,
+                                                  ),
+                                                ),
+                                                child: Row(
+                                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: [
+                                                    // SvgPicture.asset(assets.barChart,
+                                                    //     height: 12,
+                                                    //     width: 16,
+                                                    //     color: theme.isDarkMode
+                                                    //         ? colors.secondaryDark
+                                                    //         : colors.secondaryLight),
+                                                    // const SizedBox(width: 4),
+                                                    TextWidget.captionText(
+                                                      text: events["dividend"]!=null?"DIVIDEND":events["bonus"]!=null?"BONUS":events["split"]!=null?"SPLIT":events["rights"]!=null?"RIGHTS":"EVENT",
+                                                      color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                                      theme: theme.isDarkMode,
+                                                      fw: 1,
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ]
                                         ],
                                       ),
                                     ),

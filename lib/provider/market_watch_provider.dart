@@ -4445,7 +4445,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   /// Each key contains the matching event object or null if not found
   Map<String, dynamic> filterStockEventsByToken(String stockToken) {
     final stockEvents = ref.read(stocksProvide).caeventsModel;
-
+print("stockEvents $stockToken");
     Map<String, dynamic> filteredEvents = {
       'dividend': null,
       'bonus': null,

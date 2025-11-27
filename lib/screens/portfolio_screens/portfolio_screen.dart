@@ -177,6 +177,7 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen>
                 child: TabBar(
                   onTap: (index) {
                     setState(() {});
+                    FocusScope.of(context).unfocus();
                   },
                   tabAlignment: TabAlignment.start,
                   indicatorSize: TabBarIndicatorSize.tab,

@@ -167,7 +167,7 @@ class ChartResponsiveHelper {
       if (isTabletDevice) {
         // Tablets: adaptive reduction based on screen height
         if (landscapeHeight < 400) {
-          return baseHeight * 0.75; // 20% reduction for small tablets
+          return baseHeight * 0.97; // 20% reduction for small tablets
         } else if (landscapeHeight < 800) {
           return baseHeight * 0.95; // 15% reduction for medium tablets
         } else {
@@ -177,11 +177,11 @@ class ChartResponsiveHelper {
         // Phones: adaptive reduction based on screen height and pixel density
         if (landscapeHeight < 400) {
           // Very small screens (like small phones in landscape)
-          return baseHeight * 0.90; // 30% reduction
+          return baseHeight * 0.95; // 30% reduction
         } else if (landscapeHeight < 500) {
           // Small screens
           if (devicePixelRatio >= 3.0) {
-            return baseHeight * 0.70; // 25% reduction for high DPI
+            return baseHeight * 0.75; // 25% reduction for high DPI
           } else {
             return baseHeight * 0.70; // 20% reduction for others
           }
@@ -194,13 +194,22 @@ class ChartResponsiveHelper {
           }
         } else {
           // Large screens
-          return baseHeight * 0.90; // 10% reduction
+          return baseHeight * 0.95; // 10% reduction
         }
       }
     }
     
     // Additional safety check for very small screens
     final finalHeight = baseHeight < 200 ? 200.0 : baseHeight;
+
+    if (!isLandscapeMode) {
+      final portraitHeight = screenSize.height;
+      if(portraitHeight < 800){
+        return finalHeight + 20;
+      }else{
+        return finalHeight;
+      }
+    }
     
     return finalHeight;
   }

@@ -15,8 +15,16 @@ import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import '../../../provider/stocks_provider.dart';
 import '../../../res/global_state_text.dart';
 
-class GovtBondsScreen extends StatelessWidget {
+class GovtBondsScreen extends StatefulWidget {
   const GovtBondsScreen({super.key});
+
+  @override
+  State<GovtBondsScreen> createState() => _GovtBondsScreenState();
+}
+
+class _GovtBondsScreenState extends State<GovtBondsScreen> {
+  // Flag to prevent multiple bottom sheets from opening
+  bool _isBottomSheetOpen = false;
 
   // Static constants for better performance
   static const EdgeInsets _itemPadding = EdgeInsets.all(16);
@@ -248,8 +256,13 @@ class GovtBondsScreen extends StatelessWidget {
 
   Future<void> _showOrderBottomSheet(
       BuildContext context, BondsProvider bonds, dynamic bond) async {
+    // Prevent opening multiple bottom sheets
+    if (_isBottomSheetOpen) return;
+
+    _isBottomSheetOpen = true;
     await bonds.fetchLedgerBal();
-    showModalBottomSheet(
+    
+    await showModalBottomSheet(
       isScrollControlled: true,
       useSafeArea: true,
       isDismissible: true,
@@ -265,5 +278,8 @@ class GovtBondsScreen extends StatelessWidget {
         ),
       ),
     );
+    
+    // Reset flag when bottom sheet is dismissed
+    _isBottomSheetOpen = false;
   }
 }
