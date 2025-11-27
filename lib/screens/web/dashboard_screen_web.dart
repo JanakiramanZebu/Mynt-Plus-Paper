@@ -58,12 +58,8 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Top indices section
-              // _buildTopIndicesSection(theme, indexProvider),
-              Container(
-                // height: 100,
-                // width: 100,
-                // color: Colors.red,
-              ),
+              _buildTopIndicesSection(theme, indexProvider),
+             
             ],
           ),
         ),

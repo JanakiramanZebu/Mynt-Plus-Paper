@@ -14,13 +14,16 @@ import '../../../provider/thems.dart';
 import '../../../res/res.dart';
 import '../../../res/web_colors.dart';
 import '../../../res/global_font_web.dart';
-import '../../../sharedWidget/custom_text_btn_web.dart';
 import '../../../sharedWidget/list_divider.dart';
 import '../../../sharedWidget/cust_text_formfield.dart';
 import '../../Mobile/market_watch/my_stocks/stocks_screen.dart';
 import 'watchlist_card_web.dart';
 import 'search_dialog_web.dart';
 import 'edit_scrip_web.dart';
+import '../../../provider/index_list_provider.dart';
+import '../../../provider/websocket_provider.dart';
+import '../../../models/marketwatch_model/get_quotes.dart';
+import 'index/index_bottom_sheet_web.dart';
 
 // Provider to manage delete mode state
 final deleteModeProvider =
@@ -80,6 +83,30 @@ class _SliverTabsDelegate extends SliverPersistentHeaderDelegate {
       if (a[i] != b[i]) return false;
     }
     return true;
+  }
+}
+
+class _SliverIndexSlotsDelegate extends SliverPersistentHeaderDelegate {
+  final Widget child;
+  final double height;
+
+  _SliverIndexSlotsDelegate({
+    required this.child,
+    required this.height,
+  });
+
+  @override
+  Widget build(BuildContext ctx, double shrink, bool overlaps) => child;
+
+  @override
+  double get maxExtent => height;
+
+  @override
+  double get minExtent => height;
+
+  @override
+  bool shouldRebuild(covariant SliverPersistentHeaderDelegate old) {
+    return old is! _SliverIndexSlotsDelegate || old.height != height;
   }
 }
 
@@ -368,6 +395,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
               _buildSearchBar(context, ref, theme, wlName, isPreDef,
                   watchList?.values?.length ?? 0),
               _buildPinnedTabs(ref, theme, watchList, wlName),
+              _buildIndexSlots(ref, theme),
             ],
             body: showDeleteMode
                 ? EditScripWeb(
@@ -604,14 +632,14 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
       padding: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border(
-          bottom: BorderSide(
-            color: theme.isDarkMode
-                ? WebDarkColors.inputBorder
-                : WebColors.inputBorder,
-            width: 1,
-          ),
-        ),
+        // border: Border(
+        //   bottom: BorderSide(
+        //     color: theme.isDarkMode
+        //         ? WebDarkColors.inputBorder
+        //         : WebColors.inputBorder,
+        //     width: 1,
+        //   ),
+        // ),
       ),
       child: _buildWatchlistTabs(ref, wlName, watchList, theme),
     );
@@ -630,6 +658,76 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
     );
   }
 
+  // Build index slots widget - shows 2 index slots below tabs (pinned like tabs)
+  Widget _buildIndexSlots(WidgetRef ref, ThemesProvider theme) {
+    final indexContent = Consumer(
+      builder: (context, ref, _) {
+        final indexProvider = ref.watch(indexListProvider);
+        final marketWatch = ref.read(marketWatchProvider);
+        final indexValues = indexProvider.defaultIndexList?.indValues;
+
+        if (indexValues == null || indexValues.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        // Show only first 2 indices
+        final displayIndices = indexValues.length >= 2
+            ? indexValues.take(2).toList()
+            : indexValues;
+
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: theme.isDarkMode
+                ? WebDarkColors.background
+                : WebColors.background,
+            // border: Border(
+            //   bottom: BorderSide(
+            //     color: theme.isDarkMode
+            //         ? WebDarkColors.inputBorder
+            //         : WebColors.inputBorder,
+            //     width: 1,
+            //   ),
+            // ),
+          ),
+          child: Row(
+            children: List.generate(2, (index) {
+              if (index >= displayIndices.length) {
+                return Expanded(child: const SizedBox.shrink());
+              }
+              final item = displayIndices[index];
+              return Expanded(
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    right: index < 1 ? 8 : 0,
+                  ),
+                  child: _WatchlistIndexSlotWeb(
+                    indexItem: item,
+                    indexPosition: index,
+                    theme: theme,
+                    marketWatch: marketWatch,
+                    indexProvider: indexProvider,
+                  ),
+                ),
+              );
+            }),
+          ),
+        );
+      },
+    );
+
+    // Calculate total height: padding vertical (6*2) + item height (52) = 64
+    const double indexSlotsHeight = 64.0;
+
+    return SliverPersistentHeader(
+      pinned: true, // This keeps the index slots fixed at the top
+      delegate: _SliverIndexSlotsDelegate(
+        child: indexContent,
+        height: indexSlotsHeight,
+      ),
+    );
+  }
+
   Widget _buildWatchlistTabs(
     WidgetRef ref,
     String wlName,
@@ -641,7 +739,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
     final tabs = watchList.values.cast<String>();
 
     return SizedBox(
-      height: 60, // Match search dialog tabs height
+      height: 60, 
       child: Row(
         children: [
           // Left arrow button
@@ -1941,6 +2039,426 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
         );
       },
     );
+  }
+}
+
+// Index slot widget for watchlist screen with hover edit icon
+class _WatchlistIndexSlotWeb extends ConsumerStatefulWidget {
+  final dynamic indexItem;
+  final int indexPosition;
+  final ThemesProvider theme;
+  final dynamic marketWatch;
+  final dynamic indexProvider;
+
+  const _WatchlistIndexSlotWeb({
+    Key? key,
+    required this.indexItem,
+    required this.indexPosition,
+    required this.theme,
+    required this.marketWatch,
+    required this.indexProvider,
+  }) : super(key: key);
+
+  @override
+  ConsumerState<_WatchlistIndexSlotWeb> createState() =>
+      _WatchlistIndexSlotWebState();
+}
+
+class _WatchlistIndexSlotWebState
+    extends ConsumerState<_WatchlistIndexSlotWeb> {
+  bool _isHovered = false;
+
+  Future<void> _handleTap(BuildContext context) async {
+    try {
+      // Fetch index list before opening bottom sheet
+      await widget.indexProvider.fetchIndexList("NSE", context);
+
+      // Open the bottom sheet dialog
+      showDialog(
+        context: context,
+        barrierDismissible: true,
+        builder: (BuildContext context) {
+          return Dialog(
+            backgroundColor: Colors.transparent,
+            child: IndexBottomSheetWeb(
+              defaultIndex: widget.indexItem,
+              indexPosition: widget.indexPosition,
+            ),
+          );
+        },
+      );
+
+      // Clean up after dialog closes
+      await widget.indexProvider.fetchIndexList("exit", context);
+      await widget.marketWatch.requestMWScrip(
+          context: context, isSubscribe: true);
+    } catch (e) {
+      debugPrint("Error in index slot tap: $e");
+    }
+  }
+
+  Future<void> _handleIndexClick(BuildContext context) async {
+    try {
+      // First, safely fetch the quote data
+      await widget.marketWatch.fetchScripQuoteIndex(
+          widget.indexItem.token?.toString() ?? "",
+          widget.indexItem.exch?.toString() ?? "",
+          context);
+
+      final quots = widget.marketWatch.getQuotes;
+
+      // Make sure we have valid quote data before proceeding
+      if (quots == null) {
+        return;
+      }
+
+      // Create DepthInputArgs with null safety
+      final depthArgs = DepthInputArgs(
+          exch: quots.exch?.toString() ?? "",
+          token: quots.token?.toString() ?? "",
+          tsym: quots.tsym?.toString() ?? "",
+          instname: quots.instname?.toString() ?? "",
+          symbol: quots.symbol?.toString() ?? "",
+          expDate: quots.expDate?.toString() ?? "",
+          option: quots.option?.toString() ?? "");
+
+      // Call depth APIs with the safely constructed arguments
+      if (depthArgs.token.isNotEmpty && depthArgs.exch.isNotEmpty) {
+        await widget.marketWatch.calldepthApis(context, depthArgs, "");
+      }
+    } catch (e) {
+      debugPrint("Error in index click: $e");
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: Material(
+        color: Colors.transparent,
+        shape: const RoundedRectangleBorder(),
+        child: InkWell(
+          customBorder: const RoundedRectangleBorder(),
+          splashColor: widget.theme.isDarkMode
+              ? WebDarkColors.primary.withOpacity(0.1)
+              : WebColors.primary.withOpacity(0.1),
+          highlightColor: widget.theme.isDarkMode
+              ? WebDarkColors.primary.withOpacity(0.05)
+              : WebColors.primary.withOpacity(0.05),
+          onTap: () => _handleIndexClick(context),
+            child: Container(
+            height: 52, // Compact height
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: widget.theme.isDarkMode
+                    ? WebDarkColors.backgroundTertiary
+                    : WebColors.backgroundTertiary,
+              // border: Border.all(
+              //   color: widget.theme.isDarkMode                    
+              //         ? WebDarkColors.primary
+              //         : WebColors.primary,
+              //   // width: 1,
+
+              // ),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Stack(
+              children: [
+                // Main content
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Index name - match default_index_list_web.dart exactly
+                    Text(
+                      widget.indexItem.idxname ?? "",
+                      style: WebTextStyles.symbolList(
+                        isDarkTheme: widget.theme.isDarkMode,
+                        color: widget.theme.isDarkMode
+                            ? WebDarkColors.textPrimary 
+                            : WebColors.textPrimary,                      
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    // Live price widget
+                    _WatchlistLivePriceWidget(
+                      key: ValueKey('price_${widget.indexItem.token ?? ""}'),
+                      token: widget.indexItem.token?.toString() ?? "",
+                      initialLtp: (widget.indexItem.ltp == null ||
+                              widget.indexItem.ltp == "null")
+                          ? "0.00"
+                          : widget.indexItem.ltp?.toString() ?? "0.00",
+                      initialChange: (widget.indexItem.change == null ||
+                              widget.indexItem.change == "null")
+                          ? "0.00"
+                          : widget.indexItem.change?.toString() ?? "0.00",
+                      initialPerChange: (widget.indexItem.perChange == null ||
+                              widget.indexItem.perChange == "null")
+                          ? "0.00"
+                          : widget.indexItem.perChange?.toString() ?? "0.00",
+                      isDarkMode: widget.theme.isDarkMode,
+                    ),
+                  ],
+                ),
+                // Edit icon on hover
+                if (_isHovered)
+                  Positioned(
+                    right: 0,
+                    top: 0,
+                    child: Material(
+                      color: Colors.transparent,
+                      shape: const CircleBorder(),
+                      child: InkWell(
+                        customBorder: const CircleBorder(),
+                        splashColor: widget.theme.isDarkMode
+                            ? Colors.white.withOpacity(.15)
+                            : Colors.black.withOpacity(.15),
+                        highlightColor: widget.theme.isDarkMode
+                            ? Colors.white.withOpacity(.08)
+                            : Colors.black.withOpacity(.08),
+                        onTap: () => _handleTap(context),
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: widget.theme.isDarkMode
+                                ? WebDarkColors.surface
+                                : WebColors.surface,
+                            shape: BoxShape.circle,
+                            // border: Border.all(
+                            //   color: widget.theme.isDarkMode
+                            //       ? WebDarkColors.border
+                            //       : WebColors.border,
+                            //   width: 1,
+                            // ),
+                          ),
+                          child: Icon(
+                            Icons.edit_outlined,
+                            size: 16,
+                            color: widget.theme.isDarkMode
+                                ? WebDarkColors.iconSecondary
+                                : WebColors.iconSecondary,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// Live price widget for watchlist index slots
+class _WatchlistLivePriceWidget extends ConsumerStatefulWidget {
+  final String token;
+  final String initialLtp;
+  final String initialChange;
+  final String initialPerChange;
+  final bool isDarkMode;
+
+  const _WatchlistLivePriceWidget({
+    Key? key,
+    required this.token,
+    required this.initialLtp,
+    required this.initialChange,
+    required this.initialPerChange,
+    required this.isDarkMode,
+  }) : super(key: key);
+
+  @override
+  ConsumerState<_WatchlistLivePriceWidget> createState() =>
+      _WatchlistLivePriceWidgetState();
+}
+
+class _WatchlistLivePriceWidgetState
+    extends ConsumerState<_WatchlistLivePriceWidget> {
+  late String _ltp;
+  late String _change;
+  late String _perChange;
+  StreamSubscription? _subscription;
+  bool _isUpdatePending = false;
+  final _debouncer = _Debouncer(milliseconds: 300);
+  bool _isInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _ltp = widget.initialLtp == "null" ? "0.00" : widget.initialLtp;
+    _change = widget.initialChange == "null" ? "0.00" : widget.initialChange;
+    _perChange =
+        widget.initialPerChange == "null" ? "0.00" : widget.initialPerChange;
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_isInitialized) {
+      _setupSocketListener();
+      _isInitialized = true;
+    }
+  }
+
+  @override
+  void didUpdateWidget(_WatchlistLivePriceWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.token != widget.token) {
+      _ltp = widget.initialLtp == "null" ? "0.00" : widget.initialLtp;
+      _change = widget.initialChange == "null" ? "0.00" : widget.initialChange;
+      _perChange =
+          widget.initialPerChange == "null" ? "0.00" : widget.initialPerChange;
+      _subscription?.cancel();
+      _isInitialized = false;
+      _setupSocketListener();
+      _isInitialized = true;
+      if (mounted) setState(() {});
+    }
+  }
+
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    _debouncer.cancel();
+    super.dispose();
+  }
+
+  void _setupSocketListener() {
+    if (widget.token.isEmpty) return;
+
+    final websocket =
+        ProviderScope.containerOf(context).read(websocketProvider);
+
+    final existingData = websocket.socketDatas[widget.token];
+    if (existingData != null) {
+      _updateFromSocketData(existingData);
+    }
+
+    _subscription = websocket.socketDataStream.listen((data) {
+      if (data.containsKey(widget.token)) {
+        final socketData = data[widget.token];
+        if (socketData != null) {
+          final hasChanged = _updateFromSocketData(socketData);
+          if (hasChanged && mounted && !_isUpdatePending) {
+            _isUpdatePending = true;
+            _debouncer.run(() {
+              if (mounted) {
+                setState(() {});
+                _isUpdatePending = false;
+              }
+            });
+          }
+        }
+      }
+    });
+  }
+
+  bool _updateFromSocketData(dynamic data) {
+    bool hasChanged = false;
+    final newLtp = data['lp']?.toString() ?? "0.00";
+    if (newLtp != "null" && newLtp != _ltp) {
+      _ltp = newLtp;
+      hasChanged = true;
+    }
+    final newChange = data['chng']?.toString() ?? "0.00";
+    if (newChange != "null" && newChange != _change) {
+      _change = newChange;
+      hasChanged = true;
+    }
+    final newPerChange = data['pc']?.toString() ?? "0.00";
+    if (newPerChange != "null" && newPerChange != _perChange) {
+      _perChange = newPerChange;
+      hasChanged = true;
+    }
+    return hasChanged;
+  }
+
+  Color _getChangeColor(String change, String perChange) {
+    if (change.startsWith("-") || perChange.startsWith('-')) {
+      return widget.isDarkMode ? WebDarkColors.error : WebColors.error;
+    } else if ((change == "null" || perChange == "null") ||
+        (change == "0.00" || perChange == "0.00")) {
+      return widget.isDarkMode
+          ? WebDarkColors.textSecondary
+          : WebColors.textSecondary;
+    } else {
+      return widget.isDarkMode ? WebDarkColors.success : WebColors.success;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final changeColor = _getChangeColor(_change, _perChange);
+    // Match default_index_list_web.dart _LivePriceWidgetWeb exactly (src: false)
+    return RepaintBoundary(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "$_ltp  ",
+            style: _getTextStyle(
+              changeColor,
+              13, // Match font size from default_index_list_web.dart
+              1,
+            ),
+          ),
+          
+          Text(
+            "$_change ",
+            style: _getTextStyle(
+              WebColors.textPrimary, // Match default_index_list_web.dart
+              13, // Match font size
+              1,
+            ),
+          ),
+        
+          Text(
+            "($_perChange%)",
+            style: _getTextStyle(
+              WebColors.textPrimary, // Match default_index_list_web.dart
+              13, // Match font size
+              2,
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  // Cache for text styles - match default_index_list_web.dart
+  static final Map<String, TextStyle> _textStyleCache = {};
+
+  TextStyle _getTextStyle(Color color, double size, [int? fw]) {
+    final key = '${color.value}|$size|${fw ?? "null"}';
+    return _textStyleCache.putIfAbsent(
+      key,
+      () => WebTextStyles.priceWatch(
+        isDarkTheme: true, // Match default_index_list_web.dart
+        color: color,
+      ),
+    );
+  }
+}
+
+// Debouncer helper class for throttling updates
+class _Debouncer {
+  final int milliseconds;
+  Timer? _timer;
+
+  _Debouncer({required this.milliseconds});
+
+  void run(VoidCallback action) {
+    _timer?.cancel();
+    _timer = Timer(Duration(milliseconds: milliseconds), action);
+  }
+
+  void cancel() {
+    _timer?.cancel();
   }
 }
 

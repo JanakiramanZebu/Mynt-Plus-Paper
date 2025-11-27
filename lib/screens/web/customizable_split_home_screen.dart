@@ -477,6 +477,7 @@ class _CustomizableSplitHomeScreenState
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 // Logo section
                 RepaintBoundary(
@@ -487,34 +488,38 @@ class _CustomizableSplitHomeScreenState
                     fit: BoxFit.contain,
                   ),
                 ),
-                const SizedBox(width: 20),
+                // const SizedBox(width: 20),
                 // Top indices section
-                Expanded(
-                  child: Container(
-                    height: 48, // Fixed height to prevent overflow
-                    color: isDarkMode
-                        ? WebDarkColors.surface
-                        : Colors
-                            .white, // White background for indices in light mode
-                    child: const SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: DefaultIndexListWeb(src: true),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 20),
+                // Expanded(
+                //   child: Container(
+                //     height: 48, // Fixed height to prevent overflow
+                //     color: isDarkMode
+                //         ? WebDarkColors.surface
+                //         : Colors
+                //             .white, // White background for indices in light mode
+                //     child: const SingleChildScrollView(
+                //       scrollDirection: Axis.horizontal,
+                //       child: DefaultIndexListWeb(src: true),
+                //     ),
+                //   ),
+                // ),
+                // const SizedBox(width: 20),
                 // Navigation screens
-                _buildNavigationScreens(isDarkMode),
-                const SizedBox(width: 12),
+                Row(
+                  children: [
+                    _buildNavigationScreens(isDarkMode),
+                    const SizedBox(width: 12),
+                    RepaintBoundary(
+                      child: _buildSwapButton(isDarkMode),
+                    ),
+                    const SizedBox(width: 12),
+                    // Profile section
+                    RepaintBoundary(
+                      child: _buildProfileSection(isDarkMode),
+                    ),
+                  ],
+                ),
                 // Swap button
-                RepaintBoundary(
-                  child: _buildSwapButton(isDarkMode),
-                ),
-                const SizedBox(width: 12),
-                // Profile section
-                RepaintBoundary(
-                  child: _buildProfileSection(isDarkMode),
-                ),
               ],
             ),
           ),

@@ -2178,14 +2178,25 @@ class _LTPWidgetWebState extends ConsumerState<_LTPWidgetWeb> {
   Widget build(BuildContext context) {
     final theme = ref.read(themeProvider);
     final displayLtp = _safeFormatPrice(ltp);
+    
+     final changeColor =
+        displayLtp.startsWith("-") || displayLtp.startsWith('-')
+            ? theme.isDarkMode
+                ? WebDarkColors.loss
+                : WebColors.loss
+            : (displayLtp == "0.00" || displayLtp == "0.00")
+                ? theme.isDarkMode
+                    ? WebDarkColors.textSecondary
+                    : WebColors.textSecondary
+                : theme.isDarkMode
+                    ? WebDarkColors.profit
+                    : WebColors.profit;
 
     return Text(
       displayLtp,
       style: WebTextStyles.priceWatch(
         isDarkTheme: theme.isDarkMode,
-        color: theme.isDarkMode
-            ? WebDarkColors.textPrimary
-            : WebColors.textPrimary,
+        color: changeColor,
       ),
     );
   }
@@ -2289,24 +2300,15 @@ class _PriceChangeWidgetWebState extends ConsumerState<_PriceChangeWidgetWeb> {
     final displayChange = _safeFormatPrice(change);
     final displayPerChange = _safeFormatPrice(perChange);
 
-    final changeColor =
-        displayChange.startsWith("-") || displayPerChange.startsWith('-')
-            ? theme.isDarkMode
-                ? WebDarkColors.loss
-                : WebColors.loss
-            : (displayChange == "0.00" || displayPerChange == "0.00")
-                ? theme.isDarkMode
-                    ? WebDarkColors.textSecondary
-                    : WebColors.textSecondary
-                : theme.isDarkMode
-                    ? WebDarkColors.profit
-                    : WebColors.profit;
+   
 
     return Text(
       "$displayChange ($displayPerChange%)",
       style: WebTextStyles.pricePercent(
         isDarkTheme: theme.isDarkMode,
-        color: changeColor,
+        color: theme.isDarkMode
+            ? WebDarkColors.textPrimary
+            : WebColors.textPrimary,
       ),
     );
   }
