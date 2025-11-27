@@ -41,6 +41,12 @@ class IndexListProvider extends DefaultChangeNotifier {
   IndexListModel? get defaultIndexList => _defaultIndexList;
   IndexListModel? _defTopIndex;
   IndexListModel? get defTopIndex => _defTopIndex;
+  
+  IndexListModel? _topIndicesForDashboard;
+  IndexListModel? get topIndicesForDashboard => _topIndicesForDashboard;
+  
+  String _topIndicesToken = "";
+  String get topIndicesToken => _topIndicesToken;
 
   IndexListModel? _indexList;
   IndexListModel? get indexList => _indexList;
@@ -462,18 +468,23 @@ class IndexListProvider extends DefaultChangeNotifier {
       IndexValue addNewIndex, BuildContext context, dynamic index) async {
     final localstorage = await SharedPreferences.getInstance();
 
+    // Only allow changing slots 0 and 1 (2 slots for watchlist)
+    // Slots 2 and 3 are reserved for app bar display
     if (index == 0) {
       _defaultIndexList!.indValues!.removeAt(0);
       _defaultIndexList!.indValues!.insert(0, addNewIndex);
     } else if (index == 1) {
       _defaultIndexList!.indValues!.removeAt(1);
       _defaultIndexList!.indValues!.insert(1, addNewIndex);
-    } else if (index == 2) {
-      _defaultIndexList!.indValues!.removeAt(2);
-      _defaultIndexList!.indValues!.insert(2, addNewIndex);
     } else {
-      _defaultIndexList!.indValues!.removeAt(3);
-      _defaultIndexList!.indValues!.insert(3, addNewIndex);
+      // For slots 2 and 3, also update them but they're not shown in watchlist
+      if (index == 2 && _defaultIndexList!.indValues!.length > 2) {
+        _defaultIndexList!.indValues!.removeAt(2);
+        _defaultIndexList!.indValues!.insert(2, addNewIndex);
+      } else if (index == 3 && _defaultIndexList!.indValues!.length > 3) {
+        _defaultIndexList!.indValues!.removeAt(3);
+        _defaultIndexList!.indValues!.insert(3, addNewIndex);
+      }
     }
 
     localstorage.setStringList(
@@ -534,6 +545,50 @@ class IndexListProvider extends DefaultChangeNotifier {
       }
     }
     // notifyListeners();
+  }
+
+// Fetch Top Indices for Dashboard (8 specific indices)
+  Future getTopIndicesForDashboard(BuildContext context) async {
+    try {
+      Map data = {
+        "values": [
+          {"idxname": "Nifty 50", "token": "26000", "exch": "NSE", "tsym": "Nifty 50"},
+          {"idxname": "Nifty Bank", "token": "26009", "exch": "NSE", "tsym": "Nifty Bank"},
+          {"idxname": "India VIX", "token": "26017", "exch": "NSE", "tsym": "India VIX"},
+          {"idxname": "Sensex", "token": "1", "exch": "BSE", "tsym": "SENSEX"},
+          {"idxname": "Nifty Next 50", "token": "26013", "exch": "NSE", "tsym": "Nifty Next 50"},
+          {"idxname": "NIFTY MIDCAP 150", "token": "26060", "exch": "NSE", "tsym": "NIFTY MIDCAP 150"},
+          {"idxname": "NIFTY SMLCAP 250", "token": "26062", "exch": "NSE", "tsym": "NIFTY SMLCAP 250"},
+          {"idxname": "NIFTY MICROCAP250", "token": "26076", "exch": "NSE", "tsym": "NIFTY MICROCAP 250"}
+        ]
+      };
+
+      final resp = IndexListModel.fromJson(
+          jsonDecode(jsonEncode(data)) as Map<String, dynamic>);
+
+      _topIndicesForDashboard = resp;
+      
+      // Build WebSocket token for subscription
+      requestTopIndicesToken();
+      
+      notifyListeners();
+    } catch (e) {
+      _logError.add({"type": "Top Indices Dashboard", "Error": "$e"});
+      notifyListeners();
+      log("Failed to load Top Indices for Dashboard:: ${e.toString()}");
+    }
+  }
+
+// Build WebSocket token string for top indices
+  requestTopIndicesToken() {
+    _topIndicesToken = "";
+    if (_topIndicesForDashboard != null) {
+      if (_topIndicesForDashboard!.indValues!.isNotEmpty) {
+        for (var element in _topIndicesForDashboard!.indValues!) {
+          _topIndicesToken += "${element.exch}|${element.token}#";
+        }
+      }
+    }
   }
 
 // Verifying the client's session each time

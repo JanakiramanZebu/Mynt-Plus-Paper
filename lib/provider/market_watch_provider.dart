@@ -3382,6 +3382,13 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       if (ref.read(indexListProvider).indexToken.isNotEmpty) {
         input = ref.read(indexListProvider).indexToken;
       }
+      
+      // Also add top indices token for dashboard if available
+      ref.read(indexListProvider).requestTopIndicesToken();
+      final topIndicesToken = ref.read(indexListProvider).topIndicesToken;
+      if (topIndicesToken.isNotEmpty) {
+        input += topIndicesToken;
+      }
 
       // Save the current scrips count before processing
       final int initialScripsCount = _scrips.length;

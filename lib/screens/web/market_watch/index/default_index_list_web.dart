@@ -48,6 +48,13 @@ class _DefaultIndexListWebState extends ConsumerState<DefaultIndexListWeb>
     if (indexValues == null || indexValues.isEmpty) {
       return const SizedBox.shrink();
     }
+    
+    // For watchlist mode (src: false), only show first 2 indices
+    final displayIndices = widget.src 
+        ? indexValues  // AppBar mode: show all
+        : (indexValues.length >= 2 
+            ? indexValues.take(2).toList() 
+            : indexValues);  // Watchlist mode: show only 2
 
     // Create a unique key based on the indices to force rebuild when they change
     final indexKey =
@@ -89,9 +96,9 @@ class _DefaultIndexListWebState extends ConsumerState<DefaultIndexListWeb>
             width: MediaQuery.of(context).size.width * 1.0,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: List.generate(3, (i) {
-                if (i >= indexValues.length) return const SizedBox.shrink();
-                final item = indexValues[i];
+              children: List.generate(2, (i) {
+                if (i >= displayIndices.length) return const SizedBox.shrink();
+                final item = displayIndices[i];
                 return Expanded(
                   child: Container(
                     height: 48, // Reduced height for Carbon Design

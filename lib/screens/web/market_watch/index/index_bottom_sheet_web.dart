@@ -242,7 +242,9 @@ class _IndexBottomSheetWebState extends ConsumerState<IndexBottomSheetWeb> {
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    "Click icon to replace symbol in Slot ${widget.indexPosition + 1}",
+                    widget.indexPosition < 2
+                        ? "Click icon to replace symbol in Slot ${widget.indexPosition + 1}"
+                        : "Click icon to replace symbol",
                     style: WebTextStyles.caption(
                       isDarkTheme: theme.isDarkMode,
                       color: theme.isDarkMode
@@ -303,8 +305,12 @@ class _IndexBottomSheetWebState extends ConsumerState<IndexBottomSheetWeb> {
                                     var itemData = indexProvide.indValuesList[index];
 
                                     // Determine if the index is checked
-                                    bool ischeck = indexProvide.defaultIndexList!
-                                        .indValues!
+                                    // Only check first 2 indices (slots) for watchlist
+                                    final defaultIndices = indexProvide.defaultIndexList?.indValues ?? [];
+                                    final watchlistSlots = defaultIndices.length >= 2 
+                                        ? defaultIndices.take(2).toList() 
+                                        : defaultIndices;
+                                    bool ischeck = watchlistSlots
                                         .any((element) =>
                                             element.token == itemData.token);
 

@@ -152,6 +152,7 @@ class Routes {
   static const String sectorThematicDetail = ' sectorThematicDetail';
 
   static const String allTrade = 'allTrade';
+  static const String tradeActionScreen = 'tradeActionScreen';
 
 /////ipo
   static const String ipo = 'Ipo';

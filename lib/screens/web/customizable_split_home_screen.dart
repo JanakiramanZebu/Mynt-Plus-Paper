@@ -28,6 +28,7 @@ import '../../../provider/webview_chart_provider.dart';
 import '../../../provider/iop_provider.dart';
 import '../../../provider/fund_provider.dart';
 import '../../../provider/ledger_provider.dart';
+import '../../../provider/stocks_provider.dart';
 import '../Mobile/desk_reports/ca_action/ca_action_buyback.dart';
 import '../../../res/res.dart';
 import '../../../res/global_font_web.dart';
@@ -42,6 +43,7 @@ import 'market_watch/watchlist_screen_web.dart';
 import 'holdings/holding_screen_web.dart';
 import 'position/position_screen_web.dart';
 import 'dashboard_screen_web.dart';
+import 'trade_action_screen_web.dart';
 // import '../Mobile/order_book/order_book_screen.dart';
 import 'market_watch/options/option_chain_ss_web.dart';
 import '../Mobile/desk_reports/pledge_unpledge_screen.dart';
@@ -51,6 +53,7 @@ import '../Mobile/profile_screen/profile_main_screen.dart';
 import '../Mobile/ipo/ipo_main_screen.dart';
 import '../Mobile/bonds/bonds_main_screen.dart';
 import '../../../utils/custom_navigator.dart';
+import '../../../routes/route_names.dart';
 import '../../models/marketwatch_model/get_quotes.dart';
 import 'market_watch/chart_with_depth_web.dart';
 // import 'market_watch/scrip_tabs_manager.dart';
@@ -78,6 +81,9 @@ class _CustomizableSplitHomeScreenState
 
   // Track loading states for each screen type
   final Map<ScreenType, bool> _screenLoadingStates = {};
+  
+  // Store initial tab index for trade action screen
+  int? _tradeActionTabIndex;
 
   @override
   void initState() {
@@ -109,6 +115,7 @@ class _CustomizableSplitHomeScreenState
       WebNavigationHelper.initialize(
         navigatorKey: GlobalKey<NavigatorState>(),
         navigateToScreen: (routeName, {arguments}) {
+          debugPrint("WebNavigationHelper.navigateToScreen called with: $routeName");
           if (routeName == "orderBook") {
             showOrderBookInPanel();
           } else if (routeName == "optionChain") {
@@ -123,10 +130,25 @@ class _CustomizableSplitHomeScreenState
             _handleReportsTap();
           } else if (routeName == "settings") {
             _handleSettingsTap();
+          } else if (routeName == Routes.tradeActionScreen || routeName == "tradeActionScreen") {
+            debugPrint("Trade action screen navigation triggered with arguments: $arguments");
+            final tabIndex = arguments is int ? arguments : null;
+            showTradeActionInPanel(tabIndex: tabIndex);
             // caEvent and cpAction removed from panel navigation
+          } else if (routeName == Routes.holdingscreen || routeName == "HoldingScreen") {
+            _handleHoldingsTap();
+          } else if (routeName == Routes.positionscreen || routeName == "PositionScreen") {
+            _handlePositionsTap();
+          } else if (routeName == Routes.orderBook || routeName == "orderBook") {
+            showOrderBookInPanel();
+          } else if (routeName == Routes.fundscreen || routeName == "fundscreen") {
+            _handleFundsTap();
+          } else {
+            debugPrint("Unknown route: $routeName");
           }
         },
         replaceScreen: (routeName, {arguments}) {
+          debugPrint("WebNavigationHelper.replaceScreen called with: $routeName");
           if (routeName == "orderBook") {
             showOrderBookInPanel();
           } else if (routeName == "optionChain") {
@@ -141,7 +163,21 @@ class _CustomizableSplitHomeScreenState
             _handleReportsTap();
           } else if (routeName == "settings") {
             _handleSettingsTap();
+          } else if (routeName == Routes.tradeActionScreen || routeName == "tradeActionScreen") {
+            debugPrint("Trade action screen replacement triggered with arguments: $arguments");
+            final tabIndex = arguments is int ? arguments : null;
+            showTradeActionInPanel(tabIndex: tabIndex);
             // caEvent and cpAction removed from panel navigation
+          } else if (routeName == Routes.holdingscreen || routeName == "HoldingScreen") {
+            _handleHoldingsTap();
+          } else if (routeName == Routes.positionscreen || routeName == "PositionScreen") {
+            _handlePositionsTap();
+          } else if (routeName == Routes.orderBook || routeName == "orderBook") {
+            showOrderBookInPanel();
+          } else if (routeName == Routes.fundscreen || routeName == "fundscreen") {
+            _handleFundsTap();
+          } else {
+            debugPrint("Unknown route: $routeName");
           }
         },
         goBack: () {
@@ -1532,6 +1568,14 @@ class _CustomizableSplitHomeScreenState
         return ReportsScreen();
       case ScreenType.settings:
         return SettingsScreen();
+      case ScreenType.tradeAction:
+        // Get tab index from stored state or use null for default
+        final tabIndex = _tradeActionTabIndex;
+        // Use a key based on tabIndex to force recreation when tab changes
+        return TradeActionScreenWeb(
+          key: ValueKey('tradeAction_$tabIndex'),
+          initialTabIndex: tabIndex,
+        );
       // caEvent and cpAction removed
     }
   }
@@ -1568,6 +1612,8 @@ class _CustomizableSplitHomeScreenState
         return 'Reports';
       case ScreenType.settings:
         return 'Settings';
+      case ScreenType.tradeAction:
+        return 'Trade Action';
       // caEvent and cpAction removed
     }
   }
@@ -1604,6 +1650,8 @@ class _CustomizableSplitHomeScreenState
         return Icons.assessment;
       case ScreenType.settings:
         return Icons.settings;
+      case ScreenType.tradeAction:
+        return Icons.trending_up;
       // caEvent and cpAction removed
     }
   }
@@ -1956,6 +2004,9 @@ class _CustomizableSplitHomeScreenState
       case ScreenType.settings:
         _handleSettingsTap();
         break;
+      case ScreenType.tradeAction:
+        _handleTradeActionTap();
+        break;
       // caEvent and cpAction removed
     }
   }
@@ -2210,6 +2261,70 @@ class _CustomizableSplitHomeScreenState
 
     // Call the handler for the new screen type
     _handleScreenTypeChange(ScreenType.orderBook);
+  }
+
+  // Show Trade Action in a panel
+  void showTradeActionInPanel({int? tabIndex}) {
+    // Check if trade action already exists in any panel
+    for (int i = 0; i < _panels.length; i++) {
+      final panel = _panels[i];
+      bool hasTradeAction = panel.screenType == ScreenType.tradeAction ||
+          (panel.screens.isNotEmpty &&
+              panel.screens.contains(ScreenType.tradeAction));
+
+      if (hasTradeAction) {
+        // Trade action already exists, update the tab index and switch to that panel
+        setState(() {
+          _panels[i].activeScreenIndex =
+              panel.screens.indexOf(ScreenType.tradeAction);
+          if (_panels[i].activeScreenIndex == -1) {
+            _panels[i].activeScreenIndex = 0;
+          }
+          // Update the tab index even if screen already exists
+          _tradeActionTabIndex = tabIndex;
+        });
+        _saveLayout();
+        // Force a rebuild to update the tab
+        if (mounted) {
+          setState(() {});
+        }
+        return; // Exit early to prevent duplicate
+      }
+    }
+
+    // Find the panel that doesn't have watchlist (prefer left panel)
+    int targetPanelIndex = -1;
+    for (int i = 0; i < _panels.length; i++) {
+      final panel = _panels[i];
+      bool hasWatchlist = panel.screenType == ScreenType.watchlist ||
+          (panel.screens.isNotEmpty &&
+              panel.screens.contains(ScreenType.watchlist));
+
+      if (!hasWatchlist) {
+        targetPanelIndex = i;
+        break;
+      }
+    }
+
+    // If no panel without watchlist found, use the left panel (index 0) - avoid right panel with watchlist
+    if (targetPanelIndex == -1) {
+      targetPanelIndex =
+          0; // Always use left panel to avoid replacing watchlist
+    }
+
+    // Set the Trade Action screen in the target panel
+    setState(() {
+      _panels[targetPanelIndex].screenType = ScreenType.tradeAction;
+      _panels[targetPanelIndex].screens = [ScreenType.tradeAction];
+      _panels[targetPanelIndex].activeScreenIndex = 0;
+      // Store the tab index for the screen
+      _tradeActionTabIndex = tabIndex;
+    });
+
+    _saveLayout();
+
+    // Call the handler for the new screen type
+    _handleScreenTypeChange(ScreenType.tradeAction);
   }
 
   // Show Option Chain in a panel
@@ -2744,6 +2859,29 @@ class _CustomizableSplitHomeScreenState
     await ref
         .read(orderProvider)
         .requestWSOrderBook(context: context, isSubscribe: false);
+  }
+
+  // Handle trade action tap
+  void _handleTradeActionTap() async {
+    final portfolio = ref.read(portfolioProvider);
+    final stocksProvider = ref.read(stocksProvide);
+
+    portfolio.cancelTimer();
+
+    // Unsubscribe from other real-time data
+    await portfolio.requestWSHoldings(context: context, isSubscribe: false);
+    await portfolio.requestWSPosition(context: context, isSubscribe: false);
+    await ref
+        .read(orderProvider)
+        .requestWSOrderBook(context: context, isSubscribe: false);
+
+    // Fetch trade action data in background
+    Future.microtask(() async {
+      if (mounted) {
+        await stocksProvider.fetchTradeAction("NSE", "NSEALL", "topG_L", "topG_L");
+        await stocksProvider.fetchTradeAction("NSE", "NSEALL", "mostActive", "mostActive");
+      }
+    });
   }
 
   // Show screen in right panel (for app bar navigation)
@@ -3560,6 +3698,7 @@ enum ScreenType {
   corporateActions,
   reports,
   settings,
+  tradeAction,
 }
 
 // Hoverable navigation item widget

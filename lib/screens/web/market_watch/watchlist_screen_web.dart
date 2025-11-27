@@ -2422,7 +2422,7 @@ class _WatchlistLivePriceWidgetState
             style: _getTextStyle(
               WebColors.textPrimary, // Match default_index_list_web.dart
               13, // Match font size
-              2,
+              1,
             ),
           )
         ],

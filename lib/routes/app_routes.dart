@@ -17,6 +17,7 @@ import 'package:mynt_plus/screens/Mobile/order_screen/order_confirmation_screen.
 import 'package:mynt_plus/screens/Mobile/profile_screen/app_webview/ipo_webview.dart';
 import 'package:mynt_plus/screens/web/order/place_order_screen_web.dart';
 import 'package:mynt_plus/screens/web/ordersbook/pending_alert_detail_screen_web.dart';
+import 'package:mynt_plus/screens/web/trade_action_screen_web.dart';
 // import 'package:mynt_plus/screens/web/grid_dashboard_web.dart';
 import '../main.dart'; // Import for FirebaseHelper
 import '../screens/Mobile/authentication/login/login_banner_screen.dart';
@@ -670,6 +671,11 @@ class AppRoutes {
       case Routes.allTrade:
         return _createRoute(
           pageBuilder: (_, __, ___) => const AllTrade(),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
+      case Routes.tradeActionScreen:
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const TradeActionScreenWeb(),
           beginOffset: const Offset(-1.0, 0.0),
         );
 
