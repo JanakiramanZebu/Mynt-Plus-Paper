@@ -1430,7 +1430,7 @@ class IPOProvider extends DefaultChangeNotifier {
   }
 
   Future fetchupiidvalidation(BuildContext context, String upiId, String accno,
-      MenuData menudata, List<IposBid> iposbids, String iposupiid) async {
+      MenuData menudata, List<IposBid> iposbids, String iposupiid, {bool isOverlayDialog = false}) async {
     try {
       toggleLoadingOn(true);
       _upiIdValidationModel = await api.getVerifyUpi(upiId, accno);
@@ -1442,10 +1442,15 @@ class IPOProvider extends DefaultChangeNotifier {
         _upierror = "";
         _upivalid = false;
         setSelectedTab(2);
-        Navigator.pop(context);
-        Navigator.pop(context);
-        if(singlepageapply){
+        
+        // Only use Navigator.pop if not in overlay dialog
+        // Overlay dialogs are closed via their callbacks
+        if (!isOverlayDialog) {
           Navigator.pop(context);
+          Navigator.pop(context);
+          if(singlepageapply){
+            Navigator.pop(context);
+          }
         }
         // Navigator.pushNamed(context, Routes.ipo, arguments: 2);
 
