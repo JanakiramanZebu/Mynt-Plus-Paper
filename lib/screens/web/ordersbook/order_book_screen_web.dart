@@ -535,6 +535,8 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                       contentPadding: const EdgeInsets.symmetric(vertical: 12),
                     ),
                     onChanged: (value) {
+                      // All tabs now use the standard search method in provider
+                      // This is faster because filtering happens in provider, not in build
                       orderBook.searchOrders(value, context);
                     },
                   ),

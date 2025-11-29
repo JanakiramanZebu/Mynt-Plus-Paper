@@ -50,7 +50,7 @@ import '../Mobile/desk_reports/pledge_unpledge_screen.dart';
 // Removed CA Event and CP Action from panel screens
 import '../Mobile/mutual_fund/mf_main_screen.dart';
 import '../Mobile/profile_screen/profile_main_screen.dart';
-import '../Mobile/ipo/ipo_main_screen.dart';
+import 'ipo/ipo_main_screen_web.dart';
 import '../Mobile/bonds/bonds_main_screen.dart';
 import '../../../utils/custom_navigator.dart';
 import '../../../routes/route_names.dart';
@@ -143,6 +143,8 @@ class _CustomizableSplitHomeScreenState
             showOrderBookInPanel();
           } else if (routeName == Routes.fundscreen || routeName == "fundscreen") {
             _handleFundsTap();
+          } else if (routeName == Routes.ipo || routeName == "Ipo" || routeName == "ipo") {
+            _handleIPOTap();
           } else {
             debugPrint("Unknown route: $routeName");
           }
@@ -176,6 +178,8 @@ class _CustomizableSplitHomeScreenState
             showOrderBookInPanel();
           } else if (routeName == Routes.fundscreen || routeName == "fundscreen") {
             _handleFundsTap();
+          } else if (routeName == Routes.ipo || routeName == "Ipo" || routeName == "ipo") {
+            _handleIPOTap();
           } else {
             debugPrint("Unknown route: $routeName");
           }
@@ -1401,6 +1405,9 @@ class _CustomizableSplitHomeScreenState
         const SizedBox(width: 8),
         _buildNavItem(
             'Fund', isDarkMode, ScreenType.funds, () => _handleFundsTap()),
+        const SizedBox(width: 8),
+        _buildNavItem(
+            'IPO', isDarkMode, ScreenType.ipo, () => _handleIPOTap()),
       ],
     );
   }
@@ -2563,26 +2570,43 @@ class _CustomizableSplitHomeScreenState
   }
 
   void _handleIPOTap() async {
-    final portfolio = ref.read(portfolioProvider);
-    final ipoProvider = ref.read(ipoProvide);
-    final authProvi = ref.read(authProvider);
+    // Set loading state immediately
+    setState(() {
+      _screenLoadingStates[ScreenType.ipo] = true;
+    });
 
-    portfolio.cancelTimer();
+    // Replace screen immediately for instant UI response - this triggers setState synchronously
+    _replaceScreenInPanel(ScreenType.ipo);
 
-    // Unsubscribe from other real-time data
-    // await ref.read(marketWatchProvider).requestMWScrip(context: context, isSubscribe: false);
-    await portfolio.requestWSHoldings(context: context, isSubscribe: false);
-    await portfolio.requestWSPosition(context: context, isSubscribe: false);
-    await ref
-        .read(orderProvider)
-        .requestWSOrderBook(context: context, isSubscribe: false);
+    // Allow UI to update first, then do background work
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.microtask(() async {
+        if (!mounted) return;
 
-    // Fetch IPO data in the background
-    Future.microtask(() {
-      if (mounted) {
-        authProvi.setIposAPicalls(context);
-        ipoProvider.getipoorderbookmodel(context, true);
-      }
+        final portfolio = ref.read(portfolioProvider);
+        final ipoProvider = ref.read(ipoProvide);
+        final authProvi = ref.read(authProvider);
+
+        portfolio.cancelTimer();
+
+        // Unsubscribe from other real-time data (non-blocking)
+        portfolio.requestWSHoldings(context: context, isSubscribe: false);
+        portfolio.requestWSPosition(context: context, isSubscribe: false);
+        ref.read(orderProvider).requestWSOrderBook(context: context, isSubscribe: false);
+
+        // Fetch IPO data in the background (non-blocking)
+        if (mounted) {
+          authProvi.setIposAPicalls(context);
+          ipoProvider.getipoorderbookmodel(context, true);
+
+          // Clear loading state after data is fetched
+          if (mounted) {
+            setState(() {
+              _screenLoadingStates[ScreenType.ipo] = false;
+            });
+          }
+        }
+      });
     });
   }
 

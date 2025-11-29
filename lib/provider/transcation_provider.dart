@@ -727,31 +727,34 @@ class TranctionProvider extends DefaultChangeNotifier {
           hdfcpaymentstatus?.upiId?.status == "REJECTED" ||
           hdfcpaymentstatus?.upiId?.status == "SUCCESS" ||
           hdfcpaymentstatus?.upiId?.status == "FAILED") {
-        if (!_isUpiIdBottomSheetShown) {
-          _isUpiIdBottomSheetShown = true;
-          if (context.mounted) {
-            showModalBottomSheet(
-                shape: const RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.vertical(top: Radius.circular(16))),
-                backgroundColor: Colors.transparent,
-                isDismissible: false,
-                enableDrag: false,
-                showDragHandle: false,
-                useSafeArea: false,
-                isScrollControlled: true,
-                context: context,
-                builder: (BuildContext context) {
-                  return PopScope(
-                      canPop: false,
-                      onPopInvokedWithResult: (didPop, result) async {
-                        if (didPop) return;
-                      },
-                      child:
-                          Container(child: const UpiIdSucessorFaliureScreen()));
-                }).whenComplete(() {
-              _isUpiIdBottomSheetShown = false;
-            });
+        // Only show mobile bottom sheet on mobile, web handles it differently
+        if (!kIsWeb) {
+          if (!_isUpiIdBottomSheetShown) {
+            _isUpiIdBottomSheetShown = true;
+            if (context.mounted) {
+              showModalBottomSheet(
+                  shape: const RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.vertical(top: Radius.circular(16))),
+                  backgroundColor: Colors.transparent,
+                  isDismissible: false,
+                  enableDrag: false,
+                  showDragHandle: false,
+                  useSafeArea: false,
+                  isScrollControlled: true,
+                  context: context,
+                  builder: (BuildContext context) {
+                    return PopScope(
+                        canPop: false,
+                        onPopInvokedWithResult: (didPop, result) async {
+                          if (didPop) return;
+                        },
+                        child:
+                            Container(child: const UpiIdSucessorFaliureScreen()));
+                  }).whenComplete(() {
+                _isUpiIdBottomSheetShown = false;
+              });
+            }
           }
         }
         return false;
@@ -777,7 +780,7 @@ class TranctionProvider extends DefaultChangeNotifier {
     String accno,
     String name,
     String ifsc,
-    Razorpay razorpay,
+    Razorpay? razorpay, // Make nullable for web
   ) async {
     try {
       togglefundLoading(true);
@@ -819,7 +822,17 @@ class TranctionProvider extends DefaultChangeNotifier {
           },
         };
 
-        razorpay.open(options);
+        // On web, don't call razorpay.open() - let the web screen handle it
+        if (!kIsWeb && razorpay != null) {
+          // On mobile, use Razorpay Flutter plugin
+          try {
+            razorpay.open(options);
+          } catch (e) {
+            print("Razorpay open error: $e");
+            rethrow;
+          }
+        }
+        // On web, the web screen will handle opening checkout via JavaScript
       }
     } catch (e) {
       //  log("Failed to fetch bank Data:: ${e.toString()}");

@@ -104,6 +104,30 @@ class MFProvider extends DefaultChangeNotifier {
   Sip_list_data? _mfsiporderlist;
   Sip_list_data? get mfsiporderlist => _mfsiporderlist;
 
+  // Search results for MF orders
+  List<dynamic>? _mfOrderSearch = [];
+  List<dynamic>? get mfOrderSearch => _mfOrderSearch;
+
+  // Search results for SIP orders
+  List<dynamic>? _mfSipSearch = [];
+  List<dynamic>? get mfSipSearch => _mfSipSearch;
+
+  void setMfOrderSearch(List<dynamic>? searchResult) {
+    _mfOrderSearch = searchResult;
+    notifyListeners();
+  }
+
+  void setMfSipSearch(List<dynamic>? searchResult) {
+    _mfSipSearch = searchResult;
+    notifyListeners();
+  }
+
+  void clearMfSearch() {
+    _mfOrderSearch = [];
+    _mfSipSearch = [];
+    notifyListeners();
+  }
+
   Sip_list_data? _mfnotlivesiporderlist;
   Sip_list_data? get mfnotlivesiporderlist => _mfnotlivesiporderlist;
 

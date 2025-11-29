@@ -1799,15 +1799,23 @@ class AuthProvider extends DefaultChangeNotifier {
               getResponsiveWidth(context) == 600
                   ? showDialog(
                       context: context,
+                      barrierDismissible: false,
                       builder: (BuildContext context) {
-                        return Dialog(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: SizedBox(
-                            width: MediaQuery.of(context).size.width *
-                                0.3, // set your desired width here
-                            child: const RiskDisclousreBottomSheet(),
+                        return PopScope(
+                          canPop: false,
+                          onPopInvokedWithResult: (didPop, result) async {
+                            if (didPop) return;
+                            // Prevent closing with ESC key
+                          },
+                          child: Dialog(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: SizedBox(
+                              width: MediaQuery.of(context).size.width *
+                                  0.3, // set your desired width here
+                              child: const RiskDisclousreBottomSheet(),
+                            ),
                           ),
                         );
                       },

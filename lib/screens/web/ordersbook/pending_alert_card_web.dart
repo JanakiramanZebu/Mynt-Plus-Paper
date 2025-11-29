@@ -228,14 +228,19 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb>
     ref.listen<NotificationProvider>(
         notificationprovider, (previous, current) {});
 
-    // Filter broker messages that are related to alerts
-    triggeredAlerts = notification.brokermsg
-            ?.where((msg) =>
-                msg.dmsg != null &&
-                msg.dmsg!.contains("Ltp") &&
-                (msg.dmsg!.contains("above") || msg.dmsg!.contains("below")))
-            .toList() ??
-        [];
+    // Use filtered triggered alerts from provider (if searching) or filter in UI (if not searching)
+    if (isSearching) {
+      triggeredAlerts = notification.triggeredAlertSearch ?? [];
+    } else {
+      // Filter broker messages that are related to alerts (only when not searching)
+      triggeredAlerts = notification.brokermsg
+              ?.where((msg) =>
+                  msg.dmsg != null &&
+                  msg.dmsg!.contains("Ltp") &&
+                  (msg.dmsg!.contains("above") || msg.dmsg!.contains("below")))
+              .toList() ??
+          [];
+    }
 
     // Combine pending and triggered alerts (pending first)
     final List<dynamic> allAlerts = [

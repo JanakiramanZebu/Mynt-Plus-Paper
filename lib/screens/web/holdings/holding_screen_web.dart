@@ -1344,7 +1344,9 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
                   ),
                   const SizedBox(width: 6),
                 ],
-                if ((holding.saleableQty ?? 0) > 0) ...[
+                // Show Exit button for all holdings with positive quantity
+                // The exit handler will validate saleableQty when clicked
+                if ((holding.currentQty ?? 0) > 0) ...[
                   _buildHoverButton(
                     label: 'Exit',
                     color: Colors.white,
@@ -1444,7 +1446,9 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
                     ),
                     const SizedBox(width: 6),
                   ],
-                  if ((holding.saleableQty ?? 0) > 0) ...[
+                  // Show Exit button for all holdings with positive quantity
+                  // The exit handler will validate saleableQty when clicked
+                  if ((holding.currentQty ?? 0) > 0) ...[
                     _buildHoverButton(
                       label: 'Exit',
                       color: Colors.white,
@@ -1568,8 +1572,9 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
                         ),
                         const SizedBox(width: 6),
                       ],
-                      // Exit button for holdings with saleable quantity
-                      if ((holding.saleableQty ?? 0) > 0) ...[
+                      // Exit button for all holdings with positive quantity
+                      // The exit handler will validate saleableQty when clicked
+                      if ((holding.currentQty ?? 0) > 0) ...[
                         _buildHoverButton(
                           label: 'Exit',
                           color: Colors.white,
@@ -2342,6 +2347,15 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
   Future<void> _handleExitHolding(
       BuildContext context, dynamic holding, dynamic exchTsym) async {
     try {
+      // Check if there's saleable quantity before proceeding
+      if (holding.saleableQty == null || holding.saleableQty == 0) {
+        showResponsiveWarningMessage(
+          context,
+          'You are unable to exit because there are no sellable quantity.',
+        );
+        return;
+      }
+
       final scripData = ref.read(marketWatchProvider);
 
       await scripData.fetchScripInfo(
@@ -2357,14 +2371,17 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
         return;
       }
 
+      final scripInfo = scripData.scripInfoModel!;
+      final lotSize = exchTsym.ls?.toString() ?? scripInfo.ls?.toString() ?? "1";
+
       OrderScreenArgs orderArgs = OrderScreenArgs(
         exchange: exchTsym.exch ?? "",
         tSym: exchTsym.tsym ?? "",
         isExit: true,
-        token: exchTsym.token ?? "",
+        token: '',
         transType: false,
         prd: holding.prd ?? "",
-        lotSize: holding.saleableQty?.toString() ?? "1",
+        lotSize: lotSize,
         ltp: exchTsym.lp ?? "0.00",
         perChange: exchTsym.perChange ?? "0.00",
         orderTpye: holding.sPrdtAli ?? '',
@@ -2377,7 +2394,7 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
         context: context,
         arguments: {
           "orderArg": orderArgs,
-          "scripInfo": scripData.scripInfoModel!,
+          "scripInfo": scripInfo,
           "isBskt": "",
         },
       );

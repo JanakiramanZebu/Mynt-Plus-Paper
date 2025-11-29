@@ -30,6 +30,20 @@ class NotificationProvider extends DefaultChangeNotifier {
   List<BrokerMessage>? _brokermsg;
   List<BrokerMessage>? get brokermsg => _brokermsg;
 
+  // Search results for triggered alerts (broker messages)
+  List<BrokerMessage>? _triggeredAlertSearch = [];
+  List<BrokerMessage>? get triggeredAlertSearch => _triggeredAlertSearch;
+
+  void setTriggeredAlertSearch(List<BrokerMessage>? searchResult) {
+    _triggeredAlertSearch = searchResult;
+    notifyListeners();
+  }
+
+  void clearTriggeredAlertSearch() {
+    _triggeredAlertSearch = [];
+    notifyListeners();
+  }
+
   List<InformationMessageModel>? _informationMessages;
   List<InformationMessageModel>? get informationMessages => _informationMessages;
 

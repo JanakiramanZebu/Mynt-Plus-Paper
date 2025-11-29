@@ -4,6 +4,7 @@ import 'package:data_table_2/data_table_2.dart';
 
 import '../../../../provider/mf_provider.dart';
 import '../../../../provider/thems.dart';
+import '../../../../provider/order_provider.dart';
 import '../../../../sharedWidget/no_data_found.dart';
 import '../../../../res/res.dart';
 import '../../../../res/web_colors.dart';
@@ -57,8 +58,13 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb>
     super.build(context); // Required for AutomaticKeepAliveClientMixin
     final theme = ref.watch(themeProvider);
     final mf = ref.watch(mfProvider);
-
-    final orders = mf.mflumpsumorderbook?.data ?? [];
+    final orderBook = ref.watch(orderProvider);
+    
+    // Use filtered results from provider (same pattern as other tabs)
+    final isSearching = orderBook.orderSearchCtrl.text.isNotEmpty;
+    final orders = isSearching
+        ? (mf.mfOrderSearch ?? [])
+        : (mf.mflumpsumorderbook?.data ?? []);
 
     // Show loading indicator if data is being fetched and no existing data
     if (orders.isEmpty) {

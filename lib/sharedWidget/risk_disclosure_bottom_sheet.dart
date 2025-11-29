@@ -42,7 +42,7 @@ class RiskDisclousreBottomSheet extends ConsumerWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Header with close button
+          // Header without close button
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             margin: const EdgeInsets.only(bottom: 8),
@@ -56,7 +56,7 @@ class RiskDisclousreBottomSheet extends ConsumerWidget {
               ),
             ),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
                   'Risk Disclosures on Derivatives',
@@ -65,33 +65,6 @@ class RiskDisclousreBottomSheet extends ConsumerWidget {
                     color: theme.isDarkMode
                         ? WebDarkColors.textPrimary
                         : WebColors.textPrimary,
-                  ),
-                ),
-                Material(
-                  color: Colors.transparent,
-                  shape: const CircleBorder(),
-                  child: InkWell(
-                    customBorder: const CircleBorder(),
-                    splashColor: theme.isDarkMode
-                        ? Colors.white.withOpacity(.15)
-                        : Colors.black.withOpacity(.15),
-                    highlightColor: theme.isDarkMode
-                        ? Colors.white.withOpacity(.08)
-                        : Colors.black.withOpacity(.08),
-                    onTap: () {
-                      pref.setRiskDiscloser(true);
-                      Navigator.of(context).pop();
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.all(6.0),
-                      child: Icon(
-                        Icons.close,
-                        size: 20,
-                        color: theme.isDarkMode
-                            ? WebDarkColors.iconSecondary
-                            : WebColors.iconSecondary,
-                      ),
-                    ),
                   ),
                 ),
               ],

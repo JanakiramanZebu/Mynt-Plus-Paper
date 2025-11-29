@@ -41,6 +41,7 @@ import 'notification_provider.dart';
 import 'order_input_provider.dart';
 import 'websocket_provider.dart';
 import 'portfolio_provider.dart';
+import 'mf_provider.dart';
 
 final orderProvider = ChangeNotifierProvider((ref) => OrderProvider(ref));
 
@@ -647,6 +648,11 @@ class OrderProvider extends DefaultChangeNotifier {
   clearOrderSearch() {
     orderSearchCtrl.clear();
     _orderSearchItem = [];
+    _tradeBooksearch = [];
+    _gttOrderBookSearch = [];
+    ref.read(marketWatchProvider).clearAlertSearch();
+    ref.read(mfProvider).clearMfSearch();
+    ref.read(notificationprovider).clearTriggeredAlertSearch();
     notifyListeners();
   }
 
@@ -670,6 +676,8 @@ class OrderProvider extends DefaultChangeNotifier {
     _gttOrderBookSearch = [];
     _siporderBookSearch = [];
     ref.read(marketWatchProvider).clearAlertSearch();
+    ref.read(mfProvider).clearMfSearch();
+    ref.read(notificationprovider).clearTriggeredAlertSearch();
 
     if (value.isNotEmpty) {
       switch (_selectedTab) {
@@ -697,7 +705,42 @@ class OrderProvider extends DefaultChangeNotifier {
                   element.tsym!.toUpperCase().contains(value.toUpperCase()))
               .toList();
           break;
-        case 4: // Basket Orders - Search not applicable
+        case 4: // MF Orders (Web) / Basket (Mobile)
+          // Only perform MF search on web (mobile uses case 4 for Basket which doesn't need search)
+          if (kIsWeb) {
+            final mf = ref.read(mfProvider);
+            
+            // Search MF orders - only if data exists
+            if (mf.mflumpsumorderbook?.data != null && mf.mflumpsumorderbook!.data!.isNotEmpty) {
+              final searchResult = mf.mflumpsumorderbook!.data!
+                  .where((order) {
+                    final schemeName = (order.name ?? order.schemename ?? '').toUpperCase();
+                    return schemeName.contains(value.toUpperCase());
+                  })
+                  .toList();
+              mf.setMfOrderSearch(searchResult);
+            } else {
+              // Clear search if no data
+              mf.clearMfSearch();
+            }
+            
+            // Search SIP orders - only if data exists
+            if (mf.mfsiporderlist?.data != null && mf.mfsiporderlist!.data!.isNotEmpty) {
+              final searchResult = mf.mfsiporderlist!.data!
+                  .where((sip) {
+                    final schemeName = (sip.name ?? '').toUpperCase();
+                    final sipRegNo = (sip.sIPRegnNo ?? '').toUpperCase();
+                    final searchUpper = value.toUpperCase();
+                    return schemeName.contains(searchUpper) || sipRegNo.contains(searchUpper);
+                  })
+                  .toList();
+              mf.setMfSipSearch(searchResult);
+            } else {
+              // Clear search if no data
+              mf.setMfSipSearch([]);
+            }
+          }
+          // Mobile case 4 is Basket - no search needed, so do nothing
           break;
         // case 5: // SIP Orders
         //   _siporderBookSearch = _siporderBookModel!.sipDetails!
@@ -709,24 +752,38 @@ class OrderProvider extends DefaultChangeNotifier {
           final alertProvider = ref.read(marketWatchProvider);
           final notificationProvider = ref.read(notificationprovider);
           
-          // Search pending alerts
-          if (alertProvider.alertPendingModel != null) {
+          // Search pending alerts - only if data exists
+          if (alertProvider.alertPendingModel != null && alertProvider.alertPendingModel!.isNotEmpty) {
             final searchResult = alertProvider.alertPendingModel!
                 .where((element) =>
                     element.tsym!.toUpperCase().contains(value.toUpperCase()))
                 .toList();
             alertProvider.setAlertPendingSearch(searchResult);
+          } else {
+            // Clear search if no data (mobile compatibility)
+            alertProvider.setAlertPendingSearch([]);
           }
           
-          // Search triggered alerts (broker messages)
-          if (notificationProvider.brokermsg != null) {
-            notificationProvider.brokermsg!
+          // Search triggered alerts (broker messages) - only if data exists
+          if (notificationProvider.brokermsg != null && notificationProvider.brokermsg!.isNotEmpty) {
+            // First filter by alert-related messages (Ltp, above, below)
+            final alertRelatedMessages = notificationProvider.brokermsg!
+                .where((msg) =>
+                    msg.dmsg != null &&
+                    msg.dmsg!.contains("Ltp") &&
+                    (msg.dmsg!.contains("above") || msg.dmsg!.contains("below")))
+                .toList();
+            
+            // Then apply search filter
+            final searchResult = alertRelatedMessages
                 .where((msg) =>
                     msg.dmsg != null &&
                     msg.dmsg!.toUpperCase().contains(value.toUpperCase()))
                 .toList();
-            // Store triggered search results in a new property if needed
-            // For now, we'll handle this in the UI
+            notificationProvider.setTriggeredAlertSearch(searchResult);
+          } else {
+            // Clear search if no data (mobile compatibility)
+            notificationProvider.setTriggeredAlertSearch([]);
           }
           break;
       }

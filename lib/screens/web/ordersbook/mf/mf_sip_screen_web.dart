@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:data_table_2/data_table_2.dart';
 import '../../../../provider/mf_provider.dart';
 import '../../../../provider/thems.dart';
+import '../../../../provider/order_provider.dart';
 import '../../../../sharedWidget/no_data_found.dart';
 import '../../../../res/res.dart';
 import '../../../../res/web_colors.dart';
@@ -42,8 +43,13 @@ class _MFSipdetScreenWebState extends ConsumerState<MFSipdetScreenWeb>
     super.build(context); // Required for AutomaticKeepAliveClientMixin
     final theme = ref.watch(themeProvider);
     final mf = ref.watch(mfProvider);
-
-    final sipDetails = mf.mfsiporderlist?.data ?? [];
+    final orderBook = ref.watch(orderProvider);
+    
+    // Use filtered results from provider (same pattern as other tabs)
+    final isSearching = orderBook.orderSearchCtrl.text.isNotEmpty;
+    final sipDetails = isSearching
+        ? (mf.mfSipSearch ?? [])
+        : (mf.mfsiporderlist?.data ?? []);
 
     if (sipDetails.isEmpty) {
       return const SizedBox(

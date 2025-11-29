@@ -51,6 +51,20 @@ class _BasketListState extends ConsumerState<BasketList> {
     });
   }
 
+  List<dynamic> _getFilteredBaskets(List<dynamic> baskets) {
+    final orderBook = ref.read(orderProvider);
+    final searchQuery = orderBook.orderSearchCtrl.text.toUpperCase();
+    
+    if (searchQuery.isEmpty) {
+      return baskets;
+    }
+    
+    return baskets.where((basket) {
+      final basketName = (basket['bsketName'] ?? '').toString().toUpperCase();
+      return basketName.contains(searchQuery);
+    }).toList();
+  }
+
   int _getBasketColumnIndexForHeader(String header) {
     switch (header) {
       case 'Basket Name': return 0;
@@ -793,7 +807,7 @@ class _BasketListState extends ConsumerState<BasketList> {
                           child: SizedBox(
                             width: constraints.maxWidth,
                             height: constraints.maxHeight,
-                            child: _buildBasketTable(theme, basket.bsktList),
+                            child: _buildBasketTable(theme, _getFilteredBaskets(basket.bsktList)),
                           ),
                         );
                       },
