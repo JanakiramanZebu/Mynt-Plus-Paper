@@ -29,6 +29,7 @@ import '../../../provider/iop_provider.dart';
 import '../../../provider/fund_provider.dart';
 import '../../../provider/ledger_provider.dart';
 import '../../../provider/stocks_provider.dart';
+import '../../../provider/web_subscription_manager.dart';
 import '../Mobile/desk_reports/ca_action/ca_action_buyback.dart';
 import '../../../res/res.dart';
 import '../../../res/global_font_web.dart';
@@ -36,7 +37,6 @@ import '../../../res/web_colors.dart';
 import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/internet_widget.dart';
 import '../../../sharedWidget/splash_loader.dart';
-import 'market_watch/index/default_index_list_web.dart';
 import 'splitter_widget.dart';
 // import '../Mobile/market_watch/tv_chart/webview_chart.dart';
 import 'market_watch/watchlist_screen_web.dart';
@@ -209,12 +209,22 @@ class _CustomizableSplitHomeScreenState
         _handleWebSocketConnections();
       }
     });
+    
+    // Update subscription manager context
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        ref.read(webSubscriptionManagerProvider).updateContext(context);
+      }
+    });
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     socketProvider = ref.read(websocketProvider);
+    
+    // Update subscription manager context whenever dependencies change
+    ref.read(webSubscriptionManagerProvider).updateContext(context);
   }
 
   @override
@@ -304,6 +314,9 @@ class _CustomizableSplitHomeScreenState
 
     switch (state) {
       case AppLifecycleState.resumed:
+        // Update subscription manager context on resume
+        ref.read(webSubscriptionManagerProvider).updateContext(context);
+        
         Future.microtask(() async {
           try {
             await ref.read(indexListProvider).checkSession(context);
@@ -1226,6 +1239,7 @@ class _CustomizableSplitHomeScreenState
                                       panel.screenType = screenType;
                                     });
                                     _saveLayout();
+                                    _updateSubscriptionManagerForPanels();
                                     _handleScreenTypeChange(screenType);
                                   },
                                   child: Container(
@@ -1959,6 +1973,9 @@ class _CustomizableSplitHomeScreenState
 
   // Handle screen type change - calls appropriate handler based on screen type
   void _handleScreenTypeChange(ScreenType screenType) {
+    // Update subscription manager with active screen
+    _updateSubscriptionManagerForPanels();
+    
     // Only call handlers if this is not the initial load
     if (_isInitialLoad) {
       return;
@@ -2207,6 +2224,9 @@ class _CustomizableSplitHomeScreenState
         _cleanupScreenResources(previousScreenType);
       }
     });
+    
+    // Update subscription manager
+    _updateSubscriptionManagerForPanels();
 
     _saveLayout();
 
@@ -2263,6 +2283,9 @@ class _CustomizableSplitHomeScreenState
       _panels[targetPanelIndex].screens = [ScreenType.orderBook];
       _panels[targetPanelIndex].activeScreenIndex = 0;
     });
+    
+    // Update subscription manager
+    _updateSubscriptionManagerForPanels();
 
     _saveLayout();
 
@@ -2327,6 +2350,9 @@ class _CustomizableSplitHomeScreenState
       // Store the tab index for the screen
       _tradeActionTabIndex = tabIndex;
     });
+    
+    // Update subscription manager
+    _updateSubscriptionManagerForPanels();
 
     _saveLayout();
 
@@ -2372,6 +2398,10 @@ class _CustomizableSplitHomeScreenState
       _panels[targetPanelIndex].screens = [ScreenType.optionChain];
       _panels[targetPanelIndex].activeScreenIndex = 0;
     });
+    
+    // Update subscription manager
+    _updateSubscriptionManagerForPanels();
+    
     _saveLayout();
   }
 
@@ -2416,6 +2446,9 @@ class _CustomizableSplitHomeScreenState
         _handleWatchlistTap();
       }
 
+      // Update subscription manager with initial screens
+      _updateSubscriptionManagerForPanels();
+
       // Ensure websocket connections are established for real-time data
       if (mounted &&
           ref.read(networkStateProvider).connectionStatus !=
@@ -2425,43 +2458,54 @@ class _CustomizableSplitHomeScreenState
     }
   }
 
+  // Update subscription manager based on current active panels
+  void _updateSubscriptionManagerForPanels() {
+    final subscriptionManager = ref.read(webSubscriptionManagerProvider);
+    
+    // Update subscription manager for each panel
+    for (int i = 0; i < _panels.length; i++) {
+      final panel = _panels[i];
+      ScreenType? activeScreen;
+      
+      if (panel.screens.isNotEmpty &&
+          panel.activeScreenIndex >= 0 &&
+          panel.activeScreenIndex < panel.screens.length) {
+        activeScreen = panel.screens[panel.activeScreenIndex];
+      } else {
+        activeScreen = panel.screenType;
+      }
+      
+      subscriptionManager.updateActiveScreen(i, activeScreen);
+    }
+  }
+
   // Individual screen type handlers (based on home_screen.dart)
   void _handleDashboardTap() async {
     // Replace screen immediately for instant UI response
     _replaceScreenInPanel(ScreenType.dashboard);
+    
+    // Update subscription manager
+    _updateSubscriptionManagerForPanels();
+
+    
 
     // Move all async operations to background to prevent blocking UI
     Future.microtask(() async {
       if (!mounted) return;
 
       final portfolio = ref.read(portfolioProvider);
-      final marketWatchList = ref.read(marketWatchProvider);
-      final orderProviderRef = ref.read(orderProvider);
-
       portfolio.cancelTimer();
-
-      // Unsubscribe from other real-time data (non-blocking, fire and forget)
-      orderProviderRef.requestWSOrderBook(context: context, isSubscribe: false);
-      portfolio.requestWSHoldings(context: context, isSubscribe: false);
-      portfolio.requestWSPosition(context: context, isSubscribe: false);
-
-      // Subscribe to market watch for dashboard
-      marketWatchList.requestMWScrip(context: context, isSubscribe: true);
     });
   }
 
   void _handleWatchlistTap() async {
+    // Update subscription manager
+    _updateSubscriptionManagerForPanels();
+    
+   
+
     final portfolio = ref.read(portfolioProvider);
-    final marketWatchList = ref.read(marketWatchProvider);
-    final orderProviderRef = ref.read(orderProvider);
-
     portfolio.cancelTimer();
-
-    await portfolio.requestWSHoldings(context: context, isSubscribe: false);
-    await orderProviderRef.requestWSOrderBook(
-        context: context, isSubscribe: false);
-    await portfolio.requestWSPosition(context: context, isSubscribe: false);
-    await marketWatchList.requestMWScrip(context: context, isSubscribe: true);
   }
 
   void _handleMutualFundTap() {
@@ -2502,6 +2546,9 @@ class _CustomizableSplitHomeScreenState
       _panels[targetPanelIndex].screens = [screenType];
       _panels[targetPanelIndex].activeScreenIndex = 0;
     });
+    
+    // Update subscription manager
+    _updateSubscriptionManagerForPanels();
 
     // Save layout in background (non-blocking)
     Future.microtask(() => _saveLayout());
@@ -2543,25 +2590,20 @@ class _CustomizableSplitHomeScreenState
     // Replace screen immediately - no loading state needed
     // OrderBookScreenWeb will handle its own loading gracefully
     _replaceScreenInPanel(ScreenType.orderBook);
+    
+    // Update subscription manager
+    _updateSubscriptionManagerForPanels();
 
     // Do background work immediately but don't block UI
     Future.microtask(() async {
       if (!mounted) return;
 
       final portfolio = ref.read(portfolioProvider);
-      final orderProviderRef = ref.read(orderProvider);
-
       portfolio.cancelTimer();
-
-      // Unsubscribe from other real-time data (non-blocking)
-      portfolio.requestWSHoldings(context: context, isSubscribe: false);
-      portfolio.requestWSPosition(context: context, isSubscribe: false);
-
-      // Subscribe to order book websocket (non-blocking)
-      orderProviderRef.requestWSOrderBook(context: context, isSubscribe: true);
 
       // Fetch data in background - screen will update progressively as data arrives
       if (mounted) {
+        final orderProviderRef = ref.read(orderProvider);
         orderProviderRef.fetchOrderBook(context, false);
         orderProviderRef.fetchTradeBook(context);
         orderProviderRef.fetchSipOrderHistory(context);
@@ -2640,22 +2682,16 @@ class _CustomizableSplitHomeScreenState
 
     // Replace screen immediately for instant UI response
     _replaceScreenInPanel(ScreenType.holdings);
+    
+    // Update subscription manager
+    _updateSubscriptionManagerForPanels();
 
     // Move all async operations to background to prevent blocking UI
     Future.microtask(() async {
       if (!mounted) return;
 
       final portfolio = ref.read(portfolioProvider);
-      final orderProviderRef = ref.read(orderProvider);
-
       portfolio.cancelTimer();
-
-      // Unsubscribe from other real-time data (non-blocking, fire and forget)
-      orderProviderRef.requestWSOrderBook(context: context, isSubscribe: false);
-      portfolio.requestWSPosition(context: context, isSubscribe: false);
-
-      // Subscribe to holdings websocket (non-blocking)
-      portfolio.requestWSHoldings(context: context, isSubscribe: true);
 
       // Fetch holdings data in the background (non-blocking)
       if (mounted) {
@@ -2678,27 +2714,22 @@ class _CustomizableSplitHomeScreenState
 
     // Replace screen immediately for instant UI response
     _replaceScreenInPanel(ScreenType.positions);
+    
+    // Update subscription manager
+    _updateSubscriptionManagerForPanels();
 
     // Move all async operations to background to prevent blocking UI
     Future.microtask(() async {
       if (!mounted) return;
 
       final portfolio = ref.read(portfolioProvider);
-      final orderProviderRef = ref.read(orderProvider);
-
       portfolio.cancelTimer();
-
-      // Unsubscribe from other real-time data (non-blocking, fire and forget)
-      orderProviderRef.requestWSOrderBook(context: context, isSubscribe: false);
-      portfolio.requestWSHoldings(context: context, isSubscribe: false);
 
       // Fetch positions data in background (non-blocking)
       await portfolio.fetchPositionBook(context, false);
 
       // Subscribe to positions data after fetching (now we have tokens)
       if (mounted) {
-        portfolio.requestWSPosition(context: context, isSubscribe: true);
-
         // Start position update timer
         portfolio.timerfunc();
 

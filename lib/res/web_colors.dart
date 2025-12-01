@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 class WebColors {
   // === PRIMARY BRAND COLORS ===
   static const Color primary = Color(0xFF0037B7);
-  static const Color primaryLight = Color(0xFF2E65F6);
+  static const Color primaryLight = Color(0xFF0037B7);
   static const Color primaryDark = Color(0xFF002A8F);
   
   // === SECONDARY COLORS ===
@@ -89,7 +89,7 @@ class WebColors {
 class WebDarkColors {
   // === PRIMARY BRAND COLORS ===
   static const Color primary = Color(0xFF2E65F6);
-  static const Color primaryLight = Color(0xFF5A8AFF);
+  static const Color primaryLight = Color(0xFF2E65F6);
   static const Color primaryDark = Color(0xFF0037B7);
   
   // === SECONDARY COLORS ===

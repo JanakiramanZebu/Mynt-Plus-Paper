@@ -18,7 +18,6 @@ import '../../../provider/transcation_provider.dart';
 import '../../../provider/fund_provider.dart';
 import '../../../provider/mf_provider.dart';
 import '../../../sharedWidget/payment_loader.dart';
-import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../res/web_colors.dart';
 import '../../../res/global_font_web.dart';
@@ -511,8 +510,8 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
                       Icon(
                         isSuccess ? Icons.check_circle_rounded : Icons.cancel_rounded,
                         color: isSuccess
-                            ? (theme.isDarkMode ? colors.profitDark : colors.profitLight)
-                            : (theme.isDarkMode ? colors.errorDark : colors.errorLight),
+                            ? (theme.isDarkMode ? WebDarkColors.profit : WebColors.profit)
+                            : (theme.isDarkMode ? WebDarkColors.error : WebColors.error),
                         size: 70,
                       ),
                       const SizedBox(height: 16),
@@ -653,22 +652,26 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            TextWidget.subText(
-              text: label,
-              theme: false,
-              color: theme.isDarkMode
-                  ? colors.textSecondaryDark
-                  : colors.textSecondaryLight,
+            Text(
+              label,
+              style: WebTextStyles.sub(
+                isDarkTheme: theme.isDarkMode,
+                color: theme.isDarkMode
+                    ? WebDarkColors.textSecondary
+                    : WebColors.textSecondary,
+              ),
             ),
             const SizedBox(width: 16),
             Expanded(
-              child: TextWidget.subText(
-                text: value,
-                theme: false,
-                color: theme.isDarkMode
-                    ? colors.textPrimaryDark
-                    : colors.textPrimaryLight,
-                align: TextAlign.right,
+              child: Text(
+                value,
+                style: WebTextStyles.sub(
+                  isDarkTheme: theme.isDarkMode,
+                  color: theme.isDarkMode
+                      ? WebDarkColors.textPrimary
+                      : WebColors.textPrimary,
+                ),
+                textAlign: TextAlign.right,
               ),
             ),
           ],
@@ -676,7 +679,7 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
         const SizedBox(height: 8),
         Divider(
           thickness: 0,
-          color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+          color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
         ),
       ],
     );
@@ -1227,7 +1230,7 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
                     children: [
                       Icon(
                         Icons.check_circle_rounded,
-                        color: theme.isDarkMode ? colors.profitDark : colors.profitLight,
+                        color: theme.isDarkMode ? WebDarkColors.profit : WebColors.profit,
                         size: 70,
                       ),
                       const SizedBox(height: 16),
@@ -1413,7 +1416,7 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
                     children: [
                       Icon(
                         Icons.cancel_rounded,
-                        color: theme.isDarkMode ? colors.errorDark : colors.errorLight,
+                        color: theme.isDarkMode ? WebDarkColors.error : WebColors.error,
                         size: 70,
                       ),
                       const SizedBox(height: 16),
@@ -1548,13 +1551,13 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
             // Content
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Available Amount
                     _buildAvailableAmountSection(funds, theme),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 16),
                     
                     // Amount Input
                     _buildAmountInput(fund, theme),
@@ -1562,11 +1565,11 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
                     
                     // Error Messages
                     _buildErrorMessage(fund, theme),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 16),
                     
                     // Bank Selection
                     _buildBankSelection(fund, theme),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 16),
                     
                     // Payment Method
                     _buildPaymentMethods(fund, theme),
@@ -1633,40 +1636,37 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
   }
 
   Widget _buildAvailableAmountSection(dynamic funds, ThemesProvider theme) {
-    return Container(
-      padding: const EdgeInsets.all(0),
-      decoration: BoxDecoration(
-      
-      ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.account_balance_wallet_outlined,
-            color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TextWidget.paraText(
-                  text: "Available",
-                  theme: false,
-                  color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                  fw: 0,
+    return Row(
+      children: [
+        Icon(
+          Icons.account_balance_wallet_outlined,
+          color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Available",
+                style: WebTextStyles.para(
+                  isDarkTheme: theme.isDarkMode,
+                  color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
                 ),
-                const SizedBox(height: 4),
-                TextWidget.titleText(
-                  text: "₹ ${formatIndianCurrency(funds.fundDetailModel?.cash ?? "0.00")}",
-                  theme: theme.isDarkMode,
-                  color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                  fw: 1,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                "₹ ${formatIndianCurrency(funds.fundDetailModel?.cash ?? "0.00")}",
+                style: WebTextStyles.title(
+                  isDarkTheme: theme.isDarkMode,
+                  color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                  fontWeight: WebFonts.semiBold,
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -1675,10 +1675,10 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
       focusNode: fund.focusNode,
       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
       keyboardType: TextInputType.number,
-      style: TextWidget.textStyle(
-        theme: theme.isDarkMode,
-        fontSize: 25,
-        color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+      style: WebTextStyles.custom(
+        fontSize: 20,
+        isDarkTheme: theme.isDarkMode,
+        color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
       ),
       controller: fund.amount,
       onChanged: (value) {
@@ -1687,31 +1687,37 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
       decoration: InputDecoration(
         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         enabledBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: colors.colorBlue),
+          borderSide: BorderSide(
+            color: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
+          ),
           borderRadius: BorderRadius.circular(8),
         ),
         disabledBorder: InputBorder.none,
         focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: colors.colorBlue),
+          borderSide: BorderSide(
+            color: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
+          ),
           borderRadius: BorderRadius.circular(8),
         ),
         border: OutlineInputBorder(
           borderSide: BorderSide.none,
           borderRadius: BorderRadius.circular(8),
         ),
-        fillColor: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
+        fillColor: theme.isDarkMode
+            ? WebDarkColors.surfaceVariant
+            : WebColors.backgroundTertiary,
         filled: true,
         hintText: "0",
-        hintStyle: TextWidget.textStyle(
-          theme: false,
-          color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-          fontSize: 25,
+        hintStyle: WebTextStyles.custom(
+          fontSize: 20,
+          isDarkTheme: theme.isDarkMode,
+          color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
         ),
         prefixIcon: Padding(
           padding: const EdgeInsets.all(12.0),
           child: SvgPicture.asset(
             assets.ruppeIcon,
-            color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+            color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
           ),
         ),
       ),
@@ -1722,18 +1728,20 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
     return Padding(
       padding: const EdgeInsets.only(left: 8),
       child: fund.amount.text.isEmpty || fund.intValue < 50
-          ? TextWidget.captionText(
-              text: fund.funderror,
-              theme: false,
-              color: theme.isDarkMode ? colors.lossDark : colors.lossLight,
-              fw: 0,
+          ? Text(
+              fund.funderror,
+              style: WebTextStyles.caption(
+                isDarkTheme: theme.isDarkMode,
+                color: theme.isDarkMode ? WebDarkColors.loss : WebColors.loss,
+              ),
             )
           : fund.intValue > 5000000
-              ? TextWidget.captionText(
-                  text: fund.maxfunderror,
-                  theme: false,
-                  color: theme.isDarkMode ? colors.lossDark : colors.lossLight,
-                  fw: 0,
+              ? Text(
+                  fund.maxfunderror,
+                  style: WebTextStyles.caption(
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode ? WebDarkColors.loss : WebColors.loss,
+                  ),
                 )
               : const SizedBox.shrink(),
     );
@@ -1754,20 +1762,23 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
             contentPadding: const EdgeInsets.symmetric(horizontal: 16),
             title: Padding(
               padding: const EdgeInsets.only(bottom: 4),
-              child: TextWidget.subText(
-                text: fund.bankname,
-                theme: theme.isDarkMode,
-                color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                fw: 1,
+              child: Text(
+                fund.bankname,
+                style: WebTextStyles.sub(
+                  isDarkTheme: theme.isDarkMode,
+                  color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                  fontWeight: WebFonts.semiBold,
+                ),
               ),
             ),
             subtitle: Padding(
               padding: const EdgeInsets.only(top: 4),
-              child: TextWidget.paraText(
-                text: hideAccountNumber(fund.accno),
-                theme: theme.isDarkMode,
-                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                fw: 0,
+              child: Text(
+                hideAccountNumber(fund.accno),
+                style: WebTextStyles.para(
+                  isDarkTheme: theme.isDarkMode,
+                  color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
+                ),
               ),
             ),
             trailing: Material(
@@ -1776,8 +1787,12 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
               clipBehavior: Clip.hardEdge,
               child: InkWell(
                 customBorder: const CircleBorder(),
-                splashColor: theme.isDarkMode ? colors.splashColorDark : colors.splashColorLight,
-                highlightColor: theme.isDarkMode ? colors.highlightDark : colors.highlightLight,
+                splashColor: theme.isDarkMode
+                    ? Colors.white.withOpacity(.15)
+                    : Colors.black.withOpacity(.15),
+                highlightColor: theme.isDarkMode
+                    ? Colors.white.withOpacity(.08)
+                    : Colors.black.withOpacity(.08),
                 onTap: () async {
                   await Future.delayed(const Duration(milliseconds: 150));
                   fund.focusNode.unfocus();
@@ -1790,7 +1805,9 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
                     child: Icon(
                       Icons.more_vert,
                       size: 22,
-                      color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                      color: theme.isDarkMode
+                          ? WebDarkColors.textSecondary
+                          : WebColors.textSecondary,
                     ),
                   ),
                 ),
@@ -1807,11 +1824,13 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        TextWidget.subText(
-          text: "Payment method",
-          theme: false,
-          color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-          fw: 2,
+        Text(
+          "Payment method",
+          style: WebTextStyles.sub(
+            isDarkTheme: theme.isDarkMode,
+            color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+            fontWeight: WebFonts.bold,
+          ),
         ),
         const SizedBox(height: 16),
         ListView.separated(
@@ -1863,9 +1882,11 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
                       SvgPicture.asset(
                         '${fund.addfundIcons[index]['image']}',
                         width: 40,
-                        color: index == 2 ? (theme.isDarkMode
-                            ? colors.textSecondaryDark
-                            : colors.textSecondaryLight) : null,
+                        color: index == 2
+                            ? (theme.isDarkMode
+                                ? WebDarkColors.textSecondary
+                                : WebColors.textSecondary)
+                            : null,
                       ),
                       const SizedBox(width: 20),
                       Expanded(
@@ -1875,32 +1896,36 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                TextWidget.subText(
-                                  text: '${fund.defaultUpiapps[index]['name']}',
-                                  theme: theme.isDarkMode,
-                                  color: theme.isDarkMode
-                                      ? colors.textPrimaryDark
-                                      : colors.textPrimaryLight,
-                                  fw: 0,
+                                Text(
+                                  '${fund.defaultUpiapps[index]['name']}',
+                                  style: WebTextStyles.sub(
+                                    isDarkTheme: theme.isDarkMode,
+                                    color: theme.isDarkMode
+                                        ? WebDarkColors.textPrimary
+                                        : WebColors.textPrimary,
+                                  ),
                                 ),
                                 SvgPicture.asset(
                                   assets.leftArrow,
                                   width: 16,
                                   height: 16,
                                   color: theme.isDarkMode
-                                      ? colors.textSecondaryDark
-                                      : colors.textSecondaryLight,
+                                      ? WebDarkColors.textSecondary
+                                      : WebColors.textSecondary,
                                 )
                               ],
                             ),
                             if (isUpiPayment && isAmountAbove1Lakh)
                               Padding(
                                 padding: const EdgeInsets.only(top: 8),
-                                child: TextWidget.captionText(
-                                  text: "Not available for amount above ₹1,00,000",
-                                  theme: false,
-                                  color: theme.isDarkMode ? colors.lossDark : colors.lossLight,
-                                  fw: 0,
+                                child: Text(
+                                  "Not available for amount above ₹1,00,000",
+                                  style: WebTextStyles.caption(
+                                    isDarkTheme: theme.isDarkMode,
+                                    color: theme.isDarkMode
+                                        ? WebDarkColors.loss
+                                        : WebColors.loss,
+                                  ),
                                 ),
                               ),
                           ],

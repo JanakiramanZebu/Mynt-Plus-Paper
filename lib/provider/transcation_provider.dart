@@ -1,8 +1,10 @@
 // ignore_for_file: use_build_context_synchronously, deprecated_member_use
 //import 'dart:developer';
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
 import 'package:mynt_plus/provider/iop_provider.dart';
 import 'package:number_to_words/number_to_words.dart';
 import 'package:public_ip_address/public_ip_address.dart';
@@ -10,6 +12,7 @@ import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../api/core/api_export.dart';
 import '../locator/locator.dart';
+import '../locator/preference.dart';
 import '../models/fund_model_testing_copy/fund_direct_payment_model.dart';
 import '../models/fund_model_testing_copy/fund_pay.model.dart';
 import '../models/fund_model_testing_copy/fund_payment_status_model.dart';
@@ -214,12 +217,54 @@ class TranctionProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
+  bool _isValidIp(String ip) {
+    return ip.isNotEmpty && 
+           !ip.contains(RegExp(r'Exception|error|ClientException', caseSensitive: false)) &&
+           RegExp(r'^\d+\.\d+\.\d+\.\d+$').hasMatch(ip);
+  }
+
+  Future<String?> _fetchIpFromService(String url) async {
+    try {
+      final response = await http.get(Uri.parse(url)).timeout(const Duration(seconds: 5));
+      if (response.statusCode == 200) {
+        final ip = response.body.trim();
+        return _isValidIp(ip) ? ip : null;
+      }
+    } catch (_) {}
+    return null;
+  }
+
   ip() async {
     try {
       toggleLoadingOn(true);
-      String ip = await IpAddress().getIp();
-      _ipAddress = ip;
-      return _ipAddress;
+      
+      // Mobile: Simple method
+      if (!kIsWeb) {
+        try {
+          final ip = (await IpAddress().getIp()).trim();
+          return _ipAddress = ip;
+        } catch (e) {
+          return _ipAddress = "";
+        }
+      }
+      
+      // Web: Optimized method with fallbacks
+      try {
+        final ip = (await IpAddress().getIp()).trim();
+        if (_isValidIp(ip)) {
+          return _ipAddress = ip;
+        }
+      } catch (_) {}
+      
+      // Try fallback services (web only)
+      final services = ['https://ipv4.seeip.org', 'https://api.ipify.org?format=text', 
+                       'https://icanhazip.com', 'https://ifconfig.me/ip'];
+      for (final url in services) {
+        final ip = await _fetchIpFromService(url);
+        if (ip != null) return _ipAddress = ip;
+      }
+      
+      return _ipAddress = "";
     } finally {
       toggleLoadingOn(false);
     }
@@ -894,7 +939,25 @@ class TranctionProvider extends DefaultChangeNotifier {
       String ip, String amount, String segment, BuildContext context) async {
     try {
       togglefundLoading(true);
-      _paymentWithdraw = await api.getpayemntwithdraw(ip, amount, segment);
+      
+      // Get valid IP (retry if invalid)
+      String validIp = _isValidIp(ip) ? ip : (await this.ip() ?? "");
+      
+      // Use textValue as fallback if segment is empty
+      String validSegment = segment.isNotEmpty ? segment : _textValue;
+      
+      // Construct and print payload/response
+      final prefs = locator<Preferences>();
+      final payload = {
+        "accountcode": "${prefs.clientId}",
+        "ip": validIp,
+        "amount": amount,
+        "company_code": validSegment,
+      };
+      
+      _paymentWithdraw = await api.getpayemntwithdraw(validIp, amount, validSegment);
+      print("WITHDRAW - Payload: ${jsonEncode(payload)} | Response: ${jsonEncode(_paymentWithdraw?.toJson() ?? {})}");
+      
       if (_paymentWithdraw!.msg == "Sucess") {
         ScaffoldMessenger.of(context).showSnackBar(
             successMessage(context, 'Withdrawal request sent successfully'));
@@ -906,7 +969,9 @@ class TranctionProvider extends DefaultChangeNotifier {
             context, 'Withdrawal failed: ${_paymentWithdraw!.msg}'));
       }
     } catch (e) {
+      print("========== WITHDRAW ERROR ==========");
       print("Withdrawal error: ${e.toString()}");
+      print("===================================");
       ref
           .read(indexListProvider)
           .logError
