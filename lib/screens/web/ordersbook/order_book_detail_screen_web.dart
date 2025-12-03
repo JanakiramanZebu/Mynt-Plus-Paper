@@ -808,6 +808,18 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
   }
 
   OrderScreenArgs _createOrderArgs(OrderBookModel orderData) {
+    // Get LTP, fallback to close price if numeric, otherwise use 0.00
+    String ltpValue = "0.00";
+    if (orderData.ltp != null && orderData.ltp.toString() != "null") {
+      ltpValue = orderData.ltp.toString();
+    } else if (orderData.c != null && orderData.c.toString() != "null") {
+      // Only use 'c' if it's a valid number, not "C"
+      final closePrice = double.tryParse(orderData.c.toString());
+      if (closePrice != null) {
+        ltpValue = closePrice.toString();
+      }
+    }
+
     return OrderScreenArgs(
       exchange: orderData.exch.toString(),
       tSym: orderData.tsym.toString(),
@@ -815,7 +827,7 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
       token: orderData.token.toString(),
       transType: orderData.trantype == 'B' ? true : false,
       lotSize: orderData.ls,
-      ltp: "${orderData.ltp ?? orderData.c ?? 0.00}",
+      ltp: ltpValue,
       perChange: orderData.change ?? "0.00",
       orderTpye: '',
       holdQty: '',

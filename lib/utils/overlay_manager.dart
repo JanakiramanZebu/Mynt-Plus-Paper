@@ -8,8 +8,13 @@ class OverlayManager {
   // Store all active overlay entries
   static final List<OverlayEntry> _activeOverlays = [];
 
-  /// Register a new overlay entry
+  /// Register a new overlay entry and close any existing overlays
+  /// This ensures only ONE order dialog is visible at a time
   static void register(OverlayEntry entry) {
+    // Close all existing overlays before adding the new one
+    closeAllExisting();
+
+    // Add the new overlay
     _activeOverlays.add(entry);
   }
 
@@ -18,8 +23,8 @@ class OverlayManager {
     _activeOverlays.remove(entry);
   }
 
-  /// Close all open overlays (used for session expiry, account switch, logout)
-  static void closeAll() {
+  /// Close all existing overlays (internal method)
+  static void closeAllExisting() {
     // Create a copy of the list to avoid concurrent modification
     final overlaysCopy = List<OverlayEntry>.from(_activeOverlays);
 
@@ -35,6 +40,11 @@ class OverlayManager {
 
     // Clear the list
     _activeOverlays.clear();
+  }
+
+  /// Close all open overlays (used for session expiry, account switch, logout)
+  static void closeAll() {
+    closeAllExisting();
   }
 
   /// Check if there are any active overlays
