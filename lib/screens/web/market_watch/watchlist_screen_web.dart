@@ -16,7 +16,7 @@ import '../../../res/web_colors.dart';
 import '../../../res/global_font_web.dart';
 import '../../../sharedWidget/list_divider.dart';
 import '../../../sharedWidget/cust_text_formfield.dart';
-import '../../Mobile/market_watch/my_stocks/stocks_screen.dart';
+import 'my_stocks/stocks_screen_web.dart';
 import 'watchlist_card_web.dart';
 import 'search_dialog_web.dart';
 import 'edit_scrip_web.dart';
@@ -467,7 +467,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
   Widget _buildPageContent(WidgetRef ref, ThemesProvider theme, String pageName,
       List scrips, String sortBy) {
     if (pageName == 'My Stocks') {
-      return const StocksScreen();
+      return const StocksScreenWeb();
     }
 
     if (scrips.isEmpty) {

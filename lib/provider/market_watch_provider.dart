@@ -1553,10 +1553,6 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           }
         }
 
-        if (_wlName.isEmpty || !_marketWatchlist!.values!.contains(_wlName)) {
-          _wlName = _marketWatchlist!.values!.first;
-        }
-
         // Create a new list to build the final watchlist order
         // Filter out any predefined watchlists that might be in the API response
         final updatedValues = _marketWatchlist!.values!
@@ -1575,6 +1571,19 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
         // Now add predefined watchlists at the end
         updatedValues.addAll(_preDefWL);
+
+        // IMPORTANT: After sorting, update the page index to match the new position
+        // Find the current watchlist's new index after sorting
+        if (_wlName.isNotEmpty && updatedValues.contains(_wlName)) {
+          final newIndex = updatedValues.indexOf(_wlName);
+          _currentWatchlistPageIndex = newIndex;
+          print("Updated page index after sort: $newIndex for watchlist: $_wlName");
+        } else {
+          // If current watchlist doesn't exist, default to first watchlist
+          _wlName = updatedValues.first;
+          _currentWatchlistPageIndex = 0;
+          print("Reset to first watchlist: $_wlName at index 0");
+        }
 
         // Create a new MarketWatchlist object to trigger proper change detection
         _marketWatchlist = MarketWatchlist(
@@ -1875,7 +1884,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         ConstantName.sessCheck = true;
         print('qqq if si');
       } else {
-        print('qqq else');
+        // print('qqq else');
         _scripInfoModel = await api.getScripInfo(token, exch);
 
         if (_scripInfoModel!.stat == "Ok") {
@@ -1925,11 +1934,11 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       if (storeQuotes.isNotEmpty &&
           storeQuotes.containsKey(token) &&
           storeQuotes[token]?['q'] != null) {
-        print('qqq sq if');
+        // print('qqq sq if');
         ConstantName.sessCheck = true;
         _getQuotes = storeQuotes[token]?['q'];
       } else {
-        print('qqq qs else');
+        // print('qqq qs else');
         _getQuotes = await api.getScripQuote(token, exch);
 
         if (_getQuotes.stat == "Ok") {
@@ -2016,11 +2025,11 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       if (storeQuotes.isNotEmpty &&
           storeQuotes.containsKey(token) &&
           storeQuotes[token]?['q'] != null) {
-        print('qqq sq if');
+        // print('qqq sq if');
         ConstantName.sessCheck = true;
         _getQuotes = storeQuotes[token]?['q'];
       } else {
-        print('qqq qs else');
+        // print('qqq qs else');
         _getQuotes = await api.getScripQuote(token, exch);
 
         if (_getQuotes.stat == "Ok") {
@@ -3228,6 +3237,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
     // Set as current watchlist
     _wlName = wlName;
+    // IMPORTANT: Mark as custom watchlist (not predefined)
+    _isPreDefWLs = "No";
 
     // Initialize empty scrip list for this watchlist
     _scrips = [];
@@ -4403,6 +4414,62 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       String oldName, String newName, BuildContext context) async {
     try {
       toggleLoadingOn(true);
+
+      // Check if this is a pending watchlist (created locally but not synced)
+      if (_pendingWatchlists.contains(oldName)) {
+        // Handle pending watchlist rename locally without API call
+        _pendingWatchlists.remove(oldName);
+        _pendingWatchlists.add(newName);
+        await _savePendingWatchlists();
+
+        // Update cached data key from old name to new name
+        if (_marketWatchScripData.containsKey(oldName)) {
+          String cachedData = _marketWatchScripData[oldName];
+          _marketWatchScripData.remove(oldName);
+          _marketWatchScripData[newName] = cachedData;
+        }
+
+        // Update current watchlist name if it was the renamed one
+        if (_wlName == oldName) {
+          _wlName = newName;
+        }
+
+        // Update the marketWatchlist values
+        if (_marketWatchlist != null && _marketWatchlist!.values != null) {
+          final updatedValues = _marketWatchlist!.values!
+              .map((wl) => wl == oldName ? newName : wl)
+              .toList();
+
+          // Re-sort custom watchlists
+          final customWLs = updatedValues.where((wl) => !_preDefWL.contains(wl)).toList();
+          customWLs.sort((a, b) => a.compareTo(b));
+          final finalValues = [...customWLs, ..._preDefWL];
+
+          _marketWatchlist = MarketWatchlist(
+            requestTime: _marketWatchlist!.requestTime,
+            stat: _marketWatchlist!.stat,
+            values: finalValues,
+            emsg: _marketWatchlist!.emsg,
+          );
+
+          // Update page index to match new sorted position
+          if (_wlName == newName) {
+            final newIndex = finalValues.indexOf(newName);
+            if (newIndex != -1) {
+              setCurrentWatchlistPageIndex(newIndex);
+            }
+          }
+        }
+
+        toggleLoadingOn(false);
+        Navigator.pop(context);
+        successMessage(context,
+            "The name of the watchlist has been successfully changed.");
+        notifyListeners();
+        return;
+      }
+
+      // Normal flow for synced watchlists
       _watchlistRenameModel = await api.getWatchListRename(oldName, newName);
       if (_watchlistRenameModel!.stat == "Ok") {
         // Update cached data key from old name to new name

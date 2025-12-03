@@ -2133,8 +2133,8 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                         return Dialog(
                                                                           backgroundColor: Colors.transparent,
                                                                           child: Container(
-                                                                            width: 500,
-                                                                            height: 520,
+                                                                            width: 800,
+                                                                            height: 700,
                                                                             decoration: BoxDecoration(
                                                                               color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
                                                                               borderRadius: BorderRadius.circular(5),

@@ -1131,15 +1131,15 @@ class OrderProvider extends DefaultChangeNotifier {
                   element.status == "COMPLETE" ||
                   element.status == "INVALID_STATUS_TYPE") {
                 _executedOrder!.add(element);
-                debugPrint("  -> Added to _executedOrder (Status: ${element.status})");
+                // debugPrint("  -> Added to _executedOrder (Status: ${element.status})");
               } else {
                 _openOrder!.add(element);
-                debugPrint("  -> Added to _openOrder (Status: ${element.status})");
+                // debugPrint("  -> Added to _openOrder (Status: ${element.status})");
               }
               _allOrder!.add(element);
             } else {
-              debugPrint("Order ${element.norenordno}: Stat=${element.stat}, Error=${element.emsg}");
-              debugPrint("  -> NOT added to any list (stat != Ok)");
+              // debugPrint("Order ${element.norenordno}: Stat=${element.stat}, Error=${element.emsg}");
+              // debugPrint("  -> NOT added to any list (stat != Ok)");
             }
           }
 
@@ -3142,10 +3142,10 @@ class OrderProvider extends DefaultChangeNotifier {
   // Method to update basket order statuses from order book data
   void updateBasketOrderStatus() async {
     try {
-      debugPrint("=== UPDATING BASKET ORDER STATUS ===");
-      debugPrint("Order Book Model Count: ${_orderBookModel?.length ?? 0}");
-      debugPrint("Executed Order Count: ${_executedOrder?.length ?? 0}");
-      debugPrint("Open Order Count: ${_openOrder?.length ?? 0}");
+      // debugPrint("=== UPDATING BASKET ORDER STATUS ===");
+      // debugPrint("Order Book Model Count: ${_orderBookModel?.length ?? 0}");
+      // debugPrint("Executed Order Count: ${_executedOrder?.length ?? 0}");
+      // debugPrint("Open Order Count: ${_openOrder?.length ?? 0}");
       
       // Get all baskets that need processing (those with tracking data OR current basket with item orders)
       Set<String> basketsToProcess = Set<String>.from(_basketOrderIds.keys);

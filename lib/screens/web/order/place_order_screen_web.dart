@@ -503,7 +503,13 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
             : ordPrice;
       } else {
         // Fallback to LTP from orderArg when websocket data is not available
-        ordPrice = widget.orderArg.ltp ?? "0.00";
+        // Handle both null and "null" string
+        final rawLtp = widget.orderArg.ltp;
+        if (rawLtp == null || rawLtp == "null" || rawLtp == "0" || rawLtp == "0.00" || rawLtp.trim().isEmpty) {
+          ordPrice = "0.00";
+        } else {
+          ordPrice = rawLtp;
+        }
         priceCtrl.text = priceType == "Market" || priceType == "SL MKT"
             ? "Market"
             : ordPrice;
@@ -537,10 +543,18 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
       _afterMarketOrder = orderRawValue['amo'] == "Yes" ? true : false;
       // Use orderRawValue price if available and not "0", otherwise fallback to LTP
       final rawPrice = orderRawValue['prc'];
-      final fallbackPrice =
-          (rawPrice == null || rawPrice == "0" || rawPrice == "0.00")
-              ? (widget.orderArg.ltp ?? "0.00")
-              : rawPrice;
+      String fallbackPrice;
+      if (rawPrice == null || rawPrice == "0" || rawPrice == "0.00" || rawPrice == "null" || rawPrice.toString().trim().isEmpty) {
+        // Fallback to LTP, but sanitize it too
+        final ltpValue = widget.orderArg.ltp;
+        if (ltpValue == null || ltpValue == "null" || ltpValue == "0" || ltpValue == "0.00" || ltpValue.trim().isEmpty) {
+          fallbackPrice = "0.00";
+        } else {
+          fallbackPrice = ltpValue;
+        }
+      } else {
+        fallbackPrice = rawPrice;
+      }
 
       priceCtrl.text = priceType == "Market" || priceType == "SL MKT"
           ? "Market"

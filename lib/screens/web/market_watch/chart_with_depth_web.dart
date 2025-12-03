@@ -381,39 +381,38 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
                               ),
                             ),
                           ],
-                          // Depth toggle icon
-                          const SizedBox(width: 12),        
-                          if (hasOptions)
-                            _buildSegmentedControl(theme),
-                          // Depth toggle chevron icon - with proper spacing
+                          // Chart/Options toggle - only show if options available
                           if (hasOptions) ...[
                             const SizedBox(width: 12),
-                            Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                customBorder: const CircleBorder(),
-                                splashColor: theme.isDarkMode
-                                    ? Colors.white.withOpacity(0.15)
-                                    : Colors.black.withOpacity(0.15),
-                                highlightColor: theme.isDarkMode
-                                    ? Colors.white.withOpacity(0.08)
-                                    : Colors.black.withOpacity(0.08),
-                                onTap: () {
-                                  ref.read(marketWatchProvider).setIsDepthVisibleWeb(!mw.isDepthVisible);
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Icon(
-                                    mw.isDepthVisible ? Icons.view_sidebar : Icons.view_sidebar_outlined,
-                                    size: 20,
-                                    color: mw.isDepthVisible
-                                        ? (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary)
-                                        : (theme.isDarkMode ? WebDarkColors.iconSecondary : WebColors.iconSecondary),
-                                  ),
+                            _buildSegmentedControl(theme),
+                          ],
+                          // Depth toggle icon - ALWAYS show (not conditional on hasOptions)
+                          const SizedBox(width: 12),
+                          Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              customBorder: const CircleBorder(),
+                              splashColor: theme.isDarkMode
+                                  ? Colors.white.withOpacity(0.15)
+                                  : Colors.black.withOpacity(0.15),
+                              highlightColor: theme.isDarkMode
+                                  ? Colors.white.withOpacity(0.08)
+                                  : Colors.black.withOpacity(0.08),
+                              onTap: () {
+                                ref.read(marketWatchProvider).setIsDepthVisibleWeb(!mw.isDepthVisible);
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Icon(
+                                  mw.isDepthVisible ? Icons.view_sidebar : Icons.view_sidebar_outlined,
+                                  size: 20,
+                                  color: mw.isDepthVisible
+                                      ? (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary)
+                                      : (theme.isDarkMode ? WebDarkColors.iconSecondary : WebColors.iconSecondary),
                                 ),
                               ),
                             ),
-                          ],
+                          ),
                         ],
                       ),
                     ),

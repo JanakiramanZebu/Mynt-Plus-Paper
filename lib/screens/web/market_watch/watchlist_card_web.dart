@@ -1796,6 +1796,12 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
 
       final currentToken = widget.watchListData['token']?.toString() ?? "";
       final currentExch = widget.watchListData['exch']?.toString() ?? "";
+      final currentTsym = widget.watchListData['tsym']?.toString() ?? "";
+
+      print('==================== WATCHLIST ORDER DEBUG ====================');
+      print('Symbol: $currentTsym | Token: $currentToken | Exchange: $currentExch');
+      print('Transaction Type: ${transType ? "BUY" : "SELL"}');
+      print('Watchlist: ${ref.read(marketWatchProvider).wlName}');
 
       // Fetch scrip info first, exactly like reference implementation
       await ref.read(marketWatchProvider).fetchScripInfo(
@@ -1813,10 +1819,12 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
 
       // Get fresh quote data after fetchScripQuote
       final freshQuoteData = ref.read(marketWatchProvider).getQuotes;
-      
+      print('Fresh Quote Data: lp=${freshQuoteData?.lp ?? "NULL"}, c=${freshQuoteData?.c ?? "NULL"}, pc=${freshQuoteData?.pc ?? "NULL"}');
+
       // Also check websocket data for the current token as it has the most up-to-date LTP
       final wsProvider = ref.read(websocketProvider);
       final socketData = wsProvider.socketDatas[currentToken];
+      print('Websocket Data: ${socketData != null ? "lp=${socketData['lp']}, pc=${socketData['pc']}" : "NO WEBSOCKET DATA"}');
       
       // Priority: Websocket data > Fresh quote data > Watchlist data > Stale depthData
       String? ltp;
@@ -1841,35 +1849,52 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
         if (isValidPrice(wsLtp)) {
           ltp = wsLtp;
           perChange = wsPc;
+          print('✓ Using WEBSOCKET data: ltp=$ltp');
+        } else {
+          print('✗ Websocket data invalid: ltp=$wsLtp');
         }
+      } else {
+        print('✗ No websocket data available');
       }
-      
+
       // Fallback to fresh quote data
       if (!isValidPrice(ltp) && freshQuoteData != null) {
         final quoteLtp = freshQuoteData.lp ?? freshQuoteData.c;
         if (isValidPrice(quoteLtp)) {
           ltp = quoteLtp;
           perChange = freshQuoteData.pc;
+          print('✓ Using QUOTE data: ltp=$ltp');
+        } else {
+          print('✗ Quote data invalid: ltp=$quoteLtp');
         }
       }
-      
+
       // Fallback to watchlist data
       if (!isValidPrice(ltp)) {
         final wlLtp = widget.watchListData['ltp']?.toString();
         if (isValidPrice(wlLtp)) {
           ltp = wlLtp;
           perChange = widget.watchListData['perChange']?.toString();
+          print('✓ Using WATCHLIST data: ltp=$ltp');
+        } else {
+          print('✗ Watchlist data invalid: ltp=$wlLtp');
         }
       }
-      
+
       // Final fallback to depthData (stale but better than nothing)
       if (!isValidPrice(ltp)) {
         final depthLtp = depthData.lp ?? depthData.c;
         if (isValidPrice(depthLtp)) {
           ltp = depthLtp;
           perChange = depthData.pc;
+          print('✓ Using DEPTH data: ltp=$ltp');
+        } else {
+          print('✗ Depth data invalid: ltp=$depthLtp');
         }
       }
+
+      print('Watchlist Data Raw: ${widget.watchListData['ltp']}');
+      print('Depth Data Raw: lp=${depthData.lp}, c=${depthData.c}');
 
       // Use exact lot size logic from reference implementation
       final isBasketMode = widget.watchListData['isBasket']?.toString() ?? "";
@@ -1880,6 +1905,26 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
       // Use safe parsing for price values with fresh data
       final safeLtp = _safeParseNumeric(ltp, "0.00");
       final safePerChange = _safeParseNumeric(perChange, "0.00");
+
+      print('Final Values: safeLtp=$safeLtp, safePerChange=$safePerChange');
+      print('===============================================================');
+
+      // If we still don't have valid LTP data after all fallbacks, show error
+      if (safeLtp == "0.00" || safeLtp.isEmpty) {
+        print('⚠️ ERROR: No valid price data - blocking order screen');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Price data not available yet. Please wait a moment and try again.'),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+        return;
+      }
+
+      print('✓ Opening order screen with LTP: $safeLtp');
 
       OrderScreenArgs orderArgs = OrderScreenArgs(
           exchange: widget.watchListData['exch']?.toString() ?? "",

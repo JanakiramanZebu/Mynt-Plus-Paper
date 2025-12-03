@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:data_table_2/data_table_2.dart';
 
 import '../../../../models/marketwatch_model/get_quotes.dart';
 import '../../../../models/order_book_model/order_book_model.dart';
@@ -24,6 +25,15 @@ class FutureScreenWeb extends ConsumerStatefulWidget {
 class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
   String? _hoveredToken;
   bool _isNavigating = false;
+  final ScrollController _horizontalScrollController = ScrollController();
+  final ScrollController _verticalScrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _horizontalScrollController.dispose();
+    _verticalScrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,67 +59,109 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
       builder: (context, snapshot) {
         final socketDatas = snapshot.data ?? {};
 
-        return Padding(
-          padding:
-              const EdgeInsets.only(left: 16, right: 16, top: 0, bottom: 16),
-          child: SingleChildScrollView(
-            child: Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: theme.isDarkMode
-                    ? WebDarkColors.cardBackground
-                    : WebColors.cardBackground,
-                border: Border.all(
-                  color: theme.isDarkMode
-                      ? WebDarkColors.border
-                      : WebColors.border,
-                  width: 1,
-                ),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: DataTable(
-                columnSpacing: 20,
-                horizontalMargin: 16,
-                showCheckboxColumn: false,
-                headingRowHeight: 40,
-                dataRowMinHeight: 40,
-                dataRowMaxHeight: 40,
-                headingRowColor: WidgetStateProperty.all(
-                  theme.isDarkMode
-                      ? WebDarkColors.primary.withOpacity(0.1)
-                      : WebColors.primary.withOpacity(0.05),
-                ),
-                border: TableBorder(
-                  horizontalInside: BorderSide(
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            // Calculate available height for the table
+            final screenHeight = MediaQuery.of(context).size.height;
+            final padding = 32.0; // Top and bottom padding
+            final maxHeight = screenHeight * 0.75;
+            final calculatedHeight = (screenHeight - padding > maxHeight
+                ? maxHeight
+                : (screenHeight - padding > 400 ? screenHeight - padding : 400.0));
+
+            return Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Container(
+                height: calculatedHeight.toDouble(),
+                decoration: BoxDecoration(
+                  border: Border.all(
                     color: theme.isDarkMode
-                        ? WebDarkColors.border.withOpacity(0.5)
-                        : WebColors.border.withOpacity(0.5),
-                    width: 0.5,
-                  ),
-                  bottom: BorderSide(
-                    color: theme.isDarkMode
-                        ? WebDarkColors.border
-                        : WebColors.border,
+                        ? WebDarkColors.divider
+                        : WebColors.divider,
                     width: 1,
                   ),
+                  borderRadius: BorderRadius.circular(4),
+                  color: theme.isDarkMode
+                      ? WebDarkColors.background
+                      : Colors.white,
                 ),
-                dataRowColor: WidgetStateProperty.resolveWith<Color?>(
-                  (Set<WidgetState> states) {
-                    if (states.contains(WidgetState.hovered)) {
-                      return (theme.isDarkMode
-                              ? WebDarkColors.primary
-                              : WebColors.primary)
-                          .withOpacity(0.08);
-                    }
-                    return null;
-                  },
-                ),
-                columns: [
-                  DataColumn(
-                    label: Expanded(
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
+                child: Theme(
+                  data: Theme.of(context).copyWith(
+                    scrollbarTheme: ScrollbarThemeData(
+                      thumbVisibility: MaterialStateProperty.all(true),
+                      trackVisibility: MaterialStateProperty.all(true),
+                      thickness: MaterialStateProperty.all(6.0),
+                      crossAxisMargin: 0.0,
+                      mainAxisMargin: 0.0,
+                      radius: const Radius.circular(3),
+                      thumbColor: MaterialStateProperty.resolveWith((states) {
+                        return theme.isDarkMode 
+                            ? WebDarkColors.textSecondary.withOpacity(0.3)
+                            : WebColors.textSecondary.withOpacity(0.3);
+                      }),
+                      trackColor: MaterialStateProperty.resolveWith((states) {
+                        return theme.isDarkMode 
+                            ? WebDarkColors.divider.withOpacity(0.1)
+                            : WebColors.divider.withOpacity(0.1);
+                      }),
+                      trackBorderColor: MaterialStateProperty.all(Colors.transparent),
+                      minThumbLength: 48.0,
+                    ),
+                  ),
+                  child: DataTable2(
+                    columnSpacing: 12,
+                    horizontalMargin: 12,
+                    minWidth: 800,
+                    fixedLeftColumns: 1, // Fix the first column (Symbol)
+                    fixedColumnsColor: theme.isDarkMode 
+                        ? WebDarkColors.backgroundSecondary.withOpacity(0.8)
+                        : WebColors.backgroundSecondary.withOpacity(0.8),
+                    showBottomBorder: true,
+                    horizontalScrollController: _horizontalScrollController,
+                    scrollController: _verticalScrollController,
+                    showCheckboxColumn: false,
+                    headingRowColor: MaterialStateProperty.all(
+                      theme.isDarkMode
+                          ? WebDarkColors.primary
+                          : WebColors.primary.withOpacity(0.05),
+                    ),
+                    headingTextStyle: WebTextStyles.tableHeader(
+                      isDarkTheme: theme.isDarkMode,
+                      color: theme.isDarkMode
+                          ? WebDarkColors.textPrimary
+                          : WebColors.textPrimary,
+                    ),
+                    dataTextStyle: WebTextStyles.custom(
+                      fontSize: 13,
+                      isDarkTheme: theme.isDarkMode,
+                      color: theme.isDarkMode
+                          ? WebDarkColors.textPrimary
+                          : WebColors.textPrimary,
+                      fontWeight: WebFonts.medium,
+                    ),
+                    border: TableBorder(
+                      top: BorderSide(
+                        color: theme.isDarkMode
+                            ? WebDarkColors.divider
+                            : WebColors.divider,
+                        width: 1,
+                      ),
+                      bottom: BorderSide(
+                        color: theme.isDarkMode
+                            ? WebDarkColors.divider
+                            : WebColors.divider,
+                        width: 1,
+                      ),
+                      horizontalInside: BorderSide(
+                        color: theme.isDarkMode
+                            ? WebDarkColors.divider
+                            : WebColors.divider,
+                        width: 1,
+                      ),
+                    ),
+                    columns: [
+                      DataColumn2(
+                        label: Text(
                           'Symbol',
                           style: WebTextStyles.tableHeader(
                             isDarkTheme: theme.isDarkMode,
@@ -118,14 +170,11 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
                                 : WebColors.textPrimary,
                           ),
                         ),
+                        size: ColumnSize.L,
+                        fixedWidth: 300.0,
                       ),
-                    ),
-                  ),
-                  DataColumn(
-                    label: Expanded(
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        child: Text(
+                      DataColumn2(
+                        label: Text(
                           'LTP',
                           style: WebTextStyles.tableHeader(
                             isDarkTheme: theme.isDarkMode,
@@ -134,14 +183,10 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
                                 : WebColors.textPrimary,
                           ),
                         ),
+                        size: ColumnSize.S,
                       ),
-                    ),
-                  ),
-                  DataColumn(
-                    label: Expanded(
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        child: Text(
+                      DataColumn2(
+                        label: Text(
                           '%Change',
                           style: WebTextStyles.tableHeader(
                             isDarkTheme: theme.isDarkMode,
@@ -150,11 +195,12 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
                                 : WebColors.textPrimary,
                           ),
                         ),
+                        size: ColumnSize.S,
                       ),
-                    ),
-                  ),
-                ],
-                rows: future.fut!.map((displayData) {
+                    ],
+                    rows: future.fut!.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final displayData = entry.value;
                   // Update with socket data if available
                   var updatedData = displayData;
                   final tokenKey = displayData.token?.toString();
@@ -207,139 +253,141 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
                     }
                   }
 
-                  final token = updatedData.token?.toString() ?? '';
+                      final token = updatedData.token?.toString() ?? '';
+                      final uniqueId = '$token$index';
 
-                  return DataRow(
-                    onSelectChanged: (bool? selected) {
-                      // Enable hover detection
-                    },
-                    cells: [
-                      // Symbol cell with hover actions
-                      _buildSymbolCellWithHover(updatedData, theme, future),
-                      // LTP cell with hover
-                      _buildCellWithHover(
-                          updatedData,
-                          theme,
-                          token,
+                      return DataRow2(
+                        onTap: () {
+                          // Row tap handler if needed
+                        },
+                        color: MaterialStateProperty.resolveWith<Color>((states) {
+                          if (states.contains(MaterialState.hovered) || _hoveredToken == uniqueId) {
+                            return theme.isDarkMode
+                                ? WebDarkColors.primary.withOpacity(0.06)
+                                : WebColors.primary.withOpacity(0.10);
+                          }
+                          return Colors.transparent;
+                        }),
+                        cells: [
+                          // Symbol cell with hover actions
                           DataCell(
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: Text(
-                                updatedData.ltp != null &&
-                                        updatedData.ltp != "null"
-                                    ? "${updatedData.ltp}"
-                                    : updatedData.close != null &&
-                                            updatedData.close != "null"
-                                        ? "${updatedData.close}"
-                                        : '0.00',
-                                style: WebTextStyles.tableDataCompact(
-                                  isDarkTheme: theme.isDarkMode,
-                                  color: _getPriceColor(updatedData, theme),
-                                ).copyWith(fontWeight: FontWeight.w600),
+                            MouseRegion(
+                              onEnter: (_) => setState(() => _hoveredToken = uniqueId),
+                              onExit: (_) => setState(() => _hoveredToken = null),
+                              child: SizedBox.expand(
+                                child: Container(
+                                  alignment: Alignment.centerLeft,
+                                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
+                                  child: _buildSymbolCellContent(updatedData, theme, future, uniqueId),
+                                ),
                               ),
                             ),
-                          )),
-                      // Change cell with hover
-                      _buildCellWithHover(
-                          updatedData,
-                          theme,
-                          token,
+                          ),
+                          // LTP cell
                           DataCell(
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: Text(
-                                "${(_getChangeValue(updatedData))} "
-                                "(${_getPerChangeValue(updatedData)}%)",
-                                style: WebTextStyles.tableDataCompact(
-                                  isDarkTheme: theme.isDarkMode,
-                                  color: _getChangeColor(updatedData, theme),
-                                ).copyWith(fontWeight: FontWeight.w600),
+                            MouseRegion(
+                              onEnter: (_) => setState(() => _hoveredToken = uniqueId),
+                              onExit: (_) => setState(() => _hoveredToken = null),
+                              child: SizedBox.expand(
+                                child: Container(
+                                  alignment: Alignment.centerRight,
+                                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
+                                  child: Text(
+                                    updatedData.ltp != null &&
+                                            updatedData.ltp != "null"
+                                        ? "${updatedData.ltp}"
+                                        : updatedData.close != null &&
+                                                updatedData.close != "null"
+                                            ? "${updatedData.close}"
+                                            : '0.00',
+                                    style: WebTextStyles.custom(
+                                      fontSize: 13,
+                                      isDarkTheme: theme.isDarkMode,
+                                      color: _getPriceColor(updatedData, theme),
+                                      fontWeight: WebFonts.medium,
+                                    ),
+                                  ),
+                                ),
                               ),
                             ),
-                          )),
-                    ],
-                  );
-                }).toList(),
+                          ),
+                          // Change cell
+                          DataCell(
+                            MouseRegion(
+                              onEnter: (_) => setState(() => _hoveredToken = uniqueId),
+                              onExit: (_) => setState(() => _hoveredToken = null),
+                              child: SizedBox.expand(
+                                child: Container(
+                                  alignment: Alignment.centerRight,
+                                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
+                                  child: Text(
+                                    "${(_getChangeValue(updatedData))} "
+                                    "(${_getPerChangeValue(updatedData)}%)",
+                                    style: WebTextStyles.custom(
+                                      fontSize: 13,
+                                      isDarkTheme: theme.isDarkMode,
+                                      color: _getChangeColor(updatedData, theme),
+                                      fontWeight: WebFonts.medium,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    }).toList(),
+                  ),
+                ),
               ),
-            ),
-          ),
+            );
+          },
         );
       },
     );
   }
 
-  DataCell _buildCellWithHover(
-      dynamic displayData, ThemesProvider theme, String token, DataCell cell) {
-    // Wrap the cell's child with MouseRegion to detect hover anywhere on the row
-    return DataCell(
-      MouseRegion(
-        onEnter: (_) => setState(() => _hoveredToken = token),
-        onExit: (_) => setState(() => _hoveredToken = null),
-        child: SizedBox.expand(
-          child: Align(
-            alignment: Alignment.centerRight,
-            child: cell.child,
-          ),
-        ),
-      ),
-    );
-  }
-
-  DataCell _buildSymbolCellWithHover(
-      dynamic displayData, ThemesProvider theme, MarketWatchProvider future) {
-    final token = displayData.token?.toString() ?? '';
-    final isHovered = _hoveredToken == token;
+  Widget _buildSymbolCellContent(
+      dynamic displayData, ThemesProvider theme, MarketWatchProvider future, String uniqueId) {
+    final isHovered = _hoveredToken == uniqueId;
     final displayText = displayData.tsym?.toString() ?? '';
 
-    return DataCell(
-      Builder(
-        builder: (context) => MouseRegion(
-          onEnter: (_) => setState(() => _hoveredToken = token),
-          onExit: (_) => setState(() => _hoveredToken = null),
-          child: SizedBox.expand(
-            child: Row(
-              children: [
-                // Text that takes space, leaves room for buttons
-                Expanded(
-                  flex: isHovered ? 1 : 2,
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Tooltip(
-                      message: displayText,
-                      child: Text(
-                        displayText,
-                        style: WebTextStyles.tableDataCompact(
-                          isDarkTheme: theme.isDarkMode,
-                          color: theme.isDarkMode
-                              ? WebDarkColors.textPrimary
-                              : WebColors.textPrimary,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                      ),
-                    ),
-                  ),
-                ),
-                // Buttons on the right side - fade in/out
-                IgnorePointer(
-                  ignoring: !isHovered,
-                  child: AnimatedOpacity(
-                    opacity: isHovered ? 1.0 : 0.0,
-                    duration: const Duration(milliseconds: 150),
-                    child: _buildActionButtons(
-                      context,
-                      displayData,
-                      future,
-                      theme,
-                      isHovered,
-                    ),
-                  ),
-                ),
-              ],
+    return Row(
+      children: [
+        Expanded(
+          flex: isHovered ? 1 : 2,
+          child: Tooltip(
+            message: displayText,
+            child: Text(
+              displayText,
+              style: WebTextStyles.custom(
+                fontSize: 13,
+                isDarkTheme: theme.isDarkMode,
+                color: theme.isDarkMode
+                    ? WebDarkColors.textPrimary
+                    : WebColors.textPrimary,
+                fontWeight: WebFonts.medium,
+              ),
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ),
-      ),
+        // Action buttons fade in on hover
+        IgnorePointer(
+          ignoring: !isHovered,
+          child: AnimatedOpacity(
+            opacity: isHovered ? 1 : 0,
+            duration: const Duration(milliseconds: 140),
+            child: _buildActionButtons(
+              context,
+              displayData,
+              future,
+              theme,
+              isHovered,
+            ),
+          ),
+        ),
+      ],
     );
   }
 

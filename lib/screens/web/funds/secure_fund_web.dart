@@ -1,14 +1,20 @@
+import 'dart:html' as html;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'fund_screen_web.dart';
-import 'withdraw_screen_web.dart';
+// COMMENTED OUT: No longer using dialog screens, redirecting to external URLs instead
+// import 'fund_screen_web.dart';
+// import 'withdraw_screen_web.dart';
 
+import '../../../locator/locator.dart';
+import '../../../locator/preference.dart';
 import '../../../provider/fund_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/transcation_provider.dart';
 import '../../../res/web_colors.dart';
 import '../../../res/global_font_web.dart';
 import '../../../sharedWidget/functions.dart';
+import '../../../sharedWidget/snack_bar.dart';
 
 class SecureFundWeb extends ConsumerStatefulWidget {
   const SecureFundWeb({super.key});
@@ -18,6 +24,60 @@ class SecureFundWeb extends ConsumerStatefulWidget {
 }
 
 class _SecureFundWebState extends ConsumerState<SecureFundWeb> {
+  /// Opens the fund management page in a new window
+  /// Similar to Vue.js function: openFunds(pageis)
+  /// 
+  /// @param pageis - 'fund' for add money, or 'withdraw' for withdraw page
+  void openFunds(String pageis, BuildContext context) {
+    if (!kIsWeb) {
+      showResponsiveWarningMessage(context, "This feature is only available on web");
+      return;
+    }
+    
+    try {
+      // Get Preferences instance from locator
+      final pref = locator<Preferences>();
+      
+      // Get userid and usession from SharedPreferences
+      // Try sessionStorage first (for Vue.js compatibility), then fallback to SharedPreferences
+      String? uid = html.window.sessionStorage['userid'];
+      String? stoken = html.window.sessionStorage['usession'];
+      
+      // If not in sessionStorage, get from SharedPreferences
+      if (uid == null || uid.isEmpty) {
+        final clientId = pref.clientId;
+        if (clientId != null && clientId.isNotEmpty) {
+          uid = clientId;
+        }
+      }
+      if (stoken == null || stoken.isEmpty) {
+        final clientSession = pref.clientSession;
+        if (clientSession != null && clientSession.isNotEmpty) {
+          stoken = clientSession;
+        }
+      }
+      
+      // Check if credentials are missing
+      if (uid == null || uid.isEmpty || stoken == null || stoken.isEmpty) {
+        showResponsiveWarningMessage(context, "Please login to continue");
+        return;
+      }
+      
+      // Construct URL based on page type
+      String url;
+      if (pageis == 'fund') {
+        url = 'https://fund.zebuetrade.com?uid=$uid&token=$stoken';
+      } else {
+        url = 'https://fund.zebuetrade.com/withdrawal?uid=$uid&token=$stoken';
+      }
+      
+      // Open URL in new window/tab
+      html.window.open(url, '_blank');
+    } catch (e) {
+      print("Error opening fund page: $e");
+      showResponsiveWarningMessage(context, "Error opening fund page. Please try again.");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -111,7 +171,11 @@ class _SecureFundWebState extends ConsumerState<SecureFundWeb> {
                 true,
                 theme,
                 () {
-                  showDialog(context: context, builder: (context) => FundScreenWeb(dd: trancation));
+                  // Redirect to external fund page for add money
+                  openFunds('fund', context);
+                  
+                  // COMMENTED OUT: Original dialog-based add money flow
+                  // showDialog(context: context, builder: (context) => FundScreenWeb(dd: trancation));
                 },
               ),
               const SizedBox(width: 12),
@@ -119,21 +183,25 @@ class _SecureFundWebState extends ConsumerState<SecureFundWeb> {
                 "Withdraw",
                 false,
                 theme,
-                () async {
-                  await trancation.fetchValidateToken(context);
-                  Future.delayed(
-                    const Duration(milliseconds: 100),
-                    () async {
-                      await trancation.ip();
-                      await trancation.fetchupiIdView(
-                        trancation.bankdetails!.dATA![trancation.indexss][1],
-                        trancation.bankdetails!.dATA![trancation.indexss][2],
-                      );
-                      await trancation.fetchcwithdraw(context);
-                    },
-                  );
-                  trancation.changebool(false);
-                  showDialog(context: context, builder: (context) => WithdrawScreenWeb(withdarw: trancation, foucs: FocusNode(), theme: theme, segment: ""));
+                () {
+                  // Redirect to external fund page for withdraw
+                  openFunds('withdraw', context);
+                  
+                  // COMMENTED OUT: Original dialog-based withdraw flow
+                  // await trancation.fetchValidateToken(context);
+                  // Future.delayed(
+                  //   const Duration(milliseconds: 100),
+                  //   () async {
+                  //     await trancation.ip();
+                  //     await trancation.fetchupiIdView(
+                  //       trancation.bankdetails!.dATA![trancation.indexss][1],
+                  //       trancation.bankdetails!.dATA![trancation.indexss][2],
+                  //     );
+                  //     await trancation.fetchcwithdraw(context);
+                  //   },
+                  // );
+                  // trancation.changebool(false);
+                  // showDialog(context: context, builder: (context) => WithdrawScreenWeb(withdarw: trancation, foucs: FocusNode(), theme: theme, segment: ""));
                 },
               ),
             ],
