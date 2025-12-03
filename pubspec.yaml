@@ -89,6 +89,7 @@ dependencies:
   flutter_displaymode: ^0.6.0
   package_info_plus: ^8.3.0
   data_table_2: 2.5.12
+  pointer_interceptor: ^0.10.1
   
   
   

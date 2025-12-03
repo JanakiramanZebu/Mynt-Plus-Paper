@@ -19,6 +19,10 @@ import '../../../res/web_colors.dart';
 import '../../../sharedWidget/cust_text_formfield.dart';
 import '../../../sharedWidget/no_internet_widget.dart';
 import '../../../sharedWidget/snack_bar.dart';
+import 'dart:html' as html;
+import 'package:pointer_interceptor/pointer_interceptor.dart';
+import '../market_watch/tv_chart/chart_iframe_guard.dart';
+import '../../../utils/overlay_manager.dart';
 
 // InheritedWidget to pass close callback to child widgets
 class _ModifyGttDialogCloseNotifier extends InheritedWidget {
@@ -109,11 +113,16 @@ class ModifyGttWeb extends ConsumerStatefulWidget {
           if (overlayEntry.mounted) {
             overlayEntry.remove();
           }
+          // Unregister from overlay manager
+          OverlayManager.unregister(overlayEntry);
         },
       ),
     );
-    
+
     overlay.insert(overlayEntry);
+
+    // Register with overlay manager for global control
+    OverlayManager.register(overlayEntry);
   }
 }
 
@@ -1120,6 +1129,42 @@ class _DraggableModifyGttDialogState extends ConsumerState<_DraggableModifyGttDi
     _position = widget.initialPosition;
   }
 
+  // Directly disable all chart iframes and reset cursor (like chart's onExit)
+  void _disableAllChartIframes() {
+    try {
+      final iframes = html.document.querySelectorAll('iframe');
+      for (var iframe in iframes) {
+        if (iframe is html.IFrameElement && iframe.id.contains('chart-iframe')) {
+          iframe.style.pointerEvents = 'none';
+        }
+      }
+      // Also reset cursor on iframes to default
+      html.document.body?.style.cursor = 'default';
+    } catch (e) {
+      debugPrint('Error disabling iframes: $e');
+    }
+  }
+
+  void _enableAllChartIframes() {
+    try {
+      final iframes = html.document.querySelectorAll('iframe');
+      for (var iframe in iframes) {
+        if (iframe is html.IFrameElement && iframe.id.contains('chart-iframe')) {
+          iframe.style.pointerEvents = 'auto';
+        }
+      }
+    } catch (e) {
+      debugPrint('Error enabling iframes: $e');
+    }
+  }
+
+  @override
+  void dispose() {
+    ChartIframeGuard.release();
+    _enableAllChartIframes();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = ref.watch(themeProvider);
@@ -1139,47 +1184,68 @@ class _DraggableModifyGttDialogState extends ConsumerState<_DraggableModifyGttDi
         Positioned(
           left: constrainedPosition.dx,
           top: constrainedPosition.dy,
-          child: GestureDetector(
-            onTap: () {}, // Prevent tap from propagating to background
-            child: Material(
-              elevation: _isDragging ? 16 : 8,
-              borderRadius: BorderRadius.circular(5),
-              color: theme.isDarkMode ? WebDarkColors.background : WebColors.background,
-              child: Container(
-                width: dialogWidth,
-                height: dialogHeight,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(5),
-                  border: Border.all(
-                    color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
-                  ),
-                ),
-                child: _ModifyGttDialogCloseNotifier(
-                  onClose: widget.onClose,
-                  child: _ModifyGttDialogDragNotifier(
-                    onPanStart: (details) {
-                      setState(() {
-                        _isDragging = true;
-                      });
-                    },
-                    onPanUpdate: (details) {
-                      setState(() {
-                        _position = Offset(
-                          _position.dx + details.delta.dx,
-                          _position.dy + details.delta.dy,
-                        );
-                      });
-                      widget.onPositionChanged(_position);
-                    },
-                    onPanEnd: (details) {
-                      setState(() {
-                        _isDragging = false;
-                      });
-                    },
-                    isDragging: _isDragging,
-                    child: ModifyGttWeb(
-                      gttOrderBook: widget.gttOrderBook,
-                      scripInfo: widget.scripInfo,
+          child: PointerInterceptor(
+            child: MouseRegion(
+              cursor: SystemMouseCursors.basic,
+              onEnter: (_) {
+                ChartIframeGuard.acquire();
+                _disableAllChartIframes();
+              },
+              onHover: (_) {
+                _disableAllChartIframes();
+              },
+              onExit: (_) {
+                ChartIframeGuard.release();
+                _enableAllChartIframes();
+              },
+              child: Listener(
+                onPointerMove: (_) {
+                  _disableAllChartIframes();
+                },
+                child: GestureDetector(
+                  onTap: () {}, // Prevent tap from propagating to background
+                  child: Material(
+                    elevation: _isDragging ? 16 : 8,
+                    borderRadius: BorderRadius.circular(5),
+                    color: theme.isDarkMode ? WebDarkColors.background : WebColors.background,
+                    child: Container(
+                      width: dialogWidth,
+                      height: dialogHeight,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(5),
+                        border: Border.all(
+                          color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
+                        ),
+                      ),
+                      child: _ModifyGttDialogCloseNotifier(
+                        onClose: widget.onClose,
+                        child: _ModifyGttDialogDragNotifier(
+                          onPanStart: (details) {
+                            setState(() {
+                              _isDragging = true;
+                            });
+                          },
+                          onPanUpdate: (details) {
+                            setState(() {
+                              _position = Offset(
+                                _position.dx + details.delta.dx,
+                                _position.dy + details.delta.dy,
+                              );
+                            });
+                            widget.onPositionChanged(_position);
+                          },
+                          onPanEnd: (details) {
+                            setState(() {
+                              _isDragging = false;
+                            });
+                          },
+                          isDragging: _isDragging,
+                          child: ModifyGttWeb(
+                            gttOrderBook: widget.gttOrderBook,
+                            scripInfo: widget.scripInfo,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),

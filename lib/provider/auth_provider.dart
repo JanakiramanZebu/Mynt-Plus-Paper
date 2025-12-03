@@ -45,6 +45,7 @@ import '../screens/web/main_screen_control_web.dart';
 import '../sharedWidget/functions.dart';
 import '../sharedWidget/risk_disclosure_bottom_sheet.dart';
 import '../sharedWidget/snack_bar.dart';
+import '../utils/overlay_manager.dart';
 import 'change_password_provider.dart';
 import 'core/default_change_notifier.dart';
 import 'fund_provider.dart';
@@ -903,6 +904,11 @@ class AuthProvider extends DefaultChangeNotifier {
     try {
       _logoutModel = await api.getLogout();
       if (_logoutModel!.stat == "Ok") {
+        // Close all open order/modify/GTT dialogs (web only)
+        if (kIsWeb) {
+          OverlayManager.closeAll();
+        }
+
         // Cancel any active timers
         if (ConstantName.timer != null) {
           ConstantName.timer!.cancel();
@@ -1990,6 +1996,11 @@ class AuthProvider extends DefaultChangeNotifier {
 
     // Prepare session cleanup operations asynchronously
     Future.microtask(() {
+      // Close all open order/modify/GTT dialogs immediately (web only)
+      if (kIsWeb) {
+        OverlayManager.closeAll();
+      }
+
       // Clear all session data first
       pref.clearClientSession();
       pref.setLogout(true);

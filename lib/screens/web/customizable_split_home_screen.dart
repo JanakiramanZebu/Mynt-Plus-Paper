@@ -37,6 +37,9 @@ import '../../../res/web_colors.dart';
 import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/internet_widget.dart';
 import '../../../sharedWidget/splash_loader.dart';
+import 'profile/Reports/reports_screen_web.dart';
+import 'profile/profile_main_screen_web.dart';
+import 'profile/settings_web.dart';
 import 'splitter_widget.dart';
 // import '../Mobile/market_watch/tv_chart/webview_chart.dart';
 import 'market_watch/watchlist_screen_web.dart';
@@ -49,7 +52,6 @@ import 'market_watch/options/option_chain_ss_web.dart';
 import '../Mobile/desk_reports/pledge_unpledge_screen.dart';
 // Removed CA Event and CP Action from panel screens
 import '../Mobile/mutual_fund/mf_main_screen.dart';
-import '../Mobile/profile_screen/profile_main_screen.dart';
 import 'ipo/ipo_main_screen_web.dart';
 import '../Mobile/bonds/bonds_main_screen.dart';
 import '../../../utils/custom_navigator.dart';
@@ -1586,9 +1588,9 @@ class _CustomizableSplitHomeScreenState
       case ScreenType.corporateActions:
         return CABuyback();
       case ScreenType.reports:
-        return ReportsScreen();
+        return ReportsScreenWeb();
       case ScreenType.settings:
-        return SettingsScreen();
+        return SettingsScreenWeb();
       case ScreenType.tradeAction:
         // Get tab index from stored state or use null for default
         final tabIndex = _tradeActionTabIndex;
@@ -3547,6 +3549,43 @@ class _ProfileDropdownState extends State<_ProfileDropdown> {
   }
 }
 
+// Wrapper widget that provides close callback to UserAccountScreen via InheritedWidget
+class ProfileMenuContentWrapper extends StatelessWidget {
+  final VoidCallback onNavigate;
+
+  const ProfileMenuContentWrapper({
+    super.key,
+    required this.onNavigate,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return _ProfileCloseCallback(
+      onClose: onNavigate,
+      child: const UserAccountScreenWeb(),
+    );
+  }
+}
+
+// InheritedWidget to provide close callback to UserAccountScreen
+class _ProfileCloseCallback extends InheritedWidget {
+  final VoidCallback onClose;
+
+  const _ProfileCloseCallback({
+    required this.onClose,
+    required super.child,
+  });
+
+  static _ProfileCloseCallback? maybeOf(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<_ProfileCloseCallback>();
+  }
+
+  @override
+  bool updateShouldNotify(_ProfileCloseCallback oldWidget) {
+    return onClose != oldWidget.onClose;
+  }
+}
+
 // Profile dropdown overlay widget
 class _ProfileDropdownOverlay extends StatelessWidget {
   final bool isDarkMode;
@@ -3561,38 +3600,44 @@ class _ProfileDropdownOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = isDarkMode ? WebColorScheme.dark() : WebColorScheme.light();
+
     return GestureDetector(
       onTap: onClose,
       child: Material(
         color: Colors.transparent,
         child: Stack(
           children: [
-            // Background overlay
-            Positioned.fill(
-              child: Container(
-                color: Colors.transparent,
-              ),
-            ),
-            // Profile dropdown content
+            // NO background overlay - removed as per request
+            // Profile dropdown content positioned at top-right
             Positioned(
               top: 55, // Position below the app bar
               right: 16, // Align with the profile section
               child: GestureDetector(
                 onTap: () {}, // Prevent closing when tapping on content
                 child: Container(
-                  width: 300,
-                  height: MediaQuery.of(context).size.height * 0.8,
+                  width: 350,
+                  height: MediaQuery.of(context).size.height * 0.7,
                   decoration: BoxDecoration(
-                    color:
-                        isDarkMode ? WebDarkColors.surface : WebColors.surface,
+                    color: colorScheme.surface,
                     border: Border.all(
-                      color:
-                          isDarkMode ? WebDarkColors.border : WebColors.border,
+                      color: colorScheme.border,
                       width: 1,
                     ),
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 16,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
                   child: ClipRRect(
-                    child: const UserAccountScreen(),
+                    borderRadius: BorderRadius.circular(8),
+                    child: ProfileMenuContentWrapper(
+                      onNavigate: onClose, // Pass callback to close on any navigation
+                    ),
                   ),
                 ),
               ),

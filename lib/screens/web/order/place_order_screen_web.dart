@@ -1,9 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:mynt_plus/res/web_colors.dart';
 import 'package:mynt_plus/res/global_font_web.dart';
+import '../market_watch/tv_chart/chart_iframe_guard.dart';
 import 'margin_details_dialog_web.dart';
 import 'dart:convert';
 import 'dart:async';
+import 'dart:html' as html;
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
@@ -45,6 +47,8 @@ import 'package:mynt_plus/res/res.dart';
 import '../../../models/order_book_model/place_gtt_order.dart';
 import 'package:intl/intl.dart';
 import 'package:mynt_plus/utils/url_utils.dart';
+import 'package:pointer_interceptor/pointer_interceptor.dart';
+import 'package:mynt_plus/utils/overlay_manager.dart';
 
 // InheritedWidget to pass close callback to child widgets
 class _PlaceOrderDialogCloseNotifier extends InheritedWidget {
@@ -155,6 +159,8 @@ class PlaceOrderScreenWeb extends ConsumerStatefulWidget {
         onClose: () {
           overlayEntry.remove();
           _currentOverlayEntry = null;
+          // Unregister from overlay manager
+          OverlayManager.unregister(overlayEntry);
         },
       ),
     );
@@ -162,6 +168,9 @@ class PlaceOrderScreenWeb extends ConsumerStatefulWidget {
     // Store the current overlay entry
     _currentOverlayEntry = overlayEntry;
     overlay.insert(overlayEntry);
+
+    // Register with overlay manager for global control
+    OverlayManager.register(overlayEntry);
   }
 }
 
@@ -8029,10 +8038,49 @@ class _DraggablePlaceOrderScreenDialogState
     super.initState();
     _position = widget.initialPosition;
 
-    // Listen for navigation changes (when confirmation screen appears)
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _listenForNavigationChanges();
     });
+  }
+
+  // Directly disable all chart iframes and reset cursor (like chart's onExit)
+  void _disableAllChartIframes() {
+    try {
+      final iframes = html.document.querySelectorAll('iframe');
+      for (var iframe in iframes) {
+        if (iframe is html.IFrameElement && iframe.id.contains('chart-iframe')) {
+          iframe.style.pointerEvents = 'none';
+          // Reset cursor style to prevent cursor bleeding
+          iframe.style.cursor = 'default';
+        }
+      }
+      // Also reset cursor on document body to ensure it's reset globally
+      html.document.body?.style.cursor = 'default';
+    } catch (e) {
+      debugPrint('Error disabling iframes: $e');
+    }
+  }
+
+  void _enableAllChartIframes() {
+    try {
+      final iframes = html.document.querySelectorAll('iframe');
+      for (var iframe in iframes) {
+        if (iframe is html.IFrameElement && iframe.id.contains('chart-iframe')) {
+          iframe.style.pointerEvents = 'auto';
+          iframe.style.cursor = '';
+        }
+      }
+      html.document.body?.style.cursor = '';
+    } catch (e) {
+      debugPrint('Error enabling iframes: $e');
+    }
+  }
+
+  @override
+  void dispose() {
+    ChartIframeGuard.release();
+    _enableAllChartIframes();
+    super.dispose();
   }
 
   void _listenForNavigationChanges() {
@@ -8090,57 +8138,77 @@ class _DraggablePlaceOrderScreenDialogState
 
     return Stack(
       children: [
-        // Actual dialog
         Positioned(
           left: constrainedPosition.dx,
           top: constrainedPosition.dy,
-          child: GestureDetector(
-            onTap: () {}, // Prevent tap from propagating to background
-            child: Material(
-              elevation: _isDragging ? 16 : 8,
-              borderRadius: BorderRadius.circular(5),
-              color: theme.isDarkMode
-                  ? WebDarkColors.background
-                  : WebColors.background,
-              child: Container(
-                width: dialogWidth,
-                height: dialogHeight,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(5),
-                  border: Border.all(
+          child: PointerInterceptor(
+            child: MouseRegion(
+              cursor: SystemMouseCursors.basic,
+              onEnter: (_) {
+                ChartIframeGuard.acquire();
+                _disableAllChartIframes();
+              },
+              onHover: (_) {
+                _disableAllChartIframes();
+              },
+              onExit: (_) {
+                ChartIframeGuard.release();
+                _enableAllChartIframes();
+              },
+              child: Listener(
+                onPointerMove: (_) {
+                  _disableAllChartIframes();
+                },
+                child: GestureDetector(
+                  onTap: () {},
+                  child: Material(
+                    elevation: _isDragging ? 16 : 8,
+                    borderRadius: BorderRadius.circular(5),
                     color: theme.isDarkMode
-                        ? WebDarkColors.divider
-                        : WebColors.divider,
-                  ),
-                ),
-                child: _PlaceOrderDialogCloseNotifier(
-                  onClose: widget.onClose,
-                  child: _PlaceOrderDialogDragNotifier(
-                    onPanStart: (details) {
-                      setState(() {
-                        _isDragging = true;
-                      });
-                    },
-                    onPanUpdate: (details) {
-                      setState(() {
-                        _position = Offset(
-                          _position.dx + details.delta.dx,
-                          _position.dy + details.delta.dy,
-                        );
-                      });
-                      widget.onPositionChanged(_position);
-                    },
-                    onPanEnd: (details) {
-                      setState(() {
-                        _isDragging = false;
-                      });
-                    },
-                    isDragging: _isDragging,
-                    child: PlaceOrderScreenWeb(
-                      orderArg: widget.orderArg,
-                      scripInfo: widget.scripInfo,
-                      isBasket: widget.isBasket,
-                      fromChart: widget.fromChart,
+                        ? WebDarkColors.background
+                        : WebColors.background,
+                    child: Container(
+                      width: dialogWidth,
+                      height: dialogHeight,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(5),
+                        border: Border.all(
+                          color: theme.isDarkMode
+                              ? WebDarkColors.divider
+                              : WebColors.divider,
+                        ),
+                      ),
+                      child: _PlaceOrderDialogCloseNotifier(
+                        onClose: widget.onClose,
+                        child: _PlaceOrderDialogDragNotifier(
+                          onPanStart: (details) {
+                            setState(() {
+                              _isDragging = true;
+                            });
+                          },
+                          onPanUpdate: (details) {
+                            setState(() {
+                              _position = Offset(
+                                _position.dx + details.delta.dx,
+                                _position.dy + details.delta.dy,
+                              );
+                            });
+                            widget.onPositionChanged(_position);
+                          },
+                          onPanEnd: (details) {
+                            setState(() {
+                              _isDragging = false;
+                            });
+                          },
+                          isDragging: _isDragging,
+                          child: PlaceOrderScreenWeb(
+                            orderArg: widget.orderArg,
+                            scripInfo: widget.scripInfo,
+                            isBasket: widget.isBasket,
+                            fromChart: widget.fromChart,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),

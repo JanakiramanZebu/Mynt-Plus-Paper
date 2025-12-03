@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/foundation.dart';
 // import 'package:firebase_analytics/firebase_analytics.dart';
 // import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
@@ -34,6 +35,7 @@ import '../res/res.dart';
 import '../routes/route_names.dart';
 import '../sharedWidget/functions.dart';
 import '../sharedWidget/internet_widget.dart';
+import '../utils/overlay_manager.dart';
 import 'Mobile/market_watch/index/index_screen.dart';
 import 'Mobile/market_watch/scrip_filter_bottom_sheet.dart';
 import 'Mobile/market_watch/tv_chart/webview_chart.dart';
@@ -1668,6 +1670,11 @@ class _UserProfileTile extends ConsumerWidget {
 
     return ListTile(
         onTap: () {
+          // Close all open order/modify/GTT dialogs when opening account switch sheet
+          if (kIsWeb) {
+          OverlayManager.closeAll();
+        }
+
           showModalBottomSheet(
               context: context,
               isScrollControlled: true,

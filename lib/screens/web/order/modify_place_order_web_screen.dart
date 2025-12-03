@@ -26,6 +26,10 @@ import '../../../sharedWidget/snack_bar.dart';
 import '../../../utils/responsive_snackbar.dart';
 import 'margin_details_dialog_web.dart';
 import 'orderscreen_header_web.dart';
+import 'dart:html' as html;
+import 'package:pointer_interceptor/pointer_interceptor.dart';
+import '../market_watch/tv_chart/chart_iframe_guard.dart';
+import '../../../utils/overlay_manager.dart';
 
 // InheritedWidget to pass close callback to child widgets
 class _ModifyPlaceOrderDialogCloseNotifier extends InheritedWidget {
@@ -118,11 +122,16 @@ class ModifyPlaceOrderScreenWeb extends ConsumerStatefulWidget {
         },
         onClose: () {
           overlayEntry.remove();
+          // Unregister from overlay manager
+          OverlayManager.unregister(overlayEntry);
         },
       ),
     );
 
     overlay.insert(overlayEntry);
+
+    // Register with overlay manager for global control
+    OverlayManager.register(overlayEntry);
   }
 }
 
@@ -3022,6 +3031,42 @@ class _DraggableModifyPlaceOrderScreenDialogState
     _position = widget.initialPosition;
   }
 
+  // Directly disable all chart iframes and reset cursor (like chart's onExit)
+  void _disableAllChartIframes() {
+    try {
+      final iframes = html.document.querySelectorAll('iframe');
+      for (var iframe in iframes) {
+        if (iframe is html.IFrameElement && iframe.id.contains('chart-iframe')) {
+          iframe.style.pointerEvents = 'none';
+        }
+      }
+      // Also reset cursor on iframes to default
+      html.document.body?.style.cursor = 'default';
+    } catch (e) {
+      debugPrint('Error disabling iframes: $e');
+    }
+  }
+
+  void _enableAllChartIframes() {
+    try {
+      final iframes = html.document.querySelectorAll('iframe');
+      for (var iframe in iframes) {
+        if (iframe is html.IFrameElement && iframe.id.contains('chart-iframe')) {
+          iframe.style.pointerEvents = 'auto';
+        }
+      }
+    } catch (e) {
+      debugPrint('Error enabling iframes: $e');
+    }
+  }
+
+  @override
+  void dispose() {
+    ChartIframeGuard.release();
+    _enableAllChartIframes();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = ref.watch(themeProvider);
@@ -3041,52 +3086,73 @@ class _DraggableModifyPlaceOrderScreenDialogState
         Positioned(
           left: constrainedPosition.dx,
           top: constrainedPosition.dy,
-          child: GestureDetector(
-            onTap: () {}, // Prevent tap from propagating to background
-            child: Material(
-              elevation: _isDragging ? 16 : 8,
-              borderRadius: BorderRadius.circular(5),
-              color: theme.isDarkMode
-                  ? WebDarkColors.background
-                  : WebColors.background,
-              child: Container(
-                width: dialogWidth,
-                height: dialogHeight,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(5),
-                  border: Border.all(
+          child: PointerInterceptor(
+            child: MouseRegion(
+              cursor: SystemMouseCursors.basic,
+              onEnter: (_) {
+                ChartIframeGuard.acquire();
+                _disableAllChartIframes();
+              },
+              onHover: (_) {
+                _disableAllChartIframes();
+              },
+              onExit: (_) {
+                ChartIframeGuard.release();
+                _enableAllChartIframes();
+              },
+              child: Listener(
+                onPointerMove: (_) {
+                  _disableAllChartIframes();
+                },
+                child: GestureDetector(
+                  onTap: () {}, // Prevent tap from propagating to background
+                  child: Material(
+                    elevation: _isDragging ? 16 : 8,
+                    borderRadius: BorderRadius.circular(5),
                     color: theme.isDarkMode
-                        ? WebDarkColors.divider
-                        : WebColors.divider,
-                  ),
-                ),
-                child: _ModifyPlaceOrderDialogCloseNotifier(
-                  onClose: widget.onClose,
-                  child: _ModifyPlaceOrderDialogDragNotifier(
-                    onPanStart: (details) {
-                      setState(() {
-                        _isDragging = true;
-                      });
-                    },
-                    onPanUpdate: (details) {
-                      setState(() {
-                        _position = Offset(
-                          _position.dx + details.delta.dx,
-                          _position.dy + details.delta.dy,
-                        );
-                      });
-                      widget.onPositionChanged(_position);
-                    },
-                    onPanEnd: (details) {
-                      setState(() {
-                        _isDragging = false;
-                      });
-                    },
-                    isDragging: _isDragging,
-                    child: ModifyPlaceOrderScreenWeb(
-                      modifyOrderArgs: widget.modifyOrderArgs,
-                      scripInfo: widget.scripInfo,
-                      orderArg: widget.orderArg,
+                        ? WebDarkColors.background
+                        : WebColors.background,
+                    child: Container(
+                      width: dialogWidth,
+                      height: dialogHeight,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(5),
+                        border: Border.all(
+                          color: theme.isDarkMode
+                              ? WebDarkColors.divider
+                              : WebColors.divider,
+                        ),
+                      ),
+                      child: _ModifyPlaceOrderDialogCloseNotifier(
+                        onClose: widget.onClose,
+                        child: _ModifyPlaceOrderDialogDragNotifier(
+                          onPanStart: (details) {
+                            setState(() {
+                              _isDragging = true;
+                            });
+                          },
+                          onPanUpdate: (details) {
+                            setState(() {
+                              _position = Offset(
+                                _position.dx + details.delta.dx,
+                                _position.dy + details.delta.dy,
+                              );
+                            });
+                            widget.onPositionChanged(_position);
+                          },
+                          onPanEnd: (details) {
+                            setState(() {
+                              _isDragging = false;
+                            });
+                          },
+                          isDragging: _isDragging,
+                          child: ModifyPlaceOrderScreenWeb(
+                            modifyOrderArgs: widget.modifyOrderArgs,
+                            scripInfo: widget.scripInfo,
+                            orderArg: widget.orderArg,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),
