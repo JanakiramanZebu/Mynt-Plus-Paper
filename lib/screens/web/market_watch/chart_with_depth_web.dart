@@ -36,6 +36,7 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
   void initState() {
     super.initState();
     // Ensure depth + chart data is loaded for the selected scrip
+    // The provider's calldepthApis now has guards to prevent duplicate loading
     Future.microtask(() async {
       await _ensureDataLoaded();
     });
@@ -75,6 +76,7 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
     final targetToken = widget.wlValue.token;
 
     if (force || _loadedToken != targetToken || currentToken != targetToken) {
+      // Only load if it's a different scrip - calldepthApis handles duplicate prevention internally
       mw.scripdepthsize(false);
       await mw.calldepthApis(context, widget.wlValue, "");
       // Keep chart in sync with the same scrip

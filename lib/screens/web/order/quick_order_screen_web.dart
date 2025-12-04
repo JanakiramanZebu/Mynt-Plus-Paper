@@ -68,6 +68,7 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
   bool _surveillanceConfirmed = false;
   bool _showSurveillanceDialog = false;
   Future<void> Function()? _pendingSurveillanceAction;
+  String quotemsg = "";
 
   void _initializeFromProps() {
     isBuy = widget.orderArg.transType;
@@ -101,6 +102,10 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
     }
     priceCtrl.text = ordPrice;
 
+    // Get quote message for surveillance dialog (must be in initState, not postFrameCallback)
+    final quote = ref.read(marketWatchProvider).getQuotes?.ordMsg;
+    quotemsg = quote ?? "";
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(ordInputProvider).chngInvesType(
           widget.scripInfo.seg == "EQT"
@@ -110,6 +115,7 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
       ref
           .read(ordInputProvider)
           .chngPriceType(priceType, widget.orderArg.exchange);
+
       _marginUpdate();
     });
   }
@@ -344,21 +350,17 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                'Please confirm to proceed with your order.',
-                                style: WebTextStyles.custom(
-                                  fontSize: 13,
-                                  isDarkTheme: theme.isDarkMode,
-                                  color: theme.isDarkMode
-                                      ? WebDarkColors.textPrimary
-                                      : WebColors.textPrimary,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
+                          Text(
+                            quotemsg.isNotEmpty
+                                ? quotemsg
+                                : 'Security is under surveillance. Would you like to continue?',
+                            style: WebTextStyles.custom(
+                              fontSize: 13,
+                              isDarkTheme: theme.isDarkMode,
+                              color: theme.isDarkMode
+                                  ? WebDarkColors.textPrimary
+                                  : WebColors.textPrimary,
+                            ),
                           ),
                           const SizedBox(height: 16),
                           SizedBox(
@@ -1072,7 +1074,7 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
         .read(orderProvider)
         .fetchPlaceOrder(context, input, widget.orderArg.isExit, quickOrder: true);
     ref.read(orderProvider).setOrderloader(false);
-    if (mounted) Navigator.of(context).maybePop();
+    // Dialog closing is handled in fetchPlaceOrder for web quick orders
   }
 
   double _roundOffWithInterval(double input, double interval) {
@@ -1116,7 +1118,10 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
 
   Future<void> _showSurveillanceBottomSheet(
       ThemesProvider theme, Future<void> Function() onContinue) async {
+    // Update quotemsg right before showing the dialog
+    final quote = ref.read(marketWatchProvider).getQuotes?.ordMsg;
     setState(() {
+      quotemsg = quote ?? "";
       _showSurveillanceDialog = true;
       _pendingSurveillanceAction = onContinue;
     });

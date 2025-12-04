@@ -97,20 +97,15 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
               onTap: () async {
                 // Clicking the list item opens the chart
                 if (_isNavigating) return;
-                
-                // Close any previously expanded item
-                // ref
-                //     .read(expandedWatchlistItemProvider.notifier)
-                //     .setExpandedToken(null);
-                
+
                 try {
                   setState(() {
                     _isNavigating = true;
                   });
-                  WidgetsBinding.instance.addPostFrameCallback((_) async {
-                    ref.read(marketWatchProvider).setIsDepthVisibleWeb(false);
 
-                  // Create proper DepthInputArgs object like in StocksScreen
+                  ref.read(marketWatchProvider).setIsDepthVisibleWeb(false);
+
+                  // Create proper DepthInputArgs object
                   DepthInputArgs depthArgs = DepthInputArgs(
                       exch: widget.watchListData["exch"].toString(),
                       token: widget.watchListData["token"].toString(),
@@ -124,16 +119,12 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                       option:
                           widget.watchListData["option"]?.toString() ?? "");
 
-                  // Call depth APIs for chart navigation
+                  // Call depth APIs which handles everything including tab management
                   marketWatch.scripdepthsize(false);
                   await marketWatch.calldepthApis(context, depthArgs, "");
-                  });
-                  // Open in 80% panel as split Chart + Depth via tabs manager
                 } catch (e) {
-                  // Handle any errors
                   debugPrint('Error opening chart: $e');
                 } finally {
-                  // Reset navigation lock after some delay to prevent immediate re-clicks
                   if (mounted) {
                     Future.delayed(const Duration(milliseconds: 500), () {
                       if (mounted) {
@@ -313,35 +304,34 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                                   borderRadius: 5.0,
                                   onPressed: () async {
                                     if (_isNavigating) return;
-                                    
+
                                     ref
                                         .read(expandedWatchlistItemProvider.notifier)
                                         .setExpandedToken(null);
-                                    
+
                                     try {
                                       setState(() {
                                         _isNavigating = true;
                                       });
-                                      WidgetsBinding.instance.addPostFrameCallback((_) async {
-                                        ref.read(marketWatchProvider).setIsDepthVisibleWeb(true);
-                                        
-                                        DepthInputArgs depthArgs = DepthInputArgs(
-                                            exch: widget.watchListData["exch"].toString(),
-                                            token: widget.watchListData["token"].toString(),
-                                            tsym: widget.watchListData["tsym"].toString(),
-                                            instname:
-                                                widget.watchListData["instname"]?.toString() ??
-                                                widget.watchListData["symbol"].toString(),
-                                            symbol: widget.watchListData["symbol"].toString(),
-                                            expDate:
-                                                widget.watchListData["expDate"]?.toString() ?? "",
-                                            option:
-                                                widget.watchListData["option"]?.toString() ?? "",
-                                        );
-                                        
-                                        marketWatch.scripdepthsize(false);
-                                        await marketWatch.calldepthApis(context, depthArgs, "");
-                                      });
+
+                                      ref.read(marketWatchProvider).setIsDepthVisibleWeb(true);
+
+                                      DepthInputArgs depthArgs = DepthInputArgs(
+                                          exch: widget.watchListData["exch"].toString(),
+                                          token: widget.watchListData["token"].toString(),
+                                          tsym: widget.watchListData["tsym"].toString(),
+                                          instname:
+                                              widget.watchListData["instname"]?.toString() ??
+                                              widget.watchListData["symbol"].toString(),
+                                          symbol: widget.watchListData["symbol"].toString(),
+                                          expDate:
+                                              widget.watchListData["expDate"]?.toString() ?? "",
+                                          option:
+                                              widget.watchListData["option"]?.toString() ?? "",
+                                      );
+
+                                      marketWatch.scripdepthsize(false);
+                                      await marketWatch.calldepthApis(context, depthArgs, "");
                                     } catch (e) {
                                       debugPrint('Error opening chart: $e');
                                     } finally {

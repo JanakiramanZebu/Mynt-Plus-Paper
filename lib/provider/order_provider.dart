@@ -910,7 +910,15 @@ class OrderProvider extends DefaultChangeNotifier {
         if (!quickOrder && !kIsWeb) {
           Navigator.pop(context);
         }
+
         if(kIsWeb) {
+          // For quick order on web, close the dialog first before showing confirmation
+          if (quickOrder) {
+            Navigator.of(context).maybePop();
+            // Small delay to ensure dialog closes before showing confirmation
+            await Future.delayed(const Duration(milliseconds: 100));
+          }
+
           showDialog(
             context: context,
             barrierColor: Colors.black.withOpacity(0.3), // Subtle dark backdrop

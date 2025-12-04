@@ -35,28 +35,10 @@ class _SecureFundWebState extends ConsumerState<SecureFundWeb> {
     }
     
     try {
-      // Get Preferences instance from locator
       final pref = locator<Preferences>();
-      
-      // Get userid and usession from SharedPreferences
-      // Try sessionStorage first (for Vue.js compatibility), then fallback to SharedPreferences
-      String? uid = html.window.sessionStorage['userid'];
-      String? stoken = html.window.sessionStorage['usession'];
-      
-      // If not in sessionStorage, get from SharedPreferences
-      if (uid == null || uid.isEmpty) {
-        final clientId = pref.clientId;
-        if (clientId != null && clientId.isNotEmpty) {
-          uid = clientId;
-        }
-      }
-      if (stoken == null || stoken.isEmpty) {
-        final clientSession = pref.clientSession;
-        if (clientSession != null && clientSession.isNotEmpty) {
-          stoken = clientSession;
-        }
-      }
-      
+      String? uid = pref.clientId;
+      String? stoken = pref.token; 
+
       // Check if credentials are missing
       if (uid == null || uid.isEmpty || stoken == null || stoken.isEmpty) {
         showResponsiveWarningMessage(context, "Please login to continue");
@@ -70,8 +52,6 @@ class _SecureFundWebState extends ConsumerState<SecureFundWeb> {
       } else {
         url = 'https://fund.zebuetrade.com/withdrawal?uid=$uid&token=$stoken';
       }
-      
-      // Open URL in new window/tab
       html.window.open(url, '_blank');
     } catch (e) {
       print("Error opening fund page: $e");

@@ -121,10 +121,13 @@ class UserAccountScreenWeb extends ConsumerWidget {
                         ? colors.highlightDark
                         : colors.highlightLight,
                     onTap: () {
-                      ResponsiveModal.show(
-                          context: context,
-                          child: const LoggedUserListWeb(
-                              initRoute: 'switchAcc'));
+                      
+                      
+                      showDialog(
+                        context: context,
+                        builder: (context) => const LoggedUserListWeb(
+                            initRoute: 'switchAcc'),
+                      );
                     },
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
