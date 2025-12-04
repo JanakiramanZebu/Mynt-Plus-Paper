@@ -42,6 +42,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb>
   
   // Hover state
   String? _hoveredRowToken;
+  int? _hoveredColumnIndex; // Track which column is being hovered
   
   // Processing state for actions
   bool _isProcessingCancel = false;
@@ -463,7 +464,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb>
                 columnSpacing: 12,
                 horizontalMargin: 12,
                 minWidth: 1200,
-                sortColumnIndex: _alertSortColumnIndex,
+                sortColumnIndex: null, // Disable DataTable2's built-in sorting
                 sortAscending: _alertSortAscending,
                 fixedLeftColumns: 1, // Fix the first column (Instrument)
                 fixedColumnsColor: theme.isDarkMode 
@@ -523,6 +524,10 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb>
     );
   }
 
+  bool _isNumericColumnAlert(String header) {
+    return header == 'Target' || header == 'LTP'; // Only Target and LTP are numeric
+  }
+
   int _getAlertColumnIndexForHeader(String header) {
     switch (header) {
       case 'Instrument': return 0;
@@ -542,28 +547,70 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb>
   ) {
     return headers.map((header) {
       final columnIndex = _getAlertColumnIndexForHeader(header);
+      final isNumeric = _isNumericColumnAlert(header);
       final isInstrument = header == 'Instrument';
       
       return DataColumn2(
-        label: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              header,
-              style: WebTextStyles.tableHeader(
-                isDarkTheme: theme.isDarkMode,
-                color: theme.isDarkMode
-                    ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary,
+        label: SizedBox.expand(
+          child: MouseRegion(
+            cursor: SystemMouseCursors.click,
+            onEnter: (_) => setState(() => _hoveredColumnIndex = columnIndex),
+            onExit: (_) => setState(() => _hoveredColumnIndex = null),
+            child: Tooltip(
+              message: 'Sort by $header',
+              child: GestureDetector(
+                onTap: () => _onSortAlertTable(columnIndex),
+                behavior: HitTestBehavior.opaque,
+                child: Container(
+                  width: double.infinity,
+                  height: double.infinity,
+                  decoration: BoxDecoration(
+                    color: _hoveredColumnIndex == columnIndex
+                        ? (theme.isDarkMode
+                            ? WebDarkColors.primary.withOpacity(0.1)
+                            : WebColors.primary.withOpacity(0.05))
+                        : Colors.transparent,
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max,
+                    mainAxisAlignment: isNumeric ? MainAxisAlignment.end : MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Flexible(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              header,
+                              style: WebTextStyles.tableHeader(
+                                isDarkTheme: theme.isDarkMode,
+                                color: theme.isDarkMode
+                                    ? WebDarkColors.textPrimary
+                                    : WebColors.textPrimary,
+                              ),
+                              textAlign: isNumeric ? TextAlign.right : TextAlign.left,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
+                            const SizedBox(width: 4),
+                            SizedBox(
+                              width: 16, // Fixed width for the icon
+                              child: _buildAlertSortIcon(columnIndex, theme),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
-            const SizedBox(width: 4),
-            _buildAlertSortIcon(columnIndex, theme),
-          ],
+          ),
         ),
         size: isInstrument ? ColumnSize.L : ColumnSize.S,
         fixedWidth: isInstrument ? 300.0 : null,
-        onSort: (index, ascending) => _onSortAlertTable(columnIndex),
+        onSort: null, // Disable DataTable2's default sort
       );
     }).toList();
   }
@@ -804,17 +851,26 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb>
   }
 
   Widget _buildAlertSortIcon(int columnIndex, ThemesProvider theme) {
+    IconData icon;
+    Color color;
+
     if (_alertSortColumnIndex == columnIndex) {
-      return const SizedBox(width: 16); // Reserve space for DataTable2's arrow
+      // Column is currently sorted
+      icon = _alertSortAscending ? Icons.arrow_upward : Icons.arrow_downward;
+      color = theme.isDarkMode ? WebDarkColors.primary : WebColors.primary;
     } else {
-      return Icon(
-        Icons.unfold_more,
-        size: 16,
-        color: theme.isDarkMode
-            ? WebDarkColors.iconSecondary
-            : WebColors.iconSecondary,
-      );
+      // Column is not sorted
+      icon = Icons.unfold_more;
+      color = theme.isDarkMode
+          ? WebDarkColors.iconSecondary.withOpacity(0.6)
+          : WebColors.iconSecondary.withOpacity(0.6);
     }
+
+    return Icon(
+      icon,
+      size: 16,
+      color: color,
+    );
   }
 
   Widget _buildAlertTextCell(

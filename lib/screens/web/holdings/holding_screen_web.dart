@@ -41,6 +41,7 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
   final ScrollController _verticalScrollController = ScrollController();
   final ScrollController _tabScrollController = ScrollController();
   String? _hoveredRowToken; // Track which row is being hovered
+  int? _hoveredColumnIndex; // Track which column is being hovered
 
   @override
   void initState() {
@@ -1037,8 +1038,8 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
               columnSpacing: 12,
               horizontalMargin: 12,
               minWidth: 1200, // Increased to accommodate wider columns
-              sortColumnIndex: _sortColumnIndex,
-              sortAscending: _sortAscending,
+              sortColumnIndex: null, // Disable DataTable2's sort indicators
+              sortAscending: true,
               fixedLeftColumns: 1, // Fix the first column (Instrument)
               fixedColumnsColor: theme.isDarkMode 
                   ? WebDarkColors.backgroundSecondary.withOpacity(0.8)
@@ -1114,20 +1115,61 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
     }
   }
 
-  Widget _buildSortIcon(int columnIndex, ThemesProvider theme) {
-    if (_sortColumnIndex == columnIndex) {
-      // Column is currently sorted - DataTable2 shows its own arrows, so we show nothing
-      return const SizedBox(width: 16); // Reserve space to prevent layout shift
+
+  // Helper method to determine column alignment based on content type
+  bool _isNumericColumn(String header) {
+    return header != 'Instrument'; // All columns except Instrument contain numeric data
+  }
+
+
+  Widget _buildSortableHeaderContent(String header, bool isNumeric, ThemesProvider theme, int columnIndex) {
+    final isCurrentlySorted = _sortColumnIndex == columnIndex;
+    
+    // Determine which icon to show
+    IconData sortIcon;
+    if (isCurrentlySorted) {
+      sortIcon = _sortAscending ? Icons.arrow_upward : Icons.arrow_downward;
     } else {
-      // Column is not sorted - show sortable indicator
-      return Icon(
-        Icons.unfold_more,
-        size: 16,
-        color: theme.isDarkMode
-            ? WebDarkColors.textSecondary.withOpacity(0.6)
-            : WebColors.textSecondary.withOpacity(0.6),
-      );
+      sortIcon = Icons.unfold_more;
     }
+    
+    return Row(
+      mainAxisSize: MainAxisSize.max,
+      mainAxisAlignment: isNumeric ? MainAxisAlignment.end : MainAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Row(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: isNumeric ? MainAxisAlignment.end : MainAxisAlignment.start,
+            children: [
+              Text(
+                header,
+                style: WebTextStyles.tableHeader(
+                  isDarkTheme: theme.isDarkMode,
+        color: theme.isDarkMode
+                      ? WebDarkColors.textPrimary
+                      : WebColors.textPrimary,
+                ),
+                textAlign: isNumeric ? TextAlign.right : TextAlign.left,
+              ),
+              const SizedBox(width: 4),
+              SizedBox(
+                width: 16, // Fixed width for the icon
+                child: Icon(
+                  sortIcon,
+                  size: 16,
+                  color: isCurrentlySorted
+                      ? (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary)
+                      : (theme.isDarkMode
+            ? WebDarkColors.textSecondary.withOpacity(0.6)
+                          : WebColors.textSecondary.withOpacity(0.6)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+      );
   }
 
   List<DataColumn2> _buildDataTable2Columns(
@@ -1137,27 +1179,40 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
   ) {
     return headers.map((header) {
       final columnIndex = _getColumnIndexForHeader(header);
+      final isNumeric = _isNumericColumn(header);
       
       return DataColumn2(
-        label: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              header,
-              style: WebTextStyles.tableHeader(
-                isDarkTheme: theme.isDarkMode,
-                color: theme.isDarkMode
-                    ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary,
+        label: SizedBox.expand(
+          child: MouseRegion(
+            cursor: SystemMouseCursors.click,
+            onEnter: (_) => setState(() => _hoveredColumnIndex = columnIndex),
+            onExit: (_) => setState(() => _hoveredColumnIndex = null),
+            child: Tooltip(
+              message: 'Sort by $header',
+              child: GestureDetector(
+                onTap: () => _onManualSort(columnIndex),
+                behavior: HitTestBehavior.opaque,
+                child: Container(
+                  width: double.infinity,
+                  height: double.infinity,
+                  decoration: BoxDecoration(
+                    color: _hoveredColumnIndex == columnIndex
+                        ? (theme.isDarkMode
+                            ? WebDarkColors.primary.withOpacity(0.1)
+                            : WebColors.primary.withOpacity(0.05))
+                        : Colors.transparent,
+                  ),
+                  alignment: isNumeric ? Alignment.centerRight : Alignment.centerLeft,
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
+                  child: _buildSortableHeaderContent(header, isNumeric, theme, columnIndex),
+                ),
               ),
             ),
-            const SizedBox(width: 4),
-            _buildSortIcon(columnIndex, theme),
-          ],
+          ),
         ),
         size: header == 'Instrument' ? ColumnSize.L : ColumnSize.S,
         fixedWidth: header == 'Instrument' ? 300.0 : null,
-        onSort: (index, ascending) => _onSortTable(columnIndex, ascending),
+        onSort: null, // Disable DataTable2's onSort
       );
     }).toList();
   }
@@ -1188,13 +1243,14 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
           return Colors.transparent;
         }),
         cells: headers.map((header) {
+          final isNumeric = _isNumericColumn(header);
           return DataCell(
             MouseRegion(
               onEnter: (_) => setState(() => _hoveredRowToken = uniqueId),
               onExit: (_) => setState(() => _hoveredRowToken = null),
               child: SizedBox.expand(
                 child: Container(
-                  alignment: header == 'Instrument' ? Alignment.centerLeft : Alignment.centerRight,
+                  alignment: isNumeric ? Alignment.centerRight : Alignment.centerLeft,
                   padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
                   child: _buildDataTable2CellContent(header, holding, theme, exchTsym, uniqueId),
                 ),
@@ -1227,18 +1283,19 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
             color: _getQtyColor(qty, theme),
             fontWeight: WebFonts.medium,
           ),
+          textAlign: TextAlign.right,
         );
       case 'Avg Price':
         final avgPrc = holding.avgPrc != null && holding.avgPrc!.isNotEmpty
             ? holding.avgPrc!
             : '0.00';
-        return Text(avgPrc);
+        return Text(avgPrc, textAlign: TextAlign.right);
       case 'LTP':
-        return Text(exchTsym?.lp ?? '0.00');
+        return Text(exchTsym?.lp ?? '0.00', textAlign: TextAlign.right);
       case 'Invested':
-        return Text(holding.invested ?? '0.00');
+        return Text(holding.invested ?? '0.00', textAlign: TextAlign.right);
       case 'Current Value':
-        return Text(holding.currentValue ?? '0.00');
+        return Text(holding.currentValue ?? '0.00', textAlign: TextAlign.right);
       case 'Day P&L':
         final dayPnL = exchTsym?.oneDayChg ?? '0.00';
         return Text(
@@ -1249,6 +1306,7 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
             color: _getValueColor(dayPnL, theme),
             fontWeight: WebFonts.medium,
           ),
+          textAlign: TextAlign.right,
         );
       case 'Day %':
         final dayPercent = exchTsym?.perChange ?? '0.00';
@@ -1260,6 +1318,7 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
             color: _getValueColor(dayPercent, theme),
             fontWeight: WebFonts.medium,
           ),
+          textAlign: TextAlign.right,
         );
       case 'Overall P&L':
         final overallPnL = exchTsym?.profitNloss ?? '0.00';
@@ -1271,6 +1330,7 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
             color: _getValueColor(overallPnL, theme),
             fontWeight: WebFonts.medium,
           ),
+          textAlign: TextAlign.right,
         );
       case 'Overall %':
         final overallPercent = exchTsym?.pNlChng ?? '0.00';
@@ -1282,6 +1342,7 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
             color: _getValueColor(overallPercent, theme),
             fontWeight: WebFonts.medium,
           ),
+          textAlign: TextAlign.right,
         );
       default:
         return const SizedBox.shrink();
@@ -2149,50 +2210,19 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
     );
   }
 
-  void _onSortTable(int columnIndex, bool ascending) {
+  void _onManualSort(int columnIndex) {
     setState(() {
+      if (_sortColumnIndex == columnIndex) {
+        // Same column clicked - toggle sort direction
+        _sortAscending = !_sortAscending;
+      } else {
+        // Different column clicked - set as new sort column with ascending
       _sortColumnIndex = columnIndex;
-      _sortAscending = ascending;
+        _sortAscending = true;
+      }
     });
   }
 
-  Widget _buildSortableColumnHeader(
-      String label, ThemesProvider theme, int columnIndex) {
-    final isSorted = _sortColumnIndex == columnIndex;
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Text(
-          label,
-          style: WebTextStyles.tableHeader(
-            isDarkTheme: theme.isDarkMode,
-            color: theme.isDarkMode
-                ? WebDarkColors.textPrimary
-                : WebColors.textPrimary,
-          ),
-        ),
-        const SizedBox(width: 4),
-        // Reserve fixed space for sort indicator
-        // Show custom icon when not sorted, DataTable will show its icon when sorted
-        SizedBox(
-          width: 20, // Fixed width to prevent layout shift
-          height: 16,
-          child: !isSorted
-              ? Icon(
-                  Icons.unfold_more,
-                  size: 16,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.iconSecondary
-                      : WebColors.iconSecondary,
-                )
-              : const SizedBox
-                  .shrink(), // Hide when sorted, DataTable will show its indicator
-        ),
-      ],
-    );
-  }
 
   Color _getStatValueColor(String value, ThemesProvider theme) {
     // Extract numeric value from string (remove any text like percentages)

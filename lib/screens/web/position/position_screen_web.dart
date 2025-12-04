@@ -37,6 +37,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
   int? _sortColumnIndex;
   bool _sortAscending = true;
   String? _hoveredRowToken; // Track which row is being hovered
+  int? _hoveredColumnIndex; // Track which column is being hovered
   final ScrollController _horizontalScrollController = ScrollController();
   final ScrollController _verticalScrollController = ScrollController();
   final ScrollController _tabScrollController = ScrollController();
@@ -824,7 +825,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
           'Instrument': 300,
           'Product': 130,
           'Qty': 80,
-          'Act Avg Price': 180,
+          'Act Avg Price': 140,
           'LTP': 100,
           'P&L': 110,
           'MTM': 110,
@@ -924,7 +925,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                 columnSpacing: 12,
                 horizontalMargin: 12,
                 minWidth: 1800, // Increased to accommodate wider columns
-                sortColumnIndex: _sortColumnIndex,
+                sortColumnIndex: null, // Disable DataTable2's built-in sorting
                 sortAscending: _sortAscending,
                 fixedLeftColumns: 2, // Fix the first two columns (Select and Instrument)
                 fixedColumnsColor: theme.isDarkMode 
@@ -984,6 +985,10 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
     );
   }
 
+  bool _isNumericColumn(String header) {
+    return header != 'Select' && header != 'Instrument'; // All columns except Select and Instrument contain numeric data
+  }
+
   int _getColumnIndexForHeader(String header) {
     switch (header) {
       case 'Select': return 0;
@@ -1012,22 +1017,86 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
   ) {
     return headers.map((header) {
       final columnIndex = _getColumnIndexForHeader(header);
+      final isNumeric = _isNumericColumn(header);
       
       // Special handling for fixed columns (Select and Instrument)
       final isSelect = header == 'Select';
       final isInstrument = header == 'Instrument';
+      final isActAvgPrice = header == 'Act Avg Price';
+      
+      // Get the min width for this column, or use default
+      final minWidth = columnMinWidth[header];
       
       return DataColumn2(
-        label: _buildPositionHeaderWidget(
+        label: isSelect ? _buildPositionHeaderWidget(
           header,
           columnIndex,
           theme,
           positionBook,
           filteredPositions,
+        ) : SizedBox.expand(
+          child: MouseRegion(
+            cursor: SystemMouseCursors.click,
+            onEnter: (_) => setState(() => _hoveredColumnIndex = columnIndex),
+            onExit: (_) => setState(() => _hoveredColumnIndex = null),
+            child: Tooltip(
+              message: 'Sort by $header',
+              child: GestureDetector(
+                onTap: () => _onSortTable(columnIndex),
+                behavior: HitTestBehavior.opaque,
+                child: Container(
+                  width: double.infinity,
+                  height: double.infinity,
+                  decoration: BoxDecoration(
+                    color: _hoveredColumnIndex == columnIndex
+                        ? (theme.isDarkMode
+                            ? WebDarkColors.primary.withOpacity(0.1)
+                            : WebColors.primary.withOpacity(0.05))
+                        : Colors.transparent,
+                  ),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isActAvgPrice ? 6.0 : 8.0, 
+                    vertical: 12.0
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max,
+                    mainAxisAlignment: isNumeric ? MainAxisAlignment.end : MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Flexible(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              header,
+                              style: WebTextStyles.tableHeader(
+                                isDarkTheme: theme.isDarkMode,
+                                color: theme.isDarkMode
+                                    ? WebDarkColors.textPrimary
+                                    : WebColors.textPrimary,
+                              ),
+                              textAlign: isNumeric ? TextAlign.right : TextAlign.left,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
+                            const SizedBox(width: 4),
+                            SizedBox(
+                              width: 16, // Fixed width for the icon
+                              child: _buildSortIcon(columnIndex, theme),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
         ),
         size: isInstrument ? ColumnSize.L : ColumnSize.S,
-        fixedWidth: isSelect ? 60.0 : (isInstrument ? 300.0 : null),
-        onSort: columnIndex > 0 ? (index, ascending) => _onSortTable(columnIndex, ascending) : null,
+        fixedWidth: isSelect ? 60.0 : (isInstrument ? 300.0 : (isActAvgPrice && minWidth != null ? minWidth : null)),
+        onSort: null, // Disable DataTable2's default sort
       );
     }).toList();
   }
@@ -1079,6 +1148,8 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
     PortfolioProvider positionBook,
   ) {
     Widget cellContent;
+    final isNumeric = _isNumericColumn(column);
+    final alignment = isNumeric ? Alignment.centerRight : Alignment.centerLeft;
     
     switch (column) {
       case 'Select':
@@ -1097,7 +1168,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
         cellContent = _buildPositionTextCell(
           position.sPrdtAli ?? 'N/A',
           theme,
-          Alignment.centerLeft,
+          alignment,
           color: _getPositionTextColor(position, theme),
         );
         break;
@@ -1105,7 +1176,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
         cellContent = _buildPositionTextCell(
           _formatQty(position.qty ?? '0'),
           theme,
-          Alignment.centerRight,
+          alignment,
           color: isClosed ? Colors.grey : _getQtyColor(position.qty ?? '0', theme),
         );
         break;
@@ -1113,7 +1184,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
         cellContent = _buildPositionTextCell(
           position.avgPrc ?? '0.00',
           theme,
-          Alignment.centerRight,
+          alignment,
           color: _getPositionTextColor(position, theme),
         );
         break;
@@ -1121,7 +1192,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
         cellContent = _buildPositionTextCell(
           position.lp ?? '0.00',
           theme,
-          Alignment.centerRight,
+          alignment,
           color: _getPositionTextColor(position, theme),
         );
         break;
@@ -1129,7 +1200,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
         cellContent = _buildPositionTextCell(
           position.profitNloss ?? '0.00',
           theme,
-          Alignment.centerRight,
+          alignment,
           color: isClosed
               ? Colors.grey
               : _getValueColor(position.profitNloss ?? '0.00', theme),
@@ -1139,7 +1210,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
         cellContent = _buildPositionTextCell(
           position.mTm ?? '0.00',
           theme,
-          Alignment.centerRight,
+          alignment,
           color: isClosed
               ? Colors.grey
               : _getValueColor(position.mTm ?? '0.00', theme),
@@ -1149,7 +1220,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
         cellContent = _buildPositionTextCell(
           position.avgPrc ?? '0.00',
           theme,
-          Alignment.centerRight,
+          alignment,
           color: _getPositionTextColor(position, theme),
         );
         break;
@@ -1157,7 +1228,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
         cellContent = _buildPositionTextCell(
           position.daybuyqty ?? '0',
           theme,
-          Alignment.centerRight,
+          alignment,
           color: _getPositionTextColor(position, theme),
         );
         break;
@@ -1165,7 +1236,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
         cellContent = _buildPositionTextCell(
           position.daysellqty ?? '0',
           theme,
-          Alignment.centerRight,
+          alignment,
           color: _getPositionTextColor(position, theme),
         );
         break;
@@ -1173,7 +1244,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
         cellContent = _buildPositionTextCell(
           position.daybuyavgprc ?? '0.00',
           theme,
-          Alignment.centerRight,
+          alignment,
           color: _getPositionTextColor(position, theme),
         );
         break;
@@ -1181,7 +1252,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
         cellContent = _buildPositionTextCell(
           position.daysellavgprc ?? '0.00',
           theme,
-          Alignment.centerRight,
+          alignment,
           color: _getPositionTextColor(position, theme),
         );
         break;
@@ -1380,17 +1451,26 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
   }
 
   Widget _buildSortIcon(int columnIndex, ThemesProvider theme) {
+    IconData icon;
+    Color color;
+
     if (_sortColumnIndex == columnIndex) {
-      return const SizedBox(width: 16); // Reserve space for DataTable2's arrow
+      // Column is currently sorted
+      icon = _sortAscending ? Icons.arrow_upward : Icons.arrow_downward;
+      color = theme.isDarkMode ? WebDarkColors.primary : WebColors.primary;
     } else {
-      return Icon(
-        Icons.unfold_more,
-        size: 16,
-        color: theme.isDarkMode
-            ? WebDarkColors.iconSecondary
-            : WebColors.iconSecondary,
-      );
+      // Column is not sorted
+      icon = Icons.unfold_more;
+      color = theme.isDarkMode
+          ? WebDarkColors.iconSecondary.withOpacity(0.6)
+          : WebColors.iconSecondary.withOpacity(0.6);
     }
+
+    return Icon(
+      icon,
+      size: 16,
+      color: color,
+    );
   }
 
 
@@ -1695,10 +1775,16 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
     }
   }
 
-  void _onSortTable(int columnIndex, bool ascending) {
+  void _onSortTable(int columnIndex) {
     setState(() {
-      _sortColumnIndex = columnIndex;
-      _sortAscending = ascending;
+      if (_sortColumnIndex == columnIndex) {
+        // If the same column is tapped, toggle the sort order
+        _sortAscending = !_sortAscending;
+      } else {
+        // If a new column is tapped, sort it ascending by default
+        _sortColumnIndex = columnIndex;
+        _sortAscending = true;
+      }
     });
   }
 

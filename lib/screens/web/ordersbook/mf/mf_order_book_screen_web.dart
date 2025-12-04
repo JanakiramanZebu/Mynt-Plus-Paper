@@ -28,6 +28,7 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb>
   final ScrollController _verticalScrollController = ScrollController();
   bool _hasInitialized = false;
   String? _hoveredRowToken;
+  int? _hoveredColumnIndex; // Track which column is being hovered
 
   @override
   bool get wantKeepAlive => true;
@@ -156,7 +157,7 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb>
                 columnSpacing: 12,
                 horizontalMargin: 12,
                 minWidth: 1200,
-                sortColumnIndex: _mfSortColumnIndex,
+                sortColumnIndex: null, // Disable DataTable2's built-in sorting
                 sortAscending: _mfSortAscending,
                 fixedLeftColumns: 1, // Fix the first column (Scheme)
                 fixedColumnsColor: theme.isDarkMode 
@@ -231,6 +232,10 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb>
     };
   }
 
+  bool _isNumericColumnMfOrder(String header) {
+    return header == 'Amount' || header == 'Time'; // Amount and Time are numeric/right-aligned
+  }
+
   int _getMfOrderColumnIndexForHeader(String header) {
     switch (header) {
       case 'Scheme': return 0;
@@ -249,29 +254,71 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb>
   ) {
     return headers.map((header) {
       final columnIndex = _getMfOrderColumnIndexForHeader(header);
+      final isNumeric = _isNumericColumnMfOrder(header);
       final isScheme = header == 'Scheme';
       final isTime = header == 'Time';
       
       return DataColumn2(
-        label: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              header,
-              style: WebTextStyles.tableHeader(
-                isDarkTheme: theme.isDarkMode,
-                color: theme.isDarkMode
-                    ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary,
+        label: SizedBox.expand(
+          child: MouseRegion(
+            cursor: SystemMouseCursors.click,
+            onEnter: (_) => setState(() => _hoveredColumnIndex = columnIndex),
+            onExit: (_) => setState(() => _hoveredColumnIndex = null),
+            child: Tooltip(
+              message: 'Sort by $header',
+              child: GestureDetector(
+                onTap: () => _onSortMfTable(columnIndex),
+                behavior: HitTestBehavior.opaque,
+                child: Container(
+                  width: double.infinity,
+                  height: double.infinity,
+                  decoration: BoxDecoration(
+                    color: _hoveredColumnIndex == columnIndex
+                        ? (theme.isDarkMode
+                            ? WebDarkColors.primary.withOpacity(0.1)
+                            : WebColors.primary.withOpacity(0.05))
+                        : Colors.transparent,
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max,
+                    mainAxisAlignment: isNumeric ? MainAxisAlignment.end : MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Flexible(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              header,
+                              style: WebTextStyles.tableHeader(
+                                isDarkTheme: theme.isDarkMode,
+                                color: theme.isDarkMode
+                                    ? WebDarkColors.textPrimary
+                                    : WebColors.textPrimary,
+                              ),
+                              textAlign: isNumeric ? TextAlign.right : TextAlign.left,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
+                            const SizedBox(width: 4),
+                            SizedBox(
+                              width: 16, // Fixed width for the icon
+                              child: _buildMfOrderSortIcon(columnIndex, theme),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
-            const SizedBox(width: 4),
-            _buildMfOrderSortIcon(columnIndex, theme),
-          ],
+          ),
         ),
         size: isScheme ? ColumnSize.L : ColumnSize.S,
         fixedWidth: isScheme ? 300.0 : (isTime ? 220.0 : null),
-        onSort: (index, ascending) => _onSortMfTable(columnIndex, ascending),
+        onSort: null, // Disable DataTable2's default sort
       );
     }).toList();
   }
@@ -346,7 +393,7 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb>
         cellContent = _buildMfOrderTextCell(
           time,
           theme,
-          Alignment.centerLeft,
+          Alignment.centerRight,
         );
         break;
       case 'Status':
@@ -376,17 +423,26 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb>
   }
 
   Widget _buildMfOrderSortIcon(int columnIndex, ThemesProvider theme) {
+    IconData icon;
+    Color color;
+
     if (_mfSortColumnIndex == columnIndex) {
-      return const SizedBox(width: 16); // Reserve space for DataTable2's arrow
+      // Column is currently sorted
+      icon = _mfSortAscending ? Icons.arrow_upward : Icons.arrow_downward;
+      color = theme.isDarkMode ? WebDarkColors.primary : WebColors.primary;
     } else {
-      return Icon(
-        Icons.unfold_more,
-        size: 16,
-        color: theme.isDarkMode
-            ? WebDarkColors.iconSecondary
-            : WebColors.iconSecondary,
-      );
+      // Column is not sorted
+      icon = Icons.unfold_more;
+      color = theme.isDarkMode
+          ? WebDarkColors.iconSecondary.withOpacity(0.6)
+          : WebColors.iconSecondary.withOpacity(0.6);
     }
+
+    return Icon(
+      icon,
+      size: 16,
+      color: color,
+    );
   }
 
   Widget _buildMfOrderTypeCell(String type, ThemesProvider theme) {
@@ -458,10 +514,16 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb>
   }
 
 
-  void _onSortMfTable(int columnIndex, bool ascending) {
+  void _onSortMfTable(int columnIndex) {
     setState(() {
-      _mfSortColumnIndex = columnIndex;
-      _mfSortAscending = ascending;
+      if (_mfSortColumnIndex == columnIndex) {
+        // If the same column is tapped, toggle the sort order
+        _mfSortAscending = !_mfSortAscending;
+      } else {
+        // If a new column is tapped, sort it ascending by default
+        _mfSortColumnIndex = columnIndex;
+        _mfSortAscending = true;
+      }
     });
   }
 

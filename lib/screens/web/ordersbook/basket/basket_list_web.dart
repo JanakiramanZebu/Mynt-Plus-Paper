@@ -33,6 +33,7 @@ class _BasketListState extends ConsumerState<BasketList> {
   String? _hoveredRowIndex;
   int? _sortColumnIndex;
   bool _sortAscending = true;
+  int? _hoveredColumnIndex;
   final ScrollController _horizontalScrollController = ScrollController();
   final ScrollController _verticalScrollController = ScrollController();
   bool _isDeleting = false;
@@ -46,9 +47,25 @@ class _BasketListState extends ConsumerState<BasketList> {
 
   void _onSortTable(int columnIndex, bool ascending) {
     setState(() {
-      _sortColumnIndex = columnIndex;
-      _sortAscending = ascending;
+      if (_sortColumnIndex == columnIndex) {
+        _sortAscending = !_sortAscending;
+      } else {
+        _sortColumnIndex = columnIndex;
+        _sortAscending = ascending;
+      }
     });
+  }
+
+  bool _isNumericColumn(String header) {
+    switch (header) {
+      case 'Items':
+        return true;
+      case 'Basket Name':
+      case 'Created Date':
+        return false;
+      default:
+        return false;
+    }
   }
 
   List<dynamic> _getFilteredBaskets(List<dynamic> baskets) {
@@ -115,27 +132,63 @@ class _BasketListState extends ConsumerState<BasketList> {
       final columnIndex = _getBasketColumnIndexForHeader(header);
       final isBasketName = header == 'Basket Name';
       final isCreatedDate = header == 'Created Date';
+      final isNumeric = _isNumericColumn(header);
       
       return DataColumn2(
-        label: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              header,
-              style: WebTextStyles.tableHeader(
-                isDarkTheme: theme.isDarkMode,
-                color: theme.isDarkMode
-                    ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary,
+        label: SizedBox.expand(
+          child: MouseRegion(
+            onEnter: (_) => setState(() => _hoveredColumnIndex = columnIndex),
+            onExit: (_) => setState(() => _hoveredColumnIndex = null),
+            child: Tooltip(
+              message: 'Sort by $header',
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => _onSortTable(columnIndex, true),
+                child: Container(
+                  height: double.infinity,
+                  decoration: BoxDecoration(
+                    color: _hoveredColumnIndex == columnIndex
+                        ? (theme.isDarkMode
+                            ? WebDarkColors.primary.withOpacity(0.1)
+                            : WebColors.primary.withOpacity(0.05))
+                        : Colors.transparent,
+                  ),
+                  alignment: isNumeric ? Alignment.centerRight : Alignment.centerLeft,
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: isNumeric ? MainAxisAlignment.end : MainAxisAlignment.start,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          header,
+                          style: WebTextStyles.tableHeader(
+                            isDarkTheme: theme.isDarkMode,
+                            color: theme.isDarkMode
+                                ? WebDarkColors.textPrimary
+                                : WebColors.textPrimary,
+                          ),
+                          textAlign: isNumeric ? TextAlign.right : TextAlign.left,
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: _buildBasketSortIcon(columnIndex, theme),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
-            const SizedBox(width: 4),
-            _buildBasketSortIcon(columnIndex, theme),
-          ],
+          ),
         ),
         size: isBasketName ? ColumnSize.L : ColumnSize.S,
         fixedWidth: isBasketName ? 300.0 : (isCreatedDate ? 220.0 : null),
-        onSort: (index, ascending) => _onSortTable(columnIndex, ascending),
+        onSort: null,
       );
     }).toList();
   }
@@ -200,7 +253,7 @@ class _BasketListState extends ConsumerState<BasketList> {
         cellContent = _buildBasketTextCell(
           (basket['curLength'] ?? 0).toString(),
           theme,
-          Alignment.centerLeft,
+          Alignment.centerRight,
         );
         break;
       case 'Created Date':
@@ -304,7 +357,13 @@ class _BasketListState extends ConsumerState<BasketList> {
 
   Widget _buildBasketSortIcon(int columnIndex, ThemesProvider theme) {
     if (_sortColumnIndex == columnIndex) {
-      return const SizedBox(width: 16); // Reserve space for DataTable2's arrow
+      return Icon(
+        _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
+        size: 16,
+        color: theme.isDarkMode
+            ? WebDarkColors.iconPrimary
+            : WebColors.iconPrimary,
+      );
     } else {
       return Icon(
         Icons.unfold_more,
@@ -433,8 +492,8 @@ class _BasketListState extends ConsumerState<BasketList> {
                 columnSpacing: 12,
                 horizontalMargin: 12,
                 minWidth: 800,
-                sortColumnIndex: _sortColumnIndex,
-                sortAscending: _sortAscending,
+                sortColumnIndex: null,
+                sortAscending: true,
                 fixedLeftColumns: 1, // Fix the first column (Basket Name)
                 fixedColumnsColor: theme.isDarkMode 
                     ? WebDarkColors.backgroundSecondary.withOpacity(0.8)
@@ -840,6 +899,7 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
   String? _hoveredRowIndex;
   int? _sortColumnIndex;
   bool _sortAscending = true;
+  int? _hoveredColumnIndex;
   
   // Responsive breakpoints
   static const double _mobileBreakpoint = 768;
@@ -942,9 +1002,29 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
 
   void _onSortTable(int columnIndex, bool ascending) {
     setState(() {
-      _sortColumnIndex = columnIndex;
-      _sortAscending = ascending;
+      if (_sortColumnIndex == columnIndex) {
+        _sortAscending = !_sortAscending;
+      } else {
+        _sortColumnIndex = columnIndex;
+        _sortAscending = ascending;
+      }
     });
+  }
+
+  bool _isNumericColumnBasketItems(String header) {
+    switch (header) {
+      case 'Qty':
+      case 'Price':
+      case 'LTP':
+        return true;
+      case 'Instrument':
+      case 'Details':
+      case 'Type':
+      case 'Status':
+        return false;
+      default:
+        return false;
+    }
   }
 
   List<Map<String, dynamic>> _getSortedBasketScripts(
@@ -2396,53 +2476,78 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
     int columnIndex,
     ThemesProvider theme,
   ) {
-    return InkWell(
-      onTap: () => _onSortTable(columnIndex, !_sortAscending),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 6),
-              child: Text(
-                label,
-                style: WebTextStyles.tableHeader(
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
-                ),
-                overflow: TextOverflow.visible,
+    final isNumeric = _isNumericColumnBasketItems(label);
+    return SizedBox.expand(
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _hoveredColumnIndex = columnIndex),
+        onExit: (_) => setState(() => _hoveredColumnIndex = null),
+        child: Tooltip(
+          message: 'Sort by $label',
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => _onSortTable(columnIndex, true),
+            child: Container(
+              height: double.infinity,
+              decoration: BoxDecoration(
+                color: _hoveredColumnIndex == columnIndex
+                    ? (theme.isDarkMode
+                        ? WebDarkColors.primary.withOpacity(0.1)
+                        : WebColors.primary.withOpacity(0.05))
+                    : Colors.transparent,
+              ),
+              alignment: isNumeric ? Alignment.centerRight : Alignment.centerLeft,
+              padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 6.0),
+              child: Row(
+                mainAxisAlignment: isNumeric ? MainAxisAlignment.end : MainAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Flexible(
+                    child: Text(
+                      label,
+                      style: WebTextStyles.tableHeader(
+                        isDarkTheme: theme.isDarkMode,
+                        color: theme.isDarkMode
+                            ? WebDarkColors.textPrimary
+                            : WebColors.textPrimary,
+                      ),
+                      textAlign: isNumeric ? TextAlign.right : TextAlign.left,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: _buildBasketItemsSortIcon(columnIndex, theme),
+                  ),
+                ],
               ),
             ),
           ),
-          // Sort icon
-          if (_sortColumnIndex == columnIndex)
-            Padding(
-              padding: const EdgeInsets.only(left: 6.0),
-              child: Icon(
-                _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
-                size: 16,
-                color: theme.isDarkMode
-                    ? WebDarkColors.iconPrimary
-                    : WebColors.iconPrimary,
-              ),
-            )
-          else
-            Padding(
-              padding: const EdgeInsets.only(right: 6.0),
-              child: Icon(
-                Icons.unfold_more,
-                size: 16,
-                color: theme.isDarkMode
-                    ? WebDarkColors.iconSecondary
-                    : WebColors.iconSecondary,
-              ),
-            ),
-        ],
+        ),
       ),
     );
+  }
+
+  Widget _buildBasketItemsSortIcon(int columnIndex, ThemesProvider theme) {
+    if (_sortColumnIndex == columnIndex) {
+      return Icon(
+        _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
+        size: 16,
+        color: theme.isDarkMode
+            ? WebDarkColors.iconPrimary
+            : WebColors.iconPrimary,
+      );
+    } else {
+      return Icon(
+        Icons.unfold_more,
+        size: 16,
+        color: theme.isDarkMode
+            ? WebDarkColors.iconSecondary
+            : WebColors.iconSecondary,
+      );
+    }
   }
 
   Widget _buildBasketColumnCell({

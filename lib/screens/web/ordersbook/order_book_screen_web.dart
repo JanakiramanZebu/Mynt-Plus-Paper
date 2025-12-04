@@ -56,6 +56,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
   final ScrollController _gttVerticalScrollController = ScrollController();
   final ScrollController _tabScrollController = ScrollController();
   String? _hoveredRowToken; // Track which row is being hovered
+  int? _hoveredColumnIndex; // Track which column is being hovered
 
   // Track processing states for order actions
   bool _isProcessingCancel = false;
@@ -123,10 +124,12 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     try {
       // Initialize TabController after UI renders
       final orderProviderRef = ref.read(orderProvider);
+      // Always reset to Open Orders tab (index 0) when navigating to order book
+      orderProviderRef.changeTabIndex(0, context);
       _tabController = TabController(
         length: orderProviderRef.orderTabName.length,
         vsync: this,
-        initialIndex: orderProviderRef.selectedTab,
+        initialIndex: 0, // Always start with Open Orders tab
       );
 
       _tabController!.addListener(() {
@@ -1032,7 +1035,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                 columnSpacing: 12,
                 horizontalMargin: 12,
                 minWidth: 1840,
-                sortColumnIndex: _orderSortColumnIndex,
+                sortColumnIndex: null, // Disable DataTable2's built-in sorting
                 sortAscending: _orderSortAscending,
                 fixedLeftColumns: 1, // Fix the first column (Instrument)
                 fixedColumnsColor: theme.isDarkMode 
@@ -1092,6 +1095,10 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     );
   }
 
+  bool _isNumericColumn(String header) {
+    return header != 'Instrument' && header != 'Product' && header != 'Type' && header != 'Status';
+  }
+
   int _getOrderBookColumnIndexForHeader(String header) {
     switch (header) {
       case 'Instrument': return 0;
@@ -1116,29 +1123,71 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
   ) {
     return headers.map((header) {
       final columnIndex = _getOrderBookColumnIndexForHeader(header);
+      final isNumeric = _isNumericColumn(header);
       final isInstrument = header == 'Instrument';
       final isTime = header == 'Time';
       
       return DataColumn2(
-        label: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              header,
-              style: WebTextStyles.tableHeader(
-                isDarkTheme: theme.isDarkMode,
-                color: theme.isDarkMode
-                    ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary,
+        label: SizedBox.expand(
+          child: MouseRegion(
+            cursor: SystemMouseCursors.click,
+            onEnter: (_) => setState(() => _hoveredColumnIndex = columnIndex),
+            onExit: (_) => setState(() => _hoveredColumnIndex = null),
+            child: Tooltip(
+              message: 'Sort by $header',
+              child: GestureDetector(
+                onTap: () => _onSortOrderTable(columnIndex),
+                behavior: HitTestBehavior.opaque,
+                child: Container(
+                  width: double.infinity,
+                  height: double.infinity,
+                  decoration: BoxDecoration(
+                    color: _hoveredColumnIndex == columnIndex
+                        ? (theme.isDarkMode
+                            ? WebDarkColors.primary.withOpacity(0.1)
+                            : WebColors.primary.withOpacity(0.05))
+                        : Colors.transparent,
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max,
+                    mainAxisAlignment: isNumeric ? MainAxisAlignment.end : MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Flexible(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              header,
+                              style: WebTextStyles.tableHeader(
+                                isDarkTheme: theme.isDarkMode,
+                                color: theme.isDarkMode
+                                    ? WebDarkColors.textPrimary
+                                    : WebColors.textPrimary,
+                              ),
+                              textAlign: isNumeric ? TextAlign.right : TextAlign.left,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
+                            const SizedBox(width: 4),
+                            SizedBox(
+                              width: 16, // Fixed width for the icon
+                              child: _buildOrderBookSortIcon(columnIndex, theme),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
-            const SizedBox(width: 4),
-            _buildOrderBookSortIcon(columnIndex, theme),
-          ],
+          ),
         ),
         size: isInstrument ? ColumnSize.L : ColumnSize.S,
         fixedWidth: isInstrument ? 300.0 : (isTime ? 220.0 : null),
-        onSort: (index, ascending) => _onSortOrderTable(columnIndex, ascending),
+        onSort: null, // Disable DataTable2's default sort
       );
     }).toList();
   }
@@ -1285,7 +1334,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
         cellContent = _buildOrderBookTextCell(
           formatDateTime(value: time),
           theme,
-          Alignment.centerLeft,
+          Alignment.centerRight,
         );
         break;
       default:
@@ -1414,17 +1463,26 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
   }
 
   Widget _buildOrderBookSortIcon(int columnIndex, ThemesProvider theme) {
+    IconData icon;
+    Color color;
+
     if (_orderSortColumnIndex == columnIndex) {
-      return const SizedBox(width: 16); // Reserve space for DataTable2's arrow
+      // Column is currently sorted
+      icon = _orderSortAscending ? Icons.arrow_upward : Icons.arrow_downward;
+      color = theme.isDarkMode ? WebDarkColors.primary : WebColors.primary;
     } else {
-      return Icon(
-        Icons.unfold_more,
-        size: 16,
-        color: theme.isDarkMode
-            ? WebDarkColors.iconSecondary
-            : WebColors.iconSecondary,
-      );
+      // Column is not sorted
+      icon = Icons.unfold_more;
+      color = theme.isDarkMode
+          ? WebDarkColors.iconSecondary.withOpacity(0.6)
+          : WebColors.iconSecondary.withOpacity(0.6);
     }
+
+    return Icon(
+      icon,
+      size: 16,
+      color: color,
+    );
   }
 
 
@@ -1560,7 +1618,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                 columnSpacing: 12,
                 horizontalMargin: 12,
                 minWidth: 1200,
-                sortColumnIndex: _tradeSortColumnIndex,
+                sortColumnIndex: null, // Disable DataTable2's built-in sorting
                 sortAscending: _tradeSortAscending,
                 fixedLeftColumns: 1, // Fix Instrument column
                 fixedColumnsColor: theme.isDarkMode 
@@ -1612,6 +1670,10 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     );
   }
 
+  bool _isNumericColumnTradeBook(String header) {
+    return header != 'Instrument' && header != 'Product' && header != 'Type' && header != 'Order no';
+  }
+
   int _getTradeBookColumnIndexForHeader(String header) {
     switch (header) {
       case 'Instrument': return 0;
@@ -1633,29 +1695,71 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
   ) {
     return headers.map((header) {
       final columnIndex = _getTradeBookColumnIndexForHeader(header);
+      final isNumeric = _isNumericColumnTradeBook(header);
       final isInstrument = header == 'Instrument';
       final isTime = header == 'Time';
       
       return DataColumn2(
-        label: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              header,
-              style: WebTextStyles.tableHeader(
-                isDarkTheme: theme.isDarkMode,
-                color: theme.isDarkMode
-                    ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary,
+        label: SizedBox.expand(
+          child: MouseRegion(
+            cursor: SystemMouseCursors.click,
+            onEnter: (_) => setState(() => _hoveredColumnIndex = columnIndex),
+            onExit: (_) => setState(() => _hoveredColumnIndex = null),
+            child: Tooltip(
+              message: 'Sort by $header',
+              child: GestureDetector(
+                onTap: () => _onSortTradeTable(columnIndex),
+                behavior: HitTestBehavior.opaque,
+                child: Container(
+                  width: double.infinity,
+                  height: double.infinity,
+                  decoration: BoxDecoration(
+                    color: _hoveredColumnIndex == columnIndex
+                        ? (theme.isDarkMode
+                            ? WebDarkColors.primary.withOpacity(0.1)
+                            : WebColors.primary.withOpacity(0.05))
+                        : Colors.transparent,
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max,
+                    mainAxisAlignment: isNumeric ? MainAxisAlignment.end : MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Flexible(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              header,
+                              style: WebTextStyles.tableHeader(
+                                isDarkTheme: theme.isDarkMode,
+                                color: theme.isDarkMode
+                                    ? WebDarkColors.textPrimary
+                                    : WebColors.textPrimary,
+                              ),
+                              textAlign: isNumeric ? TextAlign.right : TextAlign.left,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
+                            const SizedBox(width: 4),
+                            SizedBox(
+                              width: 16, // Fixed width for the icon
+                              child: _buildTradeBookSortIcon(columnIndex, theme),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
-            const SizedBox(width: 4),
-            _buildTradeBookSortIcon(columnIndex, theme),
-          ],
+          ),
         ),
         size: isInstrument ? ColumnSize.L : ColumnSize.S,
         fixedWidth: isInstrument ? 300.0 : (isTime ? 220.0 : null),
-        onSort: (index, ascending) => _onSortTradeTable(columnIndex, ascending),
+        onSort: null, // Disable DataTable2's default sort
       );
     }).toList();
   }
@@ -1740,7 +1844,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
               cellContent = _buildTradeBookTextCell(
                 formatDateTime(value: time),
                 theme,
-                Alignment.centerLeft,
+                Alignment.centerRight,
               );
               break;
             default:
@@ -1771,15 +1875,26 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
   }
 
   Widget _buildTradeBookSortIcon(int columnIndex, ThemesProvider theme) {
+    IconData icon;
+    Color color;
+
     if (_tradeSortColumnIndex == columnIndex) {
-      return const SizedBox(width: 16); // Reserve space for DataTable2's arrow
+      // Column is currently sorted
+      icon = _tradeSortAscending ? Icons.arrow_upward : Icons.arrow_downward;
+      color = theme.isDarkMode ? WebDarkColors.primary : WebColors.primary;
     } else {
-      return Icon(
-        Icons.unfold_more,
-        size: 16,
-        color: theme.isDarkMode ? WebDarkColors.iconSecondary : WebColors.iconSecondary,
-      );
+      // Column is not sorted
+      icon = Icons.unfold_more;
+      color = theme.isDarkMode
+          ? WebDarkColors.iconSecondary.withOpacity(0.6)
+          : WebColors.iconSecondary.withOpacity(0.6);
     }
+
+    return Icon(
+      icon,
+      size: 16,
+      color: color,
+    );
   }
 
   Widget _buildTradeBookInstrumentCellContent(
@@ -1918,6 +2033,10 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     };
   }
 
+  bool _isNumericColumnGtt(String header) {
+    return header != 'Instrument' && header != 'Product' && header != 'Type' && header != 'Status';
+  }
+
   int _getGttColumnIndexForHeader(String header) {
     switch (header) {
       case 'Instrument': return 0;
@@ -1939,29 +2058,71 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
   ) {
     return headers.map((header) {
       final columnIndex = _getGttColumnIndexForHeader(header);
+      final isNumeric = _isNumericColumnGtt(header);
       final isInstrument = header == 'Instrument';
       final isTime = header == 'Time';
       
       return DataColumn2(
-        label: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              header,
-              style: WebTextStyles.tableHeader(
-                isDarkTheme: theme.isDarkMode,
-                color: theme.isDarkMode
-                    ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary,
+        label: SizedBox.expand(
+          child: MouseRegion(
+            cursor: SystemMouseCursors.click,
+            onEnter: (_) => setState(() => _hoveredColumnIndex = columnIndex),
+            onExit: (_) => setState(() => _hoveredColumnIndex = null),
+            child: Tooltip(
+              message: 'Sort by $header',
+              child: GestureDetector(
+                onTap: () => _onSortGttTable(columnIndex),
+                behavior: HitTestBehavior.opaque,
+                child: Container(
+                  width: double.infinity,
+                  height: double.infinity,
+                  decoration: BoxDecoration(
+                    color: _hoveredColumnIndex == columnIndex
+                        ? (theme.isDarkMode
+                            ? WebDarkColors.primary.withOpacity(0.1)
+                            : WebColors.primary.withOpacity(0.05))
+                        : Colors.transparent,
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max,
+                    mainAxisAlignment: isNumeric ? MainAxisAlignment.end : MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Flexible(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              header,
+                              style: WebTextStyles.tableHeader(
+                                isDarkTheme: theme.isDarkMode,
+                                color: theme.isDarkMode
+                                    ? WebDarkColors.textPrimary
+                                    : WebColors.textPrimary,
+                              ),
+                              textAlign: isNumeric ? TextAlign.right : TextAlign.left,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
+                            const SizedBox(width: 4),
+                            SizedBox(
+                              width: 16, // Fixed width for the icon
+                              child: _buildGttSortIcon(columnIndex, theme),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
-            const SizedBox(width: 4),
-            _buildGttSortIcon(columnIndex, theme),
-          ],
+          ),
         ),
         size: isInstrument ? ColumnSize.L : ColumnSize.S,
         fixedWidth: isInstrument ? 300.0 : (isTime ? 220.0 : null),
-        onSort: (index, ascending) => _onSortGttTable(columnIndex, ascending),
+        onSort: null, // Disable DataTable2's default sort
       );
     }).toList();
   }
@@ -2072,7 +2233,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
         cellContent = _buildGttTextCell(
           time.isNotEmpty ? formatDateTime(value: time) : '',
           theme,
-          Alignment.centerLeft,
+          Alignment.centerRight,
         );
         break;
       default:
@@ -2176,17 +2337,26 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
   }
 
   Widget _buildGttSortIcon(int columnIndex, ThemesProvider theme) {
+    IconData icon;
+    Color color;
+
     if (_gttSortColumnIndex == columnIndex) {
-      return const SizedBox(width: 16); // Reserve space for DataTable2's arrow
+      // Column is currently sorted
+      icon = _gttSortAscending ? Icons.arrow_upward : Icons.arrow_downward;
+      color = theme.isDarkMode ? WebDarkColors.primary : WebColors.primary;
     } else {
-      return Icon(
-        Icons.unfold_more,
-        size: 16,
-        color: theme.isDarkMode
-            ? WebDarkColors.iconSecondary
-            : WebColors.iconSecondary,
-      );
+      // Column is not sorted
+      icon = Icons.unfold_more;
+      color = theme.isDarkMode
+          ? WebDarkColors.iconSecondary.withOpacity(0.6)
+          : WebColors.iconSecondary.withOpacity(0.6);
     }
+
+    return Icon(
+      icon,
+      size: 16,
+      color: color,
+    );
   }
 
   Widget _buildGttOrderBookTable(
@@ -2299,7 +2469,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                 columnSpacing: 12,
                 horizontalMargin: 12,
                 minWidth: 1200,
-                sortColumnIndex: _gttSortColumnIndex,
+                sortColumnIndex: null, // Disable DataTable2's built-in sorting
                 sortAscending: _gttSortAscending,
                 fixedLeftColumns: 1, // Fix the first column (Instrument)
                 fixedColumnsColor: theme.isDarkMode 
@@ -2526,10 +2696,16 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     return sorted;
   }
 
-  void _onSortOrderTable(int columnIndex, bool ascending) {
+  void _onSortOrderTable(int columnIndex) {
     setState(() {
-      _orderSortColumnIndex = columnIndex;
-      _orderSortAscending = ascending;
+      if (_orderSortColumnIndex == columnIndex) {
+        // If the same column is tapped, toggle the sort order
+        _orderSortAscending = !_orderSortAscending;
+      } else {
+        // If a new column is tapped, sort it ascending by default
+        _orderSortColumnIndex = columnIndex;
+        _orderSortAscending = true;
+      }
     });
   }
 
@@ -2584,13 +2760,15 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     return sorted;
   }
 
-  void _onSortTradeTable(int columnIndex, bool ascending) {
+  void _onSortTradeTable(int columnIndex) {
     setState(() {
       if (_tradeSortColumnIndex == columnIndex) {
+        // If the same column is tapped, toggle the sort order
         _tradeSortAscending = !_tradeSortAscending;
       } else {
+        // If a new column is tapped, sort it ascending by default
         _tradeSortColumnIndex = columnIndex;
-        _tradeSortAscending = ascending;
+        _tradeSortAscending = true;
       }
     });
   }
@@ -2678,10 +2856,16 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     return sorted;
   }
 
-  void _onSortGttTable(int columnIndex, bool ascending) {
+  void _onSortGttTable(int columnIndex) {
     setState(() {
-      _gttSortColumnIndex = columnIndex;
-      _gttSortAscending = ascending;
+      if (_gttSortColumnIndex == columnIndex) {
+        // If the same column is tapped, toggle the sort order
+        _gttSortAscending = !_gttSortAscending;
+      } else {
+        // If a new column is tapped, sort it ascending by default
+        _gttSortColumnIndex = columnIndex;
+        _gttSortAscending = true;
+      }
     });
   }
 
