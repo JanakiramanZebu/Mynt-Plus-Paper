@@ -65,7 +65,7 @@ class _PositionScripBottomSheetState
         perchangisAscending = currentPositionSortOption == "PCASC";
       } else if (currentPositionSortOption == "Open") {
         currentSortType = "position";
-        postion = true; // 0 qty at top
+        postion = true;
       } else if (currentPositionSortOption == "OpenDSC") {
         currentSortType = "position";
         postion = false; // 0 qty at bottom
@@ -90,8 +90,6 @@ class _PositionScripBottomSheetState
     String sortingValue = "";
 
     // Debug current values
-    print("Before sort - Current type: $currentSortType");
-    print("Before sort - Sort state: Scrip: $scripisAscending, Price: $pricepisAscending, Qty: $qtyisAscending, PerChng: $perchangisAscending, Position: $postion");
 
     // Update current sort type
     setState(() {
@@ -128,7 +126,6 @@ class _PositionScripBottomSheetState
     });
 
     // Debug the resulting sort value
-    print("Applying sort value: $sortingValue");
 
     // Apply the sort directly
     ref.read(portfolioProvider).sortPositions(sorting: sortingValue);
@@ -235,7 +232,7 @@ class _PositionScripBottomSheetState
                                       ? colors.textSecondaryDark
                                       : colors.textSecondaryLight,
                               theme: theme.isDarkMode,
-                              fw: currentSortType == "scrip" ? 2 : null),
+                              fw: currentSortType == "scrip" ? 2 : 0),
                         ),
                       ],
                     ),
@@ -281,7 +278,7 @@ class _PositionScripBottomSheetState
                                       ? colors.textSecondaryDark
                                       : colors.textSecondaryLight,
                               theme: theme.isDarkMode,
-                              fw: currentSortType == "price" ? 2 : null),
+                              fw: currentSortType == "price" ? 2 : 0),
                         ),
                       ],
                     ),
@@ -327,7 +324,7 @@ class _PositionScripBottomSheetState
                                       ? colors.textSecondaryDark
                                       : colors.textSecondaryLight,
                               theme: theme.isDarkMode,
-                              fw: currentSortType == "qty" ? 2 : null),
+                              fw: currentSortType == "qty" ? 2 : 0),
                         ),
                       ],
                     ),
@@ -373,7 +370,7 @@ class _PositionScripBottomSheetState
                                       ? colors.textSecondaryDark
                                       : colors.textSecondaryLight,
                               theme: theme.isDarkMode,
-                              fw: currentSortType == "perchng" ? 2 : null),
+                              fw: currentSortType == "perchng" ? 2 : 0),
                         ),
                       ],
                     ),
@@ -393,8 +390,8 @@ class _PositionScripBottomSheetState
                       children: [
                         Icon(
                           postion
-                              ? Icons.arrow_upward
-                              : Icons.arrow_downward,
+                              ? Icons.arrow_downward
+                              : Icons.arrow_upward,
                           size: 20,
                           color: currentSortType == "position"
                               ? theme.isDarkMode
@@ -408,7 +405,7 @@ class _PositionScripBottomSheetState
                           width: 15,
                         ),
                         Text(
-                          postion ? "Open Position" : "Close Position",
+                          postion ? "Close Position" : "Open Position",
                           style: TextWidget.textStyle(
                               fontSize: 14,
                               color: currentSortType == "position"
@@ -419,7 +416,7 @@ class _PositionScripBottomSheetState
                                       ? colors.textSecondaryDark
                                       : colors.textSecondaryLight,
                               theme: theme.isDarkMode,
-                              fw: currentSortType == "position" ? 2 : null),
+                              fw: currentSortType == "position" ? 2 : 0),
                         ),
                       ],
                     ),

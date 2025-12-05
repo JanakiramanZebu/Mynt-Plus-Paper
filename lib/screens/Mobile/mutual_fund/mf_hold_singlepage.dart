@@ -107,10 +107,13 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
               return Scaffold(
                 backgroundColor: Colors.transparent,
                 body: SingleChildScrollView(
+                  physics: ClampingScrollPhysics(),
                   controller: scrollController,
                   child: hasData
                       ? _buildHoldingDetails(context, theme, mfdata)
-                      : const Center(child: NoDataFound()),
+                      : const Center(child: NoDataFound(
+                          secondaryEnabled: false,
+                        )),
                 ),
               );
             },
@@ -193,11 +196,12 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
                                                           data))),
                                         );
                                       } else {
-                                        showResponsiveSuccess(context,
+                                        successMessage(
+                                                context,
                                                 "Missing fund information");
                                       }
                                     } catch (e) {
-                                      showResponsiveSuccess(context,
+                                      successMessage(context,
                                               "Error loading fund details: ${e.toString()}");
                                     }
                                   },
@@ -417,7 +421,7 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
                   : colors.textSecondaryLight,
               textOverflow: TextOverflow.ellipsis,
               theme: theme.isDarkMode,
-              fw: 3),
+              fw: 0),
           TextWidget.subText(
               align: TextAlign.right,
               text: value1,
@@ -427,7 +431,7 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
                       : colors.textPrimaryLight),
               textOverflow: TextOverflow.ellipsis,
               theme: theme.isDarkMode,
-              fw: 3),
+              fw: 0),
         ],
       ),
       const SizedBox(height: 8),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/provider/thems.dart';
 
 import '../../../../../../models/marketwatch_model/get_quotes.dart';
@@ -11,9 +12,15 @@ import '../../../../../../res/global_state_text.dart';
 import '../../../../../../res/res.dart';
 import '../../../../../../sharedWidget/no_data_found.dart';
 import '../../../../../../sharedWidget/list_divider.dart';
+import '../../../../../../sharedWidget/snack_bar.dart';
 
 class TradeAction extends ConsumerStatefulWidget {
-  const TradeAction({super.key});
+  final bool showBookmarkButton;
+  
+  const TradeAction({
+    super.key,
+    this.showBookmarkButton = false,
+  });
 
   @override
   ConsumerState<TradeAction> createState() => _TradeActionState();
@@ -193,7 +200,7 @@ class _TradeActionState extends ConsumerState<TradeAction>
       child: ListView.builder(
         controller: _tabScrollController,
         scrollDirection: Axis.horizontal,
-        physics: const BouncingScrollPhysics(),
+        physics: ClampingScrollPhysics(),
         itemCount: tradeAction.length,
         itemBuilder: (context, index) {
           final action = tradeAction[index];
@@ -226,7 +233,7 @@ class _TradeActionState extends ConsumerState<TradeAction>
                       color: isSelected
                           ? theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight
                           : theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                      fw: isSelected ? 2 : 3,
+                      fw: isSelected ? 2 : 2,
                       theme: !theme.isDarkMode,
                     ),
                   ),
@@ -273,7 +280,9 @@ class _TradeActionState extends ConsumerState<TradeAction>
         }
 
         if (topStocks.isEmpty) {
-          return const Center(child: NoDataFound());
+          return Center(child: NoDataFound(
+            secondaryEnabled: false,
+          ));
         }
 
         return ListView.separated(
@@ -307,7 +316,7 @@ class _TradeActionState extends ConsumerState<TradeAction>
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        borderRadius: BorderRadius.circular(6),
+        // borderRadius: BorderRadius.circular(6),
         splashColor: theme.isDarkMode
             ? Colors.white.withOpacity(0.15)
             : Colors.black.withOpacity(0.15),
@@ -315,6 +324,8 @@ class _TradeActionState extends ConsumerState<TradeAction>
             ? Colors.white.withOpacity(0.08)
             : Colors.black.withOpacity(0.08),
         onTap: () async {
+          marketWatch.scripdepthsize(false);
+          marketWatch.setETF(false);
           DepthInputArgs depthArgs = DepthInputArgs(
               exch: stock.exch.toString(),
               token: stock.token.toString(),
@@ -325,49 +336,51 @@ class _TradeActionState extends ConsumerState<TradeAction>
               option: "");
           await marketWatch.calldepthApis(context, depthArgs, "");
         },
-        child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-          dense: false,
-          title: Padding(
-            padding: const EdgeInsets.only(bottom: 4),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                TextWidget.subText(
-                  text: stock.tsym?.split("-").isNotEmpty == true ? stock.tsym!.split("-").first.toUpperCase() : "",
-                  color: theme.isDarkMode
-                      ? colors.textPrimaryDark
-                      : colors.textPrimaryLight,
-                  fw: 3,
-                  theme: theme.isDarkMode,
-                ),
-              ],
-            ),
-          ),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+          child: Row(
             children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 4),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
+              // Left side - Stock info
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    // Stock symbol
+                    TextWidget.subText(
+                      text: stock.tsym?.split("-").isNotEmpty == true ? stock.tsym!.split("-").first.toUpperCase() : "",
+                      color: theme.isDarkMode
+                          ? colors.textPrimaryDark
+                          : colors.textPrimaryLight,
+                      fw: 0,
+                      theme: theme.isDarkMode,
+                    ),
+                    const SizedBox(height: 4),
+                    // Exchange
                     TextWidget.paraText(
                       text: stock.exch ?? "",
                       color: theme.isDarkMode
                           ? colors.textSecondaryDark
                           : colors.textSecondaryLight,
                       theme: theme.isDarkMode,
-                      fw: 3,
+                      fw: 0,
                     ),
                   ],
                 ),
               ),
+              // Right side - Price data and conditional bookmark button
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildPriceData(stock, theme),
+                  if (widget.showBookmarkButton) ...[
+                    const SizedBox(width: 8),
+                    _buildBookmarkButton(stock, marketWatch, theme),
+                  ],
+                ],
+              ),
             ],
           ),
-          trailing: _buildPriceData(stock, theme),
         ),
       ),
     );
@@ -375,8 +388,16 @@ class _TradeActionState extends ConsumerState<TradeAction>
 
   Widget _buildPriceData(TopGainers stock, ThemesProvider theme) {
     final displayLtp = stock.lp ?? "0.00";
-    final displayChange = stock.c ?? "0.00";
-    final displayPerChange = stock.pc ?? "0.00";
+    
+    // Calculate change: (lp - c) where lp is last price and c is close price
+    final displayChange = (stock.lp != null && stock.c != null) 
+        ? (double.tryParse(stock.lp.toString())! - double.tryParse(stock.c.toString())!).toStringAsFixed(2)
+        : "0.00";
+    
+    // Calculate percentage change: ((ch / lp) * 100) where ch is the calculated change and lp is last price
+    final displayPerChange = (stock.lp != null && double.tryParse(displayChange) != 0) 
+        ? ((double.tryParse(displayChange)! / double.tryParse(stock.lp.toString())!) * 100).toStringAsFixed(2)
+        : "0.00";
 
     final changeColor =
         displayChange.startsWith("-") || displayPerChange.startsWith('-')
@@ -399,7 +420,7 @@ class _TradeActionState extends ConsumerState<TradeAction>
               fontSize: 16,
               color: changeColor,
               theme: theme.isDarkMode,
-              fw: 3,
+              fw: 0,
             ),
           ),
         ),
@@ -411,10 +432,83 @@ class _TradeActionState extends ConsumerState<TradeAction>
                 ? colors.textSecondaryDark
                 : colors.textSecondaryLight,
             theme: theme.isDarkMode,
-            fw: 3,
+            fw: 0,
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildBookmarkButton(TopGainers stock, dynamic marketWatch, ThemesProvider theme) {
+    return Consumer(
+      builder: (context, ref, child) {
+        final marketWatchState = ref.watch(marketWatchProvider);
+        
+        // Check if the stock is already in the current watchlist
+        final isInWatchlist = marketWatchState.scrips.any((scrip) {
+          // Handle both Map and object types
+          if (scrip is Map) {
+            return scrip['token'] == stock.token && scrip['exch'] == stock.exch;
+          } else {
+            return scrip.token == stock.token && scrip.exch == stock.exch;
+          }
+        });
+        
+        // For trade action stocks, we assume they are valid since they come from the API
+        // The segment validation is more relevant for search results
+        
+        return Material(
+          color: Colors.transparent,
+          shape: const CircleBorder(),
+          child: InkWell(
+            customBorder: const CircleBorder(),
+            splashColor: Colors.grey.withOpacity(0.3),
+            highlightColor: Colors.grey.withOpacity(0.2),
+            onTap: () async {
+              try {
+                final currentWLName = marketWatchState.wlName;
+                if (currentWLName.isEmpty) {
+                  error(context, "No active watchlist found.");
+                  return;
+                }
+                
+                final scripToken = "${stock.exch}|${stock.token}";
+                final success = await marketWatchState.addDelMarketScrip(
+                  currentWLName,
+                  scripToken,
+                  context,
+                  !isInWatchlist, // isAdd: true if not in watchlist, false if already in watchlist
+                  false, // isEdit
+                  false, // isReOrder
+                  false, // isOptionStike
+                );
+                
+                if (success) {
+                  // The success message is already handled in the addDelMarketScrip method
+                  // Refresh the market watch data
+                  await marketWatchState.fetchMWScrip(currentWLName, context);
+                }
+              } catch (e) {
+                print("Error adding/removing stock from watchlist: $e");
+                error(context, "Failed to update watchlist. Please try again.");
+              }
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: SvgPicture.asset(
+                isInWatchlist ? assets.bookmarkIcon : assets.bookmarkedIcon,
+                color: theme.isDarkMode && isInWatchlist
+                    ? colors.colorLightBlue
+                    : isInWatchlist
+                        ? colors.colorBlue
+                        : colors.textSecondaryDark,
+                height: 20,
+                width: 20,
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

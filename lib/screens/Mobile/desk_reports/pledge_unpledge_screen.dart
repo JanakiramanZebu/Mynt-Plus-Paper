@@ -44,6 +44,8 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
     super.initState();
     tabController = TabController(length: 3, vsync: this, initialIndex: 0);
     // tabController.animation!.addListener(_onTabChanged);
+     activeTab = 0; // Initialize activeTab to match initial tab index
+    tabController.addListener(_onTabChanged);
 
     // Add listener to search controller to update UI when text changes
     searchController.addListener(() {
@@ -51,8 +53,8 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
     });
   }
 
-  void _onTabChanged(index) {
-    final newIndex = index;
+  void _onTabChanged() {
+    final newIndex = tabController.index;
     if (activeTab != newIndex) {
       setState(() {
         activeTab = newIndex;
@@ -112,13 +114,54 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
         ledgerprovider.fetchpledgeandunpledge(context);
       }
 
-      String displayValue = (ledgerprovider.pledgeandunpledge?.estTotalAvailable
-                      ?.toString() ==
-                  null ||
-              ledgerprovider.pledgeandunpledge?.estTotalAvailable?.toString() ==
-                  'null')
-          ? '0.00'
-          : ledgerprovider.pledgeandunpledge!.estTotalAvailable!.toString();
+      // Dynamic display value based on active tab
+      String displayValue;
+      String displayLabel;
+      String displayValue1 = '';
+      String displayLabel1 = '';
+      
+      if (activeTab == 0) {
+        displayLabel = 'Est Margin';
+        displayValue = (ledgerprovider.pledgeandunpledge?.estTotalAvailable
+                        ?.toString() ==
+                    null ||
+                ledgerprovider.pledgeandunpledge?.estTotalAvailable?.toString() ==
+                    'null')
+            ? '0.00'
+            : ledgerprovider.pledgeandunpledge!.estTotalAvailable!.toString();
+      } else if (activeTab == 1) {
+        displayLabel = 'Cash';
+        displayValue = (ledgerprovider.pledgeandunpledge?.cashEquivalent
+                        ?.toString() ==
+                    null ||
+                ledgerprovider.pledgeandunpledge?.cashEquivalent?.toString() ==
+                    'null')
+            ? '0.00'
+            : ledgerprovider.pledgeandunpledge!.cashEquivalent!.toString();
+        displayLabel1 = 'Non Cash';
+        displayValue1 = (ledgerprovider.pledgeandunpledge?.noncashEquivalent
+                        ?.toString() ==
+                    null ||
+                ledgerprovider.pledgeandunpledge?.noncashEquivalent?.toString() ==
+                    'null')
+            ? '0.00'
+            : ledgerprovider.pledgeandunpledge!.noncashEquivalent!.toString();
+      } else {
+        displayLabel = 'Non-Approved';
+        // Sum values from non-approved list
+        double nonApprovedSum = 0.0;
+        if (ledgerprovider.pledgeandunpledge?.data != null) {
+          for (var item in ledgerprovider.pledgeandunpledge!.data!) {
+            if (item.status == "Not_ok" && 
+                (double.tryParse(item.cOLQTY?.toString() ?? '0') ?? 0).toInt() == 0) {
+              // Sum scrip value for non-approved items
+              double scripValue = double.tryParse(item.aMOUNT?.toString() ?? '0') ?? 0.0;
+              nonApprovedSum += scripValue;
+            }
+          }
+        }
+        displayValue = nonApprovedSum.toStringAsFixed(2);
+      }
 
       // if (ledgerprovider.pledgeandunpledge?.data != null) {
       //   for (var i = 0;
@@ -208,7 +251,8 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
       return Scaffold(
         appBar: AppBar(
           // automaticallyImplyLeading: false,
-          backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+          backgroundColor:
+              theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
           leadingWidth: 41,
           titleSpacing: 6,
           centerTitle: false,
@@ -236,22 +280,22 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
               //     icon: const Icon(Icons.history))
             ],
           ),
-      
+
           // leading: InkWell(
           //   onTap: () {
-      
+
           //   },
           //   child: Icon(Icons.ios_share)),
         ),
         body: ledgerprovider.pledgeloader
             ? Center(
                 child: Container(
-                  color: Colors.white,
+                  color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
                   child: CircularLoaderImage(),
                 ),
               )
             : SafeArea(
-              child: RefreshIndicator(
+                child: RefreshIndicator(
                   onRefresh: _refresh,
                   child: Stack(
                     children: [
@@ -342,16 +386,83 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
+                                if(activeTab == 1)
+                                Column(
+                                  children: [
+                                    Row(
+                                      children: [
+                                        TextWidget.subText(
+                                            text: "${displayLabel}",
+                                            color: theme.isDarkMode
+                                                ? colors.textPrimaryDark
+                                                : colors.textPrimaryLight,
+                                            textOverflow: TextOverflow.ellipsis,
+                                            theme: theme.isDarkMode,
+                                            fw: 0),
+                                        TextWidget.custmText(
+                                            text: " | ",
+                                            color: theme.isDarkMode
+                                                ? colors.textPrimaryDark
+                                                : colors.textPrimaryLight,
+                                            textOverflow: TextOverflow.ellipsis,
+                                            theme: theme.isDarkMode,
+                                            fs: 14,
+                                            fw: 1),
+                                            TextWidget.subText(
+                                            text: "${displayLabel1}",
+                                            color: theme.isDarkMode
+                                                ? colors.textPrimaryDark
+                                                : colors.textPrimaryLight,
+                                            textOverflow: TextOverflow.ellipsis,
+                                            theme: theme.isDarkMode,
+                                            fw: 0),
+                                      ],
+                                    ),
+                                    SizedBox(height: 5),
+                                    Row(
+                                      children: [
+                                        TextWidget.headText(
+                                            text: "${displayValue}",
+                                            maxLines: 1,
+                                            color: theme.isDarkMode
+                                                ? colors.textSecondaryDark
+                                                : colors.textPrimaryLight,
+                                            textOverflow: TextOverflow.ellipsis,
+                                            theme: theme.isDarkMode,
+                                            fw: 0),
+                                            TextWidget.custmText(
+                                            text: " | ",
+                                            color: theme.isDarkMode
+                                                ? colors.textPrimaryDark
+                                                : colors.textPrimaryLight,
+                                            textOverflow: TextOverflow.ellipsis,
+                                            theme: theme.isDarkMode,
+                                            fs: 14,
+                                            fw: 1),
+                                        TextWidget.headText(
+                                            text: "${displayValue1}",
+                                            maxLines: 1,
+                                            color: theme.isDarkMode
+                                                ? colors.textSecondaryDark
+                                                : colors.textPrimaryLight,
+                                            textOverflow: TextOverflow.ellipsis,
+                                            theme: theme.isDarkMode,
+                                            fw: 0),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                if(activeTab != 1)
                                 Column(
                                   children: [
                                     TextWidget.subText(
-                                        text: 'Est Margin',
+                                        text: displayLabel,
                                         color: theme.isDarkMode
                                             ? colors.textPrimaryDark
                                             : colors.textPrimaryLight,
                                         textOverflow: TextOverflow.ellipsis,
                                         theme: theme.isDarkMode,
-                                        fw: 3),
+                                        fw: 0),
                                     SizedBox(height: 5),
                                     TextWidget.headText(
                                         text: "${displayValue}",
@@ -362,8 +473,40 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                                         textOverflow: TextOverflow.ellipsis,
                                         theme: theme.isDarkMode,
                                         fw: 0),
+                                   
                                   ],
                                 ),
+                                // if(activeTab == 1)
+                                // Padding(
+                                //   padding: const EdgeInsets.symmetric(horizontal: 10),
+                                //   child: Container(
+                                //     width: 1,
+                                //     height: 30,
+                                //     color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+                                //   ),
+                                // ),
+                                // Column(
+                                //   children: [
+                                //     TextWidget.subText(
+                                //         text: displayLabel1,
+                                //         color: theme.isDarkMode
+                                //             ? colors.textPrimaryDark
+                                //             : colors.textPrimaryLight,
+                                //         textOverflow: TextOverflow.ellipsis,
+                                //         theme: theme.isDarkMode,
+                                //         fw: 0),
+                                //     SizedBox(height: 5),
+                                //     TextWidget.headText(
+                                //         text: "${displayValue1}",
+                                //         maxLines: 1,
+                                //         color: theme.isDarkMode
+                                //             ? colors.textSecondaryDark
+                                //             : colors.textPrimaryLight,
+                                //         textOverflow: TextOverflow.ellipsis,
+                                //         theme: theme.isDarkMode,
+                                //         fw: 0),
+                                //   ],
+                                // ),
                               ],
                             ),
                           ),
@@ -459,7 +602,12 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                                                               width: 4),
                                                           SvgPicture.asset(
                                                             assets.searchIcon,
-                                                            color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                                            color: theme
+                                                                    .isDarkMode
+                                                                ? colors
+                                                                    .textSecondaryDark
+                                                                : colors
+                                                                    .textSecondaryLight,
                                                             width: 20,
                                                             fit: BoxFit
                                                                 .scaleDown,
@@ -487,6 +635,7 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                                                                         .textPrimaryLight,
                                                                 theme: theme
                                                                     .isDarkMode,
+                                                                fw: 0,
                                                               ),
                                                               decoration:
                                                                   InputDecoration(
@@ -498,11 +647,8 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                                                                   fontSize: 14,
                                                                   theme: theme
                                                                       .isDarkMode,
-                                                                  color: theme.isDarkMode
-                                                                      ? colors
-                                                                          .textSecondaryDark
-                                                                      : colors
-                                                                          .textSecondaryLight,
+                                                                  color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                                                                  fw: 0,
                                                                 ),
                                                                 border:
                                                                     InputBorder
@@ -712,7 +858,7 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                           //     thickness: 7.0,
                           //   ),
                           // ),
-                    
+
                           // Padding(
                           //   padding: const EdgeInsets.only(left: 30 , right: 30),
                           //   child: Row(
@@ -735,7 +881,7 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                           //             Container(
                           //               width: 100, // Fixed width for the static column
                           //               height: 50,
-                    
+
                           //               padding: EdgeInsets.all(8.0),
                           //               decoration: BoxDecoration(
                           //                 border: Border.all(color: const Color.fromARGB(255, 224, 224, 224)),
@@ -747,7 +893,7 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                           //         ],
                           //       ),
                           //       // Scrollable Content
-                    
+
                           //       Expanded(
                           //         child: SingleChildScrollView(
                           //           scrollDirection: Axis.horizontal,
@@ -760,7 +906,7 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                           //                     Container(
                           //                        margin: EdgeInsets.only(top: 20),
                           //                       width: i == 4 ? 275 : 100, // Column width
-                    
+
                           //                       padding: EdgeInsets.all(8.0),
                           //                       color: Color(0xFFEEEEEE),
                           //                       child: Text(
@@ -818,7 +964,9 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                             child: TabBar(
                               onTap: (int index) {
                                 print("Tab tapped: $index");
-                                activeTab = index;
+                                setState(() {
+                                  activeTab = index;
+                                });
                                 // Do something on tap
                               },
                               controller: tabController,
@@ -829,8 +977,10 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                                   colors.colorWhite, // hide default underline
                               indicator: BoxDecoration(
                                 // pill-shaped highlight[4]
-                               color: theme.isDarkMode ? colors.searchBgDark : const Color(0xffF1F3F8),
-                          borderRadius: BorderRadius.circular(5),
+                                color: theme.isDarkMode
+                                    ? colors.searchBgDark
+                                    : const Color(0xffF1F3F8),
+                                borderRadius: BorderRadius.circular(5),
                                 // border: Border.all(
                                 //   color: theme.isDarkMode
                                 //       ? colors.darkColorDivider
@@ -840,25 +990,40 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                               // labelColor: theme.isDarkMode
                               //     ? colors.colorLightBlue
                               //     : colors.colorBlue,
-                              unselectedLabelColor: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                        labelStyle: TextWidget.textStyle(
-                            fontSize: 14, theme: false, fw: 1, color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight),
-                        unselectedLabelStyle: TextWidget.textStyle(
-                            fontSize: 14,
-                            theme: false,
-                            color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                            fw: 0,
-                            letterSpacing: -0.28),
-                        labelPadding: const EdgeInsets.symmetric(horizontal: 4),
-                    
-                    
+                              unselectedLabelColor: theme.isDarkMode
+                                  ? colors.textSecondaryDark
+                                  : colors.textSecondaryLight,
+                              labelStyle: TextWidget.textStyle(
+                                  fontSize: 14,
+                                  theme: false,
+                                  fw: 2,
+                                  color: theme.isDarkMode
+                                      ? colors.textPrimaryDark
+                                      : colors.textPrimaryLight),
+                              unselectedLabelStyle: TextWidget.textStyle(
+                                  fontSize: 14,
+                                  theme: false,
+                                  color: theme.isDarkMode
+                                      ? colors.textSecondaryDark
+                                      : colors.textSecondaryLight,
+                                  fw: 0,
+                                  letterSpacing: -0.28),
+                              labelPadding:
+                                  const EdgeInsets.symmetric(horizontal: 4),
+
                               // build the "Open 4" badge and the rest of the tabs
-                              tabs: orderTabName.map((tabString) {
-                                /// If the value looks like "Open 4", split it once on the space
-                    
-                                final title =
-                                    tabString.text.toString(); // "Open"
-                    
+                              // tabs: orderTabName.map((tabString) {
+                              //   /// If the value looks like "Open 4", split it once on the space
+
+                              //   final title =
+                              //       tabString.text.toString(); // "Open"
+
+                               tabs: orderTabName.asMap().entries.map((entry) {
+                                final index = entry.key;
+                                final tabString = entry.value;
+                                final title = tabString.text.toString(); // "Open"
+                                final isActive = activeTab == index;
+
                                 return Tab(
                                   child: Padding(
                                     padding: const EdgeInsets.only(
@@ -871,9 +1036,9 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                                         TextWidget.paraText(
                                             text: "${title}",
                                             theme: false,
-                                          color :  theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                                            
-                                            fw: 3),
+                                            color :  isActive ? theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight : theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                            fw: isActive ? 2 : 2, // 2 for active (bold), 0 for inactive (w500)
+                                            ),
                                       ],
                                     ),
                                   ),
@@ -894,14 +1059,14 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                                     activetabe: '2', searchQuery: searchQuery),
                                 // OrderBook(orderBook: orderBook.allOrder!),
                               ])),
-                    
+
                           if (ledgerprovider.listforpledge.length > 0)
                             Container(
                               height: screenheight * 0.07,
-                              decoration: BoxDecoration(
-                                  color: theme.isDarkMode
-                                      ? const Color(0xffB5C0CF).withOpacity(.15)
-                                      : const Color(0xffF1F3F8)),
+                              // decoration: BoxDecoration(
+                              //     color:  theme.isDarkMode
+                              // ? colors.darkGrey.withOpacity(0.1)
+                              // : const Color(0xffF1F3F8)),
                             ),
                         ],
                       ),
@@ -922,8 +1087,11 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                                         text:
                                             "You ${ledgerprovider.listforpledge.length} Script For ${ledgerprovider.pledgeoruppledgedelete == 'unpledgedelete' ? 'Delete' : ledgerprovider.screenpledge == 'pledge' ? "Pledge" : "Unpledge"}",
                                         textOverflow: TextOverflow.ellipsis,
+                                        color: theme.isDarkMode
+                                            ? colors.textPrimaryDark
+                                            : colors.textPrimaryLight,
                                         theme: theme.isDarkMode,
-                                        fw: 3),
+                                        fw: 0),
                                   ),
                                   Row(
                                     children: [
@@ -931,122 +1099,122 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                                         padding:
                                             const EdgeInsets.only(bottom: 12.0),
                                         child: Container(
-                                            height: 35,
-                                            width: 75,
-                                            margin: const EdgeInsets.only(
-                                                right: 12, top: 15),
-                                            child: OutlinedButton(
-                                                style: OutlinedButton.styleFrom(
-                                                    side: BorderSide(
-                                                      color: theme.isDarkMode
-                                                          ? colors.primaryDark
-                                                          : colors.primaryLight,
+                                          height: 35,
+                                          width: 85,
+                                          margin: const EdgeInsets.only(
+                                              right: 12, top: 15),
+                                          child: ElevatedButton(
+                                            onPressed: () {
+                                              ledgerprovider.cancelpledgetotal(
+                                                  ledgerprovider.screenpledge);
+                                              ledgerprovider
+                                                  .changesegvaldummy('');
+                                              // ledgerprovider.screenclickedpledge = '';
+                                            },
+                                            style: ElevatedButton.styleFrom(
+                                              elevation: 0,
+                                              backgroundColor: theme.isDarkMode
+                                                  ? colors.textSecondaryDark
+                                                      .withOpacity(0.6)
+                                                  : colors.btnBg,
+                                              // foregroundColor: const Color.fromARGB(255, 0, 0, 0),
+                                              side: theme.isDarkMode
+                                                  ? null
+                                                  : BorderSide(
+                                                      color:
+                                                          colors.primaryLight,
+                                                      width: 1,
                                                     ),
-                                                    elevation: 0,
-                                                    shadowColor:
-                                                        Colors.transparent,
-                                                    shape:
-                                                        RoundedRectangleBorder(
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        5))),
-                                                onPressed: () {
-                                                  ledgerprovider
-                                                      .cancelpledgetotal(
-                                                          ledgerprovider
-                                                              .screenpledge);
-                                                  ledgerprovider
-                                                      .changesegvaldummy('');
-                                                  // ledgerprovider.screenclickedpledge = '';
-                                                },
-                                                child: Text("Cancel",
-                                                    textAlign: TextAlign.center,
-                                                    style: textStyle(
-                                                        theme.isDarkMode
-                                                            ? colors.primaryDark
-                                                            : colors
-                                                                .primaryLight,
-                                                        12,
-                                                        FontWeight.w500)))),
+                                              minimumSize: Size(double.infinity,
+                                                  45), // height: 48
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(5),
+                                              ),
+                                            ),
+                                            child: TextWidget.subText(
+                                                text: "Cancel",
+                                                color: theme.isDarkMode
+                                                    ? colors.colorWhite
+                                                    : colors.primaryLight,
+                                                theme: theme.isDarkMode,
+                                                fw: 2),
+                                          ),
+                                        ),
                                       ),
                                       Padding(
                                         padding:
                                             const EdgeInsets.only(bottom: 12.0),
                                         child: Container(
                                             height: 35,
-                                            width: 75,
+                                            width: 85,
                                             margin: const EdgeInsets.only(
                                                 right: 12, top: 15),
                                             child: ElevatedButton(
-                                                style: ElevatedButton.styleFrom(
-                                                    elevation: 0,
-                                                    shadowColor:
-                                                        Colors.transparent,
-                                                    backgroundColor: theme
-                                                            .isDarkMode
-                                                        ? colors.primaryDark
-                                                        : colors.primaryLight,
-                                                    shape:
-                                                        RoundedRectangleBorder(
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        5))),
-                                                onPressed: () {
+                                              style: ElevatedButton.styleFrom(
+                                                  elevation: 0,
+                                                  shadowColor:
+                                                      Colors.transparent,
+                                                  backgroundColor:
+                                                      theme.isDarkMode
+                                                          ? colors.primaryDark
+                                                          : colors.primaryLight,
+                                                  shape: RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              5))),
+                                              onPressed: () {
+                                                ledgerprovider
+                                                    .changesegvaldummy('');
+                                                print(
+                                                    "${ledgerprovider.pledgeoruppledgedelete} ${ledgerprovider.pledgeorunpledge == 'unpledge'} loakdsdejkvh ");
+                                                if (ledgerprovider
+                                                        .pledgeoruppledgedelete ==
+                                                    'unpledgedelete') {
+                                                  print("loakdsdejkvh");
                                                   ledgerprovider
-                                                      .changesegvaldummy('');
-                                                  print(
-                                                      "${ledgerprovider.pledgeoruppledgedelete} ${ledgerprovider.pledgeorunpledge == 'unpledge'} loakdsdejkvh ");
-                                                  if (ledgerprovider
-                                                          .pledgeoruppledgedelete ==
-                                                      'unpledgedelete') {
-                                                    print("loakdsdejkvh");
-                                                    ledgerprovider
-                                                        .unpldgedeletefun(
-                                                            context,
-                                                            ledgerprovider
-                                                                .pledgeandunpledge!
-                                                                .cLIENTCODE
-                                                                .toString(),
-                                                            ledgerprovider
-                                                                .listforpledge);
-                                                  } else {
-                                                    if (ledgerprovider
-                                                            .pledgeorunpledge ==
-                                                        'unpledge') {
-                                                      ledgerprovider.sendunpledgerequest(
+                                                      .unpldgedeletefun(
                                                           context,
                                                           ledgerprovider
                                                               .pledgeandunpledge!
                                                               .cLIENTCODE
                                                               .toString(),
                                                           ledgerprovider
-                                                              .pledgeandunpledge!
-                                                              .bOID
-                                                              .toString(),
-                                                          ledgerprovider
-                                                              .pledgeandunpledge!
-                                                              .cLIENTNAME
-                                                              .toString(),
-                                                          ledgerprovider
                                                               .listforpledge);
-                                                    } else if (ledgerprovider
-                                                            .pledgeorunpledge ==
-                                                        'pledge') {
-                                                      _showBottomSheet(context,
-                                                          PledgeList());
-                                                    }
+                                                } else {
+                                                  if (ledgerprovider
+                                                          .pledgeorunpledge ==
+                                                      'unpledge') {
+                                                    ledgerprovider.sendunpledgerequest(
+                                                        context,
+                                                        ledgerprovider
+                                                            .pledgeandunpledge!
+                                                            .cLIENTCODE
+                                                            .toString(),
+                                                        ledgerprovider
+                                                            .pledgeandunpledge!
+                                                            .bOID
+                                                            .toString(),
+                                                        ledgerprovider
+                                                            .pledgeandunpledge!
+                                                            .cLIENTNAME
+                                                            .toString(),
+                                                        ledgerprovider
+                                                            .listforpledge);
+                                                  } else if (ledgerprovider
+                                                          .pledgeorunpledge ==
+                                                      'pledge') {
+                                                    _showBottomSheet(
+                                                        context, PledgeList());
                                                   }
-                                                },
-                                                child: Text("Submit",
-                                                    textAlign: TextAlign.center,
-                                                    style: textStyle(
-                                                        !theme.isDarkMode
-                                                            ? colors.colorWhite
-                                                            : colors.colorBlack,
-                                                        12,
-                                                        FontWeight.w500)))),
+                                                }
+                                              },
+                                              child: TextWidget.subText(
+                                                  text: "Submit",
+                                                  color: colors.colorWhite,
+                                                  theme: theme.isDarkMode,
+                                                  fw: 2),
+                                            )),
                                       ),
                                     ],
                                   ),
@@ -1058,7 +1226,7 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                     ],
                   ),
                 ),
-            ),
+              ),
       );
     });
   }
@@ -1075,11 +1243,11 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
           ))
         : Expanded(
             child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
+              physics: const ClampingScrollPhysics(),
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 16.0),
                 child: ListView.separated(
-                  physics: ScrollPhysics(),
+                  physics: ClampingScrollPhysics(),
                   itemCount:
                       ledgerprovider.pledgeandunpledge?.data?.length ?? 0,
                   shrinkWrap: true,
@@ -1267,12 +1435,14 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                                                   data: index,
                                                 ));
                                           } else {
-                                            showResponsiveWarningMessage(context,
-                                                  '${value.initiated} Qty is processing');
+                                              warningMessage(context,
+                                                  '${value.initiated} Qty is processing'
+                                            );
                                           }
                                         } else {
-                                          showResponsiveWarningMessage(context,
-                                                'Unpledged initiated so can\'t pledge');
+                                            warningMessage(context,
+                                                'Unpledged initiated so can\'t pledge'
+                                          );
                                         }
                                         // ledgerprovider
                                         //     .changesegval("");
@@ -1438,12 +1608,14 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                                                       //         "${(double.parse(value.cOLQTY.toString()).toInt())}",
                                                       //         "${(double.parse(value.cOLQTY.toString()).toInt())}");
                                                     } else {
-                                                      showResponsiveWarningMessage(context,
-                                                            'Pledged initiated so can\'t unpledge');
+                                                        warningMessage(context,
+                                                            'Pledged initiated so can\'t unpledge'
+                                                      );
                                                     }
                                                   } else {
-                                                    showResponsiveWarningMessage(context,
-                                                          'Already pledged cant edit');
+                                                      warningMessage(context,
+                                                          'Already pledged cant edit'
+                                                    );
                                                   }
 
                                                   print(

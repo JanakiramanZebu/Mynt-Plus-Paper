@@ -65,7 +65,9 @@ class _mforderdetscreen extends State<mforderdetscreen>
             final hasData = mfdata.mforderdet?.data != null;
 
             if(!hasData){
-              return const Center(child: NoDataFound());
+              return const Center(child: NoDataFound(
+                secondaryEnabled: false,
+              ));
             }
 
             return SafeArea(
@@ -74,6 +76,7 @@ class _mforderdetscreen extends State<mforderdetscreen>
                 body: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: SingleChildScrollView(
+                        physics: ClampingScrollPhysics(),
                         controller: scrollController,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -281,7 +284,7 @@ class _mforderdetscreen extends State<mforderdetscreen>
                                       : colors.textSecondaryLight,
                                   textOverflow: TextOverflow.ellipsis,
                                   theme: theme.isDarkMode,
-                                  fw: 3),
+                                  fw: 0),
                               const SizedBox(height: 8),
                               TextWidget.subText(
                                   align: TextAlign.start,
@@ -291,7 +294,7 @@ class _mforderdetscreen extends State<mforderdetscreen>
                                   textOverflow: TextOverflow.ellipsis,
                                   theme: theme.isDarkMode,
                                   maxLines: 3,
-                                  fw: 3),
+                                  fw: 0),
                             ],
                           ],
                         ),
@@ -399,7 +402,8 @@ class _mforderdetscreen extends State<mforderdetscreen>
                                 inProgressStatuses.contains(
                                     mfdata.mforderdet?.data?[0].status)
                             ? colors.pending
-                            : colors.pending),
+                            : colors.pending,
+                            fw: 0),
           ),
 
           // Padding(
@@ -451,7 +455,7 @@ class _mforderdetscreen extends State<mforderdetscreen>
             theme),
 
         rowOfInfoData("Amount",
-            "${mfdata.mforderdet?.data?[0].orderVal ?? "0.00"}", theme),
+            "${double.tryParse(mfdata.mforderdet?.data?[0].orderVal?.toString() ?? '0')?.toStringAsFixed(2) ?? '0.00'}", theme),
 
         // rowOfInfoData(
         //     "Units", "${mfdata.mforderdet?.data?[0].units ?? "0.00"}", theme),
@@ -547,7 +551,7 @@ class _mforderdetscreen extends State<mforderdetscreen>
                   : colors.textSecondaryLight,
               textOverflow: TextOverflow.ellipsis,
               theme: theme.isDarkMode,
-              fw: 3),
+              fw: 0),
           SizedBox(
             width: MediaQuery.of(context).size.width * 0.5,
             child: TextWidget.subText(
@@ -557,7 +561,7 @@ class _mforderdetscreen extends State<mforderdetscreen>
                     ? colors.textPrimaryDark
                     : colors.textPrimaryLight,
                 theme: theme.isDarkMode,
-                fw: 3),
+                fw: 0),
           ),
         ]),
         const SizedBox(height: 8),

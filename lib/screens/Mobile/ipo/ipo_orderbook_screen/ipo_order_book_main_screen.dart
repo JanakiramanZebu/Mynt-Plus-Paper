@@ -36,12 +36,8 @@ class _IpoOrderbookMainScreenState extends ConsumerState<IpoOrderbookMainScreen>
       final theme = ref.watch(themeProvider);
       final devHeight = MediaQuery.of(context).size.height;
 
-      return TransparentLoaderScreen(
-            isLoading: ipo.myBidsload!,
-        child: Scaffold(
-          body: _buildBody(ipo, theme, devHeight),
-        ),
-      );
+      return _buildBody(ipo, theme, devHeight);
+      // );
     });
   }
 
@@ -53,57 +49,33 @@ class _IpoOrderbookMainScreenState extends ConsumerState<IpoOrderbookMainScreen>
     final hasOrders =
         filteredOpenOrders.isNotEmpty || filteredCloseOrders.isNotEmpty;
 
-    if (!hasOrders) {
+    if (!hasOrders && ipo.ipocommonsearchcontroller.text.isNotEmpty) {
       return _buildNoDataState(devHeight);
     }
 
+    if(!hasOrders){
+      return NoDataFound(
+        title: "No Open or Closed Orders Found",
+        subtitle: "There's nothing here yet. Buy some IPO to see them here.",
+        primaryEnabled: false,
+        secondaryEnabled: false,
+      );
+    }
+
     return SingleChildScrollView(
+      physics: ClampingScrollPhysics(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (filteredOpenOrders.isNotEmpty) ...[
-            Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: theme.isDarkMode ? colors.textSecondaryDark.withOpacity(0.2) : colors.textSecondaryLight.withOpacity(0.05),
-                  // border: Border(
-                  //   top: BorderSide(
-                  //     color: theme.isDarkMode
-                  //         ? colors.dividerDark
-                  //         : colors.dividerLight,
-                  //   ),
-                  //   bottom: BorderSide(
-                  //     color: theme.isDarkMode
-                  //         ? colors.dividerDark
-                  //         : colors.dividerLight,
-                  //   ),
-                  // ),
-                ),
-                child: _buildSectionHeader("Open Orders", theme)),
+            _buildSectionHeader("Open Orders", theme),
             IpoOpenOrder(filteredOrders: filteredOpenOrders),
           ],
           if (filteredCloseOrders.isNotEmpty) ...[
-            Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-               color: theme.isDarkMode ? colors.textSecondaryDark.withOpacity(0.2) : colors.textSecondaryLight.withOpacity(0.05),
-                // border: Border(
-                //   top: BorderSide(
-                //     color: theme.isDarkMode
-                //         ? colors.dividerDark
-                //         : colors.dividerLight,
-                //   ),
-                //   bottom: BorderSide(
-                //     color: theme.isDarkMode
-                //         ? colors.dividerDark
-                //         : colors.dividerLight,
-                //   ),
-                // ),
-              ),
-              child: _buildSectionHeader("Closed Orders", theme),
-            ),
+            _buildSectionHeader("Closed Orders", theme),
             IpoCloseOrder(filteredOrders: filteredCloseOrders),
           ],
+          // const SizedBox(height: 80),
         ],
       ),
     );
@@ -146,17 +118,12 @@ class _IpoOrderbookMainScreenState extends ConsumerState<IpoOrderbookMainScreen>
   }
 
   Widget _buildNoDataState(double devHeight) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.only(top: 225),
-        child: SizedBox(
-          height: devHeight - 140,
-          child: const Column(
-            children: [
-              NoDataFound(),
-            ],
-          ),
-        ),
+    return const Center(
+      child: NoDataFound(
+        title: "No Results Found",
+        subtitle: "Try searching with different keywords",
+        primaryEnabled: false,
+        secondaryEnabled: false,
       ),
     );
   }
@@ -167,7 +134,7 @@ class _IpoOrderbookMainScreenState extends ConsumerState<IpoOrderbookMainScreen>
       child: TextWidget.subText(
         text: title,
         theme: false,
-        fw: 0,
+        fw: 1,
         color: theme.isDarkMode
             ? colors.textPrimaryDark
             : colors.textPrimaryLight,

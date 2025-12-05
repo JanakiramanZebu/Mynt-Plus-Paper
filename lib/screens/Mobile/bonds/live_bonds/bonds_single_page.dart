@@ -63,7 +63,12 @@ class _BondsSinglePageState extends State<BondsSinglePage> {
         SizedBox(height: 10),
         Padding(
           padding: EdgeInsets.symmetric(vertical: 250),
-          child: NoDataFound()
+          child: NoDataFound(
+            title: "No Bonds Found",
+            subtitle: "",
+            primaryEnabled: false,
+            secondaryEnabled: false,
+          )
         ),
       ],
     );
@@ -249,6 +254,7 @@ class _BondsSinglePageState extends State<BondsSinglePage> {
     BuildContext context
   ) {
     return ListView(
+      physics: ClampingScrollPhysics(),
       padding: EdgeInsets.zero,
       shrinkWrap: true,
       controller: scrollController,

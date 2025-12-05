@@ -43,5 +43,3 @@ class UrlUtils {
         .join('&');
   }
 }
-
-

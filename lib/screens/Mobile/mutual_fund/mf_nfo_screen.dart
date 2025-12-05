@@ -55,8 +55,12 @@ class MFNFOScreen extends ConsumerWidget {
 
   Widget _buildContent(BuildContext context, MFProvider mf,
       ThemesProvider theme, WidgetRef ref, FundProvider fund) {
-    if (mf.mfNFOList!.mutualFundList!.isEmpty) {
-      return const Center(child: NoDataFound());
+    final nfoList = mf.mfNFOList?.mutualFundList;
+
+    if (nfoList == null || nfoList.isEmpty) {
+      return const Center(child: NoDataFound(
+        secondaryEnabled: false,
+      ));
     } else {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -64,12 +68,12 @@ class MFNFOScreen extends ConsumerWidget {
           Expanded(
             child: ListView.separated(
               shrinkWrap: true,
-              physics: const AlwaysScrollableScrollPhysics(),
+              physics: const ClampingScrollPhysics(),
               separatorBuilder: (_, __) => const ListDivider(),
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              itemCount: mf.mfNFOList!.mutualFundList!.length,
+              itemCount: nfoList.length,
               itemBuilder: (BuildContext context, int index) {
-                final nfoItem = mf.mfNFOList!.mutualFundList![index];
+                final nfoItem = nfoList[index];
 
                 return InkWell(
                   onTap: () async {
@@ -89,6 +93,7 @@ class MFNFOScreen extends ConsumerWidget {
                         mf.installmentAmt.text = amt.split('.').first;
                       }
                       fund.fetchFunds(context);
+                     mf.fetchUpiDetail('', context);
                       ref.read(transcationProvider).initialdata(context);
 
                       if (context.mounted) {
@@ -129,7 +134,7 @@ class MFNFOScreen extends ConsumerWidget {
                           textOverflow: TextOverflow.ellipsis,
                           maxLines: 2,
                           theme: theme.isDarkMode,
-                          fw: 3),
+                          fw: 0),
                     ),
                     subtitle: TextWidget.paraText(
                         align: TextAlign.start,
@@ -140,7 +145,7 @@ class MFNFOScreen extends ConsumerWidget {
                         textOverflow: TextOverflow.ellipsis,
                         maxLines: 2,
                         theme: theme.isDarkMode,
-                        fw: 3),
+                        fw: 0),
                   ),
                 );
               },

@@ -1,10 +1,13 @@
 import 'package:mynt_plus/models/client_profile_all_details/details_change_current_status_model.dart';
 import 'package:mynt_plus/models/client_profile_all_details/profile_all_details_model.dart';
+import 'package:mynt_plus/models/explore_model/portfolioanalisys_models.dart';
 import 'package:mynt_plus/sharedWidget/fund_function.dart';
 import '../api/core/api_core.dart';
 import 'package:mynt_plus/provider/transcation_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
+
+import '../screens/Mobile/profile_screen/profile_main_screen.dart';
 
 String globalcurrmail = '';
 String globalNewEmail = '';
@@ -229,6 +232,89 @@ mixin ProfileAllDetailsApi on ApiCore {
       rethrow;
     }
   }
+
+  Future<PendingStatus> fetchPendingstatusApi() async {
+  try {
+    final uri = Uri.parse(apiLinks.rekycpendingstatusURL);
+
+    final res = await apiClient.post(
+      uri,
+      headers: defaultHeaders,
+      body: jsonEncode({"clientId": prefs.clientId}),
+    );
+    print("Raw response: ${res.body}");
+    return PendingStatus.fromJson(jsonDecode(res.body));
+  } catch (e) {
+    print("error fetchpendig :::: ${e}");
+    rethrow;
+  }
+}
+
+ Future<String?> fetctfileidapi(String type) async {
+  try {
+    final uri = Uri.parse(
+      type != "nominee"
+          ? apiLinks.fetctfileidURL
+          : apiLinks.fetctfileidURLnominee,
+    );
+
+    final res = await apiClient.post(
+      uri,
+      headers: defaultHeaders,
+      body: jsonEncode({"client_id": prefs.clientId}),
+    );
+
+      final json = jsonDecode(res.body);
+      print("json :::: ${json}");
+      switch (type) {
+      case "email_change":
+        return json["email_file_id"];
+      case "mobile_change":
+        return json["mobile_file_id"];
+      case "address_change":
+        return json["address_file_id"];
+      case "bank_change":
+        return json["bank_file_id"];
+      case "mtf":
+        return json["mtf_fileid"];
+      case "nominee":
+      final nomStat = json["nom_stat"];
+  if (nomStat != null && nomStat is List && nomStat.isNotEmpty) {
+    final fileId = nomStat[0]["file_id"];
+    return fileId;
+  }
+      case "DDPI":
+        return json["DDPI_fileid"];
+      case "closure":
+        return json["closure_fileid"];
+      case "segment_change":
+        return json["segment_file_id"];
+      default:
+        return null;
+    }
+  } catch (e) {
+    print("Error in fetctfileidapi: $e");
+    return null;
+  }
+}
+
+
+  cancelPendingStatusApi(String type, String fileid) async {
+  try {
+    final response;
+    final uri = Uri.parse(apiLinks.cancelPendingesignURL);
+    final res = await apiClient.post(uri, headers: defaultHeaders, body: jsonEncode({"client_id": prefs.clientId, "file_id": fileid, "type": type}));
+    if(res.statusCode == 200){
+     return response = "Cancel Success";
+    }else{
+      return response = "Cancel Failed";
+    }
+  } catch (e) {
+    print("error cancel pending status :::: ${e}");
+    rethrow;
+  }
+}
+
 
   mobileotpapifun(String newmo, clemail, oldmobilmo, fulldataprf) async {
 //  String formattedData = jsonEncode(fulldataprf.toJson()); // Convert object to JSON

@@ -108,6 +108,7 @@ class _PnlSummarBottom extends State<PnlSummarBottom> {
               Expanded(
                 // height: screenheight * 0.5,
                 child: SingleChildScrollView(
+                  physics: ClampingScrollPhysics(),
                   child: Column(
                     children: [
                       // Container(
@@ -151,7 +152,7 @@ class _PnlSummarBottom extends State<PnlSummarBottom> {
                         ),
                       ),
                       ListView.separated(
-                        physics: ScrollPhysics(),
+                        physics: ClampingScrollPhysics(),
                         itemCount: ledgerdata.pnlSummaryData?.data?.length ?? 0,
                         shrinkWrap: true,
                         itemBuilder: (context, index) {

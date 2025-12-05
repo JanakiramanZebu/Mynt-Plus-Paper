@@ -21,6 +21,7 @@ class MutualFundNewScreen extends ConsumerWidget {
     final theme = ref.watch(themeProvider);
 
     return SingleChildScrollView(
+      physics: ClampingScrollPhysics(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -315,6 +316,7 @@ class MutualFundNewScreen extends ConsumerWidget {
 
           // const SizedBox(height: 24),
           SingleChildScrollView(
+            physics: ClampingScrollPhysics(),
             child: Column(
               children: [
                 Builder(

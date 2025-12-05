@@ -315,7 +315,7 @@ class _ContractCalendarState extends State<_ContractCalendar> {
                                 text: displayName,
                                 theme: theme.isDarkMode,
                                 color: isSelected ? theme.isDarkMode ?  colors.colorWhite : colors.colorWhite : theme.isDarkMode ? colors.textSecondaryDark : colors.textPrimaryLight,
-                                fw: 0,
+                                fw: isSelected ? 2 : 0,
                               ),
                             ),
                           );

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mynt_plus/provider/index_list_provider.dart';
 import '../../../models/order_book_model/trade_book_model.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/order_provider.dart';
@@ -157,10 +158,10 @@ class TradeBook extends ConsumerWidget {
           order.fetchOrderBook(context, true);
           order.fetchTradeBook(context);
         },
-        child: order.tradeBooksearch!.isEmpty
-            ? tradeBook.isNotEmpty
+        child: order.orderSearchCtrl.text.isEmpty ? tradeBook.isNotEmpty
                 ? ListView.separated(
-                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: EdgeInsets.only(bottom: 80),
+                    physics: const ClampingScrollPhysics(),
                     shrinkWrap: false,
                     itemBuilder: (context, index) {
                       return InkWell(
@@ -324,7 +325,7 @@ class TradeBook extends ConsumerWidget {
                                       ),
                                       TextWidget.paraText(
                                         text:
-                                            "${tradeBook[index].avgprc ?? '0.00'}",
+                                            tradeBook[index].flprc ?? '0.00',
                                         color: theme.isDarkMode
                                             ? colors.textSecondaryDark
                                             : colors.textSecondaryLight,
@@ -372,14 +373,20 @@ class TradeBook extends ConsumerWidget {
                       );
                     },
                   )
-                : SingleChildScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    child: SizedBox(
-                        height: MediaQuery.of(context).size.height * 0.7,
-                        child: const NoDataFound()))
+                : Center(child: NoDataFound(
+                  title: "No Trades Found",
+                  subtitle: "There's nothing here yet. Buy some stocks to see them here.",
+                  secondaryLabel: "Explore",
+                  secondaryEnabled: true,
+                  onSecondary: () {
+                    ref.read(indexListProvider).bottomMenu(1, context);
+                  },
+                  tipText: '',
+                ))
             : order.tradeBooksearch!.isNotEmpty
                 ? ListView.separated(
-                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: EdgeInsets.only(bottom: 80),
+                    physics: const ClampingScrollPhysics(),
                     shrinkWrap: false,
                     itemBuilder: (context, index) {
                       return InkWell(
@@ -558,7 +565,7 @@ class TradeBook extends ConsumerWidget {
                                       ],
                                     ),
                                     TextWidget.paraText(
-                                      text: "${tradeBook[index].prc ?? '0.00'}",
+                                      text: tradeBook[index].flprc ?? '0.00',
                                       color: theme.isDarkMode
                                           ? colors.textSecondaryDark
                                           : colors.textSecondaryLight,
@@ -606,10 +613,14 @@ class TradeBook extends ConsumerWidget {
                           height: 1);
                     },
                   )
-                : SingleChildScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    child: SizedBox(
-                        height: MediaQuery.of(context).size.height * 0.7)),
+                : Center(
+                  child: NoDataFound(
+                      title: "No Results Found",
+                      subtitle: "Try searching with different keywords",
+                      secondaryLabel: "Explore",
+                      secondaryEnabled: false,
+                    ),
+                ),
       ))
     ]);
   }

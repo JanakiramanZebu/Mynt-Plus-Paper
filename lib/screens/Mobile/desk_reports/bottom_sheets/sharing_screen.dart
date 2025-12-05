@@ -144,8 +144,7 @@ class _SharingScreen extends State<SharingScreen> {
                                 await Clipboard.setData(ClipboardData(
                                     text:
                                         "$sharingapiforcalendar${ledgerprovider.ucode}"));
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  successMessage(context, 'Text copied'),
+                                successMessage(context, 'Text copied'
                                 );
                                 Navigator.pop(context);
                               },

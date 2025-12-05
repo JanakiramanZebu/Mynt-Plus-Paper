@@ -72,7 +72,7 @@ class _MfUPIProcessingScreen extends ConsumerState<MfUPIProcessingScreen> {
             ),
           );
         }
-        showResponsiveWarningMessage(context, '$status');
+        warningMessage(context, '$status');
             mfProv.fetchmfsiplist();
         mfProv.fetchMfOrderbook(context);
       }
@@ -99,7 +99,7 @@ class _MfUPIProcessingScreen extends ConsumerState<MfUPIProcessingScreen> {
               conditionval : 'timeout'
             ),
           );
-        showResponsiveWarningMessage(context, 'Timeout try again');
+        warningMessage(context, 'Timeout try again');
             mfProv.fetchmfsiplist();
       mfProv.fetchMfOrderbook(context);
       }
@@ -150,6 +150,7 @@ class _MfUPIProcessingScreen extends ConsumerState<MfUPIProcessingScreen> {
                   color: theme.isDarkMode
                       ? colors.textPrimaryDark
                       : colors.textPrimaryLight,
+                      fw: 0,
                 ),
               ),
               SizedBox(
@@ -164,6 +165,7 @@ class _MfUPIProcessingScreen extends ConsumerState<MfUPIProcessingScreen> {
                       text: 'This will take a few seconds.',
                       theme: false,
                       color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                      fw: 0,
                     ),
                   ])),
               const SizedBox(height: 24),

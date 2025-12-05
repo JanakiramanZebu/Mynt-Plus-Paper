@@ -12,6 +12,7 @@ import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 
 import '../../../provider/thems.dart';
 import '../../../res/global_state_text.dart';
+import '../../../sharedWidget/list_divider.dart';
 import 'bottom_sheets/ledger_filter.dart';
 
 class UnpledgeHistoryScreen extends StatelessWidget {
@@ -58,12 +59,14 @@ class UnpledgeHistoryScreen extends StatelessWidget {
                 ? Center(
                     child: Padding(
                     padding: EdgeInsets.only(top: 60),
-                    child: NoDataFound(),
+                    child: NoDataFound(
+                    secondaryEnabled: false,
+                    ),
                   ))
                 : Expanded(
                     child: SingleChildScrollView(
                       child: ListView.separated(
-                        physics: ScrollPhysics(),
+                        physics: ClampingScrollPhysics(),
                         itemCount:
                             ledgerprovider.unPledgeHistoryData?.data?.length ??
                                 0,
@@ -89,7 +92,7 @@ class UnpledgeHistoryScreen extends StatelessWidget {
                                                 : colors.colorBlack,
                                             textOverflow: TextOverflow.ellipsis,
                                             theme: theme.isDarkMode,
-                                            fw: 3),
+                                            fw: 0),
                                       ],
                                     ),
                                     Padding(
@@ -109,26 +112,25 @@ class UnpledgeHistoryScreen extends StatelessWidget {
                                               : const Color.fromARGB(
                                                   255, 246, 197, 197),
                                         ),
-                                        child: Text("${value.status}",
-                                            overflow: TextOverflow.ellipsis,
-                                            maxLines: 1,
-                                            style: textStyle(
-                                                value.status == 'Approved'
-                                                    ? const Color.fromARGB(
-                                                        193, 68, 168, 53)
-                                                    : const Color.fromARGB(
-                                                        193, 187, 41, 41),
-                                                10,
-                                                FontWeight.w600)),
+                                        child: TextWidget.paraText(
+                                          text:"${value.status}",
+                                          theme: false,
+                                          textOverflow: TextOverflow.ellipsis,
+                                          fw: 0,
+                                          maxLines: 1,
+                                          color :  value.status == 'Approved'
+                                                    ?  theme.isDarkMode ? colors.profitDark : colors.profitLight
+                                                    :  theme.isDarkMode ? colors.lossDark : colors.lossLight
+                                        ),    
                                       ),
                                     ),
                                   ],
                                 ),
                               ),
-                              const SizedBox(height: 10),
+                              const SizedBox(height: 8),
                               Padding(
                                 padding: const EdgeInsets.only(
-                                    top: 2.0, left: 14.0, bottom: 4.0),
+                                    top: 0, left: 14.0, bottom: 8.0),
                                 child: Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
@@ -145,17 +147,15 @@ class UnpledgeHistoryScreen extends StatelessWidget {
                                               textOverflow:
                                                   TextOverflow.ellipsis,
                                               theme: theme.isDarkMode,
-                                              fw: 3),
+                                              fw: 0),
                                           TextWidget.paraText(
                                               align: TextAlign.right,
                                               text: " ${value.iSIN}",
-                                                color: theme.isDarkMode
-                                                        ? colors.textPrimaryDark
-                                                        : colors.textPrimaryLight,
+                                                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                               textOverflow:
                                                   TextOverflow.ellipsis,
                                               theme: theme.isDarkMode,
-                                              fw: 3),
+                                              fw: 0),
                                         ],
                                       ),
                                     ),
@@ -166,36 +166,32 @@ class UnpledgeHistoryScreen extends StatelessWidget {
                                         children: [
                                           TextWidget.paraText(
                                               align: TextAlign.right,
-                                              text: "Req : ",
+                                              text: "REQ ",
                                               color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                               textOverflow:
                                                   TextOverflow.ellipsis,
                                               theme: theme.isDarkMode,
-                                              fw: 3),
+                                              fw: 0),
                                           Row(
                                             children: [
                                               TextWidget.paraText(
                                                   align: TextAlign.right,
                                                   text:
                                                       " ${value.reqDatTime!.split(" ")[0]}",
-                                                   color: theme.isDarkMode
-                                                        ? colors.textPrimaryDark
-                                                        : colors.textPrimaryLight,
+                                                   color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                                   textOverflow:
                                                       TextOverflow.ellipsis,
                                                   theme: theme.isDarkMode,
-                                                  fw: 3),
+                                                  fw: 0),
                                               TextWidget.paraText(
                                                   align: TextAlign.right,
                                                   text:
                                                       " ${value.reqDatTime!.split(" ")[1]}",
-                                                   color: theme.isDarkMode
-                                                        ? colors.textPrimaryDark
-                                                        : colors.textPrimaryLight,
+                                                   color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                                   textOverflow:
                                                       TextOverflow.ellipsis,
                                                   theme: theme.isDarkMode,
-                                                  fw: 3),
+                                                  fw: 0),
                                             ],
                                           ),
                                         ],
@@ -206,7 +202,7 @@ class UnpledgeHistoryScreen extends StatelessWidget {
                               ),
                               Padding(
                                 padding:
-                                    const EdgeInsets.only(top: 8.0, left: 14.0),
+                                    const EdgeInsets.only(top: 0, left: 14.0),
                                 child: Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
@@ -218,22 +214,20 @@ class UnpledgeHistoryScreen extends StatelessWidget {
                                         children: [
                                           TextWidget.paraText(
                                               align: TextAlign.right,
-                                              text: "Qty : ",
+                                              text: "QTY ",
                                                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                               textOverflow:
                                                   TextOverflow.ellipsis,
                                               theme: theme.isDarkMode,
-                                              fw: 3),
+                                              fw: 0),
                                           TextWidget.paraText(
                                               align: TextAlign.right,
                                               text: " ${value.unPlegeQty}",
-                                               color: theme.isDarkMode
-                                                        ? colors.textPrimaryDark
-                                                        : colors.textPrimaryLight,
+                                               color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                               textOverflow:
                                                   TextOverflow.ellipsis,
                                               theme: theme.isDarkMode,
-                                              fw: 3),
+                                              fw: 0),
                                         ],
                                       ),
                                     ),
@@ -244,36 +238,32 @@ class UnpledgeHistoryScreen extends StatelessWidget {
                                         children: [
                                           TextWidget.paraText(
                                               align: TextAlign.right,
-                                              text: "App : ",
+                                              text: "APP ",
                                                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                               textOverflow:
                                                   TextOverflow.ellipsis,
                                               theme: theme.isDarkMode,
-                                              fw: 3),
+                                              fw: 0),
                                           Row(
                                             children: [
                                               TextWidget.paraText(
                                                   align: TextAlign.right,
                                                   text:
                                                       " ${value.appDatTime!.split(" ")[0]}",
-                                                  color: theme.isDarkMode
-                                                        ? colors.textPrimaryDark
-                                                        : colors.textPrimaryLight,
+                                                  color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                                   textOverflow:
                                                       TextOverflow.ellipsis,
                                                   theme: theme.isDarkMode,
-                                                 fw: 3),
+                                                 fw: 0),
                                               TextWidget.paraText(
                                                   align: TextAlign.right,
                                                   text:
                                                       " ${value.appDatTime!.split(" ")[1]}",
-                                                  color: theme.isDarkMode
-                                                      ? colors.colorWhite
-                                                      : colors.colorBlack,
+                                                  color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                                   textOverflow:
                                                       TextOverflow.ellipsis,
                                                   theme: theme.isDarkMode,
-                                                  fw: 3),
+                                                  fw: 0),
                                             ],
                                           ),
                                         ],
@@ -296,12 +286,7 @@ class UnpledgeHistoryScreen extends StatelessWidget {
                               top: 8.0,
                               bottom: 0.0,
                             ),
-                            child: Divider(
-                              color: theme.isDarkMode
-                                  ? const Color(0xffB5C0CF).withOpacity(.15)
-                                  : const Color(0xffF1F3F8),
-                              thickness: 1.0,
-                            ),
+                            child: ListDivider(),
                           );
                           // }else{
                           // return SizedBox();

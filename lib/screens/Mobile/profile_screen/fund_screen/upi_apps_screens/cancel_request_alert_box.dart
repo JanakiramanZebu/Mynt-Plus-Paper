@@ -101,6 +101,7 @@ class _PaymentCancelAlertState extends ConsumerState<PaymentCancelAlert> {
                           color: theme.isDarkMode
                                   ? colors.textPrimaryDark
                                   : colors.textPrimaryLight,
+                          fw: 0,
                           ),
                     ),
                     SizedBox(
@@ -114,6 +115,7 @@ class _PaymentCancelAlertState extends ConsumerState<PaymentCancelAlert> {
                               text: 'This will take a few seconds.',
                               theme: false,
                               color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                              fw: 0,
                               ),
                         ])),
                     SizedBox(

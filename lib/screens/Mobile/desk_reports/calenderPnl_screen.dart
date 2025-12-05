@@ -279,7 +279,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                           color: theme.isDarkMode
                               ? colors.textSecondaryDark
                               : colors.textSecondaryLight,
-                          fw: 3,
+                          fw: 2,
                         ),
                         labelPadding:
                             const EdgeInsets.symmetric(horizontal: 16),
@@ -320,7 +320,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                        !ledgerprovider.hasDataForSegment(ledgerprovider.selectedSegment)))
                   ? Center(
                       child: Container(
-                        color: Colors.white,
+                        color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
                         child: CircularLoaderImage(),
                       ),
                     )
@@ -349,7 +349,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                                                   : colors.textSecondaryLight,
                                               textOverflow: TextOverflow.ellipsis,
                                               theme: theme.isDarkMode,
-                                              fw: 3),
+                                              fw: 0),
                                           const SizedBox(height: 4),
                                           TextWidget.subText(
                                               text: "Realised P&L",
@@ -358,7 +358,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                                                   : colors.textSecondaryLight,
                                               textOverflow: TextOverflow.ellipsis,
                                               theme: theme.isDarkMode,
-                                              fw: 3),
+                                              fw: 0),
                                           const SizedBox(height: 4),
                                           TextWidget.headText(
                                               text:
@@ -402,12 +402,14 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                                 ? const Center(
                                     child: Padding(
                                     padding: EdgeInsets.only(top: 60),
-                                    child: NoDataFound(),
+                                    child: NoDataFound(
+                                      secondaryEnabled: false,
+                                    ),
                                   ))
                                 : Expanded(
                                     child: SingleChildScrollView(
                                       physics:
-                                          const AlwaysScrollableScrollPhysics(),
+                                          const ClampingScrollPhysics(),
                                       child: Column(
                                         children: [
                                           Padding(
@@ -597,9 +599,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                                                                       hintStyle: TextWidget.textStyle(
                                       fontSize: 14,
                                       theme: theme.isDarkMode,
-                                     color: theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : colors.textSecondaryLight,
+                                     color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),fw: 0,
                                     ),
                               fillColor: theme.isDarkMode ? colors.searchBgDark : colors.searchBg,
                                                                       filled:
@@ -706,7 +706,9 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                                                               top: 30),
                                                       child: Column(
                                                         children: [
-                                                          const NoDataFound(),
+                                                          const NoDataFound(
+                                                              secondaryEnabled:
+                                                                  false),
                                                           if (ledgerprovider
                                                               .profitlossSearchCtrl
                                                               .text
@@ -806,7 +808,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                                                                                 color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                                                                                 textOverflow: TextOverflow.ellipsis,
                                                                                 theme: theme.isDarkMode,
-                                                                                fw: 3),
+                                                                                fw: 0),
                                                                             Container(
                                                                               padding:
                                                                                   const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
@@ -821,7 +823,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                                                                                 textOverflow: TextOverflow.ellipsis,
                                                                                 theme: theme.isDarkMode,
                                                                                 color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                                                                                fw: 3,
+                                                                                fw: 0,
                                                                               ),
                                                                             ),
                                                                           ],
@@ -846,7 +848,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                                                                                   : colors.textPrimaryLight,
                                                                           textOverflow: TextOverflow.ellipsis,
                                                                           theme: theme.isDarkMode,
-                                                                          fw: 3),
+                                                                          fw: 0),
                                                                     ],
                                                                   ),
                                                                 )));
@@ -1224,7 +1226,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                                 ? colors.textPrimaryDark
                                 : colors.textPrimaryLight,
                             theme: theme.isDarkMode,
-                            fw: 3,
+                            fw: 0,
                           ),
                           TextWidget.subText(
                             text: ledgerprovider.calenderpnlAllData != null
@@ -1239,7 +1241,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                                 ? colors.textPrimaryDark
                                 : colors.textPrimaryLight,
                             theme: theme.isDarkMode,
-                            fw: 3,
+                            fw: 0,
                           ),
                         ],
                       ),
@@ -1330,6 +1332,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                     ),
                     Expanded(
                       child: ListView.separated(
+                        physics: ClampingScrollPhysics(),
                         controller: scrollController,
                         itemCount: trade.length,
                         itemBuilder: (context, index) {
@@ -1363,7 +1366,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                                                     ? colors.textPrimaryDark
                                                     : colors.textPrimaryLight,
                                                 theme: theme.isDarkMode,
-                                                fw: 3,
+                                                fw: 0,
                                                 textOverflow:
                                                     TextOverflow.ellipsis,
                                                 softWrap: true,
@@ -1412,7 +1415,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                                                   color: theme.isDarkMode
                                                       ? colors.textSecondaryDark
                                                       : colors.textSecondaryLight,
-                                                  fw: 3),
+                                                  fw: 0),
                                               TextWidget.subText(
                                                   text:
                                                       "${double.parse(trade[index].realisedpnl).toStringAsFixed(2)}",
@@ -1445,7 +1448,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                                                           ? colors.textPrimaryDark
                                                           : colors
                                                               .textPrimaryLight,
-                                                  fw: 3),
+                                                  fw: 0),
                                             ],
                                           ),
                                           const SizedBox(height: 8),
@@ -1733,7 +1736,7 @@ class _MonthlyGrid extends StatelessWidget {
                 : colors.textPrimaryLight,
             textOverflow: TextOverflow.ellipsis,
             theme: theme.isDarkMode,
-            fw: 3,
+            fw: 0,
           ),
           const SizedBox(height: 6),
           TextWidget.subText(
@@ -1760,14 +1763,14 @@ Widget _buildInfoRow(String title1, String value1, ThemesProvider theme) {
             color: theme.isDarkMode
                 ? colors.textSecondaryDark
                 : colors.textSecondaryLight,
-            fw: 3),
+            fw: 0),
         TextWidget.subText(
             text: value1,
             theme: false,
             color: theme.isDarkMode
                 ? colors.textPrimaryDark
                 : colors.textPrimaryLight,
-            fw: 3),
+            fw: 0),
       ],
     ),
     const SizedBox(height: 8),
@@ -1835,13 +1838,22 @@ class _DailyCalendarState extends State<_DailyCalendar> {
                 icon: const Icon(Icons.chevron_left),
                 onPressed: _goToPreviousMonth,
               ),
-              Text(
-                _formatMonthYear(_month),
-                style: textStyle(
-                    widget.theme.isDarkMode ? Colors.white : Colors.black,
-                    16,
-                    FontWeight.w700),
+
+              TextWidget.titleText(
+                text: _formatMonthYear(_month),
+                theme: false,
+                color: widget.theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                fw: 1,
               ),
+
+
+              // Text(
+              //   _formatMonthYear(_month),
+              //   style: textStyle(
+              //       widget.theme.isDarkMode ? Colors.white : Colors.black,
+              //       16,
+              //       FontWeight.w700),
+              // ),
               IconButton(
                 icon: const Icon(Icons.chevron_right),
                 onPressed: _goToNextMonth,
@@ -1855,41 +1867,48 @@ class _DailyCalendarState extends State<_DailyCalendar> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              Text("Mon",
-                  style: textStyle(
-                      widget.theme.isDarkMode ? Colors.white : Colors.black,
-                      12,
-                      FontWeight.w700)),
-              Text("Tue",
-                  style: textStyle(
-                      widget.theme.isDarkMode ? Colors.white : Colors.black,
-                      12,
-                      FontWeight.w700)),
-              Text("Wed",
-                  style: textStyle(
-                      widget.theme.isDarkMode ? Colors.white : Colors.black,
-                      12,
-                      FontWeight.w700)),
-              Text("Thu",
-                  style: textStyle(
-                      widget.theme.isDarkMode ? Colors.white : Colors.black,
-                      12,
-                      FontWeight.w700)),
-              Text("Fri",
-                  style: textStyle(
-                      widget.theme.isDarkMode ? Colors.white : Colors.black,
-                      12,
-                      FontWeight.w700)),
-              Text("Sat",
-                  style: textStyle(
-                      widget.theme.isDarkMode ? Colors.white : Colors.black,
-                      12,
-                      FontWeight.w700)),
-              Text("Sun",
-                  style: textStyle(
-                      widget.theme.isDarkMode ? Colors.white : Colors.black,
-                      12,
-                      FontWeight.w700)),
+              TextWidget.paraText(
+                text: "Mon",
+                theme: false,
+                color: widget.theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                fw: 0,
+              ),
+              TextWidget.paraText(
+                text: "Tue",
+                theme: false,
+                color: widget.theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                fw: 0,
+              ),
+              TextWidget.paraText(
+                text: "Wed",
+                theme: false,
+                color: widget.theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                fw: 0,
+              ),
+              TextWidget.paraText(
+                text: "Thu",
+                theme: false,
+                color: widget.theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                fw: 0,
+              ),
+              TextWidget.paraText(
+                text: "Fri",
+                theme: false,
+                color: widget.theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                fw: 0,
+              ),
+              TextWidget.paraText(
+                text: "Sat",
+                theme: false,
+                color: widget.theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                fw: 0,
+              ),
+              TextWidget.paraText(
+                text: "Sun",
+                theme: false,
+                color: widget.theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                fw: 0,
+              ),
             ],
           ),
         ),

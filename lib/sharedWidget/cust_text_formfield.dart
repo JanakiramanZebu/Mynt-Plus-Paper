@@ -22,6 +22,9 @@ class CustomTextFormField extends StatelessWidget {
   final Color? fillColor;
   final bool? isReadable;
   final bool? autofocus;
+  final String? Function(String?)? validator;
+  final TextStyle? errorStyle;
+  final int? maxLines;
   CustomTextFormField({
     super.key,
     this.hintText,
@@ -40,6 +43,9 @@ class CustomTextFormField extends StatelessWidget {
     this.keyboardType,
     required this.textAlign,
     this.autofocus,
+    this.validator,
+    this.errorStyle,
+    this.maxLines,
     // required String type
   });
 
@@ -53,12 +59,15 @@ class CustomTextFormField extends StatelessWidget {
         textAlign: textAlign,
         inputFormatters: inputFormate,
         autofocus: autofocus ?? false,
+        validator: validator,
+        maxLines: maxLines,
         decoration: InputDecoration(
             fillColor: fillColor ?? const Color(0xffF1F3F8),
             filled: true,
             hintText: hintText,
             hintStyle: hintStyle,
             labelStyle: labelStyle,
+            errorStyle: errorStyle,
             prefixIconColor: const Color(0xff586279),
             suffixIcon: suffixIcon,
             prefixIcon: prefixIcon,
@@ -69,6 +78,12 @@ class CustomTextFormField extends StatelessWidget {
                 borderRadius: BorderRadius.circular(5)),
             disabledBorder: InputBorder.none,
             focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: colors.colorBlue),
+                borderRadius: BorderRadius.circular(5)),
+            errorBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: colors.colorBlue),
+                borderRadius: BorderRadius.circular(5)),
+            focusedErrorBorder: OutlineInputBorder(
                 borderSide: BorderSide(color: colors.colorBlue),
                 borderRadius: BorderRadius.circular(5)),
             border: OutlineInputBorder(

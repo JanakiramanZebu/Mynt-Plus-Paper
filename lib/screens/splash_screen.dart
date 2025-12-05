@@ -7,6 +7,7 @@ import '../locator/locator.dart';
 import '../locator/preference.dart';
 import '../provider/auth_provider.dart';
 import '../provider/network_state_provider.dart';
+import '../provider/thems.dart';
 import '../res/res.dart';
 import '../res/web_resources.dart';
 import '../routes/route_names.dart';
@@ -27,7 +28,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     super.initState();
 
     SchedulerBinding.instance.addPostFrameCallback((_) {
-      initializeResources(context: context);
+      // initializeResources(context: context);
       initializeWebResources(); // Initialize web resources
       initialRoute();
       ref.read(networkStateProvider).networkStream();
@@ -42,8 +43,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = ref.watch(themeProvider);
     return Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: theme.isDarkMode ? Colors.black : Colors.white,
         body: Stack(children: [
           CircularLoaderImage(),
           if (ref.read(networkStateProvider).connectionStatus ==
@@ -85,7 +87,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
             context, "", pref.clientId!, "", pref.imei!, true);
       }
     } catch (e) {
-      showResponsiveErrorMessage(context, "Something Wrong !!!");
+      error(context, "Something Wrong !!!");
       log("faild to build --- $e");
     }
   }

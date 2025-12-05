@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mynt_plus/models/marketwatch_model/market_watch_scrip_model.dart';
+import 'package:mynt_plus/provider/chart_provider.dart';
 import '../../../../models/marketwatch_model/get_quotes.dart';
 import '../../../../models/order_book_model/order_book_model.dart';
 import '../../../../models/portfolio_model/holdings_model.dart';
@@ -14,11 +16,11 @@ import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
 import '../../../../routes/route_names.dart';
 import '../../../../sharedWidget/alert_dialogue.dart';
-import '../../../../utils/responsive_navigation.dart';
 import '../../../../sharedWidget/custom_back_btn.dart';
 import '../../../../sharedWidget/custom_drag_handler.dart';
 import '../../../../sharedWidget/custom_exch_badge.dart';
 import '../../../../sharedWidget/scrip_info_btns.dart';
+import '../../../../utils/responsive_navigation.dart';
 import '../../market_watch/futures/future_screen.dart';
 
 // Create a wrapper for ScripInfoBtns with navigation lock
@@ -725,6 +727,7 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                     return true;
                   },
                   child: ListView(
+                    physics: ClampingScrollPhysics(),
                     controller: scrollController,
                     children: [
               Container(
@@ -972,7 +975,12 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                                     scripInfo.setHoldingDetailContext(_exchTsym, _holdingData);
                                     
                                     Navigator.pop(context);
-                                    userProfile.setChartdialog(true);
+                                    final chartArgs = ChartArgs(
+                                        exch: _exchTsym.exch ?? "",
+                                        tsym: _exchTsym.tsym ?? "",
+                                        token: _exchTsym.token ?? "",
+                                      );
+                                      ref.read(chartProvider.notifier).showChart(chartArgs, previousRoute: null);
                                   },
                                   splashColor: theme.isDarkMode
                                       ? Colors.white.withOpacity(0.15)

@@ -39,17 +39,17 @@ mixin AuthApi on ApiCore {
         return MobileLoginModel.fromJson(json as Map<String, dynamic>);
       }
     } on SocketException catch (_) {
-      showResponsiveErrorMessage(context, "Network error. Please check your connection.");
+          error(context, "Network error. Please check your connection.");
       return null;
     } on HttpException catch (_) {
-      showResponsiveErrorMessage(context, "Network error. Unable to connect to server.");
+          error(context, "Network error. Unable to connect to server.");
       return null;
     } on TimeoutException catch (_) {
-      showResponsiveErrorMessage(context, "Connection timed out. Please try again.");
+          error(context, "Connection timed out. Please try again.");
       return null;
     } catch (e) {
       debugPrint("Login error: $e");
-      showResponsiveErrorMessage(context, "An error occurred. Please try again.");
+          error(context, "An error occurred. Please try again.");
       return null;
     }
   }
@@ -70,17 +70,17 @@ mixin AuthApi on ApiCore {
         return MobileOtpModel.fromJson(json as Map<String, dynamic>);
       }
     } on SocketException catch (_) {
-      showResponsiveErrorMessage(context, "Network error. Please check your connection.");
+          error(context, "Network error. Please check your connection.");
       return null;
     } on HttpException catch (_) {
-      showResponsiveErrorMessage(context, "Network error. Unable to connect to server.");
+          error(context, "Network error. Unable to connect to server.");
       return null;
     } on TimeoutException catch (_) {
-      showResponsiveErrorMessage(context, "Connection timed out. Please try again.");
+          error(context, "Connection timed out. Please try again.");
       return null;
     } catch (e) {
       debugPrint("OTP error: $e");
-      showResponsiveErrorMessage(context, "An error occurred. Please try again.");
+          error(context, "An error occurred. Please try again.");
       return null;
     }
   }
@@ -121,17 +121,17 @@ mixin AuthApi on ApiCore {
 
       return ForgetPasswordModel.fromJson(json as Map<String, dynamic>);
     } on SocketException catch (_) {
-      showResponsiveErrorMessage(context, "Network error. Please check your connection.");
+          error(context, "Network error. Please check your connection.");
       return null;
     } on HttpException catch (_) {
-      showResponsiveErrorMessage(context, "Network error. Unable to connect to server.");
+          error(context, "Network error. Unable to connect to server.");
       return null;
     } on TimeoutException catch (_) {
-      showResponsiveErrorMessage(context, "Connection timed out. Please try again.");
+          error(context, "Connection timed out. Please try again.");
       return null;
     } catch (e) {
       debugPrint("Forget password error: $e");
-      showResponsiveErrorMessage(context, "An error occurred. Please try again.");
+          error(context, "An error occurred. Please try again.");
       return null;
     }
   }
@@ -144,17 +144,17 @@ mixin AuthApi on ApiCore {
 
       return json;
     } on SocketException catch (_) {
-      showResponsiveErrorMessage(context, "Network error. Please check your connection.");
+          error(context, "Network error. Please check your connection.");
       return null;
     } on HttpException catch (_) {
-      showResponsiveErrorMessage(context, "Network error. Unable to connect to server.");
+          error(context, "Network error. Unable to connect to server.");
       return null;
     } on TimeoutException catch (_) {
-      showResponsiveErrorMessage(context, "Connection timed out. Please try again.");
+          error(context, "Connection timed out. Please try again.");
       return null;
     } catch (e) {
       debugPrint("App version error: $e");
-      showResponsiveErrorMessage(context, "An error occurred. Please try again.");
+          error(context, "An error occurred. Please try again.");
       return null;
     }
   }
@@ -168,17 +168,17 @@ mixin AuthApi on ApiCore {
 
       return json;
     } on SocketException catch (_) {
-      showResponsiveErrorMessage(context, "Network error. Please check your connection.");
+          error(context, "Network error. Please check your connection.");
       return null;
     } on HttpException catch (_) {
-      showResponsiveErrorMessage(context, "Network error. Unable to connect to server.");
+          error(context, "Network error. Unable to connect to server.");
       return null;
     } on TimeoutException catch (_) {
-      showResponsiveErrorMessage(context, "Connection timed out. Please try again.");
+          error(context, "Connection timed out. Please try again.");
       return null;
     } catch (e) {
       debugPrint("Order preference error: $e");
-      showResponsiveErrorMessage(context, "An error occurred. Please try again.");
+          error(context, "An error occurred. Please try again.");
       return null;
     }
   }

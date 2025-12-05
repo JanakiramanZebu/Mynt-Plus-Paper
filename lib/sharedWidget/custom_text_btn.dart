@@ -20,33 +20,47 @@ class CustomTextBtn extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref.read(themeProvider);
-    return InkWell(
-      borderRadius: BorderRadius.circular(32),
-      onTap: () {
-        onPress();
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(32),
+   return SizedBox(
+      height: 35,
+      child: TextButton(
+        style: TextButton.styleFrom(
+          elevation: 0.0,
+          minimumSize: const Size(0, 40),
+          foregroundColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(4),
+          ),
+          padding: const EdgeInsets.all(0),
+          side: BorderSide.none,
+          backgroundColor: Colors.transparent,
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            TextWidget.subText(
-              text: label,
-              color: theme.isDarkMode
-                  ? colors.secondaryDark
-                  : colors.secondaryLight,
-              theme: theme.isDarkMode,
-            ),
-            const SizedBox(width: 8),
-            SvgPicture.asset(icon,
+        onPressed: () {
+          onPress();
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(32),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              TextWidget.subText(
+                text: label,
                 color: theme.isDarkMode
                     ? colors.secondaryDark
-                    : colors.secondaryLight)
-          ],
+                    : colors.secondaryLight,
+                theme: theme.isDarkMode,
+                fw:0
+              ),
+              const SizedBox(width: 8),
+              SvgPicture.asset(icon,
+                  color: theme.isDarkMode
+                      ? colors.secondaryDark
+                      : colors.secondaryLight)
+            ],
+          ),
         ),
       ),
     );

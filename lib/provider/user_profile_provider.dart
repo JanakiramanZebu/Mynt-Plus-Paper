@@ -1,23 +1,29 @@
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:mynt_plus/provider/thems.dart';
 import '../api/core/api_export.dart';
 import '../locator/constant.dart';
 import '../locator/locator.dart';
 import '../locator/preference.dart';
+import '../models/profile_model/algo_strategy_model.dart';
+import '../models/profile_model/create_algo_strategy_request_model.dart';
+import 'package:file_picker/file_picker.dart';
 import '../models/profile_model/client_detail_model.dart';
 import '../models/profile_model/user_detail_model.dart';
 import '../res/res.dart';
 import '../routes/route_names.dart';
 import '../sharedWidget/snack_bar.dart';
+import '../utils/image_utils.dart';
 import 'auth_provider.dart';
 import 'core/default_change_notifier.dart';
 import 'index_list_provider.dart';
 import 'shocase_provider.dart';
 import '../models/profile_model/qr_login_res.dart';
+import 'dart:io';
 
 final userProfileProvider =
     ChangeNotifierProvider((ref) => UserProfileProvider(ref));
@@ -145,6 +151,53 @@ class UserProfileProvider extends DefaultChangeNotifier {
 
   ClientDetailModel? _clientDetailModel;
   ClientDetailModel? get clientDetailModel => _clientDetailModel;
+
+  List<AlgoStrategyModel> _algoStrategies = [];
+  List<AlgoStrategyModel> get algoStrategies => _algoStrategies;
+
+  // Create Algo Strategy Form Management
+  final _formKey = GlobalKey<FormState>();
+  final _algorithmNameController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  final _strategyLogicController = TextEditingController();
+  
+  String? _selectedAlgorithmType;
+  String? _selectedCategory;
+  String? _selectedRiskLevel = 'Low';
+  bool _hasAttemptedSubmit = false;
+  String? _selectedFileName;
+  PlatformFile? _selectedFile;
+  bool _acceptTerms = false;
+  bool _isEditMode = false;
+
+  // Getters for form state
+  GlobalKey<FormState> get formKey => _formKey;
+  TextEditingController get algorithmNameController => _algorithmNameController;
+  TextEditingController get descriptionController => _descriptionController;
+  TextEditingController get strategyLogicController => _strategyLogicController;
+  String? get selectedAlgorithmType => _selectedAlgorithmType;
+  String? get selectedCategory => _selectedCategory;
+  String? get selectedRiskLevel => _selectedRiskLevel;
+  bool get hasAttemptedSubmit => _hasAttemptedSubmit;
+  String? get selectedFileName => _selectedFileName;
+  PlatformFile? get selectedFile => _selectedFile;
+  bool get acceptTerms => _acceptTerms;
+  bool get isEditMode => _isEditMode;
+
+  // Form constants
+  final List<String> algorithmTypes = ['Python', 'Pine Script', 'API-based'];
+  final List<String> categories = [
+    'Trend Following',
+    'Mean Reversion', 
+    'Momentum',
+    'Breakout',
+    'Oscillator-based',
+    'Options Strategy',
+    'Statistical Arbitrage',
+    'Other'
+  ];
+  final List<String> riskLevels = ['Low', 'Medium', 'High'];
+
   UserProfileProvider(this.ref);
 
   bool _userloader = false;
@@ -180,6 +233,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
     _onloadshowchartof = false;
     _userloader = false;
     _webViewKey = UniqueKey();
+    _profileimage = null;
     notifyListeners();
   }
 
@@ -455,12 +509,12 @@ class UserProfileProvider extends DefaultChangeNotifier {
     try {
       _qrLoginesponces = await api.getqr(unquiid, loginfsrc);
       if (_qrLoginesponces!.msg == "logged in") {
-        showResponsiveSuccess(context, "${_qrLoginesponces!.msg}");
+        successMessage(context, "${_qrLoginesponces!.msg}");
         Navigator.pop(context);
         Navigator.pop(context);
         camera.stop();
       } else {
-        showResponsiveWarningMessage(context, "${_qrLoginesponces!.emsg}");
+        warningMessage(context, "${_qrLoginesponces!.emsg}");
         Navigator.pop(context);
         camera.start();
       }
@@ -479,7 +533,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
       if (data["stat"] == "Ok") {
         await fetchBlockAc(context);
       } else {
-        showResponsiveWarningMessage(context, data["emsg"].toString());
+        warningMessage(context, data["emsg"].toString());
       }
     } catch (e) {
       notifyListeners();
@@ -510,13 +564,551 @@ class UserProfileProvider extends DefaultChangeNotifier {
             Navigator.pushNamedAndRemoveUntil(
                 context, Routes.loginScreen, (route) => false);
           }
-          showResponsiveSuccess(context, 'The Account has been deactivated');
+          successMessage(context, 'The Account has been deactivated');
         });
       } else {
-        showResponsiveWarningMessage(context, data["emsg"].toString());
+        warningMessage(context, data["emsg"].toString());
       }
     } catch (e) {
       notifyListeners();
     } finally {}
   }
+
+  Future fetchAlgoStrategies(BuildContext context) async {
+    try {
+      toggleLoadingOn(true);
+      print("🔍 Fetching algo strategies...");
+      _algoStrategies = await api.getAlgoStrategy();
+      print("📊 API Response - Number of strategies: ${_algoStrategies.length}");
+      for (int i = 0; i < _algoStrategies.length; i++) {
+        print("📋 Strategy $i: ${_algoStrategies[i].algorithmName} - ${_algoStrategies[i].status}");
+      }
+      notifyListeners();
+    } catch (e) {
+      print("❌ Error fetching algo strategies: $e");
+      error(context, 'Failed to load algo strategies: $e');
+      notifyListeners();
+    } finally {
+      toggleLoadingOn(false);
+    }
+  }
+
+  Future createAlgoStrategy(BuildContext context, {
+    required String algorithmName,
+    required String algorithmType,
+    required String category,
+    required String riskLevel,
+    required String description,
+    required String strategyLogic,
+    required PlatformFile file,
+  }) async {
+    try {
+      toggleLoadingOn(true);
+       final clientId = 'ZP00285'; 
+      //  final codeLang = _getCodeLanguage(algorithmType);
+      final requestData = CreateAlgoStrategyRequestModel(
+        algorithmName: algorithmName,
+        submittedBy: clientId,
+        type: algorithmType,
+        category: category,
+        riskLevel: riskLevel,
+        description: description,
+        logicDescription: strategyLogic,
+        codeLang: '',
+      );
+      
+      print("Creating algo strategy: $algorithmName");
+      final response = await api.createAlgoStrategy(
+        requestData: requestData,
+        file: file,
+      );
+      
+      print("Algo strategy created successfully: $response");
+      
+      // Refresh the algo strategies list
+      await fetchAlgoStrategies(context);
+      
+      // Clear form after successful creation
+      clearForm();
+      
+      successMessage(context, 'Algorithm strategy created successfully!');
+      
+    } catch (e) {
+      print("Error creating algo strategy: $e");
+      print("Stack trace: ${StackTrace.current}");
+      error(context, 'Failed to create algorithm strategy: $e');
+    } finally {
+      toggleLoadingOn(false);
+    }
+  }
+
+  String? _getCodeLanguage(String algorithmType) {
+    switch (algorithmType.toLowerCase()) {
+      case 'python':
+        return 'python';
+      case 'pine script':
+        return 'pinescript';
+      case 'api-based':
+        return 'api';
+      default:
+        return null;
+    }
+  }
+
+  // Form Management Methods
+  void setAlgorithmType(String? value) {
+    _selectedAlgorithmType = value;
+    notifyListeners();
+  }
+
+  void setCategory(String? value) {
+    _selectedCategory = value;
+    notifyListeners();
+  }
+
+  void setRiskLevel(String? value) {
+    _selectedRiskLevel = value;
+    notifyListeners();
+  }
+
+  void setAcceptTerms(bool value) {
+    _acceptTerms = value;
+    notifyListeners();
+  }
+
+  void setAttemptedSubmit(bool value) {
+    _hasAttemptedSubmit = value;
+    notifyListeners();
+  }
+
+  void setSelectedFile(PlatformFile file) {
+    _selectedFile = file;
+    _selectedFileName = file.name;
+    notifyListeners();
+  }
+
+  void clearForm() {
+    _algorithmNameController.clear();
+    _descriptionController.clear();
+    _strategyLogicController.clear();
+    _selectedAlgorithmType = null;
+    _selectedCategory = null;
+    _selectedRiskLevel = 'Low';
+    _hasAttemptedSubmit = false;
+    _selectedFileName = null;
+    _selectedFile = null;
+    _acceptTerms = false;
+    _isEditMode = false;
+    notifyListeners();
+  }
+
+  void populateFormForEdit(AlgoStrategyModel strategy) {
+    print("🔍 POPULATING FORM FOR EDIT:");
+    print("  Algorithm Name: ${strategy.algorithmName}");
+    print("  Type: ${strategy.type}");
+    print("  Category: ${strategy.category}");
+    print("  Risk Level (raw): ${strategy.riskLevel}");
+    
+    _isEditMode = true; // Set edit mode flag
+    _algorithmNameController.text = strategy.algorithmName;
+    _descriptionController.text = strategy.description;
+    _strategyLogicController.text = strategy.logicDescription;
+    _selectedAlgorithmType = strategy.type;
+    _selectedCategory = strategy.category;
+    // Convert risk level to proper case (e.g., "medium" -> "Medium")
+    _selectedRiskLevel = _capitalizeFirstLetter(strategy.riskLevel);
+    
+    print("  Risk Level (converted): $_selectedRiskLevel");
+    print("  Available risk levels: $riskLevels");
+    
+    _hasAttemptedSubmit = false;
+    _selectedFileName = strategy.filePath?.split('/').last ?? 'Existing file';
+    _selectedFile = null; // Will need to be re-selected for update
+    _acceptTerms = true; // Assume terms are accepted for existing strategy
+    notifyListeners();
+  }
+
+  String _capitalizeFirstLetter(String text) {
+    if (text.isEmpty) return text;
+    return text[0].toUpperCase() + text.substring(1).toLowerCase();
+  }
+
+  void disposeForm() {
+    _algorithmNameController.dispose();
+    _descriptionController.dispose();
+    _strategyLogicController.dispose();
+  }
+
+  // File Selection Logic
+  Future<void> selectFile(BuildContext context) async {
+    try {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['py', 'pine', 'js', 'json'],
+        allowMultiple: false,
+        withData: true,
+      );
+
+      if (result != null && result.files.isNotEmpty) {
+        PlatformFile file = result.files.first;
+        
+        // Check file size (5MB = 5 * 1024 * 1024 bytes)
+        const int maxSizeInBytes = 5 * 1024 * 1024;
+        
+        if (file.size > maxSizeInBytes) {
+          error(context, 'File size must be less than 5MB');
+          return;
+        }
+        
+        // Check file extension
+        String? extension = file.extension?.toLowerCase();
+        if (extension != null && ['py', 'pine', 'js', 'json'].contains(extension)) {
+          // Verify file bytes are loaded
+          if (file.bytes != null) {
+            setSelectedFile(file);
+            print("✅ File selected successfully with ${file.bytes!.length} bytes");
+          } else {
+            error(context, 'Failed to load file content. Please try again.');
+          }
+        } else {
+          error(context, 'Please select a valid file (.py, .pine, .js, .json)');
+        }
+      }
+    } catch (e) {
+      print("💥 File selection error: $e");
+      error(context, 'Error selecting file: $e');
+    }
+  }
+
+  String formatFileSize(int bytes) {
+    if (bytes < 1024) {
+      return '${bytes} B';
+    } else if (bytes < 1024 * 1024) {
+      return '${(bytes / 1024).toStringAsFixed(1)} KB';
+    } else {
+      return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+    }
+  }
+
+  // Form Validation
+  String? validateField(String label, String? value) {
+    if (value == null || value.trim().isEmpty) {
+      switch (label) {
+        case 'Algorithm Name':
+          return 'Algorithm name is required';
+        case 'Algorithm Type':
+          return 'Algorithm type is required';
+        case 'Category':
+          return 'Category is required';
+        case 'Risk Level':
+          return 'Risk level is required';
+        case 'Algorithm Description':
+          return 'Algorithm description is required';
+        case 'Strategy Logic':
+          return 'Strategy logic is required';
+        default:
+          return 'This field is required';
+      }
+    }
+    if (label == 'Algorithm Name' && value.trim().length < 3) {
+      return 'Algorithm name must be at least 3 characters';
+    }
+    return null;
+  }
+
+  bool isFormValid() {
+    // In edit mode, file upload is optional
+    bool fileRequired = !_isEditMode;
+    
+    return _formKey.currentState!.validate() && 
+           _selectedRiskLevel != null && 
+           (!fileRequired || _selectedFile != null) && 
+           _acceptTerms;
+  }
+
+  // Submit Form
+  Future<bool> submitForm(BuildContext context) async {
+    setAttemptedSubmit(true);
+    
+    if (isFormValid()) {
+      try {
+        await createAlgoStrategy(
+          context,
+          algorithmName: _algorithmNameController.text.trim(),
+          algorithmType: _selectedAlgorithmType!,
+          category: _selectedCategory!,
+          riskLevel: _selectedRiskLevel!,
+          description: _descriptionController.text.trim(),
+          strategyLogic: _strategyLogicController.text.trim(),
+          file: _selectedFile!,
+        );
+        return true; // Success
+      } catch (e) {
+        return false; // Failed
+      }
+    }
+    return false; // Form not valid
+  }
+
+  Future<void> updateAlgoStrategy(
+    BuildContext context, {
+    required String submissionId,
+    required String algoId,
+    required String algorithmName,
+    required String algorithmType,
+    required String category,
+    required String riskLevel,
+    required String description,
+    required String strategyLogic,
+    PlatformFile? file,
+  }) async {
+    try {
+      toggleLoadingOn(true);
+      final clientId = 'ZP00285';
+      
+      final requestData = CreateAlgoStrategyRequestModel(
+        algorithmName: algorithmName,
+        submittedBy: clientId,
+        type: algorithmType,
+        category: category,
+        riskLevel: riskLevel,
+        description: description,
+        logicDescription: strategyLogic,
+        codeLang: '',
+      );
+      
+      print("Updating algo strategy: $algorithmName");
+      final response = await api.updateAlgoStrategy(
+        requestData: requestData,
+        file: file,
+        submissionId: submissionId,
+        algoId: algoId,
+      );
+      
+      print("Algo strategy updated successfully: $response");
+      
+      // Refresh the algo strategies list
+      await fetchAlgoStrategies(context);
+      
+      // Clear form after successful update
+      clearForm();
+      
+      successMessage(context, 'Algorithm strategy updated successfully!');
+      
+    } catch (e) {
+      print("Error updating algo strategy: $e");
+      print("Stack trace: ${StackTrace.current}");
+      error(context, 'Failed to update algorithm strategy: $e');
+    } finally {
+      toggleLoadingOn(false);
+    }
+  }
+
+  Future<bool> updateForm(BuildContext context, String submissionId, String algoId) async {
+    print("🔍 UPDATE FORM CALLED:");
+    print("  Submission ID: $submissionId");
+    print("  Algo ID: $algoId");
+    print("  Algorithm Name: ${_algorithmNameController.text.trim()}");
+    print("  Algorithm Type: $_selectedAlgorithmType");
+    print("  Category: $_selectedCategory");
+    print("  Risk Level: $_selectedRiskLevel");
+    print("  Description: ${_descriptionController.text.trim()}");
+    print("  Strategy Logic: ${_strategyLogicController.text.trim()}");
+    print("  Selected File: ${_selectedFile?.name}");
+    print("  Form Valid: ${isFormValid()}");
+    
+    setAttemptedSubmit(true);
+    
+    if (isFormValid()) {
+      try {
+        await updateAlgoStrategy(
+          context,
+          submissionId: submissionId,
+          algoId: algoId,
+          algorithmName: _algorithmNameController.text.trim(),
+          algorithmType: _selectedAlgorithmType!,
+          category: _selectedCategory!,
+          riskLevel: _selectedRiskLevel!,
+          description: _descriptionController.text.trim(),
+          strategyLogic: _strategyLogicController.text.trim(),
+          file: _selectedFile, // Now optional
+        );
+        return true; // Success
+      } catch (e) {
+        print("❌ Update failed: $e");
+        return false; // Failed
+      }
+    }
+    print("❌ Form validation failed");
+    return false; // Form not valid
+  }
+
+  Future<bool> deleteAlgoStrategy(BuildContext context, String submissionId, String algoId) async {
+    try {
+      toggleLoadingOn(true);
+      
+      print("Deleting algo strategy: $algoId");
+      final response = await api.deleteAlgoStrategy(submissionId, algoId);
+      
+      print("Algo strategy deleted successfully: $response");
+      
+      // Refresh the algo strategies list
+      await fetchAlgoStrategies(context);
+      
+      // Clear form after successful deletion
+      clearForm();
+      
+      successMessage(context, 'Algorithm strategy deleted successfully!');
+      
+      return true; // Success
+      
+    } catch (e) {
+      print("Error deleting algo strategy: $e");
+      print("Stack trace: ${StackTrace.current}");
+      error(context, 'Failed to delete algorithm strategy: $e');
+      return false; // Failed
+    } finally {
+      toggleLoadingOn(false);
+    }
+  }
+
+ bool fileSizeCheck(File file) {
+  final int sizeInBytes = file.lengthSync();
+  final double sizeInMb = sizeInBytes / (1024 * 1024);
+  return sizeInMb <= 10; // limit 10 MB
+}
+
+  Future<void> pickImageFromGallery(BuildContext context, ImageSource source) async {
+  final ImagePicker picker = ImagePicker();
+
+  try {
+    final XFile? pickedFile = await picker.pickImage(
+      source: source,
+      maxHeight: 1800,
+      maxWidth: 1800,
+      imageQuality: 85,
+    );
+
+    if (pickedFile != null) {
+      File file = File(pickedFile.path);
+
+      if (!fileSizeCheck(file)) {
+        warningMessage(context, 'File size exceeds the limit of 10MB');
+        return;
+      } else {
+        await uploadImage(context, file);
+      }
+    } else {
+      print("No image selected");
+    }
+  } catch (e) {
+    print("Error selecting image: $e");
+  }
+}
+
+
+  // Method to remove profile image
+  Future<void> removeProfileImage(BuildContext context) async {
+    try {
+      final response = await api.removeProfileImage();
+      if(response.statusCode == 200){
+      _profileimage = null;
+      successMessage(context, 'Profile picture removed successfully');
+      notifyListeners();
+      }else{
+        warningMessage(context, 'Failed to remove profile picture');
+      }
+    } catch (e) {
+      print("Error removing profile image: $e");
+    }
+  }
+
+  // Method to take selfie using camera
+//   Future<void> takeAndUploadSelfie(BuildContext context) async {
+//   try {
+//     final ImagePicker picker = ImagePicker();
+
+//     // Open camera (front by default)
+//     final XFile? photo = await picker.pickImage(
+//       source: ImageSource.camera,
+//       imageQuality: 80,
+//       preferredCameraDevice: CameraDevice.front,
+//     );
+
+//     if (photo != null) {
+//       File file = File(photo.path);
+
+//       if (!await _validateImageFile(context, file)) {
+//         return;
+//       }
+
+//       await uploadImage(context, file);
+
+//     }
+//   } catch (e) {
+//     if (context.mounted) {
+//       warningMessage(context, 'Error taking selfie: $e');
+//     }
+//   }
+// }
+
+  Uint8List? _profileimage;
+  Uint8List? get getprofileImage => _profileimage;
+
+  Future<void> getProfileimage() async {
+    try {
+      toggleimageloader(true);
+      final responseData = await api.getProfileImage();
+      if (responseData != null) {
+        _profileimage = responseData;
+        notifyListeners();
+      } else {
+        _profileimage = null;
+        notifyListeners();
+      }
+    } catch (e) {
+      print("error in get profile image ${e}");
+    } finally {
+      toggleimageloader(false);
+    }
+  }
+
+  bool _imageloader = false;
+  bool get imageLoader => _imageloader;
+
+  toggleimageloader(bool value) {
+    _imageloader = value;
+    notifyListeners();
+  }
+
+  // Method to upload image to API
+  Future<void> uploadImage(BuildContext context, File imageFile) async {
+    try {
+      toggleimageloader(true);
+
+      // Fix image orientation before uploading (important for iOS photos)
+      final processedImageFile = await ImageUtils.processImageForUpload(
+        imageFile,
+        maxWidth: 1024, // Limit width to 1024px for better performance
+        maxHeight: 1024, // Limit height to 1024px for better performance
+        quality: 85, // Good quality with reasonable file size
+      );
+
+      final responseData = await api.uploadImage(processedImageFile);
+
+      if (responseData["status"] == "success") {
+        successMessage(context, 'Profile image updated successfully!');
+        _profileimage = await api.getProfileImage();
+        notifyListeners();
+      } else {
+        warningMessage(context,
+            'Failed to update image: ${responseData.statusCode} - $responseData');
+      }
+    } catch (e) {
+      print("error in upload image ${e}");
+    } finally {
+      toggleimageloader(false);
+    }
+  }
+
 }

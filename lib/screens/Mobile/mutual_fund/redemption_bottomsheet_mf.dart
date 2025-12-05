@@ -53,6 +53,7 @@ class _RedemptionBottomScreenState extends ConsumerState<RedemptionBottomScreen>
     final theme = ref.watch(themeProvider);
     final mf = ref.watch(mfProvider);
     return SingleChildScrollView(
+      physics: ClampingScrollPhysics(),
         child: Container(
           decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
@@ -322,8 +323,7 @@ class _RedemptionBottomScreenState extends ConsumerState<RedemptionBottomScreen>
                             final navValue = widget.mfHoldingData.exchTsym?.firstOrNull?.nav;
                             
                             if (minRdQty == null || holdQty == null || navValue == null) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                successMessage(context, "Missing fund information")
+                                successMessage(context, "Missing fund information"
                               );
                               return;
                             }
@@ -333,18 +333,15 @@ class _RedemptionBottomScreenState extends ConsumerState<RedemptionBottomScreen>
                               if (tsym != null) {
                                 mf.mfRedemption(context, tsym, mf.redemptionQty.text);
                               } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  successMessage(context, "Missing scheme symbol")
+                                  successMessage(context, "Missing scheme symbol"
                                 );
                               }
                             } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                successMessage(context, "Please check the data you have provided")
+                                successMessage(context, "Please check the data you have provided"
                               );
                             }
                           } catch (e) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              successMessage(context, "Error processing redemption: ${e.toString()}")
+                              successMessage(context, "Error processing redemption: ${e.toString()}"
                             );
                           }
                         },

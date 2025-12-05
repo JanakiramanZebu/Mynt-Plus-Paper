@@ -360,14 +360,12 @@ class UserProfileProvider extends DefaultChangeNotifier {
     try {
       _qrLoginesponces = await api.getqr(unquiid, loginfsrc);
       if (_qrLoginesponces!.msg == "logged in") {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(successMessage(context, "${_qrLoginesponces!.msg}"));
+        successMessage(context, "${_qrLoginesponces!.msg}");
         Navigator.pop(context);
         Navigator.pop(context);
         camera.stop();
       } else {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(warningMessage(context, "${_qrLoginesponces!.emsg}"));
+        warningMessage(context, "${_qrLoginesponces!.emsg}");
         Navigator.pop(context);
         camera.start();
       }
@@ -386,8 +384,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
       if (data["stat"] == "Ok") {
         await fetchBlockAc(context);
       } else {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(warningMessage(context, data["emsg"].toString()));
+        warningMessage(context, data["emsg"].toString());
       }
     } catch (e) {
       notifyListeners();
@@ -410,16 +407,13 @@ class UserProfileProvider extends DefaultChangeNotifier {
         ref.read(authProvider).loginMethCtrl.text =
             pref.isMobileLogin! ? pref.clientMob! : pref.clientId!;
         notifyListeners();
-        ScaffoldMessenger.of(context).showSnackBar(
-            successMessage(context, 'The Account has been deactivated'));
+            successMessage(context, 'The Account has been deactivated');
 
         Navigator.of(context).pop();
         // ref.read(websocketProvider).closeSocket();
         Navigator.pushNamedAndRemoveUntil(
             context, Routes.loginScreen, (route) => false);
-      } else {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(warningMessage(context, data["emsg"].toString()));
+      } else {warningMessage(context, data["emsg"].toString());
       }
     } catch (e) {
       notifyListeners();

@@ -73,7 +73,9 @@ class _mfSipdetScren extends State<mfSipdetScren>
                   child: TransparentLoaderScreen(
                     isLoading: mfdata.bestmfloader ?? false,
                     child: widget.data == null
-                        ? const Center(child: NoDataFound())
+                        ? const Center(child: NoDataFound(
+                          secondaryEnabled: false,
+                        ))
                         : Column(
                           children: [
                             Expanded(
@@ -87,18 +89,24 @@ class _mfSipdetScren extends State<mfSipdetScren>
                                         _buildHeaderSection(mfdata, theme),
                                         const SizedBox(height: 20),
                                                 
-                                        if (widget.data?.status == "ACTIVE")
                                           Row(
                                             children: [
-                                              Expanded(
-                                                child: _buildPauseButton(
-                                                    context, mfdata, theme),
-                                              ),
-                                              const SizedBox(width: 12),
-                                              Expanded(
-                                                child: _buildCancelButton(
-                                                    context, mfdata, theme),
-                                              ),
+                                              // Show buttons based on status and pause flag
+                                              if (_shouldShowButtons(widget.data?.status, mfdata.monthlyPauseFlag)) ...[
+                                                // Show pause button only if pause flag is Y
+                                                if (mfdata.monthlyPauseFlag == "Y") ...[
+                                                  Expanded(
+                                                    child: _buildPauseButton(
+                                                        context, mfdata, theme),
+                                                  ),
+                                                  const SizedBox(width: 12),
+                                                ],
+                                                // Always show cancel button if SIP is active
+                                                Expanded(
+                                                  child: _buildCancelButton(
+                                                      context, mfdata, theme),
+                                                ),
+                                              ],
                                             ],
                                           ),
                                                 
@@ -110,6 +118,7 @@ class _mfSipdetScren extends State<mfSipdetScren>
                               
                                       Expanded(
                                         child: SingleChildScrollView(
+                                          physics: ClampingScrollPhysics(),
                                         controller: scrollController,
                                         child: Column(
                                           children: [
@@ -253,7 +262,7 @@ class _mfSipdetScren extends State<mfSipdetScren>
                         ? theme.isDarkMode ? colors.profitDark : colors.profitLight
                         : theme.isDarkMode ? colors.lossDark : colors.lossLight,
                     theme: theme.isDarkMode,
-                    fw: 3,
+                    fw: 0,
                   ),
                 ),
 
@@ -424,7 +433,7 @@ class _mfSipdetScren extends State<mfSipdetScren>
                   : colors.textSecondaryLight,
               textOverflow: TextOverflow.ellipsis,
               theme: theme.isDarkMode,
-              fw: 3),
+              fw: 0),
           SizedBox(
             width: MediaQuery.of(context).size.width * 0.4,
             child: TextWidget.subText(
@@ -435,7 +444,7 @@ class _mfSipdetScren extends State<mfSipdetScren>
                     : colors.textPrimaryLight,
                 // textOverflow: TextOverflow.ellipsis,
                 theme: theme.isDarkMode,
-                fw: 3),
+                fw: 0),
           ),
         ]),
         const SizedBox(height: 8),
@@ -445,5 +454,45 @@ class _mfSipdetScren extends State<mfSipdetScren>
         )
       ],
     );
+  }
+
+  /// Determines whether to show pause and cancel buttons based on SIP status and pause flag
+  bool _shouldShowButtons(String? status, String? pauseFlag) {
+    // Debug print to see what values we're getting
+    print("=== SIP BUTTON VISIBILITY DEBUG ===");
+    print("SIP Status: '$status'");
+    print("Pause Flag: '$pauseFlag'");
+    print("Widget Data Status: '${widget.data?.status}'");
+    print("Widget Data Name: '${widget.data?.name}'");
+    print("Widget Data Scheme Code: '${widget.data?.schemeCode}'");
+    print("===================================");
+    
+    // Show buttons only if:
+    // 1. SIP is ACTIVE
+    // 2. SIP can be paused (pauseFlag == "Y")
+    // 3. SIP is not already paused, cancelled, or rejected
+    
+    if (status == null || pauseFlag == null) {
+      print("Buttons hidden: status or pauseFlag is null");
+      print("Status is null: ${status == null}");
+      print("PauseFlag is null: ${pauseFlag == null}");
+      return false;
+    }
+    
+    // Don't show buttons for cancelled, rejected, or paused SIPs
+    if (status == "CANCELLED" || 
+        status == "REJECTED" || 
+        status == "PAUSED") {
+      print("Buttons hidden: SIP status is $status");
+      return false;
+    }
+    
+    // Show buttons for ACTIVE SIPs (regardless of pause flag)
+    // Cancel button is always available for active SIPs
+    bool shouldShow = status == "ACTIVE";
+    print("Status == 'ACTIVE': ${status == 'ACTIVE'}");
+    print("PauseFlag == 'Y': ${pauseFlag == 'Y'}");
+    print("Should show buttons: $shouldShow");
+    return shouldShow;
   }
 }

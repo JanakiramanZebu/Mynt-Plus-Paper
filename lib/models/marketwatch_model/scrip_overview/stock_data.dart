@@ -691,6 +691,7 @@ class BalanceSheet {
   String? unsecuredLoans;
   String? yearEndDate;
   String? convDate;
+  String? companyName;
   BalanceSheet(
       {this.borrowings,
       this.cashAndBank,
@@ -722,7 +723,8 @@ class BalanceSheet {
       this.tradePayables,
       this.unsecuredLoans,
       this.yearEndDate,
-      this.convDate});
+      this.convDate,
+      this.companyName});
 
   BalanceSheet.fromJson(Map<String, dynamic> json) {
     borrowings = json['borrowings'].toString();
@@ -761,6 +763,7 @@ class BalanceSheet {
     unsecuredLoans = json['unsecured_loans'].toString();
     yearEndDate = json['year_end_date'].toString();
     convDate = json['convDate'].toString();
+    companyName = json['companyName'].toString();
   }
 
   Map<String, dynamic> toJson() {
@@ -797,6 +800,7 @@ class BalanceSheet {
     data['unsecured_loans'] = unsecuredLoans;
     data['year_end_date'] = yearEndDate;
     data['convDate'] = convDate;
+    data['companyName'] = companyName;
     return data;
   }
 }
@@ -807,13 +811,15 @@ class CashflowSheet {
   String? cashFromOperatingActivities;
   String? yearEndDate;
   String? convDate;
+  String? companyName;
 
   CashflowSheet(
       {this.cashFlowFromInvestingActivities,
       this.cashFromFinancingActivities,
       this.cashFromOperatingActivities,
       this.yearEndDate,
-      this.convDate});
+      this.convDate,
+      this.companyName});
 
   CashflowSheet.fromJson(Map<String, dynamic> json) {
     cashFlowFromInvestingActivities =
@@ -824,6 +830,7 @@ class CashflowSheet {
         json['cash_from_operating_activities'].toString();
     yearEndDate = json['year_end_date'].toString();
     convDate = json['convDate'];
+    companyName = json['companyName'].toString();
   }
 
   Map<String, dynamic> toJson() {
@@ -834,6 +841,7 @@ class CashflowSheet {
     data['cash_from_operating_activities'] = cashFromOperatingActivities;
     data['year_end_date'] = yearEndDate;
     data['convDate'] = convDate;
+    data['companyName'] = companyName;
     return data;
   }
 }
@@ -850,6 +858,7 @@ class IncomeSheet {
   String? tax;
   String? convDate;
   String? yearEndDate;
+  String? companyName;
 
   IncomeSheet(
       {this.earningsPerShare,
@@ -862,7 +871,8 @@ class IncomeSheet {
       this.revenue,
       this.tax,
       this.yearEndDate,
-      this.convDate});
+      this.convDate,
+      this.companyName});
 
   IncomeSheet.fromJson(Map<String, dynamic> json) {
     earningsPerShare = json['earnings_per_share'].toString();
@@ -876,6 +886,7 @@ class IncomeSheet {
     tax = json['tax'].toString();
     yearEndDate = json['year_end_date'].toString();
     convDate = json['convDate'];
+    companyName = json['companyName'].toString();
   }
 
   Map<String, dynamic> toJson() {
@@ -891,6 +902,7 @@ class IncomeSheet {
     data['tax'] = tax;
     data['year_end_date'] = yearEndDate;
     data['convDate'] = convDate;
+    data['companyName'] = companyName;
     return data;
   }
 }

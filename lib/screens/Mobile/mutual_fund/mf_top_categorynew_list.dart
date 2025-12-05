@@ -57,12 +57,15 @@ class MFCategoryListScreen extends ConsumerWidget {
       body: TransparentLoaderScreen(
         isLoading: mfData.bestmfloader ?? false,
         child: mfData.catnewlist?.isEmpty ?? true
-            ? const Center(child: NoDataFound())
+            ? const Center(child: NoDataFound(
+              secondaryEnabled: false,
+            ))
             : Column(
                 children: [
                   _buildCategoryChips(context, ref, theme, title, mfData),
                   Expanded(
                     child: ListView.separated(
+                      physics: ClampingScrollPhysics(),
                       shrinkWrap: true,
                       // padding: const EdgeInsets.all(8),
                       itemCount: sortedList?.length ?? 0,
@@ -130,8 +133,8 @@ class MFCategoryListScreen extends ConsumerWidget {
               );
             }
           } catch (e) {
-            ScaffoldMessenger.of(context).showSnackBar(successMessage(
-                context, "Error updating watchlist: ${e.toString()}"));
+            successMessage(
+                context, "Error updating watchlist: ${e.toString()}");
           }
         },
         onTap: () async {
@@ -149,8 +152,7 @@ class MFCategoryListScreen extends ConsumerWidget {
                   arguments: bInstance,
                 );
               } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                    successMessage(context, "No Single Page Data"));
+                    successMessage(context, "No Single Page Data");
                 final jsondata = MutualFundList.fromJson(item.toJson());
                 Navigator.pushNamed(context, Routes.mforderScreen,
                     arguments: jsondata);
@@ -158,12 +160,11 @@ class MFCategoryListScreen extends ConsumerWidget {
                 mfData.chngOrderType("One-time");
               }
             } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                  successMessage(context, "Missing fund information"));
+                  successMessage(context, "Missing fund information");
             }
           } catch (e) {
-            ScaffoldMessenger.of(context).showSnackBar(successMessage(
-                context, "Error loading fund details: ${e.toString()}"));
+            successMessage(
+                context, "Error loading fund details: ${e.toString()}");
           }
         },
         child: ListTile(

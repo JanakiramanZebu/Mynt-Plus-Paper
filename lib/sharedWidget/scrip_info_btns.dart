@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import '../models/marketwatch_model/market_watch_scrip_model.dart';
 import '../utils/custom_navigator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:mynt_plus/provider/chart_provider.dart';
+import 'package:mynt_plus/screens/Mobile/market_watch/tv_chart/webview_chart.dart';
 import '../../provider/thems.dart';
 import '../../res/res.dart';
 import '../../res/global_state_text.dart';
@@ -151,7 +155,28 @@ class ScripInfoBtns extends ConsumerWidget {
         Navigator.pop(context);
         
         // Then activate the chart overlay
-        ref.read(userProfileProvider).setChartdialog(true);
+        final chartArgs = ChartArgs(exch: exch, tsym: tsym, token: token);
+        
+        // Check the current route to determine where to return after chart
+        final currentRoute = ModalRoute.of(context)?.settings.name;
+        String? previousRoute;
+        dynamic originalArgs;
+        
+        if (currentRoute == Routes.optionChain) {
+          previousRoute = Routes.optionChain;
+          // Store the original DepthInputArgs for option chain navigation
+          originalArgs = DepthInputArgs(
+            exch: exch,
+            token: token,
+            tsym: marketwatch.getQuotes!.tsym ?? '',
+            instname: marketwatch.getQuotes!.instname ?? "",
+            symbol: marketwatch.getQuotes!.symbol ?? '',
+            expDate: marketwatch.getQuotes!.expDate ?? '',
+            option: marketwatch.getQuotes!.option ?? ''
+          );
+        }
+        
+        ref.read(chartProvider.notifier).showChart(chartArgs, previousRoute: previousRoute, originalArgs: originalArgs);
         
       } else if (buttonName == "Option") {
         // Option chain logic

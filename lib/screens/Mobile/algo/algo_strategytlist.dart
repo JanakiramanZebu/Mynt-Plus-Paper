@@ -7,6 +7,7 @@ import '../../../models/strategy_model.dart';
 import '../../../provider/stocks_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../res/global_state_text.dart';
+import '../../../sharedWidget/snack_bar.dart';
 
 class AlgoStrategyList extends ConsumerStatefulWidget {
   const AlgoStrategyList({super.key});
@@ -531,13 +532,7 @@ class _AlgoStrategyListState extends ConsumerState<AlgoStrategyList> {
       // No delete API yet; clear full list from provider for now.
       ref.read(stocksProvide).clearStrategyList();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Strategy deleted'),
-            backgroundColor: theme.isDarkMode ? colors.lossDark : colors.lossLight,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        successMessage(context, 'Strategy deleted');
       }
     }
   }

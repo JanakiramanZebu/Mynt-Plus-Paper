@@ -145,6 +145,7 @@ class _ApplyBondsScreenState extends ConsumerState<ApplyBondsScreen> {
               ),
               body: 
               SingleChildScrollView(
+                physics: ClampingScrollPhysics(),
                 child: Column(
                   children: [
                     Container(

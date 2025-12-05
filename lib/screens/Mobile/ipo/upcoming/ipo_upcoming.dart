@@ -24,11 +24,21 @@ class UpcomingIpo extends StatelessWidget {
       List<dynamic> filteredUpcomingIPOs = _getFilteredUpcomingIPOs(ipos);
       final hasUpcomingIPOs = filteredUpcomingIPOs.isNotEmpty;
 
-      if (!hasUpcomingIPOs) {
+      if (!hasUpcomingIPOs && ipos.ipocommonsearchcontroller.text.isNotEmpty) {
         return _NoDataSection(devHeight: devHeight);
       }
 
+      if(!hasUpcomingIPOs){
+        return NoDataFound(
+          title: "No Upcoming IPOs Found",
+          subtitle: "There are no Upcoming IPO listings for today",
+          primaryEnabled: false,
+          secondaryEnabled: false,
+        );
+      }
+
       return SingleChildScrollView(
+        physics: ClampingScrollPhysics(),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -68,15 +78,14 @@ class _NoDataSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 225),
-      child: SizedBox(
-        height: devHeight - 140,
-        child: const Column(
-          children: [NoDataFound()],
-        ),
+    return Center(
+      child: NoDataFound(
+        title: "No Results Found",
+        subtitle: "Try searching with different keywords",
+        primaryEnabled: false,
+        secondaryEnabled: false,
       ),
-    );
+        );
   }
 }
 
@@ -92,6 +101,7 @@ class _UpcomingIPOList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.separated(
+      padding: EdgeInsets.zero,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: upcomingIPOs.length ?? 0,
@@ -144,6 +154,7 @@ class _UpcomingIPOItem extends StatelessWidget {
                     ? colors.textPrimaryDark
                     : colors.textPrimaryLight,
                 textOverflow: TextOverflow.ellipsis,
+                fw: 0,
               ),
             ),
             Material(
@@ -184,7 +195,7 @@ class _UpcomingIPOItem extends StatelessWidget {
     return TextWidget.paraText(
       text: "${ipo.ipoType}",
       theme: false,
-      fw: 3,
+      fw: 0,
       color: theme.isDarkMode
           ? colors.textSecondaryDark
           : colors.textSecondaryLight,

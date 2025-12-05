@@ -54,6 +54,9 @@ class _FundScreenState extends ConsumerState<FundScreen> {
     // WidgetsBinding.instance.addPostFrameCallback((_) {
     //   _setDefaultSegment(ref.read(transcationProvider));
     // });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(transcationProvider).focusNode.requestFocus();
+    });
   }
 
   bool _isDisposedIos = false;
@@ -204,6 +207,7 @@ class _FundScreenState extends ConsumerState<FundScreen> {
             MediaQuery.of(context).viewInsets.bottom, // Add keyboard padding
       ),
       child: SingleChildScrollView(
+        physics: ClampingScrollPhysics(),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -243,6 +247,7 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                           ? colors.textPrimaryDark
                                           : colors.textPrimaryLight,
                                       theme: theme.isDarkMode,
+                                      fw: 0,
                                     ),
               inputFormatters: [
                 NoEmojiInputFormatter(),
@@ -253,7 +258,7 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                 hintText: "Enter UPI ID",
                 
                 hintStyle: TextWidget.textStyle(
-                    fontSize: 14, theme: false, color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight),
+                    fontSize: 14,  theme: false, color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4), fw: 0),
                     
 
                 contentPadding:
@@ -458,6 +463,7 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                   fund.focusNode.unfocus();
                                 },
                                 child: SingleChildScrollView(
+                                  physics: ClampingScrollPhysics(),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -528,6 +534,7 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                   color: theme.isDarkMode
                                       ? colors.textPrimaryDark
                                       : colors.textPrimaryLight,
+                                  fw: 0,
                                 ),
                                 const SizedBox(height: 10),
                                 TextFormField(
@@ -542,6 +549,7 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                     color: theme.isDarkMode
                                         ? colors.textPrimaryDark
                                         : colors.textPrimaryLight,
+                                    fw: 0,
                                   ),
                                   controller: fund.amount,
                                   onChanged: (value) {
@@ -569,14 +577,14 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                     hintText: "0",
                                     hintStyle: TextWidget.textStyle(
                                       theme: false,
-                                      color: theme.isDarkMode
-                                          ? colors.textSecondaryDark
-                                          : colors.textSecondaryLight,
+                                      color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
                                       fontSize: 25,
+                                      fw: 0,
                                     ),
                                     labelStyle: TextWidget.textStyle(
                                       theme: theme.isDarkMode,
                                       fontSize: 25,
+                                      fw: 0,
                                     ),
                                     prefixIcon: Padding(
                                       padding: const EdgeInsets.all(12.0),
@@ -763,6 +771,7 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                             color: theme.isDarkMode
                                                 ? colors.textPrimaryDark
                                                 : colors.textPrimaryLight,
+                                            fw: 0,
                                           ),
                                         ),
                                         subtitle: Padding(
@@ -773,6 +782,7 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                             color: theme.isDarkMode
                                                 ? colors.textSecondaryDark
                                                 : colors.textSecondaryLight,
+                                            fw: 0,
                                           ),
                                         ),
                                         trailing: Material(
@@ -832,6 +842,7 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                               color: theme.isDarkMode
                                   ? colors.textPrimaryDark
                                   : colors.textPrimaryLight,
+                              fw: 0,
                             ),
                           ),
                           const SizedBox(
@@ -856,15 +867,15 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                     onTap: () {
                                       if (fund.amount.text.isEmpty ||
                                           fund.intValue < 50) {
-                                        showResponsiveWarningMessage(
-                                            context, "Min amount ₹50");
+                                        warningMessage(
+                                                context, "Min amount ₹50");
                                         return;
                                       }
                   
                                       // Check for UPI payment restriction above 1 lakh
                                       if (isUpiPayment && isAmountAbove1Lakh) {
-                                        showResponsiveWarningMessage(context,
-                                            "UPI payments are not allowed for amounts above ₹1,00,000. Please use Net Banking.");
+                                        warningMessage(context,
+                                                "UPI payments are not allowed for amounts above ₹1,00,000. Please use Net Banking.");
                                         return;
                                       }
                   
@@ -882,9 +893,9 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                             context, fund, theme, colors);
                                       } else if (index == 2) {
                                         if (fund.intValue > 5000000) {
-                                          showResponsiveWarningMessage(
-                                              context,
-                                              "Max amount ₹5,000,000");
+                                          warningMessage(
+                                                  context,
+                                                  "Max amount ₹5,000,000");
                                         } else {
                                           _handleRazorpayPayment(context, fund);
                                         }
@@ -929,6 +940,7 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                                                 .textPrimaryDark
                                                             : colors
                                                                 .textPrimaryLight,
+                                                        fw: 0,
                                                       ),
                                                       SvgPicture.asset(
                                                         assets.leftArrow,
@@ -1276,11 +1288,12 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                         color: fund.bankdetails!.dATA![index][1] == fund.bankname
                             ? theme.isDarkMode ? colors.textSecondaryDark.withOpacity(0.2) : colors.textSecondaryLight.withOpacity(0.2)
                             : Colors.transparent,
-                        child: TextWidget.titleText(
+                        child: TextWidget.subText(
                           text:
                               '${fund.bankdetails!.dATA![index][1]}-${hideAccountNumber(fund.bankdetails!.dATA![index][2])}',
                           color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                           theme: theme.isDarkMode,
+                          fw: 0,
                         ),
                       ),
                     );

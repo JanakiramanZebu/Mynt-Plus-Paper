@@ -106,11 +106,11 @@ class SipOrderBook extends ConsumerWidget {
                               fillColor: const Color(0xffF1F3F8),
                               filled: true,
                               hintStyle: TextWidget.textStyle(
-                                theme: false,
-                                color: const Color(0xff69758F),
-                                fontSize: 15,
-                                fw: 0,
-                              ),
+                                      fontSize: 14,
+                                      theme: theme.isDarkMode,
+                                     color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                                    fw: 0,
+                                    ),
                               prefixIconColor: const Color(0xff586279),
                               prefixIcon: Padding(
                                 padding: const EdgeInsets.symmetric(
@@ -163,7 +163,7 @@ class SipOrderBook extends ConsumerWidget {
                 ),
               Expanded(
                 child: SingleChildScrollView(
-                  physics: const ScrollPhysics(),
+                  physics: const ClampingScrollPhysics(),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [

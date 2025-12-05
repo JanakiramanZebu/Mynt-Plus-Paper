@@ -410,7 +410,7 @@ class SettingsScreen extends ConsumerWidget {
                                   await ref
                                       .read(apikeyprovider)
                                       .fetchapikey(context);
-                                  showResponsiveSuccess(context,
+                                      successMessage(context,
                                           'API Key as been ${apikeys.generateApikey?.status}');
                                 },
                                 child: TextWidget.subText(

@@ -58,7 +58,7 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
       (mandate) => mandate.mandateId == mfOrder.mandateId,
       orElse: () => mfOrder.mandateData!.first,
     );
-    return selectedMandate.amount ?? "N/A";
+    return double.parse(selectedMandate.amount ?? "0").toStringAsFixed(2) ?? "N/A";
   }
 
   Widget _getSelectedMandateStatus(MFProvider mfOrder) {
@@ -173,6 +173,7 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                   
                 ),
               child: SingleChildScrollView(
+                physics: ClampingScrollPhysics(),
                 padding: EdgeInsets.only(
                   top: 22.0,
                   bottom: MediaQuery.of(context).viewInsets.bottom + 16.0,
@@ -323,7 +324,7 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                                             ? colors.textPrimaryDark
                                                             : colors
                                                                 .textPrimaryLight,
-                                                        fw: 3,
+                                                        fw: 0,
                                                       ),
                                                       SizedBox(
                                                         width: 4,
@@ -344,7 +345,7 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                                     color: theme.isDarkMode
                                                         ? colors.textPrimaryDark
                                                         : colors.textPrimaryLight,
-                                                    fw: 3,
+                                                    fw: 0,
                                                   ),
                                                   // const SizedBox(height: 4),
                                                   // TextWidget.paraText(
@@ -490,6 +491,7 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                                    color: theme.isDarkMode
                                                         ? colors.textPrimaryDark
                                                         : colors.textPrimaryLight,
+                                                    fw: 0,
                                                   ),
                                                 ),
                                                 subtitle: Padding(
@@ -502,6 +504,7 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                                      color: theme.isDarkMode
                                                         ? colors.textSecondaryDark
                                                         : colors.textSecondaryLight,
+                                                    fw: 0,
                                                   ),
                                                 ),
                                                 trailing: Material(
@@ -554,7 +557,7 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                     color: theme.isDarkMode
                                         ? colors.textPrimaryDark
                                         : colors.textPrimaryLight,
-                                    fw: 0,
+                                    fw: 1,
                                   ),
                                   const SizedBox(height: 16),
                                   const ListDivider(),
@@ -611,6 +614,7 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                                           color: theme.isDarkMode
                                                               ? colors.textPrimaryDark
                                                               : colors.textPrimaryLight,
+                                                          fw: 0,
                                                         ),
                                                         if (isSelected)
                                                           Icon(
@@ -655,9 +659,8 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                                      hintStyle: TextWidget.textStyle(
                                         fontSize: 14,
                                         theme: theme.isDarkMode,
-                                       color: theme.isDarkMode
-                                  ? colors.textSecondaryDark
-                                  : colors.textSecondaryLight,
+                                       color:(theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                                                          fw: 0,
                                       ),
                                                       style: TextWidget.textStyle(
                                       fontSize: 16,
@@ -665,6 +668,7 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                           ? colors.textPrimaryDark
                                           : colors.textPrimaryLight,
                                       theme: theme.isDarkMode,
+                                      fw: 0,
                                     ),
                                                       textCtrl: mfOrder.upiId,
                                                       onChanged: (value) {
@@ -1095,10 +1099,11 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                       color: fund.bankdetails!.dATA![index][1] == fund.bankname
                           ? const Color(0xff999999).withOpacity(0.2)
                           : Colors.transparent,
-                      child: TextWidget.titleText(
+                      child: TextWidget.subText(
                         text:
                             '${fund.bankdetails!.dATA![index][1]}-${hideAccountNumber(fund.bankdetails!.dATA![index][2])}',
                         theme: theme.isDarkMode,
+                        fw: 0,
                       ),
                     ),
                   );

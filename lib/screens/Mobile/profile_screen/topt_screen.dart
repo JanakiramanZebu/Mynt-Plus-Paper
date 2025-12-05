@@ -175,6 +175,7 @@ class _TotpScreenState extends ConsumerState<TotpScreen> {
                         color: theme.isDarkMode
                             ? colors.textSecondaryDark
                             : colors.textSecondaryLight,
+                            fw: 1,
                         ),
                   ),
                   
@@ -192,7 +193,7 @@ class _TotpScreenState extends ConsumerState<TotpScreen> {
                       onTap: () async {
                         await Future.delayed(const Duration(milliseconds: 150));
                         Clipboard.setData(ClipboardData(text: otp));
-                        showResponsiveSuccess(context, "TOTP copied to clipboard");
+                            successMessage(context, "TOTP copied to clipboard");
         
                         Navigator.pop(context);
                       },
@@ -232,7 +233,7 @@ class _TotpScreenState extends ConsumerState<TotpScreen> {
                                       await Future.delayed(
                                           const Duration(milliseconds: 150));
                                       Clipboard.setData(ClipboardData(text: otp));
-                                      showResponsiveSuccess(context, "TOTP copied to clipboard");
+                                          successMessage(context, "TOTP copied to clipboard");
                                       Navigator.pop(context);
                                     },
                                     child: Container(
@@ -266,7 +267,7 @@ class _TotpScreenState extends ConsumerState<TotpScreen> {
                                 color: theme.isDarkMode
                                     ? colors.textSecondaryDark
                                     : colors.textSecondaryLight,
-                                fw: 3),
+                                fw: 0),
                           ],
                         ),
                       ),
@@ -307,7 +308,7 @@ class _TotpScreenState extends ConsumerState<TotpScreen> {
                                 color: theme.isDarkMode
                                     ? colors.textPrimaryDark
                                     : colors.textPrimaryLight,
-                                
+                                fw: 0,
                                 textOverflow: TextOverflow.ellipsis),
                           ),
                           Material(
@@ -360,7 +361,8 @@ class _TotpScreenState extends ConsumerState<TotpScreen> {
                                     const Duration(milliseconds: 150));
                                 Clipboard.setData(
                                     ClipboardData(text: widget.secretKey));
-                                showResponsiveSuccess(context, "Auth key copied to clipboard");
+                                    successMessage(
+                                        context, "Auth key copied to clipboard");
                                 Navigator.pop(context);
                               },
                               child: Container(

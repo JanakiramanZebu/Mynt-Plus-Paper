@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mynt_plus/provider/index_list_provider.dart';
 import 'package:mynt_plus/sharedWidget/custom_text_form_field.dart';
 
 import '../../../models/order_book_model/order_book_model.dart';
@@ -332,13 +333,27 @@ class _OrderBookState extends ConsumerState<OrderBook> {
                 order.fetchOrderBook(context, true);
                 order.fetchTradeBook(context);
               },
-              child: searchorder!.isEmpty
+              child: order.orderSearchCtrl.text.isEmpty
                   ? widget.orderBook.isNotEmpty
                       ? _buildOrderList(widget.orderBook, order, theme)
-                      : const SizedBox(height: 500, child: NoDataFound())
-                  : searchorder.isNotEmpty
+                      : NoDataFound(
+                          title: "No Orders Found",
+                          subtitle:
+                              "There's nothing here yet. Buy some stocks to see them here.",
+                          secondaryLabel: "Explore",
+                          secondaryEnabled: true,
+                          onSecondary: () {
+                            ref.read(indexListProvider).bottomMenu(1, context);
+                          },
+                        )
+                  : searchorder!.isNotEmpty
                       ? _buildOrderList(searchorder, order, theme)
-                      : Container()),
+                      : NoDataFound(
+                          title: "No Results Found",
+                          subtitle: "Try searching with different keywords",
+                          secondaryLabel: "Explore",
+                          secondaryEnabled: false,
+                        )),
         )
       ]),
     );
@@ -387,8 +402,8 @@ class _OrderBookState extends ConsumerState<OrderBook> {
                 hintStyle: TextWidget.textStyle(
                     fontSize: 14,
                     theme: theme.isDarkMode,
-                    color: const Color(0xff000000),
-                    fw: 3),
+                    color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                    fw: 0),
                 hintText: "Search",
                 enabledBorder: OutlineInputBorder(
                     borderSide: BorderSide.none,
@@ -479,21 +494,20 @@ class _OrderBookState extends ConsumerState<OrderBook> {
   // Order list view
   Widget _buildOrderList(
       List<OrderBookModel> items, OrderProvider order, ThemesProvider theme) {
-    final isSearchActive = order.showSearchHold;
-    final searchText = order.orderSearchCtrl.text;
+    // final isSearchActive = order.showSearchHold;
+    // final searchText = order.orderSearchCtrl.text;
 
-    // Determine what items to display
-    final itemsToDisplay = isSearchActive && searchText.isNotEmpty
-        ? order.orderSearchItem
-        : widget.orderBook;
-
-    if (itemsToDisplay!.isEmpty) {
-      return const Center(
-        child: SizedBox(height: 500, child: NoDataFound()),
-      );
-    }
+    // // Determine what items to display
+    // final itemsToDisplay = isSearchActive && searchText.isNotEmpty
+    //     ? order.orderSearchItem
+    //     : widget.orderBook;
+    
+    // if (itemsToDisplay!.isEmpty) {
+    //   return ;
+    // }
     return ListView.separated(
-      physics: const AlwaysScrollableScrollPhysics(),
+      padding: EdgeInsets.only(bottom: 80),
+      physics: const ClampingScrollPhysics(),
       shrinkWrap: false,
       itemBuilder: (context, index) {
         final itemIndex = index;
@@ -509,7 +523,7 @@ class _OrderBookState extends ConsumerState<OrderBook> {
                 _navigateToOrderDetails(items[itemIndex], ref, itemContext),
             onLongPress: () {
               if (order.openOrder!.isNotEmpty &&
-                  (order.tabCtrl.index == 1 ||
+                  (order.tabCtrl.index == 0 ||
                       !["COMPLETE", "CANCELED", "REJECTED"]
                           .contains(items[itemIndex].status))) {
                 Navigator.pushNamed(itemContext, Routes.orderExit,

@@ -18,8 +18,12 @@ import '../api/core/api_link.dart';
 import '../locator/constant.dart';
 import '../locator/locator.dart';
 import '../locator/preference.dart';
+import '../routes/app_routes.dart';
+import '../routes/route_names.dart';
+import 'auth_provider.dart';
 import 'market_watch_provider.dart';
 import 'notification_provider.dart';
+import 'subscription_manager.dart';
 
 final websocketProvider = ChangeNotifierProvider((ref) => WebSocketProvider(ref));
 
@@ -407,7 +411,7 @@ class WebSocketProvider extends ChangeNotifier {
     // Show alert message in a SnackBar
     if (res['dmsg'] != null && _context != null) {
       // Display the alert message to the user
-      ScaffoldMessenger.of(_context!).showSnackBar(successMessage(_context!, res['dmsg'].toString()));
+      successMessage(_context!, res['dmsg'].toString());
 
       // Navigate to the alerts tab (tab index 6) when alert is triggered
       // This will take the user to the alerts tab even if they're on another screen
@@ -629,6 +633,28 @@ class WebSocketProvider extends ChangeNotifier {
       return;
     }
 
+    // Update SubscriptionManager based on task type
+    final subscriptionManager = ref.read(subscriptionManagerProvider);
+    
+    log("🔌 WebSocket: connectTouchLine called - task: '$task', input: '$input'");
+    
+    // Update context in subscription manager when actively used
+    subscriptionManager.updateContext(context);
+    
+    if (task.toLowerCase() == "t" || task.toLowerCase() == "d") {
+      // Subscribe tasks - add to subscription manager
+      subscriptionManager.addSubscription(input);
+      final symbols = input.split('#').where((s) => s.isNotEmpty).toList();
+      log("WebSocket: ➕ Added ${symbols.length} subscriptions for task '$task'");
+      log("  Symbols: ${symbols.join(', ')}");
+    } else if (task.toLowerCase() == "u" || task.toLowerCase() == "ud") {
+      // Unsubscribe tasks - remove from subscription manager
+      subscriptionManager.removeSubscription(input);
+      final symbols = input.split('#').where((s) => s.isNotEmpty).toList();
+      log("WebSocket: ➖ Removed ${symbols.length} subscriptions for task '$task'");
+      log("  Symbols: ${symbols.join(', ')}");
+    }
+
     if (_wsConnected && _channel != null) {
       print("WebSocket: Sending ${task} request for ${input.split('#').length} symbols");
       _channel?.sink.add(jsonEncode({"t": task, "k": input}));
@@ -744,10 +770,11 @@ class WebSocketProvider extends ChangeNotifier {
 
       // Make sure we only try to refresh data once per reconnection attempt
       if (!_wsConnected) {
-       if (currentRouteName != Routes.loginScreen){
+        if (currentRouteName != Routes.loginScreen){
         _refreshData(context);
         }
       }
+      
 
       // First establish a base connection if needed
       establishConnection(

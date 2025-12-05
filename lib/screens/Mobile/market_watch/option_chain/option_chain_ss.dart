@@ -7,7 +7,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_swipe_action_cell/flutter_swipe_action_cell.dart';
 import 'package:intl/intl.dart';
-import '../../../../../provider/websocket_provider.dart';
+import 'package:mynt_plus/provider/chart_provider.dart';
+import 'package:mynt_plus/provider/webview_chart_provider.dart';
+import '../../../../provider/websocket_provider.dart';
 import '../../../../models/marketwatch_model/get_quotes.dart';
 import '../../../../models/order_book_model/order_book_model.dart';
 import '../../../../provider/index_list_provider.dart';
@@ -20,7 +22,6 @@ import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
 import '../../../../routes/route_names.dart';
 import '../../../../sharedWidget/custom_drag_handler.dart';
-import '../../../../utils/responsive_navigation.dart';
 import '../../../../sharedWidget/list_divider.dart';
 import '../../../../sharedWidget/custom_exch_badge.dart';
 import '../../../../sharedWidget/functions.dart';
@@ -30,7 +31,6 @@ import 'opt_chain_call_list.dart';
 import 'opt_chain_put_list.dart';
 import 'strike_price_list_card.dart';
 import '../../order_book/basket/create_basket.dart';
-import '../../../../sharedWidget/snack_bar.dart';
 
 class OptionChainSS extends ConsumerStatefulWidget {
   final DepthInputArgs wlValue;
@@ -121,70 +121,89 @@ class _OptionChainSSState extends ConsumerState<OptionChainSS> {
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop: true,
+      canPop: false,
       onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return;
-        await ref
-            .read(marketWatchProvider)
-            .calldepthApis(context, widget.wlValue, "");
-        await ref
-            .read(marketWatchProvider)
-            .requestWSOptChain(context: context, isSubscribe: false);
-        await ref.read(websocketProvider).establishConnection(
-              channelInput: "${widget.wlValue.exch}|${widget.wlValue.token}",
-              task: "ud",
-              context: context,
-            );
+        await Future.delayed(const Duration(milliseconds: 150));
+
+        final wsProvider = ref.read(websocketProvider);
+        final scripInfo = ref.read(marketWatchProvider);
+        final currentContext = context;
+        if(ref.read(chartUpdateProvider).orientation != 'portrait'){
+        ref.read(chartUpdateProvider).changeOrientation('portrait');
+        await Future.delayed(const Duration(milliseconds: 700));
+        }
+        if(ref.watch(chartProvider).isVisible == false){
         Navigator.pop(context);
+        await scripInfo.calldepthApis(
+            currentContext, scripInfo.getQuotes!, "",
+            isOptionChain: false);
+        await scripInfo.requestWSOptChain(
+            context: currentContext, isSubscribe: false);
+        await wsProvider.establishConnection(
+          channelInput:
+            "${widget.wlValue.exch}|${widget.wlValue.token}",
+          task: "ud",
+          context: currentContext,
+        );
+        }
+        ref.read(chartProvider.notifier).hideChart();
+        scripInfo.setChartScript('ABC', '0123', 'ABCD');
+        scripInfo.setOptionScript(
+                      context,
+                      scripInfo.getQuotes!.exch.toString(),
+                      scripInfo.getQuotes!.token.toString(),
+                      scripInfo.getQuotes!.tsym.toString());
       },
       child: Scaffold(
         appBar: AppBar(
-          // leading: Consumer(builder: (context, ref, _) {
-          //   final theme = ref.read(themeProvider);
-          //   return Material(
-          //     color: Colors.transparent,
-          //     shape: const CircleBorder(),
-          //     clipBehavior: Clip.hardEdge,
-          //     child: InkWell(
-          //       customBorder: const CircleBorder(),
-          //       splashColor: Colors.grey.withOpacity(0.4),
-          //       highlightColor: Colors.grey.withOpacity(0.2),
-          //       onTap: () async {
-          //         // Add delay for visual feedback
-          //         await Future.delayed(const Duration(milliseconds: 150));
+          leading: Consumer(builder: (context, ref, _) {
+            final theme = ref.read(themeProvider);
+            return Material(
+              color: Colors.transparent,
+              shape: const CircleBorder(),
+              clipBehavior: Clip.hardEdge,
+              child: InkWell(
+                customBorder: const CircleBorder(),
+                splashColor: Colors.grey.withOpacity(0.4),
+                highlightColor: Colors.grey.withOpacity(0.2),
+                onTap: () async {
+                  // Add delay for visual feedback
+                  await Future.delayed(const Duration(milliseconds: 150));
 
-          //         final wsProvider = ref.read(websocketProvider);
-          //         final scripInfo = ref.read(marketWatchProvider);
-          //         final currentContext = context;
-          //         Navigator.pop(context);
-          //         await scripInfo.calldepthApis(
-          //             currentContext, scripInfo.getQuotes!, "");
-          //         await scripInfo.requestWSOptChain(
-          //             context: currentContext, isSubscribe: false);
-          //         await wsProvider.establishConnection(
-          //           channelInput:
-          //               "${widget.wlValue.exch}|${widget.wlValue.token}",
-          //           task: "ud",
-          //           context: currentContext,
-          //         );
-          //       },
-          //       child: Container(
-          //         width: 40,
-          //         height: 40,
-          //         alignment: Alignment.center,
-          //         child: Icon(
-          //           Icons.arrow_back_ios_outlined,
-          //           size: 18,
-          //           color: theme.isDarkMode
-          //               ? colors.textSecondaryDark
-          //               : colors.textSecondaryLight,
-          //         ),
-          //       ),
-          //     ),
-          //   );
-          // }),
-          // leadingWidth: 48,
-         toolbarHeight: 40,
+                  final wsProvider = ref.read(websocketProvider);
+                  final scripInfo = ref.read(marketWatchProvider);
+                  final currentContext = context;
+                  Navigator.pop(context);
+                  await scripInfo.calldepthApis(
+                      currentContext, scripInfo.getQuotes!, "",
+                      isOptionChain: false);
+                  await scripInfo.requestWSOptChain(
+                      context: currentContext, isSubscribe: false);
+                  await wsProvider.establishConnection(
+                    channelInput:
+                        "${widget.wlValue.exch}|${widget.wlValue.token}",
+                    task: "ud",
+                    context: currentContext,
+                  );
+                },
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  alignment: Alignment.center,
+                  child: Icon(
+                    Icons.arrow_back_ios_outlined,
+                    size: 18,
+                    color: theme.isDarkMode
+                        ? colors.textSecondaryDark
+                        : colors.textSecondaryLight,
+                  ),
+                ),
+              ),
+            );
+          }),
+          leadingWidth: 48,
+          toolbarHeight: 40,
           elevation: 0,
           title: _NewAppBarTitle(
             wlValue: widget.wlValue,
@@ -311,14 +330,15 @@ class _NewAppBarTitle extends ConsumerWidget {
         // Symbol Name and Expiry Dropdown
         Row(
           children: [
-            TextWidget.subText(
-              text: wlValue.tsym.toUpperCase(),
+            TextWidget.titleText(
+              text: ref.read(marketWatchProvider).getQuotes!.symbol!.toUpperCase().replaceAll("-EQ", ""),
               theme: theme.isDarkMode,
               color: theme.isDarkMode
                   ? colors.textPrimaryDark
                   : colors.textPrimaryLight,
               maxLines: 1,
               textOverflow: TextOverflow.ellipsis,
+              fw: 1,
             ),
             const SizedBox(width: 8),
             Theme(
@@ -359,6 +379,7 @@ class _NewAppBarTitle extends ConsumerWidget {
                             ? colors.textPrimaryDark
                             : colors.textPrimaryLight,
                         theme: theme.isDarkMode,
+                        fw: 0,
                       ),
                     );
                   }).toList(),
@@ -434,7 +455,7 @@ class _NewAppBarTitle extends ConsumerWidget {
               isBasketMode
                   ? Icons.shopping_basket
                   : Icons.shopping_basket_outlined,
-              size: 18,
+              size: 22,
               color: isBasketMode
                   ?  colors.primaryLight
                   : (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight),
@@ -442,35 +463,35 @@ class _NewAppBarTitle extends ConsumerWidget {
           ),
         ),
 
-        const SizedBox(width: 4),
+        // const SizedBox(width: 4),
 
-        // Search Icon
-        InkWell(
-          borderRadius: BorderRadius.circular(20),
-          splashColor: theme.isDarkMode
-              ? colors.splashColorDark
-              : colors.splashColorLight,
-          highlightColor:
-              theme.isDarkMode ? colors.highlightDark : colors.highlightLight,
-          onTap: () async {
-            // Add delay for visual feedback
-            await Future.delayed(const Duration(milliseconds: 150));
+        // // Search Icon
+        // InkWell(
+        //   borderRadius: BorderRadius.circular(20),
+        //   splashColor: theme.isDarkMode
+        //       ? colors.splashColorDark
+        //       : colors.splashColorLight,
+        //   highlightColor:
+        //       theme.isDarkMode ? colors.highlightDark : colors.highlightLight,
+        //   onTap: () async {
+        //     // Add delay for visual feedback
+        //     await Future.delayed(const Duration(milliseconds: 150));
 
-            Navigator.pushNamed(
-              context,
-              Routes.searchScrip,
-              arguments: "Option||Replace",
-            );
-          },
-          child: Padding(
-            padding: const EdgeInsets.all(8),
-            child: SvgPicture.asset(
-              assets.searchIcon,
-              width: 18,
-              height: 18,
-            ),
-          ),
-        )
+        //     Navigator.pushNamed(
+        //       context,
+        //       Routes.searchScrip,
+        //       arguments: "Option||Replace",
+        //     );
+        //   },
+        //   child: Padding(
+        //     padding: const EdgeInsets.all(8),
+        //     child: SvgPicture.asset(
+        //       assets.searchIcon,
+        //       width: 18,
+        //       height: 18,
+        //     ),
+        //   ),
+        // )
       ],
     );
   }
@@ -669,7 +690,7 @@ class _ColumnHeaders extends ConsumerWidget {
             // Left arrow icon
             Material(
               color: Colors.transparent,
-              shape: const CircleBorder(),
+              // shape: const CircleBorder(),
               child: InkWell(
                 onTap: onToggleView,
                 borderRadius: BorderRadius.circular(5),
@@ -689,6 +710,7 @@ class _ColumnHeaders extends ConsumerWidget {
                         ? colors.textSecondaryDark
                         : colors.textSecondaryLight,
                     theme: theme.isDarkMode,
+                    fw: 0,
                   ),
                 ),
               ),
@@ -722,6 +744,7 @@ class _ColumnHeaders extends ConsumerWidget {
                               ? colors.textSecondaryDark
                               : colors.textSecondaryLight,
                           theme: theme.isDarkMode,
+                          fw: 0,
                         ),
                         TextWidget.subText(
                           text: "Strike",
@@ -729,6 +752,7 @@ class _ColumnHeaders extends ConsumerWidget {
                               ? colors.textSecondaryDark
                               : colors.textSecondaryLight,
                           theme: theme.isDarkMode,
+                          fw: 0,
                         ),
                         Icon(Icons.arrow_drop_down,
                             color: theme.isDarkMode
@@ -743,7 +767,7 @@ class _ColumnHeaders extends ConsumerWidget {
 
             Material(
               color: Colors.transparent,
-              shape: const CircleBorder(),
+              // shape: const CircleBorder(),
               child: InkWell(
                 onTap: onToggleView,
                 borderRadius: BorderRadius.circular(5),
@@ -761,6 +785,7 @@ class _ColumnHeaders extends ConsumerWidget {
                         ? colors.textSecondaryDark
                         : colors.textSecondaryLight,
                     theme: theme.isDarkMode,
+                    fw: 0,
                   ),
                 ),
               ),
@@ -791,10 +816,11 @@ class _PreDefinedWatchlistBanner extends ConsumerWidget {
           ),
           child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
             SvgPicture.asset(assets.dInfo, color: colors.colorBlue),
-            TextWidget.captionText(
+            TextWidget.paraText(
               text: " Long press to add Watchlist / Swipe to Trade",
               color: theme.isDarkMode ? colors.secondaryDark : colors.secondaryLight,
               theme: false,
+              fw: 0,
             ),
           ])),
     );
@@ -886,7 +912,7 @@ class _OptionChainContent extends ConsumerWidget {
     }
 
     return SingleChildScrollView(
-      physics: const AlwaysScrollableScrollPhysics(),
+      physics: const ClampingScrollPhysics(),
       controller: mainScrollController,
       child: Column(children: [
         RepaintBoundary(
@@ -1072,7 +1098,7 @@ Future<void> _placeOrderInput(BuildContext context, WidgetRef ref,
       raw: {"correctLotSize": scripInfoModel.ls ?? depthData.ls});
 
   Navigator.pop(context);
-  ResponsiveNavigation.toPlaceOrderScreen(context: context, arguments: {
+  Navigator.pushNamed(context, Routes.placeOrderScreen, arguments: {
     "orderArg": orderArgs,
     "scripInfo": scripInfoModel,
     "isBskt": "Basket"
@@ -1178,7 +1204,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
       },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        height: _sheetHeight,
+        // height: _sheetHeight,
         decoration: BoxDecoration(
           color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
           borderRadius: const BorderRadius.only(
@@ -1266,8 +1292,9 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                 if (orderProv.selectedBsktName.isNotEmpty)
                   TextWidget.subText(
                     text: "${orderProv.bsktScripList.length} items",
-                    color: colors.colorGrey,
+                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                     theme: theme.isDarkMode,
+                    fw: 0,
                   ),
               ],
             ),
@@ -1393,11 +1420,12 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                 text: orderProv.bsktScripList.isEmpty ||
                         orderProv.bsktOrderMargin == null
                     ? "0.00"
-                    : "${orderProv.bsktOrderMargin!.marginusedtrade ?? 0.00}",
+                    : (double.parse(orderProv.bsktOrderMargin!.marginused ?? '0.00') - double.parse(orderProv.bsktOrderMargin!.marginusedprev ?? '0.00')).toStringAsFixed(2),
                 theme: theme.isDarkMode,
                 color: theme.isDarkMode
                     ? colors.textPrimaryDark
                     : colors.textPrimaryLight,
+                fw: 0,
               ),
             ],
           ),
@@ -1410,17 +1438,19 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                 color: theme.isDarkMode
                     ? colors.textSecondaryDark
                     : colors.textSecondaryLight,
+                fw: 0,
               ),
               const SizedBox(height: 6),
               TextWidget.titleText(
                 text: orderProv.bsktScripList.isEmpty ||
                         orderProv.bsktOrderMargin == null
                     ? "0.00"
-                    : "${orderProv.bsktOrderMargin!.marginused ?? 0.00}",
+                    : (double.parse(orderProv.bsktOrderMargin!.marginusedtrade ?? '0.00') - double.parse(orderProv.bsktOrderMargin!.marginusedprev ?? '0.00')).toStringAsFixed(2),
                 theme: theme.isDarkMode,
                 color: theme.isDarkMode
                     ? colors.textPrimaryDark
                     : colors.textPrimaryLight,
+                fw: 0,
               ),
             ],
           ),
@@ -1442,6 +1472,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
             text: "Basket should contain orders of only 1 segment",
             theme: false,
             color: colors.colorWhite,
+            fw: 0,
           ),
         ],
       ),
@@ -1456,32 +1487,41 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
         children: [
           Column(
             children: [
-              SvgPicture.asset(assets.noDatafound,
-                  color: Color(0xff777777)),
-              const SizedBox(height: 2),
-              Text("No Data Found",
-                  style:
-                      textStyle(const Color(0xff777777), 15, FontWeight.w500)),
+              NoDataFound(
+                secondaryEnabled: true,
+                title: 'No Baskets Found',
+                subtitle: null,
+                secondaryLabel: 'Create basket',
+                onSecondary: (){
+                  _showCreateBasket(context);
+                },
+              ),
+              // SvgPicture.asset(assets.noDatafound,
+              //     color: Color(0xff777777)),
+              // const SizedBox(height: 2),
+              // Text("No Data Found",
+              //     style:
+              //         textStyle(const Color(0xff777777), 15, FontWeight.w500)),
               //       SizedBox(height: 16),
               // TextWidget.subText(
               //   text: "No baskets found",
               //   theme: theme.isDarkMode,
               //   color: colors.colorGrey,
               // ),
-              SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () => _showCreateBasket(context),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: colors.primaryLight,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                ),
-                child: TextWidget.subText(
-                  text: "Create Basket",
-                  color: colors.colorWhite,
-                  theme: false,
-                ),
-              ),
+              // SizedBox(height: 16),
+              // ElevatedButton(
+              //   onPressed: () => ,
+              //   style: ElevatedButton.styleFrom(
+              //     backgroundColor: colors.primaryLight,
+              //     padding:
+              //         const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              //   ),
+              //   child: TextWidget.subText(
+              //     text: "Create Basket",
+              //     color: colors.colorWhite,
+              //     theme: false,
+              //   ),
+              // ),
             ],
           ),
         ],
@@ -1671,6 +1711,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                     color: theme.isDarkMode
                         ? colors.textPrimaryDark
                         : colors.textPrimaryLight,
+                    fw: 0,
                   ),
                   TextWidget.subText(
                     text: " ${script['expDate']} ",
@@ -1679,6 +1720,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                     color: theme.isDarkMode
                         ? colors.textPrimaryDark
                         : colors.textPrimaryLight,
+                    fw: 0,
                   ),
                   TextWidget.subText(
                     text: " ${script['option']} ",
@@ -1687,6 +1729,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                     color: theme.isDarkMode
                         ? colors.textPrimaryDark
                         : colors.textPrimaryLight,
+                    fw: 0,
                   ),
                 ],
               ),
@@ -1708,12 +1751,14 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                         text: _getItemStatusText(script['orderStatus']),
                         theme: theme.isDarkMode,
                         color: _getItemStatusColor(script['orderStatus']),
+                        fw: 0,
                       ),
                       if (script['avgPrice'] != null)
                         TextWidget.paraText(
                           text: " @ ₹${script['avgPrice']}",
                           theme: theme.isDarkMode,
                           color: _getItemStatusColor(script['orderStatus']),
+                          fw: 0,
                         ),
                       // Add navigation hint for placed orders
                       if (_isOrderPlaced(script['orderStatus'])) ...[
@@ -1745,6 +1790,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                     color: theme.isDarkMode
                         ? colors.textSecondaryDark
                         : colors.textSecondaryLight,
+                    fw: 0,
                   ),
                 ],
               ),
@@ -1756,6 +1802,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                     color: theme.isDarkMode
                         ? colors.textSecondaryDark
                         : colors.textSecondaryLight,
+                    fw: 0,
                   ),
                 ],
               ),
@@ -1793,6 +1840,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                     color: theme.isDarkMode
                         ? colors.textSecondaryDark
                         : colors.textSecondaryLight,
+                    fw: 0,
                   ),
                 ],
               ),
@@ -1805,6 +1853,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                       color: theme.isDarkMode
                           ? colors.textSecondaryDark
                           : colors.textSecondaryLight,
+                      fw: 0,
                     ),
                   ],
                 ),
@@ -1837,6 +1886,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                       theme: theme.isDarkMode,
                       color: colors.darkred,
                       textOverflow: TextOverflow.ellipsis,
+                      fw: 0,
                     ),
                   ),
                 ],
@@ -1907,8 +1957,14 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                   onPressed: () {
                     orderProv
                         .resetBasketOrderTracking(orderProv.selectedBsktName);
-                    showResponsiveSuccess(context,
-                        "Basket reset. You can place orders again.");
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: const Text(
+                            "Basket reset. You can place orders again."),
+                        backgroundColor: colors.profit,
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
                   },
                   label: TextWidget.subText(
                     text: "Reset Orders",
@@ -2216,7 +2272,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
       raw: script,
     );
 
-    ResponsiveNavigation.toPlaceOrderScreen(context: context, arguments: {
+    Navigator.pushNamed(context, Routes.placeOrderScreen, arguments: {
       "orderArg": orderArgs,
       "scripInfo": ref.read(marketWatchProvider).scripInfoModel!,
       "isBskt": 'BasketEdit'
@@ -2290,6 +2346,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                             color: theme.isDarkMode
                                 ? colors.textSecondaryDark
                                 : colors.textPrimaryLight,
+                            fw: 0,
                             align: TextAlign.center),
                       ]))
             ],
@@ -2447,6 +2504,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
               ),
               Expanded(
                 child: ListView.separated(
+                  physics: ClampingScrollPhysics(),
                   itemCount: orderProv.bsktList.length,
                   separatorBuilder: (_, __) => const ListDivider(),
                   itemBuilder: (context, index) {
@@ -2479,6 +2537,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                               : colors.textPrimaryLight,
                           textOverflow: TextOverflow.ellipsis,
                           maxLines: 2,
+                          fw: 0,
                         ),
                       ),
                       subtitle: Padding(
@@ -2491,6 +2550,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                           color: ref.read(themeProvider).isDarkMode
                               ? colors.textSecondaryDark
                               : colors.textSecondaryLight,
+                          fw: 0,
                         ),
                       ),
                       trailing: basketName == orderProv.selectedBsktName

@@ -959,14 +959,13 @@ class TranctionProvider extends DefaultChangeNotifier {
       print("WITHDRAW - Payload: ${jsonEncode(payload)} | Response: ${jsonEncode(_paymentWithdraw?.toJson() ?? {})}");
       
       if (_paymentWithdraw!.msg == "Sucess") {
-        ScaffoldMessenger.of(context).showSnackBar(
-            successMessage(context, 'Withdrawal request sent successfully'));
+            successMessage(context, 'Withdrawal request sent successfully');
         withdrawamount.clear();
         fetchPaymentWithDrawStatus(context);
       } else {
         print("Withdrawal failed with message: ${_paymentWithdraw!.msg}");
-        ScaffoldMessenger.of(context).showSnackBar(warningMessage(
-            context, 'Withdrawal failed: ${_paymentWithdraw!.msg}'));
+        warningMessage(
+            context, 'Withdrawal failed: ${_paymentWithdraw!.msg}');
       }
     } catch (e) {
       print("========== WITHDRAW ERROR ==========");

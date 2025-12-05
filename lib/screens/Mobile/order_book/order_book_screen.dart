@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../screens/Mobile/order_book/filter_alert_pending.dart';
 
 import '../../../provider/order_provider.dart';
 import '../../../provider/portfolio_provider.dart';
@@ -10,7 +11,6 @@ import '../../../provider/thems.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/custom_text_form_field.dart';
-import '../../../utils/responsive_modal.dart';
 import 'basket/basket_list.dart';
 import 'filter_scrip_bottom_sheet.dart';
 import 'gtt_order_book.dart';
@@ -28,39 +28,24 @@ class OrderBookScreen extends ConsumerStatefulWidget {
 
 class _OrderBookScreenState extends ConsumerState<OrderBookScreen>
     with TickerProviderStateMixin {
-  int _lastTabLength = 0;
-  
   @override
   void initState() {
-    // Get the current tab count and selected tab
-    final orderProv = ref.read(orderProvider);
-    final tabLength = orderProv.orderTabName.length;
-    final selectedTab = orderProv.selectedTab;
-    
-    // Ensure we have at least one tab and valid initial index
-    final safeTabLength = tabLength > 0 ? tabLength : 1;
-    final safeInitialIndex = selectedTab >= 0 && selectedTab < safeTabLength 
-        ? selectedTab 
-        : 0;
-    
-    _lastTabLength = safeTabLength;
-    
-    setState(() {
-      orderProv.tabCtrl = TabController(
-          length: safeTabLength,
+    super.initState();
+      ref.read(orderProvider).tabCtrl = TabController(
+          length: ref.read(orderProvider).orderTabName.length,
           vsync: this,
-          initialIndex: safeInitialIndex);
+          initialIndex: ref.read(orderProvider).selectedTab);
 
-      orderProv.tabCtrl.addListener(() {
-        orderProv.changeTabIndex(orderProv.tabCtrl.index, context);
+      ref.read(orderProvider).tabCtrl.addListener(() {
+        ref
+            .read(orderProvider)
+            .changeTabIndex(ref.read(orderProvider).tabCtrl.index, context);
       });
-    });
 
     FirebaseAnalytics.instance.logScreenView(
       screenName: 'Place order screen',
       screenClass: 'Order_screen',
     );
-    super.initState();
   }
 
   @override
@@ -68,30 +53,7 @@ class _OrderBookScreenState extends ConsumerState<OrderBookScreen>
     return Consumer(builder: (context, WidgetRef ref, _) {
       final orderBook = ref.watch(orderProvider);
       final theme = ref.watch(themeProvider);
-      
-      // Check if tab length has changed and recreate TabController if needed
-      if (orderBook.orderTabName.length != _lastTabLength) {
-        final newTabLength = orderBook.orderTabName.length;
-        _lastTabLength = newTabLength;
-        
-        // Dispose old controller if it exists
-        if (orderBook.tabCtrl.length != newTabLength) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) {
-              final safeTabLength = newTabLength > 0 ? newTabLength : 1;
-              orderBook.tabCtrl.dispose();
-              orderBook.tabCtrl = TabController(
-                length: safeTabLength,
-                vsync: this,
-                initialIndex: 0
-              );
-              orderBook.tabCtrl.addListener(() {
-                orderBook.changeTabIndex(orderBook.tabCtrl.index, context);
-              });
-            }
-          });
-        }
-      }
+      final sipBook = ref.watch(orderProvider);
 
       return GestureDetector(
         onTap: () {
@@ -174,7 +136,7 @@ class _OrderBookScreenState extends ConsumerState<OrderBookScreen>
                                           text: title,
                                           theme: false,
                                            color: isSelected ? theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight :  theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                                          fw: isSelected ? 2 : 3),
+                                          fw: isSelected ? 2 : 2),
                                       if (badge != null) ...[
                                         const SizedBox(width: 3),
                                         Container(
@@ -189,7 +151,7 @@ class _OrderBookScreenState extends ConsumerState<OrderBookScreen>
                                             badge,
                                             style: TextWidget.textStyle(
                                                 fontSize: 12, theme: false, 
-                                                color: isSelected ? theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight :  theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight, fw : isSelected ? 2 : 3),
+                                                color: isSelected ? theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight :  theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight, fw : isSelected ? 2 : 0),
                                                 
                                           ),
                                         ),
@@ -285,20 +247,18 @@ class _OrderBookScreenState extends ConsumerState<OrderBookScreen>
                     color: theme.isDarkMode
                         ? colors.textPrimaryDark
                         : colors.textPrimaryLight,
-                    fw: 3,
+                    fw: 0,
                   ),
                   decoration: InputDecoration(
                     hintStyle: TextWidget.textStyle(
                       fontSize: 14,
                       theme: false,
-                      color: theme.isDarkMode
-                          ? colors.textSecondaryDark
-                          : colors.textSecondaryLight,
-                      fw: 3,
+                      color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                      fw: 0,
                     ),
                     border: InputBorder.none,
                     isDense: true,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 5),
                   ),
                   onChanged: (value) {
                     order.searchOrders(value, context);
@@ -340,6 +300,7 @@ class _OrderBookScreenState extends ConsumerState<OrderBookScreen>
               //   indent: 8,
               //   endIndent: 8,
               // ),
+              if(order.selectedTab != 4)
               Material(
                 color: Colors.transparent,
                 shape: CircleBorder(),
@@ -354,15 +315,17 @@ class _OrderBookScreenState extends ConsumerState<OrderBookScreen>
                   onTap: () async {
                     Future.delayed(const Duration(milliseconds: 100), () {
                       FocusScope.of(context).unfocus();
-                      ResponsiveModal.show(
-                        context: context,
-                        child: const OrderbookFilterBottomSheet(),
+                      showModalBottomSheet(
                         useSafeArea: true,
                         isScrollControlled: true,
                         shape: const RoundedRectangleBorder(
                           borderRadius:
                               BorderRadius.vertical(top: Radius.circular(16)),
                         ),
+                        context: context,
+                        builder: (context) {
+                          return order.selectedTab == 5 ? const OrderbookPendingAlertkFilterBottomSheet() : const OrderbookFilterBottomSheet();
+                        },
                       );
                     });
                   },
@@ -501,6 +464,7 @@ class _CustomTabBarViewState extends State<_CustomTabBarView> {
                 target: portfolio.selectedTab - 1,
                 action: () {
                   portfolio.portTab.animateTo(portfolio.selectedTab - 1);
+                  FocusScope.of(context).unfocus();
                 },
               );
             }
@@ -513,6 +477,7 @@ class _CustomTabBarViewState extends State<_CustomTabBarView> {
                 target: portfolio.selectedTab + 1,
                 action: () {
                   portfolio.portTab.animateTo(portfolio.selectedTab + 1);
+                  FocusScope.of(context).unfocus();
                 },
               );
             }

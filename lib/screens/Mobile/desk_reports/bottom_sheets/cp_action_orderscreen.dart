@@ -134,7 +134,7 @@ class _CPActionOrderScreen extends State<CPActionOrderScreen> {
                             color: theme.isDarkMode
                                 ? colors.textSecondaryDark
                                 : colors.textPrimaryLight,
-                            fw: 3),
+                            fw: 0),
                       ],
                     ),
                     const SizedBox(height: 5),
@@ -147,7 +147,7 @@ class _CPActionOrderScreen extends State<CPActionOrderScreen> {
                             color: theme.isDarkMode
                                 ? colors.textSecondaryDark
                                 : colors.textPrimaryLight,
-                            fw: 3),
+                            fw: 0),
                       ),
                     ),
                   ],
@@ -206,8 +206,7 @@ class _CPActionOrderScreen extends State<CPActionOrderScreen> {
             );
           } else {
             Navigator.pop(context);
-            ScaffoldMessenger.of(context)
-                .showSnackBar(error(context, "Not Eligible"));
+            error(context, "Not Eligible");
             return;
           }
         }
@@ -371,7 +370,7 @@ class _CPActionOrderScreen extends State<CPActionOrderScreen> {
                                               textOverflow:
                                                   TextOverflow.ellipsis,
                                               theme: theme.isDarkMode,
-                                              fw: 3,
+                                              fw: 0,
                                             ),
                                           ),
                                         ],
@@ -429,7 +428,7 @@ class _CPActionOrderScreen extends State<CPActionOrderScreen> {
                                               textOverflow:
                                                   TextOverflow.ellipsis,
                                               theme: theme.isDarkMode,
-                                              fw: 3),
+                                              fw: 0),
                                           TextWidget.subText(
                                               text:
                                                   "${widget.data?.havingqty == 'null' ? '0' : widget.data?.havingqty} / ${widget.data?.approvedqty == 'null' ? '0' : widget.data?.approvedqty}",
@@ -439,7 +438,7 @@ class _CPActionOrderScreen extends State<CPActionOrderScreen> {
                                               textOverflow:
                                                   TextOverflow.ellipsis,
                                               theme: theme.isDarkMode,
-                                              fw: 3),
+                                              fw: 0),
                                         ],
                                       ),
                                       // if (widget.data?.approvedqty == '0' ||
@@ -509,11 +508,8 @@ class _CPActionOrderScreen extends State<CPActionOrderScreen> {
                                                         TextWidget.textStyle(
                                                       fontSize: 14,
                                                       theme: theme.isDarkMode,
-                                                      color: theme.isDarkMode
-                                                          ? colors
-                                                              .textSecondaryDark
-                                                          : colors
-                                                              .textSecondaryLight,
+                                                      color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                                                      fw: 0,
                                                     ),
                                                     style: TextWidget.textStyle(
                                                       fontSize: 16,
@@ -523,6 +519,7 @@ class _CPActionOrderScreen extends State<CPActionOrderScreen> {
                                                           : colors
                                                               .textPrimaryLight,
                                                       theme: theme.isDarkMode,
+                                                      fw: 0,
                                                     ),
                                                     textCtrl: ledgerprovider
                                                         .selectedqtyforcpaction,
@@ -600,11 +597,8 @@ class _CPActionOrderScreen extends State<CPActionOrderScreen> {
                                                         TextWidget.textStyle(
                                                       fontSize: 14,
                                                       theme: theme.isDarkMode,
-                                                      color: theme.isDarkMode
-                                                          ? colors
-                                                              .textSecondaryDark
-                                                          : colors
-                                                              .textSecondaryLight,
+                                                      color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                                                      fw: 0,
                                                     ),
                                                     style: TextWidget.textStyle(
                                                       fontSize: 16,
@@ -614,6 +608,7 @@ class _CPActionOrderScreen extends State<CPActionOrderScreen> {
                                                           : colors
                                                               .textPrimaryLight,
                                                       theme: theme.isDarkMode,
+                                                      fw: 0,
                                                     ),
                                                     textCtrl: ledgerprovider
                                                         .selectedqtyforcpaction,
@@ -708,7 +703,7 @@ class _CPActionOrderScreen extends State<CPActionOrderScreen> {
                                             padding:
                                                 const EdgeInsets.only(top: 8.0),
                                             child: SizedBox(
-                                                height: 44,
+                                                height: 45,
                                                 child: CustomTextFormField(
                                                     textAlign: TextAlign.start,
                                                     fillColor: theme.isDarkMode
@@ -731,11 +726,8 @@ class _CPActionOrderScreen extends State<CPActionOrderScreen> {
                                                         TextWidget.textStyle(
                                                       fontSize: 14,
                                                       theme: theme.isDarkMode,
-                                                      color: theme.isDarkMode
-                                                          ? colors
-                                                              .textSecondaryDark
-                                                          : colors
-                                                              .textSecondaryLight,
+                                                      color:(theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                                                      fw: 0,
                                                     ),
                                                     style: TextWidget.textStyle(
                                                       fontSize: 16,
@@ -745,6 +737,7 @@ class _CPActionOrderScreen extends State<CPActionOrderScreen> {
                                                           : colors
                                                               .textPrimaryLight,
                                                       theme: theme.isDarkMode,
+                                                      fw: 0,
                                                     ),
                                                     textCtrl: ledgerprovider
                                                         .selectedpriceforcpaction,
@@ -798,7 +791,7 @@ class _CPActionOrderScreen extends State<CPActionOrderScreen> {
                                             padding:
                                                 const EdgeInsets.only(top: 8.0),
                                             child: SizedBox(
-                                                height: 44,
+                                                height: 45,
                                                 child: CustomTextFormField(
                                                     isReadable: ledgerprovider
                                                                 .cutoffcheckboxofs ==
@@ -826,11 +819,8 @@ class _CPActionOrderScreen extends State<CPActionOrderScreen> {
                                                         TextWidget.textStyle(
                                                       fontSize: 14,
                                                       theme: theme.isDarkMode,
-                                                      color: theme.isDarkMode
-                                                          ? colors
-                                                              .textSecondaryDark
-                                                          : colors
-                                                              .textSecondaryLight,
+                                                      color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                                                      fw: 0,
                                                     ),
                                                     style: TextWidget.textStyle(
                                                       fontSize: 16,
@@ -840,6 +830,7 @@ class _CPActionOrderScreen extends State<CPActionOrderScreen> {
                                                           : colors
                                                               .textPrimaryLight,
                                                       theme: theme.isDarkMode,
+                                                      fw: 0,
                                                     ),
                                                     textCtrl: ledgerprovider
                                                         .selectedpriceforcpaction,
@@ -949,6 +940,7 @@ class _CPActionOrderScreen extends State<CPActionOrderScreen> {
                                             color: theme.isDarkMode
                                                 ? colors.textSecondaryDark
                                                 : colors.textSecondaryLight,
+                                            fw: 0,
                                           ),
                                         ),
                                       ]),
@@ -1112,7 +1104,7 @@ class _CPActionOrderScreen extends State<CPActionOrderScreen> {
                                 color: theme.isDarkMode
                                     ? colors.textPrimaryDark
                                     : colors.textPrimaryLight,
-                                fw: 3,
+                                fw: 0,
                               ),
                               Padding(
                                 padding: const EdgeInsets.symmetric(

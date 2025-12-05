@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/provider/ledger_provider.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/screens/Mobile/desk_reports/com_taxpnl_screen.dart';
@@ -137,6 +138,7 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                         text: "Financial Year",
                         theme: theme.isDarkMode,
                         color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                        fw: 1,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -199,10 +201,10 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                                 Text(
                                   "Apr ${ledgerprovider.yearforTaxpnl} - Mar ${ledgerprovider.yearforTaxpnl + 1}",
                                   style: TextWidget.textStyle(
-                                    fontSize: 14,
+                                    fontSize: 16,
                                     color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                                     theme: theme.isDarkMode,
-                                    fw: 1,
+                                    fw: 0,
                                   ),
                                 ),
                                 Material(
@@ -261,10 +263,125 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                           ),
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 10),
                     ],
+                Row(
+  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+  children: [
+    // PDF Option
+   Material(
+      color: Colors.transparent,
+      shape: const RoundedRectangleBorder(
+      ),
+      child: InkWell(
+        customBorder: const RoundedRectangleBorder(),
+        splashColor: theme.isDarkMode ? colors.splashColorDark: colors.splashColorLight,
+        highlightColor: theme.isDarkMode ? colors.highlightDark: colors.highlightLight,
+        onTap: () {
+          ledgerprovider.selectedFormatFunction("PDF");
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SvgPicture.asset(
+                assets.pdfIcon,
+                height: 50,  // ← Keep consistent
+                width: 50,   // ← Keep consistent
+                fit: BoxFit.contain,
+              ),
+              const SizedBox(height: 10), // ← Keep this
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center, // ← Center under icon
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(
+                    width: 28,
+                    child: Radio<String>(
+                      value: "PDF",
+                      groupValue: ledgerprovider.selectedFormat,
+                      onChanged: (value) {
+                        if (value != null) {
+                          ledgerprovider.selectedFormatFunction(value);
+                        }
+                      },
+                      activeColor: Colors.blue,
+                    ),
+                  ),
+                  TextWidget.subText(
+                    text: "PDF",
+                    theme: theme.isDarkMode,
+                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                    fw: 0,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+
+    // Excel Option
+    Material(
+      color: Colors.transparent,
+      shape: const RoundedRectangleBorder(
+      ),
+      child: InkWell(
+        customBorder: const RoundedRectangleBorder(),
+        splashColor: theme.isDarkMode ? colors.splashColorDark: colors.splashColorLight,
+        highlightColor: theme.isDarkMode ? colors.highlightDark: colors.highlightLight,
+        onTap: () {
+          ledgerprovider.selectedFormatFunction("Excel");
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SvgPicture.asset(
+                assets.excelIcon,
+                height: 60, 
+                width: 60,  
+                fit: BoxFit.contain,
+              ),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center, // ← Center under icon
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(
+                    width: 28,
+                    child: Radio<String>(
+                      value: "Excel",
+                      groupValue: ledgerprovider.selectedFormat,
+                      onChanged: (value) {
+                        if (value != null) {
+                          ledgerprovider.selectedFormatFunction(value);
+                        }
+                      },
+                      activeColor: Colors.blue,
+                    ),
+                  ),
+                  TextWidget.subText(
+                    text: "Excel",
+                    theme: theme.isDarkMode,
+                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                    fw: 0,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  ],
+),
+                    const SizedBox(height: 16),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       child: SizedBox(
                         width: double.infinity,
                         height: 45,
@@ -284,8 +401,9 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                             // Check if already loading using provider state
                             if (ledgerprovider.taxpnlloading) {
                               Navigator.pop(context);
-                              showResponsiveWarningMessage(context,
-                                    'Previous request is still processing');
+                                warningMessage(context,
+                                    'Previous request is still processing'
+                              );
                               return;
                             }
                             try {
@@ -307,13 +425,14 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                                 errorMessage = null;
                               });
                               Navigator.pop(context);
-                              showResponsiveSuccess(context, 'The file will be sent to your email shortly.');
+                              successMessage(context, 'The file will be sent to your email shortly.');
 
                             } catch (e) {
                               // Show error in ScaffoldMessenger
                               // Navigator.pop(context);
-                              showResponsiveWarningMessage(
-                                    context, 'Error: ${e.toString()}');
+                                warningMessage(
+                                    context, 'Error: ${e.toString()}'
+                              );
                               setState(() {
                                 errorMessage = e.toString();
                               });

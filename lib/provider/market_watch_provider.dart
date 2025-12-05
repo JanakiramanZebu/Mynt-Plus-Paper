@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:mynt_plus/provider/stocks_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/provider/user_profile_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -31,7 +32,7 @@ import '../models/marketwatch_model/market_watchlist_model.dart';
 import '../models/marketwatch_model/opt_chain_model.dart';
 import '../models/marketwatch_model/pre_define_wl_model.dart';
 import '../models/marketwatch_model/scrip_info.dart';
-// import '../models/marketwatch_model/scrip_overview/eodchartdata_model.dart';
+import '../models/marketwatch_model/scrip_overview/eodchartdata_model.dart';
 import '../models/marketwatch_model/scrip_overview/stock_data.dart';
 import '../models/marketwatch_model/scrip_overview/technical_data.dart';
 import '../models/marketwatch_model/search_scrip_new_model.dart';
@@ -435,6 +436,15 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     _saveCurrentPageIndex();
   }
 
+  // Method to reset current watchlist page index (used during account switch)
+  void resetCurrentWatchlistPageIndex() {
+    _currentWatchlistPageIndex = 0;
+    _wlName = "";  // Reset watchlist name to force selection of first watchlist
+    _saveCurrentPageIndex();
+    notifyListeners();
+    print("Watchlist page index and name reset to 0");
+  }
+
   // Save current page index to SharedPreferences
   Future<void> _saveCurrentPageIndex() async {
     try {
@@ -831,7 +841,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     return value;
   }
 
-  calldepthApis(BuildContext context, raw, basket) async {
+  calldepthApis(BuildContext context, raw, basket,
+      {bool? isOptionChain}) async {
     String? currentRoute = context.widget.runtimeType.toString();
 
     ref.read(userProfileProvider).setonloadChartdialog(true);
@@ -907,13 +918,13 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     singlePageloader(false);
     await fetchScripQuote("${flow ? raw['token'] : raw.token}",
         "${flow ? raw['exch'] : raw.exch}", context);
-    if (getOptionawait(
-        flow ? raw['exch'] : raw.exch, flow ? raw['token'] : raw.token)) {
+    // if (getOptionawait(
+    //     flow ? raw['exch'] : raw.exch, flow ? raw['token'] : raw.token)) {
       await fetchScripInfo("${flow ? raw['token'] : raw.token}",
           "${flow ? raw['exch'] : raw.exch}", context);
       await fetchLinkeScrip("${flow ? raw['token'] : raw.token}",
           "${flow ? raw['exch'] : raw.exch}", context);
-    }
+    // }
 
     if (((flow ? raw['exch'] : raw.exch) == "NSE" ||
         (flow ? raw['exch'] : raw.exch) == "BSE")) {
@@ -1230,6 +1241,36 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     _chartDuration = duration;
     notifyListeners();
   }
+
+  void openScripInWebPanel(BuildContext context, DepthInputArgs depthArgs, String basket) {
+    // Import the scrip tabs provider to add the new scrip
+    final container = ProviderScope.containerOf(context);
+    final scripTabsNotifier = container.read(scripTabsProvider.notifier);
+    
+    // Check if scrip already exists in tabs
+    if (scripTabsNotifier.hasScrip(depthArgs)) {
+      // Scrip already exists, just switch to it
+      scripTabsNotifier.addScrip(depthArgs); // This will switch to existing tab
+    } else {
+      // Add the scrip to the tabs manager
+      scripTabsNotifier.addScrip(depthArgs);
+    }
+    
+    // Switch to scrip details panel if callback is available
+    if (_onShowScripDepthInfoInPanel != null) {
+      _onShowScripDepthInfoInPanel!(depthArgs);
+    }
+  }
+
+  Function(dynamic)? _onShowScripDepthInfoInPanel;
+
+  // Set callback for showing scrip depth info in panel
+  void setOnShowScripDepthInfoInPanel(Function(dynamic) callback) {
+    _onShowScripDepthInfoInPanel = callback;
+  }
+
+  // Open scrip in web panel using the scrip tabs manager
+ 
 
   final List<ChartArgs> _chartTabs = [];
   ChartArgs? _activeTab;
@@ -1551,6 +1592,10 @@ class MarketWatchProvider extends DefaultChangeNotifier {
               fetchMWScrip(element, context); // No await here
             }
           }
+        }
+
+        if (_wlName.isEmpty || !_marketWatchlist!.values!.contains(_wlName)) {
+          _wlName = _marketWatchlist!.values!.first;
         }
 
         // Create a new list to build the final watchlist order
@@ -2288,7 +2333,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       //   }
       // ];
       if (storeQuotes.containsKey(token) && storeQuotes[token]?['l'] != null) {
-        print('qqq ls if ');
+        print('[fetchLinkeScrip] storeQuotes has script ');
         ConstantName.sessCheck = true;
         _linkedScrips = storeQuotes[token]?['l']['all'];
         _equls = storeQuotes[token]?['l']['eq'];
@@ -2306,7 +2351,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           __futExch = "${_fut![0].exch}";
         }
       } else {
-        print('qqq ls else');
+        print('[fetchLinkeScrip] on storeQuotes script not found');
         _linkedScrips = await api.getLinkedScrip(token, exch);
         if (_linkedScrips!.stat == "Ok") {
           ConstantName.sessCheck = true;
@@ -2722,7 +2767,6 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   }
 
   // Method to clear chart data
-  
   void clearChartData() {
     _eodChartData = [];
     _chartDataLoading = false;
@@ -4568,7 +4612,6 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   }
 
 
-  // Chart and UI state management methods
   void updateSelectedTimeframe(String timeframe) {
     _selectedTimeframe = timeframe;
     notifyListeners();
@@ -4607,33 +4650,80 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
- Function(dynamic)? _onShowScripDepthInfoInPanel;
 
-  // Set callback for showing scrip depth info in panel
-  void setOnShowScripDepthInfoInPanel(Function(dynamic) callback) {
-    _onShowScripDepthInfoInPanel = callback;
+
+    /// Filters stock events (dividend, bonus, split, rights) by matching the given stock token
+  /// Returns a map containing matching events across different event types
+  ///
+  /// Parameters:
+  /// - [stockToken]: The token of the stock to filter events for
+  ///
+  /// Returns a Map with keys: 'dividend', 'bonus', 'split', 'rights'
+  /// Each key contains the matching event object or null if not found
+  Map<String, dynamic> filterStockEventsByToken(String stockToken) {
+    final stockEvents = ref.read(stocksProvide).caeventsModel;
+print("stockEvents $stockToken");
+    Map<String, dynamic> filteredEvents = {
+      'dividend': null,
+      'bonus': null,
+      'split': null,
+      'rights': null,
+    };
+
+    if (stockEvents == null) {
+      return filteredEvents;
+    }
+
+    // Find dividend
+    if (stockEvents.dividend != null) {
+      try {
+        filteredEvents['dividend'] = stockEvents.dividend!
+            .firstWhere((dividend) => dividend.token == stockToken);
+      } catch (e) {
+        // No matching dividend found
+      }
+    }
+
+    // Find bonus
+    if (stockEvents.bonus != null) {
+      try {
+        filteredEvents['bonus'] = stockEvents.bonus!
+            .firstWhere((bonus) => bonus.token == stockToken);
+      } catch (e) {
+        // No matching bonus found
+      }
+    }
+
+    // Find split
+    if (stockEvents.split != null) {
+      try {
+        filteredEvents['split'] = stockEvents.split!
+            .firstWhere((split) => split.token == stockToken);
+      } catch (e) {
+        // No matching split found
+      }
+    }
+
+    // Find rights
+    if (stockEvents.rights != null) {
+      try {
+        filteredEvents['rights'] = stockEvents.rights!
+            .firstWhere((right) => right.token == stockToken);
+      } catch (e) {
+        // No matching right found
+      }
+    }
+
+    return filteredEvents;
   }
 
-  // Open scrip in web panel using the scrip tabs manager
-  void openScripInWebPanel(BuildContext context, DepthInputArgs depthArgs, String basket) {
-    // Import the scrip tabs provider to add the new scrip
-    final container = ProviderScope.containerOf(context);
-    final scripTabsNotifier = container.read(scripTabsProvider.notifier);
-    
-    // Check if scrip already exists in tabs
-    if (scripTabsNotifier.hasScrip(depthArgs)) {
-      // Scrip already exists, just switch to it
-      scripTabsNotifier.addScrip(depthArgs); // This will switch to existing tab
-    } else {
-      // Add the scrip to the tabs manager
-      scripTabsNotifier.addScrip(depthArgs);
-    }
-    
-    // Switch to scrip details panel if callback is available
-    if (_onShowScripDepthInfoInPanel != null) {
-      _onShowScripDepthInfoInPanel!(depthArgs);
-    }
+  /// Returns true if the stock has any corporate action events
+  bool hasStockEvents(Map<String,dynamic> events,String stockToken) {
+    // final events = filterStockEventsByToken(stockToken);
+    return events['dividend'] != null ||
+        events['bonus'] != null ||
+        events['split'] != null ||
+        events['rights'] != null;
   }
- 
-
 }
+

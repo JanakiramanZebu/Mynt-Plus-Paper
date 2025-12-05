@@ -3,11 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import '../../../../api/core/api_core.dart';
+import '../../../api/core/api_core.dart';
 import '../../../models/profile_model/qr_response.dart';
 import '../../../provider/thems.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
+import '../../../locator/locator.dart';
+import '../../../locator/preference.dart';
+import '../../../sharedWidget/camera_permission_dialog.dart';
 import 'invalid_qr.dart';
 import 'qr_scan_detils.dart';
 
@@ -22,6 +25,34 @@ class BarcodeScannerWithScanWindow extends ConsumerStatefulWidget {
 class _BarcodeScannerWithScanWindowState
     extends ConsumerState<BarcodeScannerWithScanWindow> {
   final MobileScannerController controller = MobileScannerController();
+  final Preferences _prefs = locator<Preferences>();
+  bool _hasShownPermissionDialog = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkPermissionDenialCount();
+  }
+
+  void _checkPermissionDenialCount() {
+    final denialCount = _prefs.cameraPermissionDeniedCount;
+    if (denialCount >= 2) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!_hasShownPermissionDialog) {
+          _hasShownPermissionDialog = true;
+          _showPermissionDialog();
+        }
+      });
+    }
+  }
+
+  void _showPermissionDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const CameraPermissionDialog(),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -136,6 +167,13 @@ class _BarcodeScannerWithScanWindowState
     return ValueListenableBuilder(
       valueListenable: controller,
       builder: (context, value, child) {
+        // Handle camera permission errors
+        if (value.error != null) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _handleCameraPermissionDenied();
+          });
+        }
+
         // Not ready.
         if (!value.isInitialized ||
             !value.isRunning ||
@@ -149,6 +187,18 @@ class _BarcodeScannerWithScanWindowState
         );
       },
     );
+  }
+
+  void _handleCameraPermissionDenied() {
+    if (_hasShownPermissionDialog) return;
+    
+    final currentCount = _prefs.cameraPermissionDeniedCount;
+    _prefs.setCameraPermissionDeniedCount(currentCount + 1);
+    
+    // Pop the screen immediately when permission is denied
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Navigator.pop(context);
+    });
   }
 }
 

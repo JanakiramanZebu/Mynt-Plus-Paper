@@ -63,6 +63,7 @@ class WatchListValues {
   String? instname;
   bool? isExpandable;
   String? holdingQty;
+  bool? hasStockEvent;
   String? weekly;
   String? symbol;
   String? expDate;
@@ -88,6 +89,7 @@ class WatchListValues {
       this.isSelected,
       this.isExpandable,
       this.holdingQty,
+      this.hasStockEvent,
       this.expDate,
       this.dname,
       this.option,
@@ -115,6 +117,7 @@ class WatchListValues {
         isSelected: json['isSelected'] ?? false,
         isExpandable: isexpand,
         holdingQty: json['holdingQty'],
+        hasStockEvent:json['hasStockEvent'],
         expDate: json['expDate'],
         symbol: json['symbol'].toString().toUpperCase(),
         option: json['option'],

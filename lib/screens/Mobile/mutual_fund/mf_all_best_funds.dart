@@ -226,7 +226,7 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
                               : colors.textSecondaryLight,
                           textOverflow: TextOverflow.ellipsis,
                           theme: theme.isDarkMode,
-                          fw: 3,
+                          fw: 0,
                         ),
                         PopupMenuButton<String>(
                           color: theme.isDarkMode
@@ -246,7 +246,7 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
                                       ? colors.textSecondaryDark
                                       : colors.textSecondaryLight,
                                   theme: theme.isDarkMode,
-                                  fw: 3,
+                                  fw: 0,
                                 )),
                             PopupMenuItem(
                                 value: '3Y Returns',
@@ -256,7 +256,7 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
                                       ? colors.textSecondaryDark
                                       : colors.textSecondaryLight,
                                   theme: theme.isDarkMode,
-                                  fw: 3,
+                                  fw: 0,
                                 )),
                             PopupMenuItem(
                                 value: '5Y Returns',
@@ -266,7 +266,7 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
                                       ? colors.textSecondaryDark
                                       : colors.textSecondaryLight,
                                   theme: theme.isDarkMode,
-                                  fw: 3,
+                                  fw: 0,
                                 )),
                           ],
                           child: Material(
@@ -289,7 +289,7 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
                                       : colors.textSecondaryLight,
                                   textOverflow: TextOverflow.ellipsis,
                                   theme: theme.isDarkMode,
-                                  fw: 3,
+                                  fw: 0,
                                 ),
                               ),
                             ),
@@ -340,7 +340,7 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
             textOverflow: TextOverflow.ellipsis,
             maxLines: 1,
             theme: theme.isDarkMode,
-            fw: isActive ? 2 : null,
+            fw: isActive ? 2 : 2,
           ),
         ),
         AnimatedContainer(
@@ -422,10 +422,13 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
     }
 
     if (sortedList == null || sortedList.isEmpty) {
-      return const Center(child: NoDataFound());
+      return const Center(child: NoDataFound(
+        secondaryEnabled: false,
+      ));
     }
 
     return ListView.separated(
+      physics: ClampingScrollPhysics(),
       itemCount: sortedList.length,
       separatorBuilder: (_, __) => const ListDivider(),
       itemBuilder: (BuildContext context, int index) {
@@ -496,7 +499,7 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
                     // Navigator.pushNamed(context, Routes.mfStockDetail,
                     //     arguments: bInstance);
                   } else {
-                    showResponsiveSuccess(context, "No Single Page Data");
+                        successMessage(context, "No Single Page Data");
 
                     final jsondata = MutualFundList.fromJson(item.toJson());
                     Navigator.pushNamed(context, Routes.mforderScreen,
@@ -506,10 +509,10 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
                     mf.chngOrderType("One-time");
                   }
                 } else {
-                  showResponsiveSuccess(context, "Invalid fund data");
+                      successMessage(context, "Invalid fund data");
                 }
               } catch (e) {
-                showResponsiveSuccess(context, "Error loading fund details");
+                    successMessage(context, "Error loading fund details");
               }
             },
             child: ListTile(
@@ -533,13 +536,13 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
                   textOverflow: TextOverflow.ellipsis,
                   maxLines: 2,
                   theme: theme.isDarkMode,
-                  fw: 3,
+                  fw: 0,
                 ),
               ),
               subtitle: Padding(
                 padding: const EdgeInsets.only(top: 8),
                 child: TextWidget.paraText(
-                  fw: 3,
+                  fw: 0,
                   text: "${item.type ?? "Unknown"}",
                   textOverflow: TextOverflow.ellipsis,
                   maxLines: 1,
@@ -554,10 +557,10 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
                 color: theme.isDarkMode
                     ? colors.textPrimaryDark
                     : colors.textPrimaryLight,
-                text: "$returnData%",
+                text: _formatReturns(returnData),
                 textOverflow: TextOverflow.ellipsis,
                 theme: theme.isDarkMode,
-                fw: 3,
+                fw: 0,
               ),
             ),
           ),
@@ -567,6 +570,12 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
   }
 }
 
+String _formatReturns(String? returns) {
+    if (returns == null || returns.isEmpty || returns == "0.0") {
+      return "0.00%";
+    }
+    return "$returns%";
+  }
 
 
 

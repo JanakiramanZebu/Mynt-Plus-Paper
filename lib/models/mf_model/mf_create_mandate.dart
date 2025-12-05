@@ -5,9 +5,11 @@ class MfCreateMandateModel {
   String? stat;
   String? url1;
   String? error;
+  String? msg;
+  String? emsg;
 
   MfCreateMandateModel(
-      {this.mandate, this.resp, this.resp2, this.stat, this.url1, this.error});
+      {this.mandate, this.resp, this.resp2, this.stat, this.url1, this.error, this.msg, this.emsg});
 
   MfCreateMandateModel.fromJson(Map<String, dynamic> json) {
     mandate = json['mandate'];
@@ -16,6 +18,8 @@ class MfCreateMandateModel {
     stat = json['stat'];
     url1 = json['url1'];
     error = json['error'];
+    msg = json['msg'];
+    emsg = json['emsg'];
   }
 
   Map<String, dynamic> toJson() {
@@ -26,6 +30,8 @@ class MfCreateMandateModel {
     data['stat'] = stat;
     data['url1'] = url1;
     data['error'] = error;
+    data['msg'] = msg;
+    data['emsg'] = emsg;
     return data;
   }
 }

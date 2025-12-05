@@ -74,6 +74,7 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
               fw: 1),
         ),
         body: SingleChildScrollView(
+          physics: ClampingScrollPhysics(),
           padding: EdgeInsets.all(16.0),
           child: Column(
             children: [
@@ -396,9 +397,8 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
                             hintStyle: TextWidget.textStyle(
                               fontSize: 12,
                               theme: theme.isDarkMode,
-                              color: theme.isDarkMode
-                                  ? colors.textSecondaryDark
-                                  : colors.textSecondaryLight,
+                              color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                              fw: 0,
                             ),
                             fillColor: theme.isDarkMode
                                 ? colors.searchBgDark
@@ -456,9 +456,8 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
                             hintStyle: TextWidget.textStyle(
                               fontSize: 12,
                               theme: theme.isDarkMode,
-                              color: theme.isDarkMode
-                                  ? colors.textSecondaryDark
-                                  : colors.textSecondaryLight,
+                              color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                              fw: 0,
                             ),
                             fillColor: theme.isDarkMode
                                 ? colors.searchBgDark
@@ -1025,9 +1024,8 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
               hintStyle: TextWidget.textStyle(
                 fontSize: 12,
                 theme: theme.isDarkMode,
-                color: theme.isDarkMode
-                    ? colors.textSecondaryDark
-                    : colors.textSecondaryLight,
+                color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                fw: 0,
               ),
               fillColor:
                   theme.isDarkMode ? colors.searchBgDark : colors.searchBg,
@@ -1245,9 +1243,8 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
                     hintStyle: TextWidget.textStyle(
                       fontSize: 14,
                       theme: theme.isDarkMode,
-                      color: theme.isDarkMode
-                          ? colors.textSecondaryDark
-                          : colors.textSecondaryLight,
+                      color:(theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                      fw: 0,
                     ),
                     fillColor: theme.isDarkMode
                         ? colors.searchBgDark
@@ -1440,14 +1437,12 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
     final currentLegs = strategy.legs;
     strategy.addLeg();
 
-    ScaffoldMessenger.of(context)
-        .showSnackBar(successMessage(context, 'Leg added successfully!'));
+    successMessage(context, 'Leg added successfully!');
   }
 
   void _removeLeg(int index) {
     final strategy = ref.watch(stocksProvide);
     strategy.removeLeg(index);
-    ScaffoldMessenger.of(context)
-        .showSnackBar(successMessage(context, 'Leg removed successfully!'));
+    successMessage(context, 'Leg removed successfully!');
   }
 }

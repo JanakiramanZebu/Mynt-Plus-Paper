@@ -46,6 +46,10 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
     // Clear the text field when screen is initialized
     widget.withdarw.withdrawamount.clear();
 
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      widget.foucs.requestFocus();
+    });
+
     disable = (widget.withdarw.withdrawamount.text.isEmpty ||
         widget.withdarw.payoutdetails!.withdrawAmount == "0.00");
     super.initState();
@@ -77,6 +81,7 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
           widget.foucs.unfocus();
         },
         child: SingleChildScrollView(
+          physics: ClampingScrollPhysics(),
           child: SafeArea(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -92,6 +97,7 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
                             "Withdrawable Amount ₹ ${widget.withdarw.payoutdetails!.withdrawAmount}",
                         theme: widget.theme.isDarkMode,
                         color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                        fw: 0,
                       ),
                       const SizedBox(height: 10),
                       TextFormField(
@@ -109,7 +115,7 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
                         keyboardType:
                             const TextInputType.numberWithOptions(decimal: true),
                         style: TextWidget.textStyle(
-                            theme: widget.theme.isDarkMode, color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight, fontSize: 25,),
+                            theme: widget.theme.isDarkMode, color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight, fontSize: 25, fw: 0,),
                         controller: widget.withdarw.withdrawamount,
                         onChanged: (value) {
                           // widget.withdarw.withdrawamount.text = value;
@@ -163,12 +169,14 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
                           hintText: "0",
                           hintStyle: TextWidget.textStyle(
                               theme: false,
-                              color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                              color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
                               fontSize: 25,
+                              fw: 0,
                               ),
                           labelStyle: TextWidget.textStyle(
                               theme: widget.theme.isDarkMode,
                               fontSize: 25,
+                              fw: 0,
                               ),
                           prefixIcon: Padding(
                             padding: const EdgeInsets.all(12.0),
@@ -217,20 +225,22 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
                           ? () {
                               if (widget.withdarw.payoutdetails!.withdrawAmount ==
                                   "0.00") {
-                                showResponsiveWarningMessage(context, "Insufficient fund");
+                                    warningMessage(context, "Insufficient fund");
                               } else if (widget
                                   .withdarw.withdrawamount.text.isEmpty) {
-                                showResponsiveWarningMessage(context, "Please enter the amount");
+                                    warningMessage(
+                                        context, "Please enter the amount");
                               } else if (double.tryParse(
                                           widget.withdarw.withdrawamount.text) !=
                                       null &&
                                   double.parse(
                                           widget.withdarw.withdrawamount.text) <=
                                       0) {
-                                showResponsiveWarningMessage(context,
-                                    "Amount must be greater than 0");
+                                    warningMessage(context,
+                                        "Amount must be greater than 0");
                               } else {
-                                showResponsiveWarningMessage(context, "Please enter a valid amount");
+                                    warningMessage(
+                                        context, "Please enter a valid amount");
                               }
                             }
                           : () async {
@@ -385,6 +395,7 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
                                     text: "Request on : ",
                                     theme: false,
                                     color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                    fw: 0,
                                   ),
                                   const SizedBox(height: 4),
                                   TextWidget.paraText(
@@ -392,6 +403,7 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
                                         "${widget.withdarw.withdrawstatus?[0].eNTRYTIME}",
                                     theme: false,
                                     color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                    fw: 0,
                                   ),
                                 ],
                               ),
@@ -481,6 +493,7 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
               color: theme.isDarkMode
                   ? colors.textSecondaryDark
                   : colors.textSecondaryLight,
+              fw: 0,
             ),
             TextWidget.subText(
               text: value,
@@ -488,6 +501,7 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
               color: theme.isDarkMode
                   ? colors.textPrimaryDark
                   : colors.textPrimaryLight,
+              fw: 0,
             ),
           ],
         ),

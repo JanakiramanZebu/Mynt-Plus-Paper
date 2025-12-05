@@ -88,6 +88,7 @@ class _UPIAppsPaymentSuccessAlertState
                           color: theme.isDarkMode
                               ? colors.textPrimaryDark
                               : colors.textPrimaryLight,
+                          fw: 0,
                         ),
                         const SizedBox(
                           height: 5,
@@ -98,6 +99,7 @@ class _UPIAppsPaymentSuccessAlertState
                               : "Transaction fail",
                           theme: false,
                           color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                          fw: 0,
                         ),
                         const SizedBox(
                           height: 10,
@@ -108,7 +110,9 @@ class _UPIAppsPaymentSuccessAlertState
                             fs: 40,
                            color: theme.isDarkMode
                               ? colors.textPrimaryDark
-                              : colors.textPrimaryLight,),
+                              : colors.textPrimaryLight,
+                          fw: 0,
+                          ),
                         const SizedBox(
                           height: 10,
                         ),
@@ -118,6 +122,7 @@ class _UPIAppsPaymentSuccessAlertState
                                   "${fund.hdfcUPIStatus!.data!.transactionAuthDate}"),
                           theme: false,
                           color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                          fw: 0,
                         ),
                       ],
                     ),
@@ -192,6 +197,7 @@ class _UPIAppsPaymentSuccessAlertState
               color: theme.isDarkMode
                   ? colors.textSecondaryDark
                   : colors.textSecondaryLight,
+              fw: 0,
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -202,6 +208,7 @@ class _UPIAppsPaymentSuccessAlertState
                     ? colors.textPrimaryDark
                     : colors.textPrimaryLight,
                 align: TextAlign.right,
+                fw: 0,
               ),
             ),
           ],

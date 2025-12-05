@@ -118,9 +118,9 @@ class _TimmerScreenForUPI extends State<TimmerScreenForUPI> {
                       ? mfOrder.mandateId
                       : null,
                   onChanged: (value) async {
-                    if (value != null) {
-                      mfOrder.chngMandate("$value");
-                    }
+                    // if (value != null) {
+                    //   // mfOrder.chngMandate("$value");
+                    // }
                   },
                 ),
               ),
@@ -277,18 +277,20 @@ class _TimmerScreenForUPI extends State<TimmerScreenForUPI> {
                       ? colors.darkGrey
                       : const Color(0xffF1F3F8),
                   hintText: 'example@upi',
-                  hintStyle: TextWidget.textStyle(
-                    fontSize: 14,
-                    theme: theme.isDarkMode,
-                    fw: 3,
-                    color: const Color(0xff666666),
-                  ),
-                  style: TextWidget.textStyle(
-                    fontSize: 14,
-                    theme: theme.isDarkMode,
-                    fw: 1,
-                    color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  ),
+                 hintStyle: TextWidget.textStyle(
+                                      fontSize: 14,
+                                      theme: theme.isDarkMode,
+                                     color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                                    fw: 0,
+                                    ),
+                   style: TextWidget.textStyle(
+                                    fontSize: 16,
+                                    color: theme.isDarkMode
+                                        ? colors.textPrimaryDark
+                                        : colors.textPrimaryLight,
+                                    theme: theme.isDarkMode,
+                                    fw: 0,
+                                  ),
                   textCtrl: mfOrder.upiId,
                   onChanged: (value) {
                     mfOrder.isValidUpiId(widget.data,'');

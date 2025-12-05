@@ -27,6 +27,8 @@ class ApiLinks {
   String get apiKey => '$goMyntURL/RequestApiKey';
   String get generateapiKey => '$goMyntURL/UserApiKeyRenReq';
   String get generateapiKeynewuser => '$goMyntURL/GetUserApiKey';
+  String get getapikeynew => '$goMyntURL/GetAppKeyData';
+  String get appkeystore => '$goMyntURL/AppKeyStore';
   String get gettotp => "$goMyntURL/GetSecretKey";
   String get gentotp => "$goMyntURL/GenSecretKey";
 
@@ -76,6 +78,10 @@ class ApiLinks {
   String get clientDetail => '$goMyntURL/ClientDetails';
   String get freezeAccount => '$goMyntURL/FreezeAccount';
   String get blockAcct => '$goMyntURL/BlockAcct';
+  String get algoStrategy => 'http://192.168.5.119:9005/api/getall';
+  String get createAlgoStrategy => 'http://192.168.5.119:9005/api/new';
+  String get updateAlgoStrategy => 'http://192.168.5.119:9005/api/update';
+  String get deleteAlgoStrategy => 'http://192.168.5.119:9005/api/delete';
 
 // Trade data
 
@@ -168,6 +174,8 @@ class ApiLinks {
   // Stock data URL
 
   String dashBoardURL = "https://v3.mynt.in";
+  String get portfolioAnalysisURL => "$dashBoardURL/dd/AnalysisHoldingsdata_mob";
+  String get referralBonusURL => "http://192.168.5.207:8002/bonus_details/referal_bonus";
 
   // String tradeAction = "https://v3.mynt.in/equity/getadindicesAdvdec";
 
@@ -235,7 +243,7 @@ class ApiLinks {
   String get mfallpayment => "$dashBoardURL/mf/lumsum_purchase_mob";
   String get topSchemes => "$dashBoardURL/mf/getTopschemes";
   String get redemption => "$dashBoardURL/mf/lumsum_redemption_mob";
-  String get etfcategory => "$dashBoardURL/dd//etf-category";
+  String get etfcategory => "$dashBoardURL/dd/etf-category";
 
   String get mainfund => 'https://fundapi.mynt.in/api';
   String get clientcheck => '$mainfund/client_check';
@@ -280,6 +288,10 @@ class ApiLinks {
   String get detailschangecurrentstatusURL =>
       '$profileDetailsURL/add_mob_email_stat';
   String get profileAllDetailsURL => '$profileDetailsURL/profile';
+  String get rekycpendingstatusURL => '$profileDetailsURL/rekyc_pending_details';
+  String get cancelPendingesignURL => '${profileDetailsURL}manual_cancel_request';
+  String get fetctfileidURL => '$profileDetailsURL/add_mob_email_stat';
+  String get fetctfileidURLnominee => '$profileDetailsURL/nom_stat';
 
   // email change
   String get sendOTPEmailURL => '$profileDetailsURL/mail_otpsend';
@@ -360,4 +372,7 @@ class ApiLinks {
   String get mfsipcancelnew => "$newvenketmfurl/order/xsip_cancel";
   String get mfsippausenew => "$newvenketmfurl/order/xsip_pause";
   String get mfredemptionenew => "$newvenketmfurl/order/PlaceRedeemOrder";
+  String get mandatecreatenew => "$newvenketmfurl/order/mandate_creation";
+  
+
 }

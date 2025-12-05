@@ -46,7 +46,9 @@ class MFSipOrderHistoryScreen extends ConsumerWidget {
             TransparentLoaderScreen(
               isLoading: mfData.bestmfloader ?? false,
               child: mfData.mfnotlivesiporderlist?.data?.isEmpty ?? true
-                  ? const Center(child: NoDataFound())
+                  ? const Center(child: NoDataFound(
+                    secondaryEnabled: false,
+                  ))
                   : Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -65,6 +67,8 @@ class MFSipOrderHistoryScreen extends ConsumerWidget {
   Widget _buildSipOrderList(
       BuildContext context, dynamic mfData, dynamic theme) {
     return ListView.separated(
+      physics: ClampingScrollPhysics(),
+      padding: EdgeInsets.zero,
       shrinkWrap: true,
       separatorBuilder: (context, index) => const ListDivider(),
       // padding: const EdgeInsets.all(0),
@@ -84,10 +88,24 @@ class MFSipOrderHistoryScreen extends ConsumerWidget {
 
               // if (mfData.mfsinglepageres?.stat == "Ok") {
               showModalBottomSheet(
-                  context: context,
                   isScrollControlled: true,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    topRight: Radius.circular(16),
+                  ),
+                ),
+                isDismissible: true,
+                enableDrag: false,
+                useSafeArea: true,
+                context: context,
                   // backgroundColor: Colors.transparent,
-                  builder: (context) => mfSipdetScren(data: item));
+                  builder: (context) => Container(
+                    padding: EdgeInsets.only(
+                      bottom:
+                          MediaQuery.of(context).viewInsets.bottom,
+                    ),
+                    child: mfSipdetScren(data: item)));
               // Navigator.pushNamed(context, Routes.mfSipdetScren);
               // } else {
               // final errorMsg = mfData.mfsinglepageres?.Msg ?? "Failed to fetch SIP details";
@@ -126,7 +144,7 @@ class MFSipOrderHistoryScreen extends ConsumerWidget {
                             textOverflow: TextOverflow.ellipsis,
                             theme: theme.isDarkMode,
                             maxLines: 2,
-                            fw: 3),
+                            fw: 0),
                       ),
                       Container(
                         padding: const EdgeInsets.symmetric(
@@ -146,7 +164,7 @@ class MFSipOrderHistoryScreen extends ConsumerWidget {
                             textOverflow: TextOverflow.ellipsis,
                             theme: theme.isDarkMode,
                             maxLines: 2,
-                            fw: 3),
+                            fw: 0),
                       ),
                     ],
                   ),
@@ -187,7 +205,7 @@ class MFSipOrderHistoryScreen extends ConsumerWidget {
                             textOverflow: TextOverflow.ellipsis,
                             theme: theme.isDarkMode,
                             maxLines: 2,
-                            fw: 3),
+                            fw: 0),
                       const Spacer(),
                       TextWidget.paraText(
                           align: TextAlign.start,
@@ -198,7 +216,7 @@ class MFSipOrderHistoryScreen extends ConsumerWidget {
                           textOverflow: TextOverflow.ellipsis,
                           theme: theme.isDarkMode,
                           maxLines: 2,
-                          fw: 3),
+                          fw: 0),
                     ],
                   ),
                 )

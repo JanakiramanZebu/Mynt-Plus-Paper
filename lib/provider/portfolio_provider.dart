@@ -141,6 +141,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
   String _subscr = "";
   String get subscr => _subscr;
 
+  late TabController holdingsTabController;
+
   PortfolioProvider(this.ref);
 
   bool _showSearchHold = false;
@@ -241,8 +243,32 @@ class PortfolioProvider extends DefaultChangeNotifier {
   changeTabIndex(int index) {
     _selectedTab = index;
     print("selectedTab: $index");
+    
+    // Animate the TabController to the new index
+    try {
+      portTab.animateTo(index);
+    } catch (e) {
+      print("TabController animation error: $e");
+    }
+    
     notifyListeners();
   }
+
+  int _selectedHoldingsTab = 0;
+  int get selectedHoldingsTab => _selectedHoldingsTab;
+
+changeHoldingsTabIndex(int index) {
+  _selectedHoldingsTab = index;
+  
+  // Animate the TabController to the new index
+  try {
+    holdingsTabController.animateTo(index);
+  } catch (e) {
+    print("TabController animation error: $e");
+  }
+  
+  notifyListeners();
+}
 
   chngPosSelection(String val) {
     _posSelection = val;
@@ -271,8 +297,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
       } else {
         if (consent) {
           Future.delayed(const Duration(seconds: 2), () {
-            ScaffoldMessenger.of(context)
-                .showSnackBar(warningMessage(context, "Unable to fetch data"));
+            warningMessage(context, "Unable to fetch data");
           });
         }
         _allholds = {};
@@ -623,6 +648,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
                     // int.parse("${element.brkcolqty ?? 0}") +
                     // int.parse("${element.npoadt1qty ?? 0}") +
                     max(int.parse("${element.dpQty ?? 0}"), int.parse("${element.npoadqty ?? 0}"))+
+                    int.parse("${element.npoadt1qty ?? 0}") +
                     int.parse("${element.holdqty ?? 0}") +
                     int.parse("${element.btstqty ?? 0}")) -
                 int.parse("${element.trdqty ?? 0}");
@@ -722,7 +748,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
       pref.setPosPrice(true);
       pref.setPosPerchnage(true);
       pref.setPosqty(true);
-      pref.setPostion(true);
+      pref.setPostion(false); // Default to show 0 qty positions at bottom
       if (_postionBookModel!.isNotEmpty) {
         if (_postionBookModel![0].stat != "Not_Ok") {
           for (var i = 0; i < _postionBookModel!.length; i++) {
@@ -1632,8 +1658,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
               .contains(value.toUpperCase()))
           .toList();
       if (_mfHoldingSearchItem!.isEmpty) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(warningMessage(context, 'No Data Found'));
+        warningMessage(context, 'No Data Found');
       } else {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
       }
@@ -2095,7 +2120,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
             _placeOrderModel!.stat == "Not_Ok") {
           ref.read(authProvider).ifSessionExpired(context);
         } else {
-          showResponsiveSuccess(context, "${_placeOrderModel!.emsg}");
+              successMessage(context, "${_placeOrderModel!.emsg}");
         }
       }
 
@@ -2208,17 +2233,17 @@ class PortfolioProvider extends DefaultChangeNotifier {
         // Refresh position book after conversion
         await fetchPositionBook(context, _isDay);
         Navigator.pop(context);
-        showResponsiveSuccess(context, "Position converted successfully");
+            successMessage(context, "Position converted successfully");
       } else {
         Navigator.pop(context);
-        showResponsiveWarningMessage(context, "${_positionConvertionModel!.emsg}");
+            warningMessage(context, "${_positionConvertionModel!.emsg}");
       }
     } catch (e) {
       ref
           .read(indexListProvider)
           .logError
           .add({"type": "Position Conversion", "Error": "$e"});
-      showResponsiveWarningMessage(context, "Failed to convert position: $e");
+          warningMessage(context, "Failed to convert position: $e");
     } finally {
       toggleLoadingOn(false);
     }
@@ -2412,7 +2437,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
   bool get isExitingAll => _isExitingAll;
 
   // Add this near the other state variables
-  String _currentPositionSortOption = "Open";
+  String _currentPositionSortOption = "OpenDSC"; // Default to show 0 qty positions at bottom
   String get currentPositionSortOption => _currentPositionSortOption;
 
   // Add this near the other state variables and _currentHoldingSortOption

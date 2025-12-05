@@ -1,10 +1,13 @@
 // ignore_for_file: use_build_context_synchronously, deprecated_member_use
 
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import '../../../sharedWidget/snack_bar.dart';
 import '../../../utils/custom_navigator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:mynt_plus/screens/Mobile/profile_screen/topt_screen.dart';
 import 'package:share_plus/share_plus.dart';
@@ -35,12 +38,22 @@ import '../../../sharedWidget/loader_ui.dart';
 import '../../../sharedWidget/custom_drag_handler.dart';
 import '../desk_reports/contract_calendar_screen.dart';
 import '../desk_reports/tax_pnl_screen.dart';
+// tabs inlined in bottom sheet builder for API key
 import 'Api_key_screen.dart';
+import 'api_key_screen_new.dart';
 import 'logged_user_bottom_sheet.dart';
 import 'need_help_screen.dart';
 
-class UserAccountScreen extends ConsumerWidget {
+class UserAccountScreen extends ConsumerStatefulWidget {
   const UserAccountScreen({super.key});
+
+  @override
+  ConsumerState<UserAccountScreen> createState() => _UserAccountScreenState();
+}
+
+class _UserAccountScreenState extends ConsumerState<UserAccountScreen> {
+  bool _hasScrolled = false;
+  late ScrollController _scrollController;
 
   String _truncateProfileName(String text, {int maxLength = 18}) {
     return (text.length > maxLength)
@@ -60,6 +73,29 @@ class UserAccountScreen extends ConsumerWidget {
 
   static DateTime _lastTapTime = DateTime.now();
 
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    final isScrolled = _scrollController.offset > 0;
+    if (isScrolled != _hasScrolled) {
+      setState(() {
+        _hasScrolled = isScrolled;
+      });
+    }
+  }
+
   String formatIndianCurrency(String amount) {
     final formatter = NumberFormat.currency(
       locale: "en_IN",
@@ -69,8 +105,111 @@ class UserAccountScreen extends ConsumerWidget {
     return formatter.format(double.tryParse(amount) ?? 0.0);
   }
 
+  // Method to show image update options
+  void _showImageUpdateOptions(BuildContext context, WidgetRef ref) {
+    final theme = ref.watch(themeProvider);
+    final userProfile = ref.watch(userProfileProvider);
+    showModalBottomSheet(
+      useSafeArea: true,
+      context: context,
+      backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Container(
+            decoration: BoxDecoration(
+              color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+               border: Border(
+                                    top: BorderSide(
+                                      color: theme.isDarkMode
+                                          ? colors.textSecondaryDark
+                                              .withOpacity(0.5)
+                                          : colors.colorWhite,
+                                    ),
+                                    left: BorderSide(
+                                      color: theme.isDarkMode
+                                          ? colors.textSecondaryDark
+                                              .withOpacity(0.5)
+                                          : colors.colorWhite,
+                                    ),
+                                    right: BorderSide(
+                                      color: theme.isDarkMode
+                                          ? colors.textSecondaryDark
+                                              .withOpacity(0.5)
+                                          : colors.colorWhite,
+                                    ),
+                                  ), 
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(20),
+                topRight: Radius.circular(20),
+              ),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  margin: const EdgeInsets.only(top: 8),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                ListTile(
+                  leading: Icon(Icons.photo_library,
+                      color: theme.isDarkMode
+                          ? colors.primaryDark
+                          : colors.primaryLight),
+                  title: TextWidget.subText(
+                      text: 'Choose from Gallery',
+                      theme: false,
+                      color: theme.isDarkMode
+                          ? colors.textPrimaryDark
+                          : colors.textPrimaryLight),
+                  onTap: () {
+                    Navigator.pop(context);
+                    ref
+                        .watch(userProfileProvider)
+                        .pickImageFromGallery(context, ImageSource.gallery);
+                  },
+                ),
+                userProfile.getprofileImage == null ? SizedBox() :
+                ListTile(
+                  leading: Icon(Icons.delete,
+                      color: theme.isDarkMode
+                          ? colors.lossDark
+                          : colors.lossLight),
+                  title: TextWidget.subText(
+                      text: 'Remove Profile Picture',
+                      theme: false,
+                      color: theme.isDarkMode
+                          ? colors.textPrimaryDark
+                          : colors.textPrimaryLight),
+                  onTap: () {
+                    Navigator.pop(context);
+                    ref.watch(userProfileProvider).removeProfileImage(context);
+                  },
+                ),
+                // ListTile(
+                //   leading: const Icon(Icons.camera_alt, color: Color(0xFF0037B7)),
+                //   title: const Text('Take Selfie'),
+                //   onTap: () {
+                //     Navigator.pop(context);
+                //     ref.watch(userProfileProvider).takeAndUploadSelfie(context);
+                //   },
+                // ),
+                const SizedBox(height: 20),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final theme = ref.watch(themeProvider);
     final userProfile = ref.watch(userProfileProvider);
     final trancation = ref.watch(transcationProvider);
@@ -91,7 +230,7 @@ class UserAccountScreen extends ConsumerWidget {
       // {'title': 'Account'},
       {'title': 'Settings'},
       {'title': 'Notification'},
-      {'title': 'Refer & Get ₹300'},
+      {'title': 'Refer'},
       {'title': 'Rate Us'},
       {'title': 'Contact Us'},
     ];
@@ -102,7 +241,23 @@ class UserAccountScreen extends ConsumerWidget {
         children: [
           const SizedBox(height: 50),
 
-          /// 🔹 Top: QR Code
+          /// 🔹 Header Section with Elevation
+          Container(
+            decoration: BoxDecoration(
+              color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+              boxShadow: _hasScrolled
+                  ? [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      )
+                    ]
+                  : [],
+            ),
+            child: Column(
+              children: [
+                /// 🔹 Top: QR Code
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
@@ -169,32 +324,107 @@ class UserAccountScreen extends ConsumerWidget {
                 children: [
                   Padding(
                     padding: const EdgeInsets.only(bottom: 8.0),
-                    child: Container(
-                      width: 100,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: theme.isDarkMode
-                            ? colors.textSecondaryDark.withOpacity(0.1)
-                            : const Color(0xFFF1F3F8),
-                        border: Border.all(
-                          color: const Color(0xFF0037B7),
-                          width: 1.5,
-                        ),
-                      ),
-                      child: Center(
-                        child: TextWidget.custmText(
-                          text: userProfile.userDetailModel?.uname
-                                  ?.substring(0, 1)
-                                  .toUpperCase() ??
-                              "",
-                          theme: false,
-                          color: theme.isDarkMode
-                              ? colors.colorWhite
-                              : const Color(0xff0037B7),
-                          fs: 40,
-                          fw: 3,
-                        ),
+                    child: GestureDetector(
+                      onTap: () => _showImageUpdateOptions(context, ref),
+                      child: Stack(
+                        children: [
+                          Container(
+                            width: 100,
+                            height: 100,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: theme.isDarkMode
+                                  ? colors.textSecondaryDark.withOpacity(0.1)
+                                  : const Color(0xFFF1F3F8),
+                              border: Border.all(
+                                color: const Color(0xFF0037B7),
+                                width: 1.5,
+                              ),
+                            ),
+                            child: ClipOval(
+                              child: userProfile.getprofileImage != null
+                                  ? userProfile.imageLoader
+                                      ? Container(
+                                          width: 100,
+                                          height: 100,
+                                          decoration: BoxDecoration(
+                                            color: theme.isDarkMode
+                                                ? colors.colorBlack
+                                                    .withOpacity(0.1)
+                                                : colors.colorWhite
+                                                    .withOpacity(0.1),
+                                          ),
+                                          child: Center(
+                                            child: CircularProgressIndicator(
+                                              color: !theme.isDarkMode
+                                                  ? colors.primaryLight
+                                                  : colors.primaryDark,
+                                              strokeWidth: 3,
+                                            ),
+                                          ),
+                                        )
+                                      : Image.memory(
+                                          userProfile.getprofileImage!,
+                                          width: 100,
+                                          height: 100,
+                                          fit: BoxFit.cover,
+                                        )
+                                  : userProfile.imageLoader
+                                      ? Container(
+                                          width: 100,
+                                          height: 100,
+                                          decoration: BoxDecoration(
+                                            color: theme.isDarkMode
+                                                ? colors.colorBlack
+                                                    .withOpacity(0.1)
+                                                : colors.colorWhite
+                                                    .withOpacity(0.1),
+                                          ),
+                                          child: Center(
+                                            child: CircularProgressIndicator(
+                                              color: !theme.isDarkMode
+                                                  ? colors.primaryLight
+                                                  : colors.primaryDark,
+                                              strokeWidth: 3,
+                                            ),
+                                          ),
+                                        )
+                                      : Center(
+                                          child: TextWidget.custmText(
+                                            text: userProfile
+                                                    .userDetailModel?.uname
+                                                    ?.substring(0, 1)
+                                                    .toUpperCase() ??
+                                                "",
+                                            theme: false,
+                                            color: theme.isDarkMode
+                                                ? colors.colorWhite
+                                                : const Color(0xff0037B7),
+                                            fs: 40,
+                                            fw: 3,
+                                          ),
+                                        ),
+                            ),
+                          ),
+                          // Camera icon overlay
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: Container(
+                              width: 32,
+                              height: 32,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFF0037B7),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.camera_alt,
+                                color: Colors.white,
+                                size: 18,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -275,6 +505,9 @@ class UserAccountScreen extends ConsumerWidget {
           //                    ),
           // ),
           const SizedBox(height: 16),
+              ],
+            ),
+          ),
           // Padding(
           //   padding: const EdgeInsets.symmetric(horizontal: 16.0),
           //   child: Divider(
@@ -289,6 +522,8 @@ class UserAccountScreen extends ConsumerWidget {
           /// 🔹 Menu List
           Expanded(
             child: ListView.separated(
+              physics: ClampingScrollPhysics(),
+              controller: _scrollController,
               padding: const EdgeInsets.only(top: 0),
               itemCount: filteredMenu.length,
               itemBuilder: (context, index) {
@@ -396,7 +631,8 @@ class UserAccountScreen extends ConsumerWidget {
                           reportsprovider.fetchLegerData(
                               context,
                               reportsprovider.startDate,
-                              reportsprovider.endDate);
+                              reportsprovider.endDate,
+                              reportsprovider.includeBillMargin);
                         }
                         if (reportsprovider.holdingsAllData == null) {
                           await reportsprovider.getCurrentDate('else');
@@ -483,7 +719,7 @@ class UserAccountScreen extends ConsumerWidget {
                       case "OptionZ":
                         funds.optionZ(context);
                         break;
-                      case "Refer & Get ₹300":
+                      case "Refer":
                         await Share.share(
                           "I invite you to explore Mynt by Zebu — from Stocks to Mutual funds and more.\nOpen your free demat account today\n👉 ${Uri.parse(reflink)}",
                         );
@@ -565,6 +801,7 @@ class UserAccountScreen extends ConsumerWidget {
                     color: !theme.isDarkMode
                         ? colors.textSecondaryLight
                         : colors.textSecondaryDark,
+                    fw: 0,
                   ),
                   trailing: Icon(
                     Icons.arrow_forward_ios,
@@ -634,6 +871,7 @@ class UserAccountScreen extends ConsumerWidget {
             child: Tooltip(
               key: key,
               message: message,
+              showDuration: const Duration(milliseconds: 100),
               preferBelow: false,
               child: child,
             ),
@@ -672,6 +910,7 @@ class UserAccountScreen extends ConsumerWidget {
                         color: !theme.isDarkMode
                             ? colors.textPrimaryLight
                             : colors.textPrimaryDark,
+                        fw: 0,
                       ),
                       const SizedBox(height: 4),
                       TextWidget.subText(
@@ -681,6 +920,7 @@ class UserAccountScreen extends ConsumerWidget {
                         color: !theme.isDarkMode
                             ? colors.textSecondaryLight
                             : colors.textSecondaryDark,
+                        fw: 0,
                       ),
                     ],
                   ),
@@ -789,6 +1029,152 @@ class UserAccountScreen extends ConsumerWidget {
   }
 }
 
+class ApiKeyBottomTabs extends ConsumerStatefulWidget {
+  const ApiKeyBottomTabs({super.key});
+
+  @override
+  ConsumerState<ApiKeyBottomTabs> createState() => _ApiKeyBottomTabsState();
+}
+
+class _ApiKeyBottomTabsState extends ConsumerState<ApiKeyBottomTabs>
+    with TickerProviderStateMixin {
+  late TabController _tabController;
+  int selectedTab = 0; // 0 Old, 1 New
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this, initialIndex: 0);
+    _tabController.animation?.addListener(() {
+      final newIndex = _tabController.animation!.value.round();
+      if (selectedTab != newIndex) {
+        setState(() {
+          selectedTab = newIndex;
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = ref.watch(themeProvider);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const CustomDragHandler(),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: TextWidget.titleText(
+            text: 'Generate API Key',
+            theme: false,
+            color: theme.isDarkMode
+                ? colors.textPrimaryDark
+                : colors.textPrimaryLight,
+            fw: 1,
+          ),
+        ),
+        Container(
+          width: MediaQuery.of(context).size.width,
+          padding: const EdgeInsets.only(top: 8),
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: theme.isDarkMode
+                    ? colors.darkColorDivider
+                    : colors.colorDivider,
+                width: 0,
+              ),
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              _tabHeader('Base key', 0, theme),
+              _tabHeader('OAuth key', 1, theme),
+            ],
+          ),
+        ),
+        Expanded(
+          child: TabBarView(
+            controller: _tabController,
+            physics: const BouncingScrollPhysics(),
+            children: const [
+              ApiKeyScreen(),
+              ApiKeyScreenNew(),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _tabHeader(String title, int index, ThemesProvider theme) {
+    final isActive = selectedTab == index;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        splashColor: theme.isDarkMode
+            ? Colors.white.withOpacity(0.05)
+            : Colors.black.withOpacity(0.05),
+        highlightColor: theme.isDarkMode
+            ? Colors.white.withOpacity(0.01)
+            : Colors.black.withOpacity(0.01),
+        onTap: () {
+          setState(() {
+            selectedTab = index;
+          });
+          _tabController.animateTo(index);
+          if (_tabController.index != index) {
+            _tabController.index = index;
+          }
+          FocusScope.of(context).unfocus();
+        },
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: MediaQuery.of(context).size.width * 0.5,
+              alignment: Alignment.center,
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              child: TextWidget.subText(
+                text: title,
+                color: isActive
+                    ? theme.isDarkMode
+                        ? colors.secondaryDark
+                        : colors.secondaryLight
+                    : theme.isDarkMode
+                        ? colors.textSecondaryDark
+                        : colors.textSecondaryLight,
+                textOverflow: TextOverflow.ellipsis,
+                maxLines: 1,
+                theme: theme.isDarkMode,
+                fw: 2,
+              ),
+            ),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.easeInOut,
+              height: 2,
+              width: isActive ? 82 : 0,
+              margin: const EdgeInsets.only(top: 1),
+              decoration: BoxDecoration(
+                color: colors.colorBlue,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 // Settings Screen
 class SettingsScreen extends ConsumerWidget {
   String _truncateProfileName(String text, {int maxLength = 18}) {
@@ -815,6 +1201,7 @@ class SettingsScreen extends ConsumerWidget {
       {'title': 'Generate TOTP', 'section': 'Security'},
       {'title': 'Generate API Key', 'section': 'Security'},
       {'title': 'Freeze Account', 'section': 'Security'},
+      // {'title': 'Algo Strategy', 'section': 'Settings'},
     ];
 
     return Scaffold(
@@ -976,6 +1363,7 @@ class SettingsScreen extends ConsumerWidget {
                           color: !theme.isDarkMode
                               ? colors.textSecondaryLight
                               : colors.textSecondaryDark,
+                          fw: 0,
                         ),
                         trailing: Icon(
                           Icons.arrow_forward_ios,
@@ -1196,6 +1584,7 @@ class SettingsScreen extends ConsumerWidget {
                     color: !theme.isDarkMode
                         ? colors.textSecondaryLight
                         : colors.textSecondaryDark,
+                    fw: 0,
                   ),
                   trailing: Icon(
                     Icons.arrow_forward_ios,
@@ -1317,6 +1706,7 @@ class SettingsScreen extends ConsumerWidget {
                                       color: theme.isDarkMode
                                           ? colors.textSecondaryDark
                                           : colors.textSecondaryLight,
+                                      fw: 0,
                                     ),
                                     const SizedBox(height: 20.0),
                                     Padding(
@@ -1444,7 +1834,7 @@ class SettingsScreen extends ConsumerWidget {
                                                                       .textSecondaryDark
                                                                   : colors
                                                                       .textPrimaryLight,
-                                                              fw: 3,
+                                                              fw: 0,
                                                               align: TextAlign
                                                                   .center,
                                                             ),
@@ -1547,7 +1937,19 @@ class SettingsScreen extends ConsumerWidget {
                                 topRight: Radius.circular(16),
                               ),
                             ),
-                            builder: (_) => ApiKeyScreen());
+                            // builder: (_) => ApiKeyScreen());
+
+                              builder: (_) => Consumer(
+                                  builder: (context, ref, __) {
+                                    final screenHeight = MediaQuery.of(context).size.height;
+                                    return SafeArea(
+                                      child: SizedBox(
+                                        height: screenHeight * 0.85,
+                                        child: const ApiKeyBottomTabs(),
+                                      ),
+                                    );
+                                  },
+                                ));
                         break;
                       case 'Generate TOTP':
                         await apikeys.fetchTotp();
@@ -1566,6 +1968,10 @@ class SettingsScreen extends ConsumerWidget {
                                 secretKey:
                                     ref.read(apikeyprovider).totpkey!.pwd));
                         break;
+                      // case 'Algo Strategy':
+                      //   await ref.read(userProfileProvider).fetchAlgoStrategies(context);
+                      //   Navigator.pushNamed(context, Routes.algoStrategyShowList);
+                      //   break;
                     }
                   },
                 );
@@ -1713,18 +2119,29 @@ class SettingsScreen extends ConsumerWidget {
 
 // My Account Screen
 class MyAccountScreen extends ConsumerStatefulWidget {
-  const MyAccountScreen({super.key, this.initialIndex = 0});
+  const MyAccountScreen({super.key, this.initialIndex = 0, this.expandSection});
   final int initialIndex;
+  final String? expandSection;
   @override
   ConsumerState<MyAccountScreen> createState() => _MyAccountScreenState();
 }
 
 class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
   // late int _expandedIndex;
+  String? _expandedTitle;
 
   @override
   void initState() {
     super.initState();
+
+    // Set initial expanded section from widget parameter
+    if (widget.expandSection != null) {
+      _expandedTitle = widget.expandSection;
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      ref.read(profileAllDetailsProvider).fetchPendingstatus();
+    });
     // _expandedIndex = widget.initialIndex; // ← store the target tile
   }
 
@@ -1833,19 +2250,6 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
   //   );
   // }
 
-  // Add this function
-  Color _getBottomNavColor(ThemesProvider theme, bool isSelected) {
-    if (theme.isDarkMode && isSelected) {
-      return colors.colorLightBlue;
-    } else if (isSelected) {
-      return colors.colorBlue;
-    } else {
-      return colors.colorGrey;
-    }
-  }
-
-  String? _expandedTitle;
-
   // List of items for the account screen
   final accountItems = [
     {'title': 'Profile'},
@@ -1877,6 +2281,373 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
           _expandedTitle = null;
         });
       }
+    }
+  }
+
+  /// Helper method to get pending statuses for a specific section
+  List<String> _getPendingStatusesForSection(
+      String sectionTitle, WidgetRef ref) {
+    final profileDetails = ref.watch(profileAllDetailsProvider);
+    if (profileDetails.pendingStatusList.isEmpty ||
+        profileDetails.pendingStatusList[0].data == null ||
+        profileDetails.pendingStatusList[0].data!.isEmpty) {
+      return [];
+    }
+
+    final pendingStatuses = profileDetails.pendingStatusList[0].data!;
+
+    switch (sectionTitle) {
+      case 'Profile':
+        return pendingStatuses
+            .where((status) =>
+                status == 'address_change_pending' ||
+                status == 'email_change_pending' ||
+                status == 'mobile_change_pending')
+            .toList();
+      case 'Bank':
+        return pendingStatuses
+            .where((status) => status == 'bank_change_pending')
+            .toList();
+      case 'Depository':
+        return pendingStatuses
+            .where((status) => status == 'ddpicre_pending')
+            .toList();
+      case 'Margin Trading Facility (MTF)':
+        return pendingStatuses
+            .where((status) => status == 'mtf_pending')
+            .toList();
+      case 'Trading Preferences':
+        return pendingStatuses
+            .where((status) => status == 'segments_change_pending')
+            .toList();
+      case 'Nominee':
+        return pendingStatuses
+            .where((status) => status == 'nominee_pending')
+            .toList();
+      case 'Closure':
+        return pendingStatuses
+            .where((status) => status == 'closure_pending')
+            .toList();
+      case 'Form Download':
+        return []; // No specific pending statuses for form download
+      default:
+        return [];
+    }
+  }
+
+  /// Helper method to build section title with pending indicator
+  Widget _buildSectionTitleWithPendingIndicator(
+      String title, WidgetRef ref, ThemesProvider theme) {
+    final pendingStatuses = _getPendingStatusesForSection(title, ref);
+    final hasPending = pendingStatuses.isNotEmpty;
+
+    return Row(
+      children: [
+        Expanded(
+          child: TextWidget.subText(
+            text: title,
+            theme: false,
+            color: _expandedTitle == title
+                ? theme.isDarkMode
+                    ? colors.primaryDark
+                    : colors.primaryLight
+                : theme.isDarkMode
+                    ? colors.textSecondaryDark
+                    : colors.textSecondaryLight,
+            fw: _expandedTitle == title ? 1 : 0,
+          ),
+        ),
+        if (hasPending) ...[
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.orange.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Colors.orange.withOpacity(0.6),
+                width: 1,
+              ),
+            ),
+            child: TextWidget.captionText(
+              text: '${pendingStatuses.length} Pending',
+              theme: false,
+              color: Colors.orange.shade700,
+              fw: 3,
+            ),
+          ),
+          const SizedBox(width: 8),
+        ],
+      ],
+    );
+  }
+
+  /// Helper method to build pending statuses display for a specific section
+  Widget _buildSectionPendingStatuses(String sectionTitle, WidgetRef ref,
+      ThemesProvider theme, VoidCallback onTap, VoidCallback onTapCancel) {
+    final profileDetails = ref.watch(profileAllDetailsProvider);
+    final pendingStatuses = _getPendingStatusesForSection(sectionTitle, ref);
+
+    if (pendingStatuses.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10.0),
+      ),
+      color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            /// Header Row
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                TextWidget.subText(
+                  text: "Pending Status",
+                  theme: theme.isDarkMode,
+                  color: theme.isDarkMode
+                      ? colors.textPrimaryDark
+                      : colors.textPrimaryLight,
+                  fw: 3,
+                ),
+                Row(
+                  children: [
+                    InkWell(
+                      onTap: onTap,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: theme.isDarkMode
+                              ? colors.primaryDark
+                              : colors.primaryLight,
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        child: TextWidget.captionText(
+                          text: "Click here to E-sign",
+                          theme: false,
+                          color: colors.colorWhite,
+                          fw: 2,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    InkWell(
+                      onTap: () {
+                        showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                                  backgroundColor: theme.isDarkMode
+                                      ? const Color(0xFF121212)
+                                      : const Color(0xFFF1F3F8),
+                                  titlePadding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 8),
+                                  shape: const RoundedRectangleBorder(
+                                      borderRadius:
+                                          BorderRadius.all(Radius.circular(8))),
+                                  scrollable: true,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 12,
+                                  ),
+                                  actionsPadding: const EdgeInsets.only(
+                                      bottom: 16, right: 16, left: 16, top: 8),
+                                  insetPadding: const EdgeInsets.symmetric(
+                                      horizontal: 30, vertical: 12),
+                                  title: Column(
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
+                                        children: [
+                                          Material(
+                                            color: Colors.transparent,
+                                            shape: const CircleBorder(),
+                                            child: InkWell(
+                                              onTap: () async {
+                                                await Future.delayed(
+                                                    const Duration(
+                                                        milliseconds: 150));
+                                                Navigator.pop(context);
+                                              },
+                                              borderRadius:
+                                                  BorderRadius.circular(20),
+                                              splashColor: theme.isDarkMode
+                                                  ? colors.splashColorDark
+                                                  : colors.splashColorLight,
+                                              highlightColor: theme.isDarkMode
+                                                  ? colors.splashColorDark
+                                                  : colors.splashColorLight,
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.all(6.0),
+                                                child: Icon(
+                                                  Icons.close_rounded,
+                                                  size: 22,
+                                                  color: theme.isDarkMode
+                                                      ? colors.textSecondaryDark
+                                                      : colors
+                                                          .textSecondaryLight,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 12),
+                                      SizedBox(
+                                        width:
+                                            MediaQuery.of(context).size.width,
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 4),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.center,
+                                            children: [
+                                              const SizedBox(height: 10),
+                                              TextWidget.subText(
+                                                text:
+                                                    "Are you sure want to cancel the Esign",
+                                                theme: theme.isDarkMode,
+                                                color: theme.isDarkMode
+                                                    ? colors.textSecondaryDark
+                                                    : colors.textPrimaryLight,
+                                                fw: 3,
+                                                align: TextAlign.center,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  actions: [
+                                    SizedBox(
+                                      width: double.infinity,
+                                      child: OutlinedButton(
+                                        onPressed: onTapCancel,
+                                        style: OutlinedButton.styleFrom(
+                                          minimumSize: const Size(0, 40),
+                                          side: BorderSide(
+                                              color: colors.btnOutlinedBorder),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(5),
+                                          ),
+                                          backgroundColor: colors.primaryDark,
+                                        ),
+                                        child: profileDetails.cancelpendingloader ? SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: theme.isDarkMode
+                              ? colors.colorWhite
+                              : colors.colorBlack,
+                        )) : TextWidget.titleText(
+                                            text: "Yes",
+                                            theme: theme.isDarkMode,
+                                            color: colors.colorWhite,
+                                            fw: 2),
+                                      ),
+                                    ),
+                                  ],
+                                ));
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: theme.isDarkMode
+                                ? colors.lossDark
+                                : colors.lossLight,
+                            width: 1,
+                          ),
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        child: Icon(Icons.close,
+                            color: theme.isDarkMode
+                                ? colors.lossDark
+                                : colors.lossLight,
+                            size: 14),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            /// Pending Status as Chips
+            Wrap(
+              spacing: 8.0,
+              runSpacing: 8.0,
+              children: pendingStatuses.map((status) {
+                final displayName = _getPendingStatusDisplayName(status);
+                return Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: theme.isDarkMode
+                        ? colors.pending.withOpacity(0.1)
+                        : colors.pending.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: colors.pending.withOpacity(0.6),
+                      width: 1,
+                    ),
+                  ),
+                  child: TextWidget.subText(
+                    text: displayName,
+                    theme: false,
+                    color: colors.pending,
+                    fw: 3,
+                  ),
+                );
+              }).toList(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Helper method to get display name for pending status
+  String _getPendingStatusDisplayName(String status) {
+    switch (status.toLowerCase()) {
+      case 'address_change_pending':
+        return 'Address Change';
+      case 'bank_change_pending':
+        return 'Bank Change';
+      case 'closure_pending':
+        return 'Account Closure';
+      case 'ddpicre_pending':
+        return 'DPICRE';
+      case 'email_change_pending':
+        return 'Email Change';
+      case 'income_change_pending':
+        return 'Income Change';
+      case 'mobile_change_pending':
+        return 'Mobile Change';
+      case 'mtf_pending':
+        return 'MTF';
+      case 'nominee_pending':
+        return 'Nominee';
+      case 'segments_change_pending':
+        return 'Segments Change';
+      default:
+        return status
+            .replaceAll('_', ' ')
+            .split(' ')
+            .map((word) => word.isNotEmpty
+                ? '${word[0].toUpperCase()}${word.substring(1).toLowerCase()}'
+                : word)
+            .join(' ');
     }
   }
 
@@ -1995,6 +2766,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
               /// Expandable List View
               Expanded(
                 child: ListView.separated(
+                  physics: ClampingScrollPhysics(),
                   itemCount: accountItems.length,
                   itemBuilder: (context, index) {
                     final item = accountItems[index];
@@ -2025,18 +2797,8 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                               _onExpansionChanged(isExpanding, title),
                           tilePadding:
                               const EdgeInsets.symmetric(horizontal: 0),
-                          title: TextWidget.subText(
-                            text: title,
-                            theme: false,
-                            color: _expandedTitle == title
-                                ? theme.isDarkMode
-                                    ? colors.primaryDark
-                                    : colors.primaryLight
-                                : theme.isDarkMode
-                                    ? colors.textSecondaryDark
-                                    : colors.textSecondaryLight,
-                            fw: _expandedTitle == title ? 0 : 3,
-                          ),
+                          title: _buildSectionTitleWithPendingIndicator(
+                              title, ref, theme),
                           children: [
                             // Dynamically build the content based on the title
                             _buildExpansionContent(title, ref, theme),
@@ -2128,6 +2890,33 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
             }(),
             theme,
             ref),
+
+        // Show pending statuses for Profile section only
+        _buildSectionPendingStatuses('Profile', ref, theme, () {
+          if (_getPendingStatusesForSection("Profile", ref)
+              .any((status) => status == 'email_change_pending')) {
+            profileDetails.openInWebURLk(context, "profile", "email");
+          } else if (_getPendingStatusesForSection("Profile", ref)
+              .any((status) => status == 'mobile_change_pending')) {
+            profileDetails.openInWebURLk(context, "profile", "mobile");
+          } else if (_getPendingStatusesForSection("Profile", ref)
+              .any((status) => status == 'address_change_pending')) {
+            profileDetails.openInWebURLk(context, "profile", "address");
+          }
+        },
+        () {
+        if (_getPendingStatusesForSection("Profile", ref)
+              .any((status) => status == 'email_change_pending')) {
+           profileDetails.cancelPendingStatus("email_change", context);
+          } else if (_getPendingStatusesForSection("Profile", ref)
+              .any((status) => status == 'mobile_change_pending')) {
+            profileDetails.cancelPendingStatus("mobile_change", context);
+          } else if (_getPendingStatusesForSection("Profile", ref)
+              .any((status) => status == 'address_change_pending')) {
+            profileDetails.cancelPendingStatus("address_change", context);
+          }
+        },
+        ),
         // _buildDetailRow("DP ID", clientData?.cLIENTDPCODE ?? "N/A", theme),
       ],
     );
@@ -2171,10 +2960,25 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
               color: Colors.transparent,
               child: InkWell(
                 onTap: () async {
+                  final pendingStatuses =
+                      ref.watch(profileAllDetailsProvider).pendingStatusList;
+                  if (pendingStatuses.isNotEmpty &&
+                      pendingStatuses[0].data != null) {
+                    final hasPendingChanges = pendingStatuses[0]
+                        .data!
+                        .any((status) => status == 'bank_change_pending');
+                    if (hasPendingChanges) {
+                      warningMessage(context, 'You have pending request.click on the E-Sign to proceed.');
+                      return;
+                    }
+                  }
+
                   // Add delay for visual feedback
                   await Future.delayed(const Duration(milliseconds: 150));
 
-                  profileDetails.openInWebURL(context, "bank");
+                  // profileDetails.openInWebURL(context, "bank");
+                  profileDetails.openInWebURLWithbank(
+                      context, "bank", "addbank", "");
                 },
                 borderRadius: BorderRadius.circular(20),
                 splashColor: theme.isDarkMode
@@ -2255,6 +3059,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                                       color: theme.isDarkMode
                                           ? colors.textPrimaryDark
                                           : colors.textPrimaryLight,
+                                      fw: 0,
                                     ),
                                   ),
                                   // SizedBox(height: 25.0),
@@ -2267,6 +3072,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                                 color: theme.isDarkMode
                                     ? colors.textSecondaryDark
                                     : colors.textSecondaryLight,
+                                fw: 0,
                               ),
                               SizedBox(height: 5.0),
                               TextWidget.paraText(
@@ -2275,6 +3081,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                                 color: theme.isDarkMode
                                     ? colors.textSecondaryDark
                                     : colors.textSecondaryLight,
+                                fw: 0,
                               ),
                             ],
                           ),
@@ -2294,58 +3101,94 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                                   borderRadius: BorderRadius.circular(5),
                                 ),
                                 child: TextWidget.captionText(
-                                    text: 'PRIMARY',
-                                    theme: theme.isDarkMode,
-                                    color: colors.colorWhite),
+                                  text: 'PRIMARY',
+                                  theme: theme.isDarkMode,
+                                  color: colors.colorWhite,
+                                  fw: 0,
+                                ),
                               ),
-                            // if (bank.defaultAc != "Yes")
-                            //   PopupMenuButton<String>(
-                            //     padding: EdgeInsets.zero,
-                            //     constraints:
-                            //         const BoxConstraints(minWidth: 160),
-                            //     shape: RoundedRectangleBorder(
-                            //       borderRadius: BorderRadius.circular(8),
-                            //     ),
-                            //     onSelected: (value) {
-                            //       if (value == 'set_primary') {
-                            //         profileDetails.openInWebURL(
-                            //           context,
-                            //           "bank",
+                            if (bank.defaultAc != "Yes")
+                              PopupMenuButton<String>(
+                                padding: EdgeInsets.zero,
+                                constraints:
+                                    const BoxConstraints(minWidth: 160),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                onSelected: (value) {
+                                  final pendingStatuses = ref
+                                      .watch(profileAllDetailsProvider)
+                                      .pendingStatusList;
+                                  final hasPendingChanges = pendingStatuses
+                                          .isNotEmpty &&
+                                      pendingStatuses[0].data != null &&
+                                      pendingStatuses[0].data!.any((status) =>
+                                          status == 'bank_change_pending');
 
-                            //         );
-                            //       } else if (value == 'delete') {
-                            //         profileDetails.openInWebURL(
-                            //           context,
-                            //           "bank",
-
-                            //         );
-                            //       }
-                            //     },
-                            //     itemBuilder: (ctx) => const [
-                            //       PopupMenuItem<String>(
-                            //         value: 'set_primary',
-                            //         child: Text('Set primary'),
-                            //       ),
-                            //       PopupMenuItem<String>(
-                            //         value: 'delete',
-                            //         child: Text('Delete'),
-                            //       ),
-                            //     ],
-                            //     child: Icon(
-                            //       Icons.more_vert,
-                            //       size: 18,
-                            //       color: colors.iconColor,
-                            //     ),
-                            //   ),
+                                  if (value == 'set_primary') {
+                                    if (hasPendingChanges) {
+                                      warningMessage(context, 'You have pending request.click on the E-Sign to proceed.');
+                                      return;
+                                    }
+                                    profileDetails.openInWebURLWithbank(
+                                        context,
+                                        "bank",
+                                        "setasprimarybank",
+                                        bank.bankAcNo ?? "");
+                                  } else if (value == 'delete') {
+                                    if (hasPendingChanges) {
+                                      warningMessage(context, 'You have pending request.click on the E-Sign to proceed.');
+                                      return;
+                                    }
+                                    profileDetails.openInWebURLWithbank(
+                                        context,
+                                        "bank",
+                                        "deletebank",
+                                        bank.bankAcNo ?? "");
+                                  }
+                                },
+                                itemBuilder: (ctx) => const [
+                                  PopupMenuItem<String>(
+                                    value: 'set_primary',
+                                    child: Text('Set primary'),
+                                  ),
+                                  PopupMenuItem<String>(
+                                    value: 'delete',
+                                    child: Text('Delete'),
+                                  ),
+                                ],
+                                child: Icon(
+                                  Icons.more_vert,
+                                  size: 18,
+                                  color: colors.iconColor,
+                                ),
+                              ),
                             SizedBox(height: 4),
                             Material(
                               color: Colors.transparent,
                               child: InkWell(
                                 onTap: () async {
+                                  final pendingStatuses = ref
+                                      .watch(profileAllDetailsProvider)
+                                      .pendingStatusList;
+                                  if (pendingStatuses.isNotEmpty &&
+                                      pendingStatuses[0].data != null) {
+                                    final hasPendingChanges = pendingStatuses[0]
+                                        .data!
+                                        .any((status) =>
+                                            status == 'bank_change_pending');
+                                    if (hasPendingChanges) {
+                                      warningMessage(context, 'You have pending request.click on the E-Sign to proceed.');
+                                      return;
+                                    }
+                                  }
+
                                   // Add delay for visual feedback
                                   await Future.delayed(
                                       const Duration(milliseconds: 150));
-                                  profileDetails.openInWebURL(context, "bank");
+                                  // profileDetails.openInWebURL(context, "bank");
+                                  profileDetails.openInWebURLWithbank(context,
+                                      "bank", "editbank", bank.bankAcNo ?? "");
                                 },
                                 borderRadius: BorderRadius.circular(20),
                                 splashColor: theme.isDarkMode
@@ -2376,6 +3219,14 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
             );
           }).toList(),
         SizedBox(height: 16.0),
+
+        // Show pending statuses for Bank section
+        _buildSectionPendingStatuses('Bank', ref, theme, () {
+          profileDetails.openInWebURLk(context, "bank", "bank");
+        },
+        () {
+          profileDetails.cancelPendingStatus("bank_change", context);
+        },),
       ],
     );
   }
@@ -2402,11 +3253,13 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     TextWidget.subText(
-                        text: "CDSL",
-                        theme: theme.isDarkMode,
-                        color: theme.isDarkMode
-                            ? colors.textPrimaryDark
-                            : colors.textPrimaryLight),
+                      text: "CDSL",
+                      theme: theme.isDarkMode,
+                      color: theme.isDarkMode
+                          ? colors.textPrimaryDark
+                          : colors.textPrimaryLight,
+                      fw: 0,
+                    ),
                     Row(
                       children: [
                         Container(
@@ -2442,6 +3295,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                                 : theme.isDarkMode
                                     ? colors.lossDark
                                     : colors.lossLight,
+                            fw: 0,
                           ),
                         ),
                         Container(
@@ -2471,6 +3325,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                                 : theme.isDarkMode
                                     ? colors.lossDark
                                     : colors.lossLight,
+                            fw: 0,
                           ),
                         ),
                       ],
@@ -2511,14 +3366,29 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                 color: theme.isDarkMode
                     ? colors.textSecondaryDark
                     : colors.textSecondaryLight,
+                fw: 0,
               ),
               const SizedBox(height: 12),
               ElevatedButton(
                 onPressed: () async {
-                  profileprovider.openInWebURL(context, "deposltory");
+                  // profileprovider.openInWebURL(context, "deposltory");
+                  final pendingStatuses =
+                      ref.watch(profileAllDetailsProvider).pendingStatusList;
+                  if (pendingStatuses.isNotEmpty &&
+                      pendingStatuses[0].data != null) {
+                    final hasPendingChanges = pendingStatuses[0]
+                        .data!
+                        .any((status) => status == 'ddpicre_pending');
+                    if (hasPendingChanges) {
+                      warningMessage(context, 'You have pending request.click on the E-Sign to proceed.');
+                      return;
+                    }
+                  }
+                  profileprovider.openInWebURLk(context, "deposltory", "demat");
                 },
                 style: ElevatedButton.styleFrom(
                     elevation: 0,
+                    minimumSize: Size(100, 45),
                     backgroundColor: theme.isDarkMode
                         ? colors.primaryDark
                         : colors.primaryLight,
@@ -2533,6 +3403,15 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
               SizedBox(height: 10.0),
             ],
           ),
+
+        // Show pending statuses for Depository section
+        _buildSectionPendingStatuses('Depository', ref, theme, () {
+          profileprovider.openInWebURLk(context, "deposltory", "demat");
+        },
+        () {
+          profileprovider.cancelPendingStatus("DDPI", context);
+        },
+        ),
       ],
     );
   }
@@ -2547,156 +3426,192 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
     bool mtfCl = clientData?.mTFCl == 'Y';
     bool mtfClAuto = clientData?.mTFClAuto == "Y";
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 0.0, vertical: 8.0),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        // Status badges
-        // Row(
-        //   mainAxisAlignment: MainAxisAlignment.end,
-        //   children: [
-        //     _buildStatusChip("DDPI", DDPIActive, theme),
-        //     const SizedBox(width: 8),
-        //     _buildStatusChip("POA", POAActive, theme),
-        //   ],
-        // ),
-        // const SizedBox(height: 16),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 0.0, vertical: 8.0),
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            // Status badges
+            // Row(
+            //   mainAxisAlignment: MainAxisAlignment.end,
+            //   children: [
+            //     _buildStatusChip("DDPI", DDPIActive, theme),
+            //     const SizedBox(width: 8),
+            //     _buildStatusChip("POA", POAActive, theme),
+            //   ],
+            // ),
+            // const SizedBox(height: 16),
 
-        if (!DDPIActive && !POAActive) ...[
-          TextWidget.subText(
-            text:
-                "You need to enable DDPI before you can proceed with processing MTF (Margin Trading Facility).",
-            theme: theme.isDarkMode,
-            color: theme.isDarkMode ? colors.lossDark : colors.lossLight,
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: null,
-            style: ElevatedButton.styleFrom(
-              elevation: 0,
-              minimumSize: Size(100, 45),
-              backgroundColor: colors.colorbluegrey,
-              disabledBackgroundColor: colors.colorbluegrey,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(5),
+            if (!DDPIActive && !POAActive) ...[
+              TextWidget.subText(
+                text:
+                    "You need to enable DDPI before you can proceed with processing MTF (Margin Trading Facility).",
+                theme: theme.isDarkMode,
+                color: theme.isDarkMode ? colors.lossDark : colors.lossLight,
+                fw: 0,
               ),
-            ),
-            child: TextWidget.subText(
-              text: "Enable MTF",
-              theme: theme.isDarkMode,
-              fw: 2,
-              color: colors.colorWhite,
-            ),
-          ),
-        ] else if (mtfCl && mtfClAuto) ...[
-          TextWidget.subText(
-            text:
-                "You have activated the Margin Trading Facility (MTF) on your account",
-            theme: theme.isDarkMode,
-            color: theme.isDarkMode
-                ? colors.textPrimaryDark
-                : colors.textPrimaryLight,
-          ),
-          const SizedBox(height: 16),
-          Chip(
-            label: TextWidget.subText(
-              text: 'MTF Enabled',
-              theme: theme.isDarkMode,
-              color: colors.colorWhite,
-            ),
-            backgroundColor: colors.primaryLight,
-          ),
-        ] else if (DDPIActive || POAActive) ...[
-          TextWidget.subText(
-            text:
-                "Would you like to activate Margin Trading Facility (MTF) on your account",
-            color: theme.isDarkMode
-                ? colors.textPrimaryDark
-                : colors.textPrimaryLight,
-            theme: theme.isDarkMode,
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () {
-              profileDetails.openInWebURL(context, "segment");
-            },
-            style: ElevatedButton.styleFrom(
-              elevation: 0,
-              minimumSize: Size(100, 45),
-              backgroundColor:
-                  theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(5),
-              ),
-            ),
-            child: TextWidget.subText(
-              text: "Enable MTF",
-              theme: theme.isDarkMode,
-              fw: 2,
-              color: colors.colorWhite,
-            ),
-          ),
-        ] else ...[
-          if ((profileDetails.clientAllDetails.clientData!.mTFCl == 'N' &&
-                  profileDetails.clientAllDetails.clientData!.mTFClAuto ==
-                      'N') &&
-              (profileDetails.clientAllDetails.clientData!.dDPI == 'Y' ||
-                  profileDetails.clientAllDetails.clientData!.pOA == "Y"))
-            Padding(
-              padding: const EdgeInsets.only(top: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  TextWidget.subText(
-                    text:
-                        "Would you like to activate Margin Trading Facility (MTF) on your account ",
-                    theme: theme.isDarkMode,
-                    color: theme.isDarkMode
-                        ? colors.textPrimaryDark
-                        : colors.textPrimaryLight,
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: null,
+                style: ElevatedButton.styleFrom(
+                  elevation: 0,
+                  minimumSize: Size(100, 45),
+                  backgroundColor: colors.colorbluegrey,
+                  disabledBackgroundColor: colors.colorbluegrey,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 16.0),
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        //  if (Platform.isAndroid) {
-                        //           await ref.read(fundProvider).fetchHstoken(context);
-                        //             Navigator.pushNamed(
-                        //                 context, Routes.profileWebViewApp,
-                        //                 arguments: "mtf");
+                ),
+                child: TextWidget.subText(
+                  text: "Enable MTF",
+                  theme: theme.isDarkMode,
+                  fw: 2,
+                  color: colors.colorWhite,
+                ),
+              ),
+            ] else if (mtfCl && mtfClAuto) ...[
+              TextWidget.subText(
+                text:
+                    "You have activated the Margin Trading Facility (MTF) on your account",
+                theme: theme.isDarkMode,
+                color: theme.isDarkMode
+                    ? colors.textPrimaryDark
+                    : colors.textPrimaryLight,
+              ),
+              const SizedBox(height: 16),
+              Chip(
+                label: TextWidget.subText(
+                  text: 'MTF Enabled',
+                  theme: theme.isDarkMode,
+                  color: colors.colorWhite,
+                ),
+                backgroundColor: colors.primaryLight,
+              ),
+            ] else if (DDPIActive || POAActive) ...[
+              TextWidget.subText(
+                text:
+                    "Would you like to activate Margin Trading Facility (MTF) on your account",
+                color: theme.isDarkMode
+                    ? colors.textPrimaryDark
+                    : colors.textPrimaryLight,
+                theme: theme.isDarkMode,
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () {
+                  final pendingStatuses =
+                      ref.watch(profileAllDetailsProvider).pendingStatusList;
+                  if (pendingStatuses.isNotEmpty &&
+                      pendingStatuses[0].data != null) {
+                    final hasPendingChanges = pendingStatuses[0]
+                        .data!
+                        .any((status) => status == 'mtf_pending');
+                    if (hasPendingChanges) {
+                      warningMessage(context, 'You have pending request.click on the E-Sign to proceed.');
+                      return;
+                    }
+                  }
+                  // profileDetails.openInWebURL(context, "segment");
+                  profileDetails.openInWebURLk(context, "segment", "mtf");
+                },
+                style: ElevatedButton.styleFrom(
+                  elevation: 0,
+                  minimumSize: Size(100, 45),
+                  backgroundColor: theme.isDarkMode
+                      ? colors.primaryDark
+                      : colors.primaryLight,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                ),
+                child: TextWidget.subText(
+                  text: "Enable MTF",
+                  theme: theme.isDarkMode,
+                  fw: 2,
+                  color: colors.colorWhite,
+                ),
+              ),
+            ] else ...[
+              if ((profileDetails.clientAllDetails.clientData!.mTFCl == 'N' &&
+                      profileDetails.clientAllDetails.clientData!.mTFClAuto ==
+                          'N') &&
+                  (profileDetails.clientAllDetails.clientData!.dDPI == 'Y' ||
+                      profileDetails.clientAllDetails.clientData!.pOA == "Y"))
+                Padding(
+                  padding: const EdgeInsets.only(top: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextWidget.subText(
+                        text:
+                            "Would you like to activate Margin Trading Facility (MTF) on your account ",
+                        theme: theme.isDarkMode,
+                        color: theme.isDarkMode
+                            ? colors.textPrimaryDark
+                            : colors.textPrimaryLight,
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 16.0),
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            //  if (Platform.isAndroid) {
+                            //           await ref.read(fundProvider).fetchHstoken(context);
+                            //             Navigator.pushNamed(
+                            //                 context, Routes.profileWebViewApp,
+                            //                 arguments: "mtf");
 
-                        //         } else {
-                        profileDetails.openInWebURL(context, "mtf");
-                        // }
+                            //         } else {
+                            // profileDetails.openInWebURL(context, "mtf");
+                            profileDetails.openInWebURLk(
+                                context, "segment", "mtf");
 
-                        // await ref.read(fundProvider).fetchHstoken(context);
-                        // Navigator.pushNamed(context, Routes.profileWebViewApp,
-                        //     arguments: "mtf");
-                        //  profileDetails.openInWebURL(context,"mtf");
-                      },
-                      style: ElevatedButton.styleFrom(
-                        elevation: 0,
-                        backgroundColor: theme.isDarkMode
-                            ? colors.colorBlack
-                            : colors.colorWhite,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(32),
-                        ),
-                        side: BorderSide(
-                          width: 1,
-                          color: theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack,
+                            // }
+
+                            // await ref.read(fundProvider).fetchHstoken(context);
+                            // Navigator.pushNamed(context, Routes.profileWebViewApp,
+                            //     arguments: "mtf");
+                            //  profileDetails.openInWebURL(context,"mtf");
+                          },
+                          style: ElevatedButton.styleFrom(
+                            elevation: 0,
+                            backgroundColor: theme.isDarkMode
+                                ? colors.colorBlack
+                                : colors.colorWhite,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(32),
+                            ),
+                            side: BorderSide(
+                              width: 1,
+                              color: theme.isDarkMode
+                                  ? colors.colorWhite
+                                  : colors.colorBlack,
+                            ),
+                          ),
+                          child: TextWidget.subText(
+                              text: "Enable MTF",
+                              theme: theme.isDarkMode,
+                              fw: 2),
                         ),
                       ),
-                      child: TextWidget.subText(
-                          text: "Enable MTF", theme: theme.isDarkMode, fw: 2),
-                    ),
+                    ],
                   ),
-                ],
-              ),
-            ),
-        ],
-      ]),
+                ),
+            ],
+          ]),
+        ),
+
+        // Show pending statuses for MTF section
+        _buildSectionPendingStatuses(
+            'Margin Trading Facility (MTF)', ref, theme, () {
+          profileDetails.openInWebURLk(context, "segment", "mtf");
+        },
+        () {
+          profileDetails.cancelPendingStatus("mtf", context);
+        },
+        ),
+      ],
     );
   }
 
@@ -2725,10 +3640,23 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                 color: Colors.transparent,
                 child: InkWell(
                   onTap: () async {
+                    final pendingStatuses =
+                        ref.watch(profileAllDetailsProvider).pendingStatusList;
+                    if (pendingStatuses.isNotEmpty &&
+                        pendingStatuses[0].data != null) {
+                      final hasPendingChanges = pendingStatuses[0]
+                          .data!
+                          .any((status) => status == 'segments_change_pending');
+                      if (hasPendingChanges) {
+                        warningMessage(context, 'You have pending request.click on the E-Sign to proceed.');
+                        return;
+                      }
+                    }
+
                     // Add delay for visual feedback
                     await Future.delayed(const Duration(milliseconds: 150));
-
-                    profileDetails.openInWebURL(context, "segment");
+                    // profileDetails.openInWebURL(context, "segment");
+                    profileDetails.openInWebURLk(context, "segment", "segment");
                   },
                   borderRadius: BorderRadius.circular(20),
                   splashColor: theme.isDarkMode
@@ -2778,6 +3706,16 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
               text: "No segment data available",
               theme: theme.isDarkMode,
             ),
+
+          // Show pending statuses for Trading Preferences section
+          _buildSectionPendingStatuses('Trading Preferences', ref, theme, () {
+            profileDetails.openInWebURLk(context, "segment", "segment");
+          },
+          () {
+            profileDetails.cancelPendingStatus("segment_change", context);
+          },
+          
+          ),
         ],
       ),
     );
@@ -2809,10 +3747,12 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                 ElevatedButton(
                   onPressed: () async {
                     await Future.delayed(const Duration(milliseconds: 150));
-                    profileDetails.openInWebURL(context, "nominee");
+                    // profileDetails.openInWebURL(context, "nominee");
+                    profileDetails.openInWebURLk(context, "nominee", "nominee");
                   },
                   style: ElevatedButton.styleFrom(
                       elevation: 0,
+                    minimumSize: Size(100, 45),
                       backgroundColor: theme.isDarkMode
                           ? colors.primaryDark
                           : colors.primaryLight,
@@ -2843,10 +3783,25 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                   color: Colors.transparent,
                   child: InkWell(
                     onTap: () async {
+                      final pendingStatuses = ref
+                          .watch(profileAllDetailsProvider)
+                          .pendingStatusList;
+                      if (pendingStatuses.isNotEmpty &&
+                          pendingStatuses[0].data != null) {
+                        final hasPendingChanges = pendingStatuses[0]
+                            .data!
+                            .any((status) => status == 'nominee_pending');
+                        if (hasPendingChanges) {
+                          warningMessage(context, 'You have pending request.click on the E-Sign to proceed.');
+                          return;
+                        }
+                      }
+
                       // Add delay for visual feedback
                       await Future.delayed(const Duration(milliseconds: 150));
-
-                      profileDetails.openInWebURL(context, "nominee");
+                      // profileDetails.openInWebURL(context, "nominee");
+                      profileDetails.openInWebURLk(
+                          context, "nominee", "nominee");
                     },
                     borderRadius: BorderRadius.circular(20),
                     splashColor: theme.isDarkMode
@@ -2871,13 +3826,22 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
             ),
             const SizedBox(height: 1),
             _buildDetailRow(
-                "Nominee Name", clientData?.nomineeName ?? "N/A", theme, ref),
+                "Nominee Name", clientData?.nomineeName ?? "", theme, ref),
             _buildDetailRow("Nominee Relation",
-                clientData?.nomineeRelation ?? "N/A", theme, ref),
+                clientData?.nomineeRelation ?? "", theme, ref),
             if (clientData?.nomineeDOB != null)
               _buildDetailRow("Nominee DOB",
-                  formatNomineeDOB(clientData!.nomineeDOB!), theme, ref),
+                  formatNomineeDOB(clientData!.nomineeDOB! ?? ""), theme, ref),
           ],
+
+          // Show pending statuses for Nominee section
+          _buildSectionPendingStatuses('Nominee', ref, theme, () {
+            profileDetails.openInWebURLk(context, "nominee", "nominee");
+          },
+          () {
+            profileDetails.cancelPendingStatus("nominee", context);
+          },
+          ),
         ],
       ),
     );
@@ -2898,6 +3862,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
             color: theme.isDarkMode
                 ? colors.textPrimaryDark
                 : colors.textPrimaryLight,
+            fw: 0,
           ),
           const SizedBox(height: 10),
           Row(
@@ -2968,13 +3933,28 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
             color: theme.isDarkMode
                 ? colors.textPrimaryDark
                 : colors.textPrimaryLight,
+            fw: 0,
           ),
           const SizedBox(height: 10),
           ElevatedButton(
             onPressed: () async {
+              final pendingStatuses =
+                  ref.watch(profileAllDetailsProvider).pendingStatusList;
+              if (pendingStatuses.isNotEmpty &&
+                  pendingStatuses[0].data != null) {
+                final hasPendingChanges = pendingStatuses[0]
+                    .data!
+                    .any((status) => status == 'closure_pending');
+                if (hasPendingChanges) {
+                  warningMessage(context, 'You have pending request.click on the E-Sign to proceed.');
+                  return;
+                }
+              }
+
               await Future.delayed(const Duration(milliseconds: 150));
 
-              profileDetails.openInWebURL(context, "closure");
+              // profileDetails.openInWebURL(context, "closure");
+              profileDetails.openInWebURLk(context, "closure", "closure");
             },
             style: ElevatedButton.styleFrom(
                 elevation: 0,
@@ -2988,7 +3968,16 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                 theme: false,
                 color: colors.colorWhite,
                 fw: 2),
-          )
+          ),
+
+          // Show pending statuses for Closure section
+          _buildSectionPendingStatuses('Closure', ref, theme, () {
+            profileDetails.openInWebURLk(context, "closure", "closure");
+          },
+          () {
+            profileDetails.cancelPendingStatus("closure", context);
+          },
+          ),
         ],
       ),
     );
@@ -3030,6 +4019,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
               color: theme.isDarkMode
                   ? colors.textSecondaryDark
                   : colors.textSecondaryLight,
+              fw: 0,
             ),
             Row(
               children: segments.map<Widget>((segment) {
@@ -3062,13 +4052,15 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                         : null,
                   ),
                   child: TextWidget.subText(
-                      text: displayName,
-                      theme: theme.isDarkMode,
-                      color: isActive
-                          ? colors.colorWhite
-                          : theme.isDarkMode
-                              ? colors.lossDark
-                              : colors.lossLight),
+                    text: displayName,
+                    theme: theme.isDarkMode,
+                    color: isActive
+                        ? colors.colorWhite
+                        : theme.isDarkMode
+                            ? colors.lossDark
+                            : colors.lossLight,
+                    fw: 0,
+                  ),
                 );
               }).toList(),
             ),
@@ -3110,34 +4102,55 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                     color: theme.isDarkMode
                         ? colors.textSecondaryDark
                         : colors.textSecondaryLight,
+                    fw: 0,
                   ),
                 ),
-                // if (label == "Email" || label == "Mobile" || label == "Address")
-                //   Material(
-                //     color: Colors.transparent,
-                //     shape: const CircleBorder(),
-                //     child: InkWell(
-                //       customBorder: const CircleBorder(),
-                //       splashColor: theme.isDarkMode
-                //           ? colors.splashColorDark
-                //           : colors.splashColorLight,
-                //       highlightColor: theme.isDarkMode
-                //           ? colors.highlightDark
-                //           : colors.highlightLight,
-                //       onTap: () {
-                //         ref.read(profileAllDetailsProvider).openInWebURLtest(
-                //             context, "profile", label.toLowerCase());
-                //       },
-                //       child: Padding(
-                //         padding: const EdgeInsets.all(4.0),
-                //         child: Icon(
-                //           Icons.edit_outlined,
-                //           color: colors.iconColor,
-                //           size: 20,
-                //         ),
-                //       ),
-                //     ),
-                //   ),
+                if (label == "Email" || label == "Mobile" || label == "Address")
+                  Material(
+                    color: Colors.transparent,
+                    shape: const CircleBorder(),
+                    child: InkWell(
+                      customBorder: const CircleBorder(),
+                      splashColor: theme.isDarkMode
+                          ? colors.splashColorDark
+                          : colors.splashColorLight,
+                      highlightColor: theme.isDarkMode
+                          ? colors.highlightDark
+                          : colors.highlightLight,
+                      onTap: () {
+                        final pendingStatuses = ref
+                            .watch(profileAllDetailsProvider)
+                            .pendingStatusList;
+                        if (pendingStatuses.isNotEmpty &&
+                            pendingStatuses[0].data != null) {
+                          final hasPendingChanges = pendingStatuses[0]
+                              .data!
+                              .any((status) =>
+                                  status == 'address_change_pending' ||
+                                  status == 'mobile_change_pending' ||
+                                  status == 'email_change_pending');
+                          if (hasPendingChanges) {
+                            warningMessage(context, 'You have pending request.click on the E-Sign to proceed.');
+                            return;
+                          } else {
+                            ref.read(profileAllDetailsProvider).openInWebURLk(
+                                context, "profile", label.toLowerCase());
+                          }
+                        } else {
+                          ref.read(profileAllDetailsProvider).openInWebURLk(
+                              context, "profile", label.toLowerCase());
+                        }
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.all(4.0),
+                        child: Icon(
+                          Icons.edit_outlined,
+                          color: colors.iconColor,
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                  ),
               ],
             ),
             SizedBox(
@@ -3152,6 +4165,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                 align: TextAlign.right,
                 textOverflow: TextOverflow.ellipsis,
                 maxLines: 4,
+                fw: 0,
               ),
             ),
           ],
@@ -3180,6 +4194,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
               color: theme.isDarkMode
                   ? colors.textSecondaryDark
                   : colors.textSecondaryLight,
+              fw: 0,
             ),
             SizedBox(
               width: 250,
@@ -3190,6 +4205,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                     ? colors.textPrimaryDark
                     : colors.textPrimaryLight,
                 align: TextAlign.right,
+                fw: 0,
               ),
             ),
           ],
@@ -3238,6 +4254,7 @@ class ReportsScreen extends ConsumerWidget {
       // {'title': 'Tradebook'},
       {'title': 'Contract Note'},
       {'title': 'Client Master(CMR)'},
+      {'title': 'Positions'},
       // {'title': 'DP Holdings & Transcation'},
       // {'title': 'Corporate Actions'},
       // {'title': 'CA Events'},
@@ -3330,6 +4347,7 @@ class ReportsScreen extends ConsumerWidget {
             // ),
             Expanded(
               child: SingleChildScrollView(
+                physics: ClampingScrollPhysics(),
                 child: ListView.separated(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
@@ -3344,6 +4362,7 @@ class ReportsScreen extends ConsumerWidget {
                         color: !theme.isDarkMode
                             ? colors.textSecondaryLight
                             : colors.textSecondaryDark,
+                        fw: 0,
                       ),
                       trailing: Icon(
                         Icons.arrow_forward_ios,
@@ -3438,165 +4457,182 @@ class ReportsScreen extends ConsumerWidget {
 
                           case 'Client Master(CMR)':
                             await showModalBottomSheet(
-                              isScrollControlled: true,
-                              backgroundColor: Colors.transparent,
-                              shape: const RoundedRectangleBorder(
-                                borderRadius: BorderRadius.only(
-                                  topLeft: Radius.circular(16),
-                                  topRight: Radius.circular(16),
-                                ),
-                              ),
-                              isDismissible: true,
-                              enableDrag: false,
-                              useSafeArea: true,
-                              context: context,
-                              builder: (context) => SafeArea(
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    borderRadius: const BorderRadius.only(
-                                      topLeft: Radius.circular(16),
-                                      topRight: Radius.circular(16),
-                                    ),
-                                    color: theme.isDarkMode
-                                        ? colors.colorBlack
-                                        : colors.colorWhite,
-                                    border: Border(
-                                      top: BorderSide(
-                                        color: theme.isDarkMode
-                                            ? colors.textSecondaryDark
-                                                .withOpacity(0.5)
-                                            : colors.colorWhite,
-                                      ),
-                                      left: BorderSide(
-                                        color: theme.isDarkMode
-                                            ? colors.textSecondaryDark
-                                                .withOpacity(0.5)
-                                            : colors.colorWhite,
-                                      ),
-                                      right: BorderSide(
-                                        color: theme.isDarkMode
-                                            ? colors.textSecondaryDark
-                                                .withOpacity(0.5)
-                                            : colors.colorWhite,
-                                      ),
-                                    ),
-                                  ),
-                                  child: Padding(
-                                    padding: EdgeInsets.only(
-                                      bottom: 24 +
-                                          MediaQuery.of(context)
-                                              .viewInsets
-                                              .bottom,
-                                    ),
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              vertical: 8.0, horizontal: 16.0),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              TextWidget.titleText(
-                                                text: "Client Master (CMR)",
-                                                theme: theme.isDarkMode,
-                                                fw: 1,
-                                              ),
-                                              Material(
-                                                color: Colors.transparent,
-                                                shape: const CircleBorder(),
-                                                child: InkWell(
-                                                  onTap: () async {
-                                                    await Future.delayed(
-                                                        const Duration(
-                                                            milliseconds: 150));
-                                                    Navigator.pop(context);
-                                                  },
-                                                  borderRadius:
-                                                      BorderRadius.circular(20),
-                                                  splashColor: theme.isDarkMode
-                                                      ? Colors.white
-                                                          .withOpacity(0.15)
-                                                      : Colors.black
-                                                          .withOpacity(0.15),
-                                                  highlightColor: theme
-                                                          .isDarkMode
-                                                      ? Colors.white
-                                                          .withOpacity(0.08)
-                                                      : Colors.black
-                                                          .withOpacity(0.08),
-                                                  child: Padding(
-                                                    padding:
-                                                        const EdgeInsets.all(
-                                                            6.0),
-                                                    child: Icon(
-                                                      Icons.close_rounded,
-                                                      size: 22,
-                                                      color: theme.isDarkMode
-                                                          ? const Color(
-                                                              0xffBDBDBD)
-                                                          : colors.colorGrey,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        Divider(
-                                          color: theme.isDarkMode
-                                              ? colors.darkColorDivider
-                                              : colors.colorDivider,
-                                          height: 0,
-                                        ),
-                                        const SizedBox(height: 24),
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 24.0),
-                                          child: SizedBox(
-                                            width: double.infinity,
-                                            height: 45,
-                                            child: OutlinedButton(
-                                              style: OutlinedButton.styleFrom(
-                                                elevation: 0,
-                                                minimumSize: const Size(0, 45),
-                                                backgroundColor:
-                                                    theme.isDarkMode
-                                                        ? colors.primaryDark
-                                                        : colors.primaryLight,
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(5),
-                                                ),
-                                                padding: EdgeInsets.zero,
-                                              ),
-                                              onPressed: () {
-                                                // Download functionality will be added later
-                                                print("Downloading cmr");
-                                                ledgerdate
-                                                    .fetchcmrdownload(context);
-                                                print("Downloading cmr api");
-                                              },
-                                              child: TextWidget.subText(
-                                                text: "Download",
-                                                theme: theme.isDarkMode,
-                                                color: colors.colorWhite,
-                                                fw: 2,
-                                                align: TextAlign.center,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                        const SizedBox(height: 35),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            );
+  context: context,
+  shape: const RoundedRectangleBorder(
+    borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+  ),
+  isScrollControlled: true,
+  useSafeArea: true,
+  isDismissible: true,
+  backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+  builder: (context) => downloadBottomSheet(context, theme, ledgerdate),
+);
+                            
+                            // showModalBottomSheet(
+                            //   isScrollControlled: true,
+                            //   backgroundColor: Colors.transparent,
+                            //   shape: const RoundedRectangleBorder(
+                            //     borderRadius: BorderRadius.only(
+                            //       topLeft: Radius.circular(16),
+                            //       topRight: Radius.circular(16),
+                            //     ),
+                            //   ),
+                            //   isDismissible: true,
+                            //   enableDrag: false,
+                            //   useSafeArea: true,
+                            //   context: context,
+                            //   builder: (context) => StatefulBuilder(
+                            //     builder: (context, setState) {
+                            //       return SafeArea(
+                            //         child: Container(
+                            //           decoration: BoxDecoration(
+                            //             borderRadius: const BorderRadius.only(
+                            //               topLeft: Radius.circular(16),
+                            //               topRight: Radius.circular(16),
+                            //             ),
+                            //             color: theme.isDarkMode
+                            //                 ? colors.colorBlack
+                            //                 : colors.colorWhite,
+                            //             border: Border(
+                            //               top: BorderSide(
+                            //                 color: theme.isDarkMode
+                            //                     ? colors.textSecondaryDark
+                            //                         .withOpacity(0.5)
+                            //                     : colors.colorWhite,
+                            //               ),
+                            //               left: BorderSide(
+                            //                 color: theme.isDarkMode
+                            //                     ? colors.textSecondaryDark
+                            //                         .withOpacity(0.5)
+                            //                     : colors.colorWhite,
+                            //               ),
+                            //               right: BorderSide(
+                            //                 color: theme.isDarkMode
+                            //                     ? colors.textSecondaryDark
+                            //                         .withOpacity(0.5)
+                            //                     : colors.colorWhite,
+                            //               ),
+                            //             ),
+                            //           ),
+                            //           child: Padding(
+                            //             padding: EdgeInsets.only(
+                            //               bottom: 24 +
+                            //                   MediaQuery.of(context)
+                            //                       .viewInsets
+                            //                       .bottom,
+                            //             ),
+                            //             child: Column(
+                            //               mainAxisSize: MainAxisSize.min,
+                            //               crossAxisAlignment:
+                            //                   CrossAxisAlignment.start,
+                            //               children: [
+                            //                 Padding(
+                            //                   padding: const EdgeInsets.symmetric(
+                            //                       vertical: 8.0, horizontal: 16.0),
+                            //                   child: Row(
+                            //                     mainAxisAlignment:
+                            //                         MainAxisAlignment.spaceBetween,
+                            //                     children: [
+                            //                       TextWidget.titleText(
+                            //                         text: "Client Master (CMR)",
+                            //                         theme: theme.isDarkMode,
+                            //                         fw: 1,
+                            //                       ),
+                            //                       Material(
+                            //                         color: Colors.transparent,
+                            //                         shape: const CircleBorder(),
+                            //                         child: InkWell(
+                            //                           onTap: () async {
+                            //                             await Future.delayed(
+                            //                                 const Duration(
+                            //                                     milliseconds: 150));
+                            //                             Navigator.pop(context);
+                            //                           },
+                            //                           borderRadius:
+                            //                               BorderRadius.circular(20),
+                            //                           splashColor: theme.isDarkMode
+                            //                               ? Colors.white
+                            //                                   .withOpacity(0.15)
+                            //                               : Colors.black
+                            //                                   .withOpacity(0.15),
+                            //                           highlightColor: theme
+                            //                                   .isDarkMode
+                            //                               ? Colors.white
+                            //                                   .withOpacity(0.08)
+                            //                               : Colors.black
+                            //                                   .withOpacity(0.08),
+                            //                           child: Padding(
+                            //                             padding:
+                            //                                 const EdgeInsets.all(
+                            //                                     6.0),
+                            //                             child: Icon(
+                            //                               Icons.close_rounded,
+                            //                               size: 22,
+                            //                               color: theme.isDarkMode
+                            //                                   ? const Color(
+                            //                                       0xffBDBDBD)
+                            //                                   : colors.colorGrey,
+                            //                             ),
+                            //                           ),
+                            //                         ),
+                            //                       ),
+                            //                     ],
+                            //                   ),
+                            //                 ),
+                            //                 Divider(
+                            //                   color: theme.isDarkMode
+                            //                       ? colors.darkColorDivider
+                            //                       : colors.colorDivider,
+                            //                   height: 0,
+                            //                 ),
+                            //                 const SizedBox(height: 10),
+                                            
+                            //                 const SizedBox(height: 10),
+                            //                 Padding(
+                            //                   padding: const EdgeInsets.symmetric(
+                            //                       horizontal: 24.0),
+                            //                   child: SizedBox(
+                            //                     width: double.infinity,
+                            //                     height: 45,
+                            //                     child: OutlinedButton(
+                            //                       style: OutlinedButton.styleFrom(
+                            //                         elevation: 0,
+                            //                         minimumSize: const Size(0, 45),
+                            //                         backgroundColor:
+                            //                             theme.isDarkMode
+                            //                                 ? colors.primaryDark
+                            //                                 : colors.primaryLight,
+                            //                         shape: RoundedRectangleBorder(
+                            //                           borderRadius:
+                            //                               BorderRadius.circular(5),
+                            //                         ),
+                            //                         padding: EdgeInsets.zero,
+                            //                       ),
+                            //                       onPressed: () {
+                            //                         // Download functionality will be added later
+                            //                         print("Downloading cmr");
+                                                    
+                            //                         print("Downloading cmr api");
+                            //                       },
+                            //                       child: TextWidget.subText(
+                            //                         text: "Download",
+                            //                         theme: theme.isDarkMode,
+                            //                         color: colors.colorWhite,
+                            //                         fw: 2,
+                            //                         align: TextAlign.center,
+                            //                       ),
+                            //                     ),
+                            //                   ),
+                            //                 ),
+                            //                 const SizedBox(height: 35),
+                            //               ],
+                            //             ),
+                            //           ),
+                            //         ),
+                            //       );
+                            //     }
+                            //   ),
+                            // );
                             break;
                           //          case 'DP Holdings & Transcation':
                           //           await showModalBottomSheet(
@@ -3807,12 +4843,11 @@ class ReportsScreen extends ConsumerWidget {
                           //   Navigator.pushNamed(context, Routes.holdingscreen,
                           //       arguments: "DDDDD");
                           //   break;
-                          // case 'Positions':
-                          //   ledgerdate.fetchposition(context);
-
-                          //   Navigator.pushNamed(context, Routes.positionscreen,
-                          //       arguments: "DDDDD");
-                          //   break;
+                          case 'Positions':
+                            ledgerdate.fetchposition(context);
+                            Navigator.pushNamed(context, Routes.positionscreen,
+                                arguments: "DDDDD");
+                            break;
                           // case 'Profit & Loss':
                           //   // ledgerdate.fetchposition(context);
                           //   if (ledgerdate.pnlAllData == null) {
@@ -3900,11 +4935,12 @@ class ReportsScreen extends ConsumerWidget {
                               ledgerdate.fetchcaeventsdata(context,
                                   ledgerdate.startDate, ledgerdate.endDate);
                             }
-
                             Navigator.pushNamed(context, Routes.caeventmainpage,
                                 arguments: "DDDDD");
                             break;
-
+                          // case 'Positions':
+                          //  ledgerdate.redirecttopositionsbeta(context);
+                          //   break;
                           // Add other cases as needed
                         }
                       },
@@ -4043,7 +5079,141 @@ class ReportsScreen extends ConsumerWidget {
   //     ),
   //   );
   // }
+Widget downloadBottomSheet(BuildContext context, ThemesProvider theme, LDProvider ledgerdate) {
+  String selectedFormat = "PDF";
 
+  return StatefulBuilder(
+    builder: (context, setState) {
+      return SafeArea(
+        child: Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+            left: 16,
+            right: 16,
+            top: 20,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              /// Title
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  TextWidget.titleText(
+                    text: "Client Master(CMR)",
+                    theme: theme.isDarkMode,
+                    fw: 1,
+                  ),
+                  Material(
+                    color: Colors.transparent,
+                    shape: const CircleBorder(),
+                    child: InkWell(
+                      onTap: () async {
+                        await Future.delayed(const Duration(milliseconds: 150));
+                        Navigator.pop(context);
+                      },
+                      borderRadius: BorderRadius.circular(20),
+                      splashColor: theme.isDarkMode
+                          ? colors.splashColorDark.withOpacity(0.15)
+                          : colors.splashColorLight.withOpacity(0.15),
+                      highlightColor: theme.isDarkMode
+                          ? colors.splashColorDark.withOpacity(0.08)
+                          : colors.splashColorLight.withOpacity(0.08),
+                      child: Padding(
+                        padding: const EdgeInsets.all(6.0),
+                        child: Icon(
+                          Icons.close_rounded,
+                          size: 22,
+                          color: !theme.isDarkMode
+                              ? colors.colorGrey
+                              : colors.colorWhite,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+
+              /// Options (PDF / Excel) - Updated Icons
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // PDF Option
+                  InkWell(
+                    onTap: () {
+                      ledgerdate.fetchcmrdownload(context);
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        children: [
+                          SvgPicture.asset(assets.pdfIcon,
+                            height: 50,
+                            width: 50,
+                            fit: BoxFit.contain,
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.download, size: 16, color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight),
+                              TextWidget.subText(
+                                text: " PDF",
+                                theme: theme.isDarkMode,
+                                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                fw: 0,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  
+                  // Excel Option
+                  // InkWell(
+                  //   onTap: () {
+                  //     ledgerdate.fetchcmrdownload(context);
+                  //   },
+                  //   child: Padding(
+                  //     padding: const EdgeInsets.all(8.0),
+                  //     child: Column(
+                  //       children: [
+                  //         SvgPicture.asset(assets.excelIcon,
+                  //           height: 60,
+                  //           width: 60,
+                  //           fit: BoxFit.contain,
+                  //         ),
+                  //         Row(
+                  //           mainAxisAlignment: MainAxisAlignment.center,
+                  //           children: [
+                  //             Icon(Icons.download, size: 16, color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight),
+                  //             TextWidget.subText(
+                  //               text: " Excel",
+                  //               theme: theme.isDarkMode,
+                  //               color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                  //               fw: 0,
+                  //             ),
+                  //           ],
+                  //         ),
+                  //       ],
+                  //     ),
+                  //   ),
+                  // ),
+                ],
+              ),
+              const SizedBox(height: 30),
+
+              // Download Button - Updated to handle both formats
+              
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
   // Add this function
   Color _getBottomNavColor(ThemesProvider theme, bool isSelected) {
     if (theme.isDarkMode && isSelected) {
@@ -4105,6 +5275,28 @@ class UserInfoColumn extends StatelessWidget {
     );
   }
 }
+
+class PendingStatus {
+  List<String>? data;
+  String? msg;
+
+  PendingStatus({this.data, this.msg});
+
+  factory PendingStatus.fromJson(Map<String, dynamic> json) {
+    return PendingStatus(
+      data: json['data'] != null ? List<String>.from(json['data']) : [],
+      msg: json['msg'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'data': data,
+      'msg': msg,
+    };
+  }
+}
+
 //   final selectedBtmIndx = 4;
 
 //   // Add this function

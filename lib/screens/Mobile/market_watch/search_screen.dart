@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mynt_plus/provider/webview_chart_provider.dart';
 // import 'package:remove_emoji_input_formatter/remove_emoji_input_formatter.dart';
 import '../../../../provider/market_watch_provider.dart';
 import '../../../provider/network_state_provider.dart';
@@ -16,6 +17,7 @@ import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/no_internet_widget.dart';
 import '../../../utils/no_emoji_inputformatter.dart';
 import 'search_scrip_list.dart';
+import '../../../provider/chart_provider.dart';
 
 class SearchScreen extends ConsumerStatefulWidget {
   final String wlName;
@@ -32,6 +34,8 @@ class _AddScripState extends ConsumerState<SearchScreen>
   String _searchvalue = "";
   int tabcount = 5;
   final ScrollController _tabScrollController = ScrollController();
+  final FocusNode _searchFocusNode = FocusNode();
+  bool _isInitialEntry = true;
 
   // Simple fixed width for each tab for reliable calculations
   final double tabWidth = 75.0;
@@ -40,6 +44,17 @@ class _AddScripState extends ConsumerState<SearchScreen>
   void initState() {
     tabcount = widget.isBasket == "Basket" ? 5 : 6;
     tabCtrl = TabController(length: tabcount, vsync: this, initialIndex: 0);
+    // Ensure no stale results carry over from other search screens
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        ref.read(marketWatchProvider).searchClear();
+        // Request focus only on initial entry
+        if (_isInitialEntry) {
+          _searchFocusNode.requestFocus();
+          _isInitialEntry = false;
+        }
+      }
+    });
     super.initState();
 
     tabCtrl.addListener(() {
@@ -58,6 +73,7 @@ class _AddScripState extends ConsumerState<SearchScreen>
   @override
   void dispose() {
     _tabScrollController.dispose();
+    _searchFocusNode.dispose();
     tabCtrl.dispose();
     super.dispose();
   }
@@ -109,20 +125,55 @@ class _AddScripState extends ConsumerState<SearchScreen>
       final searchScrip = ref.watch(marketWatchProvider);
       final internet = ref.watch(networkStateProvider);
       final theme = ref.read(themeProvider);
+      final chartState = ref.watch(chartProvider);
+      
+      // Unfocus the search field when chart becomes visible
+      if (chartState.isVisible && _searchFocusNode.hasFocus) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            _searchFocusNode.unfocus();
+          }
+        });
+      }
       return PopScope(
-          canPop: true, // Allows back navigation
+          canPop: false, // Allows back navigation
           onPopInvokedWithResult: (didPop, result) async {
-            // if (didPop) return; // If system handled back, do nothing
+            if (didPop) return; // If system handled back, do nothing
+
+            if (ref.read(chartProvider).isVisible == false){
+            await searchScrip.searchClear();
+            Navigator.pop(context);
+          }
+        if (ref.read(chartProvider).isVisible) {
+            if(ref.read(chartUpdateProvider).orientation != 'portrait'){
+            ref.read(chartUpdateProvider).changeOrientation('portrait');
+            await Future.delayed(Duration(milliseconds: 700));
+            }
+            ref.read(chartProvider.notifier).hideChart();
+            final mktwth = ref.read(marketWatchProvider);
+            mktwth.chngDephBtn("Overview");
+            mktwth.calldepthApis(context, mktwth.getQuotes, "");
+        }
 
             if (!(["Option||Is", "Chart||Is"].contains(widget.isBasket))) {
               ref
                   .read(marketWatchProvider)
                   .requestMWScrip(context: context, isSubscribe: true);
             }
-            await searchScrip.searchClear();
+            
+            // If coming from chart, restore the chart overlay
+            if (widget.isBasket == "Chart||Is") {
+              final chartState = ref.read(chartProvider);
+              if (chartState.chartArgs != null) {
+                ref.read(chartProvider.notifier).showChart(
+                  chartState.chartArgs!,
+                  previousRoute: null
+                );
+              }
+            }
+            
             currentRouteName = 'homeScreen';
             FocusScope.of(context).unfocus();
-            // Navigator.pop(context);
           },
           child: GestureDetector(
               onTap: () => FocusManager.instance.primaryFocus!.unfocus(),
@@ -146,6 +197,18 @@ class _AddScripState extends ConsumerState<SearchScreen>
                             ref.read(marketWatchProvider).requestMWScrip(
                                 context: context, isSubscribe: true);
                           }
+                          
+                          // If coming from chart, restore the chart overlay
+                          if (widget.isBasket == "Chart||Is") {
+                            final chartState = ref.read(chartProvider);
+                            if (chartState.chartArgs != null) {
+                              ref.read(chartProvider.notifier).showChart(
+                                chartState.chartArgs!,
+                                 previousRoute: null,
+                              );
+                            }
+                          }
+                          
                           searchScrip.searchClear();
                           searchScrip.setpageName("");
                           currentRouteName = 'homeScreen';
@@ -198,7 +261,7 @@ class _AddScripState extends ConsumerState<SearchScreen>
                             // Text input
                             Expanded(
                               child: TextFormField(
-                                autofocus: true,
+                                focusNode: _searchFocusNode,
                                 controller: textCtrl,
                                 style: TextWidget.textStyle(
                                   fontSize: 16,
@@ -206,6 +269,7 @@ class _AddScripState extends ConsumerState<SearchScreen>
                                       ? colors.textPrimaryDark
                                       : colors.textPrimaryLight,
                                   theme: theme.isDarkMode,
+                                  fw: 0,
                                 ),
                                 textCapitalization:
                                     TextCapitalization.characters,
@@ -226,9 +290,9 @@ class _AddScripState extends ConsumerState<SearchScreen>
                                   hintStyle: TextWidget.textStyle(
                                     fontSize: 14,
                                     theme: theme.isDarkMode,
-                                   color: theme.isDarkMode
-                              ? colors.textSecondaryDark
-                              : colors.textSecondaryLight,
+                                     fw: 0,
+                                   color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                                   
                                   ),
                                   contentPadding: const EdgeInsets.symmetric(
                                       horizontal: 0, vertical: 12),
@@ -322,6 +386,7 @@ class _AddScripState extends ConsumerState<SearchScreen>
                               SearchScripList(
                                   wlName: widget.wlName,
                                   searchValue: searchScrip.allSearchScrip!,
+                                  searchText: textCtrl.text,
                                   isBasket: widget.isBasket),
                           // SearchScripList(
                           //     wlName: widget.wlName,
@@ -361,7 +426,7 @@ class _AddScripState extends ConsumerState<SearchScreen>
     return ListView.builder(
       controller: _tabScrollController,
       scrollDirection: Axis.horizontal,
-      physics: const BouncingScrollPhysics(),
+      physics: ClampingScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 0),
       itemCount: searchTabList.length,
       itemBuilder: (context, index) {
@@ -413,7 +478,7 @@ class _AddScripState extends ConsumerState<SearchScreen>
                         textOverflow: TextOverflow.ellipsis,
                         maxLines: 1,
                         theme: theme.isDarkMode,
-                        fw: isSelected ? 2 : null),
+                        fw: isSelected ? 2 : 2),
                   ),
                   // Animated underline indicator
                   AnimatedContainer(

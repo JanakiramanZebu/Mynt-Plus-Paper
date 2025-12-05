@@ -14,8 +14,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:local_auth/error_codes.dart' as auth_error;
+import 'package:mynt_plus/provider/banner_provider.dart';
 import 'package:mynt_plus/provider/mf_provider.dart';
 import 'package:mynt_plus/provider/profile_all_details_provider.dart';
+import 'package:mynt_plus/provider/stocks_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/provider/websocket_provider.dart';
 import 'package:sms_autofill/sms_autofill.dart';
@@ -66,9 +68,9 @@ class AuthProvider extends DefaultChangeNotifier {
   final api = locator<ApiExporter>();
   final Preferences pref = locator<Preferences>();
   final Ref ref;
-  final String _version = "1.0.86(25)";
+  final String _version = "1.0.103(3)";
   late final String _versiontext =
-      "Version 3.0.2 Build $_version Released on 1 Aug";
+      "Version 3.0.2 Build $_version Released on 17 Nov";
   String get versiontext => _versiontext;
 
   //  Text field controller for Login and otp screen
@@ -594,7 +596,7 @@ class AuthProvider extends DefaultChangeNotifier {
         mobile_client = mobileRclint;
         if (!totp) {
           if (context.mounted) {
-            showResponsiveSuccess(context, 'The OTP is sent via email and SMS');
+                successMessage(context, 'The OTP is sent via email and SMS');
           }
         }
         _isDisableBtn = true;
@@ -646,8 +648,7 @@ class AuthProvider extends DefaultChangeNotifier {
           "Invalid Input : User Blocked due to multiple wrong attempts") {
         ref.read(changePasswordProvider).userIdController.text =
             "${_mobileLogin!.clientid}";
-        ScaffoldMessenger.of(context)
-            .showSnackBar(warningMessage(context, _mobileLogin!.emsg!));
+        warningMessage(context, _mobileLogin!.emsg!);
         Future.delayed(const Duration(seconds: 3), () {
           Navigator.pushNamed(context, Routes.forgotPass);
         });
@@ -659,8 +660,7 @@ class AuthProvider extends DefaultChangeNotifier {
           ref.read(changePasswordProvider).oldPassword.text =
               password.toString();
         }
-        ScaffoldMessenger.of(context)
-            .showSnackBar(warningMessage(context, _mobileLogin!.emsg!));
+        warningMessage(context, _mobileLogin!.emsg!);
         Navigator.pushNamed(context, Routes.changePass,
             arguments: _mobileLogin!.emsg == "Invalid Input : Password Expired"
                 ? 'Yes'
@@ -669,13 +669,13 @@ class AuthProvider extends DefaultChangeNotifier {
           "Your mobile registered in multiple accounts, Please login with client ID") {
         loginMethod();
         pref.setHideLoginOptBtn(false);
-        showResponsiveWarningMessage(context,
+        warningMessage(context,
             "Multiple accounts linked to your mobile no. Login with Client ID");
       } else if (_mobileLogin!.emsg == "mobile_unique not valid") {
         if (s.isNotEmpty) {
           Navigator.pop(context);
         }
-        showResponsiveWarningMessage(context,
+        warningMessage(context,
             "This user id logged in another device, Please login again");
         _isDisableBtn = true;
         pref.setHideLoginOptBtn(false);
@@ -734,8 +734,7 @@ class AuthProvider extends DefaultChangeNotifier {
         _handleNetworkFailure(
             context, "Network error. Please check your connection.");
       } else {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(warningMessage(context, _mobileLogin!.emsg!));
+        warningMessage(context, _mobileLogin!.emsg!);
         if (currentRouteName != Routes.loginScreen) {
           Navigator.pushNamedAndRemoveUntil(
               context,
@@ -780,10 +779,10 @@ class AuthProvider extends DefaultChangeNotifier {
               _mobileLogin!.msg ==
                   "otp sended, already logged in another device")) {
         mobile_client = mobileRclint;
-        showResponsiveSuccess(context, 'The OTP is re-sent via SMS and email.');
+            successMessage(context, 'The OTP is re-sent via SMS and email.');
         // _isDisableBtn = true;
       } else {
-        showResponsiveWarningMessage(context, _mobileLogin!.emsg!);
+        warningMessage(context, _mobileLogin!.emsg!);
       }
       notifyListeners();
     } catch (e) {
@@ -850,8 +849,7 @@ class AuthProvider extends DefaultChangeNotifier {
         final ctx = context;
         ref.read(changePasswordProvider).userIdController.text = mobile_client;
         Navigator.pushNamed(ctx, Routes.forgotPass);
-        ScaffoldMessenger.of(context)
-            .showSnackBar(warningMessage(context, _mobileOtp!.emsg!));
+        warningMessage(context, _mobileOtp!.emsg!);
         // Future.delayed(const Duration(seconds: 1), () {
         Navigator.pop(context);
         // });
@@ -929,6 +927,12 @@ class AuthProvider extends DefaultChangeNotifier {
 
         ref.read(fundProvider).clearFunds();
 
+        // Clear banner seen storage on logout
+        ref.read(bannerProvider).onUserLogout();
+
+        // Clear pending watchlists on logout
+        ref.read(marketWatchProvider).clearPendingWatchlists();
+
         // Update UI state
         ref.read(indexListProvider).bottomMenu(0, context);
 
@@ -950,6 +954,8 @@ class AuthProvider extends DefaultChangeNotifier {
           Navigator.pushNamedAndRemoveUntil(
               context, Routes.loginScreen, (route) => false);
         }
+      }else if(_logoutModel!.emsg == "Session Expired :  Invalid Session Key"){
+        ref.read(authProvider).ifSessionExpired(context);
       }
     } catch (e) {
       ref.read(indexListProvider).logError.add({"type": "API", "Error": "$e"});
@@ -1737,6 +1743,9 @@ class AuthProvider extends DefaultChangeNotifier {
         _logoutMsg = "";
 
         if (ref.read(indexListProvider).checkSess!.stat == "Ok") {
+          await ref.read(portfolioProvider).clearAllportfolio();
+          await ref.read(fundProvider).clearFunds();
+          await ref.read(orderProvider).clearAllorders();
           ref.read(indexListProvider).fetchNotifyMsg();
           ref.read(portfolioProvider).changeTabIndex(0);
           await ref.read(themeProvider).navigateToNewPage(context);
@@ -1744,13 +1753,18 @@ class AuthProvider extends DefaultChangeNotifier {
 
           await ref.read(indexListProvider).getDeafultIndexList(context);
 
+          // Reset watchlist page index to first tab when switching accounts
+          ref.read(marketWatchProvider).resetCurrentWatchlistPageIndex();
+
+          await ref.read(stocksProvide).fetchCAevents();
+
           // Fetch watchlist data with proper initialization
           await ref.read(marketWatchProvider).fetchMWList(context, false);
 
-          ref.read(portfolioProvider).clearAllportfolio();
-          await ref.read(fundProvider).clearFunds();
-          ref.read(orderProvider).clearAllorders();
+          
           ref.read(ledgerProvider).setterfornullallSwitch = null;
+          
+            ref.read(userProfileProvider).getProfileimage();
 
           // initLaod(false);
           ref.read(orderProvider).fetchOrderBook(context, false);
@@ -1890,6 +1904,12 @@ class AuthProvider extends DefaultChangeNotifier {
     pref.setHideLoginOptBtn(false);
     pref.setMobileLogin(false);
 
+    // Clear banner seen storage on logout (network failure scenario)
+    ref.read(bannerProvider).onUserLogout();
+
+    // Clear pending watchlists on logout (network failure scenario)
+    ref.read(marketWatchProvider).clearPendingWatchlists();
+
     // Update UI state
     ref.read(indexListProvider).bottomMenu(0, context);
 
@@ -1913,7 +1933,7 @@ class AuthProvider extends DefaultChangeNotifier {
           context, Routes.loginScreen, (route) => false);
 
       // Show error message
-      showResponsiveWarningMessage(context,
+      warningMessage(context,
           "Connection issue. Please check your internet and try again.");
     }
   }
@@ -2007,6 +2027,12 @@ class AuthProvider extends DefaultChangeNotifier {
       pref.setHideLoginOptBtn(false);
       pref.setMobileLogin(false);
 
+      // Clear banner seen storage on session expiry
+      ref.read(bannerProvider).onUserLogout();
+
+      // Clear pending watchlists on session expiry
+      ref.read(marketWatchProvider).clearPendingWatchlists();
+
       // Prefill the login field for convenience
       loginMethCtrl.text = pref.clientId ?? "";
 
@@ -2029,7 +2055,7 @@ class AuthProvider extends DefaultChangeNotifier {
                 context, Routes.loginScreen, (route) => false);
 
             // Show the message only after navigation for better UX
-            showResponsiveWarningMessage(
+            warningMessage(
                 context, "Session Expired, Please log in again");
           }
 

@@ -810,7 +810,7 @@ class _SMEApplyIpoScreenState extends ConsumerState<SMEApplyIpoScreen> {
                                               .isEmpty ||
                                           bid.bidpricecontroller.text ==
                                               "0") {
-                                        showResponsiveWarningMessage(
+                                        warningMessage(
                                                 context,
                                                 bid.bidpricecontroller
                                                             .text ==
@@ -822,14 +822,14 @@ class _SMEApplyIpoScreenState extends ConsumerState<SMEApplyIpoScreen> {
                                           (int.parse(bid.bidpricecontroller.text)) <
                                               double.parse(widget.smeipo.minPrice.toString())
                                                   .toInt()) {
-                                        showResponsiveWarningMessage(
+                                        warningMessage(
                                                 context,
                                                 "Your bid price ranges between ₹${double.parse(widget.smeipo.minPrice!).toInt()}-₹${double.parse(widget.smeipo.maxPrice!).toInt()}");
                                         ischecked = false;
                                       } else if ((int.parse(bid.qualityController.text)) <
                                           int.parse(widget.smeipo.minBidQuantity.toString())
                                               .toInt()) {
-                                        showResponsiveWarningMessage(
+                                        warningMessage(
                                                 context,
                                                 "Minimum Bid quantity is ${widget.smeipo.minBidQuantity.toString()} only ");
                                         ischecked = false;
@@ -849,7 +849,7 @@ class _SMEApplyIpoScreenState extends ConsumerState<SMEApplyIpoScreen> {
                                               .isEmpty ||
                                           bid.qualityController.text ==
                                               "0") {
-                                        showResponsiveWarningMessage(
+                                        warningMessage(
                                                 context,
                                                 bid.qualityController
                                                             .text ==
@@ -871,7 +871,7 @@ class _SMEApplyIpoScreenState extends ConsumerState<SMEApplyIpoScreen> {
                                       //   ischecked = false;
                                       // }
                                        else if (upiid.upiid.text.isEmpty) {
-                                        showResponsiveWarningMessage(
+                                        warningMessage(
                                                 context,
                                                 "UPI ID cannot be empty");
                                         ischecked = false;
@@ -1008,7 +1008,7 @@ class _SMEApplyIpoScreenState extends ConsumerState<SMEApplyIpoScreen> {
                             // };
                               if (addIpo[addIpo.length - 1].requriedprice >
                                   ipo.maxUPIAmt) {
-                                showResponsiveWarningMessage(context,
+                                    warningMessage(context,
                                         "Maximum investment upto 2 ₹${double.parse(ipo.maxUPIAmt.toString()).toInt()} only ");
                                 ischecked = false;
                               } else if (addIpo[addIpo.length - 1]
@@ -1019,7 +1019,7 @@ class _SMEApplyIpoScreenState extends ConsumerState<SMEApplyIpoScreen> {
                                           .bidpricecontroller
                                           .text ==
                                       "0") {
-                                showResponsiveWarningMessage(
+                                    warningMessage(
                                         context,
                                         addIpo[addIpo.length - 1]
                                                     .bidpricecontroller
@@ -1035,7 +1035,7 @@ class _SMEApplyIpoScreenState extends ConsumerState<SMEApplyIpoScreen> {
                                           .qualityController
                                           .text ==
                                       "0") {
-                                showResponsiveWarningMessage(
+                                    warningMessage(
                                         context,
                                         addIpo[addIpo.length - 1]
                                                     .qualityController
@@ -1044,11 +1044,11 @@ class _SMEApplyIpoScreenState extends ConsumerState<SMEApplyIpoScreen> {
                                             ? '* Quantity cannot be 0'
                                             : '* Quantity cannot be empty');
                               } else if (upiid.upiid.text.isEmpty) {
-                                showResponsiveWarningMessage(
+                                    warningMessage(
                                         context, '* UPI ID cannot be empty');
                               } else if (!RegExp(r'^[\w.-]+@[\w]+$')
                                   .hasMatch(upiid.upiid.text)) {
-                                showResponsiveWarningMessage(
+                                    warningMessage(
                                         context, 'Invalid UPI ID format');
                               } else {
                                 ipoplaceorder(upiid, ipo);

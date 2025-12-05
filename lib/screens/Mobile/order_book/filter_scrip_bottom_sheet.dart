@@ -81,9 +81,7 @@ class _OrderbookFilterBottomSheetState
   void _applySortForType(String type) {
     String sortingValue = "";
 
-    // Debug current values
-    print("Before sort - Current type: $currentSortType");
-    print("Before sort - Sort state: Scrip: $scripisAscending, Price: $pricepisAscending, Qty: $qtyisAscending, Product: $productisAscending, Time: $timeisAscending");
+   
 
     // Update current sort type
     setState(() {
@@ -222,7 +220,7 @@ class _OrderbookFilterBottomSheetState
                                       ? colors.textSecondaryDark
                                       : colors.textSecondaryLight,
                               theme: theme.isDarkMode,
-                              fw: currentSortType == "scrip" ? 2 : null),
+                              fw: currentSortType == "scrip" ? 2 : 0),
                         ),
                       ],
                     ),
@@ -268,7 +266,7 @@ class _OrderbookFilterBottomSheetState
                                       ? colors.textSecondaryDark
                                       : colors.textSecondaryLight,
                               theme: theme.isDarkMode,
-                              fw: currentSortType == "product" ? 2 : null),
+                              fw: currentSortType == "product" ? 2 : 0),
                         ),
                       ],
                     ),
@@ -314,7 +312,7 @@ class _OrderbookFilterBottomSheetState
                                       ? colors.textSecondaryDark
                                       : colors.textSecondaryLight,
                               theme: theme.isDarkMode,
-                              fw: currentSortType == "qty" ? 2 : null),
+                              fw: currentSortType == "qty" ? 2 : 0),
                         ),
                       ],
                     ),
@@ -360,7 +358,7 @@ class _OrderbookFilterBottomSheetState
                                       ? colors.textSecondaryDark
                                       : colors.textSecondaryLight,
                               theme: theme.isDarkMode,
-                              fw: currentSortType == "price" ? 2 : null),
+                              fw: currentSortType == "price" ? 2 : 0),
                         ),
                       ],
                     ),
@@ -406,7 +404,7 @@ class _OrderbookFilterBottomSheetState
                                       ? colors.textSecondaryDark
                                       : colors.textSecondaryLight,
                               theme: theme.isDarkMode,
-                              fw: currentSortType == "time" ? 2 : null),
+                              fw: currentSortType == "time" ? 2 : 0),
                         ),
                       ],
                     ),

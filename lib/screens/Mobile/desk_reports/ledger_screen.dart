@@ -185,7 +185,7 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
         onRefresh: () async {
           await ledgerprovider.getCurrentDate('else');
           await ledgerprovider.fetchLegerData(
-              context, ledgerprovider.startDate, ledgerprovider.endDate);
+              context, ledgerprovider.startDate, ledgerprovider.endDate, ledgerprovider.includeBillMargin);
         },
         child: PopScope(
           canPop: true,
@@ -246,7 +246,7 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
             body: ledgerprovider.ledgerloading
                 ? Center(
                     child: Container(
-                      color: Colors.white,
+                      color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
                       child: CircularLoaderImage(),
                     ),
                   )
@@ -334,6 +334,7 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                                                             .formattedStartDate,
                                                         ledgerprovider
                                                             .formattedendDate,
+                                                        ledgerprovider.includeBillMargin
                                                       );
                                                     }
                                                   },
@@ -350,6 +351,7 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                                                   : colors.textSecondaryLight,
                                               textOverflow: TextOverflow.ellipsis,
                                               theme: theme.isDarkMode,
+                                              fw: 0,
                                             ),
                                             SizedBox(
                                               height: 6,
@@ -438,6 +440,7 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                                                             .formattedStartDate,
                                                         ledgerprovider
                                                             .formattedendDate,
+                                                        ledgerprovider.includeBillMargin
                                                       );
                                                     }
                                                   },
@@ -635,28 +638,17 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                                                    await Future.delayed(
                                                        const Duration(
                                                            milliseconds: 150));
-                                                   String currentDate = DateFormat("dd/MM/yyyy").format(DateTime.now());
-                                                   
-                                                   ledgerprovider.pdfdownloadforledger(
-                                                       context,
-                                                       ledgerprovider
-                                                               .ledgerAllData
-                                                               ?.toJson() ??
-                                                           {},
-                                                       ledgerprovider.ledgerAllData
-                                                               ?.drAmt ??
-                                                           '0.00',
-                                                       ledgerprovider.ledgerAllData
-                                                               ?.crAmt ??
-                                                           '0.00',
-                                                       ledgerprovider.ledgerAllData
-                                                               ?.closingBalance ??
-                                                           '0.00',
-                                                       ledgerprovider.ledgerAllData
-                                                               ?.openingBalance ??
-                                                           '0.00',
-                                                       ledgerprovider.startDate,
-                                                       currentDate);
+                                                  showModalBottomSheet(
+  context: context,
+  shape: const RoundedRectangleBorder(
+    borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+  ),
+  isScrollControlled: true,
+  useSafeArea: true,
+  isDismissible: true,
+  backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+  builder: (context) => downloadBottomSheet(context, theme, ledgerprovider),
+);
                                                  },
                                               ),
                                             ),
@@ -696,6 +688,7 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                                         ? colors.textPrimaryDark
                                         : colors.textPrimaryLight,
                                     theme: theme.isDarkMode,
+                                    fw: 0,
                                   ),
                                     keyboardType: TextInputType.text,
                                     textCapitalization:
@@ -711,9 +704,8 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                                          hintStyle: TextWidget.textStyle(
                                       fontSize: 14,
                                       theme: theme.isDarkMode,
-                                     color: theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : colors.textSecondaryLight,
+                                     color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                                fw: 0,
                                     ),
                                          fillColor: theme.isDarkMode ? colors.searchBgDark : colors.searchBg,
                               filled: true,
@@ -934,16 +926,17 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                         // ),
                         const ListDivider(),
                         ledgerprovider.ledgerAllData?.fullStat?.isEmpty ?? true
-                            ? Center(
-                                child: Padding(
-                                padding: EdgeInsets.only(top: 220),
-                                child: NoDataFound(),
-                              ))
+                            ? Expanded(
+                              child: Center(
+                                  child: NoDataFound(
+                                    secondaryEnabled: false,
+                                  )),
+                            )
                             : Expanded(
                                 child: SingleChildScrollView(
-                                  physics: const AlwaysScrollableScrollPhysics(),
+                                  physics: const ClampingScrollPhysics(),
                                   child: ListView.separated(
-                                    physics: ScrollPhysics(),
+                                    physics: ClampingScrollPhysics(),
                                     itemCount: ledgerprovider
                                             .ledgerAllData?.fullStat?.length ??
                                         0,
@@ -1052,6 +1045,7 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                                                               TextOverflow
                                                                   .ellipsis,
                                                           theme: theme.isDarkMode,
+                                                          fw: 0,
                                                         ),
                                                         const SizedBox(width: 4),
                                                         ledgerprovider
@@ -1113,6 +1107,7 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                                                       textOverflow:
                                                           TextOverflow.ellipsis,
                                                       theme: theme.isDarkMode,
+                                                      fw: 0,
                                                     ),
                                                   ],
                                                 ),
@@ -1145,23 +1140,23 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                                                                     .ellipsis,
                                                             theme:
                                                                 theme.isDarkMode,
-                                                            fw: 3),
+                                                            fw: 0),
                             
                                                         TextWidget.paraText(
                                                             text:
                                                                 " ${dateFormatChangeForLedger(ledgerprovider.ledgerAllData!.fullStat![index].vOUCHERDATE.toString())}",
-                                                            color: theme
+                                                             color: theme
                                                                     .isDarkMode
                                                                 ? colors
-                                                                    .textPrimaryDark
+                                                                    .textSecondaryDark
                                                                 : colors
-                                                                    .textPrimaryLight,
+                                                                    .textSecondaryLight,
                                                             textOverflow:
                                                                 TextOverflow
                                                                     .ellipsis,
                                                             theme:
                                                                 theme.isDarkMode,
-                                                            fw: 3),
+                                                            fw: 0),
                                                       ],
                                                     ),
                                                     Row(
@@ -1169,7 +1164,7 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                                                         TextWidget.paraText(
                                                             align:
                                                                 TextAlign.right,
-                                                            text: "Bal : ",
+                                                            text: "BAL ",
                                                             color: theme
                                                                     .isDarkMode
                                                                 ? colors
@@ -1181,24 +1176,24 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                                                                     .ellipsis,
                                                             theme:
                                                                 theme.isDarkMode,
-                                                            fw: 3),
+                                                            fw: 0),
                                                         TextWidget.paraText(
                                                             align:
                                                                 TextAlign.right,
                                                             text:
                                                                 " ${(double.tryParse(ledgerprovider.ledgerAllData!.fullStat![index].nETAMT ?? '')?.toStringAsFixed(2) ?? '0.00')}",
-                                                            color: theme
+                                                          color: theme
                                                                     .isDarkMode
                                                                 ? colors
-                                                                    .textPrimaryDark
+                                                                    .textSecondaryDark
                                                                 : colors
-                                                                    .textPrimaryLight,
+                                                                    .textSecondaryLight,
                                                             textOverflow:
                                                                 TextOverflow
                                                                     .ellipsis,
                                                             theme:
                                                                 theme.isDarkMode,
-                                                            fw: 3),
+                                                            fw: 0),
                                                       ],
                                                     ),
                                                   ],
@@ -1293,6 +1288,160 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
       );
     });
   }
+
+ Widget downloadBottomSheet(BuildContext context, ThemesProvider theme, LDProvider ledgerprovider) {
+  String selectedFormat = "PDF";
+
+  return StatefulBuilder(
+    builder: (context, setState) {
+      return SafeArea(
+        child: Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+            left: 16,
+            right: 16,
+            top: 20,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              /// Title
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  TextWidget.titleText(
+                    text: "Download as",
+                    theme: theme.isDarkMode,
+                    fw: 1,
+                  ),
+                  Material(
+                    color: Colors.transparent,
+                    shape: const CircleBorder(),
+                    child: InkWell(
+                      onTap: () async {
+                        await Future.delayed(const Duration(milliseconds: 150));
+                        Navigator.pop(context);
+                      },
+                      borderRadius: BorderRadius.circular(20),
+                      splashColor: theme.isDarkMode
+                          ? colors.splashColorDark.withOpacity(0.15)
+                          : colors.splashColorLight.withOpacity(0.15),
+                      highlightColor: theme.isDarkMode
+                          ? colors.splashColorDark.withOpacity(0.08)
+                          : colors.splashColorLight.withOpacity(0.08),
+                      child: Padding(
+                        padding: const EdgeInsets.all(6.0),
+                        child: Icon(
+                          Icons.close_rounded,
+                          size: 22,
+                          color: !theme.isDarkMode
+                              ? colors.colorGrey
+                              : colors.colorWhite,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+
+              /// Options (PDF / Excel) - Updated Icons
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // PDF Option
+                  InkWell(
+                    onTap: () {
+                          setState(() => selectedFormat = "PDF");
+                          String currentDate = DateFormat("dd/MM/yyyy").format(DateTime.now()); 
+                          ledgerprovider.pdfdownloadforledger( context, 
+                          ledgerprovider .ledgerAllData ?.toJson() ?? {}, 
+                          ledgerprovider.ledgerAllData ?.drAmt ?? '0.00', 
+                          ledgerprovider.ledgerAllData ?.crAmt ?? '0.00', 
+                          ledgerprovider.ledgerAllData ?.openingBalance ?? '0.00', 
+                          ledgerprovider.ledgerAllData ?.closingBalance ?? '0.00', 
+                          ledgerprovider.startDate, currentDate);
+                        },
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        children: [
+                          SvgPicture.asset(assets.pdfIcon,
+                            height: 50,
+                            width: 50,
+                            fit: BoxFit.contain,
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.download, size: 16, color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight),
+                              TextWidget.subText(
+                                text: " PDF",
+                                theme: theme.isDarkMode,
+                                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                fw: 0,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  
+                  // Excel Option
+                  // InkWell(
+                  //   onTap: () {
+                  //         setState(() => selectedFormat = "Excel");
+                  //         String currentDate = DateFormat("dd/MM/yyyy").format(DateTime.now()); 
+                  //         ledgerprovider.pdfdownloadforledger( context, 
+                  //         ledgerprovider .ledgerAllData ?.toJson() ?? {}, 
+                  //         ledgerprovider.ledgerAllData ?.drAmt ?? '0.00', 
+                  //         ledgerprovider.ledgerAllData ?.crAmt ?? '0.00', 
+                  //         ledgerprovider.ledgerAllData ?.openingBalance ?? '0.00', 
+                  //         ledgerprovider.ledgerAllData ?.closingBalance ?? '0.00', 
+                  //         ledgerprovider.startDate, currentDate);
+                  //       },
+                  //   child: Padding(
+                  //     padding: const EdgeInsets.all(8.0),
+                  //     child: Column(
+                  //       children: [
+                  //         SvgPicture.asset(assets.excelIcon,
+                  //           height: 60,
+                  //           width: 60,
+                  //           fit: BoxFit.contain,
+                  //         ),
+                  //         Row(
+                  //           mainAxisAlignment: MainAxisAlignment.center,
+                  //           children: [
+                  //             Icon(Icons.download, size: 16, color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight),
+                  //             TextWidget.subText(
+                  //               text: " Excel",
+                  //               theme: theme.isDarkMode,
+                  //               color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                  //               fw: 0,
+                  //             ),
+                  //           ],
+                  //         ),
+                  //       ],
+                  //     ),
+                  //   ),
+                  // ),
+                ],
+              ),
+              const SizedBox(height: 30),
+
+              // Download Button - Updated to handle both formats
+              
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
+
+
 
   _showBottomSheet(BuildContext context, Widget bottomSheet, ThemesProvider theme) {
     showModalBottomSheet(

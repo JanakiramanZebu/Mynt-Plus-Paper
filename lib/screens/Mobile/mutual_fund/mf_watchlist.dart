@@ -60,16 +60,22 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
       });
     }
 
-    return Scaffold(
-      body: TransparentLoaderScreen(
+    return TransparentLoaderScreen(
         isLoading: mfData.bestmfloader ?? false,
         child: sortedList?.isEmpty ?? true
-            ? const Center(child: NoDataFound())
+            ? const Center(child: NoDataFound(
+              title: "No Funds Found",
+              subtitle: "Add your favorite funds to your watchlist",
+              primaryEnabled: false,
+              secondaryEnabled: false,
+            ))
             : Column(
                 children: [
                   _buildHeader(theme),
                   Expanded(
                     child: ListView.separated(
+                      physics: ClampingScrollPhysics(),
+                      padding: EdgeInsets.zero,
                       // padding: const EdgeInsets.all(8),
                       itemCount: sortedList?.length ?? 0,
                       separatorBuilder: (_, __) => const ListDivider(),
@@ -84,8 +90,8 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
                   ),
                 ],
               ),
-      ),
-    );
+      );
+    // );
   }
 
   Widget _buildHeader(ThemesProvider theme) {
@@ -104,6 +110,7 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
                 : colors.textSecondaryLight,
             textOverflow: TextOverflow.ellipsis,
             theme: theme.isDarkMode,
+            fw: 0,
           ),
           PopupMenuButton<String>(
              color: theme.isDarkMode
@@ -123,7 +130,7 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
                         ? colors.textSecondaryDark
                         : colors.textSecondaryLight,
                     theme: theme.isDarkMode,
-                    fw: 3,
+                    fw: 0,
                   )),
               PopupMenuItem(
                   value: '3Y Returns',
@@ -133,7 +140,7 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
                         ? colors.textSecondaryDark
                         : colors.textSecondaryLight,
                     theme: theme.isDarkMode,
-                    fw: 3,
+                    fw: 0,
                   )),
               PopupMenuItem(
                   value: '5Y Returns',
@@ -143,7 +150,7 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
                         ? colors.textSecondaryDark
                         : colors.textSecondaryLight,
                     theme: theme.isDarkMode,
-                    fw: 3,
+                    fw: 0,
                   )),
             ],
             child: Material(
@@ -166,7 +173,7 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
                         : colors.textSecondaryLight,
                     textOverflow: TextOverflow.ellipsis,
                     theme: theme.isDarkMode,
-                    fw: 3,
+                    fw: 0,
                   ),
                 ),
               ),
@@ -200,11 +207,10 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
                     "watch",
                   );
                 } else {
-                  showResponsiveErrorMessage(
-                      context, "Missing fund information");
+                      successMessage(context, "Missing fund information");
                 }
               } catch (e) {
-                showResponsiveErrorMessage(
+                successMessage(
                     context, "Error updating watchlist: ${e.toString()}");
               }
             },
@@ -239,11 +245,10 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
                         child: MFStockDetailScreen(mfStockData: item)),
                   );
                 } else {
-                  showResponsiveErrorMessage(
-                      context, "Missing fund information");
+                      successMessage(context, "Missing fund information");
                 }
               } catch (e) {
-                showResponsiveErrorMessage(
+                successMessage(
                     context, "Error loading fund details: ${e.toString()}");
               }
             },
@@ -269,6 +274,7 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
                   textOverflow: TextOverflow.ellipsis,
                   maxLines: 2,
                   theme: theme.isDarkMode,
+                  fw: 0,
                 ),
               ),
               subtitle: Padding(
@@ -286,6 +292,7 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
                             ? colors.textSecondaryDark
                             : colors.textSecondaryLight,
                         theme: false,
+                        fw: 0,
                       ),
                       // const SizedBox(width: 4),
                       // TextWidget.paraText(
@@ -308,6 +315,7 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
                 // _getReturnColor(item.tHREEYEARDATA, theme.isDarkMode)
                 textOverflow: TextOverflow.ellipsis,
                 theme: theme.isDarkMode,
+                fw: 0,
               ),
             )));
   }
@@ -326,7 +334,7 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
   }
 
   String _formatReturns(String? returns) {
-    if (returns == null || returns.isEmpty) {
+    if (returns == null || returns.isEmpty || returns == "0.0") {
       return "0.00%";
     }
     return "$returns%";

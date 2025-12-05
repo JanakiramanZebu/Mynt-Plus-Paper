@@ -58,7 +58,8 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
       }
       
       if (principal >= 100000) {
-        showResponsiveErrorMessage(context, "Please enter an amount below ₹1,00,000.");
+          error(context, "Please enter an amount below ₹1,00,000."
+        );
         // Reset to a valid value
         _principalCtrl.text = "99999";
         principal = 99999;
@@ -99,7 +100,8 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
         _investedAmount = 0;
         _returns = 0;
       });
-      showResponsiveErrorMessage(context, "Calculation error: ${e.toString()}");
+        error(context, "Calculation error: ${e.toString()}"
+      );
     }
   }
 
@@ -134,6 +136,7 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
           child: Padding(
             padding: const EdgeInsets.only(left: 16, right: 16, top: 16),
             child: SingleChildScrollView(
+              physics: ClampingScrollPhysics(),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -204,7 +207,7 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
               text: "Principal Amount",
               color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
               theme: theme.isDarkMode,
-              
+              fw: 1,
             ),
             Container(
               width: 150,
@@ -220,14 +223,14 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
                                         ? colors.textPrimaryDark
                                         : colors.textPrimaryLight,
                                     theme: theme.isDarkMode,
+                                    fw: 0,
                                   ),
                 hintText: '10000',
                  hintStyle: TextWidget.textStyle(
                                       fontSize: 14,
                                       theme: theme.isDarkMode,
-                                     color: theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : colors.textSecondaryLight,
+                                     color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                                fw: 0,
                                     ),
                 textCtrl: _principalCtrl,
                 onChanged: (value) {
@@ -297,13 +300,13 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
               text: "Interest Rate (p.a.)",
               color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
               theme: theme.isDarkMode,
-            
+              fw: 1,
             ),
             TextWidget.subText(
               text: "${_interestRate.toStringAsFixed(0)}%",
               color:  theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
               theme: theme.isDarkMode,
-             
+              fw: 0,
             ),
           ],
         ),
@@ -348,13 +351,13 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
               text: "Tenure Period (Years)",
              color :   theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
               theme: theme.isDarkMode,
-              
+              fw: 1,
             ),
             TextWidget.subText(
               text: "${_tenureYears.toStringAsFixed(0)} Yr",
               color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
               theme: theme.isDarkMode,
-          
+              fw: 0,
             ),
           ],
         ),
@@ -397,7 +400,7 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
           text: "Estimation",
           color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
           theme: theme.isDarkMode,
-          fw :0
+          fw :1
           
         ),
         const SizedBox(height: 16),
@@ -426,15 +429,15 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
                 text: label,
                 color:  theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                 theme: false,
-                
+                fw: 0,
               ),
             ],
           ),
           TextWidget.subText(
             text: "₹ ${value.toStringAsFixed(0)}",
             color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-            theme: false,
-            
+            theme: false, 
+            fw: 0,
           ),
         ],
       ),

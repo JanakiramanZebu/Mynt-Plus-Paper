@@ -37,6 +37,7 @@ class _OrdersList extends StatelessWidget {
     }
 
     return ListView.separated(
+      padding: EdgeInsets.zero,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: orders.length,
@@ -119,6 +120,7 @@ class _OrderHeader extends StatelessWidget {
           color: theme.isDarkMode
               ? colors.textPrimaryDark
               : colors.textPrimaryLight,
+          fw: 0,
         ),
         _StatusBadge(order: order, theme: theme),
       ],
@@ -151,6 +153,7 @@ class _OrderFooter extends StatelessWidget {
               color: theme.isDarkMode
                   ? colors.textSecondaryDark
                   : colors.textSecondaryLight,
+              fw: 0,
             ),
           ],
         ),
@@ -164,6 +167,7 @@ class _OrderFooter extends StatelessWidget {
           color: theme.isDarkMode
               ? colors.textPrimaryDark
               : colors.textPrimaryLight,
+          fw: 0,
         ),
       ],
     );
@@ -199,6 +203,7 @@ class _StatusBadge extends StatelessWidget {
             color: order.reponseStatus == "Cancel Success"
                 ? colors.error
                 : colors.error,
+            fw: 0,
           ),
         ),
 

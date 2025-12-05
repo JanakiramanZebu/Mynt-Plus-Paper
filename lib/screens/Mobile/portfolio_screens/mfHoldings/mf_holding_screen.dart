@@ -219,13 +219,12 @@ class _MFHoldingScreen extends State<MFHoldingScreen> {
                               ? colors.darkGrey
                               : const Color(0xffF1F3F8),
                           filled: true,
-                          hintStyle: GoogleFonts.inter(
-                            textStyle: textStyle(
-                              const Color(0xff69758F),
-                              15,
-                              0,
-                            ),
-                          ),
+                         hintStyle: TextWidget.textStyle(
+                                      fontSize: 14,
+                                      theme: theme.isDarkMode,
+                                     color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                                    fw: 0,
+                                    ),
                           prefixIconColor: const Color(0xff586279),
                           prefixIcon: Padding(
                             padding:
@@ -420,7 +419,9 @@ class _MFHoldingScreen extends State<MFHoldingScreen> {
                               },
                             ),
                           )
-                        : const Center(child: NoDataFound()),
+                        : const Center(child: NoDataFound(
+                          secondaryEnabled: false,
+                        )),
                   )
                 : Expanded(
                     child: ListView.separated(

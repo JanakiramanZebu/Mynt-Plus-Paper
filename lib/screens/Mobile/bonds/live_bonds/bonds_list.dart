@@ -22,7 +22,14 @@ class BondsListScreen extends StatelessWidget {
       final bonds = ref.watch(bondsProvider);
       final devHeight = MediaQuery.of(context).size.height;
 
+       final bool isEmpty = _isBondsDataEmpty(bonds);
+
+    if (isEmpty) {
+      return _buildEmptyState();
+    }
+
       return SingleChildScrollView(
+        physics: ClampingScrollPhysics(),
         child: Column(
           children: [
             _buildContent(bonds, devHeight, ref),
@@ -39,11 +46,11 @@ class BondsListScreen extends StatelessWidget {
     }
 
     // Safe null checks for all bond types
-    final bool isEmpty = _isBondsDataEmpty(bonds);
+    // final bool isEmpty = _isBondsDataEmpty(bonds);
 
-    if (isEmpty) {
-      return _buildEmptyState(devHeight);
-    }
+    // if (isEmpty) {
+    //   return _buildEmptyState(devHeight);
+    // }
 
     return const Column(
       children: [
@@ -51,7 +58,8 @@ class BondsListScreen extends StatelessWidget {
         TreasuryBondsScreen(),
         StateBondsScreen(),
         SovereignGoldBondsScreen(),
-        SizedBox(height: 24),
+        // SizedBox(height: 24),
+        // SizedBox(height: 80),
       ],
     );
   }
@@ -103,7 +111,12 @@ class BondsListScreen extends StatelessWidget {
           height: devHeight - 140,
           child: const Column(
             children: [
-              NoDataFound(),
+              NoDataFound(
+                title: "No Results Found",
+                subtitle: "Try searching with different keywords",
+                primaryEnabled: false,
+                secondaryEnabled: false,
+              ),
             ],
           ),
         ),
@@ -111,18 +124,13 @@ class BondsListScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildEmptyState(double devHeight) {
+  Widget _buildEmptyState() {
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.only(top: 225),
-        child: SizedBox(
-          height: devHeight - 140,
-          child: const Column(
-            children: [
-              NoDataFound(),
-            ],
-          ),
-        ),
+      child: NoDataFound(
+        title: "No Bonds Found",
+        subtitle: "There are no bond listings for today.",
+        primaryEnabled: false,
+        secondaryEnabled: false,
       ),
     );
   }

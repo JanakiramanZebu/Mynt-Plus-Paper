@@ -1,9 +1,10 @@
 import 'dart:developer';
 // Conditional import for HttpOverrides only on non-web platforms
-import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform, TargetPlatform;
+import 'package:flutter/foundation.dart' show PlatformDispatcher, TargetPlatform, defaultTargetPlatform, kIsWeb;
 // ignore: uri_does_not_exist
 import 'utils/http_overrides_stub.dart' if (dart.library.io) 'utils/http_overrides.dart';
 // import 'package:flutter/services.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:awesome_notifications/awesome_notifications.dart';
@@ -11,6 +12,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:mynt_plus/firebase_options.dart';
 import 'package:mynt_plus/locator/constant.dart';
+import 'package:mynt_plus/res/res.dart';
+import 'package:mynt_plus/sharedWidget/chart_overlay_widget.dart';
 import 'package:rxdart/rxdart.dart';
 // Remove unused alias
 // import 'package:flutter_phoenix/flutter_phoenix.dart';
@@ -21,12 +24,19 @@ import 'package:url_launcher/url_launcher.dart';
 import 'locator/locator.dart';
 import 'locator/preference.dart';
 import 'provider/thems.dart';
+import 'provider/subscription_manager.dart';
 import 'routes/app_routes.dart';
 import 'routes/route_names.dart';
 import 'themes/theme.dart';
 
 // Global route observer to allow screens to react to navigation events
 final RouteObserver<ModalRoute<void>> routeObserver = RouteObserver<ModalRoute<void>>();
+
+final GlobalKey<ScaffoldMessengerState> rootScaffoldMessengerKey =
+    GlobalKey<ScaffoldMessengerState>();
+
+final GlobalKey<NavigatorState> rootNavigatorKey = 
+    GlobalKey<NavigatorState>();
 
 // Global provider to track Firebase initialization status
 final firebaseInitializedProvider = StateProvider<bool>((ref) => false);
@@ -107,7 +117,15 @@ Future<void> initializeFirebaseAsync() async {
     final coreInitDuration = coreInitTime.difference(firebaseStartTime);
     print("Firebase core initialized in: ${coreInitDuration.inMilliseconds}ms");
 
-    // Pref is initialized during startup; skip re-fetch here to avoid unused var
+    final Preferences pref = locator<Preferences>();
+
+     FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+      PlatformDispatcher.instance.onError = (error, stack) {
+      FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+        return true;
+      };
+      FirebaseCrashlytics.instance.setUserIdentifier("${pref.deviceName!} ${pref.imei}");
+
 
     // Configure messaging
     final messaging = FirebaseMessaging.instance;
@@ -179,6 +197,11 @@ Future<void> initializeFirebaseAsync() async {
   }
 }
 
+void _clearBadgeOnStartup() async {
+    // await AwesomeNotifications().cancelAll();        // Clear all notifications
+    await AwesomeNotifications().resetGlobalBadge(); // Clear badge count
+  }
+
 // This method represents the project's entry level.
 void main() async {
   // Track startup time
@@ -186,6 +209,7 @@ void main() async {
   print("App startup began at: $startTime");
 
   WidgetsFlutterBinding.ensureInitialized();
+  initializeResources();
   if (!kIsWeb && TargetPlatform.android == defaultTargetPlatform) {
     await FlutterDisplayMode.setHighRefreshRate();
   }
@@ -197,7 +221,12 @@ void main() async {
 
   final Preferences pref = locator<Preferences>();
   await pref.init();
-
+  try{
+    _clearBadgeOnStartup();
+  }
+  catch(e){
+    print("Error in notification clearing $e");
+  }
   // Run the app first without waiting for Firebase
   final beforeFirebase = DateTime.now();
   final startupDuration = beforeFirebase.difference(startTime);
@@ -223,6 +252,10 @@ class MyApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final themeProvide = ref.watch(themeProvider);
     themeProvide.getThemeData();
+    
+    // Initialize lightweight subscription manager
+    final subscriptionManager = ref.watch(subscriptionManagerProvider);
+    
     // SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
     //     statusBarIconBrightness: themeProvide.isDarkMode
     //         ? Brightness.light
@@ -231,6 +264,8 @@ class MyApp extends ConsumerWidget {
     //         themeProvide.isDarkMode ? Brightness.light : Brightness.dark,
     //     statusBarColor: themeProvide.isDarkMode ? Colors.black :Colors.white));
     return MaterialApp(
+        navigatorKey: rootNavigatorKey,
+        scaffoldMessengerKey: rootScaffoldMessengerKey,
         themeMode: themeProvide.themeMode,
         theme: themeProvide.currentTheme,
         darkTheme: MyThemes.darkTheme,
@@ -238,7 +273,16 @@ class MyApp extends ConsumerWidget {
         debugShowCheckedModeBanner: false,
         initialRoute: Routes.splash,
         onGenerateRoute: AppRoutes.router,
-        navigatorObservers: [routeObserver]);
+        navigatorObservers: [routeObserver],
+      builder: (context, child) {
+        return Stack(
+          children: [
+            child!,
+            const ChartOverlayWidget(),
+          ],
+        );
+      },
+    );
   }
 }
 

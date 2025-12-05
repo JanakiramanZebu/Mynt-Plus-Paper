@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_swipe_action_cell/flutter_swipe_action_cell.dart';
 import 'package:mynt_plus/res/colors.dart';
+import '../../../sharedWidget/no_data_found.dart';
 import '../../../utils/responsive_modal.dart';
 import '../../../models/marketwatch_model/get_quotes.dart';
 import '../../../models/order_book_model/order_book_model.dart';
@@ -286,9 +287,11 @@ class _WatchListScreenState extends State<WatchListScreen>
 
       const predefined = ['My Stocks', 'Nifty50', 'Niftybank', 'Sensex'];
       final isPredefined = predefined.contains(newWatchlistName);
-
-      await marketWatch.changeWlName(
-          newWatchlistName, isPredefined ? 'Yes' : 'No');
+      
+      // Clear current scrips before loading new watchlist
+      marketWatch.clearCurrentScrips();
+      
+      await marketWatch.changeWlName(newWatchlistName, isPredefined ? 'Yes' : 'No');
       await marketWatch.changeWLScrip(newWatchlistName, context);
 
       await marketWatch.requestMWScrip(context: context, isSubscribe: true);
@@ -358,7 +361,7 @@ class _WatchListScreenState extends State<WatchListScreen>
 
       return SafeArea(
         child: NestedScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
+          physics: const ClampingScrollPhysics(),
           headerSliverBuilder: (_, inner) => [
             _buildSearchBar(
                 ref, theme, wlName, isPreDef, watchList?.values?.length ?? 0),
@@ -432,7 +435,22 @@ class _WatchListScreenState extends State<WatchListScreen>
     }
 
     if (scrips.isEmpty) {
-      return _buildEmptyState(theme, ref.read(marketWatchProvider));
+      return NoDataFound(
+        title: 'No symbol Found',
+        subtitle: 'Use the search box above to find and add stocks, indices, futures or options.',
+        secondaryEnabled: true,
+         onSecondary: (){
+          WidgetsBinding.instance.addPostFrameCallback((_) async {
+                  await ref.read(marketWatchProvider).requestMWScrip(context: context, isSubscribe: false);
+                });
+                Navigator.pushNamed(
+                  context,
+                  Routes.searchScrip,
+                  arguments: ref.read(marketWatchProvider).wlName,
+                );
+         },
+        secondaryLabel: 'Add Symbol',
+      );
     }
 
     return _buildWatchlistView(scrips, sortBy);
@@ -490,6 +508,7 @@ class _WatchListScreenState extends State<WatchListScreen>
                               ? colors.textSecondaryDark
                               : colors.textSecondaryLight,
                           theme: theme.isDarkMode,
+                          fw: 0,
                         ),
                       ),
                     ],
@@ -639,7 +658,7 @@ class _WatchListScreenState extends State<WatchListScreen>
         key: const PageStorageKey<String>('watchlistTabs'),
         controller: _tabScrollController,
         scrollDirection: Axis.horizontal,
-        physics: const BouncingScrollPhysics(),
+        physics: ClampingScrollPhysics(),
         itemCount: watchList.values.length,
         itemBuilder: (_, i) {
           final name = watchList.values[i];
@@ -677,7 +696,7 @@ class _WatchListScreenState extends State<WatchListScreen>
                         textOverflow: TextOverflow.ellipsis,
                         maxLines: 1,
                         theme: theme.isDarkMode,
-                        fw: selected ? 2 : null,
+                        fw: selected ? 2 : 2,
                       ),
                     ),
                     AnimatedContainer(
@@ -704,7 +723,7 @@ class _WatchListScreenState extends State<WatchListScreen>
   Widget _buildEmptyState(ThemesProvider theme, MarketWatchProvider mw) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+        padding: const EdgeInsets.symmetric(horizontal: 0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -712,14 +731,7 @@ class _WatchListScreenState extends State<WatchListScreen>
               label: 'Add Symbol',
               icon: assets.addCircleIcon,
               onPress: () {
-                WidgetsBinding.instance.addPostFrameCallback((_) async {
-                  await mw.requestMWScrip(context: context, isSubscribe: false);
-                });
-                Navigator.pushNamed(
-                  context,
-                  Routes.searchScrip,
-                  arguments: mw.wlName,
-                );
+                
               },
             ),
             const SizedBox(height: 8),
@@ -729,6 +741,7 @@ class _WatchListScreenState extends State<WatchListScreen>
                   ? colors.textPrimaryDark
                   : colors.textPrimaryLight,
               theme: theme.isDarkMode,
+              fw:0
             ),
             const SizedBox(height: 8),
             SizedBox(
@@ -741,8 +754,14 @@ class _WatchListScreenState extends State<WatchListScreen>
                     : colors.textSecondaryLight,
                 theme: theme.isDarkMode,
                 align: TextAlign.center,
+                fw:0
               ),
             ),
+            // const SizedBox(height: 16),
+            //  const SizedBox(
+            //     height: 350,
+            //     child: TradeAction(showBookmarkButton: true),
+            //   ),
           ],
         ),
       ),
@@ -752,6 +771,7 @@ class _WatchListScreenState extends State<WatchListScreen>
   Widget _buildWatchlistView(List scrips, String sortBy) {
     return ListView.separated(
       key: ValueKey('${scrips.length}_$sortBy'),
+      physics: ClampingScrollPhysics(),
       itemCount: scrips.length,
       cacheExtent: 500,
       separatorBuilder: (_, __) => const ListDivider(),

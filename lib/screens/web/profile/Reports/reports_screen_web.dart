@@ -52,7 +52,7 @@ class ReportsScreenWeb extends ConsumerWidget {
                 await ledgerdate.getCurrentDate('else');
 
                 ledgerdate.fetchLegerData(
-                    context, ledgerdate.startDate, ledgerdate.endDate);
+                    context, ledgerdate.startDate, ledgerdate.endDate, ledgerdate.includeBillMargin);
 
                 Navigator.pushNamed(context, Routes.ledgerscreen,
                     arguments: "DDDDD");

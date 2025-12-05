@@ -165,11 +165,14 @@ class _OptionStrategyEditState extends ConsumerState<OptionStrategyEdit> {
               TextFormField(
                   controller: textCtrl,
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  style: 
-TextWidget.textStyle(
-                 fontSize: 14 , color: theme.isDarkMode
-                          ? colors.colorWhite
-                          : colors.colorBlue , theme: theme.isDarkMode , fw: 1 ),	
+                   style: TextWidget.textStyle(
+                                    fontSize: 16,
+                                    color: theme.isDarkMode
+                                        ? colors.textPrimaryDark
+                                        : colors.textPrimaryLight,
+                                    theme: theme.isDarkMode,
+                                    fw: 0,
+                                  ),
 
                   decoration: InputDecoration(
                       fillColor: theme.isDarkMode
@@ -177,9 +180,12 @@ TextWidget.textStyle(
                           : const Color(0xffF1F3F8),
                       filled: true,
                       hintText: "Enter lot size",
-                      hintStyle: 
-                      TextWidget.textStyle(
-                 fontSize: 12 , color: Colors.grey , theme: theme.isDarkMode , fw: 00 ),	
+                      hintStyle: TextWidget.textStyle(
+                                      fontSize: 14,
+                                      theme: theme.isDarkMode,
+                                     color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                                    fw: 0,
+                                    ),
                       contentPadding: const EdgeInsets.symmetric(
                           vertical: 8, horizontal: 16),
                       errorText: errorText,

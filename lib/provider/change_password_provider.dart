@@ -230,7 +230,8 @@ class ChangePasswordProvider extends DefaultChangeNotifier {
       _forgetPasswordModel = await api.getForgetPassword(field, value, context);
       if (_forgetPasswordModel!.stat == "Ok") {
         ConstantName.sessCheck = true;
-        showResponsiveSuccess(context, 'New Password has been sent to your registered Mobile Number /Email');
+        successMessage(
+            context, 'New Password has been sent to your registered Mobile Number /Email');
 
         userIdController.text = '${_forgetPasswordModel!.clientid}';
 
@@ -240,7 +241,7 @@ class ChangePasswordProvider extends DefaultChangeNotifier {
           Navigator.pushNamed(context, Routes.changePass, arguments: "No");
         });
       } else if (_forgetPasswordModel!.stat == "Not_Ok") {
-        showResponsiveWarningMessage(context, _forgetPasswordModel!.emsg!);
+        warningMessage(context, _forgetPasswordModel!.emsg!);
       } else if (_forgetPasswordModel!.emsg ==
           "Session Expired :  Invalid Session Key") {
         ref.read(authProvider).ifSessionExpired(context);
@@ -274,7 +275,7 @@ class ChangePasswordProvider extends DefaultChangeNotifier {
         ConstantName.sessCheck = true;
         ref.read(authProvider).clearTextField();
 // FocusScope.of(context).unfocus();
-        showResponsiveSuccess(context, '${_changepasswordmodel!.dmsg}');
+            successMessage(context, '${_changepasswordmodel!.dmsg}');
         pref.setHideLoginOptBtn(false);
         ref.read(authProvider).loginMethCtrl.text = pref.clientId!;
         pref.setMobileLogin(false);

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/provider/core/default_change_notifier.dart';
@@ -13,11 +14,17 @@ class ChartUpdateNotifier extends DefaultChangeNotifier {
   ChartUpdateNotifier(this.ref);
   String orientation = 'portrait';
 
-  void changeOrientation(String orientationData){
+  changeOrientation(String orientationData){
     if(orientationData == 'landscape'){
+    if(Platform.isIOS){
     SystemChrome.setPreferredOrientations([
-                              DeviceOrientation.landscapeLeft,
-                          ]);
+              DeviceOrientation.landscapeRight,
+              ]);}
+    else{
+              SystemChrome.setPreferredOrientations([
+              DeviceOrientation.landscapeLeft,
+              ]);
+    }
       orientation = 'landscape';
     }
     else{

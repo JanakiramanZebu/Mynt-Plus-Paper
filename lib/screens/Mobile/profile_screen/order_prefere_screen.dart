@@ -164,6 +164,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
           children: [
             Expanded(
               child: SingleChildScrollView(
+                physics: ClampingScrollPhysics(),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -219,8 +220,8 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                               fontSize: 14,
                                               theme: theme.isDarkMode,
                                               fw: orderType == orderTypes[index]
-                                                  ? 0
-                                                  : null)));
+                                                  ? 2
+                                                  : 0)));
                                 },
                                 separatorBuilder: (context, index) {
                                   return const SizedBox(width: 8);
@@ -279,14 +280,14 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                               theme: theme.isDarkMode,
                                               fw: priceType ==
                                                       priceTypes[index]['type']
-                                                  ? 0
-                                                  : null)));
+                                                  ? 2
+                                                  : 0)));
                                 },
                                 separatorBuilder: (context, index) {
                                   return const SizedBox(width: 8);
                                 },
                                 itemCount: (orderType == "CO - BO")
-                                    ? 2
+                                    ? 3
                                     : priceTypes.length))),
             
                     Row(
@@ -346,7 +347,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                                 : colors.textPrimaryLight,
                                             fontSize: 14,
                                             theme: theme.isDarkMode,
-                                            fw: isSelected ? 0 : null,
+                                            fw: isSelected ? 2 : 0,
                                           ),
                                         ),
                                       );
@@ -395,12 +396,14 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                             int parsed = int.tryParse(value) ?? 1;
                                             if (parsed > 20) {
                                               mktProtCtrl.text = "20";
-                                              showResponsiveWarningMessage(context,
-                                                  "Can't enter greater than 20% of Market Protection");
+                                                warningMessage(context,
+                                                    "Can't enter greater than 20% of Market Protection"
+                                              );
                                             } else if (parsed < 1) {
                                               mktProtCtrl.text = "1";
-                                              showResponsiveWarningMessage(context,
-                                                  "can't enter less than 1% of Market Protection");
+                                                warningMessage(context,
+                                                    "can't enter less than 1% of Market Protection"
+                                              );
                                             }
                                           }
                                         });
@@ -411,6 +414,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                             : colors.textPrimaryLight,
                                         fontSize: 16,
                                         theme: theme.isDarkMode,
+                                        fw: 0,
                                       ),
                                       textCtrl: mktProtCtrl,
                                       prefixIcon: Container(
@@ -475,6 +479,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                             : Color(QtyPrefer == OrdQtyPref.mktqty
                                 ? 0xff3E4763
                                 : 0xff666666),
+                        fw: 0,
                       ),
                       Radio<OrdQtyPref>(
                           fillColor: MaterialStateProperty.resolveWith<Color>(
@@ -506,6 +511,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                             : Color(QtyPrefer == OrdQtyPref.mktqty
                                 ? 0xff3E4763
                                 : 0xff666666),
+                        fw: 0,
                       ),
                     ]),
                     if (QtyPrefer == OrdQtyPref.mktlot) ...[
@@ -522,9 +528,10 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                         : const Color(0xffF1F3F8),
                                     hintText: qtyCtrl.text,
                                     hintStyle: TextWidget.textStyle(
-                                      color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                      color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
                                       fontSize: 14,
                                       theme: theme.isDarkMode,
+                                      fw: 0,
                                     ),
                                     inputFormate: [
                                       FilteringTextInputFormatter.digitsOnly
@@ -535,6 +542,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                           : colors.textPrimaryLight,
                                       fontSize: 16,
                                       theme: theme.isDarkMode,
+                                      fw: 0,
                                     ),
                                     textCtrl: qtyCtrl,
                                     textAlign: TextAlign.start,
@@ -543,8 +551,8 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                           .hideCurrentSnackBar();
             
                                       if (value.isEmpty) {
-                                        showResponsiveWarningMessage(context,
-                                            "Quantity cannot be empty");
+                                        warningMessage(context,
+                                                "Quantity cannot be empty");
                                       } else {
                                         String newValue = value.replaceAll(
                                             RegExp(r'[^0-9]'), '');
@@ -615,8 +623,8 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                               theme: theme.isDarkMode,
                                               fw: expriceType ==
                                                       expriceTypes[index]['type']
-                                                  ? 0
-                                                  : null)));
+                                                  ? 2
+                                                  : 0)));
                                 },
                                 separatorBuilder: (context, index) {
                                   return const SizedBox(width: 8);
@@ -647,12 +655,12 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                           if (mktProtCtrl.text.isEmpty ||
                               int.parse(mktProtCtrl.text) > 20 ||
                               int.parse(mktProtCtrl.text) < 1) {
-                            showResponsiveWarningMessage(context,
-                                "Market Protection between 1% to 20%");
+                                warningMessage(context,
+                                    "Market Protection between 1% to 20%");
                           } else if ((QtyPrefer == OrdQtyPref.mktlot) &&
                               qtyCtrl.text == "") {
-                            showResponsiveWarningMessage(
-                                context, "Quantity can not be 0 or empty");
+                                warningMessage(
+                                    context, "Quantity can not be 0 or empty");
                           } else {
                             await setPrefOrderPrefer(context);
                           }
@@ -678,7 +686,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
       theme: false,
       color:
           theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-      fw: null,
+      fw: 1,
     );
   }
 
@@ -700,7 +708,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
     final authProv = ref.read(authProvider);
     await authProv.getPrefOrderPrefer(local, true, context);
 
-    showResponsiveSuccess(context, "Order Preference hav been saved");
+        successMessage(context, "Order Preference hav been saved");
     await authProv.setPrefOrderPrefer(context);
     Navigator.pop(context);
     if (gobackOP) {
@@ -716,9 +724,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
     orderType = selectedOrderType == "Cover" || selectedOrderType == "Bracket"
         ? "CO - BO"
         : selectedOrderType;
-    priceType = (orderType == "CO - BO" && selectedPriceType == "SL Limit")
-        ? "Limit"
-        : (orderType == "CO - BO" && selectedPriceType == "SL MKT")
+    priceType = (orderType == "CO - BO" && selectedPriceType == "SL MKT")
             ? "Market"
             : selectedPriceType;
   }

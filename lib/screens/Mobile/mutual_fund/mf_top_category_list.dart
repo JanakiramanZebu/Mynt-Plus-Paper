@@ -54,7 +54,8 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
       if (category['title'] == widget.title) {
         List<dynamic> subTabs = category['sub'] ?? [];
         setState(() {
-          tabTitles = subTabs.map((tab) => tab.toString()).toList();
+          // Remove duplicates and convert to list
+          tabTitles = subTabs.map((tab) => tab.toString()).toSet().toList();
         });
         break;
       }
@@ -165,7 +166,9 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
         child: TransparentLoaderScreen(
           isLoading: mfData.bestmfloader ?? false,
           child: tabTitles.isEmpty
-              ? const Center(child: NoDataFound())
+              ? const Center(child: NoDataFound(
+                secondaryEnabled: false,
+              ))
               : Column(
                   children: [
                     // Custom tabs section
@@ -182,6 +185,7 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
                         ),
                       ),
                       child: SingleChildScrollView(
+                        physics: ClampingScrollPhysics(),
                         controller: _scrollController,
                         scrollDirection: Axis.horizontal,
                         child: Row(
@@ -238,7 +242,7 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
                                 : colors.textSecondaryLight,
                             textOverflow: TextOverflow.ellipsis,
                             theme: theme.isDarkMode,
-                            fw: 3,
+                            fw: 0,
                           ),
                           PopupMenuButton<String>(
                             color: theme.isDarkMode
@@ -258,7 +262,7 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
                                         ? colors.textSecondaryDark
                                         : colors.textSecondaryLight,
                                     theme: theme.isDarkMode,
-                                    fw: 3,
+                                    fw: 0,
                                   )),
                               PopupMenuItem(
                                   value: '3Y Returns',
@@ -268,7 +272,7 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
                                         ? colors.textSecondaryDark
                                         : colors.textSecondaryLight,
                                     theme: theme.isDarkMode,
-                                    fw: 3,
+                                    fw: 0,
                                   )),
                               PopupMenuItem(
                                   value: '5Y Returns',
@@ -278,7 +282,7 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
                                         ? colors.textSecondaryDark
                                         : colors.textSecondaryLight,
                                     theme: theme.isDarkMode,
-                                    fw: 3,
+                                    fw: 0,
                                   )),
                             ],
                             child: Material(
@@ -301,7 +305,7 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
                                         : colors.textSecondaryLight,
                                     textOverflow: TextOverflow.ellipsis,
                                     theme: theme.isDarkMode,
-                                    fw: 3,
+                                    fw: 0,
                                   ),
                                 ),
                               ),
@@ -348,7 +352,7 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
             textOverflow: TextOverflow.ellipsis,
             maxLines: 1,
             theme: theme.isDarkMode,
-            fw: isActive ? 2 : null,
+            fw: isActive ? 2 : 2,  
           ),
         ),
         AnimatedContainer(
@@ -395,17 +399,19 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
             bValue = b.s3Year;
         }
 
-        final aDouble = double.tryParse(aValue ?? '0.00') ?? 0.00;
-        final bDouble = double.tryParse(bValue ?? '0.00') ?? 0.00;
-        return bDouble.compareTo(aDouble); // Sort in descending order
+         return (double.tryParse(bValue ?? "0") ?? 0)
+            .compareTo(double.tryParse(aValue ?? "0") ?? 0);// Sort in descending order
       });
     }
 
     if (sortedList == null || sortedList.isEmpty) {
-      return const Center(child: NoDataFound());
+      return const Center(child: NoDataFound(
+        secondaryEnabled: false,
+      ));
     }
 
     return ListView.separated(
+      physics: ClampingScrollPhysics(),
       itemCount: sortedList.length,
       separatorBuilder: (_, __) => const ListDivider(),
       itemBuilder: (BuildContext context, int index) {
@@ -440,7 +446,7 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
                 );
               }
             } catch (e) {
-              showResponsiveErrorMessage(
+              successMessage(
                   context, "Error updating watchlist: ${e.toString()}");
             }
           },
@@ -478,8 +484,7 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
                   //   arguments: bInstance,
                   // );
                 } else {
-                  showResponsiveErrorMessage(
-                      context, "No Single Page Data");
+                      successMessage(context, "No Single Page Data");
                   final jsondata = MutualFundList.fromJson(item.toJson());
                   Navigator.pushNamed(context, Routes.mforderScreen,
                       arguments: jsondata);
@@ -487,12 +492,11 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
                   mfData.chngOrderType("One-time");
                 }
               } else {
-                showResponsiveErrorMessage(
-                    context, "Missing fund information");
+                    successMessage(context, "Missing fund information");
               }
             } catch (e) {
-              showResponsiveErrorMessage(
-                  context, "Error loading fund details: ${e.toString()}");
+              // successMessage(
+              //     context, "Error loading fund details: ${e.toString()}");
             }
           },
           child: ListTile(
@@ -513,7 +517,7 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
                     ? colors.textPrimaryDark
                     : colors.textPrimaryLight,
                 theme: theme.isDarkMode,
-                fw: 3,
+                fw: 0,
               ),
             ),
             subtitle: Padding(
@@ -524,16 +528,16 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
                     ? colors.textSecondaryDark
                     : colors.textSecondaryLight,
                 theme: theme.isDarkMode,
-                fw: 3,
+                fw: 0,
               ),
             ),
             trailing: TextWidget.subText(
-              text: _formatReturns(item.s3Year),
+              text: _formatReturns(_getReturnValue(item, selectedReturn)),
               color: theme.isDarkMode
                   ? colors.textPrimaryDark
                   : colors.textPrimaryLight,
               theme: theme.isDarkMode,
-              fw: 3,
+              fw: 0,
             ),
           )),
     );

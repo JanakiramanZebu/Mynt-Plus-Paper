@@ -509,9 +509,11 @@ class BondsProvider extends DefaultChangeNotifier {
           await api.placeBondOrderApi(symbol, investmentValue, price);
       fetchBondsOrderBook();
 
-      _bondOrderResponcesModel!.status == "success"
-          ? showResponsiveSuccess(context, _bondOrderResponcesModel!.orderStatusResponse!)
-          : showResponsiveErrorMessage(context, _bondOrderResponcesModel!.reason!);
+      
+          _bondOrderResponcesModel!.status == "success"
+              ? successMessage(
+                  context, _bondOrderResponcesModel!.orderStatusResponse!)
+              : error(context, _bondOrderResponcesModel!.reason!);
       Navigator.pop(context);
       // Navigator.pushReplacementNamed(context, Routes.bonds, arguments: 1);
       // return _ipoOrderResponcesModel;
@@ -542,7 +544,8 @@ class BondsProvider extends DefaultChangeNotifier {
       print('Updated bonds order book fetched successfully.');
       notifyListeners();
 
-      showResponsiveSuccess(context, _bondOrderResponcesModel!.orderStatusResponse ?? "");
+      successMessage(
+          context, _bondOrderResponcesModel!.orderStatusResponse ?? "");
 
       // Navigator.pop(context);
       // Navigator.pushNamed(context, Routes.bondsorderbook);

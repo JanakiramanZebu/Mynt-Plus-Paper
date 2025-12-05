@@ -73,7 +73,7 @@ class ExitPositionScreen extends ConsumerWidget {
                   Icons.arrow_back_ios_outlined,
                   size: 18,
                   color:
-                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                      theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                 ),
               ),
             ),
@@ -82,39 +82,57 @@ class ExitPositionScreen extends ConsumerWidget {
               text:
                   "Exit Position (${positions.openPosition?.where((p) => p.qty != "0").length ?? 0})",
               theme: false,
-              color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+              color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
               fw: 1),
           actions: [
-            Row(
-              children: [
-                InkWell(
-                  onTap: () {
-                    positions.selectExitAllPosition(
-                        positions.isExitAllPosition ? false : true);
-                  },
-                  child: SvgPicture.asset(
-                    theme.isDarkMode
-                        ? positions.isExitAllPosition
-                            ? assets.darkCheckedboxIcon
-                            : assets.darkCheckboxIcon
-                        : positions.isExitAllPosition
-                            ? assets.ckeckedboxIcon
-                            : assets.ckeckboxIcon,
-                    width: 22,
+            Container(
+              margin: const EdgeInsets.only(right: 16),
+              child: Row(
+                children: [
+                  InkWell(
+                    onTap: () async {
+                      await Future.delayed(const Duration(milliseconds: 150));
+                      positions.selectExitAllPosition(
+                          positions.isExitAllPosition ? false : true);
+                    },
+                    customBorder: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    splashColor: theme.isDarkMode
+                        ? colors.splashColorDark
+                        : colors.splashColorLight,
+                    highlightColor: theme.isDarkMode
+                        ? colors.highlightDark
+                        : colors.highlightLight,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6.0),
+                      child: Row(
+                        children: [
+                          SvgPicture.asset(
+                              theme.isDarkMode
+                                  ? positions.isExitAllPosition
+                                      ? assets.darkCheckedboxIcon
+                                      : assets.darkCheckboxIcon
+                                  : positions.isExitAllPosition
+                                      ? assets.ckeckedboxIcon
+                                      : assets.ckeckboxIcon,
+                            width: 22,
+                          ),
+                          const SizedBox(width: 4),
+                          TextWidget.subText(
+                                 text:
+                                     positions.isExitAllPosition ? "Cancel" : "Select All",
+                                 theme: false,
+                                 color: theme.isDarkMode
+                                     ? colors.colorWhite
+                                     : colors.textPrimaryLight,
+                              fw: 2),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  child: TextWidget.subText(
-                      text:
-                          positions.isExitAllPosition ? "Cancel" : "Select All",
-                      theme: false,
-                      color: theme.isDarkMode
-                          ? colors.colorLightBlue
-                          : colors.colorBlue,
-                      fw: 0),
-                )
-              ],
+                ],
+              ),
             ),
           ],
         ),
@@ -214,12 +232,12 @@ class ExitPositionScreen extends ConsumerWidget {
                                   children: [
                                     TextWidget.subText(
                                         text:
-                                            "${position.symbol?.replaceAll("-EQ", "")} ",
+                                            "${position.symbol?.replaceAll("-EQ", "")} ${position.expDate} ",
                                         theme: false,
                                         color: theme.isDarkMode
                                             ? colors.textPrimaryDark
                                             : colors.textPrimaryLight,
-                                        fw: 3,
+                                        fw: 0,
                                         textOverflow: TextOverflow.ellipsis),
                                     TextWidget.subText(
                                         text: "${position.option} ",
@@ -227,20 +245,20 @@ class ExitPositionScreen extends ConsumerWidget {
                                         color: theme.isDarkMode
                                             ? colors.textPrimaryDark
                                             : colors.textPrimaryLight,
-                                        fw: 3,
+                                        fw: 0,
                                         textOverflow: TextOverflow.ellipsis),
                                   ],
                                 ),
                                 Row(
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
-                                    TextWidget.paraText(
+                                    TextWidget.subText(
                                         text: "${position.exch}",
                                         theme: false,
                                         color: theme.isDarkMode
-                                            ? colors.textSecondaryDark
-                                            : colors.textSecondaryLight,
-                                        fw: 3,
+                                            ? colors.textPrimaryDark
+                                            : colors.textPrimaryLight,
+                                        fw: 0,
                                         textOverflow: TextOverflow.ellipsis),
                                   ],
                                 )
@@ -254,34 +272,34 @@ class ExitPositionScreen extends ConsumerWidget {
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     TextWidget.paraText(
-                                        text: "Qty ",
+                                        text: "QTY ",
                                         theme: false,
                                         color: theme.isDarkMode
                                             ? colors.textSecondaryDark
                                             : colors.textSecondaryLight,
-                                        fw: 3),
+                                        fw: 0),
                                     TextWidget.paraText(
                                         text: "${((int.tryParse(position.qty.toString()) ?? 0) / (position.exch == 'MCX' ? (int.tryParse(position.ls.toString()) ?? 1) : 1)).toInt()}",
                                         theme: false,
                                         color: theme.isDarkMode
                                             ? colors.textSecondaryDark
                                             : colors.textSecondaryLight,
-                                        fw: 3),
+                                        fw: 0),
                                     const SizedBox(width: 4),
                                     TextWidget.paraText(
-                                        text: "Avg ",
+                                        text: "AVG ",
                                         theme: false,
                                         color: theme.isDarkMode
                                             ? colors.textSecondaryDark
                                             : colors.textSecondaryLight,
-                                        fw: 3),
+                                        fw: 0),
                                     TextWidget.paraText(
                                         text: "${position.avgPrc}",
                                         theme: false,
                                         color: theme.isDarkMode
                                             ? colors.textSecondaryDark
                                             : colors.textSecondaryLight,
-                                        fw: 3),
+                                        fw: 0),
                                     // TextWidget.paraText(
                                     //     text: "  ${position.expDate} ",
                                     //     theme: false,
@@ -307,7 +325,7 @@ class ExitPositionScreen extends ConsumerWidget {
                                                       ? (position.profitNloss ?? position.rpnl)
                                                       : position.mTm,
                                                   theme),
-                                              fw: 3),
+                                              fw: 0),
                                         ],
                                       )
                                     : Row(
@@ -359,7 +377,7 @@ class ExitPositionScreen extends ConsumerWidget {
                                         color: theme.isDarkMode
                                             ? colors.textSecondaryDark
                                             : colors.textSecondaryLight,
-                                        fw: 3),
+                                        fw: 0),
                                   ],
                                 ),
                                 Row(
@@ -371,14 +389,14 @@ class ExitPositionScreen extends ConsumerWidget {
                                         color: theme.isDarkMode
                                             ? colors.textSecondaryDark
                                             : colors.textSecondaryLight,
-                                        fw: 3),
+                                        fw: 0),
                                     TextWidget.paraText(
                                         text: "${position.lp}",
                                         theme: false,
                                         color: theme.isDarkMode
                                             ? colors.textPrimaryDark
                                             : colors.textPrimaryLight,
-                                        fw: 3),
+                                        fw: 0),
                                   ],
                                 ),
                               ],
@@ -414,13 +432,13 @@ class ExitPositionScreen extends ConsumerWidget {
                   ),
                   decoration: BoxDecoration(
                       color: positions.exitPositionQty == 0
-                          ? colors.tertiary.withOpacity(.8)
+                          ? colors.tertiary.withOpacity(.2)
                           : colors.tertiary,
                       borderRadius: BorderRadius.circular(5)),
                   width: MediaQuery.of(context).size.width,
                   child: InkWell(
                     onTap: positions.exitPositionQty == 0
-                        ? () {}
+                        ? null
                         : () async {
                             try {
                               // Execute the exit position logic

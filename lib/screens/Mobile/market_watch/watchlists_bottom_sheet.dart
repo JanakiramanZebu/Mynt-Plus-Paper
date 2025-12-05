@@ -10,7 +10,6 @@ import '../../../sharedWidget/custom_drag_handler.dart';
 import '../../../sharedWidget/list_divider.dart';
 import 'create_watchlist.dart';
 import 'watchlist_rename.dart';
-import 'dart:math' as math;
 
 class WatchlistsBottomSheet extends StatefulWidget {
   final String currentWLName;
@@ -30,6 +29,7 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
       final watchlist = marketWatch.marketWatchlist!.values!;
       final preDefWl = marketWatch.preDefWL;
       final theme = ref.watch(themeProvider);
+
       return SafeArea(
         child: Container(
             decoration: BoxDecoration(
@@ -82,7 +82,7 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                   theme: theme.isDarkMode,
                                   fw: 1),
                             ),
-                            if (watchlist.length - 4 < 10)
+                            if (watchlist.length - preDefWl.length < 10)
                               Material(
                                 color: Colors.transparent,
                                 child: InkWell(
@@ -147,20 +147,26 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                             0.6, // Max 60% of screen height
                       ),
                       child: ListView.separated(
+                        physics: ClampingScrollPhysics(),
                           shrinkWrap: true,
                           padding: EdgeInsets.zero,
-                          itemCount: (watchlist.length - 4 >= 10
-                                      ? 10
-                                      : math.max(0, watchlist.length - 4))
-                                  .toInt() +
-                              preDefWl.length,
+                          itemCount: () {
+                            // Calculate user watchlist count (excluding predefined)
+                            final userWatchlistCount = watchlist.length - preDefWl.length;
+                            // Show max 10 user watchlists + all predefined watchlists
+                            return (userWatchlistCount > 10 ? 10 : userWatchlistCount) + preDefWl.length;
+                          }(),
                           itemBuilder: (BuildContext context, int index) {
-                            // First show custom watchlists
-                            if (index <
-                                (watchlist.length - 4 >= 10
-                                        ? 10
-                                        : math.max(0, watchlist.length - 4))
-                                    .toInt()) {
+                            // Calculate user watchlist count (excluding predefined)
+                            final userWatchlistCount = watchlist.length - preDefWl.length;
+                            final maxUserWatchlists = userWatchlistCount > 10 ? 10 : userWatchlistCount;
+
+                            // First show custom watchlists (max 10, excluding predefined)
+                            // User watchlists are at the beginning of the list (0 to userWatchlistCount-1)
+                            if (index < maxUserWatchlists) {
+                              // Access only user watchlists from the beginning of the array
+                              final watchlistName = watchlist[index];
+
                               return Material(
                                 color: Colors.transparent,
                                 child: InkWell(
@@ -223,11 +229,11 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                         theme: theme.isDarkMode,
                                         fw: widget.currentWLName !=
                                                 watchlist[index]
-                                            ? null
+                                            ? 0
                                             : 2,
                                       ),
                                     ),
-                                    trailing: watchlist.length > 1
+                                    trailing: (watchlist.length > 1 && !preDefWl.contains(watchlistName))
                                         ? Row(
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
@@ -365,20 +371,21 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                                                         shape:
                                                                             const CircleBorder(),
                                                                         child:
-                                                                            InkWell(
-                                                                          onTap:
+                                                                            TextButton(
+                                                                          onPressed:
                                                                               () async {
                                                                             await Future.delayed(const Duration(milliseconds: 150));
                                                                             Navigator.pop(context);
                                                                           },
-                                                                          borderRadius:
-                                                                              BorderRadius.circular(20),
-                                                                          splashColor: theme.isDarkMode
-                                                                              ? colors.splashColorDark
-                                                                              : colors.splashColorLight,
-                                                                          highlightColor: theme.isDarkMode
-                                                                              ? colors.splashColorDark
-                                                                              : colors.splashColorLight,
+                                                                          style: TextButton.styleFrom(
+                                                                            shape: const CircleBorder(),
+                                                                            padding: const EdgeInsets.all(0),
+                                                                            backgroundColor: Colors.transparent,
+                                                                            foregroundColor: Colors.transparent,
+                                                                            elevation: 0.0,
+                                                                            minimumSize: const Size(0, 40),
+                                                                            side: BorderSide.none,
+                                                                          ),
                                                                           child:
                                                                               Padding(
                                                                             padding:
@@ -416,7 +423,7 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                                                           color: theme.isDarkMode
                                                                               ? colors.textSecondaryDark
                                                                               : colors.textPrimaryLight,
-                                                                          fw: 3,
+                                                                          fw: 0,
                                                                           align: TextAlign.center),
                                                                     ),
                                                                   ),
@@ -514,24 +521,18 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                               );
                             } else {
                               // Then show pre-defined watchlists
-                              final preDefIndex = (index -
-                                      (watchlist.length - 4 >= 10
-                                              ? 10
-                                              : math.max(
-                                                  0, watchlist.length - 4))
-                                          .toInt())
-                                  .toInt();
-                              final isSelected =
-                                  widget.currentWLName == preDefWl[preDefIndex];
-            
+                              final preDefIndex = index - maxUserWatchlists;
+                              final preDefName = preDefWl[preDefIndex];
+                              final preDefWatchlistIndex = watchlist.indexOf(preDefName);
+                              final isSelected = widget.currentWLName == preDefName;
+
                               return Material(
                                 color: Colors.transparent,
                                 child: InkWell(
                                   onTap: () {
                                     ref
                                         .read(marketWatchProvider)
-                                        .setCurrentWatchlistPageIndex(
-                                            preDefIndex + watchlist.length - 4);
+                                        .setCurrentWatchlistPageIndex(preDefWatchlistIndex);
                                     ref.read(marketWatchProvider).changeWlName(
                                         preDefWl[preDefIndex], "Yes");
             
@@ -600,7 +601,7 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                                 ? colors.textSecondaryDark
                                                 : colors.textSecondaryLight,
                                         theme: theme.isDarkMode,
-                                        fw: isSelected ? 2 : null,
+                                        fw: isSelected ? 2 : 0,
                                       ),
                                     ),
                                   ),

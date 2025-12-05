@@ -8,6 +8,7 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:mynt_plus/provider/chart_provider.dart';
 import 'package:mynt_plus/routes/app_routes.dart';
 import 'package:mynt_plus/sharedWidget/list_divider.dart';
 import 'package:percent_indicator/percent_indicator.dart';
@@ -20,17 +21,26 @@ import '../../../provider/market_watch_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/user_profile_provider.dart';
 import '../../../provider/websocket_provider.dart';
+import '../../../locator/constant.dart';
+import '../../../models/marketwatch_model/get_quotes.dart';
+import '../../../models/marketwatch_model/market_watch_scrip_model.dart';
+import '../../../models/order_book_model/order_book_model.dart';
+import '../../../models/portfolio_model/holdings_model.dart';
+import '../../../provider/market_watch_provider.dart';
+import '../../../provider/portfolio_provider.dart';
+import '../../../provider/thems.dart';
+import '../../../provider/user_profile_provider.dart';
+import '../portfolio_screens/holdings/holdings_list.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
 import '../../../sharedWidget/custom_drag_handler.dart';
 import '../../../sharedWidget/no_data_found.dart';
+import '../../../sharedWidget/segment_activation_dialog.dart';
 import 'futures/future_screen.dart';
 import 'over_view/funtamental_data_widget.dart';
 import 'scrip_detail_dialogue.dart';
 import 'set_alert_screen.dart';
-import './fundamental_detail_screen.dart';
-import './set_alert_screen_new.dart';
 
 class ScripDepthInfo extends ConsumerStatefulWidget {
   final DepthInputArgs wlValue;
@@ -145,6 +155,71 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
     return safeSize;
   }
 
+  // Helper method to get holding data for current scrip
+  HoldingsModel? _getHoldingForCurrentScrip() {
+    final portfolio = ref.read(portfolioProvider);
+    final holdings = portfolio.holdingsModel;
+
+    if (holdings == null || holdings.isEmpty) {
+      return null;
+    }
+
+    // Find holding that matches current token
+    try {
+      return holdings.firstWhere(
+        (holding) {
+          if (holding.exchTsym == null || holding.exchTsym!.isEmpty) {
+            return false;
+          }
+          return holding.exchTsym![0].token == widget.wlValue.token;
+        },
+      );
+    } catch (e) {
+      // No matching holding found
+      return null;
+    }
+  }
+
+  // Build holdings card widget if user holds this scrip
+  Widget? _buildHoldingsCard() {
+    final holding = _getHoldingForCurrentScrip();
+
+    if (holding == null || holding.exchTsym == null || holding.exchTsym!.isEmpty) {
+      return null;
+    }
+
+    final theme = ref.read(themeProvider);
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+      decoration: BoxDecoration(
+        // color: theme.isDarkMode ? colors.searchBgDark : colors.searchBg,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Padding(
+          //   padding: const EdgeInsets.only(left: 16, top: 0, bottom: 4),
+          //   child: TextWidget.subText(
+          //     text: "Your Holdings",
+          //     theme: theme.isDarkMode,
+          //     color: theme.isDarkMode
+          //         ? colors.textSecondaryDark
+          //         : colors.textSecondaryLight,
+          //     fw: 2,
+          //   ),
+          // ),
+          HoldingsList(
+            fromDepthScreen: true,
+            holdingData: holding,
+            exchTsym: holding.exchTsym![0],
+          ),
+        ],
+      ),
+    );
+  }
+
   // Calculate dynamic initial size based on content height
   double _calculateDynamicInitialSize(BuildContext context) {
     if (ref.read(marketWatchProvider).actDeptBtn != "Overview" ||
@@ -207,6 +282,36 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
         token: widget.wlValue.token,
       );
     });
+  }
+
+    // Check if user has activated the segment for the current scrip
+  bool _isSegmentActive(String? segment) {
+    if (segment == null || segment.isEmpty) return true;
+
+    List<String> userExarr = ref.read(userProfileProvider).userDetailModel?.exarr ?? [];
+    // List<String> userExarr = [];
+      // userExarr.remove("NSE");
+    // Check if the segment exists in user's activated segments (exarr)
+    return (userExarr.isEmpty ? true : userExarr.contains(segment));
+  }
+
+  // Show segment activation dialog
+  void _showSegmentActivationDialog(BuildContext context, String segment) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return SegmentActivationDialog(
+          segmentName: segment,
+          onActivate: () {
+            // Navigate to user account screen with Trading Preferences expanded
+            final args = {
+              'expandSection': 'Trading Preferences',
+            };
+            Navigator.pushNamed(context, Routes.myaccountScreen, arguments: args);
+          },
+        );
+      },
+    );
   }
 
   // Preprocess depth data
@@ -485,7 +590,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
             
                                          // Calculate dynamic initial size for Overview state
                      if (scripInfo.actDeptBtn == "Overview") {
-                       initSize = _calculateDynamicInitialSize(context);
+                       initSize = _buildHoldingsCard() != null ? 0.39 : _calculateDynamicInitialSize(context);
                      }
                      
                      // Ensure initSize is safe before building DraggableScrollableSheet
@@ -888,6 +993,12 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                       ],
                                                     ),
                                                   ),
+                                                  // Holdings card - display if user holds this scrip
+                                                  if (_buildHoldingsCard() != null)
+                                                    Padding(
+                                                      padding: const EdgeInsets.only(bottom: 12),
+                                                      child: _buildHoldingsCard()!,
+                                                    ),
                                                   if (!scripInfo
                                                           .scripDepthloader &&
                                                       widget.wlValue.instname !=
@@ -1399,7 +1510,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                 },
                                                 child: ListView(
                                                     physics:
-                                                        const AlwaysScrollableScrollPhysics(),
+                                                        const ClampingScrollPhysics(),
                                                     controller:
                                                         scrollController,
                                                     children: [
@@ -1441,7 +1552,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                          });
                             
                                                                         if (scripInfo
-                                                                            .scripsize) {
+                                                                            .scripsize && (widget.isfromOptionChain ?? false) == false) {
                                                                           Navigator.pop(
                                                                               context);
                                                                           Navigator.pop(
@@ -1456,12 +1567,12 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                           scripInfo.requestMWScrip(
                                                                               context: context,
                                                                               isSubscribe: true);
-                                                                          scripInfo
-                                                                              .searchClear();
+                                                                          // scripInfo
+                                                                          //     .searchClear();
                                                                           scripInfo
                                                                               .setpageName("");
-                                                                          Navigator.pop(
-                                                                              context);
+                                                                          // Navigator.pop(
+                                                                          //     context);
                                                                           currentRouteName =
                                                                               'homeScreen';
                                                                         }
@@ -1482,7 +1593,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                           originalArgs = widget.wlValue;
                                                                         }
                                                                         
-                                                                        ref.read(chartProvider.notifier).showChart(chartArgs, previousRoute: previousRoute, originalArgs: originalArgs);
+                                                                        ref.read(chartProvider.notifier).showChart(chartArgs, previousRoute: previousRoute, originalArgs: originalArgs, isfromoption: widget.isfromOptionChain);
                             
                                                                         scripInfo.setChartScript(
                                                                             widget.wlValue.exch,
@@ -2229,10 +2340,16 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
         holdQty: '',
         isModify: false,
         raw: {});
+    
+    var scriptInfoData = ref.read(marketWatchProvider).scripInfoModel;
+    if (!_isSegmentActive(scriptInfoData?.exch)) {
+      _showSegmentActivationDialog(ctx, scriptInfoData?.exch ?? "Unknown");
+      return;
+    }
     Navigator.pop(ctx);
     Navigator.pushNamed(ctx, Routes.placeOrderScreen, arguments: {
       "orderArg": orderArgs,
-      "scripInfo": ref.read(marketWatchProvider).scripInfoModel!,
+      "scripInfo": scriptInfoData!,
       "isBskt": widget.isBasket
     });
   }

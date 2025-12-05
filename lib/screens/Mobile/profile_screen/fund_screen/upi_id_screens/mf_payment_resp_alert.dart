@@ -83,6 +83,7 @@ class _MfPaymentRespAlertState extends State<MfPaymentRespAlert> {
                           
                                Icons.cancel_rounded,
                           //
+                          color: theme.isDarkMode ? colors.lossDark : colors.lossLight,
                          
                           size: 70,
                         ),
@@ -95,6 +96,7 @@ class _MfPaymentRespAlertState extends State<MfPaymentRespAlert> {
                           color: theme.isDarkMode
                               ? colors.textPrimaryDark
                               : colors.textPrimaryLight,
+                          fw: 0,
                         ),
                         const SizedBox(
                           height: 5,
@@ -105,6 +107,7 @@ class _MfPaymentRespAlertState extends State<MfPaymentRespAlert> {
                               : "Transaction fail",
                           theme: false,
                           color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                          fw: 0,
                         ),
                         const SizedBox(
                           height: 10,
@@ -115,6 +118,7 @@ class _MfPaymentRespAlertState extends State<MfPaymentRespAlert> {
                             color: theme.isDarkMode
                                 ? colors.textPrimaryDark
                                 : colors.textPrimaryLight,
+                            fw: 0,
                             fs: 40),
                         const SizedBox(
                           height: 10,
@@ -123,6 +127,7 @@ class _MfPaymentRespAlertState extends State<MfPaymentRespAlert> {
                           text: "${widget.upiData?["datetime"]}",
                           theme: false,
                           color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                          fw: 0,
                         ),
                       ],
                     ),
@@ -195,6 +200,7 @@ class _MfPaymentRespAlertState extends State<MfPaymentRespAlert> {
                           color: theme.isDarkMode
                               ? colors.textPrimaryDark
                               : colors.textPrimaryLight,
+                          fw: 0,
                         ),
                         const SizedBox(
                           height: 8,
@@ -203,6 +209,7 @@ class _MfPaymentRespAlertState extends State<MfPaymentRespAlert> {
                           text:  "Payment initiate fail",
                           theme: false,
                           color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                          fw: 0,
                         ),
                         const SizedBox(
                           height: 10,
@@ -294,6 +301,7 @@ class _MfPaymentRespAlertState extends State<MfPaymentRespAlert> {
                           color: theme.isDarkMode
                               ? colors.textPrimaryDark
                               : colors.textPrimaryLight,
+                          fw: 0,
                         ),
                         const SizedBox(
                           height: 8,
@@ -302,6 +310,7 @@ class _MfPaymentRespAlertState extends State<MfPaymentRespAlert> {
                           text:  "Payment initiate fail",
                           theme: false,
                           color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                          fw: 0,
                         ),
                         const SizedBox(
                           height: 10,
@@ -387,6 +396,8 @@ class _MfPaymentRespAlertState extends State<MfPaymentRespAlert> {
                           //
                           color: widget.upiData?["status"] == "PAYMENT COMPLETED" || widget.upiData?["status"] == "REGISTERED"
                               ? theme.isDarkMode ? colors.profitDark : colors.profitLight
+                              : widget.upiData?["status"] == "PAYMENT PROCESSING"
+                              ? colors.pending
                               : theme.isDarkMode ? colors.lossDark : colors.lossLight,
                           size: 70,
                         ),
@@ -399,16 +410,19 @@ class _MfPaymentRespAlertState extends State<MfPaymentRespAlert> {
                           color: theme.isDarkMode
                               ? colors.textPrimaryDark
                               : colors.textPrimaryLight,
+                          fw: 0,
                         ),
                         const SizedBox(
                           height: 5,
                         ),
+                        if(mfpro.mfOrderTpye != 'SIP')
                         TextWidget.paraText(
                           text: widget.upiData?["status"] == "PAYMENT COMPLETED"
                               ? "Transaction Success" :  widget.upiData?["status"] == "PAYMENT PROCESSING" ?  "Transaction pending"
                               : "Transaction fail",
                           theme: false,
                           color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                          fw: 0,
                         ),
                         const SizedBox(
                           height: 10,
@@ -419,6 +433,7 @@ class _MfPaymentRespAlertState extends State<MfPaymentRespAlert> {
                             color:  theme.isDarkMode
                                 ? colors.textPrimaryDark
                                 : colors.textPrimaryLight,
+                            fw: 0,
                             fs: 40),
                         const SizedBox(
                           height: 10,
@@ -427,6 +442,7 @@ class _MfPaymentRespAlertState extends State<MfPaymentRespAlert> {
                           text: "${widget.upiData?["datetime"]}",
                           theme: false,
                           color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                          fw: 0,
                         ),
                       ],
                     ),
@@ -498,6 +514,7 @@ class _MfPaymentRespAlertState extends State<MfPaymentRespAlert> {
               color: theme.isDarkMode
                   ? colors.textSecondaryDark
                   : colors.textSecondaryLight,
+              fw: 0,
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -508,6 +525,7 @@ class _MfPaymentRespAlertState extends State<MfPaymentRespAlert> {
                     ? colors.textPrimaryDark
                     : colors.textPrimaryLight,
                 align: TextAlign.right,
+                fw: 0,
               ),
             ),
           ],

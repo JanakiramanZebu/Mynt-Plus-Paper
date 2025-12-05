@@ -145,6 +145,7 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
                       children: [
                         Expanded(
                           child: SingleChildScrollView(
+                            physics: ClampingScrollPhysics(),
                             controller: scrollController,
                             child: Padding(
                               padding:
@@ -220,7 +221,7 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
                                                                         .profitDark
                                                                     : colors
                                                                         .profitLight,
-                                                    fw: 3),
+                                                    fw: 0),
                                                 const SizedBox(height: 4),
                                                 TextWidget.paraText(
                                                     text:
@@ -578,7 +579,7 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
                                             color: theme.isDarkMode
                                                 ? colors.textSecondaryDark
                                                 : colors.textSecondaryLight,
-                                            fw: 3),
+                                            fw: 0),
                                         const SizedBox(
                                           width: 50,
                                         ),
@@ -601,6 +602,7 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
                                                     ? colors.textPrimaryDark
                                                     : colors.textPrimaryLight,
                                                 theme: theme.isDarkMode,
+                                                fw: 0,
                                               ),
                                               keyboardType:
                                                   TextInputType.number,
@@ -609,11 +611,8 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
                                                   TextWidget.textStyle(
                                                 fontSize: 14,
                                                 theme: theme.isDarkMode,
-                                                color: theme.isDarkMode
-                                                    ? colors
-                                                        .textSecondaryDark
-                                                    : colors
-                                                        .textSecondaryLight,
+                                                color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                                                fw: 0,
                                               ),
                                               prefixIcon: widget.alert.aiT ==
                                                           "CH_PER_A" ||
@@ -761,14 +760,14 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
             TextWidget.subText(
                 text: title1,
                 theme: theme.isDarkMode,
-                fw: 3,
+                fw: 0,
                 color: theme.isDarkMode
                     ? colors.textSecondaryDark
                     : colors.textSecondaryLight),
             TextWidget.subText(
                 text: value,
                 theme: theme.isDarkMode,
-                fw: 3,
+                fw: 0,
                 color: theme.isDarkMode
                     ? colors.textPrimaryDark
                     : colors.textPrimaryLight),

@@ -148,6 +148,7 @@ class _TradeBookDetailState extends ConsumerState<TradeBookDetail> {
                     children: [
                       Expanded(
                         child: SingleChildScrollView(
+                          physics: ClampingScrollPhysics(),
                           controller: scrollController,
                           child: Padding(
                             padding:
@@ -205,15 +206,28 @@ class _TradeBookDetailState extends ConsumerState<TradeBookDetail> {
                                                     fw: 1,
                                                     textOverflow:
                                                         TextOverflow.ellipsis),
-                                                        const SizedBox(width: 4),
-                                                CustomExchBadge(
-                                                    exch:
-                                                        displayData.exch ?? ""),
+                                                        // const SizedBox(width: 4),
+
+                                                        TextWidget.subText(
+                                                        fw: 0,
+                                                        text: displayData.exch ?? "",
+                                                        textOverflow: TextOverflow.ellipsis,
+                                                        maxLines: 1,
+                                                        color: theme.isDarkMode
+                                                            ? colors.textPrimaryDark
+                                                            : colors.textPrimaryLight,
+                                                        theme: false,
+                                                      ),
+
+
+                                                // CustomExchBadge(
+                                                //     exch:
+                                                //         ),
                                               ],
                                             ),
                                             const SizedBox(height: 4),
                                             TextWidget.titleText(
-                                                text: "$formattedLTP",
+                                                text: formattedLTP,
                                                 theme: false,
                                                 color: (formattedLTP ==
                                                             "null") ||
@@ -234,7 +248,7 @@ class _TradeBookDetailState extends ConsumerState<TradeBookDetail> {
                                                             ? colors.profitDark
                                                             : colors
                                                                 .profitLight,
-                                                fw: 3),
+                                                fw: 0),
                                             // displayData.expDate != null &&
                                             //         displayData.expDate != "null"
                                             //     ? TextWidget.paraText(
@@ -292,14 +306,10 @@ class _TradeBookDetailState extends ConsumerState<TradeBookDetail> {
 
                                 rowOfInfoData(
                                     "Price",
-                                    displayData.avgprc != null &&
-                                            displayData.avgprc != "null"
-                                        ? displayData.avgprc!
-                                        : displayData.prc != null &&
-                                                displayData.prc != "null"
-                                            ? displayData.prc!
-                                            : "0.00",
-                                    theme),
+                                    displayData.flprc != null && displayData.flprc != "null"
+                                        ? displayData.flprc ?? "0.00"
+                                        : displayData.prc ?? "0.00",
+                                        theme),
                                 const SizedBox(height: 8),
                                 rowOfInfoData(
                                     "Trade Value",
@@ -318,18 +328,18 @@ class _TradeBookDetailState extends ConsumerState<TradeBookDetail> {
                                 //     "${displayData.prctyp ?? ''}", theme),
                                 // const SizedBox(height: 8),
                                 rowOfInfoData("Validity",
-                                    "${displayData.ret ?? ''}", theme),
+                                    displayData.ret ?? '', theme),
                                 const SizedBox(height: 8),
 
                                 rowOfInfoData("Fill Id",
-                                    "${displayData.flid ?? ''}", theme),
+                                    displayData.flid ?? '', theme),
                                 const SizedBox(height: 8),
 
                                 // rowOfInfoData("Product",
                                 //     "${displayData.sPrdtAli ?? ''}", theme),
                                 // const SizedBox(height: 8),
                                 rowOfInfoData("Order Id",
-                                    "${displayData.norenordno ?? ''}", theme),
+                                    displayData.norenordno ?? '', theme),
                                 const SizedBox(height: 8),
                                 rowOfInfoData(
                                     "Date & Time",
@@ -407,14 +417,14 @@ class _TradeBookDetailState extends ConsumerState<TradeBookDetail> {
               color: theme.isDarkMode
                   ? colors.textSecondaryDark
                   : colors.textSecondaryLight,
-              fw: 3),
+              fw: 0),
           TextWidget.subText(
               text: value1,
               theme: false,
               color: theme.isDarkMode
                   ? colors.textPrimaryDark
                   : colors.textPrimaryLight,
-              fw: 3),
+              fw: 3), 
         ],
       ),
       const SizedBox(height: 8),

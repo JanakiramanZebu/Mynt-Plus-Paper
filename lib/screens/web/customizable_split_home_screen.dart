@@ -2866,7 +2866,7 @@ class _CustomizableSplitHomeScreenState
     if (reportsprovider.ledgerAllData == null) {
       await reportsprovider.getCurrentDate('else');
       reportsprovider.fetchLegerData(
-          context, reportsprovider.startDate, reportsprovider.endDate);
+          context, reportsprovider.startDate, reportsprovider.endDate, reportsprovider.includeBillMargin);
     }
     if (reportsprovider.holdingsAllData == null) {
       await reportsprovider.getCurrentDate('else');

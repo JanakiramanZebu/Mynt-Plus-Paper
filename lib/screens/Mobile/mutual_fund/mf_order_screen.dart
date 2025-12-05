@@ -196,7 +196,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                                 color: theme.isDarkMode
                                     ? colors.textSecondaryDark
                                     : colors.textSecondaryLight,
-                                fw: 3),
+                                fw: 0), 
                           ],
                         ),
                       ],
@@ -260,6 +260,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                                   color: theme.isDarkMode
                                       ? colors.textSecondaryDark
                                       : colors.textSecondaryLight,
+                                  fw: 0,
                                 ),
                               ),
                             ];
@@ -683,11 +684,11 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                               color: theme.isDarkMode
                                   ? colors.textPrimaryDark
                                   : colors.textPrimaryLight,
-                              fw: 0),
+                              fw: 1),
                           const SizedBox(height: 7),
                           Container(
                               margin: const EdgeInsets.symmetric(vertical: 8),
-                              height: 44,
+                              height: 45,
                               child: CustomTextFormField(
                                   textAlign: TextAlign.start,
                                   fillColor: theme.isDarkMode
@@ -699,9 +700,8 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                                  hintStyle: TextWidget.textStyle(
                                       fontSize: 14,
                                       theme: theme.isDarkMode,
-                                     color: theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : colors.textSecondaryLight,
+                                     color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                                fw: 0,
                                     ),
                                   keyboardType: TextInputType.number,
                                   inputFormate: [
@@ -713,6 +713,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                                         ? colors.textPrimaryDark
                                         : colors.textPrimaryLight,
                                     theme: theme.isDarkMode,
+                                    fw: 0,
                                   ),
                                   //       prefixIcon: InkWell(
                                   //         onTap: () {
@@ -804,11 +805,14 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                             ],
                           ] else ...[
                             if (mfOrder.installmentAmtError != null) ...[
+
                               TextWidget.captionText(
-                                  text: "${mfOrder.installmentAmtError}",
-                                  theme: theme.isDarkMode,
-                                  fw: 0,
-                                  color: colors.kColorRedText),
+                                text: "${mfOrder.installmentAmtError}",
+                                theme: theme.isDarkMode,
+                                color: theme.isDarkMode ? colors.lossDark : colors.lossLight,
+                                fw: 0,
+                              ),
+                             
                               const SizedBox(height: 6)
                             ],
                           ],
@@ -1130,18 +1134,20 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                                           ? colors.darkGrey
                                           : const Color(0xffF1F3F8),
                                       hintText: 'exmaple@upi',
-                                      hintStyle: TextWidget.textStyle(
-                                          fontSize: 14,
-                                          theme: theme.isDarkMode,
-                                          fw: 3,
-                                          color: const Color(0xff666666)),
-                                      style: TextWidget.textStyle(
-                                          fontSize: 14,
-                                          theme: theme.isDarkMode,
-                                          fw: 1,
-                                          color: theme.isDarkMode
-                                              ? colors.colorWhite
-                                              : colors.colorBlack),
+                                   hintStyle: TextWidget.textStyle(
+                                      fontSize: 14,
+                                      theme: theme.isDarkMode,
+                                     color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                                    fw: 0,
+                                    ),
+                                       style: TextWidget.textStyle(
+                                    fontSize: 16,
+                                    color: theme.isDarkMode
+                                        ? colors.textPrimaryDark
+                                        : colors.textPrimaryLight,
+                                    theme: theme.isDarkMode,
+                                    fw: 0,
+                                  ),
                                       textCtrl: mfOrder.upiId,
                                       onChanged: (value) {
                                         mfOrder.isValidUpiId(widget.mfData,'');
@@ -1435,7 +1441,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                                       if (mfOrder.mfPlaceOrderResponces == null &&
                                           mfOrder.mfPlaceOrderResponces?.stat !=
                                               'Ok') {
-                                        showResponsiveWarningMessage(context,
+                                        warningMessage(context,
                                                 "${mfOrder.mfPlaceOrderResponces?.remarks}");
                                       }
                                     }
@@ -1470,11 +1476,11 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                                     // }
                                   } else {
                                     if (mfOrder.mfOrderTpye == "One-time") {
-                                      showResponsiveWarningMessage(context,
-                                              "Enter a valid minimum investment amount.");
+                                          warningMessage(context,
+                                              "Enter a valid investment amount.");
                                     } else {
-                                      showResponsiveWarningMessage(context,
-                                              "Enter a valid minimum installment amount.");
+                                          warningMessage(context,
+                                              "Enter a valid installment amount.");
                                     }
                                   }
                                 }
@@ -1570,6 +1576,7 @@ void CallUpiNetbanking(BuildContext context, MFProvider mfOrder,
     isScrollControlled: true,
     builder: (context) {
       return SingleChildScrollView(
+        physics: ClampingScrollPhysics(),
         padding: EdgeInsets.only(
           top: 22.0,
           bottom: MediaQuery.of(context).viewInsets.bottom + 16.0,
@@ -1702,18 +1709,20 @@ void CallUpiNetbanking(BuildContext context, MFProvider mfOrder,
                       ? colors.darkGrey
                       : const Color(0xffF1F3F8),
                   hintText: 'example@upi',
-                  hintStyle: TextWidget.textStyle(
-                    fontSize: 14,
-                    theme: theme.isDarkMode,
-                    fw: 3,
-                    color: const Color(0xff666666),
-                  ),
-                  style: TextWidget.textStyle(
-                    fontSize: 14,
-                    theme: theme.isDarkMode,
-                    fw: 1,
-                    color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  ),
+                 hintStyle: TextWidget.textStyle(
+                                      fontSize: 14,
+                                      theme: theme.isDarkMode,
+                                     color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                                    fw: 0,
+                                    ),
+                   style: TextWidget.textStyle(
+                                    fontSize: 16,
+                                    color: theme.isDarkMode
+                                        ? colors.textPrimaryDark
+                                        : colors.textPrimaryLight,
+                                    theme: theme.isDarkMode,
+                                    fw: 0,
+                                  ),
                   textCtrl: mfOrder.upiId,
                   onChanged: (value) {
                     mfOrder.isValidUpiId(mfData,'');
@@ -1969,7 +1978,7 @@ class _SIPCalendarState extends State<_SIPCalendar> {
               text: "Available",
               theme: widget.theme.isDarkMode,
               color: widget.theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-              fw: 3,
+              fw: 0,
             ),
             const SizedBox(width: 16),
             Container(
@@ -1984,8 +1993,8 @@ class _SIPCalendarState extends State<_SIPCalendar> {
             TextWidget.captionText(
               text: "Unavailable",
               theme: widget.theme.isDarkMode,
-              color: const Color(0xFFE0E0E0),
-              fw: 3,
+              color: widget.theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+              fw: 0,
             ),
           ],
         ),

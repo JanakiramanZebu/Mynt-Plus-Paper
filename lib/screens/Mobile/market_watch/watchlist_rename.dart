@@ -168,10 +168,9 @@ class _WatchListRenameState extends ConsumerState<WatchListRename> {
                           hintText: "Enter watchlist name",
                           hintStyle: TextWidget.textStyle(
                               fontSize: 14,
-                              color: theme.isDarkMode
-                                  ? colors.textSecondaryDark
-                                  : colors.textSecondaryLight,
+                              color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
                               theme: theme.isDarkMode,
+                              fw: 0,
                               ),
                           keyboardType: TextInputType.text,
                           style: TextWidget.textStyle(
@@ -180,6 +179,7 @@ class _WatchListRenameState extends ConsumerState<WatchListRename> {
                                   ? colors.textPrimaryDark
                                   : colors.textPrimaryLight,
                               theme: theme.isDarkMode,
+                              fw: 0,
                               ),
                           textCtrl: textCtrl,
                           textAlign: TextAlign.start,

@@ -107,6 +107,7 @@ class _RedemptionBottomScreenNewState extends State<RedemptionBottomScreenNew> {
                 children: [
                   Expanded(
                     child: SingleChildScrollView(
+                      physics: ClampingScrollPhysics(),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: Column(
@@ -124,6 +125,7 @@ class _RedemptionBottomScreenNewState extends State<RedemptionBottomScreenNew> {
                                         ? colors.textPrimaryDark
                                         : colors.textPrimaryLight,
                                     theme: theme.isDarkMode,
+                                    fw: 1,
                                   ),
                                   const SizedBox(width: 6),
                                   TextWidget.subText(
@@ -135,6 +137,7 @@ class _RedemptionBottomScreenNewState extends State<RedemptionBottomScreenNew> {
                                         ? colors.textPrimaryDark
                                         : colors.textPrimaryLight,
                                     theme: theme.isDarkMode,
+                                    fw: 1,
                                   ),
                                 ],
                               ),
@@ -163,7 +166,7 @@ class _RedemptionBottomScreenNewState extends State<RedemptionBottomScreenNew> {
                                     mf.checkRedemption(value, minRedemptionQty,
                                         netUnits, navStr);
                                   } catch (e) {
-                                    showResponsiveErrorMessage(context,
+                                        successMessage(context,
                                             "Error validating redemption: ${e.toString()}");
                                   }
                                 } else {
@@ -172,12 +175,14 @@ class _RedemptionBottomScreenNewState extends State<RedemptionBottomScreenNew> {
                                 }
                               },
                               textAlign: TextAlign.start,
-                              style: textStyle(
-                                  theme.isDarkMode
-                                      ? colors.colorWhite
-                                      : colors.colorBlack,
-                                  14,
-                                  FontWeight.w600),
+                                style: TextWidget.textStyle(
+                                    fontSize: 16,
+                                    color: theme.isDarkMode
+                                        ? colors.textPrimaryDark
+                                        : colors.textPrimaryLight,
+                                    theme: theme.isDarkMode,
+                                    fw: 0,
+                                  ),
                               keyboardType: TextInputType.number,
                               controller: mf.redemptionQty,
                               decoration: InputDecoration(
@@ -208,8 +213,11 @@ class _RedemptionBottomScreenNewState extends State<RedemptionBottomScreenNew> {
                                   children: [
                                     TextWidget.paraText(
                                       text: mf.redemptionError!,
-                                      color: colors.kColorRedText,
+                                      color:  theme.isDarkMode
+                                          ? colors.lossDark
+                                          : colors.lossLight,
                                       theme: theme.isDarkMode,
+                                      fw: 0,
                                     ),
                                   ],
                                 ),
@@ -221,7 +229,9 @@ class _RedemptionBottomScreenNewState extends State<RedemptionBottomScreenNew> {
                               TextWidget.paraText(
                                 text: mf.redemptionOrderError!,
                                 align: TextAlign.start,
-                                color: colors.kColorRedText,
+                                color: theme.isDarkMode
+                                    ? colors.lossDark
+                                    : colors.lossLight,
                                 theme: theme.isDarkMode,
                                 fw: 0,
                               ),
@@ -269,11 +279,11 @@ class _RedemptionBottomScreenNewState extends State<RedemptionBottomScreenNew> {
                               mf.mfRedemption(
                                   context, schemeCode, mf.redemptionQty.text);
                             } else {
-                              showResponsiveErrorMessage(context,
+                                  successMessage(context,
                                       "Please check the data you have provided");
                             }
                           } catch (e) {
-                            showResponsiveErrorMessage(context,
+                                successMessage(context,
                                     "Error processing redemption: ${e.toString()}");
                           }
                         },

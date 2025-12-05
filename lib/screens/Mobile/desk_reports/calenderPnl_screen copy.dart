@@ -449,10 +449,8 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                                           }
                                         else
                                           {
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(
                                               warningMessage(
-                                                  context, 'Sharing is not on'),
+                                                  context, 'Sharing is not on'
                                             )
                                           }
                                       },

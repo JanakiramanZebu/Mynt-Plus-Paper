@@ -16,7 +16,8 @@ import '../../../utils/no_emoji_inputformatter.dart';
 class BondsScreen extends ConsumerStatefulWidget {
   final int? initialTabIndex;
   final bool isBonds;
-  const BondsScreen({super.key, this.initialTabIndex, required this.isBonds});
+  final Function(bool)? onBoundaryReached; // Callback for boundary detection
+  const BondsScreen({super.key, this.initialTabIndex, required this.isBonds, this.onBoundaryReached});
 
   @override
   ConsumerState<BondsScreen> createState() => _BondsmainScreenState();
@@ -58,7 +59,7 @@ class _BondsmainScreenState extends ConsumerState<BondsScreen> {
       child: SafeArea(
         child: Scaffold(
           appBar: widget.isBonds ? _buildAppBar(context, theme, bonds) : null,
-          body: BondsExploreScreens(theme: theme, initialTabIndex: initialTabIndex),
+          body: BondsExploreScreens(theme: theme, initialTabIndex: initialTabIndex, onBoundaryReached: widget.onBoundaryReached),
         ),
       ),
     );
@@ -117,9 +118,8 @@ class _BondsmainScreenState extends ConsumerState<BondsScreen> {
                    hintStyle: TextWidget.textStyle(
                                       fontSize: 14,
                                       theme: theme.isDarkMode,
-                                     color: theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : colors.textSecondaryLight,
+                                     color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                                     fw: 0,
                                     ),
                   fillColor: theme.isDarkMode
                         ? colors.searchBgDark

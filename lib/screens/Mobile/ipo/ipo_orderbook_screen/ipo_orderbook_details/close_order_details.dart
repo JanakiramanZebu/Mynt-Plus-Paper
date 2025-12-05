@@ -78,21 +78,26 @@ class _IpoCloseOrderDetailsState extends ConsumerState<IpoCloseOrderDetails> {
                     ),
                   ),
                   child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       const CustomDragHandler(),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        child: TextWidget.headText(
-                          text:
-                              "${widget.ipoclose.companyName.toString()} ${widget.ipoclose.symbol.toString()}",
-                          theme: false,
-                          color: theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack,
-                          maxLines: 2,
-                          fw: 0,
-                          textOverflow: TextOverflow.ellipsis,
-                        ),
+                      Row(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            child: TextWidget.headText(
+                              text:
+                                  "${widget.ipoclose.companyName.toString()} ${widget.ipoclose.symbol.toString()}",
+                              theme: false,
+                              color: theme.isDarkMode
+                                  ? colors.colorWhite
+                                  : colors.colorBlack,
+                              maxLines: 2,
+                              fw: 0,
+                              textOverflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
                       ),
                       if (currentDate.isBetween(
                               convertIpoDates(widget.ipoclose.biddingstartdate!,
@@ -221,7 +226,7 @@ class _IpoCloseOrderDetailsState extends ConsumerState<IpoCloseOrderDetails> {
                                         color: theme.isDarkMode
                                             ? colors.textSecondaryDark
                                             : colors.textSecondaryLight,
-                                        fw: 3,
+                                        fw: 0,
                                       ),
                                       Container(
                                         padding: const EdgeInsets.symmetric(
@@ -254,7 +259,7 @@ class _IpoCloseOrderDetailsState extends ConsumerState<IpoCloseOrderDetails> {
                                                   : theme.isDarkMode
                                                       ? colors.lossDark
                                                       : colors.lossLight,
-                                          fw: 3,
+                                          fw: 0,
                                         ),
                                       ),
                                     ],
@@ -345,7 +350,7 @@ class _IpoCloseOrderDetailsState extends ConsumerState<IpoCloseOrderDetails> {
                                     color: theme.isDarkMode
                                         ? colors.textPrimaryDark
                                         : colors.textPrimaryLight,
-                                    fw: 3,
+                                    fw: 1,
                                   ),
                                   const SizedBox(height: 8),
                                   SizedBox(
@@ -390,7 +395,7 @@ class _IpoCloseOrderDetailsState extends ConsumerState<IpoCloseOrderDetails> {
                                                       ? colors.textPrimaryDark
                                                       : colors
                                                           .textPrimaryLight,
-                                                  fw: 3,
+                                                  fw: 0,
                                                 ),
                                               ),
                                             ),
@@ -401,7 +406,7 @@ class _IpoCloseOrderDetailsState extends ConsumerState<IpoCloseOrderDetails> {
                                                 color: theme.isDarkMode
                                                     ? colors.textPrimaryDark
                                                     : colors.textPrimaryLight,
-                                                fw: 3,
+                                                fw: 0,
                                               ),
                                             ),
                                             DataColumn(
@@ -411,7 +416,7 @@ class _IpoCloseOrderDetailsState extends ConsumerState<IpoCloseOrderDetails> {
                                                 color: theme.isDarkMode
                                                     ? colors.textPrimaryDark
                                                     : colors.textPrimaryLight,
-                                                fw: 3,
+                                                fw: 0,
                                               ),
                                             ),
                                             DataColumn(
@@ -421,7 +426,7 @@ class _IpoCloseOrderDetailsState extends ConsumerState<IpoCloseOrderDetails> {
                                                 color: theme.isDarkMode
                                                     ? colors.textPrimaryDark
                                                     : colors.textPrimaryLight,
-                                                fw: 3,
+                                                fw: 0,
                                               ),
                                             ),
                                             DataColumn(
@@ -431,7 +436,7 @@ class _IpoCloseOrderDetailsState extends ConsumerState<IpoCloseOrderDetails> {
                                                 color: theme.isDarkMode
                                                     ? colors.textPrimaryDark
                                                     : colors.textPrimaryLight,
-                                                fw: 3,
+                                                fw: 0,
                                               ),
                                             ),
                                           ],
@@ -450,7 +455,7 @@ class _IpoCloseOrderDetailsState extends ConsumerState<IpoCloseOrderDetails> {
                                                   padding:
                                                       const EdgeInsets.only(
                                                           left: 8),
-                                                  child: TextWidget.subText(
+                                                  child: TextWidget.paraText(
                                                     text: "${index + 1}",
                                                     theme: false,
                                                     color: theme.isDarkMode
@@ -458,11 +463,11 @@ class _IpoCloseOrderDetailsState extends ConsumerState<IpoCloseOrderDetails> {
                                                             .textSecondaryDark
                                                         : colors
                                                             .textSecondaryLight,
-                                                    fw: 3,
+                                                    fw: 0,
                                                   ),
                                                 )),
                                                 DataCell(
-                                                  TextWidget.subText(
+                                                  TextWidget.paraText(
                                                     text: bid.quantity!,
                                                     theme: false,
                                                     color: theme.isDarkMode
@@ -470,11 +475,11 @@ class _IpoCloseOrderDetailsState extends ConsumerState<IpoCloseOrderDetails> {
                                                             .textSecondaryDark
                                                         : colors
                                                             .textSecondaryLight,
-                                                    fw: 3,
+                                                    fw: 0,
                                                   ),
                                                 ),
                                                 DataCell(
-                                                  TextWidget.subText(
+                                                  TextWidget.paraText(
                                                     text:
                                                         widget.ipoclose.type ==
                                                                 "BSE"
@@ -486,11 +491,11 @@ class _IpoCloseOrderDetailsState extends ConsumerState<IpoCloseOrderDetails> {
                                                             .textSecondaryDark
                                                         : colors
                                                             .textSecondaryLight,
-                                                    fw: 3,
+                                                    fw: 0,
                                                   ),
                                                 ),
                                                 DataCell(
-                                                  TextWidget.subText(
+                                                  TextWidget.paraText(
                                                     text: widget.ipoclose
                                                                 .type ==
                                                             "BSE"
@@ -502,7 +507,7 @@ class _IpoCloseOrderDetailsState extends ConsumerState<IpoCloseOrderDetails> {
                                                             .textSecondaryDark
                                                         : colors
                                                             .textSecondaryLight,
-                                                    fw: 3,
+                                                    fw: 0,
                                                   ),
                                                 ),
                                                 DataCell(Padding(
@@ -514,8 +519,12 @@ class _IpoCloseOrderDetailsState extends ConsumerState<IpoCloseOrderDetails> {
                                                         ? Icons.check_circle
                                                         : Icons.cancel,
                                                     color: isCutOff
-                                                        ? Colors.green
-                                                        : Colors.red,
+                                                        ? theme.isDarkMode
+                                                            ? colors.profitDark
+                                                            : colors.profitLight
+                                                        : theme.isDarkMode
+                                                            ? colors.lossDark
+                                                            : colors.lossLight,
                                                   ),
                                                 )),
                                               ]);
@@ -819,7 +828,7 @@ class _IpoCloseOrderDetailsState extends ConsumerState<IpoCloseOrderDetails> {
               color: theme.isDarkMode
                   ? colors.textSecondaryDark
                   : colors.textSecondaryLight,
-              fw: 3),
+              fw: 0),
           SizedBox(
             width: MediaQuery.of(context).size.width * 0.6,
             child: TextWidget.subText(
@@ -830,7 +839,7 @@ class _IpoCloseOrderDetailsState extends ConsumerState<IpoCloseOrderDetails> {
                     : colors.textPrimaryLight,
                 softWrap: true,
                 align: TextAlign.end,
-                fw: 3),
+                fw: 0),
           ),
         ],
       ),

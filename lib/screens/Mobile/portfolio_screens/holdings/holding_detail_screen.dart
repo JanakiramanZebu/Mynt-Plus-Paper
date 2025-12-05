@@ -542,6 +542,7 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                         return true;
                       },
                       child: ListView(
+                        physics: ClampingScrollPhysics(),
                         controller: scrollController,
                         children: [
                           // Header section (previously fixed, now part of scrollable content)
@@ -632,7 +633,7 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                                                                         ? colors.profitDark
                                                                         : colors.profitLight,
                                                             theme: false,
-                                                            fw: 3),
+                                                            fw: 0),
                                                       ),
                                                       const SizedBox(height: 4),
                                                       TextWidget.paraText(
@@ -645,7 +646,7 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                                                               : colors
                                                                   .textSecondaryLight,
                                                           theme: false,
-                                                          fw: 3)
+                                                          fw: 0)
                                                     ]),
                                                 Row(
                                                   children: [
@@ -866,7 +867,7 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                                               color: theme.isDarkMode
                                                   ? colors.textSecondaryDark
                                                   : colors.textSecondaryLight,
-                                              fw: 3),
+                                              fw: 0),
 
                                           // Animate P&L changes
                                           FadeTransition(
@@ -890,7 +891,7 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                                                             ? colors.profitDark
                                                             : colors
                                                                 .profitLight,
-                                                    fw: 3),
+                                                    fw: 0),
                                                 SizedBox(height: 4),
                                                 TextWidget.subText(
                                                     text:
@@ -900,7 +901,7 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                                                         ? colors.textPrimaryDark
                                                         : colors
                                                             .textPrimaryLight,
-                                                    fw: 3),
+                                                    fw: 0),
                                               ],
                                             ),
                                           ),
@@ -1342,6 +1343,7 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                 color: theme.isDarkMode
                     ? colors.textSecondaryDark
                     : colors.textSecondaryLight,
+                fw: 0,
               ),
               TextWidget.subText(
                 text: value,
@@ -1349,6 +1351,7 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                 color: theme.isDarkMode
                     ? colors.textPrimaryDark
                     : colors.textPrimaryLight,
+                fw: 0,
               ),
             ],
           ),

@@ -88,10 +88,9 @@ class _MfmainScreenState extends State<MfmainScreen> {
                           hintText: "Search Mutual Fund",
                           hintStyle: MaterialStateProperty.all(
                               TextWidget.textStyle(
-                                  color: theme.isDarkMode
-                                      ? colors.textSecondaryDark
-                                      : colors.textSecondaryLight,
+                                  color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
                                   fontSize: 14,
+                                  fw: 0,
                                   theme: theme.isDarkMode)),
                           backgroundColor: WidgetStateProperty.all(
                             theme.isDarkMode

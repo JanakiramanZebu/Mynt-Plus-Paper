@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import '../../../../utils/custom_navigator.dart';
@@ -37,7 +38,7 @@ class HoldingScreen extends ConsumerStatefulWidget {
   ConsumerState<HoldingScreen> createState() => _HoldingScreenState();
 }
 
-class _HoldingScreenState extends ConsumerState<HoldingScreen> {
+class _HoldingScreenState extends ConsumerState<HoldingScreen> with TickerProviderStateMixin {
   StreamSubscription? _socketSubscription;
 
   // Cached values to avoid recalculations
@@ -73,10 +74,36 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
   Widget? _cachedDarkDivider;
   Widget? _cachedLightDivider;
 
+  // Scroll controller and animation controller for scroll-based animations
+  late ScrollController _scrollController;
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+  bool _isScrollingUp = false;
+
   @override
   void initState() {
     super.initState();
-
+    
+    // Initialize scroll controller
+    _scrollController = ScrollController();
+    _scrollController.addListener(_onScroll);
+    
+    // Initialize animation controller
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+    
+    // Initialize fade animation
+    _fadeAnimation = Tween<double>(begin: 1.0, end: 0.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
+    
+    ref.read(portfolioProvider).holdingsTabController.addListener(() {
+      if (mounted) {
+        setState(() {});
+      }
+    });
     // Delay initialization to avoid setState during build
     // Use a longer delay to ensure we batch multiple initialization steps
     Future.delayed(const Duration(milliseconds: 50), () {
@@ -87,13 +114,43 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
       }
     });
   }
+  
+  // Scroll listener to detect scroll direction and animate
+  void _onScroll() {
+    final currentOffset = _scrollController.offset;
+    // Scrolling up means offset is increasing (user scrolling up, content moves up)
+    // Scrolling down means offset is decreasing (user scrolling down, content moves down)
+    // Keep Total PNL card visible when scrolled past initial position, never hide when scrolling down
+    bool shouldShowTotalPnlCard = false;
+    
+    if (currentOffset > 10) {
+      // Once scrolled past initial position, always show Total PNL card
+      // It stays visible whether scrolling up or down
+      shouldShowTotalPnlCard = true;
+    } else {
+      // At top (offset <= 10), show normal stats (hide Total PNL card)
+      shouldShowTotalPnlCard = false;
+    }
+    
+    if (shouldShowTotalPnlCard != _isScrollingUp) {
+      _isScrollingUp = shouldShowTotalPnlCard;
+      if (_isScrollingUp) {
+        _animationController.forward();
+      } else {
+        _animationController.reverse();
+      }
+      // Trigger rebuild to show/hide Total PNL card and summary section
+      if (mounted) {
+        setState(() {});
+      }
+    }
+  }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
 
     // Listen for theme changes here instead of in build
-    final theme = ref.read(themeProvider);
     ref.listenManual(themeProvider, (previous, next) {
       if (previous?.isDarkMode != next.isDarkMode) {
         // Theme changed, clear caches
@@ -116,6 +173,9 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
   @override
   void dispose() {
     _socketSubscription?.cancel();
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    _animationController.dispose();
     super.dispose();
   }
 
@@ -269,10 +329,16 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                         100)
                     .toStringAsFixed(2);
 
-            exchTsym.oneDayChg = ((double.parse(exchTsym.lp ?? "0.00") -
-                        double.parse(exchTsym.close ?? "0.00")) *
-                    int.parse("${holding.currentQty ?? 0}"))
-                .toStringAsFixed(2);
+            // Calculate 1D change only if close price is not 0
+            if (double.parse(exchTsym.close ?? "0.00") > 0) {
+              exchTsym.oneDayChg = ((double.parse(exchTsym.lp ?? "0.00") -
+                          double.parse(exchTsym.close ?? "0.00")) *
+                      int.parse("${holding.currentQty ?? 0}"))
+                  .toStringAsFixed(2);
+            } else {
+              // Skip calculation if close price is 0
+              exchTsym.oneDayChg = "0.00";
+              }
           }
         }
       }
@@ -319,7 +385,6 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
   void _calculateInitialValues() {
     if (_isInitialized) return; // Prevent duplicate initialization
 
-    final holdingProvider = ref.read(portfolioProvider);
     final websocket = ref.read(websocketProvider);
 
     // Process initial socket data
@@ -419,10 +484,16 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                       100)
                   .toStringAsFixed(2);
 
-          exchTsym.oneDayChg = ((double.parse(exchTsym.lp ?? "0.00") -
-                      double.parse(exchTsym.close ?? "0.00")) *
-                  int.parse("${holding.currentQty ?? 0}"))
-              .toStringAsFixed(2);
+          // Calculate 1D change only if close price is not 0
+          if (double.parse(exchTsym.close ?? "0.00") > 0) {
+            exchTsym.oneDayChg = ((double.parse(exchTsym.lp ?? "0.00") -
+                        double.parse(exchTsym.close ?? "0.00")) *
+                    int.parse("${holding.currentQty ?? 0}"))
+                .toStringAsFixed(2);
+          } else {
+            // Skip calculation if close price is 0
+            exchTsym.oneDayChg = "0.00";
+            }
         }
       }
 
@@ -451,7 +522,6 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
   @override
   Widget build(BuildContext context) {
     // Read providers only once for static data
-    final theme = ref.read(themeProvider);
     final holdingProvider = ref.read(portfolioProvider);
 
     // Use a focused Consumer only for the loading status
@@ -461,9 +531,21 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
       if (isLoading) {
         return const Center(child: CircularProgressIndicator());
       }
+      
 
       if (holdingProvider.holdingsModel!.isEmpty) {
-        return const Center(child: const NoDataFound());
+        return ListView(
+          children: [
+            Center(child:NoDataFound(
+                              title: "No Holdings Found",
+                              subtitle: "There's nothing here yet. Buy some stocks to see them here.",
+                              primaryEnabled: false,
+                              onSecondary: () {
+                                ref.read(indexListProvider).bottomMenu(1, context);
+                              },
+                            )),
+          ],
+        );
       }
 
       return RefreshIndicator(
@@ -487,29 +569,57 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
           // Recalculate all summaries with the new data
           _calculateSummaryValues();
         },
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: GestureDetector(
-            onTap: () => FocusScope.of(context).unfocus(),
-            behavior: HitTestBehavior.opaque,
-            child:
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              // Summary section with investment and P&L information
-              holdingProvider.holdingsModel!.isEmpty
-                  ? const SizedBox.shrink()
-                  : _buildSummarySection(),
+        child: Stack(
+          children: [
+            // Scrollable content
+            LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  controller: _scrollController,
+                  physics: const ClampingScrollPhysics(),
+                  child: GestureDetector(
+                    onTap: () => FocusScope.of(context).unfocus(),
+                    behavior: HitTestBehavior.opaque,
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: constraints.maxHeight > 0 
+                            ? constraints.maxHeight + 1 
+                            : double.infinity,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Summary section with all stats (original UI) - hide when scrolling up
+                          if (!_isScrollingUp && !holdingProvider.holdingsModel!.isEmpty)
+                            _buildSummarySection(),
 
-              // Action buttons section - using cached buttons when possible
-              holdingProvider.holdingsModel!.isEmpty
-                  ? const SizedBox.shrink()
-                  : _getActionButtons(),
-              _buildSearchBar(),
-              // Search bar (conditional)
+                          // Action buttons section - using cached buttons when possible
+                          holdingProvider.holdingsModel!.isEmpty
+                              ? const SizedBox.shrink()
+                              : _getActionButtons(),
+                          _buildSearchBar(),
+                          // Search bar (conditional)
 
-              // Holdings list with selective rebuilding
-              _buildHoldingsList()
-            ]),
-          ),
+                          // Holdings list with selective rebuilding
+                          _buildHoldingsList(),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+            
+            // Fixed Total PNL card overlaying the content - show until search bar becomes visible
+            if (_isScrollingUp && !holdingProvider.holdingsModel!.isEmpty)
+              Positioned(
+                top: -1,
+                left: 0,
+                right: 0,
+                child: _buildTotalPnlCard(),
+              ),
+          ],
         ),
       );
     });
@@ -563,7 +673,104 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
     _cachedSummarySection = null;
   }
 
-  // Summary section with investment and P&L information
+  // Total PNL card - fixed at the top
+  Widget _buildTotalPnlCard() {
+    final theme = ref.read(themeProvider);
+
+    return Consumer(builder: (context, watch, _) {
+      // Watch holdings data to rebuild when it changes
+      ref.watch(portfolioProvider);
+      
+      // Recalculate summary values when provider updates
+      _calculateSummaryValues();
+
+      return AnimatedBuilder(
+        animation: _fadeAnimation,
+        builder: (context, child) {
+          return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              // Translucent background to give glassy feel (same as watchlist)
+              color: theme.isDarkMode
+                  ? colors.colorBlack
+                  : colors.colorWhite,
+              // Subtle gradient to enhance the frosted look (same as watchlist)
+              // gradient: LinearGradient(
+              //   begin: Alignment.topLeft,
+              //   end: Alignment.bottomRight,
+              //   colors: [
+              //     theme.isDarkMode
+              //         ? Colors.white.withOpacity(0.02)
+              //         : Colors.white.withOpacity(0.06),
+              //     theme.isDarkMode
+              //         ? Colors.white.withOpacity(0.01)
+              //         : Colors.white.withOpacity(0.03),
+              //   ],
+              // ),
+              // Keep the bottom border as before (same as watchlist)
+              border: Border(
+                bottom: BorderSide(
+                  color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+                ),
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Total PNL label on the left
+                TextWidget.subText(
+                  text: "Total PNL",
+                  theme: false,
+                  color: theme.isDarkMode
+                      ? colors.textSecondaryDark
+                      : colors.textSecondaryLight,
+                  fw: 0,
+                ),
+                // Total PNL value on the right with animation
+                Opacity(
+                  opacity: 1.0 - _fadeAnimation.value * 0.3,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      TextWidget.subText(
+                        text:
+                            "(${_totPnlPercHolding == "NaN" ? 0.00 : _totPnlPercHolding}%)",
+                        theme: false,
+                        color: _totPnlPercHolding.startsWith("-")
+                            ? theme.isDarkMode
+                                ? colors.lossDark
+                                : colors.lossLight
+                            : theme.isDarkMode
+                                ? colors.profitDark
+                                : colors.profitLight,
+                        fw: 0,
+                      ),
+                      const SizedBox(width: 4),
+                      TextWidget.headText(
+                        text:
+                            "${getFormatter(value: _totalPnlHolding, v4d: false, noDecimal: false)}",
+                        theme: false,
+                        color: _totalPnlHolding.toString().startsWith("-")
+                            ? theme.isDarkMode
+                                ? colors.lossDark
+                                : colors.lossLight
+                            : theme.isDarkMode
+                                ? colors.profitDark
+                                : colors.profitLight,
+                        fw: 0,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      );
+    });
+  }
+
+  // Summary section with investment and P&L information (original UI with Total P&L)
   Widget _buildSummarySection() {
     final theme = ref.read(themeProvider);
 
@@ -595,9 +802,11 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
           FocusScope.of(context).unfocus();
         },
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            
             Padding(
-              padding: const EdgeInsets.only(top: 10, left: 16, right: 16),
+              padding: const EdgeInsets.only(top: 0, left: 16, right: 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -646,7 +855,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                                           : theme.isDarkMode
                                               ? colors.profitDark
                                               : colors.profitLight,
-                                      fw: 3),
+                                      fw: 0),
                                 ])
                           ]),
                       Column(
@@ -793,7 +1002,6 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
       required bool showEdis,
       required bool showSearch}) {
     final holdingProvider = ref.read(portfolioProvider);
-    final mf = ref.read(mfProvider);
     final theme = ref.read(themeProvider);
     final ledgerdate = ref.watch(ledgerProvider);
     final showSearch = ref.watch(portfolioProvider).showSearchHold;
@@ -1009,19 +1217,16 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                                     ? colors.highlightDark
                                     : colors.highlightLight,
                                 onTap: () async {
-                                  Future.delayed(Duration(milliseconds: 150),
-                                      () async {
-                                    await ref
-                                        .read(indexListProvider)
-                                        .bottomMenu(3, context);
-                                    mf.mfExTabchange(2);
-                                  });
+                                  Future.delayed(const Duration(milliseconds: 150), () {
+                              Navigator.pushNamed(
+                                  context, Routes.portfolioDashboard);
+                            });
                                 },
                                 child: Padding(
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 10, vertical: 5),
                                   child: TextWidget.subText(
-                                    text: "My MF",
+                                    text: "Insights",
                                     theme: false,
                                     color: theme.isDarkMode
                                         ? colors.secondaryDark
@@ -1093,6 +1298,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                       ? colors.textPrimaryDark
                       : colors.textPrimaryLight,
                   theme: theme.isDarkMode,
+                  fw: 0,
                 ),
                 keyboardType: TextInputType.text,
                 textCapitalization: TextCapitalization.characters,
@@ -1106,9 +1312,8 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                     hintStyle: TextWidget.textStyle(
                       fontSize: 14,
                       theme: theme.isDarkMode,
-                      color: theme.isDarkMode
-                          ? colors.textSecondaryDark
-                          : colors.textSecondaryLight,
+                      color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                      fw: 0,
                     ),
                     fillColor: theme.isDarkMode
                         ? colors.searchBgDark
@@ -1244,9 +1449,14 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
       // Show "No Data Found" only when search is active with text and no results found
       if (showSearch && searchText.isNotEmpty && items.isEmpty) {
         if (_cachedEmptyState == null) {
-          _cachedEmptyState = const SizedBox(
+          _cachedEmptyState = SizedBox(
             height: 400,
-            child: Center(child: NoDataFound()),
+            child: Center(child: NoDataFound(
+                          title: "No Results Found",
+                          subtitle: "Try searching with different keywords",
+                          primaryEnabled: false,
+                          secondaryEnabled: false,
+                        ),),
           );
         }
         return _cachedEmptyState!;
@@ -1264,6 +1474,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
       // Wrap in RepaintBoundary to isolate the whole list
       return RepaintBoundary(
         child: ListView.builder(
+          padding: EdgeInsets.only(bottom: 0),
           // Use a key that only changes when the list fundamentally changes
           key: ValueKey('holdings-list-${items.length}'),
           physics: const NeverScrollableScrollPhysics(),

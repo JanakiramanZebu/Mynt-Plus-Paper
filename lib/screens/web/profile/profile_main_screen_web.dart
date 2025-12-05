@@ -399,7 +399,8 @@ class UserAccountScreenWeb extends ConsumerWidget {
                           reportsprovider.fetchLegerData(
                               context,
                               reportsprovider.startDate,
-                              reportsprovider.endDate);
+                              reportsprovider.endDate,
+                              reportsprovider.includeBillMargin);
                         }
                         if (reportsprovider.holdingsAllData == null) {
                           await reportsprovider.getCurrentDate('else');

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
+import '../utils/url_utils.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -296,6 +297,7 @@ class OrderProvider extends DefaultChangeNotifier {
       }
     } else if (mode == 'tb') {
       result = await api.getTradeBook();
+      // result = await api.mockTradeBookResponse();
       if (result['stat'] == 'success') {
         _ttradeBook = result['data'];
       } else {
@@ -326,11 +328,15 @@ class OrderProvider extends DefaultChangeNotifier {
     FocusScope.of(context).unfocus();
 
     _selectedTab = index;
+
+    // Animate the TabController to the new index
+    try {
+      tabCtrl.animateTo(index);
+    } catch (e) {
+      print("TabController not ready for animation: $e");
+    }
     
-    // Only update tab sizes when necessary (defer to avoid blocking)
-    Future.microtask(() => tabSize());
-    
-    // Hide search for all tabs
+    tabSize();
     showOrderSearch(false);
     showGTTOrderSearch(false);
     ref.read(marketWatchProvider).showAlertPendingSearch(false);
@@ -748,7 +754,7 @@ class OrderProvider extends DefaultChangeNotifier {
         //           element.sipName!.toUpperCase().contains(value.toUpperCase()))
         //       .toList();
         //   break;
-        case 6: // Alerts
+        case 5: // Alerts
           final alertProvider = ref.read(marketWatchProvider);
           final notificationProvider = ref.read(notificationprovider);
           
@@ -802,8 +808,7 @@ class OrderProvider extends DefaultChangeNotifier {
                   false))
           .toList();
       if (_orderSearchItem!.isEmpty) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(warningMessage(context, 'No Data Found'));
+        warningMessage(context, 'No Data Found');
       }
     } else {
       _orderSearchItem = [];
@@ -820,8 +825,7 @@ class OrderProvider extends DefaultChangeNotifier {
               element.tsym!.toUpperCase().contains(value.toUpperCase()))
           .toList();
       if (_gttOrderBookSearch!.isEmpty) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(warningMessage(context, 'No Data Found'));
+        warningMessage(context, 'No Data Found');
       }
     } else {
       _gttOrderBookSearch = [];
@@ -838,8 +842,7 @@ class OrderProvider extends DefaultChangeNotifier {
               element.sipName!.toUpperCase().contains(value.toUpperCase()))
           .toList();
       if (_siporderBookSearch!.isEmpty) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(warningMessage(context, 'No Data Found'));
+        warningMessage(context, 'No Data Found');
       }
     } else {
       _siporderBookSearch = [];
@@ -856,8 +859,7 @@ class OrderProvider extends DefaultChangeNotifier {
               element.tsym!.toUpperCase().contains(value.toUpperCase()))
           .toList();
       if (_tradeBooksearch!.isEmpty) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(warningMessage(context, 'No Data Found'));
+        warningMessage(context, 'No Data Found');
       }
     } else {
       _tradeBooksearch = [];
@@ -883,7 +885,7 @@ class OrderProvider extends DefaultChangeNotifier {
         //     ConstantName.sessCheck = true;
         //     for (var element in _orderBookModel!) {
         //       if (element.norenordno == _placeOrderModel!.norenordno) {
-        // ScaffoldMessenger.of(context).showSnackBar(successMessage(
+        // successMessage(
         //     context, "Order placed successfully."
         //     // "Your ${element.trantype == "B" ? "buy" : "sell"} order ${element.norenordno} for ${element.tsym} in ${element.exch} is ${element.status}"
         //     ));
@@ -938,7 +940,8 @@ class OrderProvider extends DefaultChangeNotifier {
             _placeOrderModel!.stat == "Not_Ok") {
           ref.read(authProvider).ifSessionExpired(context);
         } else {
-          showResponsiveSuccess(context, "${_placeOrderModel!.emsg}");
+          
+              successMessage(context, "${_placeOrderModel!.emsg}");
         }
       }
 
@@ -950,8 +953,7 @@ class OrderProvider extends DefaultChangeNotifier {
           .add({"type": "API Place Order", "Error": "$e"});
 
       if (context.mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(warningMessage(context, "Error on placing order"));
+        warningMessage(context, "Error on placing order");
       }
     } finally {
       notifyListeners();
@@ -1056,7 +1058,8 @@ class OrderProvider extends DefaultChangeNotifier {
       } else {
         // Show error if no orders were successful
         if (context.mounted) {
-          showResponsiveWarningMessage(context, "Failed to place orders. Please try again.");
+          warningMessage(
+              context, "Failed to place orders. Please try again.");
         }
       }
     } catch (e) {
@@ -1065,7 +1068,8 @@ class OrderProvider extends DefaultChangeNotifier {
           .logError
           .add({"type": "API Slice Order Confirmation", "Error": "$e"});
       if (context.mounted) {
-        showResponsiveWarningMessage(context, "Error placing orders: ${e.toString()}");
+        
+            warningMessage(context, "Error placing orders: ${e.toString()}");
       }
       // notifyListeners();
     } finally {
@@ -1372,8 +1376,7 @@ class OrderProvider extends DefaultChangeNotifier {
           ConstantName.sessCheck = true;
           await fetchOrderBook(context, true);
           Navigator.pop(context);
-          ScaffoldMessenger.of(context)
-              .showSnackBar(successMessage(context, 'Order Cancelled'));
+          successMessage(context, 'Order Cancelled');
 
           Navigator.pop(context);
         }
@@ -1401,8 +1404,7 @@ class OrderProvider extends DefaultChangeNotifier {
           ConstantName.sessCheck = true;
           await fetchOrderBook(context, true);
           Navigator.pop(context);
-          ScaffoldMessenger.of(context)
-              .showSnackBar(successMessage(context, 'Order Exited'));
+          successMessage(context, 'Order Exited');
           Navigator.pop(context);
         }
       } else {
@@ -1435,7 +1437,8 @@ class OrderProvider extends DefaultChangeNotifier {
 
         // ScaffoldMessenger.of(context)
         //     .showSnackBar(successMessage(context, 'Order Modified'));
-        // Navigator.pop(context);
+        
+        Navigator.pop(context);
 
         if(kIsWeb) {
           showDialog(
@@ -1453,7 +1456,8 @@ class OrderProvider extends DefaultChangeNotifier {
             "Session Expired :  Invalid Session Key") {
           ref.read(authProvider).ifSessionExpired(context);
         } else {
-          showResponsiveSuccess(context, '${_modifyOrderModel!.emsg}');
+          
+              successMessage(context, '${_modifyOrderModel!.emsg}');
         }
       }
       notifyListeners();
@@ -1716,7 +1720,12 @@ class OrderProvider extends DefaultChangeNotifier {
       // GTT orders - handle separately since it's a different model type
       _sortGttOrders(sorting);
       return;
-    } else {
+    } else if(_selectedTab == 4){
+      // Alerts - handle separately since it's a different model type
+      ref.read(marketWatchProvider).filterPendingAlert(sorting);
+      return;
+    }
+    else {
       mainListToSort = _allOrder;
       searchListToSort = _orderSearchItem;
     }
@@ -1917,22 +1926,30 @@ class OrderProvider extends DefaultChangeNotifier {
         });
         break;
       case "PRODUCTASC":
-        listToSort.sort((a, b) => a.sPrdtAli!.compareTo(b.sPrdtAli!));
+        listToSort.sort((a, b) {
+          final aProduct = a.placeOrderParams?.sPrdtAli ?? '';
+          final bProduct = b.placeOrderParams?.sPrdtAli ?? '';
+          return aProduct.compareTo(bProduct);
+        });
         break;
       case "PRODUCTDSC":
-        listToSort.sort((a, b) => b.sPrdtAli!.compareTo(a.sPrdtAli!));
+        listToSort.sort((a, b) {
+          final aProduct = a.placeOrderParams?.sPrdtAli ?? '';
+          final bProduct = b.placeOrderParams?.sPrdtAli ?? '';
+          return bProduct.compareTo(aProduct);
+        });
         break;
       case "QTYASC":
         listToSort.sort((a, b) {
-          final aQty = int.tryParse(a.qty ?? '0') ?? 0;
-          final bQty = int.tryParse(b.qty ?? '0') ?? 0;
+          final aQty = a.qty ?? 0;
+          final bQty = b.qty ?? 0;
           return aQty.compareTo(bQty);
         });
         break;
       case "QTYDSC":
         listToSort.sort((a, b) {
-          final aQty = int.tryParse(a.qty ?? '0') ?? 0;
-          final bQty = int.tryParse(b.qty ?? '0') ?? 0;
+          final aQty = a.qty ?? 0;
+          final bQty = b.qty ?? 0;
           return bQty.compareTo(aQty);
         });
         break;
@@ -1969,12 +1986,19 @@ class OrderProvider extends DefaultChangeNotifier {
         ref.read(ordInputProvider).clearTextField();
         await fetchGTTOrderBook(context, "");
 
+        Navigator.pop(context);
+        ref.read(indexListProvider).bottomMenu(2, context);
+        // Switch to Orders tab in Portfolio screen
+        ref.read(portfolioProvider).changeTabIndex(2);
+        ref.read(orderProvider).changeTabIndex(3, context);
+        HapticFeedback.heavyImpact();
+        SystemSound.play(SystemSoundType.click);
         // Show success message - ResponsiveSnackBar for web, ScaffoldMessenger for mobile
         if (kIsWeb) {
           ResponsiveSnackBar.showSuccess(context, "Order Placed Successfully");
         } else {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(successMessage(context, "Order Placed Successfully"));
+          // ScaffoldMessenger.of(context)
+          //     .showSnackBar(successMessage(context, "Order Placed Successfully"));
         }
 
         if (kIsWeb) {
@@ -2011,6 +2035,7 @@ class OrderProvider extends DefaultChangeNotifier {
 
       if (_modifyGttOrderModel!.stat == "OI replaced") {
         ConstantName.sessCheck = true;
+        successMessage(context, "Modified Order");
         ref.read(ordInputProvider).clearTextField();
         await fetchGTTOrderBook(context, "");
 
@@ -2018,8 +2043,8 @@ class OrderProvider extends DefaultChangeNotifier {
         if (kIsWeb) {
           ResponsiveSnackBar.showSuccess(context, "Modified Order");
         } else {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(successMessage(context, "Modified Order"));
+          // ScaffoldMessenger.of(context)
+          //     .showSnackBar(successMessage(context, "Modified Order"));
         }
 
         if (kIsWeb) {
@@ -2079,6 +2104,9 @@ class OrderProvider extends DefaultChangeNotifier {
           showResponsiveWarningMessage(context, "Provided GTT Order is not found");
           Navigator.pop(context);
         }
+        
+            warningMessage(context, "Provided GTT Order is not found");
+        Navigator.pop(context);
       }
     } catch (e) {
       ref
@@ -2101,23 +2129,12 @@ class OrderProvider extends DefaultChangeNotifier {
         ref.read(ordInputProvider).clearTextField();
         await fetchGTTOrderBook(context, "");
 
-        // Show success message - ResponsiveSnackBar for web, ScaffoldMessenger for mobile
-        if (kIsWeb) {
-          ResponsiveSnackBar.showSuccess(context, "Order Placed Successfully");
-        } else {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(successMessage(context, "Order Placed Successfully"));
-        }
-
-        if (kIsWeb) {
-          // On web, skip Navigator.pop and bottomMenu navigation
-          // The draggable dialog will handle closing itself
-        } else {
-          Navigator.pop(context);
-          ref.read(indexListProvider).bottomMenu(2, context);
-          HapticFeedback.heavyImpact();
-          SystemSound.play(SystemSoundType.click);
-        }
+        Navigator.pop(context);
+        ref.read(indexListProvider).bottomMenu(2, context);
+         ref.read(portfolioProvider).changeTabIndex(2);
+        ref.read(orderProvider).changeTabIndex(3, context);
+        HapticFeedback.heavyImpact();
+        SystemSound.play(SystemSoundType.click);
       } else {
         if (_placeGttOrderModel!.emsg ==
                 "Session Expired :  Invalid Session Key" &&
@@ -2141,6 +2158,7 @@ class OrderProvider extends DefaultChangeNotifier {
 
       if (_modifyGttOrderModel!.stat == "OI replaced") {
         ConstantName.sessCheck = true;
+        successMessage(context, "Modified Order");
         ref.read(ordInputProvider).clearTextField();
         await fetchGTTOrderBook(context, "");
 
@@ -2148,8 +2166,8 @@ class OrderProvider extends DefaultChangeNotifier {
         if (kIsWeb) {
           ResponsiveSnackBar.showSuccess(context, "Modified Order");
         } else {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(successMessage(context, "Modified Order"));
+          // ScaffoldMessenger.of(context)
+          //     .showSnackBar(successMessage(context, "Modified Order"));
         }
 
         if (kIsWeb) {
@@ -2189,7 +2207,11 @@ class OrderProvider extends DefaultChangeNotifier {
     for (var basket in _bsktList) {
       if (basket['bsketName'].toString().toLowerCase() == lowerCaseName) {
         // Show error if duplicate found
-        showResponsiveErrorMessage(context, "Basket name '$trimmedName' already exists");
+        
+          warningMessage(context,
+            "Basket name '$trimmedName' already exists",
+          );
+        
         return; // Exit without creating duplicate
       }
     }
@@ -2507,7 +2529,9 @@ class OrderProvider extends DefaultChangeNotifier {
       // Check basket limit (frezQtyOrderSliceMaxLimit items max)
       if (currentScripts.length >= frezQtyOrderSliceMaxLimit) {
         if (context != null) {
-          showResponsiveErrorMessage(context, "Basket limit reached. Cannot add more than $frezQtyOrderSliceMaxLimit items to a basket.");
+          warningMessage(context,
+            "Basket limit reached. Cannot add more than $frezQtyOrderSliceMaxLimit items to a basket.",
+          );
         }
         return false; // Return false to indicate failure
       }
@@ -2547,7 +2571,8 @@ class OrderProvider extends DefaultChangeNotifier {
       
       if (currentBasketOrders + newOrders > frezQtyOrderSliceMaxLimit) {
         if (context != null) {
-          showResponsiveErrorMessage(context, "Cannot add to basket. Total orders would be ${currentBasketOrders + newOrders}, which exceeds the maximum limit of $frezQtyOrderSliceMaxLimit orders.");
+          warningMessage(context,
+            "Cannot add to basket. Total orders would be ${currentBasketOrders + newOrders}, which exceeds the maximum limit of $frezQtyOrderSliceMaxLimit orders.");
         }
         return false; // Return false to indicate failure
       }
@@ -2600,9 +2625,7 @@ class OrderProvider extends DefaultChangeNotifier {
         for (var i = 1; i < _bsktScripList.length; i++) {
           basket.add({
             "exch": '${_bsktScripList[i]["exch"]}',
-            "tsym": '${_bsktScripList[i]["tsym"]}'.contains("&")
-                ? '${_bsktScripList[i]["tsym"]}'.replaceAll("&", "%26")
-                : '${_bsktScripList[i]["tsym"]}',
+            "tsym": UrlUtils.encodeParameter('${_bsktScripList[i]["tsym"]}'),
             "qty": '${_bsktScripList[i]["qty"]}',
             "prc": '${_bsktScripList[i]["prc"]}',
             "prd": '${_bsktScripList[i]["prd"]}',
@@ -2649,8 +2672,8 @@ class OrderProvider extends DefaultChangeNotifier {
         fetchSipOrderHistory(context);
         tabSize();
         Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-            successMessage(context, "Order is Placed Sucessfully"));
+        
+            successMessage(context, "Order is Placed Sucessfully");
         notifyListeners();
       } else if (_sipPlaceOrder!.emsg ==
           "Session Expired :  Invalid Session Key") {
@@ -2675,10 +2698,12 @@ class OrderProvider extends DefaultChangeNotifier {
         Navigator.pop(context);
         Navigator.pop(context);
         fetchSipOrderHistory(context);
-        showResponsiveSuccess(context, "Order is Modified Sucessfully");
+        
+            successMessage(context, "Order is Modified Sucessfully");
       }
       if (_modifySipModel!.reqStatus == "NOT_OK") {
-        showResponsiveSuccess(context, "${_modifySipModel!.rejreason}");
+        
+            successMessage(context, "${_modifySipModel!.rejreason}");
       } else if (_modifySipModel!.emsg ==
           "Session Expired :  Invalid Session Key") {
         ref.read(authProvider).ifSessionExpired(context);
@@ -2815,8 +2840,7 @@ class OrderProvider extends DefaultChangeNotifier {
         tabSize();
         Navigator.pop(context);
         Navigator.pop(context);
-        ScaffoldMessenger.of(context)
-            .showSnackBar(successMessage(context, "Order Sucessfully Cancled"));
+        successMessage(context, "Order Sucessfully Cancled");
       } else if (cancleSipOrder!.emsg ==
           "Session Expired :  Invalid Session Key") {
         ref.read(authProvider).ifSessionExpired(context);
@@ -2849,8 +2873,19 @@ class OrderProvider extends DefaultChangeNotifier {
       List<String> successfulOrders = [];
       List<String> failedOrders = [];
       
-      for (int index = 0; index < _bsktScripList.length; index++) {
-        var element = _bsktScripList[index];
+      // Sort basket list to place BUY orders before SELL orders
+      List<Map<String, dynamic>> sortedBsktScripList = List.from(_bsktScripList);
+      sortedBsktScripList.sort((a, b) {
+        String tranTypeA = a['trantype'] ?? '';
+        String tranTypeB = b['trantype'] ?? '';
+        // BUY (B) orders first, then SELL (S) orders
+        if (tranTypeA == 'B' && tranTypeB == 'S') return -1;
+        if (tranTypeA == 'S' && tranTypeB == 'B') return 1;
+        return 0;
+      });
+      
+      for (int index = 0; index < sortedBsktScripList.length; index++) {
+        var element = sortedBsktScripList[index];
         String itemKey = "${element['tsym']}_${element['token']}_$index";
         
         debugPrint("\n--- Processing Basket Item $index ---");
@@ -3124,9 +3159,8 @@ class OrderProvider extends DefaultChangeNotifier {
         message = "Basket Order Partially Placed - ${successfulOrders.length} success, ${failedOrders.length} failed";
       }
       
-      debugPrint("Showing message: $message");
-      ScaffoldMessenger.of(context).showSnackBar(
-          successMessage(context, message));
+      
+          successMessage(context, message);
           
       debugPrint("=== BASKET PLACE ORDER END ===\n");
       notifyListeners();
@@ -3852,8 +3886,8 @@ class OrderProvider extends DefaultChangeNotifier {
         if (kIsWeb) {
           ResponsiveSnackBar.showSuccess(context, "Order Placed Successfully");
         } else {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(successMessage(context, "Order Placed Successfully"));
+          // ScaffoldMessenger.of(context)
+          //     .showSnackBar(successMessage(context, "Order Placed Successfully"));
         }
 
         if (kIsWeb) {

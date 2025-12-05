@@ -18,6 +18,7 @@ import '../../../sharedWidget/custom_drag_handler.dart';
 import '../../../sharedWidget/custom_exch_badge.dart';
 import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/loader_ui.dart';
+import '../../../sharedWidget/splash_loader.dart';
 import 'widget/allocation.dart';
 import 'widget/comparition.dart';
 import 'widget/overview.dart';
@@ -26,10 +27,11 @@ import 'widget/scheme.dart';
 
 class MFStockDetailScreen extends StatefulWidget {
   final MutualFundList mfStockData;
+  final bool fromSearch;
 
   // final TaxSaving mfStockData;
   //  final mfData = mfProvider;
-  const MFStockDetailScreen({super.key, required this.mfStockData});
+  const MFStockDetailScreen({super.key, required this.mfStockData, this.fromSearch = false});
 
 //    final MutualFundList mfStockData1;
 //  MFStockDetailScreen({super.key, required this.mfStockData1});
@@ -92,33 +94,22 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(16),
                       topRight: Radius.circular(16),
-                      
-              
                     ),
-                      border: Border(
-                                    top: BorderSide(
-                                      color: theme.isDarkMode
-                                          ? colors.textSecondaryDark
-                                              .withOpacity(0.5)
-                                          : colors.colorWhite,
-                                    ),
-                                    left: BorderSide(
-                                      color: theme.isDarkMode
-                                          ? colors.textSecondaryDark
-                                              .withOpacity(0.5)
-                                          : colors.colorWhite,
-                                    ),
-                                    right: BorderSide(
-                                      color: theme.isDarkMode
-                                          ? colors.textSecondaryDark
-                                              .withOpacity(0.5)
-                                          : colors.colorWhite,
-                                    ),
-                                  ),
+                    border: theme.isDarkMode ? Border(
+                      top: BorderSide(
+                        color: colors.textSecondaryDark.withOpacity(0.5),
+                      ),
+                      left: BorderSide(
+                        color: colors.textSecondaryDark.withOpacity(0.5),
+                      ),
+                      right: BorderSide(
+                        color: colors.textSecondaryDark.withOpacity(0.5),
+                      ),
+                    ) : null,
                   ),
-                  child: TransparentLoaderScreen(
-                    isLoading: mfData.singleloader ?? false,
-                    child: Column(
+                  child: Stack(
+                    children: [
+                      Column(
                       children: [
                         Expanded(
                           child: Column(
@@ -155,6 +146,7 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                               // Tab Content - Scrollable
                               Expanded(
                                 child: SingleChildScrollView(
+                                  physics: ClampingScrollPhysics(),
                                   controller: scrollController,
                                   child: Column(
                                     children: [
@@ -174,6 +166,15 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                         ),
                       ],
                     ),
+                      // Black overlay with Mynt logo loader
+                      if (mfData.singleloader == true)
+                        Container(
+                          color: Colors.black.withOpacity(0.3),
+                          child: const Center(
+                            child: CircularLoaderImage(),
+                          ),
+                        ),
+                    ],
                   ),
                 ),
               ),
@@ -200,51 +201,41 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                       style: ElevatedButton.styleFrom(
                           elevation: 0,
                           shadowColor: Colors.transparent,
-                          backgroundColor: theme.isDarkMode
-                              ? colors.primaryDark
-                              : colors.primaryLight,
+                          backgroundColor: mfData.singleloader == true 
+                              ? (theme.isDarkMode 
+                                  ? colors.primaryDark.withOpacity(0.5)
+                                  : colors.primaryLight.withOpacity(0.5))
+                              : (theme.isDarkMode
+                                  ? colors.primaryDark
+                                  : colors.primaryLight),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(4),
                           )),
-                      onPressed: () async {
-                        if (mfData.singleloader == false) {
-                          final isin = widget.mfStockData.iSIN;
-                          final schemeCode = widget.mfStockData.schemeCode;
+                      onPressed: mfData.singleloader == true ? null : () async {
+                        final isin = widget.mfStockData.iSIN;
+                        final schemeCode = widget.mfStockData.schemeCode;
 
-                          if (widget.mfStockData.sIPFLAG == "Y" &&
-                              isin != null &&
-                              schemeCode != null) {
-                            await mfData.invertfun(isin, schemeCode, context);
-                            String amt =
-                                widget.mfStockData.minimumPurchaseAmount ?? "0";
-                            mfData.invAmt.text = amt.split('.').first;
-                          }
-                          Navigator.pushNamed(context, Routes.mforderScreen,
-                              arguments: widget.mfStockData);
-                          mfData.orderchangetitle("One-time");
-                          mfData.orderpagetite("SDS");
-                          mfData.chngOrderType("One-time");
+                        if (widget.mfStockData.sIPFLAG == "Y" &&
+                            isin != null &&
+                            schemeCode != null) {
+                          await mfData.invertfun(isin, schemeCode, context);
+                          String amt =
+                              widget.mfStockData.minimumPurchaseAmount ?? "0";
+                          mfData.invAmt.text = amt.split('.').first;
                         }
+                        Navigator.pushNamed(context, Routes.mforderScreen,
+                            arguments: widget.mfStockData);
+                        mfData.orderchangetitle("One-time");
+                        mfData.orderpagetite("SDS");
+                        mfData.chngOrderType("One-time");
                       },
-                      child: mfData.singleloader == false
-                          ? TextWidget.subText(
-                              text: "One-time",
-                              theme: false,
-                              color: colors.colorWhite,
-                              fw: 2,
-                              align: TextAlign.center,
-                            )
-                          : const SizedBox(
-                              height: 15,
-                              width: 15,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2.0,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                    Color.fromARGB(99, 48, 48, 48)),
-                                backgroundColor:
-                                    Color.fromARGB(255, 255, 255, 255),
-                              ),
-                            )),
+                      child: TextWidget.subText(
+                        text: "One-time",
+                        theme: false,
+                        color: colors.colorWhite,
+                        fw: 2,
+                        align: TextAlign.center,
+                      )),
                 ))),
         const SizedBox(width: 10),
         Expanded(
@@ -259,51 +250,41 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                       style: ElevatedButton.styleFrom(
                           elevation: 0,
                           shadowColor: Colors.transparent,
-                          backgroundColor: theme.isDarkMode
-                              ? colors.primaryDark
-                              : colors.primaryLight,
+                          backgroundColor: mfData.singleloader == true 
+                              ? (theme.isDarkMode 
+                                  ? colors.primaryDark.withOpacity(0.5)
+                                  : colors.primaryLight.withOpacity(0.5))
+                              : (theme.isDarkMode
+                                  ? colors.primaryDark
+                                  : colors.primaryLight),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(4),
                           )),
-                      onPressed: () async {
-                        if (mfData.singleloader == false) {
-                          final isin = widget.mfStockData.iSIN;
-                          final schemeCode = widget.mfStockData.schemeCode;
+                      onPressed: mfData.singleloader == true ? null : () async {
+                        final isin = widget.mfStockData.iSIN;
+                        final schemeCode = widget.mfStockData.schemeCode;
 
-                          if (widget.mfStockData.sIPFLAG == "Y" &&
-                              isin != null &&
-                              schemeCode != null) {
-                            await mfData.invertfun(isin, schemeCode, context);
-                            String amt =
-                                widget.mfStockData.minimumPurchaseAmount ?? "0";
-                            mfData.installmentAmt.text = amt.split('.').first;
-                          }
-                          Navigator.pushNamed(context, Routes.mforderScreen,
-                              arguments: widget.mfStockData);
-                          mfData.orderchangetitle("SIP");
-                          mfData.chngOrderType("SIP");
-                          mfData.orderpagetite("SDS");
+                        if (widget.mfStockData.sIPFLAG == "Y" &&
+                            isin != null &&
+                            schemeCode != null) {
+                          await mfData.invertfun(isin, schemeCode, context);
+                          String amt =
+                              widget.mfStockData.minimumPurchaseAmount ?? "0";
+                          mfData.installmentAmt.text = amt.split('.').first;
                         }
+                        Navigator.pushNamed(context, Routes.mforderScreen,
+                            arguments: widget.mfStockData);
+                        mfData.orderchangetitle("SIP");
+                        mfData.chngOrderType("SIP");
+                        mfData.orderpagetite("SDS");
                       },
-                      child: mfData.singleloader == false
-                          ? TextWidget.subText(
-                              text: "SIP",
-                              theme: false,
-                              color: colors.colorWhite,
-                              fw: 2,
-                              align: TextAlign.center,
-                            )
-                          : const SizedBox(
-                              height: 15,
-                              width: 15,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2.0,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                    Color.fromARGB(99, 48, 48, 48)),
-                                backgroundColor:
-                                    Color.fromARGB(255, 255, 255, 255),
-                              ),
-                            )),
+                      child: TextWidget.subText(
+                        text: "SIP",
+                        theme: false,
+                        color: colors.colorWhite,
+                        fw: 2,
+                        align: TextAlign.center,
+                      )),
                 ))),
       ],
     );
@@ -349,7 +330,7 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                     scrollDirection: Axis.horizontal,
                     children: [
                       TextWidget.paraText(
-                        fw: 3,
+                        fw: 0,
                         text: widget.mfStockData.type ?? "Unknown",
                         textOverflow: TextOverflow.ellipsis,
                         maxLines: 1,
@@ -378,6 +359,7 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
             ),
           ],
         ),
+        if(!widget.fromSearch)
         Padding(
           padding: const EdgeInsets.only(right: 8),
           child: SizedBox(
@@ -458,7 +440,7 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                 : colors.textPrimaryLight,
             textOverflow: TextOverflow.ellipsis,
             theme: theme.isDarkMode,
-            fw: 3),
+            fw: 0),
         const SizedBox(height: 6),
         TextWidget.paraText(
             align: TextAlign.right,
@@ -468,7 +450,7 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                 : colors.textPrimaryLight,
             textOverflow: TextOverflow.ellipsis,
             theme: theme.isDarkMode,
-            fw: 3),
+            fw: 0),
       ],
     );
   }

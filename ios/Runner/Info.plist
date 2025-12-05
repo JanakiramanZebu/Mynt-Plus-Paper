@@ -31,7 +31,7 @@
 	<key>NSFaceIDUsageDescription</key>
 	<string>Why is my app authenticating using face id?</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>This app needs photos access to get QR code from photo library</string>
+	<string>We need access to your photo library to let you upload images.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UIBackgroundModes</key>
@@ -46,6 +46,7 @@
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>

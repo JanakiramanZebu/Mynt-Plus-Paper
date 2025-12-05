@@ -207,6 +207,7 @@ class ExitHoldingsScreen extends ConsumerWidget {
               }
 
               return ListView(
+                physics: ClampingScrollPhysics(),
                 children: [
                   if (holdings.sealableHoldings.isNotEmpty) ...[
                     Container(

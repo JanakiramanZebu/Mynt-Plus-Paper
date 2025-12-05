@@ -105,6 +105,7 @@ class ScripDetailDialogue extends ConsumerWidget {
             width: MediaQuery.of(context).size.width,
             height: 600,
             child: ListView(
+              physics: ClampingScrollPhysics(),
               children: [
                 const SizedBox(height: 12),
                 rowOfInfoData("Company Name", scripInfo.cname ?? "-",

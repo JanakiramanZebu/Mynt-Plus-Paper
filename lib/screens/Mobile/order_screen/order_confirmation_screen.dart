@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mynt_plus/provider/market_watch_provider.dart';
 import 'package:mynt_plus/utils/custom_navigator.dart';
 import '../../../models/order_book_model/order_history_model.dart';
 import '../../../models/order_book_model/place_order_model.dart';
@@ -112,6 +113,7 @@ class _OrderConfirmationScreenState extends ConsumerState<OrderConfirmationScree
     if (kIsWeb) {
       WebNavigationHelper.navigateTo("orderBook");
     } else {
+      ref.read(marketWatchProvider).setETF(false);
     ref.read(indexListProvider).bottomMenu(2, context);
     ref.read(portfolioProvider).changeTabIndex(2);
     ref.read(orderProvider).changeTabIndex(0, context);
@@ -143,6 +145,7 @@ class _OrderConfirmationScreenState extends ConsumerState<OrderConfirmationScree
         ),
         body: SafeArea(
           child: SingleChildScrollView(
+            physics: ClampingScrollPhysics(),
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -168,7 +171,7 @@ class _OrderConfirmationScreenState extends ConsumerState<OrderConfirmationScree
                       const SizedBox(height: 16),
                       TextWidget.subText(
                         text: _getStatusText(),
-                        fw: 3,
+                        fw: 0,
                         color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                         theme: false,
                       ),
@@ -177,6 +180,7 @@ class _OrderConfirmationScreenState extends ConsumerState<OrderConfirmationScree
                         text: _getStatusMessage(),
                         color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                         theme: false,
+                        fw: 0,
                       ),
                     ],
                   ),
@@ -187,7 +191,7 @@ class _OrderConfirmationScreenState extends ConsumerState<OrderConfirmationScree
                 // Orders List
                 TextWidget.subText(
                   text: widget.orderData.length == 1 ? "Order Details" : "Order List",
-                  fw: 0,
+                  fw: 1,
                   color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                   theme: false,
                 ),
@@ -255,6 +259,7 @@ class _OrderConfirmationScreenState extends ConsumerState<OrderConfirmationScree
                                     text: "#$orderNumber",
                                     color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                                     theme: false,
+                                    fw: 0,
                                   ),
                                 ],
                                 if (order.requestTime != null) ...[
@@ -263,6 +268,7 @@ class _OrderConfirmationScreenState extends ConsumerState<OrderConfirmationScree
                                     text: order.requestTime!,
                                     color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                     theme: false,
+                                    fw: 0,
                                   ),
                                 ],
                               ],
@@ -293,13 +299,15 @@ class _OrderConfirmationScreenState extends ConsumerState<OrderConfirmationScree
                               _buildOrderDetailRow("Symbol", orderHistory[0].tsym ?? "-", theme),
                               _buildOrderDetailRow("Exchange", orderHistory[0].exch ?? "-", theme),
                               _buildOrderDetailRow("Transaction Type", orderHistory[0].trantype == "B" ? "Buy" : "Sell", theme),
-                              _buildOrderDetailRow("Quantity", orderHistory[0].qty ?? "-", theme),
+                              _buildOrderDetailRow("Quantity", (orderHistory[0].exch == "MCX" ? 
+                                                                    (int.parse(orderHistory[0].qty ?? "0") ~/ int.parse(orderHistory[0].ls ?? "1")).toString() 
+                                                                    : orderHistory[0].qty) ?? "-", theme),
                               _buildOrderDetailRow("Price", "₹${orderHistory[0].prc ?? "0.00"}", theme),
                               _buildOrderDetailRow("Product", _getProductName(orderHistory[0].prd ?? ""), theme),
                               _buildOrderDetailRow("Price Type", orderHistory[0].prctyp ?? "-", theme),
                               _buildOrderDetailRow("Validity", orderHistory[0].ret ?? "-", theme),
                               _buildOrderDetailRow("Status", _formatStatus(orderHistory[0].status ?? ""), theme),
-                              if (orderHistory[0].status == "REJECTED") ...[
+                              if ((orderHistory[0].status == "REJECTED") || ((orderHistory[0].rpt == "ReplaceRejected") ||(orderHistory[0].rpt == "CancelRejected"))) ...[
                                 _buildOrderDetailRow("Reason", "", theme),
                                 Padding(
                                   padding: const EdgeInsets.only(top: 8),
@@ -398,13 +406,14 @@ class _OrderConfirmationScreenState extends ConsumerState<OrderConfirmationScree
             text: label,
             color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
             theme: false,
+            fw: 0,
             // fontSize: 14,
           ),
           TextWidget.subText(
             text: value,
             color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
             theme: false,
-            fw: 3,
+            fw: 0,
             // fontSize: 14,
           ),
         ],
@@ -492,7 +501,7 @@ class _OrderConfirmationScreenState extends ConsumerState<OrderConfirmationScree
             size: 40,
           ),
           );
-         ;
+        
         case 'REJECTED':
         case 'CANCELLED':
           return  Container(

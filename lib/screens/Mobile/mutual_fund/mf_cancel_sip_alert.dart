@@ -2,6 +2,7 @@
 
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -32,6 +33,20 @@ class MfSipCancelalert extends ConsumerWidget {
     required this.mfnextsipdate,
     required this.mfscode,
   });
+
+  /// Safely parse max installments with error handling
+  String _getMaxInstallments(MFProvider mfData) {
+    try {
+      final maxInstallments = mfData.mfSIPModel?.data?.first.pAUSEMAXIMUMINSTALLMENTS;
+      if (maxInstallments == null || maxInstallments.isEmpty) {
+        return "0";
+      }
+      return double.parse(maxInstallments).toStringAsFixed(0);
+    } catch (e) {
+      print("Error parsing max installments: $e");
+      return "0";
+    }
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -110,6 +125,7 @@ class MfSipCancelalert extends ConsumerWidget {
                 color: theme.isDarkMode
                     ? colors.textSecondaryDark
                     : colors.textPrimaryLight,
+                fw: 0,
               ),
             ),
           ),
@@ -144,17 +160,29 @@ class MfSipCancelalert extends ConsumerWidget {
               child: Padding(
                 padding: const EdgeInsets.only(left: 8.0),
                 child: TextWidget.subText(
-                  text: "No of installments Passed *",
+                  text: "No of installments to pause (Range: 1-${_getMaxInstallments(mfData)})",
                   theme: false,
                   color: theme.isDarkMode
                       ? colors.textPrimaryDark
                       : colors.textPrimaryLight,
-                  fw: 0,
+                  fw: 1,
                 ),
               ),
             ),
             const SizedBox(height: 10),
-            _buildPauseTextField(mfData, theme),
+            _buildPauseTextField(mfData, theme, context),
+            if(mfData.inpauseerror.isNotEmpty)
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextWidget.paraText(
+                text: mfData.inpauseerror,
+                theme: false,
+                color: theme.isDarkMode
+                    ? colors.lossDark
+                    : colors.lossLight,
+                fw: 3,
+              ),
+            ),
           ]
         ],
       ),
@@ -204,7 +232,7 @@ class MfSipCancelalert extends ConsumerWidget {
                       ),
                       backgroundColor: colors.primaryDark,
                     ),
-                    onPressed: () async {
+                    onPressed: mfData.inpauseerror.isNotEmpty && mfData.inpauseerror != "" ? (){} : () async {
                       try {
                         await mfData.pausesiporder(
                             context, orderNo, freqType, nextSipDate, scode);
@@ -289,6 +317,7 @@ class MfSipCancelalert extends ConsumerWidget {
                   ? colors.textPrimaryDark
                   : colors.textPrimaryLight,
               fontSize: 16,
+              fw: 0,
             ),
             hint: TextWidget.subText(
               text: mfData.sipreason,
@@ -296,6 +325,7 @@ class MfSipCancelalert extends ConsumerWidget {
               color: theme.isDarkMode
                   ? colors.textSecondaryDark
                   : colors.textSecondaryLight,
+              fw: 0,
             ),
             items: hasReasonList
                 ? mfData.mfrejectsiplist!.map((item) {
@@ -309,7 +339,7 @@ class MfSipCancelalert extends ConsumerWidget {
                               ? colors.textPrimaryDark
                               : colors.textPrimaryLight,
                           fontSize: 12,
-                          
+                          fw: 0,
                         ),
                       ),
                     );
@@ -332,12 +362,20 @@ class MfSipCancelalert extends ConsumerWidget {
                 fillColor:
                     isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
                 hintText: 'Specify The Reason',
-                hintStyle:
-                    textStyle(const Color(0xff666666), 14, FontWeight.w400),
-                style: textStyle(
-                    isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    14,
-                    FontWeight.w600),
+                hintStyle: TextWidget.textStyle(
+                                      fontSize: 14,
+                                      theme: theme.isDarkMode,
+                                     color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                                    fw: 0,
+                                    ),
+               style: TextWidget.textStyle(
+                                    fontSize: 16,
+                                    color: theme.isDarkMode
+                                        ? colors.textPrimaryDark
+                                        : colors.textPrimaryLight,
+                                    theme: theme.isDarkMode,
+                                    fw: 0,
+                                  ),
                 textCtrl: mfData.rejectsip,
               )),
         ]
@@ -346,7 +384,7 @@ class MfSipCancelalert extends ConsumerWidget {
   }
 
   // Pause SIP text field
-  Widget _buildPauseTextField(MFProvider mfData, ThemesProvider theme) {
+  Widget _buildPauseTextField(MFProvider mfData, ThemesProvider theme, BuildContext context) {
     final isDarkMode = theme.isDarkMode;
 
     return Column(
@@ -357,24 +395,28 @@ class MfSipCancelalert extends ConsumerWidget {
           child: CustomTextFormField(
             textAlign: TextAlign.start,
             fillColor: isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
+            inputFormate: [FilteringTextInputFormatter.digitsOnly],
             style: TextWidget.textStyle(
               theme: theme.isDarkMode,
               color: theme.isDarkMode
                   ? colors.textPrimaryDark
                   : colors.textPrimaryLight,
               fontSize: 16,
+              fw: 0,
             ),
 
-            hintText: 'No of installments Passed',
+            // hintText: 'No of installments Passed (Range: 1-${_getMaxInstallments(mfData)})',
             hintStyle: TextWidget.textStyle(
               fontSize: 14,
               theme: theme.isDarkMode,
-              color: theme.isDarkMode
-                  ? colors.textSecondaryDark
-                  : colors.textSecondaryLight,
+              color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+              fw: 0,
             ),
             textCtrl: mfData.pausesip,
             keyboardType: TextInputType.number, // Show numeric keyboard
+            onChanged: (value) {
+              mfData.installmentDuration(value, context);
+            },
           ),
         ),
       ],

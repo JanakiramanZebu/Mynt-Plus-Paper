@@ -169,9 +169,8 @@ class _CreatewatchListState extends ConsumerState<CreatewatchList> {
                           hintStyle: TextWidget.textStyle(
                                       fontSize: 14,
                                       theme: theme.isDarkMode,
-                                     color: theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : colors.textSecondaryLight,
+                                     color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                                    fw: 0,
                                     ),
                             
                           keyboardType: TextInputType.text,
@@ -181,6 +180,7 @@ class _CreatewatchListState extends ConsumerState<CreatewatchList> {
                                         ? colors.textPrimaryDark
                                         : colors.textPrimaryLight,
                                     theme: theme.isDarkMode,
+                                    fw: 0,
                                   ),
                           textCtrl: textCtrl,
                           textAlign: TextAlign.start,
@@ -213,26 +213,17 @@ class _CreatewatchListState extends ConsumerState<CreatewatchList> {
                         onPressed: _isProcessing
                             ? (){}
                             : () async {
-                                if (textCtrl.text.trim().isEmpty) {
+                                // Use centralized validation from provider
+                                final validationError = ref
+                                    .read(marketWatchProvider)
+                                    .validateWatchlistName(textCtrl.text);
+
+                                if (validationError != null) {
                                   setState(() {
-                                    errorText = "Please enter watchlist name";
+                                    errorText = validationError;
                                   });
                                 } else {
-                                  List<String> watchList = [];
-                                  for (var element in widget.wList) {
-                                    watchList.add(element.toUpperCase());
-                                  }
-                                  if (watchList.isNotEmpty) {
-                                    if (watchList
-                                        .contains(textCtrl.text.toUpperCase())) {
-                                      setState(() {
-                                        errorText =
-                                            "This watchlist name already exists";
-                                      });
-                                    } else {
-                                      await _handlebutton();
-                                    }
-                                  }
+                                  await _handlebutton();
                                 }
                               },
                         style: ElevatedButton.styleFrom(

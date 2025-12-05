@@ -20,7 +20,8 @@ import '../../../sharedWidget/no_data_found.dart';
 class IPOScreen extends StatefulWidget {
   final int? initialTabIndex;
   final bool? isIpo;
-  const IPOScreen({super.key, this.initialTabIndex, this.isIpo});
+  final Function(bool)? onBoundaryReached; // Callback for boundary detection
+  const IPOScreen({super.key, this.initialTabIndex, this.isIpo, this.onBoundaryReached});
 
   @override
   State<IPOScreen> createState() => _IPOmainScreenState();
@@ -44,15 +45,14 @@ class _IPOmainScreenState extends State<IPOScreen> {
           onTap: () {
             FocusScope.of(context).unfocus();
           },
-          child: SafeArea(
-            child: Scaffold(
-              appBar: widget.isIpo == true
-                  ? _buildAppBar(context, theme, ipo)
-                  : null,
-              body: IpoExploreScreens(
-                theme: theme,
-                initialTabIndex: widget.initialTabIndex,
-              ),
+          child: Scaffold(
+            appBar: widget.isIpo == true
+                ? _buildAppBar(context, theme, ipo)
+                : null,
+            body: IpoExploreScreens(
+              theme: theme,
+              initialTabIndex: widget.initialTabIndex,
+              onBoundaryReached: widget.onBoundaryReached,
             ),
           ),
         );
@@ -146,9 +146,8 @@ class _SearchBarSection extends StatelessWidget {
                    hintStyle: TextWidget.textStyle(
                                       fontSize: 14,
                                       theme: theme.isDarkMode,
-                                     color: theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : colors.textSecondaryLight,
+                                     color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                                     fw: 0,
                                     ),
                   fillColor: theme.isDarkMode
                         ? colors.searchBgDark

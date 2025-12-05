@@ -285,7 +285,7 @@ mixin MutualFundApi on ApiCore {
             "CaseNo": droupreason,
             "CaseRemarks": droupreason == "13" ? "${retext}" : "",
             "placed_by": "${prefs.clientId}",
-            "source": "API",
+            "source": "MOB",
             "SIPRegnNo": orderno,
             "scheme_code": scode
           }));
@@ -448,11 +448,11 @@ mixin MutualFundApi on ApiCore {
       DateTime endparsedDate = DateFormat("d/M/yyyy").parse(endDate);
       String endDateDateformattedDate =
           DateFormat("dd/MM/yyyy").format(endparsedDate);
-      final uri = Uri.parse(apiLinks.mandatecreate);
+      final uri = Uri.parse(apiLinks.mandatecreatenew);
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body: jsonEncode({
-            "client_code": prefs.clientId,
+            "ClientCode": prefs.clientId,
             "amount": amount,
             "startdate": startDateformattedDate,
             "enddate": endDateDateformattedDate

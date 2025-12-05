@@ -24,9 +24,12 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
 
   // Track active screens per panel (panel index -> ScreenType)
   final Map<int, ScreenType?> _activeScreens = {};
-  
+
   // Track subscriptions per screen type (ScreenType -> Set of symbols)
   final Map<ScreenType, Set<String>> _screenSubscriptions = {};
+
+  // Track which symbols are currently subscribed via websocket (for deduplication)
+  final Set<String> _currentWebSocketSubscriptions = {};
   
   // Track which screens need which subscription types
   Map<ScreenType, SubscriptionType> _screenSubscriptionTypes = {};
@@ -113,57 +116,126 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
       log('WebSubscriptionManager: Not subscribing - user not logged in');
       return;
     }
-    
+
     final context = _getValidContext();
     if (context == null) {
       log('WebSubscriptionManager: No valid context for subscription');
       return;
     }
-    
+
     final subscriptionType = _screenSubscriptionTypes[screenType] ?? SubscriptionType.none;
-    
+
     if (subscriptionType == SubscriptionType.none) {
       return; // Screen doesn't need subscriptions
     }
-    
+
     log('WebSubscriptionManager: Subscribing to $screenType (type: $subscriptionType)');
-    
+
+    try {
+      // Get symbols that need subscription for this screen
+      Set<String> symbolsToSubscribe = _getSymbolsForScreen(screenType, subscriptionType);
+
+      if (symbolsToSubscribe.isEmpty) {
+        log('WebSubscriptionManager: No symbols to subscribe for $screenType');
+        return;
+      }
+
+      // Filter out symbols that are already subscribed
+      final newSymbols = symbolsToSubscribe.where((symbol) =>
+        !_currentWebSocketSubscriptions.contains(symbol)
+      ).toSet();
+
+      if (newSymbols.isEmpty) {
+        log('WebSubscriptionManager: All symbols for $screenType already subscribed');
+        return;
+      }
+
+      log('WebSubscriptionManager: Subscribing to ${newSymbols.length} new symbols for $screenType');
+
+      // Subscribe via websocket provider (which handles the subscription manager integration)
+      final wsProvider = ref.read(websocketProvider);
+      final symbolString = newSymbols.join('#');
+
+      // Use connectTouchLine which properly tracks subscriptions
+      wsProvider.connectTouchLine(
+        task: "t",
+        input: symbolString,
+        context: context,
+      );
+
+      // Track these symbols as subscribed
+      _currentWebSocketSubscriptions.addAll(newSymbols);
+
+      // Store symbols per screen type for cleanup later
+      _screenSubscriptions[screenType] = symbolsToSubscribe;
+
+    } catch (e) {
+      log('WebSubscriptionManager: Error subscribing to $screenType: $e');
+    }
+  }
+
+  /// Get symbols that need subscription for a screen type
+  Set<String> _getSymbolsForScreen(ScreenType screenType, SubscriptionType subscriptionType) {
+    Set<String> symbols = {};
+
     try {
       switch (subscriptionType) {
         case SubscriptionType.marketWatch:
-          await ref.read(marketWatchProvider).requestMWScrip(
-            context: context,
-            isSubscribe: true,
-          );
+          // Get symbols from market watch provider
+          final mwProvider = ref.read(marketWatchProvider);
+          final watchlistScrips = mwProvider.marketWatchScrip?.values ?? [];
+          for (var scrip in watchlistScrips) {
+            if (scrip.exch != null && scrip.token != null) {
+              symbols.add('${scrip.exch}|${scrip.token}');
+            }
+          }
           break;
-          
+
         case SubscriptionType.holdings:
-          await ref.read(portfolioProvider).requestWSHoldings(
-            context: context,
-            isSubscribe: true,
-          );
+          // Get symbols from holdings
+          final portfolio = ref.read(portfolioProvider);
+          final holdings = portfolio.holdingsModel ?? [];
+          for (var holding in holdings) {
+            // Holdings have exchTsym list containing the exchange and token
+            final exchTsymList = holding.exchTsym ?? [];
+            for (var exchTsym in exchTsymList) {
+              if (exchTsym.exch != null && exchTsym.token != null) {
+                symbols.add('${exchTsym.exch}|${exchTsym.token}');
+              }
+            }
+          }
           break;
-          
+
         case SubscriptionType.positions:
-          await ref.read(portfolioProvider).requestWSPosition(
-            context: context,
-            isSubscribe: true,
-          );
+          // Get symbols from positions
+          final portfolio = ref.read(portfolioProvider);
+          final positions = portfolio.postionBookModel ?? [];
+          for (var position in positions) {
+            if (position.exch != null && position.token != null) {
+              symbols.add('${position.exch}|${position.token}');
+            }
+          }
           break;
-          
+
         case SubscriptionType.orderBook:
-          await ref.read(orderProvider).requestWSOrderBook(
-            context: context,
-            isSubscribe: true,
-          );
+          // Get symbols from order book
+          final orders = ref.read(orderProvider);
+          final orderList = orders.orderBookModel ?? [];
+          for (var order in orderList) {
+            if (order.exch != null && order.token != null) {
+              symbols.add('${order.exch}|${order.token}');
+            }
+          }
           break;
-          
+
         case SubscriptionType.none:
           break;
       }
     } catch (e) {
-      log('WebSubscriptionManager: Error subscribing to $screenType: $e');
+      log('WebSubscriptionManager: Error getting symbols for $screenType: $e');
     }
+
+    return symbols;
   }
   
   /// Unsubscribe from a screen's data
@@ -173,71 +245,66 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
       log('WebSubscriptionManager: No valid context for unsubscription');
       return;
     }
-    
+
     final subscriptionType = _screenSubscriptionTypes[screenType] ?? SubscriptionType.none;
-    
+
     if (subscriptionType == SubscriptionType.none) {
       return; // Screen doesn't have subscriptions
     }
-    
-    // Check if any other active screen needs the same subscription type
-    // This is the correct check - multiple screens can share the same subscription type
-    // (e.g., Dashboard and Watchlist both use marketWatch)
-    if (_hasActiveScreenWithType(subscriptionType, exclude: screenType)) {
-      log('WebSubscriptionManager: Not unsubscribing from $screenType - subscription type $subscriptionType still needed by another screen');
+
+    // Get symbols that were subscribed for this screen
+    final screenSymbols = _screenSubscriptions[screenType];
+    if (screenSymbols == null || screenSymbols.isEmpty) {
+      log('WebSubscriptionManager: No symbols tracked for $screenType, skipping unsubscribe');
       return;
     }
-    
-    log('WebSubscriptionManager: Unsubscribing from $screenType (type: $subscriptionType)');
-    
-    try {
-      switch (subscriptionType) {
-        case SubscriptionType.marketWatch:
-          await ref.read(marketWatchProvider).requestMWScrip(
-            context: context,
-            isSubscribe: false,
-          );
-          break;
-          
-        case SubscriptionType.holdings:
-          await ref.read(portfolioProvider).requestWSHoldings(
-            context: context,
-            isSubscribe: false,
-          );
-          break;
-          
-        case SubscriptionType.positions:
-          await ref.read(portfolioProvider).requestWSPosition(
-            context: context,
-            isSubscribe: false,
-          );
-          break;
-          
-        case SubscriptionType.orderBook:
-          await ref.read(orderProvider).requestWSOrderBook(
-            context: context,
-            isSubscribe: false,
-          );
-          break;
-          
-        case SubscriptionType.none:
-          break;
+
+    // Check if any other active screen needs the same symbols
+    final symbolsStillNeeded = <String>{};
+    for (var entry in _activeScreens.entries) {
+      final otherScreenType = entry.value;
+      if (otherScreenType != null && otherScreenType != screenType) {
+        final otherScreenSymbols = _screenSubscriptions[otherScreenType];
+        if (otherScreenSymbols != null) {
+          symbolsStillNeeded.addAll(otherScreenSymbols);
+        }
       }
+    }
+
+    // Find symbols that can be unsubscribed (not needed by any other screen)
+    final symbolsToUnsubscribe = screenSymbols.where((symbol) =>
+      !symbolsStillNeeded.contains(symbol)
+    ).toSet();
+
+    if (symbolsToUnsubscribe.isEmpty) {
+      log('WebSubscriptionManager: All symbols for $screenType still needed by other screens');
+      return;
+    }
+
+    log('WebSubscriptionManager: Unsubscribing from ${symbolsToUnsubscribe.length} symbols for $screenType');
+
+    try {
+      // Unsubscribe via websocket provider
+      final wsProvider = ref.read(websocketProvider);
+      final symbolString = symbolsToUnsubscribe.join('#');
+
+      // Use connectTouchLine with unsubscribe task
+      wsProvider.connectTouchLine(
+        task: "u", // Unsubscribe task
+        input: symbolString,
+        context: context,
+      );
+
+      // Remove these symbols from our tracking
+      _currentWebSocketSubscriptions.removeAll(symbolsToUnsubscribe);
+
+      // Clear the screen's subscription record
+      _screenSubscriptions.remove(screenType);
+
+      log('WebSubscriptionManager: Successfully unsubscribed from $screenType');
     } catch (e) {
       log('WebSubscriptionManager: Error unsubscribing from $screenType: $e');
     }
-  }
-  
-  /// Check if any active screen needs a specific subscription type
-  bool _hasActiveScreenWithType(SubscriptionType type, {ScreenType? exclude}) {
-    for (final screenType in _activeScreens.values) {
-      if (screenType == null || screenType == exclude) continue;
-      final screenSubType = _screenSubscriptionTypes[screenType] ?? SubscriptionType.none;
-      if (screenSubType == type) {
-        return true;
-      }
-    }
-    return false;
   }
   
   /// Update context for future use
@@ -354,20 +421,24 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
       log('WebSubscriptionManager: Session invalid, aborting restoration');
       return;
     }
-    
+
     if (_activeScreens.isEmpty) {
       log('WebSubscriptionManager: No active screens to restore');
       return;
     }
-    
+
     final context = _getValidContext();
     if (context == null) {
       log('WebSubscriptionManager: No valid context for restoration');
       return;
     }
-    
+
     log('WebSubscriptionManager: Restoring subscriptions for ${_activeScreens.length} active screens');
-    
+
+    // Clear current tracking since we're doing a full restore
+    _currentWebSocketSubscriptions.clear();
+    _screenSubscriptions.clear();
+
     // Restore subscriptions for each active screen
     for (final screenType in _activeScreens.values) {
       if (screenType != null) {
@@ -404,16 +475,31 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
   /// Clear all active screens and subscriptions
   void clearAll() {
     log('WebSubscriptionManager: Clearing all active screens');
-    
-    // Unsubscribe from all screens
-    for (final screenType in _activeScreens.values.toSet()) {
-      if (screenType != null) {
-        _unsubscribeFromScreen(screenType);
+
+    final context = _getValidContext();
+    if (context != null) {
+      // Unsubscribe all tracked websocket subscriptions
+      if (_currentWebSocketSubscriptions.isNotEmpty) {
+        try {
+          final wsProvider = ref.read(websocketProvider);
+          final symbolString = _currentWebSocketSubscriptions.join('#');
+
+          log('WebSubscriptionManager: Unsubscribing from ${_currentWebSocketSubscriptions.length} symbols');
+
+          wsProvider.connectTouchLine(
+            task: "u",
+            input: symbolString,
+            context: context,
+          );
+        } catch (e) {
+          log('WebSubscriptionManager: Error during clearAll unsubscribe: $e');
+        }
       }
     }
-    
+
     _activeScreens.clear();
     _screenSubscriptions.clear();
+    _currentWebSocketSubscriptions.clear();
     notifyListeners();
   }
   
@@ -422,6 +508,8 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
     return {
       'activeScreens': _activeScreens.map((k, v) => MapEntry(k.toString(), v?.toString())),
       'screenSubscriptions': _screenSubscriptions.map((k, v) => MapEntry(k.toString(), v.length.toString())),
+      'currentWebSocketSubscriptions': _currentWebSocketSubscriptions.length,
+      'websocketSymbols': _currentWebSocketSubscriptions.toList(),
       'currentState': _currentState.toString(),
       'lastPauseTime': _lastPauseTime?.toIso8601String(),
       'wasDisconnectedInBackground': _wasDisconnectedInBackground,
@@ -435,6 +523,7 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
     _connectivitySubscription.cancel();
     _activeScreens.clear();
     _screenSubscriptions.clear();
+    _currentWebSocketSubscriptions.clear();
     super.dispose();
   }
 }

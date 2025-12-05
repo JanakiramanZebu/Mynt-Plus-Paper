@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
-import '../../../../provider/mf_provider.dart';
-import '../../../../provider/thems.dart';
-import '../../../../res/global_state_text.dart';
-import '../../../../res/res.dart';
-import '../../../../routes/route_names.dart';
-import '../../../../sharedWidget/custom_exch_badge.dart';
+import '../../../provider/mf_provider.dart';
+import '../../../provider/thems.dart';
+import '../../../res/res.dart';
+import '../../../routes/route_names.dart';
+import '../../../sharedWidget/custom_exch_badge.dart';
+import '../../../sharedWidget/functions.dart';
+import '../../../res/global_state_text.dart';
 
 class MfCommonSearch extends ConsumerWidget {
   const MfCommonSearch({super.key});
@@ -48,6 +49,7 @@ class MfCommonSearch extends ConsumerWidget {
                     : colors.colorBlack),
         ),
         body: SingleChildScrollView(
+          physics: ClampingScrollPhysics(),
           child: Column(
             children: [
               Container(
@@ -56,23 +58,26 @@ class MfCommonSearch extends ConsumerWidget {
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   child: TextFormField(
                     controller: mfData.mfsearchcontroller,
-                    style: TextWidget.textStyle(
-                        fontSize: 16,
-                        theme: theme.isDarkMode,
-                        fw: 1,
-                        color: theme.isDarkMode
-                            ? colors.colorWhite
-                            : colors.colorBlack),
+                   style: TextWidget.textStyle(
+                                    fontSize: 16,
+                                    color: theme.isDarkMode
+                                        ? colors.textPrimaryDark
+                                        : colors.textPrimaryLight,
+                                    theme: theme.isDarkMode,
+                                    fw: 0,
+                                  ),
                     decoration: InputDecoration(
                         fillColor: theme.isDarkMode
                             ? colors.darkGrey
                             : const Color(0xffF1F3F8),
                         filled: true,
-                        hintStyle: TextWidget.textStyle(
-                            fontSize: 15,
-                            theme: theme.isDarkMode,
-                            fw: 0,
-                            color: const Color(0xff69758F)),
+                     hintStyle: TextWidget.textStyle(
+                                      fontSize: 14,
+                                      theme: theme.isDarkMode,
+                                     color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                               
+                                    fw: 0,
+                                    ),
                         prefixIconColor: const Color(0xff586279),
                         prefixIcon: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -114,7 +119,9 @@ class MfCommonSearch extends ConsumerWidget {
               else
                 const Padding(
                   padding: EdgeInsets.only(top: 250),
-                  child: NoDataFound(),
+                  child: NoDataFound(
+                    secondaryEnabled: false,
+                  ),
                 )
             ],
           ),

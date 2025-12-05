@@ -18,16 +18,19 @@ class InformationMessage extends ConsumerWidget {
     return notification.loading
         ? const Center(child: CircularProgressIndicator())
         : SingleChildScrollView(
+          physics: ClampingScrollPhysics(),
             child: notification.informationMessages == null ||
                     notification.informationMessages!.isEmpty
                 ? const Padding(
                     padding: EdgeInsets.symmetric(vertical: 220),
-                    child: NoDataFound(),
+                    child: NoDataFound(
+                        secondaryEnabled: false,
+                    ),
                   )
                 : ListView.separated(
                     padding: const EdgeInsets.symmetric(vertical: 20),
                     shrinkWrap: true,
-                    physics: const BouncingScrollPhysics(),
+                    physics: ClampingScrollPhysics(),
                     itemCount: notification.informationMessages!.length,
                     itemBuilder: (BuildContext context, int index) {
                       final item = notification.informationMessages![index];
@@ -40,7 +43,7 @@ class InformationMessage extends ConsumerWidget {
                               text: _formatDateTime(item.datetime),
                               theme: false,
                               color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                              
+                              fw: 0,
                             ),
                             const SizedBox(height: 5),
                             if (item.title.isNotEmpty) ...[
@@ -64,6 +67,7 @@ class InformationMessage extends ConsumerWidget {
                                     : colors.textSecondaryLight,
                                 height: 1.5,
                                 letterSpacing: 0.5,
+                                fw: 0,
                               ),
                               textAlign: TextAlign.left,
                               trimLines: 5,

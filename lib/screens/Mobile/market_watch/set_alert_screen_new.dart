@@ -96,6 +96,7 @@ class SetAlertScreen extends ConsumerWidget {
                             ? colors.textPrimaryDark
                             : colors.textPrimaryLight,
                         theme: theme.isDarkMode,
+                        fw: 0,
                       ),
                       const SizedBox(width: 4),
                       TextWidget.titleText(
@@ -104,6 +105,7 @@ class SetAlertScreen extends ConsumerWidget {
                             ? colors.textPrimaryDark
                             : colors.textPrimaryLight,
                         theme: theme.isDarkMode,
+                        fw: 0,
                       ),
                     ],
                   ),
@@ -121,6 +123,7 @@ class SetAlertScreen extends ConsumerWidget {
                             ? theme.isDarkMode ? colors.lossDark : colors.lossLight
                             : theme.isDarkMode ? colors.profitDark : colors.profitLight,
                     theme: theme.isDarkMode,
+                    fw: 0,
                   ),
                   const SizedBox(height: 8),
                   TextWidget.paraText(
@@ -130,6 +133,7 @@ class SetAlertScreen extends ConsumerWidget {
                         ? colors.textSecondaryDark
                         : colors.textSecondaryLight,
                     theme: theme.isDarkMode,
+                    fw: 0,
                   ),
                     ],
                   ),

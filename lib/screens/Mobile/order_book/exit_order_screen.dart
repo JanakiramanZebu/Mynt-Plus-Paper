@@ -112,7 +112,7 @@ class ExitOrderScreen extends ConsumerWidget {
               ],
             ),
             body: ListView.builder(
-              physics: const BouncingScrollPhysics(),
+              physics: ClampingScrollPhysics(),
               shrinkWrap: false,
               itemBuilder: (context, index) {
                 final itemIndex = index ~/ 2;

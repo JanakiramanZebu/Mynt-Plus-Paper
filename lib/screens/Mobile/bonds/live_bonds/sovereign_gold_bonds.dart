@@ -12,8 +12,16 @@ import 'package:mynt_plus/sharedWidget/functions.dart';
 import '../../../../provider/stocks_provider.dart';
 import '../../../../res/global_state_text.dart';
 
-class SovereignGoldBondsScreen extends StatelessWidget {
+class SovereignGoldBondsScreen extends StatefulWidget {
   const SovereignGoldBondsScreen({super.key});
+
+  @override
+  State<SovereignGoldBondsScreen> createState() => _SovereignGoldBondsScreenState();
+}
+
+class _SovereignGoldBondsScreenState extends State<SovereignGoldBondsScreen> {
+  // Flag to prevent multiple bottom sheets from opening
+  bool _isBottomSheetOpen = false;
 
   // Static constants for better performance
   static const EdgeInsets _itemPadding = EdgeInsets.all(16);
@@ -238,6 +246,10 @@ class SovereignGoldBondsScreen extends StatelessWidget {
 
   Future<void> _showOrderBottomSheet(double responsiveWidth,
       BuildContext context, BondsProvider bonds, dynamic bond) async {
+    // Prevent opening multiple bottom sheets
+    if (_isBottomSheetOpen) return;
+
+    _isBottomSheetOpen = true;
     await bonds.fetchLedgerBal();
     responsiveWidth == 600
         ? showDialog(
@@ -273,6 +285,7 @@ class SovereignGoldBondsScreen extends StatelessWidget {
               ),
             ),
           );
+           _isBottomSheetOpen = false;
     // showModalBottomSheet(
     //   isScrollControlled: true,
     //   useSafeArea: true,

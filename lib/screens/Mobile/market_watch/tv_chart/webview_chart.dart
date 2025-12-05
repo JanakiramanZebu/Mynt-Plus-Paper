@@ -2,9 +2,13 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:mynt_plus/main.dart';
+import 'package:mynt_plus/provider/chart_provider.dart';
+import 'package:mynt_plus/routes/app_routes.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../locator/constant.dart';
 import '../../../../locator/locator.dart';
@@ -24,12 +28,204 @@ import '../../../../res/global_state_text.dart';
 import '../../portfolio_screens/holdings/holding_detail_screen.dart';
 // import '../scrip_depth_info.dart';
 
+/// Responsive utility class for chart screen
+class ChartResponsiveHelper {
+  static bool isTablet(BuildContext context) {
+    return MediaQuery.of(context).size.width > 600;
+  }
+  
+  static bool isLandscape(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    return size.width > size.height;
+  }
+  
+  /// Get device information for debugging
+  static Map<String, dynamic> getDeviceInfo(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final padding = MediaQuery.of(context).padding;
+    final devicePixelRatio = MediaQuery.of(context).devicePixelRatio;
+    
+    return {
+      'width': size.width,
+      'height': size.height,
+      'topPadding': padding.top,
+      'bottomPadding': padding.bottom,
+      'devicePixelRatio': devicePixelRatio,
+      'isTablet': isTablet(context),
+      'isLandscape': isLandscape(context),
+    };
+  }
+  
+  /// Get detailed chart height calculation info for debugging
+  // static Map<String, dynamic> getChartHeightInfo(BuildContext context, {
+  //   required double topBarHeight,
+  //   required double spacingHeight,
+  //   required double actionButtonsHeight,
+  //   required double actionButtonsPadding,
+  // }) {
+  //   final screenSize = MediaQuery.of(context).size;
+  //   final padding = MediaQuery.of(context).padding;
+  //   final devicePixelRatio = MediaQuery.of(context).devicePixelRatio;
+  //   final isTabletDevice = isTablet(context);
+  //   final isLandscapeMode = isLandscape(context);
+    
+  //   final availableHeight = screenSize.height - 
+  //       padding.top - 
+  //       padding.bottom - 
+  //       topBarHeight - 
+  //       spacingHeight - 
+  //       actionButtonsHeight - 
+  //       actionButtonsPadding;
+    
+  //   final baseHeight = availableHeight > 300 ? availableHeight : 300.0;
+    
+  //   double finalHeight = baseHeight;
+  //   String reductionReason = 'No reduction applied';
+    
+  //        if (isLandscapeMode) {
+  //      final landscapeHeight = screenSize.height;
+       
+  //      if (isTabletDevice) {
+  //        if (landscapeHeight < 600) {
+  //          finalHeight = baseHeight * 0.80;
+  //          reductionReason = 'Small tablet landscape: 20% reduction (height: ${landscapeHeight.toStringAsFixed(0)})';
+  //        } else if (landscapeHeight < 800) {
+  //          finalHeight = baseHeight * 0.85;
+  //          reductionReason = 'Medium tablet landscape: 15% reduction (height: ${landscapeHeight.toStringAsFixed(0)})';
+  //        } else {
+  //          finalHeight = baseHeight * 0.90;
+  //          reductionReason = 'Large tablet landscape: 10% reduction (height: ${landscapeHeight.toStringAsFixed(0)})';
+  //        }
+  //      } else {
+  //        if (landscapeHeight < 400) {
+  //          finalHeight = baseHeight * 0.70;
+  //          reductionReason = 'Very small phone landscape: 30% reduction (height: ${landscapeHeight.toStringAsFixed(0)})';
+  //        } else if (landscapeHeight < 500) {
+  //          if (devicePixelRatio >= 3.0) {
+  //            finalHeight = baseHeight * 0.75;
+  //            reductionReason = 'Small high DPI phone landscape: 25% reduction (height: ${landscapeHeight.toStringAsFixed(0)})';
+  //          } else {
+  //            finalHeight = baseHeight * 0.80;
+  //            reductionReason = 'Small phone landscape: 20% reduction (height: ${landscapeHeight.toStringAsFixed(0)})';
+  //          }
+  //        } else if (landscapeHeight < 600) {
+  //          if (devicePixelRatio >= 3.0) {
+  //            finalHeight = baseHeight * 0.80;
+  //            reductionReason = 'Medium high DPI phone landscape: 20% reduction (height: ${landscapeHeight.toStringAsFixed(0)})';
+  //          } else {
+  //            finalHeight = baseHeight * 0.85;
+  //            reductionReason = 'Medium phone landscape: 15% reduction (height: ${landscapeHeight.toStringAsFixed(0)})';
+  //          }
+  //        } else {
+  //          finalHeight = baseHeight * 0.90;
+  //          reductionReason = 'Large phone landscape: 10% reduction (height: ${landscapeHeight.toStringAsFixed(0)})';
+  //        }
+  //      }
+  //    }
+    
+  //   return {
+  //     'screenHeight': screenSize.height,
+  //     'availableHeight': availableHeight,
+  //     'baseHeight': baseHeight,
+  //     'finalHeight': finalHeight,
+  //     'reductionReason': reductionReason,
+  //     'devicePixelRatio': devicePixelRatio,
+  //     'isTablet': isTabletDevice,
+  //     'isLandscape': isLandscapeMode,
+  //   };
+  // }
+  
+  static double getChartHeight(BuildContext context, {
+    required double topBarHeight,
+    required double spacingHeight,
+    required double actionButtonsHeight,
+    required double actionButtonsPadding,
+  }) {
+    final screenSize = MediaQuery.of(context).size;
+    final padding = MediaQuery.of(context).padding;
+    
+    // Get device-specific information
+    final devicePixelRatio = MediaQuery.of(context).devicePixelRatio;
+    final isTabletDevice = isTablet(context);
+    final isLandscapeMode = isLandscape(context);
+    
+    // Calculate base available height
+    final availableHeight = screenSize.height - 
+        padding.top - 
+        padding.bottom - 
+        topBarHeight - 
+        spacingHeight - 
+        actionButtonsHeight - 
+        actionButtonsPadding;
+    
+    // Ensure minimum height for chart visibility
+    final baseHeight = availableHeight > 300 ? availableHeight : 300.0;
+    
+    // Dynamic landscape adjustments based on actual screen dimensions
+    if (isLandscapeMode) {
+      // Calculate the actual screen height in landscape
+      final landscapeHeight = screenSize.height;
+      print("landscapeHeight1 $landscapeHeight");
+      
+      if (isTabletDevice) {
+        // Tablets: adaptive reduction based on screen height
+        if (landscapeHeight < 400) {
+          return baseHeight * 0.97; // 20% reduction for small tablets
+        } else if (landscapeHeight < 800) {
+          return baseHeight * 0.95; // 15% reduction for medium tablets
+        } else {
+          return baseHeight * 0.90; // 10% reduction for large tablets
+        }
+      } else {
+        // Phones: adaptive reduction based on screen height and pixel density
+        if (landscapeHeight < 400) {
+          // Very small screens (like small phones in landscape)
+          return baseHeight * 0.95; // 30% reduction
+        } else if (landscapeHeight < 500) {
+          // Small screens
+          if (devicePixelRatio >= 3.0) {
+            return baseHeight * 0.75; // 25% reduction for high DPI
+          } else {
+            return baseHeight * 0.70; // 20% reduction for others
+          }
+        } else if (landscapeHeight < 600) {
+          // Medium screens
+          if (devicePixelRatio >= 3.0) {
+            return baseHeight * 0.80; // 20% reduction for high DPI
+          } else {
+            return baseHeight * 0.85; // 15% reduction for others
+          }
+        } else {
+          // Large screens
+          return baseHeight * 0.95; // 10% reduction
+        }
+      }
+    }
+    
+    // Additional safety check for very small screens
+    final finalHeight = baseHeight < 200 ? 200.0 : baseHeight;
+
+    if (!isLandscapeMode) {
+      final portraitHeight = screenSize.height;
+      if(portraitHeight < 800){
+        return finalHeight + 20;
+      }else{
+        return finalHeight;
+      }
+    }
+    
+    return finalHeight;
+  }
+}
+
 class ChartScreenWebView extends StatefulWidget {
   final ChartArgs chartArgs;
+  final VoidCallback? onSearchTap;
 
   const ChartScreenWebView({
     super.key,
     required this.chartArgs,
+    this.onSearchTap,
   });
 
   @override
@@ -80,6 +276,14 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
 
   @override
   void dispose() {
+    // Restore system orientation to default (allow all orientations)
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+
     ConstantName.chartwebViewController?.dispose();
     ConstantName.chartwebViewController = null;
     super.dispose();
@@ -105,18 +309,25 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
 
         bool transbtn = tvChart.getQuotes?.instname != "UNDIND" &&
             tvChart.getQuotes?.instname != "COM";
-        return SafeArea(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
+        return Material(
+          type: MaterialType.transparency,
+          child: SafeArea(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
               _buildTopBar(tvChart, theme, userProfile, chartUpdate),
               _buildWebView(
                   tvChart, theme, userProfile.showchartof, chartUpdate, context),
+          if(chartUpdate.orientation != "landscape") ...[
               const SizedBox(height: 4),
-          
                if (transbtn) ...[
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+                padding: EdgeInsets.fromLTRB(
+                  ChartResponsiveHelper.isTablet(context) ? 24 : 16, // Responsive padding
+                  0, 
+                  ChartResponsiveHelper.isTablet(context) ? 24 : 16, 
+                  0
+                ),
                 child: Row(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -143,13 +354,12 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                         child: InkWell(
                           onTap: () async {
                             if (transbtn) {
-                              userProfile.setChartdialog(false);
                               await placeOrderInput(
                                   tvChart, context, tvChart.getQuotes!, true);
                             }
                           },
                           child: Container(
-                            height: 40,
+                            height: ChartResponsiveHelper.isTablet(context) ? 48 : 40, // Responsive height
                             decoration: BoxDecoration(
                               color: transbtn
                                   ? const Color(0xFF0037B7) // Blue color for Buy
@@ -168,18 +378,17 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                           ),
                         ),
                       ),
-                      const SizedBox(width: 18),
+                      SizedBox(width: ChartResponsiveHelper.isTablet(context) ? 24 : 18), // Responsive spacing
                       Expanded(
                         child: InkWell(
                           onTap: () async {
                             if (transbtn) {
-                              userProfile.setChartdialog(false);
                               await placeOrderInput(
                                   tvChart, context, tvChart.getQuotes!, false);
                             }
                           },
                           child: Container(
-                            height: 40,
+                            height: ChartResponsiveHelper.isTablet(context) ? 48 : 40, // Responsive height
                             decoration: BoxDecoration(
                               color: transbtn
                                   ? const Color(0xFFC40024) // Red color for Sell
@@ -199,9 +408,14 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                         ),
                       ),
                     ]),
-              ) 
+              ) ,
                ]
+            ]
+            else...[
+             const SizedBox.shrink(),
             ],
+          ],
+            ),
           ),
         );
       },
@@ -231,21 +445,29 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                   splashColor: Colors.grey.withOpacity(0.4),
                   highlightColor: Colors.grey.withOpacity(0.2),
                   onTap: () async {
-                    // Add delay for visual feedback
-                    await Future.delayed(const Duration(milliseconds: 150));
-
-                    userProfile.setChartdialog(false);
-                    if (tvChart.scripsize) {
-                      tvChart.chngDephBtn("Overview");
-                    } else {
-                      tvChart.chngDephBtn("Overview");
-                      tvChart.singlePageloader(true);
-                      await tvChart.calldepthApis(
-                          context, tvChart.getQuotes, "");
-                      tvChart.singlePageloader(false);
+                  final mktwth = ref.read(marketWatchProvider);
+                    if( ref.read(chartProvider.notifier).isfromOption == false){
+                      if(ref.read(chartUpdateProvider).orientation != 'portrait'){
+                  ref.read(chartUpdateProvider).changeOrientation('portrait');
+                  await Future.delayed(Duration(milliseconds: 700));
+                      }
+                  ref.read(chartProvider.notifier).hideChart();
+                  mktwth.chngDephBtn("Overview");
+                  final safeContext = rootNavigatorKey.currentContext ?? context;
+                  if(ref.read(marketWatchProvider).scripsize){
+                Navigator.pop(context);
+                }
+                  await mktwth.calldepthApis(safeContext, mktwth.getQuotes, "");
+                  if (mounted) setState(() {});
+                  mktwth.setChartScript('ABC', '0123', 'ABCD');}
+                  else {
+                    if(ref.read(chartUpdateProvider).orientation != 'portrait'){
+                  ref.read(chartUpdateProvider).changeOrientation('portrait');
+                  await Future.delayed(Duration(milliseconds: 700));
                     }
-                    tvChart.setChartScript('ABC', '0123', 'ABCD');
-                    chartUpdate.changeOrientation('portrait');
+                  ref.read(chartProvider.notifier).hideChart();
+                  mktwth.setChartScript('ABC', '0123', 'ABCD');
+                  }
                   },
                   child: Container(
                     width: 44,
@@ -389,11 +611,15 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                   ref
                       .read(marketWatchProvider)
                       .requestMWScrip(context: context, isSubscribe: false);
-                  Navigator.pushNamed(
-                    context,
-                    Routes.searchScrip,
-                    arguments: "Chart||Is",
-                  );
+                  
+                  if (widget.onSearchTap != null) {
+                    widget.onSearchTap!();
+                  } else {
+                    Navigator.of(context).pushNamed(
+                      Routes.searchScrip,
+                      arguments: "Chart||Is",
+                    );
+                  }
                   // userProfile.setChartdialog(false);
                 },
                 child: Padding(
@@ -416,9 +642,50 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
 
   Widget _buildWebView(MarketWatchProvider tvChart, theme, showchartof,
       chartUpdate, BuildContext context) {
+    // Get screen dimensions
+    final screenSize = MediaQuery.of(context).size;
+    final screenWidth = screenSize.width;
+    
+    // Calculate available height for chart using responsive helper
+    final topBarHeight = 40.0;
+    final spacingHeight = 4.0;
+    
+    // Check if transaction buttons should be shown
+    final bool transbtn = tvChart.getQuotes?.instname != "UNDIND" &&
+        tvChart.getQuotes?.instname != "COM";
+    
+    final actionButtonsHeight = transbtn ? 40.0 : 0.0;
+    final actionButtonsPadding = transbtn ? 60.0 : 0.0;
+    
+    // Get responsive chart height
+    final chartHeight = ChartResponsiveHelper.getChartHeight(
+      context,
+      topBarHeight: topBarHeight,
+      spacingHeight: spacingHeight,
+      actionButtonsHeight: actionButtonsHeight,
+      actionButtonsPadding: actionButtonsPadding,
+    );
+    
+    // Minimal safety check for landscape mode (since we have precise calculations now)
+    final finalChartHeight = ChartResponsiveHelper.isLandscape(context) 
+        ? chartHeight * 0.98  // Only 2% extra reduction for final safety
+        : chartHeight;
+    
+    // // Debug: Print chart height calculation details
+    // if (ChartResponsiveHelper.isLandscape(context)) {
+    //   final heightInfo = ChartResponsiveHelper.getChartHeightInfo(
+    //     context,
+    //     topBarHeight: topBarHeight,
+    //     spacingHeight: spacingHeight,
+    //     actionButtonsHeight: actionButtonsHeight,
+    //     actionButtonsPadding: actionButtonsPadding,
+    //   );
+      
+    // }
+    
     return SizedBox(
-      height: (MediaQuery.of(context).size.height -
-          (TargetPlatform.iOS == defaultTargetPlatform ? 180 : 150)),
+      height: finalChartHeight,
+      width: screenWidth,
       child: InAppWebView(
         key: ref.read(userProfileProvider).webViewKey,
         gestureRecognizers: {
@@ -447,9 +714,24 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
         },
         initialSettings: InAppWebViewSettings(
           transparentBackground: true,
+          // Add responsive settings for better chart display
+          useWideViewPort: true,
+          loadWithOverviewMode: true,
+          supportZoom: true,
+          builtInZoomControls: true,
+          displayZoomControls: false,
+          // Additional responsive settings
+          mediaPlaybackRequiresUserGesture: false,
+          allowsInlineMediaPlayback: true,
+          // Better handling of different screen densities
+          textZoom: 100,
         ),
         onWebViewCreated: (controller) {
           ConstantName.chartwebViewController = controller;
+          
+          // Load the chart with current user credentials
+          final chartUrl = "https://mynt.zebuetrade.com/tv?src=app&symbol=${widget.chartArgs.tsym}&user=${prefs.clientId}&usession=${prefs.clientSession}&token=${widget.chartArgs.token}&exch=${widget.chartArgs.exch}&dark=${theme.isDarkMode}";
+          controller.loadUrl(urlRequest: URLRequest(url: WebUri(chartUrl)));
         },
         onReceivedError: (controller, request, error) {
           ConstantName.chartwebViewController = controller;
@@ -487,6 +769,8 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
 
   Future<void> placeOrderInput(MarketWatchProvider scripInfo, BuildContext ctx,
       GetQuotes depthData, bool transType) async {
+    // Hide chart before opening order screen
+    
     final raw = ref.read(marketWatchProvider).getQuotes;
     await ref
         .read(marketWatchProvider)
@@ -505,11 +789,13 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
         isModify: false,
         raw: {});
 
+    ref.read(chartProvider.notifier).hideChart();
     // Navigator.pop(context);
-    ResponsiveNavigation.toPlaceOrderScreen(context: ctx, arguments: {
+    rootNavigatorKey.currentState?.pushNamed(Routes.placeOrderScreen, arguments: {
       "orderArg": orderArgs,
       "scripInfo": ref.read(marketWatchProvider).scripInfoModel!,
-      "isBskt": ''
+      "isBskt": '',
+      "fromChart": true, // Add flag to indicate coming from chart
     });
   }
 }

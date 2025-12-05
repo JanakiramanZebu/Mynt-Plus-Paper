@@ -15,8 +15,16 @@ import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import '../../../../provider/stocks_provider.dart';
 import '../../../../res/global_state_text.dart';
 
-class GovtBondsScreen extends StatelessWidget {
+class GovtBondsScreen extends StatefulWidget {
   const GovtBondsScreen({super.key});
+
+  @override
+  State<GovtBondsScreen> createState() => _GovtBondsScreenState();
+}
+
+class _GovtBondsScreenState extends State<GovtBondsScreen> {
+  // Flag to prevent multiple bottom sheets from opening
+  bool _isBottomSheetOpen = false;
 
   // Static constants for better performance
   static const EdgeInsets _itemPadding = EdgeInsets.all(16);
@@ -126,6 +134,7 @@ class GovtBondsScreen extends StatelessWidget {
                 ? colors.textPrimaryDark
                 : colors.textPrimaryLight,
             textOverflow: TextOverflow.ellipsis,
+            fw: 0,
           ),
         ),
       ],
@@ -141,6 +150,7 @@ class GovtBondsScreen extends StatelessWidget {
           color: theme.isDarkMode
               ? colors.textSecondaryDark
               : colors.textSecondaryLight,
+          fw: 0,
         ),
         const SizedBox(width: 4),
         TextWidget.paraText(
@@ -149,6 +159,7 @@ class GovtBondsScreen extends StatelessWidget {
           color: theme.isDarkMode
               ? colors.textSecondaryDark
               : colors.textSecondaryLight,
+          fw: 0,
         ),
       ],
     );
@@ -176,7 +187,7 @@ class GovtBondsScreen extends StatelessWidget {
           color: theme.isDarkMode
               ? colors.textSecondaryDark
               : colors.textSecondaryLight,
-          // w500
+          fw: 0,
         ),
         const SizedBox(width: 4),
         TextWidget.paraText(
@@ -185,6 +196,7 @@ class GovtBondsScreen extends StatelessWidget {
           color: theme.isDarkMode
               ? colors.textSecondaryDark
               : colors.textSecondaryLight,
+          fw: 0,
         ),
         const SizedBox(height: 4),
         TextWidget.paraText(
@@ -193,6 +205,7 @@ class GovtBondsScreen extends StatelessWidget {
           color: theme.isDarkMode
               ? colors.textSecondaryDark
               : colors.textSecondaryLight,
+          fw: 0,
         ),
       ],
     );
@@ -245,56 +258,27 @@ class GovtBondsScreen extends StatelessWidget {
 
   Future<void> _showOrderBottomSheet(double responsiveWidth,
       BuildContext context, BondsProvider bonds, dynamic bond) async {
+    // Prevent opening multiple bottom sheets
+    if (_isBottomSheetOpen) return;
+
+    _isBottomSheetOpen = true;
     await bonds.fetchLedgerBal();
-    responsiveWidth == 600
-        ? showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return Dialog(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: SizedBox(
-                  width: MediaQuery.of(context).size.width *
-                      0.3, // set your desired width here
-                  child: BondOrderScreenbottomPage(
-                    bondInfo: bond,
-                  ),
-                ),
-              );
-            },
-          )
-        : showModalBottomSheet(
-            isScrollControlled: true,
-            useSafeArea: true,
-            isDismissible: true,
-            shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
-            context: context,
-            builder: (context) => Container(
-              padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom,
-              ),
-              child: BondOrderScreenbottomPage(
-                bondInfo: bond,
-              ),
-            ),
-          );
-    // showModalBottomSheet(
-    //   isScrollControlled: true,
-    //   useSafeArea: true,
-    //   isDismissible: true,
-    //   shape: const RoundedRectangleBorder(
-    //       borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
-    //   context: context,
-    //   builder: (context) => Container(
-    //     padding: EdgeInsets.only(
-    //       bottom: MediaQuery.of(context).viewInsets.bottom,
-    //     ),
-    //     child: BondOrderScreenbottomPage(
-    //       bondInfo: bond,
-    //     ),
-    //   ),
-    // );
+    showModalBottomSheet(
+      isScrollControlled: true,
+      useSafeArea: true,
+      isDismissible: true,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      context: context,
+      builder: (context) => Container(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: BondOrderScreenbottomPage(
+          bondInfo: bond,
+        ),
+      ),
+    );
+     _isBottomSheetOpen = false;
   }
 }

@@ -24,40 +24,48 @@ class MFSipdetScreen extends ConsumerWidget {
     final theme = ref.watch(themeProvider);
     final mfData = ref.watch(mfProvider);
 
-    return SafeArea(
-      child: Scaffold(
-        body: Stack(
-          children: [
-            TransparentLoaderScreen(
-              isLoading: mfData.bestmfloader ?? false,
-              child: mfData.mfsiporderlist?.data?.isEmpty ?? true
-                  ? const Center(child: NoDataFound())
-                  : RefreshIndicator(
-                      onRefresh: () async {
-                        await mfData.fetchmfsipnotlivelist();
-                      },
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: _buildSipOrderList(context, mfData, theme),
-                          ),
-                        ],
-                      ),
-                    ),
-            ),
-          ],
+    if (mfData.mfsiporderlist?.data?.isEmpty ?? true) {
+      return Center(child: NoDataFound(
+                title: "No SIP Orders Found",
+                subtitle: "There's nothing here yet. Buy some SIP to see them here.",
+                // onSecondary: () {
+                //   ref.read(mfProvider).mfExTabchange(0);
+                // },
+                secondaryEnabled: false,
+                // secondaryLabel: "Buy SIP",
+              ));
+    }
+
+    return  Column(
+      children: [
+        TransparentLoaderScreen(
+          isLoading: mfData.bestmfloader ?? false,
+          child: RefreshIndicator(
+                  onRefresh: () async {
+                    await mfData.fetchmfsipnotlivelist();
+                    await mfData.fetchmfsiplist();
+                  },
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildSipOrderList(context, mfData, theme),
+                    ],
+                  ),
+                ),
         ),
-      ),
+      ],
     );
+    // );
   }
 
   Widget _buildSipOrderList(
       BuildContext context, dynamic mfData, dynamic theme) {
     return ListView.separated(
+      // padding: EdgeInsets.only(bottom: 80),
+      physics: ClampingScrollPhysics(),
       shrinkWrap: true,
       separatorBuilder: (context, index) => const ListDivider(),
-      // padding: const EdgeInsets.all(0),
+      padding: EdgeInsets.zero,
       itemCount: (mfData.mfsiporderlist?.data?.length ?? 0) + 1,
       itemBuilder: (BuildContext context, int index) {
         if (index == mfData.mfsiporderlist?.data?.length) {
@@ -79,18 +87,18 @@ class MFSipdetScreen extends ConsumerWidget {
                   TextWidget.subText(
                     text: "View SIP Order History",
                     color: theme.isDarkMode
-                        ? colors.textPrimaryDark
-                        : colors.textPrimaryLight,
+                        ? colors.primaryDark
+                        : colors.primaryLight,
                     theme: theme.isDarkMode,
-                    fw: 3,
+                    fw: 2,
                   ),
                   const SizedBox(width: 8),
                   Icon(
                     Icons.arrow_forward_ios,
                     size: 16,
                     color: theme.isDarkMode
-                        ? colors.textPrimaryDark
-                        : colors.textPrimaryLight,
+                        ? colors.primaryDark
+                        : colors.primaryLight,
                   ),
                 ],
               ),
@@ -108,20 +116,43 @@ class MFSipdetScreen extends ConsumerWidget {
             final sIPRegnNo = item.sIPRegnNo;
 
             if (sIPRegnNo != null) {
-              // await mfData.fetchmfsipsinglepage(sIPRegnNo);
-
-              // if (mfData.mfsinglepageres?.stat == "Ok") {
-              showModalBottomSheet(
-                  context: context,
-                  isScrollControlled: true,
-                  shape: const RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.only(
-                                              topLeft: Radius.circular(16),
-                                              topRight: Radius.circular(16),
+              // Show loading dialog
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (context) => const Center(
+                  child: CircularProgressIndicator(),
+                ),
+              );
+              
+              try {
+                // Pre-load SIP data before showing details
+                await mfData.fetchMFSipData(item.iSIN, item.schemeCode);
+                mfData.clearPauseError();
+                
+                // Hide loading dialog
+                Navigator.pop(context);
+                
+                // Show details screen with correct buttons
+                showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    shape: const RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.only(
+                                                topLeft: Radius.circular(16),
+                                                topRight: Radius.circular(16),
+                                              ),
                                             ),
-                                          ),
-                  // backgroundColor: Colors.transparent,
-                  builder: (context) => mfSipdetScren(data: item));
+                    builder: (context) => mfSipdetScren(data: item));
+              } catch (e) {
+                // Hide loading dialog on error
+                Navigator.pop(context);
+                
+                // Show error message
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text("Failed to load SIP details: ${e.toString()}"))
+                );
+              }
               // Navigator.pushNamed(context, Routes.mfSipdetScren);
               // } else {
               // final errorMsg = mfData.mfsinglepageres?.Msg ?? "Failed to fetch SIP details";
@@ -160,7 +191,7 @@ class MFSipdetScreen extends ConsumerWidget {
                             textOverflow: TextOverflow.ellipsis,
                             theme: theme.isDarkMode,
                             maxLines: 2,
-                            fw: 3),
+                            fw: 0),
                       ),
                       Container(
                         padding: const EdgeInsets.symmetric(
@@ -181,7 +212,7 @@ class MFSipdetScreen extends ConsumerWidget {
                             textOverflow: TextOverflow.ellipsis,
                             theme: theme.isDarkMode,
                             maxLines: 2,
-                            fw: 3),
+                            fw: 0),
                       ),
                     ],
                   ),
@@ -222,7 +253,7 @@ class MFSipdetScreen extends ConsumerWidget {
                             textOverflow: TextOverflow.ellipsis,
                             theme: theme.isDarkMode,
                             maxLines: 2,
-                            fw: 3),
+                            fw: 0),
                       const Spacer(),
                       TextWidget.paraText(
                           align: TextAlign.start,
@@ -233,7 +264,7 @@ class MFSipdetScreen extends ConsumerWidget {
                           textOverflow: TextOverflow.ellipsis,
                           theme: theme.isDarkMode,
                           maxLines: 2,
-                          fw: 3),
+                          fw: 0),
                     ],
                   ),
                 )

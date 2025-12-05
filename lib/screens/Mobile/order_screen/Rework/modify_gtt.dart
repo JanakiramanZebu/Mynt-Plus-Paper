@@ -50,8 +50,8 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
   String price = "0.00";
   String validityType = "GTT";
   OrderScreenArgs? headerData;
-  bool _GTTPriceTypeIsMarket = false;
-  bool _GTTOCOPriceTypeIsMarket = false;
+  // bool _GTTPriceTypeIsMarket = false;
+  // bool _GTTOCOPriceTypeIsMarket = false;
 
   @override
   void initState() {
@@ -119,41 +119,48 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                   titleSpacing: 6,
                   leading: Material(
                     color: Colors.transparent,
-                shape: const CircleBorder(),
-                clipBehavior: Clip.hardEdge,
+                    shape: const CircleBorder(),
+                    clipBehavior: Clip.hardEdge,
                     child: InkWell(
-                       customBorder: const CircleBorder(),
-                splashColor: theme.isDarkMode
-                                                  ? colors.splashColorDark
-                                                  : colors.splashColorLight,
-                                              highlightColor: theme.isDarkMode
-                                                  ? colors.highlightDark
-                                                  : colors.highlightLight,
-                        onTap: () {
-                          orderInput.clearTextField();
-                          Navigator.pop(context);
-                        },
-                        child:  Container(
-                    width: 44, // Increased touch area
-                    height: 44,
-                    alignment: Alignment.center,
-                    child: Icon(
-                      Icons.arrow_back_ios_outlined,
-                      size: 18,
-                      color: theme.isDarkMode
-                          ? colors.textSecondaryDark
-                          : colors.textSecondaryLight,
+                      customBorder: const CircleBorder(),
+                      splashColor: theme.isDarkMode
+                          ? colors.splashColorDark
+                          : colors.splashColorLight,
+                      highlightColor: theme.isDarkMode
+                          ? colors.highlightDark
+                          : colors.highlightLight,
+                      onTap: () {
+                        orderInput.clearTextField();
+                        Navigator.pop(context);
+                      },
+                      child: Container(
+                        width: 44, // Increased touch area
+                        height: 44,
+                        alignment: Alignment.center,
+                        child: Icon(
+                          Icons.arrow_back_ios_outlined,
+                          size: 18,
+                          color: theme.isDarkMode
+                              ? colors.textSecondaryDark
+                              : colors.textSecondaryLight,
+                        ),
+                      ),
                     ),
-                  ),),
                   ),
                   elevation: .2,
                   title: Column(
                     children: [
                       Row(children: [
-                        TextWidget.subText(text: "${widget.scripInfo.symbol!} ", theme: theme.isDarkMode, color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight, fw: 3, maxLines: 1, textOverflow: TextOverflow.ellipsis),
-            
-            
-            
+                        TextWidget.subText(
+                            text: "${widget.scripInfo.symbol!} ",
+                            theme: theme.isDarkMode,
+                            color: theme.isDarkMode
+                                ? colors.textPrimaryDark
+                                : colors.textPrimaryLight,
+                            fw: 0,
+                            maxLines: 1,
+                            textOverflow: TextOverflow.ellipsis),
+
                         // Text("${widget.scripInfo.symbol!} ",
                         //     style: textStyles.scripNameTxtStyle.copyWith(
                         //         color: theme.isDarkMode
@@ -162,40 +169,52 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                         //     overflow: TextOverflow.ellipsis,
                         //     maxLines: 1),
                         if (widget.scripInfo.option!.isNotEmpty)
-            
-            
-                        TextWidget.subText(text: widget.scripInfo.option!, theme: theme.isDarkMode, color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight, fw: 3, maxLines: 1, textOverflow: TextOverflow.ellipsis),
-            
-            
-                          // Text(widget.scripInfo.option!,
-                          //     style: textStyles.scripNameTxtStyle
-                          //         .copyWith(color: const Color(0xff666666)),
-                          //     overflow: TextOverflow.ellipsis,
-                          //     maxLines: 1),
+                          TextWidget.subText(
+                              text: widget.scripInfo.option!,
+                              theme: theme.isDarkMode,
+                              color: theme.isDarkMode
+                                  ? colors.textPrimaryDark
+                                  : colors.textPrimaryLight,
+                              fw: 0,
+                              maxLines: 1,
+                              textOverflow: TextOverflow.ellipsis),
+
+                        // Text(widget.scripInfo.option!,
+                        //     style: textStyles.scripNameTxtStyle
+                        //         .copyWith(color: const Color(0xff666666)),
+                        //     overflow: TextOverflow.ellipsis,
+                        //     maxLines: 1),
                         if (widget.scripInfo.expDate!.isNotEmpty)
-            
-            
-                        TextWidget.subText(text: " ${widget.scripInfo.expDate} ", theme: theme.isDarkMode, color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight, fw: 3, maxLines: 1, textOverflow: TextOverflow.ellipsis),
-            
-            
-                          // Text(" ${widget.scripInfo.expDate} ",
-                          //     style: textStyles.scripExchTxtStyle.copyWith(
-                          //         color: theme.isDarkMode
-                          //             ? colors.colorWhite
-                          //             : colors.colorBlack)),
-                        Container(
-                            margin: const EdgeInsets.only(right: 4),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(2),
-                                color: const Color(0xffF1F3F8)),
-                            child: Text("${widget.scripInfo.exch}",
-                                overflow: TextOverflow.ellipsis,
-                                style: textStyle(const Color(0xff666666), 10,
-                                    FontWeight.w500)))
+                          TextWidget.subText(
+                              text: " ${widget.scripInfo.expDate} ",
+                              theme: theme.isDarkMode,
+                              color: theme.isDarkMode
+                                  ? colors.textPrimaryDark
+                                  : colors.textPrimaryLight,
+                              fw: 0,
+                              maxLines: 1,
+                              textOverflow: TextOverflow.ellipsis),
+
+                        // Text(" ${widget.scripInfo.expDate} ",
+                        //     style: textStyles.scripExchTxtStyle.copyWith(
+                        //         color: theme.isDarkMode
+                        //             ? colors.colorWhite
+                        //             : colors.colorBlack)),
+                        TextWidget.subText(
+                            text: "${widget.scripInfo.exch}",
+                            theme: theme.isDarkMode,
+                            color: theme.isDarkMode
+                                ? colors.textPrimaryDark
+                                : colors.textPrimaryLight,
+                            fw: 0,
+                            textOverflow: TextOverflow.ellipsis)
+
+                        // Text("${widget.scripInfo.exch}",
+                        //    overflow: TextOverflow.ellipsis,
+                        //    style: textStyle(const Color(0xff666666), 10,
+                        //        FontWeight.w500)))
                       ]),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 8),
                       Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -221,16 +240,18 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                   child: Stack(
                     children: [
                       SingleChildScrollView(
+                        physics: ClampingScrollPhysics(),
                           reverse: true,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const SizedBox(height: 16),
                               Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 16.0),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16.0),
                                 child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Row(children: [
                                         headerTitleText(
@@ -249,17 +270,17 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                               onChanged: (value) {
                                                 double inputPrice =
                                                     double.tryParse(value) ?? 0;
-                              
+
                                                 if (value.isNotEmpty &&
                                                     inputPrice > 0) {
                                                   final regex = RegExp(
                                                       r'^(\d+)?(\.\d{0,2})?$');
                                                   if (!regex.hasMatch(value)) {
                                                     orderInput.val1Ctrl.text =
-                                                        value.substring(
-                                                            0, value.length - 1);
-                                                    orderInput
-                                                            .val1Ctrl.selection =
+                                                        value.substring(0,
+                                                            value.length - 1);
+                                                    orderInput.val1Ctrl
+                                                            .selection =
                                                         TextSelection.collapsed(
                                                             offset: orderInput
                                                                 .val1Ctrl
@@ -271,36 +292,39 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                     .removeCurrentSnackBar();
                                                 if (value.isEmpty ||
                                                     inputPrice <= 0) {
-                                                  ScaffoldMessenger.of(context)
-                                                      .showSnackBar(warningMessage(
-                                                          context,
-                                                          "Trigger Price can not be ${inputPrice <= 0 ? 'zero' : 'empty'}"));
+                                                  warningMessage(context,
+                                                      "Trigger price can not be ${inputPrice <= 0 ? 'zero' : 'empty'}");
                                                 }
                                               },
                                               hintText:
                                                   "${widget.gttOrderBook.ltp}",
-                                             hintStyle: TextWidget.textStyle(
-                                        fontSize: 14,
-                                        theme: theme.isDarkMode,
-                                       color: theme.isDarkMode
-                                  ? colors.textSecondaryDark
-                                  : colors.textSecondaryLight,
-                                      ),
+                                              hintStyle: TextWidget.textStyle(
+                                                fontSize: 14,
+                                                theme: theme.isDarkMode,
+                                                color: (theme.isDarkMode
+                                                        ? colors
+                                                            .textSecondaryDark
+                                                        : colors
+                                                            .textSecondaryLight)
+                                                    .withOpacity(0.4),
+                                                fw: 0,
+                                              ),
                                               keyboardType: const TextInputType
                                                   .numberWithOptions(
                                                   decimal: true),
-                                                style: TextWidget.textStyle(
-                                      fontSize: 16,
-                                      color: theme.isDarkMode
-                                          ? colors.textPrimaryDark
-                                          : colors.textPrimaryLight,
-                                      theme: theme.isDarkMode,
-                                    ),
+                                              style: TextWidget.textStyle(
+                                                fontSize: 16,
+                                                color: theme.isDarkMode
+                                                    ? colors.textPrimaryDark
+                                                    : colors.textPrimaryLight,
+                                                theme: theme.isDarkMode,
+                                                fw: 0,
+                                              ),
                                               textCtrl: orderInput.val1Ctrl,
                                               textAlign: TextAlign.start)),
                                     ]),
                               ),
-                              
+
                               const SizedBox(height: 16),
                               // GttCondition(
                               //     isOco: false, isGtt: isGtt, isModify: true),
@@ -325,8 +349,8 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                               //         : colors.colorDivider),
                               const SizedBox(height: 16),
                               Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(horizontal: 16),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16),
                                   child: Row(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
@@ -343,27 +367,36 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                   child: CustomTextFormField(
                                                     fillColor: theme.isDarkMode
                                                         ? colors.darkGrey
-                                                        : const Color(0xffF1F3F8),
+                                                        : const Color(
+                                                            0xffF1F3F8),
                                                     hintText:
                                                         orderInput.qtyCtrl.text,
-                                                    hintStyle: TextWidget.textStyle(
-                                        fontSize: 14,
-                                        theme: theme.isDarkMode,
-                                       color: theme.isDarkMode
-                                  ? colors.textSecondaryDark
-                                  : colors.textSecondaryLight,
-                                      ),
+                                                    hintStyle:
+                                                        TextWidget.textStyle(
+                                                      fontSize: 14,
+                                                      theme: theme.isDarkMode,
+                                                      color: (theme.isDarkMode
+                                                              ? colors
+                                                                  .textSecondaryDark
+                                                              : colors
+                                                                  .textSecondaryLight)
+                                                          .withOpacity(0.4),
+                                                      fw: 0,
+                                                    ),
                                                     inputFormate: [
                                                       FilteringTextInputFormatter
                                                           .digitsOnly
                                                     ],
-                                                     style: TextWidget.textStyle(
-                                      fontSize: 16,
-                                      color: theme.isDarkMode
-                                          ? colors.textPrimaryDark
-                                          : colors.textPrimaryLight,
-                                      theme: theme.isDarkMode,
-                                    ),
+                                                    style: TextWidget.textStyle(
+                                                      fontSize: 16,
+                                                      color: theme.isDarkMode
+                                                          ? colors
+                                                              .textPrimaryDark
+                                                          : colors
+                                                              .textPrimaryLight,
+                                                      theme: theme.isDarkMode,
+                                                      fw: 0,
+                                                    ),
                                                     // prefixIcon: InkWell(
                                                     //   onTap: () {
                                                     //     setState(() {
@@ -423,7 +456,8 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                     //           : assets.addIcon,
                                                     //       fit: BoxFit.scaleDown),
                                                     // ),
-                                                    textCtrl: orderInput.qtyCtrl,
+                                                    textCtrl:
+                                                        orderInput.qtyCtrl,
                                                     textAlign: TextAlign.start,
                                                     onChanged: (value) {
                                                       ScaffoldMessenger.of(
@@ -431,16 +465,13 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                           .hideCurrentSnackBar();
                                                       if (value.isEmpty ||
                                                           value == "0") {
-                                                        ScaffoldMessenger.of(
-                                                                context)
-                                                            .showSnackBar(
-                                                                warningMessage(
-                                                                    context,
-                                                                    "Quantity can not be ${value == "0" ? 'zero' : 'empty'}"));
+                                                        warningMessage(context,
+                                                            "Quantity can not be ${value == "0" ? 'zero' : 'empty'}");
                                                       } else {
                                                         String newValue =
                                                             value.replaceAll(
-                                                                RegExp(r'[^0-9]'),
+                                                                RegExp(
+                                                                    r'[^0-9]'),
                                                                 '');
                                                         if (newValue != value) {
                                                           orderInput.qtyCtrl
@@ -472,34 +503,35 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                     headerTitleText(
                                                         "Price", theme),
                                                     const SizedBox(width: 4),
-                                                    TextWidget.subText(text: "${orderInput.actPrcType}", theme: theme.isDarkMode, color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight, fw: 0, ),
-                              
-                              
-                              
-                              
-                              
-                              
-                              
-                              
-                              
-                              
+                                                    TextWidget.subText(
+                                                      text:
+                                                          "${orderInput.actPrcType}",
+                                                      theme: theme.isDarkMode,
+                                                      color: theme.isDarkMode
+                                                          ? colors
+                                                              .textPrimaryDark
+                                                          : colors
+                                                              .textPrimaryLight,
+                                                      fw: 1,
+                                                    ),
                                                   ]),
                                               const SizedBox(height: 8),
                                               SizedBox(
                                                   height: 45,
                                                   child: CustomTextFormField(
-                                                      fillColor: theme.isDarkMode
-                                                          ? colors.darkGrey
-                                                          : const Color(
-                                                              0xffF1F3F8),
+                                                      fillColor:
+                                                          theme.isDarkMode
+                                                              ? colors.darkGrey
+                                                              : const Color(
+                                                                  0xffF1F3F8),
                                                       onChanged: (value) {
                                                         ScaffoldMessenger.of(
                                                                 context)
                                                             .hideCurrentSnackBar();
                                                         if (value.isEmpty) {
-                                                          showResponsiveWarningMessage(
-                                                                      context,
-                                                                      "Price can not be empty");
+                                                          warningMessage(
+                                                              context,
+                                                              "Price can not be empty");
                                                         } else {
                                                           setState(() {
                                                             price = value;
@@ -508,20 +540,29 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                       },
                                                       hintText:
                                                           "${widget.gttOrderBook.placeOrderParams!.prc}",
-                                                      hintStyle: TextWidget.textStyle(
-                                        fontSize: 14,
-                                        theme: theme.isDarkMode,
-                                       color: theme.isDarkMode
-                                  ? colors.textSecondaryDark
-                                  : colors.textSecondaryLight,
-                                      ),
-                                                        style: TextWidget.textStyle(
-                                      fontSize: 16,
-                                      color: theme.isDarkMode
-                                          ? colors.textPrimaryDark
-                                          : colors.textPrimaryLight,
-                                      theme: theme.isDarkMode,
-                                    ),
+                                                      hintStyle:
+                                                          TextWidget.textStyle(
+                                                        fontSize: 14,
+                                                        theme: theme.isDarkMode,
+                                                        color: (theme.isDarkMode
+                                                                ? colors
+                                                                    .textSecondaryDark
+                                                                : colors
+                                                                    .textSecondaryLight)
+                                                            .withOpacity(0.4),
+                                                        fw: 0,
+                                                      ),
+                                                      style:
+                                                          TextWidget.textStyle(
+                                                        fontSize: 16,
+                                                        color: theme.isDarkMode
+                                                            ? colors
+                                                                .textPrimaryDark
+                                                            : colors
+                                                                .textPrimaryLight,
+                                                        theme: theme.isDarkMode,
+                                                        fw: 0,
+                                                      ),
                                                       isReadable: orderInput
                                                                       .actPrcType ==
                                                                   "Limit" ||
@@ -542,37 +583,50 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                       //             ? const Color(0xff555555)
                                                       //             : colors.colorWhite),
                                                       //     child: SvgPicture.asset(color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey, orderInput.actPrcType == "Limit" || orderInput.actPrcType == "SL Limit" ? assets.ruppeIcon : assets.lock, fit: BoxFit.scaleDown)),
-                              
-                                                      suffixIcon: InkWell(
-                                                        onTap: () {
-                                                          setState(() {
-                                                            _GTTPriceTypeIsMarket =
-                                                                !_GTTPriceTypeIsMarket;
-                                                            orderInput
-                                                                .chngGTTPriceType(
-                                                                    _GTTPriceTypeIsMarket
-                                                                        ? "Market"
-                                                                        : "Limit");
-                                                            if (orderInput
-                                                                        .actPrcType ==
-                                                                    "Market" ||
+
+                                                      suffixIcon: Material(
+                                                        color: Colors.transparent,
+                                                         shape: const CircleBorder(),
+                                                        child: InkWell(
+                                                               customBorder: const CircleBorder(),
+                                                                splashColor:
+                                                    theme.isDarkMode ? colors.splashColorDark : colors.splashColorLight,
+                                                highlightColor:
+                                                    theme.isDarkMode ? colors.highlightDark : colors.highlightLight,
+                                                          onTap: () {
+                                                            setState(() {
+                                                              orderInput.setGTTPriceTypeIsMarket(
+                                                                  !orderInput.GTTPriceTypeIsMarket);
+                                                              orderInput.chngGTTPriceType(
+                                                                  orderInput.GTTPriceTypeIsMarket
+                                                                      ? "Market"
+                                                                      : "Limit");
+                                                              if (orderInput
+                                                                          .actPrcType ==
+                                                                      "Market" ||
+                                                                  orderInput
+                                                                          .actPrcType ==
+                                                                      "SL MKT") {
                                                                 orderInput
-                                                                        .actPrcType ==
-                                                                    "SL MKT") {
-                                                              orderInput.priceCtrl
-                                                                      .text =
-                                                                  "Market";
-                                                            } else {
-                                                              orderInput.priceCtrl
-                                                                      .text =
-                                                                  "${widget.gttOrderBook.ltp}";
-                                                            }
-                                                          });
-                                                        },
-                                                        child: SvgPicture.asset(
-                                                            assets.switchIcon,
-                                                            fit:
-                                                                BoxFit.scaleDown),
+                                                                        .priceCtrl
+                                                                        .text =
+                                                                    "Market";
+                                                              } else {
+                                                                orderInput
+                                                                        .priceCtrl
+                                                                        .text =
+                                                                    "${widget.gttOrderBook.ltp}";
+                                                              }
+                                                            });
+                                                          },
+                                                          child: Padding(
+                                                            padding: const EdgeInsets.all(12.0),
+                                                            child: SvgPicture.asset(
+                                                                assets.switchIcon,
+                                                                fit: BoxFit
+                                                                    .contain),
+                                                          ),
+                                                        ),
                                                       ),
                                                       textCtrl:
                                                           orderInput.priceCtrl,
@@ -662,8 +716,8 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                               //   ),
                               // ],
                               Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(horizontal: 16),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16),
                                   child: Row(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.center,
@@ -762,22 +816,19 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                         if (isOco) ...[
                                           const SizedBox(width: 16),
                                           Row(children: [
-                                            TextWidget.subText(text: "OCO", theme: theme.isDarkMode, color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight, fw: 0, ),
-                              
-                              
-                              
-                              
-                              
-                              
-                              
-                              
-                              
-                              
+                                            TextWidget.subText(
+                                              text: "OCO",
+                                              theme: theme.isDarkMode,
+                                              color: theme.isDarkMode
+                                                  ? colors.textPrimaryDark
+                                                  : colors.textPrimaryLight,
+                                              fw: 0,
+                                            ),
                                             IconButton(
                                                 onPressed: () {
                                                   // setState(() {
                                                   //   isOco = !isOco;
-                              
+
                                                   //   if (isOco) {
                                                   //     orderInput.chngAlert("LTP");
                                                   //     orderInput.chngCond("Less");
@@ -790,7 +841,7 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                   //         .disableCondGTT(false);
                                                   //   }
                                                   // });
-                              
+
                                                   // context
                                                   //     .read(ordInputProvider)
                                                   //     .chngInvesType(
@@ -806,7 +857,8 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                     ? isOco
                                                         ? assets
                                                             .darkCheckedboxIcon
-                                                        : assets.darkCheckboxIcon
+                                                        : assets
+                                                            .darkCheckboxIcon
                                                     : isOco
                                                         ? assets.checkedbox
                                                         : assets.checkbox))
@@ -840,7 +892,7 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                 //         ? colors.darkColorDivider
                                 //         : colors.colorDivider),
                                 const SizedBox(height: 16),
-                              
+
                                 Padding(
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 16.0),
@@ -864,13 +916,15 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                     : const Color(0xffF1F3F8),
                                                 onChanged: (value) {
                                                   double inputPrice =
-                                                      double.tryParse(value) ?? 0;
-                              
+                                                      double.tryParse(value) ??
+                                                          0;
+
                                                   if (value.isNotEmpty &&
                                                       inputPrice > 0) {
                                                     final regex = RegExp(
                                                         r'^(\d+)?(\.\d{0,2})?$');
-                                                    if (!regex.hasMatch(value)) {
+                                                    if (!regex
+                                                        .hasMatch(value)) {
                                                       orderInput.val2Ctrl.text =
                                                           value.substring(0,
                                                               value.length - 1);
@@ -887,31 +941,40 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                       .removeCurrentSnackBar();
                                                   if (value.isEmpty ||
                                                       inputPrice <= 0) {
-                                                    showResponsiveWarningMessage(
-                                                            context,
-                                                            "Trigger Price can not be ${inputPrice <= 0 ? 'zero' : 'empty'}");
+                                                    warningMessage(context,
+                                                        "Trigger price can not be ${inputPrice <= 0 ? 'zero' : 'empty'}");
                                                   }
                                                 },
                                                 hintText:
                                                     "${widget.gttOrderBook.ltp}",
-                                                hintStyle: textStyle(
-                                                    const Color(0xff666666),
-                                                    15,
-                                                    FontWeight.w400),
-                                                keyboardType: const TextInputType
-                                                    .numberWithOptions(
-                                                    decimal: true),
-                                                style: textStyle(
-                                                    theme.isDarkMode
-                                                        ? colors.colorWhite
-                                                        : colors.colorBlack,
-                                                    16,
-                                                    FontWeight.w600),
+                                                hintStyle: TextWidget.textStyle(
+                                                  fontSize: 14,
+                                                  theme: theme.isDarkMode,
+                                                  color: (theme.isDarkMode
+                                                          ? colors
+                                                              .textSecondaryDark
+                                                          : colors
+                                                              .textSecondaryLight)
+                                                      .withOpacity(0.4),
+                                                  fw: 0,
+                                                ),
+                                                keyboardType:
+                                                    const TextInputType
+                                                        .numberWithOptions(
+                                                        decimal: true),
+                                                style: TextWidget.textStyle(
+                                                  fontSize: 16,
+                                                  color: theme.isDarkMode
+                                                      ? colors.textPrimaryDark
+                                                      : colors.textPrimaryLight,
+                                                  theme: theme.isDarkMode,
+                                                  fw: 0,
+                                                ),
                                                 textCtrl: orderInput.val2Ctrl,
                                                 textAlign: TextAlign.start)),
                                       ]),
                                 ),
-                              
+
                                 const SizedBox(height: 16),
                                 Padding(
                                     padding: const EdgeInsets.symmetric(
@@ -930,26 +993,40 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                 SizedBox(
                                                     height: 44,
                                                     child: CustomTextFormField(
-                                                      fillColor: theme.isDarkMode
-                                                          ? colors.darkGrey
-                                                          : const Color(
-                                                              0xffF1F3F8),
+                                                      fillColor:
+                                                          theme.isDarkMode
+                                                              ? colors.darkGrey
+                                                              : const Color(
+                                                                  0xffF1F3F8),
                                                       hintText: orderInput
                                                           .ocoQtyCtrl.text,
-                                                      hintStyle: textStyle(
-                                                          const Color(0xff666666),
-                                                          15,
-                                                          FontWeight.w400),
+                                                      hintStyle:
+                                                          TextWidget.textStyle(
+                                                        fontSize: 14,
+                                                        theme: theme.isDarkMode,
+                                                        color: (theme.isDarkMode
+                                                                ? colors
+                                                                    .textSecondaryDark
+                                                                : colors
+                                                                    .textSecondaryLight)
+                                                            .withOpacity(0.4),
+                                                        fw: 0,
+                                                      ),
                                                       inputFormate: [
                                                         FilteringTextInputFormatter
                                                             .digitsOnly
                                                       ],
-                                                      style: textStyle(
-                                                          theme.isDarkMode
-                                                              ? colors.colorWhite
-                                                              : colors.colorBlack,
-                                                          16,
-                                                          FontWeight.w600),
+                                                      style:
+                                                          TextWidget.textStyle(
+                                                        fontSize: 16,
+                                                        color: theme.isDarkMode
+                                                            ? colors
+                                                                .textPrimaryDark
+                                                            : colors
+                                                                .textPrimaryLight,
+                                                        theme: theme.isDarkMode,
+                                                        fw: 0,
+                                                      ),
                                                       // prefixIcon: InkWell(
                                                       //   onTap: () {
                                                       //     setState(() {
@@ -994,7 +1071,7 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                       //           .parse(orderInput
                                                       //               .ocoQtyCtrl
                                                       //               .text);
-                              
+
                                                       //       if (orderInput
                                                       //           .ocoQtyCtrl
                                                       //           .text
@@ -1026,26 +1103,31 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                       // ),
                                                       textCtrl:
                                                           orderInput.ocoQtyCtrl,
-                                                      textAlign: TextAlign.start,
+                                                      textAlign:
+                                                          TextAlign.start,
                                                       onChanged: (value) {
                                                         ScaffoldMessenger.of(
                                                                 context)
                                                             .hideCurrentSnackBar();
                                                         if (value.isEmpty ||
                                                             value == "0") {
-                                                          showResponsiveWarningMessage(
-                                                                      context,
-                                                                      "Quantity can not be ${value == "0" ? 'zero' : 'empty'}");
+                                                          warningMessage(
+                                                              context,
+                                                              "Quantity can not be ${value == "0" ? 'zero' : 'empty'}");
                                                         } else {
                                                           String newValue =
                                                               value.replaceAll(
                                                                   RegExp(
                                                                       r'[^0-9]'),
                                                                   '');
-                                                          if (newValue != value) {
-                                                            orderInput.ocoQtyCtrl
-                                                                .text = newValue;
-                                                            orderInput.ocoQtyCtrl
+                                                          if (newValue !=
+                                                              value) {
+                                                            orderInput
+                                                                    .ocoQtyCtrl
+                                                                    .text =
+                                                                newValue;
+                                                            orderInput
+                                                                    .ocoQtyCtrl
                                                                     .selection =
                                                                 TextSelection
                                                                     .fromPosition(
@@ -1072,39 +1154,56 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                       headerTitleText(
                                                           "Price", theme),
                                                       const SizedBox(width: 4),
-                                                      Text(
+                                                      TextWidget.subText(
+                                                      text:
                                                           "${orderInput.actOcoPrcType}",
-                                                          style: textStyle(
-                                                              const Color(
-                                                                  0xff777777),
-                                                              14,
-                                                              FontWeight.w600))
+                                                      theme: theme.isDarkMode,
+                                                      color: theme.isDarkMode
+                                                          ? colors
+                                                              .textPrimaryDark
+                                                          : colors
+                                                              .textPrimaryLight,
+                                                      fw: 1,
+                                                    ),
                                                     ]),
                                                 const SizedBox(height: 8),
                                                 SizedBox(
                                                     height: 44,
                                                     child: CustomTextFormField(
-                                                        fillColor:
-                                                            theme.isDarkMode
-                                                                ? colors.darkGrey
-                                                                : const Color(
-                                                                    0xffF1F3F8),
+                                                        fillColor: theme
+                                                                .isDarkMode
+                                                            ? colors.darkGrey
+                                                            : const Color(
+                                                                0xffF1F3F8),
                                                         onChanged: (value) {},
                                                         hintText:
                                                             "${widget.gttOrderBook.placeOrderParamsLeg2!.prc}",
-                                                        hintStyle: textStyle(
-                                                            const Color(
-                                                                0xff666666),
-                                                            15,
-                                                            FontWeight.w400),
-                                                        style: textStyle(
-                                                            theme.isDarkMode
-                                                                ? colors
-                                                                    .colorWhite
-                                                                : colors
-                                                                    .colorBlack,
-                                                            16,
-                                                            FontWeight.w600),
+                                                        hintStyle: TextWidget
+                                                            .textStyle(
+                                                          fontSize: 14,
+                                                          theme:
+                                                              theme.isDarkMode,
+                                                          color: theme
+                                                                  .isDarkMode
+                                                              ? colors
+                                                                  .textSecondaryDark
+                                                              : colors
+                                                                  .textSecondaryLight,
+                                                          fw: 0,
+                                                        ),
+                                                        style: TextWidget
+                                                            .textStyle(
+                                                          fontSize: 16,
+                                                          color: theme
+                                                                  .isDarkMode
+                                                              ? colors
+                                                                  .textPrimaryDark
+                                                              : colors
+                                                                  .textPrimaryLight,
+                                                          theme:
+                                                              theme.isDarkMode,
+                                                          fw: 0,
+                                                        ),
                                                         isReadable: orderInput
                                                                         .actOcoPrcType ==
                                                                     "Limit" ||
@@ -1121,14 +1220,14 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                         //             BorderRadius.circular(20),
                                                         //         color: theme.isDarkMode ? const Color(0xff555555) : colors.colorWhite),
                                                         //     child: SvgPicture.asset(color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey, orderInput.actOcoPrcType == "Limit" || orderInput.actOcoPrcType == "SL Limit" ? assets.ruppeIcon : assets.lock, fit: BoxFit.scaleDown)),
-                              
+
                                                         suffixIcon: InkWell(
                                                           onTap: () {
                                                             setState(() {
-                                                              _GTTOCOPriceTypeIsMarket =
-                                                                  !_GTTOCOPriceTypeIsMarket;
+                                                              orderInput.setGTTOCOPriceTypeIsMarket(
+                                                                  !orderInput.GTTOCOPriceTypeIsMarket);
                                                               orderInput.chngOCOPriceType(
-                                                                  _GTTOCOPriceTypeIsMarket
+                                                                  orderInput.GTTOCOPriceTypeIsMarket
                                                                       ? "Market"
                                                                       : "Limit");
                                                               if (orderInput
@@ -1138,8 +1237,9 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                                           .actOcoPrcType ==
                                                                       "SL MKT") {
                                                                 orderInput
-                                                                    .ocoPriceCtrl
-                                                                    .text = "Market";
+                                                                        .ocoPriceCtrl
+                                                                        .text =
+                                                                    "Market";
                                                               } else {
                                                                 orderInput
                                                                         .ocoPriceCtrl
@@ -1148,10 +1248,13 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                               }
                                                             });
                                                           },
-                                                          child: SvgPicture.asset(
-                                                              assets.switchIcon,
-                                                              fit: BoxFit
-                                                                  .scaleDown),
+                                                          child: Padding(
+                                                            padding: const EdgeInsets.all(12.0),
+                                                            child: SvgPicture.asset(
+                                                                assets.switchIcon,
+                                                                fit: BoxFit
+                                                                    .contain),
+                                                          ),
                                                         ),
                                                         textCtrl: orderInput
                                                             .ocoPriceCtrl,
@@ -1299,7 +1402,8 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                     ? const NoInternetWidget()
                     : SafeArea(
                         child: Padding(
-                          padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+                          padding: EdgeInsets.only(
+                              bottom: MediaQuery.of(context).viewInsets.bottom),
                           child: Container(
                               color: theme.isDarkMode
                                   ? colors.colorBlack
@@ -1311,185 +1415,185 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                     Container(
                                         padding: const EdgeInsets.symmetric(
                                             horizontal: 16, vertical: 4),
-                                        width: MediaQuery.of(context).size.width,
+                                        width:
+                                            MediaQuery.of(context).size.width,
                                         child: ElevatedButton(
-                                            onPressed: internet
-                                                            .connectionStatus ==
-                                                        ConnectivityResult.none ||
-                                                    ref
-                                                        .read(orderProvider)
-                                                        .loading
-                                                ? null
-                                                : () async {
-                                                    if (orderInput
-                                                        .disableGTTCond) {
-                                                      if ((orderInput.val1Ctrl.text.isNotEmpty &&
+                                          onPressed: internet
+                                                          .connectionStatus ==
+                                                      ConnectivityResult.none ||
+                                                  ref
+                                                      .read(orderProvider)
+                                                      .loading
+                                              ? null
+                                              : () async {
+                                                  if (orderInput
+                                                      .disableGTTCond) {
+                                                    if ((orderInput.val1Ctrl.text.isNotEmpty &&
+                                                            orderInput
+                                                                .val2Ctrl
+                                                                .text
+                                                                .isNotEmpty &&
+                                                            orderInput
+                                                                .priceCtrl
+                                                                .text
+                                                                .isNotEmpty &&
+                                                            orderInput
+                                                                .ocoPriceCtrl
+                                                                .text
+                                                                .isNotEmpty &&
+                                                            orderInput
+                                                                .ocoQtyCtrl
+                                                                .text
+                                                                .isNotEmpty) &&
+                                                        orderInput.qtyCtrl.text
+                                                            .isNotEmpty) {
+                                                      // if (orderInput
+                                                      //             .actOcoPrcType ==
+                                                      //         "SL Limit" ||
+                                                      //     orderInput
+                                                      //             .actOcoPrcType ==
+                                                      //         "SL MKT") {
+                                                      //   if (orderInput.ocoTrgPrcCtrl
+                                                      //       .text.isEmpty) {
+                                                      //     ScaffoldMessenger.of(
+                                                      //             context)
+                                                      //         .showSnackBar(
+                                                      //             warningMessage(
+                                                      //                 context,
+                                                      //                 "Trigger can not be empty"));
+                                                      //   } else {
+                                                      //     prepareToModifyOCOOrder(
+                                                      //         orderInput);
+                                                      //   }
+                                                      // }
+                                                      // else {
+
+                                                      double ltp = double.parse(
+                                                          widget.gttOrderBook
+                                                                  .ltp ??
+                                                              "0.00");
+                                                      double val1 =
+                                                          double.parse(
+                                                              orderInput
+                                                                  .val1Ctrl
+                                                                  .text);
+                                                      double val2 =
+                                                          double.parse(
                                                               orderInput
                                                                   .val2Ctrl
-                                                                  .text
-                                                                  .isNotEmpty &&
-                                                              orderInput
-                                                                  .priceCtrl
-                                                                  .text
-                                                                  .isNotEmpty &&
-                                                              orderInput
-                                                                  .ocoPriceCtrl
-                                                                  .text
-                                                                  .isNotEmpty &&
-                                                              orderInput
-                                                                  .ocoQtyCtrl
-                                                                  .text
-                                                                  .isNotEmpty) &&
-                                                          orderInput.qtyCtrl.text
-                                                              .isNotEmpty) {
-                                                        // if (orderInput
-                                                        //             .actOcoPrcType ==
-                                                        //         "SL Limit" ||
-                                                        //     orderInput
-                                                        //             .actOcoPrcType ==
-                                                        //         "SL MKT") {
-                                                        //   if (orderInput.ocoTrgPrcCtrl
-                                                        //       .text.isEmpty) {
-                                                        //     ScaffoldMessenger.of(
-                                                        //             context)
-                                                        //         .showSnackBar(
-                                                        //             warningMessage(
-                                                        //                 context,
-                                                        //                 "Trigger can not be empty"));
-                                                        //   } else {
-                                                        //     prepareToModifyOCOOrder(
-                                                        //         orderInput);
-                                                        //   }
-                                                        // }
-                                                        // else {
-                                      
-                                                        double ltp = double.parse(
-                                                            widget.gttOrderBook
-                                                                    .ltp ??
-                                                                "0.00");
-                                                        double val1 =
-                                                            double.parse(
-                                                                orderInput
-                                                                    .val1Ctrl
-                                                                    .text);
-                                                        double val2 =
-                                                            double.parse(
-                                                                orderInput
-                                                                    .val2Ctrl
-                                                                    .text);
-                                      
-                                                        if (val1 > ltp &&
-                                                            val2 < ltp) {
-                                                          prepareToModifyOCOOrder(
-                                                              orderInput);
-                                                        } else {
-                                                          showResponsiveWarningMessage(
-                                                                  context,
-                                                                  val1 <= ltp
-                                                                      ? "Target Trigger Price can not be Less than LTP"
-                                                                      : val2 >= ltp
-                                                                          ? "Stoploss Trigger Price can not be Greater than LTP"
-                                                                          : "Trigger Price can not be equal to LTP");
-                                                        }
-                                                        // }
+                                                                  .text);
+
+                                                      if (val1 > ltp &&
+                                                          val2 < ltp) {
+                                                        prepareToModifyOCOOrder(
+                                                            orderInput);
                                                       } else {
-                                                        showResponsiveWarningMessage(
-                                                                    context,
-                                                                    "Enter all Input fields");
+                                                        warningMessage(
+                                                            context,
+                                                            val1 <= ltp
+                                                                ? "Target trigger price cannot be less than LTP"
+                                                                : val2 >= ltp
+                                                                    ? "Stoploss trigger price cannot be greater than LTP"
+                                                                    : "Trigger price cannot be equal to LTP");
                                                       }
+                                                      // }
                                                     } else {
-                                                      if ((orderInput
-                                                                  .val1Ctrl
-                                                                  .text
-                                                                  .isNotEmpty &&
-                                                              orderInput
-                                                                  .priceCtrl
-                                                                  .text
-                                                                  .isNotEmpty) &&
-                                                          orderInput.qtyCtrl.text
-                                                              .isNotEmpty) {
-                                                        // if (orderInput.actPrcType ==
-                                                        //         "SL Limit" ||
-                                                        //     orderInput.actPrcType ==
-                                                        //         "SL MKT") {
-                                                        //   if (orderInput.trgPrcCtrl
-                                                        //       .text.isEmpty) {
-                                                        //     ScaffoldMessenger.of(
-                                                        //             context)
-                                                        //         .showSnackBar(
-                                                        //             warningMessage(
-                                                        //                 context,
-                                                        //                 "Trigger can not be empty"));
-                                                        //   } else {
-                                                        //     prepareToModifyGttOrder(
-                                                        //         orderInput);
-                                                        //   }
-                                                        // }
-                                                        // else {
-                                                        double ltp = double.parse(
-                                                            widget.gttOrderBook
-                                                                    .ltp ??
-                                                                "0.00");
-                                                        double val1 =
-                                                            double.parse(
-                                                                orderInput
-                                                                    .val1Ctrl
-                                                                    .text);
-                                                        // double val2 = double.parse(orderInput.val2Ctrl.text);
-                                      
-                                                        if (val1 > ltp) {
-                                                          // orderInput.chngCond("Greater than");
-                                                          // orderInput.chngAlert("LTP");
-                                                          prepareToModifyGttOrder(
-                                                              orderInput);
-                                      
-                                                          // } else if (val1 < ltp) {
-                                                          //   // orderInput.chngCond("Less than");
-                                                          //   // orderInput.chngAlert("LTP");
-                                                          //   prepareToModifyGttOrder(orderInput);
-                                                        } else {
-                                                          showResponsiveWarningMessage(
-                                                                      context,
-                                                                      "Trigger Price can not be equal to LTP");
-                                                        }
-                                                        // prepareToModifyGttOrder(orderInput);
-                                                        // }
-                                                      } else {
-                                                        showResponsiveWarningMessage(
-                                                                    context,
-                                                                    "Enter all Input fields");
-                                                      }
+                                                      warningMessage(context,
+                                                          "Enter all Input fields");
                                                     }
-                                                  },
-                                            style: ElevatedButton.styleFrom(
-                                              padding: const EdgeInsets.symmetric(
-                                                  vertical: 10),
-                                              backgroundColor:isBuy!
-                                                        ? colors.primary
-                                                        : colors.tertiary,
-                                                  minimumSize: const Size(double.infinity, 45),
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius: BorderRadius.circular(5),
-                                                  ),
-                                              // shape: const StadiumBorder()
+                                                  } else {
+                                                    if ((orderInput
+                                                                .val1Ctrl
+                                                                .text
+                                                                .isNotEmpty &&
+                                                            orderInput
+                                                                .priceCtrl
+                                                                .text
+                                                                .isNotEmpty) &&
+                                                        orderInput.qtyCtrl.text
+                                                            .isNotEmpty) {
+                                                      // if (orderInput.actPrcType ==
+                                                      //         "SL Limit" ||
+                                                      //     orderInput.actPrcType ==
+                                                      //         "SL MKT") {
+                                                      //   if (orderInput.trgPrcCtrl
+                                                      //       .text.isEmpty) {
+                                                      //     ScaffoldMessenger.of(
+                                                      //             context)
+                                                      //         .showSnackBar(
+                                                      //             warningMessage(
+                                                      //                 context,
+                                                      //                 "Trigger can not be empty"));
+                                                      //   } else {
+                                                      //     prepareToModifyGttOrder(
+                                                      //         orderInput);
+                                                      //   }
+                                                      // }
+                                                      // else {
+                                                      double ltp = double.parse(
+                                                          widget.gttOrderBook
+                                                                  .ltp ??
+                                                              "0.00");
+                                                      double val1 =
+                                                          double.parse(
+                                                              orderInput
+                                                                  .val1Ctrl
+                                                                  .text);
+                                                      // double val2 = double.parse(orderInput.val2Ctrl.text);
+
+                                                      if (val1 > ltp) {
+                                                        // orderInput.chngCond("Greater than");
+                                                        // orderInput.chngAlert("LTP");
+                                                        prepareToModifyGttOrder(
+                                                            orderInput);
+
+                                                        // } else if (val1 < ltp) {
+                                                        //   // orderInput.chngCond("Less than");
+                                                        //   // orderInput.chngAlert("LTP");
+                                                        //   prepareToModifyGttOrder(orderInput);
+                                                      } else {
+                                                        warningMessage(context,
+                                                            "Trigger price can not be equal to LTP");
+                                                      }
+                                                      // prepareToModifyGttOrder(orderInput);
+                                                      // }
+                                                    } else {
+                                                      warningMessage(context,
+                                                          "Enter all Input fields");
+                                                    }
+                                                  }
+                                                },
+                                          style: ElevatedButton.styleFrom(
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 10),
+                                            backgroundColor: isBuy!
+                                                ? colors.primary
+                                                : colors.tertiary,
+                                            minimumSize:
+                                                const Size(double.infinity, 45),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(5),
                                             ),
-                                            child: ref.read(orderProvider).loading
-                                                ? const SizedBox(
-                                                    width: 18,
-                                                    height: 20,
-                                                    child:
-                                                        CircularProgressIndicator(
-                                                            strokeWidth: 2,
-                                                            color: Color(
-                                                                0xff666666)),
-                                                  )
-                                                : 
-                                                
-                                                
-                                                TextWidget.subText(text: "Modify", theme: theme.isDarkMode, color: colors.colorWhite, fw: 2, ),
-                                                
-                                                
-                                               )),
+                                            // shape: const StadiumBorder()
+                                          ),
+                                          child: ref.read(orderProvider).loading
+                                              ? const SizedBox(
+                                                  width: 18,
+                                                  height: 20,
+                                                  child:
+                                                      CircularProgressIndicator(
+                                                          strokeWidth: 2,
+                                                          color: Color(
+                                                              0xff666666)),
+                                                )
+                                              : TextWidget.subText(
+                                                  text: "Modify",
+                                                  theme: theme.isDarkMode,
+                                                  color: colors.colorWhite,
+                                                  fw: 2,
+                                                ),
+                                        )),
                                     if (defaultTargetPlatform ==
                                         TargetPlatform.iOS)
                                       const SizedBox(height: 18)
@@ -1500,19 +1604,20 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
     );
   }
 
-   headerTitleText(String text, ThemesProvider theme) {
-    return 
-    
-    TextWidget.subText(text: text, theme: theme.isDarkMode, color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight, fw: 0, );
-    
-    
-    
-    
-      // Text(text,
-      //     style: textStyle(
-      //         theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-      //         14,
-      //         FontWeight.w500));
+  headerTitleText(String text, ThemesProvider theme) {
+    return TextWidget.subText(
+      text: text,
+      theme: theme.isDarkMode,
+      color:
+          theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+      fw: 1,
+    );
+
+    // Text(text,
+    //     style: textStyle(
+    //         theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+    //         14,
+    //         FontWeight.w500));
   }
 
   TextStyle textStyle(Color color, double fontSize, fWeight) {
@@ -1527,7 +1632,7 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
         qty: orderInput.qtyCtrl.text,
         tsym: '${widget.gttOrderBook.tsym}',
         validity: "GTT",
-        prc: orderInput.priceCtrl.text,
+        prc: orderInput.actPrcType == "Market" || orderInput.actPrcType == "SL MKT" ? "0.00" : orderInput.priceCtrl.text,
         prd: orderInput.orderType,
         trantype: isBuy! ? 'B' : "S",
         ret: 'DAY',
@@ -1556,13 +1661,13 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                 orderInput.actOcoPrcType == "SL MKT"
             ? orderInput.trgPrcCtrl.text
             : "",
-        prc1: orderInput.priceCtrl.text,
+        prc1: orderInput.actPrcType == "Market" || orderInput.actPrcType == "SL MKT" ? "0.00" : orderInput.priceCtrl.text,
         prd1: orderInput.orderType,
         d1: orderInput.val1Ctrl.text,
         prctyp1: orderInput.prcType,
         d2: orderInput.val2Ctrl.text,
         prctyp2: orderInput.ocoPrcType,
-        prc2: orderInput.ocoPriceCtrl.text,
+        prc2: orderInput.actOcoPrcType == "Market" || orderInput.actOcoPrcType == "SL MKT" ? "0.00" : orderInput.ocoPriceCtrl.text,
         prd2: orderInput.ocoOrderType,
         qty2: orderInput.ocoQtyCtrl.text,
         trgprc2: orderInput.actOcoPrcType == "SL Limit" ||

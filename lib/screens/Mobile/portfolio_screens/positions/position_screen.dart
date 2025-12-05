@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:ui';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,6 +11,7 @@ import 'package:mynt_plus/screens/Mobile/portfolio_screens/positions/position_de
 // import 'package:remove_emoji_input_formatter/remove_emoji_input_formatter.dart';
 import '../../../../models/portfolio_model/position_book_model.dart';
 import '../../../../provider/fund_provider.dart';
+import '../../../../provider/index_list_provider.dart';
 import '../../../../provider/market_watch_provider.dart';
 import '../../../../provider/portfolio_provider.dart';
 import '../../../../provider/thems.dart';
@@ -36,21 +39,75 @@ class PositionScreen extends ConsumerStatefulWidget {
   ConsumerState<PositionScreen> createState() => _PositionScreenState();
 }
 
-class _PositionScreenState extends ConsumerState<PositionScreen> {
+class _PositionScreenState extends ConsumerState<PositionScreen> with TickerProviderStateMixin {
   // Cache SVG icons to avoid rebuilds
   final Map<String, Widget> _cachedIcons = {};
   StreamSubscription? _socketSubscription;
+  
+  // Scroll controller and animation controller for scroll-based animations
+  late ScrollController _scrollController;
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+  bool _isScrollingUp = false;
 
   @override
   void initState() {
     super.initState();
+    
+    // Initialize scroll controller
+    _scrollController = ScrollController();
+    _scrollController.addListener(_onScroll);
+    
+    // Initialize animation controller
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+    
+    // Initialize fade animation
+    _fadeAnimation = Tween<double>(begin: 1.0, end: 0.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
+    
     _setupSocketSubscription();
   }
 
   @override
   void dispose() {
     _socketSubscription?.cancel();
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    _animationController.dispose();
     super.dispose();
+  }
+
+  // Scroll listener to detect scroll direction and animate
+  void _onScroll() {
+    final currentOffset = _scrollController.offset;
+    // Keep Total PNL card visible when scrolled past initial position, never hide when scrolling down
+    bool shouldShowTotalPnlCard = false;
+    
+    if (currentOffset > 10) {
+      // Once scrolled past initial position, always show Total PNL card
+      // It stays visible whether scrolling up or down
+      shouldShowTotalPnlCard = true;
+    } else {
+      // At top (offset <= 10), show normal stats (hide Total PNL card)
+      shouldShowTotalPnlCard = false;
+    }
+    
+    if (shouldShowTotalPnlCard != _isScrollingUp) {
+      _isScrollingUp = shouldShowTotalPnlCard;
+      if (_isScrollingUp) {
+        _animationController.forward();
+      } else {
+        _animationController.reverse();
+      }
+      // Trigger rebuild to show/hide Total PNL card and summary section
+      if (mounted) {
+        setState(() {});
+      }
+    }
   }
 
   void _setupSocketSubscription() {
@@ -115,6 +172,10 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
       builder: (context, watch, _) {
         final positionBook = ref.watch(portfolioProvider);
         final theme = ref.read(themeProvider);
+        final isSearchActive = positionBook.showSearchPosition;
+    final searchText = positionBook.positionSearchCtrl.text;
+
+    final itemsToDisplay = widget.listofPosition;
 
         if (positionBook.posloader) {
           return const Center(child: CircularProgressIndicator());
@@ -126,40 +187,169 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
             onRefresh: () async {
               await positionBook.fetchPositionBook(context, false);
             },
-            child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(
-                  // parent: BouncingScrollPhysics(),
+            child: Stack(
+              children: [
+                // Scrollable content
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    if (itemsToDisplay.isEmpty) {
+                        return Center(
+                          child: NoDataFound(
+                              title: "No Positions Found",
+                              subtitle: "There's nothing here yet. Buy some stocks to see them here.",
+                              secondaryLabel: "Explore",
+                              secondaryEnabled: true,
+                              onSecondary: () {
+                                ref.read(indexListProvider).bottomMenu(1, context);
+                              },
+                              tipText: '',
+                            ),
+        );
+    }
+
+                    return SingleChildScrollView(
+                      controller: _scrollController,
+                      physics: const ClampingScrollPhysics(),
+                      child: GestureDetector(
+                        onTap: () => FocusScope.of(context).unfocus(),
+                        behavior: HitTestBehavior.opaque,
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            minHeight: constraints.maxHeight > 0 
+                                ? constraints.maxHeight + 1 
+                                : double.infinity,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // Header with P&L info - hide when scrolling up
+                              if (!_isScrollingUp)
+                                _PositionHeaderSection(
+                                  theme: theme,
+                                  positionBook: positionBook,
+                                  listofPosition: widget.listofPosition,
+                                ),
+
+                              // Filter options section
+                              // if (positionBook.postionBookModel!.isNotEmpty &&
+                              //     widget.listofPosition.length > 1)
+                              //   _buildFilterSection(context, theme, positionBook),
+
+                              // Search section if enabled
+                              // if (positionBook.showSearchPosition)
+                              if (positionBook.postionBookModel!.isNotEmpty) ...[
+                                _buildSearchSection(context, theme, positionBook, funds),
+                                _buildSearchBar(),
+                              ],
+                              _buildPositionList(context, theme, positionBook),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                
+                // Fixed Total PNL card overlaying the content
+                if (_isScrollingUp && positionBook.postionBookModel!.isNotEmpty)
+                  Positioned(
+                    top: -1,
+                    left: 0,
+                    right: 0,
+                    child: _buildTotalPnlCard(theme, positionBook),
                   ),
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Header with P&L info
-                    _PositionHeaderSection(
-                      theme: theme,
-                      positionBook: positionBook,
-                      listofPosition: widget.listofPosition,
-                    ),
-
-                    // Filter options section
-                    // if (positionBook.postionBookModel!.isNotEmpty &&
-                    //     widget.listofPosition.length > 1)
-                    //   _buildFilterSection(context, theme, positionBook),
-
-                    // Search section if enabled
-                    // if (positionBook.showSearchPosition)
-                    if (positionBook.postionBookModel!.isNotEmpty) ...[
-                      _buildSearchSection(context, theme, positionBook, funds),
-                      _buildSearchBar(),
-                    ],
-                    _buildPositionList(context, theme, positionBook),
-
-                    // Position list section
-                  ]),
+              ],
             ),
           ),
         );
       },
+        );
+  }
+
+   
+
+  // Total PNL card - fixed at the top with glassy UI
+  Widget _buildTotalPnlCard(ThemesProvider theme, PortfolioProvider positionBook) {
+    final isNetPnl = positionBook.isNetPnl;
+    final isDay = positionBook.isDay;
+    final totUnRealMtm = positionBook.totUnRealMtm;
+    final totMtM = positionBook.totMtM;
+    final totBookedPnL = positionBook.totBookedPnL;
+    final totPnL = positionBook.totPnL;
+    
+    // Get the value and color based on current settings
+    final value = !isNetPnl
+        ? (isDay ? totUnRealMtm : totMtM)
+        : (isDay ? totBookedPnL : totPnL);
+    final color = !isNetPnl
+        ? _getValueColor(isDay ? totUnRealMtm : totMtM, theme)
+        : _getValueColor(isDay ? totBookedPnL : totPnL, theme);
+    
+    return AnimatedBuilder(
+      animation: _fadeAnimation,
+      builder: (context, child) {
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            // Translucent background to give glassy feel (same as watchlist)
+            color: theme.isDarkMode
+                ? colors.colorBlack
+                : colors.colorWhite,
+            // Subtle gradient to enhance the frosted look (same as watchlist)
+            // gradient: LinearGradient(
+            //   begin: Alignment.topLeft,
+            //   end: Alignment.bottomRight,
+            //   colors: [
+            //     theme.isDarkMode
+            //         ? Colors.white.withOpacity(0.02)
+            //         : Colors.white.withOpacity(0.06),
+            //     theme.isDarkMode
+            //         ? Colors.white.withOpacity(0.01)
+            //         : Colors.white.withOpacity(0.03),
+            //   ],
+            // ),
+            // Keep the bottom border as before (same as watchlist)
+            border: Border(
+              bottom: BorderSide(
+                color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+              ),
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // Total PNL/MTM label on the left
+              TextWidget.subText(
+                text: !isNetPnl ? "Total MTM" : "Total P&L",
+                theme: false,
+                color: theme.isDarkMode
+                    ? colors.textSecondaryDark
+                    : colors.textSecondaryLight,
+                fw: 0,
+              ),
+              // Total PNL/MTM value on the right with animation
+              Opacity(
+                opacity: 1.0 - _fadeAnimation.value * 0.3,
+                child: TextWidget.headText(
+                  text: value,
+                  theme: false,
+                  color: color,
+                  fw: 0,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
+  }
+
+  Color _getValueColor(String value, ThemesProvider theme) {
+    final numValue = double.tryParse(value.replaceAll(',', '')) ?? 0.0;
+    return numValue >= 0
+        ? (theme.isDarkMode ? colors.profitDark : colors.profitLight)
+        : (theme.isDarkMode ? colors.lossDark : colors.lossLight);
   }
 
   // Widget _buildFilterSection(BuildContext context, ThemesProvider theme,
@@ -330,6 +520,41 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
                   ),
                   Row(
                     children: [
+                      // if (positionBook.postionBookModel!.isNotEmpty) ...[
+                      //   Material(
+                      //     color: Colors.transparent,
+                      //     shape: const RoundedRectangleBorder(),
+                      //     clipBehavior: Clip.hardEdge,
+                      //     child: InkWell(
+                      //       customBorder: const RoundedRectangleBorder(),
+                      //       splashColor: theme.isDarkMode
+                      //           ? colors.splashColorDark
+                      //           : colors.splashColorLight,
+                      //       highlightColor: theme.isDarkMode
+                      //           ? colors.highlightDark
+                      //           : colors.highlightLight,
+                      //       onTap: () {
+                      //         positionBook
+                      //             .chngPositionPnl(!positionBook.isNetPnl);
+                      //       },
+                      //       child: Padding(
+                      //         padding: const EdgeInsets.symmetric(
+                      //             horizontal: 10, vertical: 5),
+                      //         child: Text(
+                      //           positionBook.isNetPnl ? "P&L" : "MTM",
+                      //           style: TextWidget.textStyle(
+                      //             fontSize: 14,
+                      //             theme: theme.isDarkMode,
+                      //             color: theme.isDarkMode
+                      //                 ? colors.secondaryDark
+                      //                 : colors.secondaryLight,
+                      //             fw: 2,
+                      //           ),
+                      //         ),
+                      //       ),
+                      //     ),
+                      //   )
+                      // ],
                       if (positionBook.exitPositionQty != 0)
                         Material(
                           color: Colors.transparent,
@@ -372,7 +597,7 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
                             ),
                           ),
                         ),
-                      Material(
+                     Material(
                         color: Colors.transparent,
                         shape: const RoundedRectangleBorder(),
                         clipBehavior: Clip.hardEdge,
@@ -455,6 +680,7 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
               color: theme.isDarkMode
                   ? colors.textPrimaryDark
                   : colors.textPrimaryLight,
+              fw: 0,
             ),
             keyboardType: TextInputType.text,
             textCapitalization: TextCapitalization.characters,
@@ -466,11 +692,14 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
             decoration: InputDecoration(
                 hintText: "Search",
                 hintStyle: TextWidget.textStyle(
-                    fontSize: 14,
-                    theme: theme.isDarkMode,
-                    color: theme.isDarkMode
-                        ? colors.textSecondaryDark
-                        : colors.textSecondaryLight),
+                  fontSize: 14,
+                  theme: theme.isDarkMode,
+                  color: (theme.isDarkMode
+                          ? colors.textSecondaryDark
+                          : colors.textSecondaryLight)
+                      .withOpacity(0.4),
+                  fw: 0,
+                ),
                 fillColor:
                     theme.isDarkMode ? colors.searchBgDark : colors.searchBg,
                 filled: true,
@@ -554,12 +783,21 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
     }
 
     if (itemsToDisplay.isEmpty) {
-      return const Center(
-        child: SizedBox(height: 600, child: NoDataFound()),
+      return SizedBox(
+        height: 500,
+        child: const Center(
+          child: NoDataFound(
+            title: "No Results Found",
+            subtitle: "Try searching with different keywords",
+            primaryEnabled: false,
+            secondaryEnabled: false,
+          ),
+        ),
       );
     }
-
+    
     return ListView.builder(
+      padding: EdgeInsets.only(bottom: 0),
       physics: const NeverScrollableScrollPhysics(),
       shrinkWrap: true,
       itemBuilder: (context, idx) {
@@ -615,39 +853,41 @@ class _PositionHeaderSection extends ConsumerWidget {
               totBookedPnL: positionBook.totBookedPnL,
               totPnL: positionBook.totPnL,
               theme: theme,
+              positionBook: positionBook,
             ),
           ),
           // const SizedBox(height: 6),
           // Padding(
           //   padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 8),
           //   child: Row(
+          //     mainAxisAlignment: MainAxisAlignment.center,
           //     children: [
-          //       Text("P&L",
-          //           style: TextWidget.textStyle(
-          //               fontSize: 13,
-          //               theme: theme.isDarkMode,
-          //               color: theme.isDarkMode
-          //                   ? colors.colorWhite
-          //                   : colors.colorGrey,
-          //               fw: 0)),
-          //       const SizedBox(width: 6),
-          //       CustomSwitch(
-          //           onChanged: (bool value) {
-          //             positionBook.chngPositionPnl(!positionBook.isNetPnl);
-          //           },
-          //           color: !theme.isDarkMode
-          //               ? colors.colorGrey.withOpacity(0.2)
-          //               : colors.colorBlack,
-          //           value: positionBook.isNetPnl),
-          //       const SizedBox(width: 6),
-          //       Text("MTM",
-          //           style: TextWidget.textStyle(
-          //               fontSize: 13,
-          //               theme: theme.isDarkMode,
-          //               color: theme.isDarkMode
-          //                   ? colors.colorWhite
-          //                   : colors.colorGrey,
-          //               fw: 0)),
+          //       // Text("P&L",
+          //       //     style: TextWidget.textStyle(
+          //       //         fontSize: 13,
+          //       //         theme: theme.isDarkMode,
+          //       //         color: theme.isDarkMode
+          //       //             ? colors.colorWhite
+          //       //             : colors.colorGrey,
+          //       //         fw: 0)),
+          //       // const SizedBox(width: 6),
+          //       // CustomSwitch(
+          //       //     onChanged: (bool value) {
+          //       //       positionBook.chngPositionPnl(!positionBook.isNetPnl);
+          //       //     },
+          //       //     color: !theme.isDarkMode
+          //       //         ? colors.colorGrey.withOpacity(0.2)
+          //       //         : colors.colorBlack,
+          //       //     value: positionBook.isNetPnl),
+          //       // const SizedBox(width: 6),
+          //       // Text("MTM",
+          //       //     style: TextWidget.textStyle(
+          //       //         fontSize: 13,
+          //       //         theme: theme.isDarkMode,
+          //       //         color: theme.isDarkMode
+          //       //             ? colors.colorWhite
+          //       //             : colors.colorGrey,
+          //       //         fw: 0)),
           //     ],
           //   ),
           // ),
@@ -668,6 +908,7 @@ class _PnLDisplay extends StatelessWidget {
   final String totBookedPnL;
   final String totPnL;
   final ThemesProvider theme;
+  final PortfolioProvider positionBook;
 
   const _PnLDisplay({
     required this.isNetPnl,
@@ -677,28 +918,66 @@ class _PnLDisplay extends StatelessWidget {
     required this.totBookedPnL,
     required this.totPnL,
     required this.theme,
+    required this.positionBook,
   });
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding:
-          const EdgeInsets.only(top: 20.0, left: 8.0, right: 8.0, bottom: 15),
+          const EdgeInsets.only(top: 10.0, left: 8.0, right: 8.0, bottom: 15),
       child: Column(
         children: [
-          TextWidget.subText(
-              text: !isNetPnl ? "Total MTM" : "Total P&L",
-              theme: theme.isDarkMode,
-              color: theme.isDarkMode
-                  ? colors.textSecondaryDark
-                  : colors.textSecondaryLight,
-              fw: 0),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            // crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextWidget.subText(
+                  text: !isNetPnl ? "Total MTM" : "Total P&L",
+                  theme: theme.isDarkMode,
+                  color: theme.isDarkMode
+                      ? colors.textSecondaryDark
+                      : colors.textSecondaryLight,
+                  fw: 0),
+                  Material(
+            color: Colors.transparent,
+            shape: const CircleBorder(),
+            child: InkWell(
+              customBorder: const CircleBorder(),
+              splashColor: theme.isDarkMode
+                  ? colors.splashColorDark
+                  : colors.splashColorLight,
+              highlightColor: theme.isDarkMode
+                  ? colors.highlightDark
+                  : colors.highlightLight,
+              onTap: () {
+                 positionBook.chngPositionPnl(!positionBook.isNetPnl);
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: SvgPicture.asset(
+                  assets.switchIcon,
+                  // fit: BoxFit.contain,
+                  width: 20,
+                  height: 20,
+                ),
+              ),
+            ),
+          ),
+            ],
+          ),
           const SizedBox(height: 4),
           !isNetPnl
-              ? _buildValueText(isDay ? totUnRealMtm : totMtM,
-                  isDay ? _getValueColor(totUnRealMtm) : _getValueColor(totMtM))
-              : _buildValueText(isDay ? totBookedPnL : totPnL,
-                  isDay ? _getValueColor(totBookedPnL) : _getValueColor(totPnL))
+              ? _buildValueText(
+                  isDay ? totUnRealMtm : totMtM,
+                  isDay
+                      ? _getValueColor(totUnRealMtm)
+                      : _getValueColor(totMtM))
+              : _buildValueText(
+                  isDay ? totBookedPnL : totPnL,
+                  isDay
+                      ? _getValueColor(totBookedPnL)
+                      : _getValueColor(totPnL))
         ],
       ),
     );
@@ -1005,7 +1284,7 @@ class _PositionItemState extends ConsumerState<_PositionItem> {
             ),
 
             const SizedBox(
-              width: 5,
+              width: 4,
             ),
             // Right 50%: P&L value
 

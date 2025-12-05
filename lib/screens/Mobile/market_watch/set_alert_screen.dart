@@ -85,6 +85,7 @@ class _SetAlertState extends State<SetAlert> {
         children: [
           Expanded(
             child: SingleChildScrollView(
+              physics: ClampingScrollPhysics(),
               child: Padding(
                 padding: EdgeInsets.fromLTRB(
                     16, 0, 16, MediaQuery.of(context).viewInsets.bottom),
@@ -105,7 +106,7 @@ class _SetAlertState extends State<SetAlert> {
                                       ? colors.textPrimaryDark
                                       : colors.textPrimaryLight,
                                   theme: theme.isDarkMode,
-                                  fw: 0),
+                                  fw: 1),
                               const SizedBox(height: 8),
                               SizedBox(
                                 height: 45,
@@ -193,7 +194,7 @@ class _SetAlertState extends State<SetAlert> {
                                       ? colors.textPrimaryDark
                                       : colors.textPrimaryLight,
                                   theme: theme.isDarkMode,
-                                  fw: 0),
+                                  fw: 1),
                               const SizedBox(height: 8),
                               SizedBox(
                                 height: 45,
@@ -278,7 +279,7 @@ class _SetAlertState extends State<SetAlert> {
                             ? colors.textPrimaryDark
                             : colors.textPrimaryLight,
                         theme: theme.isDarkMode,
-                        fw: 0),
+                        fw: 1),
                     const SizedBox(height: 8),
                     SizedBox(
                       height: 45,
@@ -299,9 +300,8 @@ class _SetAlertState extends State<SetAlert> {
                         hintStyle: TextWidget.textStyle(
                             fontSize: 14,
                             theme: theme.isDarkMode,
-                            color: theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : colors.textSecondaryLight,
+                            color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                            fw: 0,
                         ),
                         keyboardType: TextInputType.number,
                         style: TextWidget.textStyle(
@@ -310,14 +310,15 @@ class _SetAlertState extends State<SetAlert> {
                                 ? colors.textPrimaryDark
                                 : colors.textPrimaryLight,
                             theme: theme.isDarkMode,
+                            fw: 0,
                         ),
                         textCtrl: valueCtrl,
                         textAlign: TextAlign.start,
-                        prefixIcon: SvgPicture.asset(assets.ruppeIcon,
-                            fit: BoxFit.scaleDown,
-                            color: theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : colors.textSecondaryLight),
+                        // prefixIcon: SvgPicture.asset(assets.ruppeIcon,
+                        //     fit: BoxFit.scaleDown,
+                        //     color: theme.isDarkMode
+                        //         ? colors.textSecondaryDark
+                        //         : colors.textSecondaryLight),
                       ),
                     ),
                     if (errorText.isNotEmpty) ...[
@@ -331,7 +332,7 @@ class _SetAlertState extends State<SetAlert> {
                     const SizedBox(height: 16),
                     // REMARK FIELD
                     TextWidget.subText(
-                        text: 'Remark', theme: theme.isDarkMode, fw: 0),
+                        text: 'Remark', theme: theme.isDarkMode, fw: 1),
                     const SizedBox(height: 8),
                     SizedBox(
                       height: 70,
@@ -343,9 +344,8 @@ class _SetAlertState extends State<SetAlert> {
                         hintStyle: TextWidget.textStyle(
                           fontSize: 14,
                           theme: theme.isDarkMode,
-                          color: theme.isDarkMode
-                              ? colors.textSecondaryDark
-                              : colors.textSecondaryLight,
+                          color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                              fw: 0,
                         ),
                         style: TextWidget.textStyle(
                             fontSize: 16,
@@ -353,6 +353,7 @@ class _SetAlertState extends State<SetAlert> {
                                 ? colors.textPrimaryDark
                                 : colors.textPrimaryLight,
                             theme: theme.isDarkMode,
+                            fw: 0,
                         ),
                         textCtrl: remark,
                         textAlign: TextAlign.start,

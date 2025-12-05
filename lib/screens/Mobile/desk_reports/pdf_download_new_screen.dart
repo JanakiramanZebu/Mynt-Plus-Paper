@@ -332,13 +332,15 @@ class PdfDownload extends StatelessWidget {
                     ? Center(
                         child: Padding(
                         padding: EdgeInsets.only(top: 60),
-                        child: NoDataFound(),
+                        child: NoDataFound(
+                          secondaryEnabled: false,
+                        ),
                       ))
                     : Expanded(
                         child: SingleChildScrollView(
-                          physics: const AlwaysScrollableScrollPhysics(),
+                          physics: const ClampingScrollPhysics(),
                           child: ListView.separated(
-                            physics: ScrollPhysics(),
+                            physics: ClampingScrollPhysics(),
                             itemCount: ledgerprovider.pdfdownload!.data!.length,
                             shrinkWrap: true,
                             itemBuilder: (context, index) {

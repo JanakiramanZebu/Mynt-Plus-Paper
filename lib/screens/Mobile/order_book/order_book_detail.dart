@@ -146,6 +146,7 @@ class _OrderBookDetailState extends ConsumerState<OrderBookDetail> {
                           children: <Widget>[
                             Expanded(
                               child: SingleChildScrollView(
+                                physics: ClampingScrollPhysics(),
                                 controller: scrollController,
                                 child: Column(
                                   children: [
@@ -193,7 +194,7 @@ class _OrderBookDetailState extends ConsumerState<OrderBookDetail> {
                                                         children: [
                                                           TextWidget.titleText(
                                                               text:
-                                                                  "${displayData.symbol?.replaceAll("-EQ", "")} ${displayData.expDate} ${displayData.option}",
+                                                                  "${displayData.symbol?.replaceAll("-EQ", "")} ${displayData.expDate} ${displayData.option} ",
                                                               theme: false,
                                                               color: theme
                                                                       .isDarkMode
@@ -202,14 +203,28 @@ class _OrderBookDetailState extends ConsumerState<OrderBookDetail> {
                                                                   : colors
                                                                       .textPrimaryLight,
                                                               fw: 1),
-                                                          const SizedBox(
-                                                              width: 4),
-                                                          CustomExchBadge(
-                                                              exch: displayData
-                                                                  .exch!),
+                                                          // const SizedBox(
+                                                          //     width: 4),
+
+                                                              TextWidget.subText(
+                                                                    fw: 0,
+                                                                    text: displayData
+                                                                                                                              .exch!,
+                                                                    textOverflow: TextOverflow.ellipsis,
+                                                                    maxLines: 1,
+                                                                    color: theme
+                                                                      .isDarkMode
+                                                                  ? colors
+                                                                      .textPrimaryDark
+                                                                  : colors
+                                                                      .textPrimaryLight,
+                                                                    theme: false,
+                                                               ),
+                                                          // CustomExchBadge(
+                                                          //     exch: ),
                                                         ],
                                                       ),
-                                                      const SizedBox(height: 6),
+                                                      const SizedBox(height: 4),
                                                       TextWidget.titleText(
                                                           text:
                                                               "${displayData.ltp}",
@@ -246,7 +261,7 @@ class _OrderBookDetailState extends ConsumerState<OrderBookDetail> {
                                                                           .profitDark
                                                                       : colors
                                                                           .profitLight,
-                                                          fw: 3),
+                                                          fw: 0),
                                                       const SizedBox(height: 4),
                                                       Row(
                                                         mainAxisAlignment:
@@ -273,7 +288,7 @@ class _OrderBookDetailState extends ConsumerState<OrderBookDetail> {
                                                                       .textSecondaryDark
                                                                   : colors
                                                                       .textSecondaryLight,
-                                                              fw: 3),
+                                                              fw: 0),
                                                         ],
                                                       ),
                                                     ],
@@ -457,7 +472,7 @@ class _OrderBookDetailState extends ConsumerState<OrderBookDetail> {
                                                               "${widget.orderBookData.status![0].toUpperCase()}${widget.orderBookData.status!.replaceAll("_", " ").substring(1)}",
                                                           theme: false,
                                                           color: color,
-                                                          fw: 3),
+                                                          fw: 0),
                                                     ),
                                                   ],
                                                 )
@@ -557,7 +572,7 @@ class _OrderDetailsSection extends ConsumerWidget {
                 color: theme.isDarkMode
                     ? colors.textSecondaryDark
                     : colors.textSecondaryLight,
-                fw: 3),
+                fw: 0),
             Container(
                padding:  const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(
@@ -644,7 +659,7 @@ class _OrderDetailsSection extends ConsumerWidget {
               color: theme.isDarkMode
                   ? colors.textSecondaryDark
                   : colors.textSecondaryLight,
-              fw: 3),
+              fw: 0),
           SizedBox(
             width: MediaQuery.of(context).size.width * 0.55,
             child: TextWidget.subText(
@@ -657,7 +672,7 @@ class _OrderDetailsSection extends ConsumerWidget {
                 maxLines: null,
                 textOverflow: TextOverflow.visible,
                 softWrap: true,
-                fw: 3),
+                fw: 0),
           ),
         ],
       ),
@@ -853,65 +868,161 @@ void _showExitPositionDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: theme.isDarkMode
-              ? const Color.fromARGB(255, 18, 18, 18)
-              : colors.colorWhite,
-          titleTextStyle: textStyles.appBarTitleTxt.copyWith(
-              color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack),
-          contentTextStyle: textStyles.menuTxt,
-          titlePadding:
-              const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+           backgroundColor: theme
+                                                                        .isDarkMode
+                                                                    ? const Color(
+                                                                        0xFF121212)
+                                                                    : const Color(
+                                                                        0xFFF1F3F8),
           shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(14))),
-          scrollable: true,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 14,
+            borderRadius: BorderRadius.all(Radius.circular(8)),
           ),
-          insetPadding: const EdgeInsets.symmetric(horizontal: 20),
-          title: TextWidget.titleText(
-              text: "Exit Position", theme: theme.isDarkMode, fw: 1),
-          content: SizedBox(
-            width: MediaQuery.of(context).size.width,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TextWidget.subText(
-                    text: "Are you sure you want to exit a position ?",
-                    theme: theme.isDarkMode,
-                    fw: 0),
-              ],
-            ),
+          scrollable: true,
+          titlePadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          insetPadding:
+              const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+          actionsPadding:
+              const EdgeInsets.only(bottom: 16, right: 16, left: 16, top: 8),
+          title: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Material(
+                    color: Colors.transparent,
+                    shape: const CircleBorder(),
+                    child: InkWell(
+                      onTap: () async {
+                        await Future.delayed(const Duration(milliseconds: 150));
+                        Navigator.pop(context);
+                      },
+                      borderRadius: BorderRadius.circular(20),
+                      splashColor: theme.isDarkMode
+                          ? colors.splashColorDark
+                          : colors.splashColorLight,
+                      highlightColor: theme.isDarkMode
+                          ? colors.splashColorDark
+                          : colors.splashColorLight,
+                      child: Padding(
+                        padding: const EdgeInsets.all(6.0),
+                        child: Icon(
+                          Icons.close_rounded,
+                          size: 22,
+                          color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: MediaQuery.of(context).size.width,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    TextWidget.subText(
+                      text: "Are you sure you want to exit a position ?",
+                      theme: theme.isDarkMode,
+                     color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                      fw: 3,
+                      align: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
           actions: [
-            TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: TextWidget.subText(
-                    text: "No",
-                    theme: false,
-                    color: theme.isDarkMode
-                        ? colors.colorLightBlue
-                        : colors.colorBlue,
-                    fw: 0)),
-            ElevatedButton(
-              onPressed: () async {
-                await ref.read(orderProvider).fetchExitSNOOrd(
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: () async {
+                  await ref.read(orderProvider).fetchExitSNOOrd(
                     "${orderBookData.snonum}",
                     "${orderBookData.prd}",
                     context,
                     true);
-              },
-              style: ElevatedButton.styleFrom(
-                  elevation: 0,
-                  backgroundColor:
-                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                },
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size(0, 45),
+                  side: BorderSide(color: colors.btnOutlinedBorder),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(50),
-                  )),
-              child: TextWidget.subText(
-                  text: "Yes", theme: theme.isDarkMode, fw: 0),
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  backgroundColor: colors.primaryDark,
+                ),
+                child: TextWidget.titleText(
+                  text: "Exit",
+                  theme: theme.isDarkMode,
+                  color:
+                       colors.colorWhite ,
+                  fw: 2,
+                ),
+              ),
             ),
           ],
         );
+        
+        
+        // AlertDialog(
+        //   backgroundColor: theme.isDarkMode
+        //       ? const Color.fromARGB(255, 18, 18, 18)
+        //       : colors.colorWhite,
+        //   titleTextStyle: textStyles.appBarTitleTxt.copyWith(
+        //       color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack),
+        //   contentTextStyle: textStyles.menuTxt,
+        //   titlePadding:
+        //       const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        //   shape: const RoundedRectangleBorder(
+        //       borderRadius: BorderRadius.all(Radius.circular(14))),
+        //   scrollable: true,
+        //   contentPadding: const EdgeInsets.symmetric(
+        //     horizontal: 14,
+        //   ),
+        //   insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+        //   title: TextWidget.titleText(
+        //       text: "", theme: theme.isDarkMode, fw: 1),
+        //   content: SizedBox(
+        //     width: MediaQuery.of(context).size.width,
+        //     child: Column(
+        //       crossAxisAlignment: CrossAxisAlignment.start,
+        //       children: [
+        //         TextWidget.subText(
+        //             text: "",
+        //             theme: theme.isDarkMode,
+        //             fw: 0),
+        //       ],
+        //     ),
+        //   ),
+        //   actions: [
+        //     TextButton(
+        //         onPressed: () => Navigator.of(context).pop(),
+        //         child: TextWidget.subText(
+        //             text: "No",
+        //             theme: false,
+        //             color: theme.isDarkMode
+        //                 ? colors.colorLightBlue
+        //                 : colors.colorBlue,
+        //             fw: 0)),
+        //     ElevatedButton(
+        //       onPressed: () async {
+               
+        //       },
+        //       style: ElevatedButton.styleFrom(
+        //           elevation: 0,
+        //           backgroundColor:
+        //               theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+        //           shape: RoundedRectangleBorder(
+        //             borderRadius: BorderRadius.circular(50),
+        //           )),
+        //       child: TextWidget.subText(
+        //           text: "Yes", theme: theme.isDarkMode, fw: 0),
+        //     ),
+        //   ],
+        // );
       });
 }
 
@@ -987,22 +1098,7 @@ void _showCancelOrderDialog(
               ],
             ),
             const SizedBox(height: 12),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                TextWidget.subText(
-                    text:
-                        "${orderBookData.symbol?.replaceAll("-EQ", "")} ${orderBookData.expDate} ${orderBookData.option} ${orderBookData.exch}",
-                    theme: theme.isDarkMode,
-                    fw: 3,
-                    color: theme.isDarkMode
-                                                                                ? colors.textSecondaryDark
-                                                                                : colors.textPrimaryLight,
-                    ),
-              ],
-            ),
-            const SizedBox(height: 5),
+           
             SizedBox(
               width: MediaQuery.of(context).size.width,
               child: Center(
@@ -1012,9 +1108,26 @@ void _showCancelOrderDialog(
                   color: theme.isDarkMode
                                                                                 ? colors.textSecondaryDark
                                                                                 : colors.textPrimaryLight,
-                    fw: 3),
+                    fw: 0),
               ),
-            )
+            ),
+            const SizedBox(height: 10),
+             Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                TextWidget.subText(
+                    text:
+                        "${orderBookData.symbol?.replaceAll("-EQ", "")} ${orderBookData.expDate} ${orderBookData.option} ${orderBookData.exch}",
+                    theme: theme.isDarkMode,
+                    fw: 1,
+                    color: theme.isDarkMode
+                                                                                ? colors.textSecondaryDark
+                                                                                : colors.textPrimaryLight,
+                    ),
+              ],
+            ),
+            // const SizedBox(height: 5),
           ],
         ),
         // content: SizedBox(
@@ -1088,7 +1201,6 @@ Future<void> _navigateToModifyOrder(
 
 Future<void> _navigateToPlaceOrder(
     BuildContext context, WidgetRef ref, orderBookData) async {
-  Navigator.pop(context);
 
   await ref.read(marketWatchProvider).fetchScripInfo(
       "${orderBookData.token}", "${orderBookData.exch}", context, true);
@@ -1106,6 +1218,7 @@ Future<void> _navigateToPlaceOrder(
       holdQty: '',
       isModify: false,
       raw: orderBookData.toJson());
+  Navigator.pop(context);
 
   ResponsiveNavigation.toPlaceOrderScreen(context: context, arguments: {
     "orderArg": orderArgs,

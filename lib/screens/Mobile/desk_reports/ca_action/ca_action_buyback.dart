@@ -328,11 +328,14 @@ class _CABuybackState extends State<CABuyback> with TickerProviderStateMixin {
                   ),
                   const ListDivider(),
                   datalist.isEmpty
-                      ? const Expanded(child: Center(child: NoDataFound()))
+                      ? const Expanded(child: Center(child: NoDataFound(
+                        secondaryEnabled: false,
+                      )))
                       : Expanded(
                           child: SingleChildScrollView(
+                            physics: ClampingScrollPhysics(),
                           child: ListView.separated(
-                            physics: ScrollPhysics(),
+                            physics: ClampingScrollPhysics(),
                             itemCount: datalist.length,
                             shrinkWrap: true,
                             itemBuilder: (context, index) {
@@ -416,6 +419,7 @@ class _CABuybackState extends State<CABuyback> with TickerProviderStateMixin {
                                                   TextOverflow.ellipsis,
                                               maxLines: 2,
                                               theme: theme.isDarkMode,
+                                              fw: 0,
                                             ),
                                           ),
 
@@ -438,6 +442,7 @@ class _CABuybackState extends State<CABuyback> with TickerProviderStateMixin {
                                               textOverflow:
                                                   TextOverflow.ellipsis,
                                               theme: theme.isDarkMode,
+                                              fw: 0,
                                             ),
                                           ),
                                           // const SizedBox(width: 4),
@@ -486,7 +491,8 @@ class _CABuybackState extends State<CABuyback> with TickerProviderStateMixin {
                                                             .textSecondaryDark
                                                         : colors
                                                             .textSecondaryLight,
-                                                    theme: theme.isDarkMode),
+                                                    theme: theme.isDarkMode,
+                                                    fw: 0),
                                                 const SizedBox(width: 4),
                                                 if (ledgerprovider
                                                         .selectvalueofcpaction !=
@@ -512,6 +518,7 @@ class _CABuybackState extends State<CABuyback> with TickerProviderStateMixin {
                                                                     .ellipsis,
                                                             theme: theme
                                                                 .isDarkMode,
+                                                            fw: 0,
                                                           ),
                                                           TextWidget.paraText(
                                                             align:
@@ -529,6 +536,7 @@ class _CABuybackState extends State<CABuyback> with TickerProviderStateMixin {
                                                                     .ellipsis,
                                                             theme: theme
                                                                 .isDarkMode,
+                                                            fw: 0,
                                                           ),
                                                         ],
                                                       ),
@@ -813,11 +821,9 @@ class _CABuybackState extends State<CABuyback> with TickerProviderStateMixin {
                                                                     data:
                                                                         dataval));
                                                       } else {
-                                                        ScaffoldMessenger.of(
-                                                                context)
-                                                            .showSnackBar(error(
+                                                        error(
                                                                 context,
-                                                                "Not Eligible"));
+                                                                "Not Eligible");
                                                         return null;
                                                       }
                                                     }
@@ -1225,7 +1231,7 @@ class _CABuybackState extends State<CABuyback> with TickerProviderStateMixin {
                         textOverflow: TextOverflow.ellipsis,
                         maxLines: 1,
                         theme: theme.isDarkMode,
-                        fw: isCurrentSelected ? 2 : null),
+                        fw: isCurrentSelected ? 2 : 2),
                   ),
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 250),

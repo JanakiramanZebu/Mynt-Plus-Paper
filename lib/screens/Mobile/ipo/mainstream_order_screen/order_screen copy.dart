@@ -822,7 +822,7 @@ class _ApplyIpoScreenState extends ConsumerState<ApplyIpoScreen> {
                                       for(final bid in addIpo){
                                           if (bid.requriedprice >
                                           ipo.maxUPIAmt) {
-                                        showResponsiveWarningMessage(
+                                        warningMessage(
                                                 context,
                                                 "Maximum investment upto ₹${double.parse(ipo.maxUPIAmt.toString()).toInt()} only ");
 
@@ -835,7 +835,7 @@ class _ApplyIpoScreenState extends ConsumerState<ApplyIpoScreen> {
                                                   .bidpricecontroller
                                                   .text ==
                                               "0") {
-                                        showResponsiveWarningMessage(
+                                        warningMessage(
                                                 context,
                                                 bid
                                                             .bidpricecontroller
@@ -851,7 +851,7 @@ class _ApplyIpoScreenState extends ConsumerState<ApplyIpoScreen> {
                                           (int.parse(bid.bidpricecontroller.text)) <
                                               double.parse(widget.mainstream.minPrice.toString())
                                                   .toInt()) {
-                                        showResponsiveWarningMessage(
+                                        warningMessage(
                                                 context,
                                                 "Your bid price ranges between ₹${double.parse(widget.mainstream.minPrice!).toInt()}-₹${double.parse(widget.mainstream.maxPrice!).toInt()}");
                                         ischecked = false;
@@ -861,7 +861,7 @@ class _ApplyIpoScreenState extends ConsumerState<ApplyIpoScreen> {
                                               .isEmpty ||
                                           bid.qualityController.text ==
                                               "0") {
-                                        showResponsiveWarningMessage(
+                                        warningMessage(
                                                 context,
                                                 bid
                                                             .qualityController
@@ -873,12 +873,12 @@ class _ApplyIpoScreenState extends ConsumerState<ApplyIpoScreen> {
                                       } else if ((int.parse(bid.qualityController.text)) <
                                           int.parse(widget.mainstream.minBidQuantity.toString())
                                               .toInt()) {
-                                        showResponsiveWarningMessage(
+                                        warningMessage(
                                                 context,
                                                 "Minimum Bid quantity is ${widget.mainstream.minBidQuantity.toString()} only ");
                                         ischecked = false;
                                       } else if (upiid.upiid.text.isEmpty) {
-                                        showResponsiveWarningMessage(
+                                        warningMessage(
                                                 context,
                                                 "UPI ID cannot be empty");
                                         ischecked = false;
@@ -942,7 +942,7 @@ class _ApplyIpoScreenState extends ConsumerState<ApplyIpoScreen> {
                               ? () {
                                   if (addIpo[addIpo.length - 1].requriedprice >
                                       ipo.maxUPIAmt) {
-                                    showResponsiveWarningMessage(context,
+                                        warningMessage(context,
                                             "Maximum investment upto ₹${double.parse(ipo.maxUPIAmt.toString()).toInt()} only ");
 
                                     ischecked = false;
@@ -954,7 +954,7 @@ class _ApplyIpoScreenState extends ConsumerState<ApplyIpoScreen> {
                                               .bidpricecontroller
                                               .text ==
                                           "0") {
-                                    showResponsiveWarningMessage(
+                                        warningMessage(
                                             context,
                                             addIpo[addIpo.length - 1]
                                                         .bidpricecontroller
@@ -970,7 +970,7 @@ class _ApplyIpoScreenState extends ConsumerState<ApplyIpoScreen> {
                                               .qualityController
                                               .text ==
                                           "0") {
-                                    showResponsiveWarningMessage(
+                                        warningMessage(
                                             context,
                                             addIpo[addIpo.length - 1]
                                                         .qualityController
@@ -979,11 +979,11 @@ class _ApplyIpoScreenState extends ConsumerState<ApplyIpoScreen> {
                                                 ? '* Quantity cannot be 0'
                                                 : '* Quantity cannot be empty');
                                   } else if (upiid.upiid.text.isEmpty) {
-                                    showResponsiveWarningMessage(context,
+                                        warningMessage(context,
                                             '* UPI ID cannot be empty');
                                   } else if (!RegExp(r'^[\w.-]+@[\w]+$')
                                       .hasMatch(upiid.upiid.text)) {
-                                    showResponsiveWarningMessage(
+                                        warningMessage(
                                             context, 'Invalid UPI ID format');
                                   } else {
                                     ipoplaceorder(upiid, ipo);

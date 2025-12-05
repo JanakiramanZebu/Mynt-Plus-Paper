@@ -449,10 +449,8 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                                           }
                                         else
                                           {
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(
                                               warningMessage(
-                                                  context, 'Sharing is not on'),
+                                                  context, 'Sharing is not on'
                                             )
                                           }
                                       },
@@ -1176,6 +1174,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                   //                     ),
                   Expanded(
                     child: ListView.separated(
+                      physics: ClampingScrollPhysics(),
                       controller: scrollController,
                       itemCount: trade.length,
                       itemBuilder: (context, index) {

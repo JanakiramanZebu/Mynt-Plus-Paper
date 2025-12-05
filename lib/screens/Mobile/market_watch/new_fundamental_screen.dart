@@ -2,17 +2,17 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'over_view/financial_new.dart';
 import 'dart:math' as math;
 import '../../../models/marketwatch_model/get_quotes.dart';
 import '../../../models/marketwatch_model/scrip_overview/eodchartdata_model.dart';
 import '../../../models/marketwatch_model/scrip_overview/stock_data.dart';
-import '../../../provider/market_watch_provider.dart';
 import '../../../provider/thems.dart';
+import '../../../provider/market_watch_provider.dart';
 import '../../../provider/websocket_provider.dart';
-import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
+import '../../../res/global_state_text.dart';
 import '../../../sharedWidget/no_data_found.dart';
-import 'over_view/financial_new.dart';
 import 'over_view/price_comparision.dart';
 
 class PriceData {
@@ -633,16 +633,88 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
 
       // Show loading indicator if still loading
       if (_isLoadingNewData) {
-        return Scaffold(         
+        return Scaffold(
+          appBar: AppBar(
+            centerTitle: false,
+            elevation: 1,
+            leadingWidth: 48,
+            titleSpacing: 0,
+            leading: Material(
+              color: Colors.transparent,
+              shape: const CircleBorder(),
+              clipBehavior: Clip.hardEdge,
+              child: InkWell(
+                customBorder: const CircleBorder(),
+                splashColor: Colors.grey.withOpacity(0.4),
+                highlightColor: Colors.grey.withOpacity(0.2),
+                onTap: () {
+                  Navigator.pop(context);
+                },
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  alignment: Alignment.center,
+                  child: Icon(
+                    Icons.arrow_back_ios_outlined,
+                    size: 18,
+                    color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                  ),
+                ),
+              ),
+            ),
+            title: TextWidget.titleText(
+              text: "${widget.wlValue.symbol.toUpperCase()} Fundamental",
+              color: Color(theme.isDarkMode ? 0xffffffff : 0xff000000),
+              theme: theme.isDarkMode,
+              fw: 1,
+            ),
+          ),
           body: _buildLoadingIndicator(theme),
         );
       }
 
       // Check if fundamental data is available, if not show error message
       if (!_isFundamentalDataAvailable(marketWatch)) {
-        return const Scaffold(        
-          body: Center(
-            child: NoDataFound(),
+        return Scaffold(
+          appBar: AppBar(
+            centerTitle: false,
+            elevation: 1,
+            leadingWidth: 48,
+            titleSpacing: 0,
+            leading: Material(
+              color: Colors.transparent,
+              shape: const CircleBorder(),
+              clipBehavior: Clip.hardEdge,
+              child: InkWell(
+                customBorder: const CircleBorder(),
+                splashColor: Colors.grey.withOpacity(0.4),
+                highlightColor: Colors.grey.withOpacity(0.2),
+                onTap: () {
+                  Navigator.pop(context);
+                },
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  alignment: Alignment.center,
+                  child: Icon(
+                    Icons.arrow_back_ios_outlined,
+                    size: 18,
+                    color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                  ),
+                ),
+              ),
+            ),
+            title: TextWidget.titleText(
+              text: "${widget.wlValue.symbol.toUpperCase()} Fundamental",
+              color: Color(theme.isDarkMode ? 0xffffffff : 0xff000000),
+              theme: theme.isDarkMode,
+              fw: 1,
+            ),
+          ),
+          body: const Center(
+            child: NoDataFound(
+              secondaryEnabled: false,
+            ),
           ),
         );
       }
@@ -651,44 +723,44 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
       // No need to calculate it separately
 
       return Scaffold(
-        // appBar: AppBar(
-        //   centerTitle: false,
-        //   elevation: _hasScrolled ? 2 : 1,
-        //   leadingWidth: 48,
-        //   titleSpacing: 0,
-        //   leading: Material(
-        //     color: Colors.transparent,
-        //     shape: const CircleBorder(),
-        //     clipBehavior: Clip.hardEdge,
-        //     child: InkWell(
-        //       customBorder: const CircleBorder(),
-        //       splashColor: Colors.grey.withOpacity(0.4),
-        //       highlightColor: Colors.grey.withOpacity(0.2),
-        //       onTap: () {
-        //         Navigator.pop(context);
-        //       },
-        //       child: Container(
-        //         width: 44,
-        //         height: 44,
-        //         alignment: Alignment.center,
-        //         child: Icon(
-        //           Icons.arrow_back_ios_outlined,
-        //           size: 18,
-        //           color:
-        //               theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-        //         ),
-        //       ),
-        //     ),
-        //   ),
-        //   shadowColor:
-        //       theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
-        //   title: TextWidget.headText(
-        //     text: " ${widget.wlValue.symbol.replaceAll("-EQ", "").toUpperCase()}${widget.wlValue.expDate} ${widget.wlValue.option} Stock Report",
-        //     color: Color(theme.isDarkMode ? 0xffffffff : 0xff000000),
-        //     theme: theme.isDarkMode,
-        //     fw: 1,
-        //   ),
-        // ),
+        appBar: AppBar(
+          centerTitle: false,
+          elevation: _hasScrolled ? 2 : 1,
+          leadingWidth: 48,
+          titleSpacing: 0,
+          leading: Material(
+            color: Colors.transparent,
+            shape: const CircleBorder(),
+            clipBehavior: Clip.hardEdge,
+            child: InkWell(
+              customBorder: const CircleBorder(),
+              splashColor: Colors.grey.withOpacity(0.4),
+              highlightColor: Colors.grey.withOpacity(0.2),
+              onTap: () {
+                Navigator.pop(context);
+              },
+              child: Container(
+                width: 44,
+                height: 44,
+                alignment: Alignment.center,
+                child: Icon(
+                  Icons.arrow_back_ios_outlined,
+                  size: 18,
+                  color:
+                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                ),
+              ),
+            ),
+          ),
+          shadowColor:
+              theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+          title: TextWidget.headText(
+            text: " ${widget.wlValue.symbol.replaceAll("-EQ", "").toUpperCase()}${widget.wlValue.expDate} ${widget.wlValue.option} Stock Report",
+            color: Color(theme.isDarkMode ? 0xffffffff : 0xff000000),
+            theme: theme.isDarkMode,
+            fw: 1,
+          ),
+        ),
         body: SafeArea(
           child: Container(
             width: double.infinity,
@@ -708,6 +780,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                         return true;
                       },
                       child: SingleChildScrollView(
+                        physics: ClampingScrollPhysics(),
                         padding: const EdgeInsets.all(8),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -885,17 +958,20 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
         // color:   Color(0xff777777)
         // ),
         // const SizedBox(height: 2),
-        SizedBox(
-          width: 250,
-          child: TextWidget.subText(
-              text: "Data not available",
-              color: theme.isDarkMode
-                  ? colors.textSecondaryDark
-                  : colors.textSecondaryLight,
-                  fw:0,
-                  align: TextAlign.center,
-              theme: theme.isDarkMode),
-        )
+        // SizedBox(
+        //   width: 250,
+        //   child: TextWidget.subText(
+        //       text: "Data not available",
+        //       color: theme.isDarkMode
+        //           ? colors.textSecondaryDark
+        //           : colors.textSecondaryLight,
+        //           fw:0,
+        //           align: TextAlign.center,
+        //       theme: theme.isDarkMode),
+        // )
+        NoDataFound(
+          secondaryEnabled: false,
+        ),
       ]
     ))),
           ],
@@ -1324,17 +1400,20 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
         // color:   Color(0xff777777)
         // ),
         // const SizedBox(height: 2),
-        SizedBox(
-          width: 250,
-          child: TextWidget.subText(
-              text: "Data not available",
-              color: theme.isDarkMode
-                  ? colors.textSecondaryDark
-                  : colors.textSecondaryLight,
-                  fw:0,
-                  align: TextAlign.center,
-              theme: theme.isDarkMode),
-        )
+        // SizedBox(
+        //   width: 250,
+        //   child: TextWidget.subText(
+        //       text: "Data not available",
+        //       color: theme.isDarkMode
+        //           ? colors.textSecondaryDark
+        //           : colors.textSecondaryLight,
+        //           fw:0,
+        //           align: TextAlign.center,
+        //       theme: theme.isDarkMode),
+        // )
+        NoDataFound(
+          secondaryEnabled: false,
+        ),
       ]
     )))
         ],
@@ -1389,17 +1468,20 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
         // color:   Color(0xff777777)
         // ),
         // const SizedBox(height: 2),
-        SizedBox(
-          width: 250,
-          child: TextWidget.subText(
-              text: "Data not available",
-              color: theme.isDarkMode
-                  ? colors.textSecondaryDark
-                  : colors.textSecondaryLight,
-                  fw:0,
-                  align: TextAlign.center,
-              theme: theme.isDarkMode),
-        )
+        // SizedBox(
+        //   width: 250,
+        //   child: TextWidget.subText(
+        //       text: "Data not available",
+        //       color: theme.isDarkMode
+        //           ? colors.textSecondaryDark
+        //           : colors.textSecondaryLight,
+        //           fw:0,
+        //           align: TextAlign.center,
+        //       theme: theme.isDarkMode),
+        // )
+        NoDataFound(
+          secondaryEnabled: false,
+        ),
       ]
     ))),
               ],
@@ -1470,15 +1552,15 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
   Color _getHoldTypeColor(String holdType) {
     switch (holdType) {
       case "Promoter Holding":
-        return const Color(0xFF2196F3); // Blue
+        return const Color(0xFF7C3AED); // Modern Purple
       case "Foriegn Institution":
-        return const Color(0xFF4CAF50); // Green
+        return const Color(0xFF2563EB); // Modern Blue
       case "Other Domestic Institution":
-        return const Color(0xFFFF9800); // Orange
+        return const Color(0xFF059669); // Modern Green
       case "Retail and Others":
-        return const Color(0xFF9C27B0); // Purple
+        return const Color.fromARGB(255, 20, 132, 197); // Modern Teal
       case "Mutual Funds":
-        return const Color(0xFFE91E63); // Pink
+        return const Color(0xFFDC2626); // Modern Red
       default:
         return const Color(0xFF607D8B); // Blue Grey
     }
@@ -1581,10 +1663,13 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
   Widget _buildFinancialTab(
       MarketWatchProvider marketWatch, ThemesProvider theme) {
     if (marketWatch.fundamentalData?.msg == "no data found") {
-      return const Center(child: NoDataFound());
+      return const Center(child: NoDataFound(
+        secondaryEnabled: false,
+      ));
     }
 
     return const SingleChildScrollView(
+      physics: ClampingScrollPhysics(),
       // padding: EdgeInsets.all(16),
       child: FinancialWidget(),
     );
@@ -1667,14 +1752,17 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                       )
                     : priceData.isEmpty
                         ? Center(
-                            child: TextWidget.paraText(
-                              text: "No Data Available",
-                              theme: theme.isDarkMode,
-                              fw: 0,
-                              color: theme.isDarkMode
-                                  ? colors.textSecondaryDark
-                                  : colors.textSecondaryLight,
-                            ),
+                            child: NoDataFound(
+                              secondaryEnabled: false,
+                            )
+                            // TextWidget.paraText(
+                            //   text: "No Data Available",
+                            //   theme: theme.isDarkMode,
+                            //   fw: 0,
+                            //   color: theme.isDarkMode
+                            //       ? colors.textSecondaryDark
+                            //       : colors.textSecondaryLight,
+                            // ),
                           )
                         : _buildScrollablePriceChart(theme, marketWatch),
               ),
@@ -2484,7 +2572,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
       {
         'name': 'Others',
         'value': double.tryParse(data.retailAndOthers ?? '0') ?? 0.0,
-        'color': const Color(0xFFEA580C), // Modern Orange
+        'color': const Color.fromARGB(255, 20, 132, 197), // Modern Blue
       },
     ];
 
@@ -2601,10 +2689,19 @@ class HoldingsTable extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 0),
       child: Row(
         children: [
-          // Empty space for the colored circle column
+          // Empty space for the name column
           Expanded(
-            flex: 0,
-            child: Container(width: 8), // Same width as the colored circles
+            flex: 1,
+            child: TextWidget.custmText(
+              text: "",
+              fs: 12,
+              theme: themes.isDarkMode,
+              color: themes.isDarkMode
+                  ? colors.textSecondaryDark
+                  : colors.textSecondaryLight,
+              fw: 1,
+              align: TextAlign.left,
+            ),
           ),
           // Year headers
           ...data
@@ -2629,27 +2726,27 @@ class HoldingsTable extends StatelessWidget {
   List<Widget> _buildMetricRows(List<Shareholdings> sortedData) {
     final metrics = [
       {
-        "name": "",
+        "name": "Promoter Holding",
         "getValue": (item) => item.promoters,
         "color": const Color(0xFF7C3AED)
       }, // Modern Purple (Insiders)
       {
-        "name": "",
+        "name": "Foreign Institution",
         "getValue": (item) => item.fiiFpi,
         "color": const Color(0xFF2563EB)
       }, // Modern Blue (Institutions)
       {
-        "name": "",
+        "name": "Other Domestic Institution",
         "getValue": (item) => item.dii,
         "color": const Color(0xFF059669)
       }, // Modern Green (Holding Company)
       {
-        "name": "",
+        "name": "Retail and Others",
         "getValue": (item) => item.retailAndOthers,
-        "color": const Color(0xFFEA580C)
-      }, // Modern Orange (Others)
+        "color": const Color.fromARGB(255, 20, 132, 197)
+      }, // Modern Teal (Others)
       {
-        "name": "",
+        "name": "Mutual Funds",
         "getValue": (item) => item.mutualFunds,
         "color": const Color(0xFFDC2626)
       }, // Modern Red (Corporation)
@@ -2661,16 +2758,16 @@ class HoldingsTable extends StatelessWidget {
               child: Row(
                 children: [
                   Expanded(
-                    flex: 0,
-                    child: Center(
-                      child: Container(
-                        width: 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          color: metric["color"] as Color,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
+                    flex: 1,
+                    child: TextWidget.custmText(
+                      text: metric["name"] as String,
+                      fs: 10,
+                      theme: themes.isDarkMode,
+                      color: themes.isDarkMode
+                          ? colors.textPrimaryDark
+                          : colors.textPrimaryLight,
+                      fw: 0,
+                      align: TextAlign.left,
                     ),
                   ),
                   ...sortedData
@@ -2705,7 +2802,7 @@ class HoldingsTable extends StatelessWidget {
         "name": "Other Domestic Institution",
         "color": const Color(0xFF059669)
       }, // Modern Green
-      {"name": "Retail and Others", "color": const Color(0xFFEA580C)}, // Modern Orange
+      {"name": "Retail and Others", "color": const Color.fromARGB(255, 20, 132, 197)}, // Modern   Teal
       {
         "name": "Mutual Funds",
         "color": const Color(0xFFDC2626)

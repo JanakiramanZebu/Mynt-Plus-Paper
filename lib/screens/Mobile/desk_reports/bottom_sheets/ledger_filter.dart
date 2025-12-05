@@ -331,6 +331,7 @@ class _LedgerFilter extends ConsumerState<LedgerFilter> {
                 ? colors.textSecondaryDark
                 : colors.textSecondaryLight,
             theme: theme.isDarkMode,
+            fw: 0,
           ),
         ),
       ),

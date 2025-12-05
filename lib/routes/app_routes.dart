@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/models/order_book_model/place_order_model.dart';
+import 'package:mynt_plus/models/profile_model/algo_strategy_model.dart';
 import 'package:mynt_plus/screens/Mobile/algo/algo_create.dart';
 import 'package:mynt_plus/screens/Mobile/bonds/bonds_common_search_screen.dart';
 import 'package:mynt_plus/screens/Mobile/algo/algo_strategytlist.dart';
@@ -20,6 +21,8 @@ import 'package:mynt_plus/screens/web/ordersbook/pending_alert_detail_screen_web
 import 'package:mynt_plus/screens/web/trade_action_screen_web.dart';
 // import 'package:mynt_plus/screens/web/grid_dashboard_web.dart';
 import '../main.dart'; // Import for FirebaseHelper
+import '../screens/Mobile/algo/algo_strategy_show_list.dart';
+import '../screens/Mobile/algo/create_algo_strategy_screen.dart';
 import '../screens/Mobile/authentication/login/login_banner_screen.dart';
 import '../screens/Mobile/authentication/login/login_screen.dart';
 import '../screens/Mobile/authentication/password/change_pass.dart';
@@ -48,6 +51,12 @@ import '../screens/Mobile/desk_reports/profitnloss_screen.dart';
 import '../screens/Mobile/desk_reports/tax_pnl_screen.dart';
 import '../screens/Mobile/desk_reports/tradebook_screen.dart';
 import '../screens/Mobile/market_watch/new_fundamental_screen.dart';
+import '../screens/Mobile/market_watch/option_chain/collection_basket/basketlist_dashboard.dart';
+import '../screens/Mobile/market_watch/option_chain/collection_basket/benchmark_backtest.dart';
+import '../screens/Mobile/market_watch/option_chain/collection_basket/collection_basket_list.dart';
+import '../screens/Mobile/market_watch/option_chain/collection_basket/create_baskerscreen.dart';
+import '../screens/Mobile/market_watch/option_chain/collection_basket/save_strategy_screen.dart';
+import '../screens/Mobile/stocks/explore/stocks/refer_earn.dart';
 import '../screens/home_screen.dart';
 import '../screens/web/main_screen_control_web.dart';
 import '../screens/Mobile/ipo/ipo_main_screen.dart';
@@ -270,6 +279,28 @@ class AppRoutes {
           beginOffset: const Offset(-1.0, 0.0),
         );
 
+      case Routes.algoStrategyShowList:
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const AlgoStrategyShowList(),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
+
+      case Routes.createAlgoStrategy:
+        return _createRoute(
+          pageBuilder: (_, __, ___) {
+            // Get arguments from the route context
+            AlgoStrategyModel? strategyToEdit;
+            if (args is AlgoStrategyModel) {
+              strategyToEdit = args;
+            } else if (args != null) {
+              // If args is not null but not AlgoStrategyModel, try to extract it
+              print("Warning: Unexpected argument type: ${args.runtimeType}");
+            }
+            return CreateAlgoStrategyScreen(strategyToEdit: strategyToEdit);
+          },
+          beginOffset: const Offset(-1.0, 0.0),
+        );
+
       case Routes.fundamentalDetail:
         return _createRoute(
           pageBuilder: (_, __, ___) => FundamentalDetailScreen(
@@ -279,7 +310,9 @@ class AppRoutes {
           beginOffset: const Offset(1.0, 0.0),
         );
 
-         case Routes.newFundamental:
+     
+
+      case Routes.newFundamental:
         return _createRoute(
           pageBuilder: (_, __, ___) => NewFundamentalScreen(
             wlValue: args['wlValue'],
@@ -287,8 +320,6 @@ class AppRoutes {
           ),
           beginOffset: const Offset(1.0, 0.0),
         );
-
-        
 
       case Routes.setAlertScreen:
         return _createRoute(
@@ -336,6 +367,17 @@ class AppRoutes {
             orderArg: args['orderArg'],
             scripInfo: args['scripInfo'],
             isBasket: args["isBskt"],
+            fromChart: args["fromChart"] ?? false,
+          ),
+          beginOffset: const Offset(0.0, 1.0),
+        );
+      case Routes.placeOrderScreenWeb:
+        return _createRoute(
+          pageBuilder: (_, __, ___) => PlaceOrderScreenWeb(
+            orderArg: args['orderArg'],
+            scripInfo: args['scripInfo'],
+            isBasket: args["isBskt"],
+            fromChart: args["fromChart"] ?? false,
           ),
           beginOffset: const Offset(0.0, 1.0),
         );
@@ -505,8 +547,51 @@ class AppRoutes {
           beginOffset: const Offset(-1.0, 0.0),
         );
       case Routes.myaccountScreen:
+        // Extract arguments to pass to the screen
+        final args = settings.arguments as Map<String, dynamic>?;
+        final expandSection = args?['expandSection'] as String?;
+
         return _createRoute(
-          pageBuilder: (_, __, ___) => const account.MyAccountScreen(),
+          pageBuilder: (_, __, ___) => account.MyAccountScreen(
+            expandSection: expandSection,
+          ),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
+      case Routes.basketScreen:
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const StrategyDashboardScreen(),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
+      case Routes.createBasketStrategy:
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const StrategyBuilderScreen(),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
+      case Routes.basketSelectionScreen:
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const FundSelectionScreen(),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
+      case Routes.saveStrategyScreen:
+        return _createRoute(
+          pageBuilder: (_, __, ___) {
+            final routeArgs = args as Map<String, dynamic>?;
+            return SaveStrategyScreen(
+              isEditMode: routeArgs?['isEditMode'] ?? false,
+              editStrategyName: routeArgs?['strategyName'],
+              editStrategyUuid: routeArgs?['strategyUuid'],
+            );
+          },
+          beginOffset: const Offset(-1.0, 0.0),
+        );
+      // case Routes.basketBacktestAnalysis:
+      //   return _createRoute(
+      //     pageBuilder: (_, __, ___) => const BasketBacktestAnalysisScreen(),
+      //     beginOffset: const Offset(-1.0, 0.0),
+      //   );
+      case Routes.benchmarkBacktestAnalysis:
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const BenchMarkBacktestScreen(),
           beginOffset: const Offset(-1.0, 0.0),
         );
 
@@ -841,11 +926,16 @@ class AppRoutes {
           pageBuilder: (_, __, ___) => MarginCalculatorScreen(),
           beginOffset: const Offset(-1.0, 0.0),
         );
-      case Routes.portfolioDashboard:
-        return _createRoute(
-          pageBuilder: (_, __, ___) => const PortfolioDashboardScreen(),
-          beginOffset: const Offset(-1.0, 0.0),
-        );
+        case Routes.portfolioDashboard:
+          return _createRoute(
+            pageBuilder: (_, __, ___) => const PortfolioDashboardScreen(),
+            beginOffset: const Offset(-1.0, 0.0),
+          );
+        case Routes.referAndEarn:
+          return _createRoute(
+            pageBuilder: (_, __, ___) =>  ReferAndEarnScreen(),
+            beginOffset: const Offset(-1.0, 0.0),
+          );
       case Routes.mfcagrcalss:
         return _createRoute(
           pageBuilder: (_, __, ___) => const MFCAGRCAL(),

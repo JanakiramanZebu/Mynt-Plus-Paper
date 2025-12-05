@@ -102,6 +102,7 @@ class _RazorpayFailedUiState extends State<RazorpayFailedUi> {
                             color: theme.isDarkMode
                                 ? colors.textPrimaryDark
                                 : colors.textPrimaryLight,
+                            fw: 0,
                           ),
                           const SizedBox(
                             height: 5,
@@ -112,6 +113,7 @@ class _RazorpayFailedUiState extends State<RazorpayFailedUi> {
                             color: theme.isDarkMode
                                 ? colors.textSecondaryDark
                                 : colors.textSecondaryLight,
+                            fw: 0,
                           ),
                           const SizedBox(
                             height: 10,
@@ -122,6 +124,7 @@ class _RazorpayFailedUiState extends State<RazorpayFailedUi> {
                               color: theme.isDarkMode
                                   ? colors.textPrimaryDark
                                   : colors.textPrimaryLight,
+                              fw: 0,
                               theme: false),
                           const SizedBox(
                             height: 10,
@@ -132,6 +135,7 @@ class _RazorpayFailedUiState extends State<RazorpayFailedUi> {
                             color: theme.isDarkMode
                                 ? colors.textSecondaryDark
                                 : colors.textSecondaryLight,
+                            fw: 0,
                           ),
                         ],
                       ),
@@ -198,6 +202,7 @@ class _RazorpayFailedUiState extends State<RazorpayFailedUi> {
               color: theme.isDarkMode
                   ? colors.textSecondaryDark
                   : colors.textSecondaryLight,
+              fw: 0,
             ),
             const SizedBox(width: 16),
             SizedBox(
@@ -209,6 +214,7 @@ class _RazorpayFailedUiState extends State<RazorpayFailedUi> {
                     ? colors.textPrimaryDark
                     : colors.textPrimaryLight,
                 align: TextAlign.right,
+                fw: 0,
               ),
             ),
           ],

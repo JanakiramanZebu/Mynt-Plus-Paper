@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/models/mf_model/mutual_fundmodel.dart';
+import 'package:mynt_plus/sharedWidget/custom_text_form_field.dart';
 import 'package:mynt_plus/sharedWidget/loader_ui.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import 'package:mynt_plus/sharedWidget/snack_bar.dart';
@@ -14,6 +16,7 @@ import '../../../routes/route_names.dart';
  
  
 import '../../../sharedWidget/list_divider.dart';
+import '../../../utils/no_emoji_inputformatter.dart';
 import 'mf_stock_detail_screen.dart';
 
 class MfCommonSearch extends ConsumerStatefulWidget {
@@ -146,12 +149,12 @@ class _MfCommonSearchState extends ConsumerState<MfCommonSearch> {
                           ),
                           // textCapitalization:
                           //     TextCapitalization.characters,
-                          // inputFormatters: [
-                          //   UpperCaseTextFormatter(),
-                          //   NoEmojiInputFormatter(),
-                          //   FilteringTextInputFormatter.deny(
-                          //       RegExp('[π£•₹€℅™∆√¶/.,]'))
-                          // ],
+                          inputFormatters: [
+                            UpperCaseTextFormatter(),
+                            NoEmojiInputFormatter(),
+                            FilteringTextInputFormatter.deny(
+                                RegExp('[π£•₹€℅™∆√¶/.,]'))
+                          ],
                           // keyboardType: TextInputType.text,
                           decoration: InputDecoration(
                             isCollapsed: true,
@@ -162,9 +165,8 @@ class _MfCommonSearchState extends ConsumerState<MfCommonSearch> {
                             hintStyle: TextWidget.textStyle(
                               fontSize: 14,
                               theme: theme.isDarkMode,
-                              color: theme.isDarkMode
-                                  ? colors.textSecondaryDark
-                                  : colors.textSecondaryLight,
+                              color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                              fw: 0,
                             ),
                             contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 0, vertical: 12),
@@ -221,7 +223,7 @@ class _MfCommonSearchState extends ConsumerState<MfCommonSearch> {
                             // padding: const EdgeInsets.symmetric(horizontal: 8),
                             separatorBuilder: (context, index) =>
                                 const ListDivider(),
-                            physics: const BouncingScrollPhysics(),
+                            physics: ClampingScrollPhysics(),
                             itemCount: mfData.mutualFundsearchdata!.length,
                             itemBuilder: (BuildContext context, int index) {
                               final fund = mfData.mutualFundsearchdata![index];
@@ -261,7 +263,7 @@ class _MfCommonSearchState extends ConsumerState<MfCommonSearch> {
                                                       .bottom,
                                                 ),
                                                 child: MFStockDetailScreen(
-                                                    mfStockData: fund)),
+                                                    mfStockData: fund, fromSearch: true)),
                                           );
                                           // Navigator.pushNamed(
                                           //   context,
@@ -269,8 +271,9 @@ class _MfCommonSearchState extends ConsumerState<MfCommonSearch> {
                                           //   arguments: fund,
                                           // );
                                         } else {
-                                          showResponsiveSuccess(
-                                                context, "No Single Page Data");
+                                            successMessage(
+                                                context, "No Single Page Data"
+                                          );
                                           final jsondata =
                                               MutualFundList.fromJson(
                                                   fund.toJson());
@@ -283,12 +286,13 @@ class _MfCommonSearchState extends ConsumerState<MfCommonSearch> {
                                           mfData.chngOrderType("One-time");
                                         }
                                       } else {
-                                        showResponsiveSuccess(
-                                              context, "Invalid fund data");
+                                          successMessage(
+                                              context, "Invalid fund data"
+                                        );
                                       }
-                                    } catch (e) {
-                                      showResponsiveSuccess(context,
-                                            "Error loading fund details");
+                                    } catch (e) { successMessage(context,
+                                            "Error loading fund details"
+                                      );
                                     }
                                   },
                                   child: ListTile(
@@ -476,13 +480,23 @@ class _MfCommonSearchState extends ConsumerState<MfCommonSearch> {
                       )
                       : Expanded(
                         child: const Center(
-                            child: NoDataFound(),
+                            child: NoDataFound(
+                              title: "No Results Found",
+                              subtitle: "Try searching with different keywords",
+                              primaryEnabled: false,
+                              secondaryEnabled: false,
+                            ),
                           ),
                       )
                 ] else ...[
                   Expanded(
                     child: const Center(
-                      child: NoDataFound(),
+                      child: NoDataFound(
+                        title: "No Results Found",
+                        subtitle: "Try searching with different keywords",
+                        primaryEnabled: false,
+                        secondaryEnabled: false,
+                      ),
                     ),
                   )
                 ]

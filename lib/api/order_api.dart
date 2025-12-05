@@ -1,4 +1,5 @@
 import 'dart:developer';
+import '../utils/url_utils.dart';
 import '../models/order_book_model/cancel_order_model.dart';
 import '../models/order_book_model/get_brokerage.dart';
 import '../models/order_book_model/gtt_order_book.dart';
@@ -27,9 +28,7 @@ mixin OrderAPI on ApiCore {
         "uid": prefs.clientId,
         "actid": prefs.clientId,
         "exch": placeOrderInput.exch,
-        "tsym": placeOrderInput.tsym.contains("&")
-            ? placeOrderInput.tsym.replaceAll("&", "%26")
-            : placeOrderInput.tsym,
+        "tsym": UrlUtils.encodeParameter(placeOrderInput.tsym),
         "qty": placeOrderInput.qty.replaceAll("-", ""),
         "prc": (placeOrderInput.prctype == 'MKT' ||
                 placeOrderInput.prctype == 'SL-MKT')
@@ -272,9 +271,9 @@ mixin OrderAPI on ApiCore {
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body:
-              '''jData={"uid":"${prefs.clientId}","actid":"${prefs.clientId}","exch":"${input.exch}","tsym":"${input.tsym.contains("&") ? input.tsym.replaceAll("&", "%26") : input.tsym}","qty":"${input.qty}","prc":"${input.prc}","prd":"${input.prd}","trantype":"${input.trantype}","prctyp":"${input.prctyp}","rorgqty":"${input.rorgqty}","rorgprc":"${input.rorgprc}","blprc": "${input.blprc}","trgprc": "${input.trgprc}"}&jKey=${prefs.clientSession}''');
+              '''jData={"uid":"${prefs.clientId}","actid":"${prefs.clientId}","exch":"${input.exch}","tsym":"${UrlUtils.encodeParameter(input.tsym)}","qty":"${input.qty}","prc":"${input.prc}","prd":"${input.prd}","trantype":"${input.trantype}","prctyp":"${input.prctyp}","rorgqty":"${input.rorgqty}","rorgprc":"${input.rorgprc}","blprc": "${input.blprc}","trgprc": "${input.trgprc}"}&jKey=${prefs.clientSession}''');
 
-      log("Order Margin => ${res.body}  ${'''jData={"uid":"${prefs.clientId}","actid":"${prefs.clientId}","exch":"${input.exch}","tsym":"${input.tsym.contains("&") ? input.tsym.replaceAll("&", "%26") : input.tsym}","qty":"${input.qty}","prc":"${input.prc}","prd":"${input.prd}","trantype":"${input.trantype}","prctyp":"${input.prctyp}","rorgqty":"${input.rorgqty}","rorgprc":"${input.rorgprc}","blprc": "${input.blprc}","trgprc": "${input.trgprc}"}&jKey=${prefs.clientSession}'''}");
+      log("Order Margin => ${res.body}  ${'''jData={"uid":"${prefs.clientId}","actid":"${prefs.clientId}","exch":"${input.exch}","tsym":"${UrlUtils.encodeParameter(input.tsym)}","qty":"${input.qty}","prc":"${input.prc}","prd":"${input.prd}","trantype":"${input.trantype}","prctyp":"${input.prctyp}","rorgqty":"${input.rorgqty}","rorgprc":"${input.rorgprc}","blprc": "${input.blprc}","trgprc": "${input.trgprc}"}&jKey=${prefs.clientSession}'''}");
       final json = jsonDecode(res.body);
 
       return OrderMarginModel.fromJson(json as Map<String, dynamic>);
@@ -291,9 +290,9 @@ mixin OrderAPI on ApiCore {
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body:
-              '''jData={"uid":"${prefs.clientId}","actid":"${prefs.clientId}","exch":"${input.exch}","tsym":"${input.tsym}","qty":"${input.qty}","prc":"${input.prc}","prd":"${input.prd}","trantype":"${input.trantype}" }&jKey=${prefs.clientSession}''');
+              '''jData={"uid":"${prefs.clientId}","actid":"${prefs.clientId}","exch":"${input.exch}","tsym":"${UrlUtils.encodeParameter(input.tsym)}","qty":"${input.qty}","prc":"${input.prc}","prd":"${input.prd}","trantype":"${input.trantype}" }&jKey=${prefs.clientSession}''');
 
-      log("Order Brokerage => ${res.body} ${'''jData={"uid":"${prefs.clientId}","actid":"${prefs.clientId}","exch":"${input.exch}","tsym":"${input.tsym}","qty":"${input.qty}","prc":"${input.prc}","prd":"${input.prd}","trantype":"${input.trantype}" }&jKey=${prefs.clientSession}'''}");
+      log("Order Brokerage => ${res.body} ${'''jData={"uid":"${prefs.clientId}","actid":"${prefs.clientId}","exch":"${input.exch}","tsym":"${UrlUtils.encodeParameter(input.tsym)}","qty":"${input.qty}","prc":"${input.prc}","prd":"${input.prd}","trantype":"${input.trantype}" }&jKey=${prefs.clientSession}'''}");
       final json = jsonDecode(res.body);
 
       return GetBrokerageModel.fromJson(json as Map<String, dynamic>);
@@ -331,9 +330,7 @@ mixin OrderAPI on ApiCore {
         "uid": prefs.clientId,
         "actid": prefs.clientId,
         "exch": input.exch,
-        "tsym": input.tsym.contains("&")
-            ? input.tsym.replaceAll("&", "%26")
-            : input.tsym,
+        "tsym":  UrlUtils.encodeParameter(input.tsym),
         "qty": input.qty.replaceAll("-", ""),
         "prc": (input.prctyp == 'MKT' || input.prctyp == 'SL-MKT')
             ? '0'
@@ -388,7 +385,7 @@ mixin OrderAPI on ApiCore {
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body:
-              '''jData={"uid":"${prefs.clientId}","reg_date":"${sipInputField.regdate}","start_date":"${sipInputField.startdate}","actid":"${prefs.clientId}","frequency":"${sipInputField.frequency}","end_period":"${sipInputField.endperiod}","sip_name":"${sipInputField.sipname}","Scrips":[{"exch":"${sipInputField.exch}","tsym":"${sipInputField.tysm}","prd":"${sipInputField.prd}","token":"${sipInputField.token}","qty":"${sipInputField.qty}"}]}&jKey=${prefs.clientSession}''');
+              '''jData={"uid":"${prefs.clientId}","reg_date":"${sipInputField.regdate}","start_date":"${sipInputField.startdate}","actid":"${prefs.clientId}","frequency":"${sipInputField.frequency}","end_period":"${sipInputField.endperiod}","sip_name":"${sipInputField.sipname}","Scrips":[{"exch":"${sipInputField.exch}","tsym":"${sipInputField.tysm != null ? UrlUtils.encodeParameter(sipInputField.tysm!) : ''}","prd":"${sipInputField.prd}","token":"${sipInputField.token}","qty":"${sipInputField.qty}"}]}&jKey=${prefs.clientSession}''');
 
       // log("PlaceOrdersip => ${res.body}");
       final json = jsonDecode(res.body);
@@ -409,7 +406,7 @@ mixin OrderAPI on ApiCore {
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body:
-              '''jData={"reg_date":"${modifysipinput.regdate}","start_date":"${modifysipinput.startdate}","frequency":"${modifysipinput.frequency}","end_period":"${modifysipinput.endperiod}","sip_name":"${modifysipinput.sipname}","internal":{"PrevExecDate":"${modifysipinput.prevExecutedate}","DueDate":"${modifysipinput.duedate}","ExecDate":"${modifysipinput.exedate}","period":"${modifysipinput.period}","active":"${modifysipinput.active}","SipId":"${modifysipinput.sipId}"},"Scrips":[{"exch":"${modifysipinput.exch}","tsym":"${modifysipinput.tysm}","prd":"${modifysipinput.prd}","token":"${modifysipinput.token}","qty":"${modifysipinput.qty}"}]}&jKey=${prefs.clientSession}''');
+              '''jData={"reg_date":"${modifysipinput.regdate}","start_date":"${modifysipinput.startdate}","frequency":"${modifysipinput.frequency}","end_period":"${modifysipinput.endperiod}","sip_name":"${modifysipinput.sipname}","internal":{"PrevExecDate":"${modifysipinput.prevExecutedate}","DueDate":"${modifysipinput.duedate}","ExecDate":"${modifysipinput.exedate}","period":"${modifysipinput.period}","active":"${modifysipinput.active}","SipId":"${modifysipinput.sipId}"},"Scrips":[{"exch":"${modifysipinput.exch}","tsym":"${modifysipinput.tysm != null ? UrlUtils.encodeParameter(modifysipinput.tysm!) : ''}","prd":"${modifysipinput.prd}","token":"${modifysipinput.token}","qty":"${modifysipinput.qty}"}]}&jKey=${prefs.clientSession}''');
 
       // log("ModifysipOrder => ${res.body}");
       final json = jsonDecode(res.body);
@@ -466,7 +463,7 @@ mixin OrderAPI on ApiCore {
       final uri = Uri.parse(apiLinks.placeGTTOrderURL);
       Map payload = {
         "uid": prefs.clientId,
-        "tsym": input.tsym.replaceAll("&", "%26"),
+        "tsym": UrlUtils.encodeParameter(input.tsym),
         "exch": input.exch,
         "ai_t": input.ait,
         "validity": input.validity,
@@ -506,7 +503,7 @@ mixin OrderAPI on ApiCore {
       final uri = Uri.parse(apiLinks.modifyGTTOrderURL);
       Map payload = {
         "uid": prefs.clientId,
-        "tsym": input.tsym,
+        "tsym": UrlUtils.encodeParameter(input.tsym),
         "exch": input.exch,
         "ai_t": input.ait,
         "validity": input.validity,
@@ -549,14 +546,14 @@ mixin OrderAPI on ApiCore {
         "uid": prefs.clientId,
         "ai_t": "LMT_BOS_O",
         "validity": "GTT",
-        "tsym": input.tsym,
+        "tsym": UrlUtils.encodeParameter(input.tsym),
         "exch": input.exch,
         "oivariable": [
           {"d": input.d1, "var_name": "x"},
           {"d": input.d2, "var_name": "y"}
         ],
         "place_order_params": {
-          "tsym": input.tsym,
+          "tsym": UrlUtils.encodeParameter(input.tsym),
           "exch": input.exch,
           "trantype": input.trantype,
           "prctyp": input.prctyp1,
@@ -570,7 +567,7 @@ mixin OrderAPI on ApiCore {
           "trgprc": input.trgprc1
         },
         "place_order_params_leg2": {
-          "tsym": input.tsym,
+          "tsym": UrlUtils.encodeParameter(input.tsym),
           "exch": input.exch,
           "trantype": input.trantype,
           "prctyp": input.prctyp2,
@@ -610,7 +607,7 @@ mixin OrderAPI on ApiCore {
         "uid": prefs.clientId,
         "ai_t": "LMT_BOS_O",
         "validity": input.validity,
-        "tsym": input.tsym,
+        "tsym": UrlUtils.encodeParameter(input.tsym),
         "exch": input.exch,
         "al_id": input.alid,
         "oivariable": [
@@ -618,7 +615,7 @@ mixin OrderAPI on ApiCore {
           {"d": input.d2, "var_name": "y"}
         ],
         "place_order_params": {
-          "tsym": input.tsym,
+          "tsym": UrlUtils.encodeParameter(input.tsym),
           "exch": input.exch,
           "trantype": input.trantype,
           "prctyp": input.prctyp1,
@@ -632,7 +629,7 @@ mixin OrderAPI on ApiCore {
           "trgprc": input.trgprc1
         },
         "place_order_params_leg2": {
-          "tsym": input.tsym,
+          "tsym": UrlUtils.encodeParameter(input.tsym),
           "exch": input.exch,
           "trantype": input.trantype,
           "prctyp": input.prctyp2,
@@ -735,9 +732,7 @@ mixin OrderAPI on ApiCore {
         "uid": "${prefs.clientId}",
         "actid": "${prefs.clientId}",
         "exch": input.exch,
-        "tsym": input.tsym.contains("&")
-            ? input.tsym.replaceAll("&", "%26")
-            : input.tsym,
+        "tsym": UrlUtils.encodeParameter(input.tsym),
         "qty": input.qty,
         "prc": input.prc,
         "prd": input.prd,

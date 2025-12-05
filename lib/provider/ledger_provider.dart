@@ -954,24 +954,28 @@ class LDProvider extends DefaultChangeNotifier {
   //   }
   // }
 
-  Future fetchLegerData(BuildContext context, String from, String to) async {
+  Future fetchLegerData(BuildContext context, String from, String to, bool includeBillMargin) async {
     try {
       _ledgerloading = true;
       notifyListeners();
 
-      _ledgerAllDataDummy = await api.getLedgerdata(from, to);
+      _ledgerAllDataDummy = await api.getLedgerdata(from, to, includeBillMargin);
       _ledgerAllData = LedgerModelData.fromJson(_ledgerAllDataDummy!.toJson());
       _ledgerAllData!.fullStat?.sort((a, b) {
         return int.parse(b.sortNo!).compareTo(int.parse(a.sortNo!));
       });
-      // Reset filters to all selected (including Bill Margin) on screen entry
+      // Reset filters based on includeBillMargin parameter
       _selectedFilters = {
         SingingCharacter.receipt,
         SingingCharacter.payment,
         SingingCharacter.journal,
         SingingCharacter.systemjournal,
-        SingingCharacter.billmargin
       };
+      
+      // Only add billmargin if includeBillMargin is true
+      if (includeBillMargin) {
+        _selectedFilters.add(SingingCharacter.billmargin);
+      }
       _ledgerloading = false;
       notifyListeners();
     } catch (e) {
@@ -985,6 +989,22 @@ class LDProvider extends DefaultChangeNotifier {
       _cmrdownload = await api.cmrdownload();
       final Uri uri =
           Uri.parse("https://rekycbe.mynt.in/${_cmrdownload!.path}");
+      print("urilinks: $uri");
+      if (await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+        throw 'Could not launch  ';
+      }
+
+      notifyListeners();
+    } catch (e) {
+      debugPrint("$e");
+    }
+  }
+
+
+  Future redirecttopositionsbeta(BuildContext context) async {
+    try {
+      final Uri uri =
+          Uri.parse('https://profile.zebuetrade.com/positions/?uid=${pref.clientId}&token=${pref.token}');
       print("urilinks: $uri");
       if (await launchUrl(uri, mode: LaunchMode.externalApplication)) {
         throw 'Could not launch  ';
@@ -1063,8 +1083,7 @@ class LDProvider extends DefaultChangeNotifier {
     } catch (e) {
       _positionloading = false;
       notifyListeners();
-
-      showResponsiveWarningMessage(context, 'Error occurred in positions try again later');
+        warningMessage(context, 'Error occurred in positions try again later');
       debugPrint("$e");
     }
   }
@@ -1087,7 +1106,7 @@ class LDProvider extends DefaultChangeNotifier {
       final time = DateFormat('hh:mm:ss a').format(DateTime.now());
       _timedis = time;
       _positiondata = await api.getposition();
-      print("objectobjectobjectobjectobjectobjectobjectobject $time");
+      // print("objectobjectobjectobjectobjectobjectobjectobject $time");
       notifyListeners();
     });
   }
@@ -1270,9 +1289,9 @@ class LDProvider extends DefaultChangeNotifier {
 
         // Safely show snackbar
         if (context.mounted) {
-          showResponsiveSuccess(
-            context,
-            ordertype == 'ER' ? 'Order placed' : 'Order cancelled',
+            successMessage(
+              context,
+              ordertype == 'ER' ? 'Order placed' : 'Order cancelled',
           );
         }
       } else if (res.msg == 'error occured on data fetch') {
@@ -1281,15 +1300,16 @@ class LDProvider extends DefaultChangeNotifier {
 
         // Safely show snackbar
         if (context.mounted) {
-          showResponsiveWarningMessage(
-            context,
-            "${res.msg}", // 'Order cancelled',
+            warningMessage(
+              context,
+              "${res.msg}", // 'Order cancelled',
           );
         }
       }
     } catch (e) {
       if (context.mounted) {
-        showResponsiveWarningMessage(context, '$e');
+          warningMessage(context, '$e'
+        );
       }
       Navigator.pop(context); // Pop after snackbar
       debugPrint("$e");
@@ -1343,17 +1363,20 @@ class LDProvider extends DefaultChangeNotifier {
         _calendarpnlloading = false;
 
         _ucode = "${_sharingturonandoff!.data!.uqCode}";
-        showResponsiveSuccess(context, "Sharing Turned on");
+          successMessage(context, "Sharing Turned on"
+        );
       } else {
         if (_sharingturonandoff!.msg != null) {
           if (_sharingturonandoff!.msg == 'Sharing Turned Off') {
             notsharing = true;
             _calendarpnlloading = false;
-            showResponsiveSuccess(context, "Sharing Turned off");
+              successMessage(context, "Sharing Turned off"
+            );
           } else {
             notsharing = false;
             _calendarpnlloading = false;
-            showResponsiveSuccess(context, "Sharing Turned on");
+              successMessage(context, "Sharing Turned on"
+            );
           }
         }
       }
@@ -1368,7 +1391,8 @@ class LDProvider extends DefaultChangeNotifier {
       }
       notifyListeners();
 
-      showResponsiveWarningMessage(context, 'Sharing error');
+        warningMessage(context, 'Sharing error'
+      );
       debugPrint("$e");
       print("${e}eeeeee");
     } finally {
@@ -1538,7 +1562,8 @@ class LDProvider extends DefaultChangeNotifier {
       // Download the file
       _pdfresponse = await api.getpdffileapi(recno, filename);
       if (_pdfresponse == 'File downloaded successfully') {
-        showResponsiveSuccess(context, 'PDF Downloaded, Check Your Download');
+          successMessage(context, 'PDF Downloaded, Check Your Download'
+        );
 
         // Open the Downloads folder
         // String downloadsDir = "/storage/emulated/0/Download";
@@ -1560,6 +1585,13 @@ class LDProvider extends DefaultChangeNotifier {
     }
   }
 
+  String _selectedFormat = "PDF";
+  String get selectedFormat => _selectedFormat;
+  void selectedFormatFunction(String value) {
+    _selectedFormat = value;
+    notifyListeners();
+  }
+
   Future pdfdownloadfortaxpnl(
       BuildContext context, eq, dercomcur, eqcharge, year) async {
     if (year <= _yearforTaxpnlDummy) {
@@ -1568,7 +1600,7 @@ class LDProvider extends DefaultChangeNotifier {
         notifyListeners();
 
         // _pdfresponse =
-        api.getpdffileapitaxpnl(eq, dercomcur, eqcharge, year);
+             api.getpdffileapitaxpnl(eq, dercomcur, eqcharge, year, selectedFormat);
         // if (_pdfresponse == 'File Sent to mail successfully') {
         // if (_istaxpnlclosed == false) {
         //   Navigator.pop(context);
@@ -1612,13 +1644,11 @@ class LDProvider extends DefaultChangeNotifier {
       _pdfresponse =
           await api.getpdffileapiledger(res, dr, cr, op, clb, stdate, edate);
       if (_pdfresponse == 'File downloaded successfully') {
-        ScaffoldMessenger.of(context).showSnackBar(
-          successMessage(context, 'PDF Downloaded, Check Your Download'),
+          successMessage(context, 'PDF Downloaded, Check Your Download'
         );
         _ledgerloading = false;
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          warningMessage(context, '$_pdfresponse'),
+          warningMessage(context, '$_pdfresponse'
         );
         _ledgerloading = false;
       }
@@ -1627,8 +1657,7 @@ class LDProvider extends DefaultChangeNotifier {
       notifyListeners();
     } catch (e) {
       _ledgerloading = false;
-      ScaffoldMessenger.of(context).showSnackBar(
-        warningMessage(context, 'Error occurred try again later'),
+        warningMessage(context, 'Error occurred try again later'
       );
       debugPrint("$e");
     }
@@ -1642,13 +1671,11 @@ class LDProvider extends DefaultChangeNotifier {
       _pdfresponse = await api.getpdffileapipnl(
           res, stdate, edate, string, notional, chargevalue);
       if (_pdfresponse == 'File downloaded successfully') {
-        ScaffoldMessenger.of(context).showSnackBar(
-          successMessage(context, 'PDF Downloaded, Check Your Download'),
+          successMessage(context, 'PDF Downloaded, Check Your Download'
         );
         _pnlloading = false;
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          warningMessage(context, '$_pdfresponse'),
+          warningMessage(context, '$_pdfresponse'
         );
         _pnlloading = false;
       }
@@ -1865,8 +1892,7 @@ class LDProvider extends DefaultChangeNotifier {
         debugPrint("Error fetching tax pnl data: $e");
       }
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        warningMessage(context, 'Cant move already in $_yearforTaxpnlDummy'),
+        warningMessage(context, 'Cant move already in $_yearforTaxpnlDummy'
       );
     }
   }
@@ -1889,8 +1915,7 @@ class LDProvider extends DefaultChangeNotifier {
       debugPrint("$e");
       _ledgerloading = false;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        warningMessage(context, 'Error occurred try again later'),
+        warningMessage(context, 'Error occurred try again later'
       );
     } finally {
       // _ledgerloading = false;
@@ -1932,8 +1957,7 @@ class LDProvider extends DefaultChangeNotifier {
         _pledgeoruppledgedelete = '';
         _pledgeorunpledge = '';
         _listforpledge = [];
-        ScaffoldMessenger.of(context).showSnackBar(
-          successMessage(context, 'Scripts Unpledged'),
+          successMessage(context, 'Scripts Unpledged'
         );
         // _reportsloading = false;
       }
@@ -1948,8 +1972,7 @@ class LDProvider extends DefaultChangeNotifier {
       debugPrint("$e");
       _pledgeloader = false;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        warningMessage(context, 'Error occurred try again later'),
+        warningMessage(context, 'Error occurred try again later'
       );
     }
   }
@@ -1963,8 +1986,7 @@ class LDProvider extends DefaultChangeNotifier {
         _pledgeandunpledge = await api.getpledgeandunpledge();
         _pledgeorunpledge = '';
         _listforpledge = [];
-        ScaffoldMessenger.of(context).showSnackBar(
-          successMessage(context, 'Request Deleted '),
+          successMessage(context, 'Request Deleted '
         );
         // _reportsloading = false;
       }
@@ -1978,8 +2000,7 @@ class LDProvider extends DefaultChangeNotifier {
     } catch (e) {
       _pledgeloader = false;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        warningMessage(context, 'Error occurred try again later'),
+        warningMessage(context, 'Error occurred try again later'
       );
       debugPrint("$e");
     }
@@ -2004,8 +2025,7 @@ class LDProvider extends DefaultChangeNotifier {
     } catch (e) {
       _reportsloadingforcharges = false;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        warningMessage(context, 'Error in getting charges'),
+        warningMessage(context, 'Error in getting charges'
       );
       debugPrint("$e");
     }
@@ -2031,15 +2051,13 @@ class LDProvider extends DefaultChangeNotifier {
         notifyListeners();
       } catch (e) {
         _reportsloadingforcharges = false;
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          warningMessage(context, 'Error occurred try again later'),
+          warningMessage(context, 'Error occurred try again later'
         );
         debugPrint("$e");
       }
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(warningMessage(
-          context, 'Cant move already in ${_yearforTaxpnlDummy}'));
+      warningMessage(
+          context, 'Cant move already in ${_yearforTaxpnlDummy}');
     }
   }
 
@@ -3026,8 +3044,7 @@ class LDProvider extends DefaultChangeNotifier {
     }
     for (var i = 0; i < _listforpledge.length; i++) {
       if (_listforpledge[i] == isin) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          successMessage(context, 'Script Already added'),
+          successMessage(context, 'Script Already added'
         );
         found = true;
         break; // No need to check further
@@ -3036,8 +3053,7 @@ class LDProvider extends DefaultChangeNotifier {
 
     if (!found) {
       _listforpledge.add(isin);
-      ScaffoldMessenger.of(context).showSnackBar(
-        successMessage(context, 'Script Added'),
+        successMessage(context, 'Script Added'
       );
     }
     print("${_listforpledge.length}loakdsdejkvh");
@@ -3109,8 +3125,7 @@ class LDProvider extends DefaultChangeNotifier {
       for (var i = 0; i < _listforpledge.length; i++) {
         if (_listforpledge[i]['isin'] == isin) {
           _listforpledge[i]['quantity'] = qty;
-          ScaffoldMessenger.of(context).showSnackBar(
-            successMessage(context, 'Script Updated'),
+            successMessage(context, 'Script Updated'
           );
           found = true;
           break; // No need to check further
@@ -3126,9 +3141,9 @@ class LDProvider extends DefaultChangeNotifier {
           "quantity": qty,
         });
         ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(
-            successMessage(context, 'Script Added'),
+          ..hideCurrentSnackBar();
+          
+            successMessage(context, 'Script Added'
           );
       }
     } else {
@@ -3136,8 +3151,7 @@ class LDProvider extends DefaultChangeNotifier {
         if (_listforpledge[i]['ISIN'] == isin) {
           _listforpledge[i]['COLQTY'] = qty;
           _listforpledge[i]['unplege_qty'] = qty;
-          ScaffoldMessenger.of(context).showSnackBar(
-            successMessage(context, 'Script Updated'),
+            successMessage(context, 'Script Updated'
           );
           found = true;
           break; // No need to check further
@@ -3152,8 +3166,7 @@ class LDProvider extends DefaultChangeNotifier {
           "NSE_SYMBOL": sym,
           "unplege_qty": qty,
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          successMessage(context, 'Script Added'),
+          successMessage(context, 'Script Added'
         );
       }
     }
@@ -3426,6 +3439,13 @@ class LDProvider extends DefaultChangeNotifier {
   Set<SingingCharacter> _selectedFilters = {};
   Set<SingingCharacter> get selectedFilters => _selectedFilters;
 
+  bool _includeBillMargin = true ;
+  bool get includeBillMargin => _includeBillMargin;
+  void setIncludeBillMargin(bool value) {
+    _includeBillMargin = value;
+    notifyListeners();
+  }
+
   void applyLedgerMultiFilter(
       BuildContext context, List<SingingCharacter> filters) {
     _selectedFilters = Set.from(filters);
@@ -3452,6 +3472,17 @@ class LDProvider extends DefaultChangeNotifier {
     // }
 
     bool billMarginSelected = filters.contains(SingingCharacter.billmargin);
+    _includeBillMargin = billMarginSelected;
+    
+    // Update _selectedFilters to match the actual data being shown
+    if (!billMarginSelected) {
+      // Remove billmargin from selected filters if it's not selected
+      _selectedFilters.remove(SingingCharacter.billmargin);
+    } else {
+      // Add billmargin to selected filters if it's selected
+      _selectedFilters.add(SingingCharacter.billmargin);
+    }
+    
     // Count only the type filters (not billmargin)
     int typeFilterCount =
         filters.where((f) => f != SingingCharacter.billmargin).length;
@@ -3490,10 +3521,13 @@ class LDProvider extends DefaultChangeNotifier {
     if (allTypesSelected && billMarginSelected) {
       // All types + Bill Margin: show all entries
       filteredList = originalList;
+       fetchLegerData(context, startDate, endDate, includeBillMargin);
     } else if (allTypesSelected) {
       filteredList = originalList
           .where((o) => o.tYPE != 'Bill-Margin' && matchesType(o))
           .toList();
+          fetchLegerData(context, startDate, endDate, includeBillMargin);
+          
     } else if (typeFilterCount == 0 && !billMarginSelected) {
       filteredList =
           originalList.where((o) => o.tYPE == 'Opening Balance').toList();

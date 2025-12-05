@@ -13,8 +13,16 @@ import '../../../../res/global_state_text.dart';
 import '../../../../sharedWidget/functions.dart';
 import '../../../../sharedWidget/list_divider.dart';
 
-class TreasuryBondsScreen extends StatelessWidget {
+class TreasuryBondsScreen extends StatefulWidget {
   const TreasuryBondsScreen({super.key});
+
+  @override
+  State<TreasuryBondsScreen> createState() => _TreasuryBondsScreenState();
+}
+
+class _TreasuryBondsScreenState extends State<TreasuryBondsScreen> {
+  // Flag to prevent multiple bottom sheets from opening
+  bool _isBottomSheetOpen = false;
 
   // Static constants for better performance
   static const EdgeInsets _itemPadding = EdgeInsets.all(16.0);
@@ -247,6 +255,10 @@ class TreasuryBondsScreen extends StatelessWidget {
 
   Future<void> _showOrderBottomSheet(double responsiveWidth,
       BuildContext context, BondsProvider bonds, dynamic bond) async {
+    // Prevent opening multiple bottom sheets
+    if (_isBottomSheetOpen) return;
+
+    _isBottomSheetOpen = true;
     await bonds.fetchLedgerBal();
     responsiveWidth == 600
         ? showDialog(
@@ -282,6 +294,8 @@ class TreasuryBondsScreen extends StatelessWidget {
               ),
             ),
           );
+
+          _isBottomSheetOpen = false;
     // showModalBottomSheet(
     //   isScrollControlled: true,
     //   useSafeArea: true,

@@ -77,18 +77,18 @@ class _SipOrderDetailsState extends ConsumerState<SipOrderDetails> {
                     )),
                 onPressed: () async {
                   if (sipqtyctrl.text.isEmpty || sipqtyctrl.text == "0") {
-                    ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+                    warningMessage(
                         context,
                         sipqtyctrl.text.isEmpty
                             ? "Quantity can not be empty"
-                            : "Quantity can not be 0"));
+                            : "Quantity can not be 0");
                   } else if (sip.numberofSips.text.isEmpty ||
                       sip.numberofSips.text == "0") {
-                    ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+                    warningMessage(
                         context,
                         sip.numberofSips.text.isEmpty
                             ? "Number of SIP can not be empty"
-                            : "Number of SIP can not be 0"));
+                            : "Number of SIP can not be 0");
                   } else {
                     // modifysipOrder(sip, sipqtyctrl, widget.sipdetails);
                     showDialog(
@@ -141,6 +141,7 @@ class _SipOrderDetailsState extends ConsumerState<SipOrderDetails> {
           ]),
         ),
         body: SingleChildScrollView(
+          physics: ClampingScrollPhysics(),
           child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -237,8 +238,12 @@ class _SipOrderDetailsState extends ConsumerState<SipOrderDetails> {
                                   : const Color(0xffF1F3F8),
                               filled: true,
                               hintText: "0",
-                              hintStyle: TextWidget.textStyle(color: const Color(0xff999999),
-                                fontSize: 14,fw: 1,theme: theme.isDarkMode),
+                             hintStyle: TextWidget.textStyle(
+                                      fontSize: 14,
+                                      theme: theme.isDarkMode,
+                                      color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                                    fw: 0,
+                                    ),
                               contentPadding: const EdgeInsets.symmetric(
                                   vertical: 8, horizontal: 16),
                               prefixIconColor: const Color(0xff586279),
@@ -367,9 +372,8 @@ class _SipOrderDetailsState extends ConsumerState<SipOrderDetails> {
                             ScaffoldMessenger.of(context)
                                 .hideCurrentSnackBar();
                             if (value.isEmpty) {
-                              ScaffoldMessenger.of(context).showSnackBar(
                                   warningMessage(context,
-                                      "The minimum number of this SIP is one."));
+                                      "The minimum number of this SIP is one.");
                             }
                           },
                         ),
@@ -499,9 +503,8 @@ class _SipOrderDetailsState extends ConsumerState<SipOrderDetails> {
                             ScaffoldMessenger.of(context)
                                 .hideCurrentSnackBar();
                             if (value.isEmpty) {
-                              ScaffoldMessenger.of(context).showSnackBar(
                                   warningMessage(context,
-                                      "The minimum quantity of this stock is one."));
+                                      "The minimum quantity of this stock is one.");
                             }
                             setState(() {
                               // double inputValue =

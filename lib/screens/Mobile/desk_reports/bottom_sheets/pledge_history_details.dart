@@ -57,13 +57,16 @@ class _PledgeHistoryDetails extends State<PledgeHistoryDetails> {
                   ? Center(
                       child: Padding(
                       padding: EdgeInsets.only(top: 60),
-                      child: NoDataFound(),
+                      child: NoDataFound(
+                        secondaryEnabled: false,
+                      ),
                     ))
                   : Expanded(
                       // height: screenheight * 0.5,
                       child: SingleChildScrollView(
+                        physics: ClampingScrollPhysics(),
                         child: ListView.separated(
-                          physics: ScrollPhysics(),
+                          physics: ClampingScrollPhysics(),
                           itemCount: widget.data.reqList!.length ?? 0,
                           shrinkWrap: true,
                           itemBuilder: (context, index) {

@@ -104,6 +104,7 @@ class _RazorpaySuccessUiState extends State<RazorpaySuccessUi> {
                               color: theme.isDarkMode
                                   ? colors.textPrimaryDark
                                   : colors.textPrimaryLight,
+                              fw: 0,
                             ),
                             const SizedBox(
                               height: 5,
@@ -114,6 +115,7 @@ class _RazorpaySuccessUiState extends State<RazorpaySuccessUi> {
                               color: theme.isDarkMode
                                   ? colors.textSecondaryDark
                                   : colors.textSecondaryLight,
+                              fw: 0,
                             ),
                             const SizedBox(
                               height: 10,
@@ -125,6 +127,7 @@ class _RazorpaySuccessUiState extends State<RazorpaySuccessUi> {
                               color: theme.isDarkMode
                                   ? colors.colorWhite
                                   : colors.colorBlack,
+                              fw: 0,
                             ),
                             const SizedBox(
                               height: 10,
@@ -135,6 +138,7 @@ class _RazorpaySuccessUiState extends State<RazorpaySuccessUi> {
                               color: theme.isDarkMode
                                   ? colors.textSecondaryDark
                                   : colors.textSecondaryLight,
+                              fw: 0,
                             ),
                           ],
                         ),
@@ -212,6 +216,7 @@ class _RazorpaySuccessUiState extends State<RazorpaySuccessUi> {
               color: theme.isDarkMode
                   ? colors.textSecondaryDark
                   : colors.textSecondaryLight,
+              fw: 0,
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -222,6 +227,7 @@ class _RazorpaySuccessUiState extends State<RazorpaySuccessUi> {
                     ? colors.textPrimaryDark
                     : colors.textPrimaryLight,
                 align: TextAlign.right,
+                fw: 0,
               ),
             ),
           ],

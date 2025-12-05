@@ -79,6 +79,7 @@ class _MarginCalculatorScreenState
         ),
         body: SafeArea(
           child: SingleChildScrollView(
+            physics: ClampingScrollPhysics(),
             child: Column(
               children: [
                 // _buildHeaderSection(),
@@ -276,6 +277,7 @@ class _MarginCalculatorScreenState
                   child: StatefulBuilder(
                     builder: (context, setBottomSheetState) {
                       return SingleChildScrollView(
+                        physics: ClampingScrollPhysics(),
                         controller: scrollController,
                         padding: const EdgeInsets.symmetric(horizontal: 20),
                         child: Column(
@@ -400,7 +402,7 @@ class _MarginCalculatorScreenState
               color: theme.isDarkMode
                   ? colors.textPrimaryDark
                   : colors.textPrimaryLight,
-              fw: 0,
+              fw: 1,
             ),
             const SizedBox(height: 8),
             Container(
@@ -433,6 +435,7 @@ class _MarginCalculatorScreenState
                             ? colors.textPrimaryDark
                             : colors.textPrimaryLight,
                         theme: theme.isDarkMode,
+                        fw: 0,
                       ),
                       textCapitalization: TextCapitalization.characters,
                       inputFormatters: [
@@ -451,9 +454,8 @@ class _MarginCalculatorScreenState
                         hintStyle: TextWidget.textStyle(
                           fontSize: 14,
                           theme: theme.isDarkMode,
-                          color: theme.isDarkMode
-                              ? colors.textSecondaryDark
-                              : colors.textSecondaryLight,
+                          color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                          fw: 0,
                         ),
                         contentPadding: const EdgeInsets.symmetric(
                             horizontal: 0, vertical: 15),
@@ -531,7 +533,7 @@ class _MarginCalculatorScreenState
                               color: theme.isDarkMode
                                   ? colors.textPrimaryDark
                                   : colors.textPrimaryLight,
-                              fw: 3,
+                              fw: 0,
                             ),
                           ),
                           subtitle: Row(
@@ -542,7 +544,7 @@ class _MarginCalculatorScreenState
                                 color: theme.isDarkMode
                                     ? colors.textSecondaryDark
                                     : colors.textSecondaryLight,
-                                fw: 3,
+                                fw: 0,
                               ),
                               const SizedBox(width: 8),
                               TextWidget.paraText(
@@ -551,17 +553,17 @@ class _MarginCalculatorScreenState
                                 color: theme.isDarkMode
                                     ? colors.textSecondaryDark
                                     : colors.textSecondaryLight,
-                                fw: 3,
+                                fw: 0,
                               ),
                               if (contract.ls != null) ...[
                                 const SizedBox(width: 8),
                                 TextWidget.paraText(
-                                  text: 'Lot: ${contract.ls}',
+                                  text: 'LOT ${contract.ls}',
                                   theme: theme.isDarkMode,
                                   color: theme.isDarkMode
                                       ? colors.textSecondaryDark
                                       : colors.textSecondaryLight,
-                                  fw: 3,
+                                  fw: 0,
                                 ),
                               ],
                             ],
@@ -579,7 +581,7 @@ class _MarginCalculatorScreenState
                   text: stocksProvider.searchError!,
                   theme: theme.isDarkMode,
                   color: colors.loss,
-                  fw: 3,
+                  fw: 0,
                 ),
               ),
           ],
@@ -599,12 +601,13 @@ class _MarginCalculatorScreenState
           color: theme.isDarkMode
               ? colors.textPrimaryDark
               : colors.textPrimaryLight,
-          fw: 0,
+          fw: 1,
         ),
         const SizedBox(height: 8),
         SizedBox(
           height: 50,
           child: CustomTextFormField(
+            isReadable: true,
             fillColor:
                 theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
             textCtrl: _bottomSheetQuantityController,
@@ -617,20 +620,22 @@ class _MarginCalculatorScreenState
                 _errorMessageqty = null;
               });
             },
-            hintText: "Enter quantity",
-            hintStyle: TextWidget.textStyle(
-              fontSize: 14,
-              theme: theme.isDarkMode,
-              color: theme.isDarkMode
-                  ? colors.textSecondaryDark
-                  : colors.textSecondaryLight,
-            ),
+            // hintText: "Enter quantity",
+            // hintStyle: TextWidget.textStyle(
+            //   fontSize: 14,
+            //   theme: theme.isDarkMode,
+            //   color: theme.isDarkMode
+            //       ? colors.textSecondaryDark
+            //       : colors.textSecondaryLight,
+            //   fw: 0,
+            // ),
             style: TextWidget.textStyle(
               fontSize: 16,
               color: theme.isDarkMode
                   ? colors.textPrimaryDark
                   : colors.textPrimaryLight,
               theme: theme.isDarkMode,
+              fw: 0,
             ),
             textAlign: TextAlign.center,
             prefixIcon: Material(
@@ -745,7 +750,7 @@ class _MarginCalculatorScreenState
           color: theme.isDarkMode
               ? colors.textPrimaryDark
               : colors.textPrimaryLight,
-          fw: 0,
+          fw: 1,
         ),
         const SizedBox(height: 8),
         SizedBox(
@@ -788,8 +793,8 @@ class _MarginCalculatorScreenState
                   textOverflow: TextOverflow.ellipsis,
                   theme: theme.isDarkMode,
                   fw: _bottomSheetTransactionType == transactionValues[index]
-                      ? 0
-                      : 3,
+                      ? 1
+                      : 0,
                 ),
               );
             },
@@ -1028,7 +1033,7 @@ class _MarginCalculatorScreenState
                         color: theme.isDarkMode
                             ? colors.textSecondaryDark
                             : colors.textSecondaryLight,
-                        fw: 3,
+                        fw: 0,
                         theme: false),
                     const SizedBox(height: 8),
                     Text(
@@ -1119,7 +1124,7 @@ class _MarginCalculatorScreenState
                   color: theme.isDarkMode
                       ? colors.textPrimaryDark
                       : colors.textPrimaryLight,
-                  fw: 0,
+                  fw: 1,
                 ),
                 Padding(
                   padding: const EdgeInsets.only(right: 16),
@@ -1250,6 +1255,7 @@ class _MarginCalculatorScreenState
               color: theme.isDarkMode
                   ? colors.textSecondaryDark
                   : colors.textSecondaryLight,
+              fw: 0,
             ),
             TextWidget.subText(
               text: value,
@@ -1257,6 +1263,7 @@ class _MarginCalculatorScreenState
               color: theme.isDarkMode
                   ? colors.textPrimaryDark
                   : colors.textPrimaryLight,
+              fw: 0,
             ),
           ],
         ),
@@ -1344,7 +1351,7 @@ class _MarginCalculatorScreenState
                 color: theme.isDarkMode
                     ? colors.textPrimaryDark
                     : colors.textPrimaryLight,
-                fw: 0,
+                fw: 1,
               ),
               Container(
                 padding:
@@ -1387,7 +1394,7 @@ class _MarginCalculatorScreenState
                     color: theme.isDarkMode
                         ? colors.textPrimaryDark
                         : colors.textPrimaryLight,
-                    fw: 3,
+                    fw: 0,
                   ),
                 ),
                 subtitle: Row(
@@ -1398,7 +1405,7 @@ class _MarginCalculatorScreenState
                       color: theme.isDarkMode
                           ? colors.textSecondaryDark
                           : colors.textSecondaryLight,
-                      fw: 3,
+                      fw: 0,
                     ),
                     const SizedBox(width: 6),
                     // TextWidget.subText(
@@ -1415,7 +1422,7 @@ class _MarginCalculatorScreenState
                       color: theme.isDarkMode
                           ? colors.textSecondaryDark
                           : colors.textSecondaryLight,
-                      fw: 3,
+                      fw: 0,
                     ),
                   ],
                 ),
@@ -1432,7 +1439,7 @@ class _MarginCalculatorScreenState
                           color: theme.isDarkMode
                               ? colors.textPrimaryDark
                               : colors.textPrimaryLight,
-                          fw: 3,
+                          fw: 0,
                         ),
                         const SizedBox(height: 8),
                         Container(
@@ -1450,7 +1457,7 @@ class _MarginCalculatorScreenState
                             color: item.transactionType == 'B'
                                 ? theme.isDarkMode ? colors.profitDark : colors.profitLight
                                 : theme.isDarkMode ? colors.lossDark : colors.lossLight,
-                            fw: 3,
+                            fw: 0,
                           ),
                         ),
                         // TextWidget.subText(

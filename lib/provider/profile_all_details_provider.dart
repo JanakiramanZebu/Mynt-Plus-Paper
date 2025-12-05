@@ -7,7 +7,8 @@ import 'package:mynt_plus/models/client_profile_all_details/profile_all_details_
 import 'package:mynt_plus/provider/core/default_change_notifier.dart';
 import 'package:mynt_plus/provider/fund_provider.dart';
 import 'package:mynt_plus/screens/Mobile/profile_screen/in_app_webview_screen.dart';
-import 'package:url_launcher/url_launcher.dart';
+
+import '../screens/Mobile/profile_screen/profile_main_screen.dart';
 import '../sharedWidget/snack_bar.dart';
 
 
@@ -274,51 +275,51 @@ class ProfileProvider extends DefaultChangeNotifier {
   //   );
   // }
 
-  // List<PendingStatus> _pendingStatusList = [];
-  // List<PendingStatus> get pendingStatusList => _pendingStatusList;
+  List<PendingStatus> _pendingStatusList = [];
+  List<PendingStatus> get pendingStatusList => _pendingStatusList;
   
-  // Future fetchPendingstatus() async {
-  //   try {
-  //     PendingStatus response = await api.fetchPendingstatusApi();
-  //     _pendingStatusList = [response];
-  //     notifyListeners();
-  //   } 
-  //   catch (e) {
-  //     debugPrint("error fetchpendig :::: ${e}");
-  //   } finally {
-  //     notifyListeners();
-  //   }
-  //   }
-  //   bool _cancelpendingloader = false;
-  //   bool get cancelpendingloader => _cancelpendingloader;
-  //   cancelPendingloader(bool value){
-  //     _cancelpendingloader = value;
-  //     print("cancelpendingloader :::: ${_cancelpendingloader}");
-  //     notifyListeners();
-  //   }
+  Future fetchPendingstatus() async {
+    try {
+      PendingStatus response = await api.fetchPendingstatusApi();
+      _pendingStatusList = [response];
+      notifyListeners();
+    } 
+    catch (e) {
+      debugPrint("error fetchpendig :::: ${e}");
+    } finally {
+      notifyListeners();
+    }
+    }
+    bool _cancelpendingloader = false;
+    bool get cancelpendingloader => _cancelpendingloader;
+    cancelPendingloader(bool value){
+      _cancelpendingloader = value;
+      print("cancelpendingloader :::: ${_cancelpendingloader}");
+      notifyListeners();
+    }
 
-  // Future cancelPendingStatus(String type, BuildContext context) async {
-  //   try {
-  //     cancelPendingloader(true);
-  //     String? fileid = await api.fetctfileidapi(type);
-  //     String response = await api.cancelPendingStatusApi(type, fileid ?? "");
-  //     Navigator.pop(context);
-  //     if(response == "Cancel Success"){
-  //     _pendingStatusList = [];
-  //     fetchPendingstatus();
-  //     successMessage(context, "Esign Cancellation Success");
-  //     notifyListeners();
-  //     }else{
-  //       warningMessage(context, "Esign Cancellation Failed");
-  //     }
-  //   } catch (e) {
-  //     debugPrint("error cancel pending status :::: ${e}");
-  //     warningMessage(context, "Something Went Wrong");
-  //   } finally {
-  //     cancelPendingloader(false);
-  //     notifyListeners();
-  //   }
-  // }
+  Future cancelPendingStatus(String type, BuildContext context) async {
+    try {
+      cancelPendingloader(true);
+      String? fileid = await api.fetctfileidapi(type);
+      String response = await api.cancelPendingStatusApi(type, fileid ?? "");
+      Navigator.pop(context);
+      if(response == "Cancel Success"){
+      _pendingStatusList = [];
+      fetchPendingstatus();
+      successMessage(context, "Esign Cancellation Success");
+      notifyListeners();
+      }else{
+        warningMessage(context, "Esign Cancellation Failed");
+      }
+    } catch (e) {
+      debugPrint("error cancel pending status :::: ${e}");
+      warningMessage(context, "Something Went Wrong");
+    } finally {
+      cancelPendingloader(false);
+      notifyListeners();
+    }
+  }
 
   Future fetchClientProfileAllDetails() async {
     try {

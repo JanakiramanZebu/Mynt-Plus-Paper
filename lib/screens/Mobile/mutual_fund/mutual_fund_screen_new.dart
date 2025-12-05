@@ -55,6 +55,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
 
 
     return SingleChildScrollView(
+      physics: ClampingScrollPhysics(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -214,6 +215,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
                             fontSize: 14,
                             theme: false,
                             color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                            fw: 2,
                             
                             letterSpacing: -0.28),
               labelPadding: const EdgeInsets.symmetric(horizontal: 4),
@@ -271,6 +273,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
               ],
             ),
           ),
+          // const SizedBox(height: 80),
         ],
       ),
     );
@@ -348,6 +351,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
 
           // const SizedBox(height: 24),
           SingleChildScrollView(
+            physics: ClampingScrollPhysics(),
             child: Column(
               children: [
                 Builder(
@@ -361,6 +365,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
                     return LayoutBuilder(
                       builder: (context, constraints) {
                         return ListView.separated(
+                          padding: EdgeInsets.zero,
                           shrinkWrap:
                               true, // Allow GridView to take only required space
                           physics:
@@ -471,6 +476,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
               : colors.textPrimaryLight,
           textOverflow: TextOverflow.ellipsis,
           theme: theme.isDarkMode,
+          fw: 0,
         ),
         subtitle: Container(
           margin: EdgeInsets.only(
@@ -484,7 +490,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
                   : colors.textSecondaryLight,
               textOverflow: TextOverflow.ellipsis,
               theme: theme.isDarkMode,
-              fw: 3),
+              fw: 0),
         ),
       ),
     );
@@ -529,7 +535,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
                               : colors.primaryLight,
                           textOverflow: TextOverflow.ellipsis,
                           theme: theme.isDarkMode,
-                          fw: 3),
+                          fw: 0),
                     ),
                     const SizedBox(height: 8),
                     Row(
@@ -544,7 +550,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
                                 : colors.textPrimaryLight,
                             textOverflow: TextOverflow.ellipsis,
                             theme: theme.isDarkMode,
-                            fw: 3),
+                            fw: 0),
                         const SizedBox(width: 4),
                         Icon(
                           Icons.arrow_forward,
@@ -626,6 +632,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
               : colors.textSecondaryLight,
           textOverflow: TextOverflow.ellipsis,
           theme: theme.isDarkMode,
+          fw: 0,
         ),
       ),
     );
@@ -653,6 +660,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
               : colors.textSecondaryLight,
           textOverflow: TextOverflow.ellipsis,
           theme: theme.isDarkMode,
+          fw: 0,
         ),
       ),
     );
@@ -696,6 +704,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
                 return LayoutBuilder(
                   builder: (context, constraints) {
                     return ListView.separated(
+                      padding: EdgeInsets.zero,
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       separatorBuilder: (_, __) => const ListDivider(),
@@ -737,6 +746,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
                                   : colors.textPrimaryLight,
                               textOverflow: TextOverflow.ellipsis,
                               theme: theme.isDarkMode,
+                              fw: 0,
                             ),
                             subtitle: TextWidget.paraText(
                               text:
@@ -747,6 +757,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
                               maxLines: 2,
                               textOverflow: TextOverflow.ellipsis,
                               theme: theme.isDarkMode,
+                              fw: 0,
                             ),
                           ),
                         );
@@ -764,6 +775,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
 
   Widget buildCategoriesTab(MFProvider mfData, ThemesProvider theme) {
     return SingleChildScrollView(
+      physics: ClampingScrollPhysics(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -780,6 +792,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
           //       fw: 1),
           // ),
           ListView.separated(
+            padding: EdgeInsets.zero,
             separatorBuilder: (_, __) => const ListDivider(),
             physics: const NeverScrollableScrollPhysics(),
             shrinkWrap: true,
@@ -790,6 +803,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
                   title: mfData.mFCategoryTypesStatic[index]['title'],
                   description: mfData.mFCategoryTypesStatic[index]
                       ['description'],
+                      
                   chips: mfData.mFCategoryTypesStatic[index]['sub'],
                   mfData: mfData,
                   theme: theme);

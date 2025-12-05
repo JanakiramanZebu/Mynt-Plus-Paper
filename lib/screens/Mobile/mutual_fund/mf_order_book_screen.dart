@@ -42,7 +42,7 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
     "MODIFY REJECTED",
     "PAYMENT REJECTED"
   };
-  int activeTab = 0;
+
 
   @override
   void initState() {
@@ -64,44 +64,71 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
     return Consumer(builder: (context, ref, child) {
       final theme = ref.watch(themeProvider);
       final mforderbook = ref.watch(mfProvider);
-      return Scaffold(
-        body: Stack(
+      return  Stack(
           children: [
             TransparentLoaderScreen(
               isLoading: mforderbook.bestmfloader == true,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    width: MediaQuery.of(context).size.width,
-                    padding: const EdgeInsets.only(bottom: 0, left: 0, top: 2),
-                    decoration: BoxDecoration(
-                      border: Border(
-                        top: BorderSide(
-                          color: theme.isDarkMode
-                              ? colors.darkColorDivider
-                              : colors.colorDivider,
-                          width: 0.4,
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      height: 35,
+                      child: TabBar(
+                        controller: _tabController,
+                        tabAlignment: TabAlignment.start,
+                        isScrollable: true,
+                        indicatorSize: TabBarIndicatorSize.tab,
+                        indicator: BoxDecoration(
+                          color: theme.isDarkMode ? colors.searchBgDark : const Color(0xffF1F3F8),
+                          borderRadius: BorderRadius.circular(5),
                         ),
-                        bottom: BorderSide(
-                          color: theme.isDarkMode
-                              ? colors.darkColorDivider
-                              : colors.colorDivider,
-                          width: 0.4,
-                        ),
-                      ),
-                    ),
-                    child: TabBar(
-                      labelPadding: const EdgeInsets.only(right: 0, bottom: 0),
-                      tabAlignment: TabAlignment.start,
-                      indicatorColor: theme.isDarkMode
-                          ? colors.secondaryDark
-                          : colors.secondaryLight,
-                      controller: _tabController,
-                      isScrollable: true,
-                      tabs: List.generate(
-                        tablistitems.length,
-                        (tab) => _buildTab(tab, theme),
+                        unselectedLabelColor: theme.isDarkMode
+                        ? colors.textSecondaryDark
+                        : colors.textSecondaryLight,
+                    labelStyle: TextWidget.textStyle(
+                        fontSize: 14,
+                        theme: false,
+                        fw: 2,
+                        color: theme.isDarkMode
+                            ? colors.textPrimaryDark
+                            : colors.textPrimaryLight),
+                    unselectedLabelStyle: TextWidget.textStyle(
+                        fontSize: 14,
+                        theme: false,
+                        fw: 3,
+                        color: colors.textSecondaryLight),
+                        // labelPadding: const EdgeInsets.symmetric(horizontal: 4),
+                        tabs: tablistitems.asMap().entries.map((entry) {
+                          final index = entry.key;
+                          final tabData = entry.value;
+                          return Tab(
+                            text: tabData['title'].toString(),
+                          //   child: Builder(
+                          //     builder: (context) {
+                          //       final isSelected = _tabController.index == index;
+                                
+                          //       return Padding(
+                          //         padding: const EdgeInsets.only(
+                          //             left: 10, right: 10, top: 0, bottom: 0),
+                          //         child: Row(
+                          //           crossAxisAlignment: CrossAxisAlignment.center,
+                          //           mainAxisSize: MainAxisSize.min,
+                          //           children: [
+                          //             TextWidget.paraText(
+                          //                 text: ,
+                          //                 theme: false,
+                          //                 color: isSelected ? theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight : theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                          //                 fw: isSelected ? 2 : 3),
+                          //           ],
+                          //         ),
+                          //       );
+                          //     },
+                          //   ),
+                          );
+                        }).toList(),
                       ),
                     ),
                   ),
@@ -119,13 +146,16 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
               ),
             ),
           ],
-        ),
-      );
+        );
+      // );
     });
   }
 
   Widget _buildOrdersTab(
       MFProvider mforderbook, ThemesProvider theme, BuildContext context) {
+        if (mforderbook.mfOrderbookfilter == "All" &&
+                  mforderbook.mflumpsumorderbook?.data != null &&
+                  mforderbook.mflumpsumorderbook?.stat != "Not Ok"){
     return TransparentLoaderScreen(
       isLoading: mforderbook.mforderloader,
       child: RefreshIndicator(
@@ -133,27 +163,31 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
           await mforderbook.fetchMfOrderbook(context);
         },
         child: SingleChildScrollView(
+          physics: ClampingScrollPhysics(),
           child: Column(
             children: [
-              if (mforderbook.mfOrderbookfilter == "All" &&
-                  mforderbook.mflumpsumorderbook?.data != null &&
-                  mforderbook.mflumpsumorderbook?.stat != "Not Ok")
+              
                 _buildOrderList(mforderbook, theme, context)
-              else
-                const Padding(
-                  padding: EdgeInsets.only(top: 300),
-                  child: Center(child: NoDataFound()),
-                ),
+               
             ],
           ),
         ),
       ),
     );
+    }
+
+   return Center(child: NoDataFound(
+                  title: "No Orders Found",
+                  subtitle: "There's nothing here yet. Buy some funds to see them here.",
+                  primaryEnabled: false,
+                  secondaryEnabled: false,
+                ));
   }
 
   Widget _buildOrderList(
       MFProvider mforderbook, ThemesProvider theme, BuildContext context) {
     return ListView.separated(
+      padding: EdgeInsets.zero,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       separatorBuilder: (_, __) => const ListDivider(),
@@ -223,7 +257,8 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
                 );
                 // Navigator.pushNamed(context, Routes.mforderdetscreen);
               } else {
-                showResponsiveWarningMessage(context,
+                warningMessage(
+                    context,
                     mforderbook.mforderdet?.emsg ??
                         'Error loading order details');
               }
@@ -248,7 +283,7 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
                         textOverflow: TextOverflow.ellipsis,
                         maxLines: 2,
                         theme: theme.isDarkMode,
-                        fw: 3),
+                        fw: 0),
                   ),
                 ),
                 subtitle: Row(
@@ -277,6 +312,7 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
                             : theme.isDarkMode
                                 ? colors.lossDark
                                 : colors.lossLight,
+                        fw: 0,
                       ),
                     ),
                     const SizedBox(width: 4),
@@ -289,7 +325,7 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
                             : colors.textSecondaryLight,
                         textOverflow: TextOverflow.ellipsis,
                         theme: theme.isDarkMode,
-                        fw: 3),
+                        fw: 0),
                     const SizedBox(width: 8),
 
                     TextWidget.paraText(
@@ -300,7 +336,7 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
                             : colors.textSecondaryLight,
                         textOverflow: TextOverflow.ellipsis,
                         theme: theme.isDarkMode,
-                        fw: 3),
+                        fw: 0),
                     // Text(
                     //   orderData.dateTime ?? "-",
                     //   style: textStyle(
@@ -359,7 +395,8 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
                                           inProgressStatuses
                                               .contains(orderData.status)
                                       ? colors.pending
-                                      : colors.pending),
+                                      : colors.pending,
+                                      fw: 0),
                     ),
                     // TextWidget.paraText(
                     //     // align: TextAlign.start,
@@ -381,7 +418,7 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
                             : colors.textSecondaryLight,
                         textOverflow: TextOverflow.ellipsis,
                         theme: theme.isDarkMode,
-                        fw: 3),
+                        fw: 0),
                   ],
                 )));
       },
@@ -410,48 +447,7 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
     return value.toStringAsFixed(2);
   }
 
-  Widget _buildTab(int tab, ThemesProvider theme) {
-    return ElevatedButton(
-      onPressed: () {
-        FocusScope.of(context).unfocus();
-        setState(() {
-          activeTab = tab;
-        });
-        _tabController.animateTo(tab);
-      },
-      style: ElevatedButton.styleFrom(
-        minimumSize: Size(MediaQuery.of(context).size.width * 0.5, 50),
-        overlayColor: Colors.transparent, // no splash
-        splashFactory: NoSplash.splashFactory,
-        elevation: 0,
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 0),
-        // backgroundColor: theme.isDarkMode
-        //     ? tab == activeTab
-        //         ? colors.colorBlack
-        //         : const Color.fromARGB(255, 0, 0, 0).withOpacity(.15)
-        //     : tab == activeTab
-        //         ? const Color.fromARGB(255, 255, 255, 255)
-        //         : const Color.fromARGB(255, 255, 255, 255),
 
-        backgroundColor:
-            theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-        shape: const StadiumBorder(),
-      ),
-      child: TextWidget.subText(
-          align: TextAlign.right,
-          text: tablistitems[tab]['title'].toString(),
-          color: theme.isDarkMode
-              ? tab == activeTab
-                  ? colors.secondaryDark
-                  : colors.textSecondaryDark
-              : tab == activeTab
-                  ? colors.secondaryLight
-                  : colors.textSecondaryLight,
-          textOverflow: TextOverflow.ellipsis,
-          theme: theme.isDarkMode,
-          fw: tab == activeTab ? 2 : 3),
-    );
-  }
 }
 
 
