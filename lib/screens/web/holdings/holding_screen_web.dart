@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:developer' as developer;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
@@ -22,16 +24,32 @@ import '../../../../models/order_book_model/order_book_model.dart';
 import '../../../../sharedWidget/snack_bar.dart';
 import '../../../../routes/route_names.dart';
 
-class HoldingScreenWeb extends ConsumerStatefulWidget {
+class HoldingScreenWeb extends ConsumerWidget {
   final List<dynamic> listofHolding;
   const HoldingScreenWeb({super.key, required this.listofHolding});
 
   @override
-  ConsumerState<HoldingScreenWeb> createState() => _HoldingScreenWebState();
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Only watch loading state
+    final isLoading = ref.watch(portfolioProvider.select((p) => p.holdloader));
+
+    if (isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    return _HoldingScreenContent(listofHolding: listofHolding);
+  }
 }
 
-class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
-  StreamSubscription? _socketSubscription;
+class _HoldingScreenContent extends ConsumerStatefulWidget {
+  final List<dynamic> listofHolding;
+  const _HoldingScreenContent({required this.listofHolding});
+
+  @override
+  ConsumerState<_HoldingScreenContent> createState() => _HoldingScreenContentState();
+}
+
+class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
   int _selectedTabIndex = 0; // 0 for Stocks, 1 for Mutual Funds
   String _searchQuery = '';
   String _mfSearchQuery = ''; // Search query for Mutual Funds tab
@@ -40,77 +58,43 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
   final ScrollController _horizontalScrollController = ScrollController();
   final ScrollController _verticalScrollController = ScrollController();
   final ScrollController _tabScrollController = ScrollController();
-  String? _hoveredRowToken; // Track which row is being hovered
-  int? _hoveredColumnIndex; // Track which column is being hovered
+
+  // ✅ Use ValueNotifier instead of setState to avoid rebuilding entire widget
+  final ValueNotifier<String?> _hoveredRowToken = ValueNotifier<String?>(null);
+  final ValueNotifier<int?> _hoveredColumnIndex = ValueNotifier<int?>(null);
 
   @override
   void initState() {
     super.initState();
-    _setupSocketSubscription();
+    // ✅ REMOVED: _setupSocketSubscription()
+    // Isolated cell widgets handle socket updates directly
+    // No need for parent widget to listen to socket at all
   }
 
   @override
   void dispose() {
-    _socketSubscription?.cancel();
     _horizontalScrollController.dispose();
     _verticalScrollController.dispose();
     _tabScrollController.dispose();
-
-    // Close WebSocket connection when screen is disposed
-    try {
-      ProviderScope.containerOf(context)
-          .read(websocketProvider)
-          .closeSocket(false);
-    } catch (e) {
-      // Context might not be available during disposal, ignore error
-      print('WebSocket close error during disposal: $e');
-    }
+    _hoveredRowToken.dispose();
+    _hoveredColumnIndex.dispose();
 
     super.dispose();
   }
 
-  void _setupSocketSubscription() {
-    Future.microtask(() {
-      final websocket = ref.read(websocketProvider);
-
-      _socketSubscription = websocket.socketDataStream.listen((socketDatas) {
-        bool needsUpdate = false;
-
-        for (var holding in widget.listofHolding) {
-          if (holding.exchTsym != null && holding.exchTsym!.isNotEmpty) {
-            final exchTsym = holding.exchTsym![0];
-            if (socketDatas.containsKey(exchTsym.token)) {
-              final socketData = socketDatas[exchTsym.token];
-              final lp = socketData['lp']?.toString();
-              if (lp != null && lp != "null" && lp != exchTsym.lp) {
-                exchTsym.lp = lp;
-                needsUpdate = true;
-              }
-
-              final pc = socketData['pc']?.toString();
-              if (pc != null && pc != "null" && pc != exchTsym.perChange) {
-                exchTsym.perChange = pc;
-                needsUpdate = true;
-              }
-            }
-          }
-        }
-
-        if (needsUpdate) {
-          if (mounted) setState(() {});
-        }
-      });
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    final portfolioData = ref.watch(portfolioProvider);
+    // ✅ CRITICAL FIX: Only watch holdloader to prevent unnecessary rebuilds
+    // Using select() ensures we only rebuild when loading state changes
+    final isLoading = ref.watch(portfolioProvider.select((p) => p.holdloader));
     final theme = ref.read(themeProvider);
 
-    if (portfolioData.holdloader) {
+    if (isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
+
+    // ✅ Access portfolioData without watching to avoid rebuilds
+    final portfolioData = ref.read(portfolioProvider);
 
     return SizedBox.expand(
       child: Container(
@@ -1185,26 +1169,31 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
         label: SizedBox.expand(
           child: MouseRegion(
             cursor: SystemMouseCursors.click,
-            onEnter: (_) => setState(() => _hoveredColumnIndex = columnIndex),
-            onExit: (_) => setState(() => _hoveredColumnIndex = null),
+            onEnter: (_) => _hoveredColumnIndex.value = columnIndex,
+            onExit: (_) => _hoveredColumnIndex.value = null,
             child: Tooltip(
               message: 'Sort by $header',
               child: GestureDetector(
                 onTap: () => _onManualSort(columnIndex),
                 behavior: HitTestBehavior.opaque,
-                child: Container(
-                  width: double.infinity,
-                  height: double.infinity,
-                  decoration: BoxDecoration(
-                    color: _hoveredColumnIndex == columnIndex
-                        ? (theme.isDarkMode
-                            ? WebDarkColors.primary.withOpacity(0.1)
-                            : WebColors.primary.withOpacity(0.05))
-                        : Colors.transparent,
-                  ),
-                  alignment: isNumeric ? Alignment.centerRight : Alignment.centerLeft,
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
-                  child: _buildSortableHeaderContent(header, isNumeric, theme, columnIndex),
+                child: ValueListenableBuilder<int?>(
+                  valueListenable: _hoveredColumnIndex,
+                  builder: (context, hoveredIndex, child) {
+                    return Container(
+                      width: double.infinity,
+                      height: double.infinity,
+                      decoration: BoxDecoration(
+                        color: hoveredIndex == columnIndex
+                            ? (theme.isDarkMode
+                                ? WebDarkColors.primary.withOpacity(0.1)
+                                : WebColors.primary.withOpacity(0.05))
+                            : Colors.transparent,
+                      ),
+                      alignment: isNumeric ? Alignment.centerRight : Alignment.centerLeft,
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
+                      child: _buildSortableHeaderContent(header, isNumeric, theme, columnIndex),
+                    );
+                  },
                 ),
               ),
             ),
@@ -1235,7 +1224,7 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
       return DataRow2(
         onTap: () => _showHoldingDetail(holding),
         color: MaterialStateProperty.resolveWith<Color>((states) {
-          if (states.contains(MaterialState.hovered) || _hoveredRowToken == uniqueId) {
+          if (states.contains(MaterialState.hovered) || _hoveredRowToken.value == uniqueId) {
             return theme.isDarkMode
                 ? WebDarkColors.primary.withOpacity(0.06)
                 : WebColors.primary.withOpacity(0.10);
@@ -1246,13 +1235,13 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
           final isNumeric = _isNumericColumn(header);
           return DataCell(
             MouseRegion(
-              onEnter: (_) => setState(() => _hoveredRowToken = uniqueId),
-              onExit: (_) => setState(() => _hoveredRowToken = null),
+              onEnter: (_) => _hoveredRowToken.value = uniqueId,
+              onExit: (_) => _hoveredRowToken.value = null,
               child: SizedBox.expand(
                 child: Container(
                   alignment: isNumeric ? Alignment.centerRight : Alignment.centerLeft,
                   padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
-                  child: _buildDataTable2CellContent(header, holding, theme, exchTsym, uniqueId),
+                  child: _buildStreamCellContent(header, holding, theme, exchTsym, uniqueId, token),
                 ),
               ),
             ),
@@ -1262,6 +1251,114 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
     }).toList();
   }
 
+  // Optimized cell content using isolated widgets for dynamic data
+  // Only the specific cell widgets rebuild, not the entire DataTable2
+  Widget _buildStreamCellContent(
+    String column,
+    dynamic holding,
+    ThemesProvider theme,
+    dynamic exchTsym,
+    String uniqueId,
+    String token,
+  ) {
+    // Static columns - render once, never rebuild
+    switch (column) {
+      case 'Instrument':
+        return _buildInstrumentCellContent(holding, theme, exchTsym, uniqueId);
+
+      case 'Net Qty':
+        final qty = holding.currentQty ?? 0;
+        final qtyText = qty > 0 ? '+$qty' : '$qty';
+        return Text(
+          qtyText,
+          style: WebTextStyles.custom(
+            fontSize: 13,
+            isDarkTheme: theme.isDarkMode,
+            color: _getQtyColor(qty, theme),
+            fontWeight: WebFonts.medium,
+          ),
+          textAlign: TextAlign.right,
+        );
+
+      case 'Avg Price':
+        final avgPrc = holding.avgPrc != null && holding.avgPrc!.isNotEmpty
+            ? holding.avgPrc!
+            : '0.00';
+        return Text(avgPrc, textAlign: TextAlign.right);
+
+      case 'Invested':
+        return Text(holding.invested ?? '0.00', textAlign: TextAlign.right);
+
+      // Dynamic columns - use isolated widgets that manage their own state
+      // Each widget only rebuilds itself, not the table
+      case 'LTP':
+        if (token.isEmpty) {
+          return Text(exchTsym?.lp ?? '0.00', textAlign: TextAlign.right);
+        }
+        return _LTPCell(
+          token: token,
+          initialLtp: exchTsym?.lp ?? '0.00',
+        );
+
+      case 'Current Value':
+        if (token.isEmpty) {
+          return Text(holding.currentValue ?? '0.00', textAlign: TextAlign.right);
+        }
+        return _CurrentValueCell(
+          token: token,
+          qty: holding.currentQty ?? 0,
+          initialValue: holding.currentValue ?? '0.00',
+        );
+
+      case 'Day P&L':
+        if (token.isEmpty) {
+          return _buildDataTable2CellContent(column, holding, theme, exchTsym, uniqueId);
+        }
+        return _DayPnLCell(
+          token: token,
+          initialValue: exchTsym?.oneDayChg ?? '0.00',
+          theme: theme,
+        );
+
+      case 'Day %':
+        if (token.isEmpty) {
+          return _buildDataTable2CellContent(column, holding, theme, exchTsym, uniqueId);
+        }
+        return _DayPercentCell(
+          token: token,
+          initialValue: exchTsym?.perChange ?? '0.00',
+          theme: theme,
+        );
+
+      case 'Overall P&L':
+        if (token.isEmpty) {
+          return _buildDataTable2CellContent(column, holding, theme, exchTsym, uniqueId);
+        }
+        return _OverallPnLCell(
+          token: token,
+          qty: holding.currentQty ?? 0,
+          avgPrice: double.tryParse(holding.avgPrc ?? '0') ?? 0.0,
+          initialValue: exchTsym?.profitNloss ?? '0.00',
+          theme: theme,
+        );
+
+      case 'Overall %':
+        if (token.isEmpty) {
+          return _buildDataTable2CellContent(column, holding, theme, exchTsym, uniqueId);
+        }
+        return _OverallPercentCell(
+          token: token,
+          avgPrice: double.tryParse(holding.avgPrc ?? '0') ?? 0.0,
+          initialValue: exchTsym?.pNlChng ?? '0.00',
+          theme: theme,
+        );
+
+      default:
+        return const SizedBox.shrink();
+    }
+  }
+
+  // Fallback method for cells without socket data
   Widget _buildDataTable2CellContent(
     String column,
     dynamic holding,
@@ -1360,12 +1457,17 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
     }
 
     final displayText = '${exchTsym.tsym ?? ''} ${exchTsym.exch ?? ''}';
-    final rowIsHovered = _hoveredRowToken == uniqueId;
-    
-    return Row(
-      children: [
-        Expanded(
-          flex: rowIsHovered ? 1 : 2,
+
+    // ✅ Use ValueListenableBuilder to avoid rebuilding entire table on hover
+    return ValueListenableBuilder<String?>(
+      valueListenable: _hoveredRowToken,
+      builder: (context, hoveredToken, child) {
+        final rowIsHovered = hoveredToken == uniqueId;
+
+        return Row(
+          children: [
+            Expanded(
+              flex: rowIsHovered ? 1 : 2,
           child: Tooltip(
             message: displayText,
             child: Text(
@@ -1447,6 +1549,8 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
           ),
         ),
       ],
+    );
+      },
     );
   }
 
@@ -1577,44 +1681,48 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
       );
 
     final holdingToken = exchTsym.token ?? '';
-    final isHovered = _hoveredRowToken == holdingToken;
     final displayText = '${exchTsym.tsym ?? ''} ${exchTsym.exch ?? ''}';
 
     return DataCell(
       MouseRegion(
-        onEnter: (_) => setState(() => _hoveredRowToken = holdingToken),
-        onExit: (_) => setState(() => _hoveredRowToken = null),
+        onEnter: (_) => _hoveredRowToken.value = holdingToken,
+        onExit: (_) => _hoveredRowToken.value = null,
         child: SizedBox.expand(
-          child: Row(
-            children: [
-              // Text that takes at least 50% of width, leaves space for buttons
-              Expanded(
-                flex: isHovered
-                    ? 1
-                    : 2, // When hovered, text takes less space but still visible
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Tooltip(
-                    message: displayText,
-                    child: Text(
-                      displayText,
-                      style: WebTextStyles.tableDataCompact(
-                        isDarkTheme: theme.isDarkMode,
-                        color: theme.isDarkMode
-                            ? WebDarkColors.textPrimary
-                            : WebColors.textPrimary,
+          child: ValueListenableBuilder<String?>(
+            valueListenable: _hoveredRowToken,
+            builder: (context, hoveredToken, child) {
+              final isHovered = hoveredToken == holdingToken;
+
+              return Row(
+                children: [
+                  // Text that takes at least 50% of width, leaves space for buttons
+                  Expanded(
+                    flex: isHovered
+                        ? 1
+                        : 2, // When hovered, text takes less space but still visible
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Tooltip(
+                        message: displayText,
+                        child: Text(
+                          displayText,
+                          style: WebTextStyles.tableDataCompact(
+                            isDarkTheme: theme.isDarkMode,
+                            color: theme.isDarkMode
+                                ? WebDarkColors.textPrimary
+                                : WebColors.textPrimary,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
                       ),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
                     ),
                   ),
-                ),
-              ),
-              // Buttons on the right side - fade in/out
-              IgnorePointer(
-                ignoring: !isHovered,
-                child: AnimatedOpacity(
-                  opacity: isHovered ? 1.0 : 0.0,
+                  // Buttons on the right side - fade in/out
+                  IgnorePointer(
+                    ignoring: !isHovered,
+                    child: AnimatedOpacity(
+                      opacity: isHovered ? 1.0 : 0.0,
                   duration: const Duration(milliseconds: 150),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -1678,6 +1786,8 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
                 ),
               ),
             ],
+          );
+            },
           ),
         ),
       ),
@@ -1690,8 +1800,8 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
     // Use SizedBox.expand to fill the entire cell area, not just the text content
     return DataCell(
       MouseRegion(
-        onEnter: (_) => setState(() => _hoveredRowToken = token),
-        onExit: (_) => setState(() => _hoveredRowToken = null),
+        onEnter: (_) => _hoveredRowToken.value = token,
+        onExit: (_) => _hoveredRowToken.value = null,
         child: SizedBox.expand(
           child: Align(
             alignment: Alignment.centerRight,
@@ -2488,8 +2598,386 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
     final ledgerdate = ref.read(ledgerProvider);
     if (ledgerdate.pledgeandunpledge == null) {
       await ledgerdate.getCurrentDate("pandu");
+      
       ledgerdate.fetchpledgeandunpledge(context);
     }
     Navigator.pushNamed(context, Routes.pledgeandun, arguments: "DDDDD");
+  }
+}
+
+// Isolated widget for LTP - only this rebuilds when LTP changes
+class _LTPCell extends ConsumerStatefulWidget {
+  final String token;
+  final String initialLtp;
+
+  const _LTPCell({required this.token, required this.initialLtp});
+
+  @override
+  ConsumerState<_LTPCell> createState() => _LTPCellState();
+}
+
+class _LTPCellState extends ConsumerState<_LTPCell> {
+  late String ltp;
+  StreamSubscription? _subscription;
+
+  @override
+  void initState() {
+    super.initState();
+    ltp = widget.initialLtp;
+
+    _subscription = ref.read(websocketProvider).socketDataStream.listen((data) {
+      if (!mounted || !data.containsKey(widget.token)) return;
+
+      final newLtp = data[widget.token]['lp']?.toString();
+      if (newLtp != null && newLtp != ltp && newLtp != '0.00' && newLtp != 'null') {
+        setState(() => ltp = newLtp);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(ltp, textAlign: TextAlign.right);
+  }
+}
+
+// Isolated widget for Current Value
+class _CurrentValueCell extends ConsumerStatefulWidget {
+  final String token;
+  final int qty;
+  final String initialValue;
+
+  const _CurrentValueCell({
+    required this.token,
+    required this.qty,
+    required this.initialValue,
+  });
+
+  @override
+  ConsumerState<_CurrentValueCell> createState() => _CurrentValueCellState();
+}
+
+class _CurrentValueCellState extends ConsumerState<_CurrentValueCell> {
+  late String currentValue;
+  StreamSubscription? _subscription;
+
+  @override
+  void initState() {
+    super.initState();
+    currentValue = widget.initialValue;
+
+    _subscription = ref.read(websocketProvider).socketDataStream.listen((data) {
+      if (!mounted || !data.containsKey(widget.token)) return;
+
+      final newLtp = data[widget.token]['lp']?.toString();
+      if (newLtp != null && newLtp != '0.00' && newLtp != 'null') {
+        final ltp = double.tryParse(newLtp) ?? 0.0;
+        final newValue = (ltp * widget.qty).toStringAsFixed(2);
+        if (newValue != currentValue) {
+          setState(() => currentValue = newValue);
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(currentValue, textAlign: TextAlign.right);
+  }
+}
+
+// Isolated widget for Day P&L
+class _DayPnLCell extends ConsumerStatefulWidget {
+  final String token;
+  final String initialValue;
+  final ThemesProvider theme;
+
+  const _DayPnLCell({
+    required this.token,
+    required this.initialValue,
+    required this.theme,
+  });
+
+  @override
+  ConsumerState<_DayPnLCell> createState() => _DayPnLCellState();
+}
+
+class _DayPnLCellState extends ConsumerState<_DayPnLCell> {
+  late String dayPnL;
+  StreamSubscription? _subscription;
+
+  @override
+  void initState() {
+    super.initState();
+    dayPnL = widget.initialValue;
+
+    _subscription = ref.read(websocketProvider).socketDataStream.listen((data) {
+      if (!mounted || !data.containsKey(widget.token)) return;
+
+      final newValue = data[widget.token]['chng']?.toString();
+      if (newValue != null && newValue != dayPnL && newValue != 'null') {
+        setState(() => dayPnL = newValue);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
+  }
+
+  Color _getValueColor(String value, ThemesProvider theme) {
+    final numValue = double.tryParse(value) ?? 0.0;
+    if (numValue > 0) {
+      return theme.isDarkMode ? WebDarkColors.success : WebColors.success;
+    } else if (numValue < 0) {
+      return theme.isDarkMode ? WebDarkColors.error : WebColors.error;
+    } else {
+      return theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      dayPnL,
+      style: WebTextStyles.custom(
+        fontSize: 13,
+        isDarkTheme: widget.theme.isDarkMode,
+        color: _getValueColor(dayPnL, widget.theme),
+        fontWeight: WebFonts.medium,
+      ),
+      textAlign: TextAlign.right,
+    );
+  }
+}
+
+// Isolated widget for Day %
+class _DayPercentCell extends ConsumerStatefulWidget {
+  final String token;
+  final String initialValue;
+  final ThemesProvider theme;
+
+  const _DayPercentCell({
+    required this.token,
+    required this.initialValue,
+    required this.theme,
+  });
+
+  @override
+  ConsumerState<_DayPercentCell> createState() => _DayPercentCellState();
+}
+
+class _DayPercentCellState extends ConsumerState<_DayPercentCell> {
+  late String dayPercent;
+  StreamSubscription? _subscription;
+
+  @override
+  void initState() {
+    super.initState();
+    dayPercent = widget.initialValue;
+
+    _subscription = ref.read(websocketProvider).socketDataStream.listen((data) {
+      if (!mounted || !data.containsKey(widget.token)) return;
+
+      final newValue = data[widget.token]['pc']?.toString();
+      if (newValue != null && newValue != dayPercent && newValue != 'null') {
+        setState(() => dayPercent = newValue);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
+  }
+
+  Color _getValueColor(String value, ThemesProvider theme) {
+    final numValue = double.tryParse(value) ?? 0.0;
+    if (numValue > 0) {
+      return theme.isDarkMode ? WebDarkColors.success : WebColors.success;
+    } else if (numValue < 0) {
+      return theme.isDarkMode ? WebDarkColors.error : WebColors.error;
+    } else {
+      return theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      '$dayPercent%',
+      style: WebTextStyles.custom(
+        fontSize: 13,
+        isDarkTheme: widget.theme.isDarkMode,
+        color: _getValueColor(dayPercent, widget.theme),
+        fontWeight: WebFonts.medium,
+      ),
+      textAlign: TextAlign.right,
+    );
+  }
+}
+
+// Isolated widget for Overall P&L
+class _OverallPnLCell extends ConsumerStatefulWidget {
+  final String token;
+  final int qty;
+  final double avgPrice;
+  final String initialValue;
+  final ThemesProvider theme;
+
+  const _OverallPnLCell({
+    required this.token,
+    required this.qty,
+    required this.avgPrice,
+    required this.initialValue,
+    required this.theme,
+  });
+
+  @override
+  ConsumerState<_OverallPnLCell> createState() => _OverallPnLCellState();
+}
+
+class _OverallPnLCellState extends ConsumerState<_OverallPnLCell> {
+  late String overallPnL;
+  StreamSubscription? _subscription;
+
+  @override
+  void initState() {
+    super.initState();
+    overallPnL = widget.initialValue;
+
+    _subscription = ref.read(websocketProvider).socketDataStream.listen((data) {
+      if (!mounted || !data.containsKey(widget.token)) return;
+
+      final newLtp = data[widget.token]['lp']?.toString();
+      if (newLtp != null && newLtp != '0.00' && newLtp != 'null') {
+        final ltp = double.tryParse(newLtp) ?? 0.0;
+        final newPnL = ((ltp - widget.avgPrice) * widget.qty).toStringAsFixed(2);
+        if (newPnL != overallPnL) {
+          setState(() => overallPnL = newPnL);
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
+  }
+
+  Color _getValueColor(String value, ThemesProvider theme) {
+    final numValue = double.tryParse(value) ?? 0.0;
+    if (numValue > 0) {
+      return theme.isDarkMode ? WebDarkColors.success : WebColors.success;
+    } else if (numValue < 0) {
+      return theme.isDarkMode ? WebDarkColors.error : WebColors.error;
+    } else {
+      return theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      overallPnL,
+      style: WebTextStyles.custom(
+        fontSize: 13,
+        isDarkTheme: widget.theme.isDarkMode,
+        color: _getValueColor(overallPnL, widget.theme),
+        fontWeight: WebFonts.medium,
+      ),
+      textAlign: TextAlign.right,
+    );
+  }
+}
+
+// Isolated widget for Overall %
+class _OverallPercentCell extends ConsumerStatefulWidget {
+  final String token;
+  final double avgPrice;
+  final String initialValue;
+  final ThemesProvider theme;
+
+  const _OverallPercentCell({
+    required this.token,
+    required this.avgPrice,
+    required this.initialValue,
+    required this.theme,
+  });
+
+  @override
+  ConsumerState<_OverallPercentCell> createState() => _OverallPercentCellState();
+}
+
+class _OverallPercentCellState extends ConsumerState<_OverallPercentCell> {
+  late String overallPercent;
+  StreamSubscription? _subscription;
+
+  @override
+  void initState() {
+    super.initState();
+    overallPercent = widget.initialValue;
+
+    _subscription = ref.read(websocketProvider).socketDataStream.listen((data) {
+      if (!mounted || !data.containsKey(widget.token)) return;
+
+      final newLtp = data[widget.token]['lp']?.toString();
+      if (newLtp != null && newLtp != '0.00' && newLtp != 'null') {
+        final ltp = double.tryParse(newLtp) ?? 0.0;
+        final newPercent = widget.avgPrice > 0
+            ? (((ltp - widget.avgPrice) / widget.avgPrice) * 100).toStringAsFixed(2)
+            : '0.00';
+        if (newPercent != overallPercent) {
+          setState(() => overallPercent = newPercent);
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
+  }
+
+  Color _getValueColor(String value, ThemesProvider theme) {
+    final numValue = double.tryParse(value) ?? 0.0;
+    if (numValue > 0) {
+      return theme.isDarkMode ? WebDarkColors.success : WebColors.success;
+    } else if (numValue < 0) {
+      return theme.isDarkMode ? WebDarkColors.error : WebColors.error;
+    } else {
+      return theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      '$overallPercent%',
+      style: WebTextStyles.custom(
+        fontSize: 13,
+        isDarkTheme: widget.theme.isDarkMode,
+        color: _getValueColor(overallPercent, widget.theme),
+        fontWeight: WebFonts.medium,
+      ),
+      textAlign: TextAlign.right,
+    );
   }
 }

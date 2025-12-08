@@ -7,6 +7,8 @@ import 'websocket_provider.dart';
 import 'market_watch_provider.dart';
 import 'portfolio_provider.dart';
 import 'order_provider.dart';
+import 'index_list_provider.dart';
+import 'stocks_provider.dart';
 import '../locator/constant.dart';
 import '../locator/locator.dart';
 import '../locator/preference.dart';
@@ -69,7 +71,7 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
       ScreenType.watchlist: SubscriptionType.marketWatch,
       ScreenType.holdings: SubscriptionType.holdings,
       ScreenType.positions: SubscriptionType.positions,
-      ScreenType.orderBook: SubscriptionType.orderBook,
+      ScreenType.orderBook: SubscriptionType.none, // Order book handles its own tab-specific subscriptions
       ScreenType.funds: SubscriptionType.none,
       ScreenType.mutualFund: SubscriptionType.none,
       ScreenType.ipo: SubscriptionType.none,
@@ -92,6 +94,9 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
       return; // No change
     }
     
+    print('\n🔄 [WebSubscriptionManager] Panel $panelIndex screen change:');
+    print('   From: ${previousScreen ?? "none"}');
+    print('   To: ${screenType ?? "none"}');
     log('WebSubscriptionManager: Panel $panelIndex screen changed from $previousScreen to $screenType');
     
     // Unsubscribe from previous screen if it exists
@@ -129,13 +134,40 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
       return; // Screen doesn't need subscriptions
     }
 
+    print('═══════════════════════════════════════════════════════════');
+    print('📱 [WebSubscriptionManager] SUBSCRIBING to screen: $screenType');
+    print('   Subscription Type: $subscriptionType');
+    print('═══════════════════════════════════════════════════════════');
     log('WebSubscriptionManager: Subscribing to $screenType (type: $subscriptionType)');
 
     try {
+      // For dashboard, ensure top indices are fetched first
+      if (screenType == ScreenType.dashboard) {
+        final indexProvider = ref.read(indexListProvider);
+        // Ensure top indices are available
+        if (indexProvider.topIndicesForDashboard == null) {
+          await indexProvider.getTopIndicesForDashboard(context);
+        }
+      }
+      
+      // For trade action, ensure trade action data is fetched first
+      if (screenType == ScreenType.tradeAction) {
+        final stocksProvider = ref.read(stocksProvide);
+        // Ensure trade action data is available
+        if (stocksProvider.topGainers.isEmpty && stocksProvider.topLosers.isEmpty) {
+          await stocksProvider.fetchTradeAction("NSE", "NSEALL", "topG_L", "topG_L");
+          await stocksProvider.fetchTradeAction("NSE", "NSEALL", "mostActive", "mostActive");
+        }
+      }
+      
+      // Note: Order book handles its own tab-specific subscriptions via changeTabIndex
+      // No need to fetch data here as it's handled in _handleOrderBookTap
+
       // Get symbols that need subscription for this screen
       Set<String> symbolsToSubscribe = _getSymbolsForScreen(screenType, subscriptionType);
 
       if (symbolsToSubscribe.isEmpty) {
+        print('⚠️  [WebSubscriptionManager] No symbols to subscribe for $screenType');
         log('WebSubscriptionManager: No symbols to subscribe for $screenType');
         return;
       }
@@ -146,10 +178,34 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
       ).toSet();
 
       if (newSymbols.isEmpty) {
+        print('ℹ️  [WebSubscriptionManager] All symbols for $screenType already subscribed');
+        print('   Total symbols needed: ${symbolsToSubscribe.length}');
+        print('   Already subscribed: ${symbolsToSubscribe.length}');
+        print('   Total tracked symbols in WebSubscriptionManager: ${_currentWebSocketSubscriptions.length}');
+        if (symbolsToSubscribe.length <= 10) {
+          print('   Symbols: ${symbolsToSubscribe.join(", ")}');
+        } else {
+          print('   First 10 symbols: ${symbolsToSubscribe.take(10).join(", ")}...');
+        }
+        print('   ℹ️  Reason: These symbols were previously subscribed by WebSubscriptionManager');
+        print('   ✅ Tracking these symbols for $screenType cleanup');
+        print('═══════════════════════════════════════════════════════════\n');
+        // Still track these symbols for this screen even if already subscribed
+        // This ensures proper cleanup when screen is removed
+        _screenSubscriptions[screenType] = symbolsToSubscribe;
         log('WebSubscriptionManager: All symbols for $screenType already subscribed');
         return;
       }
 
+      print('✅ [WebSubscriptionManager] Subscribing to ${newSymbols.length} symbols for $screenType');
+      print('   Total symbols needed: ${symbolsToSubscribe.length}');
+      print('   New symbols: ${newSymbols.length}');
+      print('   Already subscribed: ${symbolsToSubscribe.length - newSymbols.length}');
+      if (newSymbols.length <= 10) {
+        print('   Symbols: ${newSymbols.join(", ")}');
+      } else {
+        print('   First 10 symbols: ${newSymbols.take(10).join(", ")}...');
+      }
       log('WebSubscriptionManager: Subscribing to ${newSymbols.length} new symbols for $screenType');
 
       // Subscribe via websocket provider (which handles the subscription manager integration)
@@ -165,11 +221,18 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
 
       // Track these symbols as subscribed
       _currentWebSocketSubscriptions.addAll(newSymbols);
+      print('📝 [WebSubscriptionManager] Added ${newSymbols.length} symbols to tracking set');
+      print('   Total tracked symbols now: ${_currentWebSocketSubscriptions.length}');
 
       // Store symbols per screen type for cleanup later
       _screenSubscriptions[screenType] = symbolsToSubscribe;
 
+      print('✅ [WebSubscriptionManager] Successfully subscribed to $screenType');
+      print('═══════════════════════════════════════════════════════════\n');
+
     } catch (e) {
+      print('❌ [WebSubscriptionManager] ERROR subscribing to $screenType: $e');
+      print('═══════════════════════════════════════════════════════════\n');
       log('WebSubscriptionManager: Error subscribing to $screenType: $e');
     }
   }
@@ -181,12 +244,71 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
     try {
       switch (subscriptionType) {
         case SubscriptionType.marketWatch:
-          // Get symbols from market watch provider
-          final mwProvider = ref.read(marketWatchProvider);
-          final watchlistScrips = mwProvider.marketWatchScrip?.values ?? [];
-          for (var scrip in watchlistScrips) {
-            if (scrip.exch != null && scrip.token != null) {
-              symbols.add('${scrip.exch}|${scrip.token}');
+          if (screenType == ScreenType.dashboard) {
+            // Dashboard needs top indices and default indices, not watchlist
+            final indexProvider = ref.read(indexListProvider);
+            
+            // Get top indices tokens (8 specific indices for dashboard)
+            indexProvider.requestTopIndicesToken();
+            final topIndicesToken = indexProvider.topIndicesToken;
+            if (topIndicesToken.isNotEmpty) {
+              // Parse tokens from string format "exch|token#exch|token#..."
+              final tokens = topIndicesToken.split('#').where((t) => t.isNotEmpty && t.trim().isNotEmpty);
+              symbols.addAll(tokens);
+            }
+            
+            // Get default indices tokens (Nifty, Sensex, etc.)
+            indexProvider.requestdefaultIndex();
+            final defaultTokens = indexProvider.indexToken;
+            if (defaultTokens.isNotEmpty) {
+              // Parse tokens from string format "exch|token#exch|token#..."
+              final tokens = defaultTokens.split('#').where((t) => t.isNotEmpty && t.trim().isNotEmpty);
+              symbols.addAll(tokens);
+            }
+          } else if (screenType == ScreenType.tradeAction) {
+            // Trade action needs all trade action stocks (all tabs combined)
+            final stocksProvider = ref.read(stocksProvide);
+            
+            // Get all trade action stocks from all tabs
+            final allTradeActionStocks = <String>{};
+            
+            // Top gainers
+            for (var stock in stocksProvider.topGainers) {
+              if (stock.exch != null && stock.token != null) {
+                allTradeActionStocks.add('${stock.exch}|${stock.token}');
+              }
+            }
+            
+            // Top losers
+            for (var stock in stocksProvider.topLosers) {
+              if (stock.exch != null && stock.token != null) {
+                allTradeActionStocks.add('${stock.exch}|${stock.token}');
+              }
+            }
+            
+            // Volume breakout
+            for (var stock in stocksProvider.byVolume) {
+              if (stock.exch != null && stock.token != null) {
+                allTradeActionStocks.add('${stock.exch}|${stock.token}');
+              }
+            }
+            
+            // Most active
+            for (var stock in stocksProvider.byValue) {
+              if (stock.exch != null && stock.token != null) {
+                allTradeActionStocks.add('${stock.exch}|${stock.token}');
+              }
+            }
+            
+            symbols.addAll(allTradeActionStocks);
+          } else {
+            // For watchlist and other marketWatch screens, use watchlist scrips
+            final mwProvider = ref.read(marketWatchProvider);
+            final watchlistScrips = mwProvider.marketWatchScrip?.values ?? [];
+            for (var scrip in watchlistScrips) {
+              if (scrip.exch != null && scrip.token != null) {
+                symbols.add('${scrip.exch}|${scrip.token}');
+              }
             }
           }
           break;
@@ -218,14 +340,8 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
           break;
 
         case SubscriptionType.orderBook:
-          // Get symbols from order book
-          final orders = ref.read(orderProvider);
-          final orderList = orders.orderBookModel ?? [];
-          for (var order in orderList) {
-            if (order.exch != null && order.token != null) {
-              symbols.add('${order.exch}|${order.token}');
-            }
-          }
+          // Order book handles its own tab-specific subscriptions via changeTabIndex
+          // Return empty set as WebSubscriptionManager doesn't manage order book subscriptions
           break;
 
         case SubscriptionType.none:
@@ -252,9 +368,16 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
       return; // Screen doesn't have subscriptions
     }
 
+    print('═══════════════════════════════════════════════════════════');
+    print('📱 [WebSubscriptionManager] UNSUBSCRIBING from screen: $screenType');
+    print('   Subscription Type: $subscriptionType');
+    print('═══════════════════════════════════════════════════════════');
+
     // Get symbols that were subscribed for this screen
     final screenSymbols = _screenSubscriptions[screenType];
     if (screenSymbols == null || screenSymbols.isEmpty) {
+      print('⚠️  [WebSubscriptionManager] No symbols tracked for $screenType, skipping unsubscribe');
+      print('═══════════════════════════════════════════════════════════\n');
       log('WebSubscriptionManager: No symbols tracked for $screenType, skipping unsubscribe');
       return;
     }
@@ -277,10 +400,23 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
     ).toSet();
 
     if (symbolsToUnsubscribe.isEmpty) {
+      print('ℹ️  [WebSubscriptionManager] All symbols for $screenType still needed by other screens');
+      print('   Total symbols: ${screenSymbols.length}');
+      print('   Still needed by: ${_activeScreens.values.where((s) => s != null && s != screenType).join(", ")}');
+      print('═══════════════════════════════════════════════════════════\n');
       log('WebSubscriptionManager: All symbols for $screenType still needed by other screens');
       return;
     }
 
+    print('✅ [WebSubscriptionManager] Unsubscribing from ${symbolsToUnsubscribe.length} symbols for $screenType');
+    print('   Total symbols for screen: ${screenSymbols.length}');
+    print('   Symbols to unsubscribe: ${symbolsToUnsubscribe.length}');
+    print('   Symbols still needed: ${screenSymbols.length - symbolsToUnsubscribe.length}');
+    if (symbolsToUnsubscribe.length <= 10) {
+      print('   Symbols: ${symbolsToUnsubscribe.join(", ")}');
+    } else {
+      print('   First 10 symbols: ${symbolsToUnsubscribe.take(10).join(", ")}...');
+    }
     log('WebSubscriptionManager: Unsubscribing from ${symbolsToUnsubscribe.length} symbols for $screenType');
 
     try {
@@ -297,12 +433,18 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
 
       // Remove these symbols from our tracking
       _currentWebSocketSubscriptions.removeAll(symbolsToUnsubscribe);
+      print('📝 [WebSubscriptionManager] Removed ${symbolsToUnsubscribe.length} symbols from tracking set');
+      print('   Total tracked symbols now: ${_currentWebSocketSubscriptions.length}');
 
       // Clear the screen's subscription record
       _screenSubscriptions.remove(screenType);
 
+      print('✅ [WebSubscriptionManager] Successfully unsubscribed from $screenType');
+      print('═══════════════════════════════════════════════════════════\n');
       log('WebSubscriptionManager: Successfully unsubscribed from $screenType');
     } catch (e) {
+      print('❌ [WebSubscriptionManager] ERROR unsubscribing from $screenType: $e');
+      print('═══════════════════════════════════════════════════════════\n');
       log('WebSubscriptionManager: Error unsubscribing from $screenType: $e');
     }
   }

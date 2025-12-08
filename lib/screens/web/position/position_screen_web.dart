@@ -50,20 +50,14 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
 
   @override
   void dispose() {
+    // Note: WebSubscriptionManager handles unsubscription automatically
+    // when screen is replaced or removed via updateActiveScreen()
+    // No need to unsubscribe here to avoid double calls
+    
     _socketSubscription?.cancel();
     _horizontalScrollController.dispose();
     _verticalScrollController.dispose();
     _tabScrollController.dispose();
-
-    // Close WebSocket connection when screen is disposed
-    try {
-      ProviderScope.containerOf(context)
-          .read(websocketProvider)
-          .closeSocket(false);
-    } catch (e) {
-      // Context might not be available during disposal, ignore error
-      print('WebSocket close error during disposal: $e');
-    }
 
     super.dispose();
   }

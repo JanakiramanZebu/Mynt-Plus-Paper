@@ -57,8 +57,8 @@ class _TradeActionScreenWebState extends ConsumerState<TradeActionScreenWeb>
     _tabController.addListener(() {
       if (mounted) {
         setState(() {});
-        // Subscribe to WebSocket for current tab stocks
-        _subscribeToCurrentTabStocks();
+        // Note: WebSocket subscription is handled by WebSubscriptionManager
+        // No need to subscribe/unsubscribe on tab change since all trade action stocks are subscribed
       }
     });
     
@@ -73,14 +73,16 @@ class _TradeActionScreenWebState extends ConsumerState<TradeActionScreenWeb>
         }
         
         final stocksProvider = ref.read(stocksProvide);
-        // Fetch all trade action data
-        await stocksProvider.fetchTradeAction("NSE", "NSEALL", "topG_L", "topG_L");
-        await stocksProvider.fetchTradeAction("NSE", "NSEALL", "mostActive", "mostActive");
+        // Fetch all trade action data (WebSubscriptionManager will subscribe after data is fetched)
+        // Only fetch if data is empty (handler function will fetch with cooldown)
+        if (stocksProvider.topGainers.isEmpty && stocksProvider.topLosers.isEmpty) {
+          await stocksProvider.fetchTradeAction("NSE", "NSEALL", "topG_L", "topG_L");
+          await stocksProvider.fetchTradeAction("NSE", "NSEALL", "mostActive", "mostActive");
+        }
         
-        // Setup WebSocket subscription
+        // Setup WebSocket listener for receiving data updates
+        // Note: Subscription is handled by WebSubscriptionManager
         _setupSocketSubscription();
-        // Subscribe to current tab stocks
-        _subscribeToCurrentTabStocks();
       }
     });
   }
@@ -95,26 +97,6 @@ class _TradeActionScreenWebState extends ConsumerState<TradeActionScreenWeb>
         widget.initialTabIndex! < _tabs.length &&
         _tabController.index != widget.initialTabIndex!) {
       _tabController.animateTo(widget.initialTabIndex!);
-    }
-  }
-  
-  void _subscribeToCurrentTabStocks() {
-    final stocks = _getCurrentStocks();
-    if (stocks.isEmpty) return;
-    
-    final websocket = ref.read(websocketProvider);
-    final tokens = stocks
-        .where((s) => s.token != null && s.exch != null)
-        .map((s) => "${s.exch}|${s.token}")
-        .toList();
-    
-    if (tokens.isNotEmpty && mounted) {
-      final channelInput = tokens.join("#");
-      websocket.establishConnection(
-        channelInput: channelInput,
-        task: "t",
-        context: context,
-      );
     }
   }
   

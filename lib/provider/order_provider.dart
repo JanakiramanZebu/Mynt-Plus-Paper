@@ -317,7 +317,7 @@ class OrderProvider extends DefaultChangeNotifier {
         // _tgttOrderBookModel = [];
       }
     }
-    print("qwqwqw prov alert btm $mode");
+    // print("qwqwqw prov alert btm $mode");
   }
 
   changeTabIndex(int index, BuildContext context) {
@@ -327,6 +327,8 @@ class OrderProvider extends DefaultChangeNotifier {
     // Unfocus any active text fields when switching tabs
     FocusScope.of(context).unfocus();
 
+    // Store previous tab for unsubscription
+    final previousTab = _selectedTab;
     _selectedTab = index;
 
     // Animate the TabController to the new index
@@ -355,18 +357,62 @@ class OrderProvider extends DefaultChangeNotifier {
       orderSearch(orderSearchCtrl.text, context);
     }
     
-    // Only subscribe to WebSocket for tabs that need it (0-3)
+    // Lazy load data for tabs that haven't been loaded yet
+    // Tab 2: Trade Book
+    if (index == 2 && (_tradeBook == null || _tradeBook!.isEmpty)) {
+      debugPrint("📥 [Order Book] Lazy loading Trade Book data");
+      fetchTradeBook(context);
+    }
+    // Tab 3: GTT Orders - data is loaded with order book, no lazy load needed
+    // Tab 4 (web: 5): SIP Orders
+    else if ((kIsWeb ? index == 5 : index == 4) && _siporderBookModel == null) {
+      debugPrint("📥 [Order Book] Lazy loading SIP Orders data");
+      fetchSipOrderHistory(context);
+    }
+
+    // Handle WebSocket subscription/unsubscription for order book tabs (0-3)
+    // Unsubscribe from previous tab if it was a subscription tab (0-3)
+    if (previousTab <= 3) {
+      debugPrint("📤 [Order Book] Unsubscribing from Tab $previousTab");
+      _unsubscribeFromTab(previousTab, context);
+    }
+
+    // Subscribe to new tab if it's a subscription tab (0-3)
     if (index <= 3) {
+      debugPrint("📥 [Order Book] Subscribing to Tab $index");
       requestWSOrderBook(isSubscribe: true, context: context);
     }
 
     // Only fetch basket data when switching to basket tab
     if (kIsWeb ? index == 5 : index == 4) {
-      print("=== TAB SWITCH TO BASKET ===");
-      print("Calling getBasketName()...");
+      debugPrint("=== TAB SWITCH TO BASKET ===");
+      debugPrint("Calling getBasketName()...");
       getBasketName();
-      print("getBasketName() call initiated");
-      print("============================");
+      debugPrint("getBasketName() call initiated");
+      debugPrint("============================");
+    }
+  }
+  
+  // Helper method to unsubscribe from a specific tab
+  void _unsubscribeFromTab(int tabIndex, BuildContext context) {
+    // Temporarily set selectedTab to unsubscribe from the correct tab
+    final originalTab = _selectedTab;
+    _selectedTab = tabIndex;
+
+    debugPrint("📤 [Order Book] Unsubscribing from Tab $tabIndex symbols");
+
+    // Unsubscribe from this tab's symbols
+    requestWSOrderBook(isSubscribe: false, context: context);
+
+    // Restore original tab
+    _selectedTab = originalTab;
+  }
+
+  // Method to unsubscribe from current active tab (called when leaving order book screen)
+  void unsubscribeFromCurrentTab(BuildContext context) {
+    if (_selectedTab <= 3) {
+      debugPrint("📤 [Order Book] Unsubscribing from current tab ($_selectedTab) - leaving order book screen");
+      requestWSOrderBook(isSubscribe: false, context: context);
     }
   }
 
@@ -1137,7 +1183,8 @@ class OrderProvider extends DefaultChangeNotifier {
               element.option = "${spilitSymbol["option"]}";
             }
             if (element.stat == "Ok") {
-              debugPrint("Order ${element.norenordno}: Status=${element.status}, Stat=${element.stat}");
+              // Commented out to prevent console spam
+              // debugPrint("Order ${element.norenordno}: Status=${element.status}, Stat=${element.stat}");
               if (element.status == "REJECTED" ||
                   element.status == "CANCELED" ||
                   element.status == "COMPLETE" ||
@@ -1522,85 +1569,115 @@ class OrderProvider extends DefaultChangeNotifier {
     try {
       toggleLoadingOn(true);
       String input = "";
+      List<String> symbolList = [];
+      String tabName = "";
       
-      // Only include open orders if Open Orders tab (index 0) or Executed Orders tab (index 1) is active
-      if (_orderBookModel != null && (_selectedTab == 0 || _selectedTab == 1)) {
-        if (_orderBookModel!.isNotEmpty &&
-            _orderBookModel![0].stat != "Not_Ok") {
-          input = _orderBookModel!
-              .map((e) => "${e.exch}|${e.token}")
-              .toSet()
-              .join("#");
-          print("Regular orders input: $input (Active tab: $_selectedTab)");
-        }
-      }
-      
-      // Only include executed orders if Executed Orders tab (index 1) is active
-      if (_executedOrder != null && _selectedTab == 1 && _executedOrder!.isNotEmpty) {
-        final executedTokens = _executedOrder!
-            .where((e) => e.token != null && e.token!.isNotEmpty)
-            .map((e) => "${e.exch}|${e.token}")
-            .toSet()
-            .join("#");
-        if (executedTokens.isNotEmpty) {
-          if (input.isNotEmpty) {
-            input += "#$executedTokens";
-          } else {
-            input = executedTokens;
+      // Determine tab name and collect symbols based on active tab
+      switch (_selectedTab) {
+        case 0:
+          tabName = "Open Orders";
+          // Only include open orders for Tab 0
+          if (_orderBookModel != null && _orderBookModel!.isNotEmpty &&
+              _orderBookModel![0].stat != "Not_Ok") {
+            final openTokens = _orderBookModel!
+                .where((e) => e.token != null && e.token!.isNotEmpty)
+                .map((e) => "${e.exch}|${e.token}")
+                .toSet()
+                .toList();
+            symbolList.addAll(openTokens);
+            input = openTokens.join("#");
           }
-          print("Executed orders input: $executedTokens");
-        }
+          break;
+          
+        case 1:
+          tabName = "Executed Orders";
+          // Include both open and executed orders for Tab 1
+          if (_orderBookModel != null && _orderBookModel!.isNotEmpty &&
+              _orderBookModel![0].stat != "Not_Ok") {
+            final openTokens = _orderBookModel!
+                .where((e) => e.token != null && e.token!.isNotEmpty)
+                .map((e) => "${e.exch}|${e.token}")
+                .toSet()
+                .toList();
+            symbolList.addAll(openTokens);
+            input = openTokens.join("#");
+          }
+          if (_executedOrder != null && _executedOrder!.isNotEmpty) {
+            final executedTokens = _executedOrder!
+                .where((e) => e.token != null && e.token!.isNotEmpty)
+                .map((e) => "${e.exch}|${e.token}")
+                .toSet()
+                .toList();
+            if (executedTokens.isNotEmpty) {
+              symbolList.addAll(executedTokens);
+              if (input.isNotEmpty) {
+                input += "#${executedTokens.join("#")}";
+              } else {
+                input = executedTokens.join("#");
+              }
+            }
+          }
+          break;
+          
+        case 2:
+          tabName = "Trade Book";
+          // Include trade book symbols for Tab 2
+          if (_tradeBook != null && _tradeBook!.isNotEmpty) {
+            final tradeTokens = _tradeBook!
+                .where((e) => e.token != null && e.token!.isNotEmpty)
+                .map((e) => "${e.exch}|${e.token}")
+                .toSet()
+                .toList();
+            symbolList.addAll(tradeTokens);
+            input = tradeTokens.join("#");
+          }
+          break;
+          
+        case 3:
+          tabName = "GTT Orders";
+          // Include GTT orders for Tab 3
+          if (_gttOrderBookModel!.isNotEmpty) {
+            final gttTokens = _gttOrderBookModel!
+                .where((e) => e.token != null && e.token!.isNotEmpty)
+                .map((e) => "${e.exch}|${e.token}")
+                .toSet()
+                .toList();
+            symbolList.addAll(gttTokens);
+            input = gttTokens.join("#");
+          }
+          break;
+          
+        default:
+          tabName = "Unknown Tab ($_selectedTab)";
+          break;
       }
       
-      // Only include trade book if Trade Book tab (index 2) is active
-      if (_tradeBook != null && _selectedTab == 2 && _tradeBook!.isNotEmpty) {
-        final tradeTokens = _tradeBook!
-            .where((e) => e.token != null && e.token!.isNotEmpty)
-            .map((e) => "${e.exch}|${e.token}")
-            .toSet()
-            .join("#");
-        if (tradeTokens.isNotEmpty) {
-          if (input.isNotEmpty) {
-            input += "#$tradeTokens";
-          } else {
-            input = tradeTokens;
-          }
-          print("Trade book input: $tradeTokens");
-        }
-      }
-
-      // Only include GTT orders if GTT tab (index 3) is active
-      if (_gttOrderBookModel!.isNotEmpty && _selectedTab == 3) {
-        // Debug: Print GTT order tokens before subscription
-        print("=== GTT ORDER SOCKET SUBSCRIPTION ===");
-        print("GTT Orders count: ${_gttOrderBookModel!.length}");
-        print("Subscribe mode: ${isSubscribe ? 'SUBSCRIBE' : 'UNSUBSCRIBE'}");
-        print("Active tab: $_selectedTab (GTT tab is active)");
-
-        final gttTokens = _gttOrderBookModel!
-            .map((e) => "${e.exch}|${e.token}")
-            .toSet()
-            .join("#");
-
-        // Debug: Print first 3 GTT order details
-        for (int i = 0; i < _gttOrderBookModel!.length && i < 3; i++) {
-          final gtt = _gttOrderBookModel![i];
-          print(
-              "  GTT $i: ${gtt.tsym} (${gtt.exch}|${gtt.token}) - Current LTP: ${gtt.ltp ?? 'null'}");
-        }
-
-        if (input.isNotEmpty) {
-          input += "#$gttTokens";
+      // Remove duplicates from symbolList
+      final uniqueSymbols = symbolList.toSet().toList();
+      
+      // Print subscription/unsubscription details
+      if (isSubscribe) {
+        print("═══════════════════════════════════════════════════════════");
+        print("📥 [Order Book] SUBSCRIBING to Tab $_selectedTab: $tabName");
+        print("   Total symbols: ${uniqueSymbols.length}");
+        if (uniqueSymbols.length <= 10) {
+          print("   Symbols: ${uniqueSymbols.join(", ")}");
         } else {
-          input = gttTokens;
+          print("   First 10 symbols: ${uniqueSymbols.take(10).join(", ")}...");
+          print("   ... and ${uniqueSymbols.length - 10} more");
         }
-
-        print("Total subscription input length: ${input.length}");
-        print(
-            "First 100 chars: ${input.substring(0, input.length > 100 ? 100 : input.length)}");
-        print("=====================================");
-      } else if (_gttOrderBookModel!.isNotEmpty && _selectedTab != 3) {
-        print("GTT orders available but not subscribing (Active tab: $_selectedTab, GTT tab: 3)");
+        print("═══════════════════════════════════════════════════════════");
+      } else {
+        print("═══════════════════════════════════════════════════════════");
+        print("📤 [Order Book] UNSUBSCRIBING from Tab $_selectedTab: $tabName");
+        print("   Total symbols: ${uniqueSymbols.length}");
+        if (uniqueSymbols.length <= 10) {
+          print("   Symbols: ${uniqueSymbols.join(", ")}");
+        } else {
+          print("   First 10 symbols: ${uniqueSymbols.take(10).join(", ")}...");
+          print("   ... and ${uniqueSymbols.length - 10} more");
+        }
+        print("═══════════════════════════════════════════════════════════");
       }
 
       if (input.isNotEmpty) {
@@ -1609,10 +1686,10 @@ class OrderProvider extends DefaultChangeNotifier {
             task: isSubscribe ? "t" : "u",
             context: context);
       } else {
-        print("🚨 No input to subscribe to in requestWSOrderBook");
+        print("🚨 [Order Book] No symbols to ${isSubscribe ? 'subscribe' : 'unsubscribe'} for Tab $_selectedTab: $tabName");
       }
     } catch (e) {
-      print("❌ Error in requestWSOrderBook: $e");
+      print("❌ [Order Book] Error in requestWSOrderBook: $e");
     } finally {
       toggleLoadingOn(false);
     }

@@ -44,8 +44,8 @@ mixin PortfolioAPI on ApiCore {
       if (res.statusCode == 200) {
         final json = jsonDecode(res.body);
         try {
-          print(
-              'qwqwqw hold start T ${json.runtimeType} E ${json.isNotEmpty} L ${json.length}');
+          // print(
+              // 'qwqwqw hold start T ${json.runtimeType} E ${json.isNotEmpty} L ${json.length}');
           if (json.isNotEmpty && json.length > 0) {
             stat = 'success';
             for (final item in json) {
@@ -65,7 +65,7 @@ mixin PortfolioAPI on ApiCore {
             }
           }
         } catch (e) {
-          print('qwqwqw hold json catch$e');
+          // print('qwqwqw hold json catch$e');
           stat = 'error';
           if (res.statusCode == 200) {
             for (final item in json) {
@@ -102,9 +102,9 @@ mixin PortfolioAPI on ApiCore {
           var raw = [
             {"stat": "no data"}
           ];
-            print("holdingres");
+            // print("holdingres");
 
-          print(json);
+          // print(json);
           if (json.toString() == '[]') {
             data.add(MFHoldingsModel.fromJson(raw as Map<String, dynamic>));
           } else if (json['stat'] == 'Not_Ok') {
@@ -233,8 +233,7 @@ mixin PortfolioAPI on ApiCore {
       if (res.statusCode == 200) {
         final json = jsonDecode(res.body);
         try {
-          print(
-              'qwqwqw pos start T ${json.runtimeType} E ${json.isNotEmpty} L ${json.length}');
+          // print('qwqwqw pos start T ${json.runtimeType} E ${json.isNotEmpty} L ${json.length}');
           if (json is Map<String, dynamic>) {
             stat = 'no data';
           } else if (json.isNotEmpty && json.length > 0) {
@@ -256,7 +255,7 @@ mixin PortfolioAPI on ApiCore {
             }
           }
         } catch (e) {
-          print('qwqwqw pos json catch$e');
+          // print('qwqwqw pos json catch$e');
           stat = 'error';
           if (res.statusCode == 200) {
             for (final item in json) {

@@ -20,7 +20,7 @@ abstract class DefaultChangeNotifier extends ChangeNotifier {
   //we only activate loader on mode during that period.
 
   void toggleLoadingOn(bool on) {
-    print("toggleLoadingOn: $on");
+    // Removed excessive print statement
     loading = on;
     notifyListeners();
   }
@@ -38,13 +38,13 @@ abstract class DefaultChangeNotifier extends ChangeNotifier {
 
   void togglefundLoadingOn(bool on) {
     fundisLoad = on;
-    print("togglefundLoadingOn: $on");
+    // Removed excessive print statement
     notifyListeners();
   }
 
   void togglefundLoading(bool on) {
     fundLoading = on;
-    print("togglefundLoading: $on");
+    // Removed excessive print statement
     notifyListeners();
   }
 

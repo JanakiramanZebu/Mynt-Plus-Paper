@@ -98,6 +98,94 @@
   <!-- flutter_inappwebview web support (web plugin path) -->
   <script type="application/javascript" src="/assets/packages/flutter_inappwebview_web/assets/web/web_support.js"></script>
   <script>
+    // Suppress harmless WebSocket/HTTP "Connection" header warning
+    // This is a browser security restriction that doesn't affect functionality
+    // This error occurs when Flutter's HTTP client tries to set the "Connection" header,
+    // which browsers automatically manage for WebSocket upgrades and HTTP requests.
+    (function() {
+      // Store original console methods
+      var originalError = console.error;
+      var originalWarn = console.warn;
+      
+      // Helper function to check if message should be filtered
+      function shouldFilterMessage(message) {
+        if (!message) return false;
+        var msgStr = typeof message === 'string' ? message : 
+                     (message.toString ? message.toString() : String(message));
+        return msgStr.includes("Refused to set unsafe header") && 
+               (msgStr.includes("Connection") || msgStr.includes("'Connection'") || msgStr.includes('"Connection"'));
+      }
+      
+      // Override console.error - check all arguments and stack traces
+      console.error = function() {
+        var shouldFilter = false;
+        for (var i = 0; i < arguments.length; i++) {
+          if (shouldFilterMessage(arguments[i])) {
+            shouldFilter = true;
+            break;
+          }
+          // Also check stack traces
+          if (arguments[i] && arguments[i].stack && shouldFilterMessage(arguments[i].stack)) {
+            shouldFilter = true;
+            break;
+          }
+        }
+        if (shouldFilter) {
+          return; // Silently ignore this specific warning
+        }
+        // Call original console.error for all other messages
+        originalError.apply(console, arguments);
+      };
+      
+      // Override console.warn - check all arguments
+      console.warn = function() {
+        for (var i = 0; i < arguments.length; i++) {
+          if (shouldFilterMessage(arguments[i])) {
+            return; // Silently ignore this specific warning
+          }
+        }
+        // Call original console.warn for all other messages
+        originalWarn.apply(console, arguments);
+      };
+      
+      // Intercept XMLHttpRequest.setRequestHeader to silently handle Connection header
+      var originalSetRequestHeader = XMLHttpRequest.prototype.setRequestHeader;
+      XMLHttpRequest.prototype.setRequestHeader = function(header, value) {
+        // Silently skip setting the Connection header - browser manages it automatically
+        if (header && header.toLowerCase() === 'connection') {
+          return; // Don't set the header, but don't throw an error either
+        }
+        try {
+          return originalSetRequestHeader.call(this, header, value);
+        } catch (e) {
+          // If it's the Connection header error, silently ignore it
+          if (e.message && shouldFilterMessage(e.message)) {
+            return;
+          }
+          throw e; // Re-throw other errors
+        }
+      };
+      
+      // Catch unhandled errors and promise rejections
+      window.addEventListener('error', function(event) {
+        if (event.message && shouldFilterMessage(event.message)) {
+          event.preventDefault();
+          event.stopPropagation();
+          event.stopImmediatePropagation();
+          return false;
+        }
+      }, true);
+      
+      // Catch unhandled promise rejections
+      window.addEventListener('unhandledrejection', function(event) {
+        if (event.reason && shouldFilterMessage(event.reason)) {
+          event.preventDefault();
+          event.stopPropagation();
+          return false;
+        }
+      });
+    })();
+
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function() {
         navigator.serviceWorker.register('firebase-messaging-sw.js');

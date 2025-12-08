@@ -32,42 +32,32 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
   @override
   void initState() {
     super.initState();
-    // Initialize top indices for dashboard
+    // Note: Data fetching is handled by _handleDashboardTap() in customizable_split_home_screen.dart
+    // This prevents duplicate API calls when dashboard button is clicked
+    // WebSocket subscription is handled by WebSubscriptionManager
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (mounted) {
         final indexProvider = ref.read(indexListProvider);
-        final stocksProvider = ref.read(stocksProvide);
         
-        // Get top indices for dashboard (8 specific indices)
-        await indexProvider.getTopIndicesForDashboard(context);
-        // Subscribe to WebSocket for real-time updates
-        await _subscribeToTopIndices(context);
+        // Get top indices for dashboard (8 specific indices) if not already fetched
+        // This ensures tokens are available for WebSubscriptionManager
+        // Only fetch if not already available to avoid duplicate calls
+        if (indexProvider.topIndicesForDashboard == null) {
+          await indexProvider.getTopIndicesForDashboard(context);
+        }
         
-        // Fetch top gainers and losers
-        await stocksProvider.fetchTradeAction("NSE", "NSEALL", "topG_L", "topG_L");
-        // Fetch volume breakout and most active
-        await stocksProvider.fetchTradeAction("NSE", "NSEALL", "mostActive", "mostActive");
+        // Trade action data is fetched by _handleDashboardTap() before this screen is shown
+        // No need to fetch here to avoid duplicate TopList API calls
       }
     });
   }
 
-  Future<void> _subscribeToTopIndices(BuildContext context) async {
-    try {
-      final indexProvider = ref.read(indexListProvider);
-      final marketWatch = ref.read(marketWatchProvider);
-      
-      // Ensure top indices token is built
-      indexProvider.requestTopIndicesToken();
-      
-      // Subscribe to WebSocket for top indices (requestMWScrip will include topIndicesToken)
-      await marketWatch.requestMWScrip(context: context, isSubscribe: true);
-    } catch (e) {
-      debugPrint("Error subscribing to top indices: $e");
-    }
-  }
-
   @override
   void dispose() {
+    // Note: WebSubscriptionManager handles unsubscription automatically
+    // when screen is replaced or removed via updateActiveScreen()
+    // No need to unsubscribe here to avoid double calls
+    
     _indexScrollController.dispose();
     _tradeActionScrollController.dispose();
     super.dispose();
@@ -1192,30 +1182,48 @@ class _DashboardIndexCardState extends ConsumerState<_DashboardIndexCard> {
     // Check existing data
     final existingData = websocket.socketDatas[token];
     if (existingData != null) {
-      _updateFromSocketData(existingData);
+      final hasChanged = _updateFromSocketData(existingData);
+      if (hasChanged && mounted) {
+        setState(() {});
+      }
     }
 
-    // Listen for updates
+    // Listen for updates - only rebuild if data actually changed
     _subscription = websocket.socketDataStream.listen((data) {
       if (data.containsKey(token) && mounted) {
         final socketData = data[token];
         if (socketData != null) {
-          _updateFromSocketData(socketData);
-          setState(() {});
+          final hasChanged = _updateFromSocketData(socketData);
+          if (hasChanged) {
+            setState(() {});
+          }
         }
       }
     });
   }
 
-  void _updateFromSocketData(dynamic data) {
+  bool _updateFromSocketData(dynamic data) {
+    bool hasChanged = false;
+
     final newLtp = data['lp']?.toString() ?? "0.00";
-    if (newLtp != "null") _ltp = newLtp;
+    if (newLtp != "null" && newLtp != _ltp) {
+      _ltp = newLtp;
+      hasChanged = true;
+    }
 
     final newChange = data['chng']?.toString() ?? "0.00";
-    if (newChange != "null") _change = newChange;
+    if (newChange != "null" && newChange != _change) {
+      _change = newChange;
+      hasChanged = true;
+    }
 
     final newPerChange = data['pc']?.toString() ?? "0.00";
-    if (newPerChange != "null") _perChange = newPerChange;
+    if (newPerChange != "null" && newPerChange != _perChange) {
+      _perChange = newPerChange;
+      hasChanged = true;
+    }
+
+    return hasChanged;
   }
 
   Color _getChangeColor() {
@@ -1426,29 +1434,48 @@ class _DashboardStockCardState extends ConsumerState<_DashboardStockCard> {
 
     final existingData = websocket.socketDatas[token];
     if (existingData != null) {
-      _updateFromSocketData(existingData);
+      final hasChanged = _updateFromSocketData(existingData);
+      if (hasChanged && mounted) {
+        setState(() {});
+      }
     }
 
+    // Listen for updates - only rebuild if data actually changed
     _subscription = websocket.socketDataStream.listen((data) {
       if (data.containsKey(token) && mounted) {
         final socketData = data[token];
         if (socketData != null) {
-          _updateFromSocketData(socketData);
-          setState(() {});
+          final hasChanged = _updateFromSocketData(socketData);
+          if (hasChanged) {
+            setState(() {});
+          }
         }
       }
     });
   }
 
-  void _updateFromSocketData(dynamic data) {
+  bool _updateFromSocketData(dynamic data) {
+    bool hasChanged = false;
+
     final newLtp = data['lp']?.toString() ?? "0.00";
-    if (newLtp != "null") _ltp = newLtp;
+    if (newLtp != "null" && newLtp != _ltp) {
+      _ltp = newLtp;
+      hasChanged = true;
+    }
 
     final newChange = data['c']?.toString() ?? "0.00";
-    if (newChange != "null") _change = newChange;
+    if (newChange != "null" && newChange != _change) {
+      _change = newChange;
+      hasChanged = true;
+    }
 
     final newPerChange = data['pc']?.toString() ?? "0.00";
-    if (newPerChange != "null") _perChange = newPerChange;
+    if (newPerChange != "null" && newPerChange != _perChange) {
+      _perChange = newPerChange;
+      hasChanged = true;
+    }
+
+    return hasChanged;
   }
 
   Color _getChangeColor() {
@@ -1660,29 +1687,48 @@ class _TradeActionStockItemState extends ConsumerState<_TradeActionStockItem> {
 
     final existingData = websocket.socketDatas[token];
     if (existingData != null) {
-      _updateFromSocketData(existingData);
+      final hasChanged = _updateFromSocketData(existingData);
+      if (hasChanged && mounted) {
+        setState(() {});
+      }
     }
 
+    // Listen for updates - only rebuild if data actually changed
     _subscription = websocket.socketDataStream.listen((data) {
       if (data.containsKey(token) && mounted) {
         final socketData = data[token];
         if (socketData != null) {
-          _updateFromSocketData(socketData);
-          setState(() {});
+          final hasChanged = _updateFromSocketData(socketData);
+          if (hasChanged) {
+            setState(() {});
+          }
         }
       }
     });
   }
 
-  void _updateFromSocketData(dynamic data) {
+  bool _updateFromSocketData(dynamic data) {
+    bool hasChanged = false;
+
     final newLtp = data['lp']?.toString() ?? "0.00";
-    if (newLtp != "null") _ltp = newLtp;
+    if (newLtp != "null" && newLtp != _ltp) {
+      _ltp = newLtp;
+      hasChanged = true;
+    }
 
     final newChange = data['c']?.toString() ?? "0.00";
-    if (newChange != "null") _change = newChange;
+    if (newChange != "null" && newChange != _change) {
+      _change = newChange;
+      hasChanged = true;
+    }
 
     final newPerChange = data['pc']?.toString() ?? "0.00";
-    if (newPerChange != "null") _perChange = newPerChange;
+    if (newPerChange != "null" && newPerChange != _perChange) {
+      _perChange = newPerChange;
+      hasChanged = true;
+    }
+
+    return hasChanged;
   }
 
   Color _getChangeColor() {

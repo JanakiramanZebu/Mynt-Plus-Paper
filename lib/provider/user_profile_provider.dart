@@ -247,7 +247,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
 
   profileloaderfun(bool value) {
     _profileloader = value;
-    print("profileloader: $value");
+    // print("profileloader: $value");
     notifyListeners();
   }
 

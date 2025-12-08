@@ -124,8 +124,8 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     try {
       // Initialize TabController after UI renders
       final orderProviderRef = ref.read(orderProvider);
-      // Always reset to Open Orders tab (index 0) when navigating to order book
-      orderProviderRef.changeTabIndex(0, context);
+      // DO NOT call changeTabIndex here - it triggers subscription even when screen is not visible
+      // Subscription will be handled by _handleOrderBookTap() when screen becomes active
       _tabController = TabController(
         length: orderProviderRef.orderTabName.length,
         vsync: this,
@@ -141,7 +141,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
         }
       });
 
-      // Set up WebSocket subscription
+      // Set up WebSocket subscription listener (for receiving updates, not subscribing)
       _setupSocketSubscription();
 
       if (mounted) {

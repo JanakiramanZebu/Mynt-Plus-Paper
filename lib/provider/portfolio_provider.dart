@@ -246,9 +246,13 @@ class PortfolioProvider extends DefaultChangeNotifier {
     
     // Animate the TabController to the new index
     try {
-      portTab.animateTo(index);
+      // Check if portTab is initialized before using it
+      if (portTab.animation != null) {
+        portTab.animateTo(index);
+      }
     } catch (e) {
-      print("TabController animation error: $e");
+      // Silently handle TabController errors - it may not be initialized yet
+      // This is expected during app startup
     }
     
     notifyListeners();
@@ -576,7 +580,7 @@ changeHoldingsTabIndex(int index) {
     //     _tpostionBookModel = [];
     //   }
     // }
-    print("qwqwqw prov alert btm $mode , ${result['stat']}");
+    // print("qwqwqw prov alert btm $mode , ${result['stat']}");
   }
 
   Future fetchHoldings(context, String initail) async {
@@ -713,7 +717,7 @@ changeHoldingsTabIndex(int index) {
       }
       notifyListeners();
     } catch (e) {
-      print("qwqwqw hold sw catch ${e}");
+      // print("qwqwqw hold sw catch ${e}");
       ref
           .read(indexListProvider)
           .logError
@@ -796,7 +800,7 @@ changeHoldingsTabIndex(int index) {
       notifyListeners();
       return _postionBookModel;
     } catch (e) {
-      print("qwqwqw pos sw catch ${e}");
+      // print("qwqwqw pos sw catch ${e}");
       ref
           .read(indexListProvider)
           .logError

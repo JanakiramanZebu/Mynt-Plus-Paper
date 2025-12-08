@@ -83,9 +83,34 @@ class _CustomizableSplitHomeScreenState
 
   // Track loading states for each screen type
   final Map<ScreenType, bool> _screenLoadingStates = {};
-  
+
   // Store initial tab index for trade action screen
   int? _tradeActionTabIndex;
+
+  // Cooldown for portfolio data fetching to prevent excessive API calls
+  DateTime? _lastPortfolioFetch;
+  static const _portfolioFetchCooldown = Duration(seconds: 30);
+
+  // Track ongoing API requests to prevent duplicate calls when user rapidly clicks the same screen
+  // Key: screen identifier (e.g., 'holdings', 'positions')
+  // This prevents duplicate API calls if user clicks the same screen multiple times rapidly
+  // But allows fresh data fetch every time user switches between different screens
+  final Set<String> _ongoingRequests = {};
+
+  // Helper to check if a request is already in progress
+  bool _isRequestInProgress(String requestKey) {
+    return _ongoingRequests.contains(requestKey);
+  }
+
+  // Helper to mark request as started
+  void _markRequestStarted(String requestKey) {
+    _ongoingRequests.add(requestKey);
+  }
+
+  // Helper to mark request as completed
+  void _markRequestCompleted(String requestKey) {
+    _ongoingRequests.remove(requestKey);
+  }
 
   @override
   void initState() {
@@ -190,13 +215,6 @@ class _CustomizableSplitHomeScreenState
           // Handle back navigation if needed
         },
       );
-    });
-
-    // Initialize websocket heartbeat
-    ConstantName.timer = Timer.periodic(const Duration(seconds: 2), (timer) {
-      if (mounted) {
-        ref.read(websocketProvider).reconnect(context);
-      }
     });
 
     ref.read(networkStateProvider).networkStream();
@@ -318,26 +336,57 @@ class _CustomizableSplitHomeScreenState
       case AppLifecycleState.resumed:
         // Update subscription manager context on resume
         ref.read(webSubscriptionManagerProvider).updateContext(context);
-        
+
+        // Only fetch portfolio data if cooldown period has passed
+        final now = DateTime.now();
+        final shouldFetchPortfolio = hasPortfolioScreen() &&
+            (_lastPortfolioFetch == null ||
+                now.difference(_lastPortfolioFetch!) > _portfolioFetchCooldown);
+
         Future.microtask(() async {
           try {
             await ref.read(indexListProvider).checkSession(context);
             if (mounted &&
-                ref.read(indexListProvider).checkSess?.stat == "Ok") {
-              final futures = [
-                ref.read(portfolioProvider).fetchPositionBook(context, false),
-                ref.read(portfolioProvider).fetchHoldings(context, ""),
-                ref.read(orderProvider).fetchOrderBook(context, false),
-                ref.read(orderProvider).fetchTradeBook(context),
-              ];
-              await Future.wait(futures);
+                ref.read(indexListProvider).checkSess?.stat == "Ok" &&
+                shouldFetchPortfolio) {
+              // Only fetch data for ACTIVE screens (smart fetching)
+              debugPrint('Fetching data for active portfolio screens after cooldown');
+              _lastPortfolioFetch = now;
+
+              final futures = <Future>[];
+
+              // Check each panel and only fetch data for active screens
+              for (var panel in _panels) {
+                if (panel.screenType == ScreenType.positions) {
+                  futures.add(ref.read(portfolioProvider).fetchPositionBook(context, false));
+                } else if (panel.screenType == ScreenType.holdings) {
+                  futures.add(ref.read(portfolioProvider).fetchHoldings(context, ""));
+                } else if (panel.screenType == ScreenType.orderBook) {
+                  futures.add(ref.read(orderProvider).fetchOrderBook(context, false));
+                  // Note: Trade Book and SIP are lazy loaded, only fetch if already loaded
+                  if (ref.read(orderProvider).tradeBook != null &&
+                      ref.read(orderProvider).tradeBook!.isNotEmpty) {
+                    futures.add(ref.read(orderProvider).fetchTradeBook(context));
+                  }
+                }
+              }
+
+              if (futures.isNotEmpty) {
+                debugPrint('Fetching ${futures.length} API(s) for ${_panels.where((p) => p.screenType == ScreenType.positions || p.screenType == ScreenType.holdings || p.screenType == ScreenType.orderBook).length} active portfolio screen(s)');
+                await Future.wait(futures);
+              } else {
+                debugPrint('No portfolio screens active, skipping data fetch');
+              }
+
               if (mounted) {
                 setState(() {});
               }
+            } else if (!shouldFetchPortfolio) {
+              debugPrint('Skipping portfolio fetch - cooldown active or no portfolio screens');
             }
             _handleWebSocketConnections();
           } catch (e) {
-            print("Error during app resume: $e");
+            debugPrint("Error during app resume: $e");
           }
         });
         _handleChartData();
@@ -384,6 +433,8 @@ class _CustomizableSplitHomeScreenState
       websocket.changeconnectioncount();
     }
 
+    // Establish base WebSocket connection if not connected
+    // Note: Subscriptions are now handled by WebSubscriptionManager
     if (!websocket.wsConnected) {
       if (ConstantName.lastSubscribe.isNotEmpty) {
         websocket.establishConnection(
@@ -400,20 +451,14 @@ class _CustomizableSplitHomeScreenState
       }
     }
 
+    // Note: Removed direct subscription calls (requestMWScrip, requestWSHoldings, etc.)
+    // WebSubscriptionManager now handles all screen-specific subscriptions
+    // This prevents double subscriptions when screens are active
     if (ref.read(networkStateProvider).connectionStatus !=
         ConnectivityResult.none) {
-      ref
-          .read(marketWatchProvider)
-          .requestMWScrip(context: context, isSubscribe: true);
-      ref
-          .read(portfolioProvider)
-          .requestWSHoldings(context: context, isSubscribe: true);
-      ref
-          .read(portfolioProvider)
-          .requestWSPosition(context: context, isSubscribe: true);
-      ref
-          .read(orderProvider)
-          .requestWSOrderBook(context: context, isSubscribe: true);
+      // WebSubscriptionManager will handle subscriptions based on active screens
+      // Just ensure it's updated with current panel states
+      _updateSubscriptionManagerForPanels();
     }
   }
 
@@ -2082,9 +2127,10 @@ class _CustomizableSplitHomeScreenState
 
         case ScreenType.orderBook:
           if (mounted) {
+            // Unsubscribe from current active tab when leaving order book screen
             ref
                 .read(orderProvider)
-                .requestWSOrderBook(context: context, isSubscribe: false);
+                .unsubscribeFromCurrentTab(context);
           }
           _clearScreenCache(screenType);
           break;
@@ -2485,18 +2531,37 @@ class _CustomizableSplitHomeScreenState
   void _handleDashboardTap() async {
     // Replace screen immediately for instant UI response
     _replaceScreenInPanel(ScreenType.dashboard);
-    
-    // Update subscription manager
-    _updateSubscriptionManagerForPanels();
-
-    
 
     // Move all async operations to background to prevent blocking UI
     Future.microtask(() async {
       if (!mounted) return;
 
+      final indexProvider = ref.read(indexListProvider);
+      final stocksProvider = ref.read(stocksProvide);
       final portfolio = ref.read(portfolioProvider);
+      
       portfolio.cancelTimer();
+
+      // Ensure top indices are fetched before WebSubscriptionManager subscribes
+      // Only fetch if not already available to avoid duplicate API calls
+      if (indexProvider.topIndicesForDashboard == null) {
+        await indexProvider.getTopIndicesForDashboard(context);
+      }
+      
+      // Fetch trade action data only if not already available
+      // This prevents duplicate TopList API calls when clicking dashboard multiple times
+      if (stocksProvider.topGainers.isEmpty && stocksProvider.topLosers.isEmpty) {
+        await stocksProvider.fetchTradeAction("NSE", "NSEALL", "topG_L", "topG_L");
+      }
+      if (stocksProvider.byValue.isEmpty && stocksProvider.byVolume.isEmpty) {
+        await stocksProvider.fetchTradeAction("NSE", "NSEALL", "mostActive", "mostActive");
+      }
+      
+      // Update subscription manager AFTER data is fetched
+      // This ensures tokens are available for subscription
+      if (mounted) {
+        _updateSubscriptionManagerForPanels();
+      }
     });
   }
 
@@ -2592,23 +2657,48 @@ class _CustomizableSplitHomeScreenState
     // Replace screen immediately - no loading state needed
     // OrderBookScreenWeb will handle its own loading gracefully
     _replaceScreenInPanel(ScreenType.orderBook);
-    
-    // Update subscription manager
-    _updateSubscriptionManagerForPanels();
 
-    // Do background work immediately but don't block UI
+    // Move all async operations to background to prevent blocking UI
     Future.microtask(() async {
       if (!mounted) return;
 
       final portfolio = ref.read(portfolioProvider);
       portfolio.cancelTimer();
 
-      // Fetch data in background - screen will update progressively as data arrives
-      if (mounted) {
-        final orderProviderRef = ref.read(orderProvider);
-        orderProviderRef.fetchOrderBook(context, false);
-        orderProviderRef.fetchTradeBook(context);
-        orderProviderRef.fetchSipOrderHistory(context);
+      final orderProviderRef = ref.read(orderProvider);
+
+      // Check if request is already in progress (prevents duplicate calls on rapid clicks)
+      if (_isRequestInProgress('order_book')) {
+        debugPrint('⏭️ Skipping Order Book fetch - request already in progress');
+        return;
+      }
+
+      // Mark request as started
+      _markRequestStarted('order_book');
+
+      try {
+        // Only fetch Order Book (Open Orders + Executed Orders)
+        // Always fetch fresh data when switching to Order Book
+        await orderProviderRef.fetchOrderBook(context, false);
+
+        // Trade Book and SIP will be lazy loaded when user switches to those tabs
+        // This is handled in OrderProvider.changeTabIndex()
+
+        // Order book handles its own tab-specific subscriptions
+        // Subscribe to Open Orders tab (tab 0) by default when order book opens
+        if (mounted) {
+          // Reset to Open Orders tab (index 0) and subscribe
+          orderProviderRef.changeTabIndex(0, context);
+          debugPrint("📥 [Order Book] Initial subscription to Open Orders tab (Tab 0)");
+        }
+
+        // Update subscription manager (order book is now SubscriptionType.none, so it won't subscribe)
+        if (mounted) {
+          _updateSubscriptionManagerForPanels();
+        }
+      } finally {
+        // Always mark request as completed
+        _markRequestCompleted('order_book');
       }
     });
   }
@@ -2684,9 +2774,6 @@ class _CustomizableSplitHomeScreenState
 
     // Replace screen immediately for instant UI response
     _replaceScreenInPanel(ScreenType.holdings);
-    
-    // Update subscription manager
-    _updateSubscriptionManagerForPanels();
 
     // Move all async operations to background to prevent blocking UI
     Future.microtask(() async {
@@ -2695,15 +2782,39 @@ class _CustomizableSplitHomeScreenState
       final portfolio = ref.read(portfolioProvider);
       portfolio.cancelTimer();
 
-      // Fetch holdings data in the background (non-blocking)
-      if (mounted) {
-        await portfolio.fetchHoldings(context, "");
-        // Clear loading state after data is fetched
+      // Check if request is already in progress (prevents duplicate calls on rapid clicks)
+      if (_isRequestInProgress('holdings')) {
+        debugPrint('⏭️ Skipping Holdings fetch - request already in progress');
         if (mounted) {
           setState(() {
             _screenLoadingStates[ScreenType.holdings] = false;
           });
         }
+        return;
+      }
+
+      // Mark request as started
+      _markRequestStarted('holdings');
+
+      try {
+        // Fetch holdings data BEFORE WebSubscriptionManager subscribes
+        // This ensures tokens are available for subscription
+        // Always fetch fresh data when switching to Holdings
+        await portfolio.fetchHoldings(context, "");
+
+        // Update subscription manager AFTER data is fetched
+        // This ensures tokens are available for subscription
+        if (mounted) {
+          _updateSubscriptionManagerForPanels();
+
+          // Clear loading state after data is fetched
+          setState(() {
+            _screenLoadingStates[ScreenType.holdings] = false;
+          });
+        }
+      } finally {
+        // Always mark request as completed
+        _markRequestCompleted('holdings');
       }
     });
   }
@@ -2716,9 +2827,6 @@ class _CustomizableSplitHomeScreenState
 
     // Replace screen immediately for instant UI response
     _replaceScreenInPanel(ScreenType.positions);
-    
-    // Update subscription manager
-    _updateSubscriptionManagerForPanels();
 
     // Move all async operations to background to prevent blocking UI
     Future.microtask(() async {
@@ -2727,18 +2835,42 @@ class _CustomizableSplitHomeScreenState
       final portfolio = ref.read(portfolioProvider);
       portfolio.cancelTimer();
 
-      // Fetch positions data in background (non-blocking)
-      await portfolio.fetchPositionBook(context, false);
+      // Check if request is already in progress (prevents duplicate calls on rapid clicks)
+      if (_isRequestInProgress('positions')) {
+        debugPrint('⏭️ Skipping Positions fetch - request already in progress');
+        if (mounted) {
+          setState(() {
+            _screenLoadingStates[ScreenType.positions] = false;
+          });
+        }
+        return;
+      }
 
-      // Subscribe to positions data after fetching (now we have tokens)
-      if (mounted) {
+      // Mark request as started
+      _markRequestStarted('positions');
+
+      try {
+        // Fetch positions data BEFORE WebSubscriptionManager subscribes
+        // This ensures tokens are available for subscription
+        // Always fetch fresh data when switching to Positions
+        await portfolio.fetchPositionBook(context, false);
+
         // Start position update timer
-        portfolio.timerfunc();
+        if (mounted) {
+          portfolio.timerfunc();
 
-        // Clear loading state after data is fetched
-        setState(() {
-          _screenLoadingStates[ScreenType.positions] = false;
-        });
+          // Update subscription manager AFTER data is fetched
+          // This ensures tokens are available for subscription
+          _updateSubscriptionManagerForPanels();
+
+          // Clear loading state after data is fetched
+          setState(() {
+            _screenLoadingStates[ScreenType.positions] = false;
+          });
+        }
+      } finally {
+        // Always mark request as completed
+        _markRequestCompleted('positions');
       }
     });
   }
@@ -2932,13 +3064,28 @@ class _CustomizableSplitHomeScreenState
         .read(orderProvider)
         .requestWSOrderBook(context: context, isSubscribe: false);
 
-    // Fetch trade action data in background
-    Future.microtask(() async {
-      if (mounted) {
-        await stocksProvider.fetchTradeAction("NSE", "NSEALL", "topG_L", "topG_L");
-        await stocksProvider.fetchTradeAction("NSE", "NSEALL", "mostActive", "mostActive");
-      }
-    });
+    // Check if request is already in progress (prevents duplicate calls on rapid clicks)
+    if (_isRequestInProgress('trade_action')) {
+      debugPrint('⏭️ Skipping Trade Action fetch - request already in progress');
+      return;
+    }
+
+    // Mark request as started
+    _markRequestStarted('trade_action');
+
+    try {
+      // Fetch trade action data before WebSubscriptionManager subscribes
+      // This ensures tokens are available for subscription
+      // Always fetch fresh data when switching to Trade Action
+      await stocksProvider.fetchTradeAction("NSE", "NSEALL", "topG_L", "topG_L");
+      await stocksProvider.fetchTradeAction("NSE", "NSEALL", "mostActive", "mostActive");
+
+      // WebSubscriptionManager will handle subscription after data is fetched
+      // via _updateSubscriptionManagerForPanels() which is called when screen is added
+    } finally {
+      // Always mark request as completed
+      _markRequestCompleted('trade_action');
+    }
   }
 
   // Show screen in right panel (for app bar navigation)

@@ -399,7 +399,7 @@ class FundProvider extends DefaultChangeNotifier {
       notifyListeners();
 
       _pledgeAndUnpledgeModel = await api.getPledgeDetails();
-      print("Pledge Details => ${_pledgeAndUnpledgeModel!.bOID}");
+      // print("Pledge Details => ${_pledgeAndUnpledgeModel!.bOID}");
 
       _isLoadingPledgeDetails = false;
       notifyListeners();

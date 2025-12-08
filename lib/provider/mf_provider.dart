@@ -1205,10 +1205,10 @@ class MFProvider extends DefaultChangeNotifier {
     try {
       // _investloader = true;
       _mfsiprejreason = await api.getsiprejreason();
-      print("sip reject list${_mfsiprejreason?.toJson()}");
+      // print("sip reject list${_mfsiprejreason?.toJson()}");
       notifyListeners();
     } catch (e) {
-      print("NFO sippp error :: $e");
+      // print("NFO sippp error :: $e");
     } finally {
       // _investloader = false;
     }
