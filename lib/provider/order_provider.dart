@@ -854,7 +854,11 @@ class OrderProvider extends DefaultChangeNotifier {
                   false))
           .toList();
       if (_orderSearchItem!.isEmpty) {
-        warningMessage(context, 'No Data Found');
+        if (kIsWeb) {
+          ResponsiveSnackBar.showWarning(context, 'No Data Found');
+        } else {
+          warningMessage(context, 'No Data Found');
+        }
       }
     } else {
       _orderSearchItem = [];
@@ -871,7 +875,11 @@ class OrderProvider extends DefaultChangeNotifier {
               element.tsym!.toUpperCase().contains(value.toUpperCase()))
           .toList();
       if (_gttOrderBookSearch!.isEmpty) {
-        warningMessage(context, 'No Data Found');
+        if (kIsWeb) {
+          ResponsiveSnackBar.showWarning(context, 'No Data Found');
+        } else {
+          warningMessage(context, 'No Data Found');
+        }
       }
     } else {
       _gttOrderBookSearch = [];
@@ -888,7 +896,11 @@ class OrderProvider extends DefaultChangeNotifier {
               element.sipName!.toUpperCase().contains(value.toUpperCase()))
           .toList();
       if (_siporderBookSearch!.isEmpty) {
-        warningMessage(context, 'No Data Found');
+        if (kIsWeb) {
+          ResponsiveSnackBar.showWarning(context, 'No Data Found');
+        } else {
+          warningMessage(context, 'No Data Found');
+        }
       }
     } else {
       _siporderBookSearch = [];
@@ -905,7 +917,11 @@ class OrderProvider extends DefaultChangeNotifier {
               element.tsym!.toUpperCase().contains(value.toUpperCase()))
           .toList();
       if (_tradeBooksearch!.isEmpty) {
-        warningMessage(context, 'No Data Found');
+        if (kIsWeb) {
+          ResponsiveSnackBar.showWarning(context, 'No Data Found');
+        } else {
+          warningMessage(context, 'No Data Found');
+        }
       }
     } else {
       _tradeBooksearch = [];
@@ -986,8 +1002,11 @@ class OrderProvider extends DefaultChangeNotifier {
             _placeOrderModel!.stat == "Not_Ok") {
           ref.read(authProvider).ifSessionExpired(context);
         } else {
-          
-              successMessage(context, "${_placeOrderModel!.emsg}");
+          if (kIsWeb) {
+            ResponsiveSnackBar.showSuccess(context, "${_placeOrderModel!.emsg}");
+          } else {
+            successMessage(context, "${_placeOrderModel!.emsg}");
+          }
         }
       }
 
@@ -999,7 +1018,11 @@ class OrderProvider extends DefaultChangeNotifier {
           .add({"type": "API Place Order", "Error": "$e"});
 
       if (context.mounted) {
-        warningMessage(context, "Error on placing order");
+        if (kIsWeb) {
+          ResponsiveSnackBar.showWarning(context, "Error on placing order");
+        } else {
+          warningMessage(context, "Error on placing order");
+        }
       }
     } finally {
       notifyListeners();
@@ -1104,8 +1127,13 @@ class OrderProvider extends DefaultChangeNotifier {
       } else {
         // Show error if no orders were successful
         if (context.mounted) {
-          warningMessage(
-              context, "Failed to place orders. Please try again.");
+          if (kIsWeb) {
+            ResponsiveSnackBar.showWarning(
+                context, "Failed to place orders. Please try again.");
+          } else {
+            warningMessage(
+                context, "Failed to place orders. Please try again.");
+          }
         }
       }
     } catch (e) {
@@ -1114,8 +1142,11 @@ class OrderProvider extends DefaultChangeNotifier {
           .logError
           .add({"type": "API Slice Order Confirmation", "Error": "$e"});
       if (context.mounted) {
-        
-            warningMessage(context, "Error placing orders: ${e.toString()}");
+        if (kIsWeb) {
+          ResponsiveSnackBar.showWarning(context, "Error placing orders: ${e.toString()}");
+        } else {
+          warningMessage(context, "Error placing orders: ${e.toString()}");
+        }
       }
       // notifyListeners();
     } finally {
@@ -1423,7 +1454,11 @@ class OrderProvider extends DefaultChangeNotifier {
           ConstantName.sessCheck = true;
           await fetchOrderBook(context, true);
           Navigator.pop(context);
-          successMessage(context, 'Order Cancelled');
+          if (kIsWeb) {
+            ResponsiveSnackBar.showSuccess(context, 'Order Cancelled');
+          } else {
+            successMessage(context, 'Order Cancelled');
+          }
 
           Navigator.pop(context);
         }
@@ -1451,7 +1486,11 @@ class OrderProvider extends DefaultChangeNotifier {
           ConstantName.sessCheck = true;
           await fetchOrderBook(context, true);
           Navigator.pop(context);
-          successMessage(context, 'Order Exited');
+          if (kIsWeb) {
+            ResponsiveSnackBar.showSuccess(context, 'Order Exited');
+          } else {
+            successMessage(context, 'Order Exited');
+          }
           Navigator.pop(context);
         }
       } else {
@@ -1484,27 +1523,36 @@ class OrderProvider extends DefaultChangeNotifier {
 
         // ScaffoldMessenger.of(context)
         //     .showSnackBar(successMessage(context, 'Order Modified'));
-        
-        Navigator.pop(context);
 
         if(kIsWeb) {
+          // For web, the overlay is already closed by closeNotifier.onClose() in the modify screen
+          // So we don't need to call Navigator.pop here
+
+          // Small delay to ensure overlay closes smoothly before showing confirmation
+          await Future.delayed(const Duration(milliseconds: 100));
+
+          // Show confirmation dialog
           showDialog(
             context: context,
             barrierColor: Colors.black.withOpacity(0.3), // Subtle dark backdrop
             builder: (BuildContext context) => OrderConfirmationScreenWeb(orderData: [modifyOrderData]),
           );
         }else{
-        Navigator.pushNamed(context, Routes.orderConfirmation, arguments: {
-          'orderData': [modifyOrderData],
-        });
+          Navigator.pop(context);
+          Navigator.pushNamed(context, Routes.orderConfirmation, arguments: {
+            'orderData': [modifyOrderData],
+          });
         }
       } else {
         if (_modifyOrderModel!.emsg ==
             "Session Expired :  Invalid Session Key") {
           ref.read(authProvider).ifSessionExpired(context);
         } else {
-          
-              successMessage(context, '${_modifyOrderModel!.emsg}');
+          if (kIsWeb) {
+            ResponsiveSnackBar.showSuccess(context, '${_modifyOrderModel!.emsg}');
+          } else {
+            successMessage(context, '${_modifyOrderModel!.emsg}');
+          }
         }
       }
       notifyListeners();
@@ -2112,17 +2160,13 @@ class OrderProvider extends DefaultChangeNotifier {
 
       if (_modifyGttOrderModel!.stat == "OI replaced") {
         ConstantName.sessCheck = true;
-        successMessage(context, "Modified Order");
-        ref.read(ordInputProvider).clearTextField();
-        await fetchGTTOrderBook(context, "");
-
-        // Show success message - ResponsiveSnackBar for web, ScaffoldMessenger for mobile
         if (kIsWeb) {
           ResponsiveSnackBar.showSuccess(context, "Modified Order");
         } else {
-          // ScaffoldMessenger.of(context)
-          //     .showSnackBar(successMessage(context, "Modified Order"));
+          successMessage(context, "Modified Order");
         }
+        ref.read(ordInputProvider).clearTextField();
+        await fetchGTTOrderBook(context, "");
 
         if (kIsWeb) {
           // On web, skip Navigator.pop and bottomMenu navigation
@@ -2182,7 +2226,11 @@ class OrderProvider extends DefaultChangeNotifier {
           Navigator.pop(context);
         }
         
-            warningMessage(context, "Provided GTT Order is not found");
+        if (kIsWeb) {
+          ResponsiveSnackBar.showWarning(context, "Provided GTT Order is not found");
+        } else {
+          warningMessage(context, "Provided GTT Order is not found");
+        }
         Navigator.pop(context);
       }
     } catch (e) {
@@ -2235,17 +2283,13 @@ class OrderProvider extends DefaultChangeNotifier {
 
       if (_modifyGttOrderModel!.stat == "OI replaced") {
         ConstantName.sessCheck = true;
-        successMessage(context, "Modified Order");
-        ref.read(ordInputProvider).clearTextField();
-        await fetchGTTOrderBook(context, "");
-
-        // Show success message - ResponsiveSnackBar for web, ScaffoldMessenger for mobile
         if (kIsWeb) {
           ResponsiveSnackBar.showSuccess(context, "Modified Order");
         } else {
-          // ScaffoldMessenger.of(context)
-          //     .showSnackBar(successMessage(context, "Modified Order"));
+          successMessage(context, "Modified Order");
         }
+        ref.read(ordInputProvider).clearTextField();
+        await fetchGTTOrderBook(context, "");
 
         if (kIsWeb) {
           // On web, skip Navigator.pop and bottomMenu navigation
@@ -2284,10 +2328,13 @@ class OrderProvider extends DefaultChangeNotifier {
     for (var basket in _bsktList) {
       if (basket['bsketName'].toString().toLowerCase() == lowerCaseName) {
         // Show error if duplicate found
-        
+        if (kIsWeb) {
+          ResponsiveSnackBar.showWarning(context,
+              "Basket name '$trimmedName' already exists");
+        } else {
           warningMessage(context,
-            "Basket name '$trimmedName' already exists",
-          );
+              "Basket name '$trimmedName' already exists");
+        }
         
         return; // Exit without creating duplicate
       }
@@ -2606,9 +2653,13 @@ class OrderProvider extends DefaultChangeNotifier {
       // Check basket limit (frezQtyOrderSliceMaxLimit items max)
       if (currentScripts.length >= frezQtyOrderSliceMaxLimit) {
         if (context != null) {
-          warningMessage(context,
-            "Basket limit reached. Cannot add more than $frezQtyOrderSliceMaxLimit items to a basket.",
-          );
+          if (kIsWeb) {
+            ResponsiveSnackBar.showWarning(context,
+                "Basket limit reached. Cannot add more than $frezQtyOrderSliceMaxLimit items to a basket.");
+          } else {
+            warningMessage(context,
+                "Basket limit reached. Cannot add more than $frezQtyOrderSliceMaxLimit items to a basket.");
+          }
         }
         return false; // Return false to indicate failure
       }
@@ -2648,8 +2699,13 @@ class OrderProvider extends DefaultChangeNotifier {
       
       if (currentBasketOrders + newOrders > frezQtyOrderSliceMaxLimit) {
         if (context != null) {
-          warningMessage(context,
-            "Cannot add to basket. Total orders would be ${currentBasketOrders + newOrders}, which exceeds the maximum limit of $frezQtyOrderSliceMaxLimit orders.");
+          if (kIsWeb) {
+            ResponsiveSnackBar.showWarning(context,
+                "Cannot add to basket. Total orders would be ${currentBasketOrders + newOrders}, which exceeds the maximum limit of $frezQtyOrderSliceMaxLimit orders.");
+          } else {
+            warningMessage(context,
+                "Cannot add to basket. Total orders would be ${currentBasketOrders + newOrders}, which exceeds the maximum limit of $frezQtyOrderSliceMaxLimit orders.");
+          }
         }
         return false; // Return false to indicate failure
       }
@@ -2750,7 +2806,11 @@ class OrderProvider extends DefaultChangeNotifier {
         tabSize();
         Navigator.pop(context);
         
-            successMessage(context, "Order is Placed Sucessfully");
+        if (kIsWeb) {
+          ResponsiveSnackBar.showSuccess(context, "Order is Placed Sucessfully");
+        } else {
+          successMessage(context, "Order is Placed Sucessfully");
+        }
         notifyListeners();
       } else if (_sipPlaceOrder!.emsg ==
           "Session Expired :  Invalid Session Key") {
@@ -2776,11 +2836,18 @@ class OrderProvider extends DefaultChangeNotifier {
         Navigator.pop(context);
         fetchSipOrderHistory(context);
         
-            successMessage(context, "Order is Modified Sucessfully");
+        if (kIsWeb) {
+          ResponsiveSnackBar.showSuccess(context, "Order is Modified Sucessfully");
+        } else {
+          successMessage(context, "Order is Modified Successfully");
+        }
       }
       if (_modifySipModel!.reqStatus == "NOT_OK") {
-        
-            successMessage(context, "${_modifySipModel!.rejreason}");
+        if (kIsWeb) {
+          ResponsiveSnackBar.showSuccess(context, "${_modifySipModel!.rejreason}");
+        } else {
+          successMessage(context, "${_modifySipModel!.rejreason}");
+        }
       } else if (_modifySipModel!.emsg ==
           "Session Expired :  Invalid Session Key") {
         ref.read(authProvider).ifSessionExpired(context);
@@ -2917,7 +2984,11 @@ class OrderProvider extends DefaultChangeNotifier {
         tabSize();
         Navigator.pop(context);
         Navigator.pop(context);
-        successMessage(context, "Order Sucessfully Cancled");
+        if (kIsWeb) {
+          ResponsiveSnackBar.showSuccess(context, "Order Sucessfully Cancelled");
+        } else {
+          successMessage(context, "Order Sucessfully Cancelled");
+        }
       } else if (cancleSipOrder!.emsg ==
           "Session Expired :  Invalid Session Key") {
         ref.read(authProvider).ifSessionExpired(context);
@@ -3236,8 +3307,11 @@ class OrderProvider extends DefaultChangeNotifier {
         message = "Basket Order Partially Placed - ${successfulOrders.length} success, ${failedOrders.length} failed";
       }
       
-      
-          successMessage(context, message);
+      if (kIsWeb) {
+        ResponsiveSnackBar.showSuccess(context, message);
+      } else {
+        successMessage(context, message);
+      }
           
       debugPrint("=== BASKET PLACE ORDER END ===\n");
       notifyListeners();

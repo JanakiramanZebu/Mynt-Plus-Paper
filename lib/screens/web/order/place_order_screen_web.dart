@@ -7459,6 +7459,39 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
     ref.read(orderProvider).fetchGetBrokerage(brokerageInput, context);
   }
 
+  // Directly disable all chart iframes and reset cursor (like chart's onExit)
+  void _disableAllChartIframes() {
+    try {
+      final iframes = html.document.querySelectorAll('iframe');
+      for (var iframe in iframes) {
+        if (iframe is html.IFrameElement && iframe.id.contains('chart-iframe')) {
+          iframe.style.pointerEvents = 'none';
+          // Reset cursor style to prevent cursor bleeding
+          iframe.style.cursor = 'default';
+        }
+      }
+      // Also reset cursor on document body to ensure it's reset globally
+      html.document.body?.style.cursor = 'default';
+    } catch (e) {
+      debugPrint('Error disabling iframes: $e');
+    }
+  }
+
+  void _enableAllChartIframes() {
+    try {
+      final iframes = html.document.querySelectorAll('iframe');
+      for (var iframe in iframes) {
+        if (iframe is html.IFrameElement && iframe.id.contains('chart-iframe')) {
+          iframe.style.pointerEvents = 'auto';
+          iframe.style.cursor = '';
+        }
+      }
+      html.document.body?.style.cursor = '';
+    } catch (e) {
+      debugPrint('Error enabling iframes: $e');
+    }
+  }
+
   void _showSurveillanceBottomSheet(
       OrderInputProvider orderInput, bool isSliceOrd, ThemesProvider theme) {
     // Show surveillance dialog as overlay entry above the order screen
@@ -7489,16 +7522,36 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
               Center(
                 child: Material(
                   color: Colors.transparent,
-                  child: Container(
-                    constraints: const BoxConstraints(maxWidth: 500),
-                    margin: const EdgeInsets.symmetric(horizontal: 16),
-                    decoration: BoxDecoration(
-                      color: currentTheme.isDarkMode
-                          ? WebDarkColors.surface
-                          : WebColors.surface,
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                    child: Column(
+                  child: PointerInterceptor(
+                    child: MouseRegion(
+                      cursor: SystemMouseCursors.basic,
+                      onEnter: (_) {
+                        ChartIframeGuard.acquire();
+                        _disableAllChartIframes();
+                      },
+                      onHover: (_) {
+                        _disableAllChartIframes();
+                      },
+                      onExit: (_) {
+                        ChartIframeGuard.release();
+                        _enableAllChartIframes();
+                      },
+                      child: Listener(
+                        onPointerMove: (_) {
+                          _disableAllChartIframes();
+                        },
+                        child: GestureDetector(
+                          onTap: () {}, // Prevent tap from propagating to background
+                          child: Container(
+                            constraints: const BoxConstraints(maxWidth: 500),
+                            margin: const EdgeInsets.symmetric(horizontal: 16),
+                            decoration: BoxDecoration(
+                              color: currentTheme.isDarkMode
+                                  ? WebDarkColors.surface
+                                  : WebColors.surface,
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                            child: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -7546,6 +7599,8 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                       ? Colors.white.withOpacity(.08)
                                       : Colors.black.withOpacity(.08),
                                   onTap: () {
+                                    ChartIframeGuard.release();
+                                    _enableAllChartIframes();
                                     surveillanceOverlayEntry.remove();
                                     setState(() {
                                       _pendingSurveillanceAction = null;
@@ -7589,6 +7644,8 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                 height: 40,
                                 child: ElevatedButton(
                                   onPressed: () async {
+                                    ChartIframeGuard.release();
+                                    _enableAllChartIframes();
                                     surveillanceOverlayEntry.remove();
                                     final action = _pendingSurveillanceAction;
                                     _pendingSurveillanceAction = null;
@@ -7637,6 +7694,10 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                           ),
                         ),
                       ],
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),

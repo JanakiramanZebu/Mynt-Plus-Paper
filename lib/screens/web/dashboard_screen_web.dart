@@ -1315,7 +1315,7 @@ class _DashboardIndexCardState extends ConsumerState<_DashboardIndexCard> {
                   style: WebTextStyles.sub(
                     isDarkTheme: widget.isDarkMode,
                     color: widget.isDarkMode
-                        ? WebDarkColors.textPrimary
+                         ? WebDarkColors.textPrimary
                         : WebColors.textPrimary,
                     fontWeight: WebFonts.bold,
                   ),

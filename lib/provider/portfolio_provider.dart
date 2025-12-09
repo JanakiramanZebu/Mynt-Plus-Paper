@@ -26,6 +26,7 @@ import '../res/res.dart';
 import '../routes/route_names.dart';
 import '../sharedWidget/functions.dart';
 import '../sharedWidget/snack_bar.dart';
+import '../utils/responsive_snackbar.dart';
 import 'auth_provider.dart';
 import 'core/default_change_notifier.dart';
 import 'index_list_provider.dart';
@@ -301,7 +302,11 @@ changeHoldingsTabIndex(int index) {
       } else {
         if (consent) {
           Future.delayed(const Duration(seconds: 2), () {
-            warningMessage(context, "Unable to fetch data");
+            if (kIsWeb) {
+              ResponsiveSnackBar.showWarning(context, "Unable to fetch data");
+            } else {
+              warningMessage(context, "Unable to fetch data");
+            }
           });
         }
         _allholds = {};
@@ -1662,7 +1667,11 @@ changeHoldingsTabIndex(int index) {
               .contains(value.toUpperCase()))
           .toList();
       if (_mfHoldingSearchItem!.isEmpty) {
-        warningMessage(context, 'No Data Found');
+        if (kIsWeb) {
+          ResponsiveSnackBar.showWarning(context, 'No Data Found');
+        } else {
+          warningMessage(context, 'No Data Found');
+        }
       } else {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
       }
@@ -1723,12 +1732,16 @@ changeHoldingsTabIndex(int index) {
 
         Navigator.pop(c);
       } else {
-        Fluttertoast.showToast(
-            msg: "${_groupName!.status}",
-            timeInSecForIosWeb: 2,
-            backgroundColor: colors.colorBlack,
-            textColor: colors.colorWhite,
-            fontSize: 14.0);
+        if (kIsWeb) {
+          ResponsiveSnackBar.showWarning(c, "${_groupName!.status}");
+        } else {
+          Fluttertoast.showToast(
+              msg: "${_groupName!.status}",
+              timeInSecForIosWeb: 2,
+              backgroundColor: colors.colorBlack,
+              textColor: colors.colorWhite,
+              fontSize: 14.0);
+        }
       }
     } finally {
       _posloader = false;
@@ -1742,20 +1755,28 @@ changeHoldingsTabIndex(int index) {
 
       if (_groupName!.status == "symbol added") {
         await fetchPosGroupSymbol(name, true);
-        Fluttertoast.showToast(
-            msg: "Scrip was added to $name",
-            timeInSecForIosWeb: 2,
-            backgroundColor: colors.colorBlack,
-            textColor: colors.colorWhite,
-            fontSize: 14.0);
+        if (kIsWeb) {
+          ResponsiveSnackBar.showSuccess(c, "Scrip was added to $name");
+        } else {
+          Fluttertoast.showToast(
+              msg: "Scrip was added to $name",
+              timeInSecForIosWeb: 2,
+              backgroundColor: colors.colorBlack,
+              textColor: colors.colorWhite,
+              fontSize: 14.0);
+        }
         Navigator.pop(c);
       } else {
-        Fluttertoast.showToast(
-            msg: "${_groupName!.status} to $name",
-            timeInSecForIosWeb: 2,
-            backgroundColor: colors.colorBlack,
-            textColor: colors.colorWhite,
-            fontSize: 14.0);
+        if (kIsWeb) {
+          ResponsiveSnackBar.showWarning(c, "${_groupName!.status} to $name");
+        } else {
+          Fluttertoast.showToast(
+              msg: "${_groupName!.status} to $name",
+              timeInSecForIosWeb: 2,
+              backgroundColor: colors.colorBlack,
+              textColor: colors.colorWhite,
+              fontSize: 14.0);
+        }
       }
     } catch (e) {}
   }
@@ -1771,12 +1792,16 @@ changeHoldingsTabIndex(int index) {
 
         // Navigator.pop(c);
       } else {
-        Fluttertoast.showToast(
-            msg: "${_groupName!.status}",
-            timeInSecForIosWeb: 2,
-            backgroundColor: colors.colorBlack,
-            textColor: colors.colorWhite,
-            fontSize: 14.0);
+        if (kIsWeb) {
+          ResponsiveSnackBar.showWarning(c, "${_groupName!.status}");
+        } else {
+          Fluttertoast.showToast(
+              msg: "${_groupName!.status}",
+              timeInSecForIosWeb: 2,
+              backgroundColor: colors.colorBlack,
+              textColor: colors.colorWhite,
+              fontSize: 14.0);
+        }
       }
     } finally {
       _posloader = false;
@@ -1792,20 +1817,28 @@ changeHoldingsTabIndex(int index) {
       if (_groupName!.status == "symbol removed") {
         await fetchPosGroupSymbol(name, false);
 
-        Fluttertoast.showToast(
-            msg: "Group symbol $tsym was deleted",
-            timeInSecForIosWeb: 2,
-            backgroundColor: colors.colorBlack,
-            textColor: colors.colorWhite,
-            fontSize: 14.0);
+        if (kIsWeb) {
+          ResponsiveSnackBar.showSuccess(c, "Group symbol $tsym was deleted");
+        } else {
+          Fluttertoast.showToast(
+              msg: "Group symbol $tsym was deleted",
+              timeInSecForIosWeb: 2,
+              backgroundColor: colors.colorBlack,
+              textColor: colors.colorWhite,
+              fontSize: 14.0);
+        }
         Navigator.pop(c);
       } else {
-        Fluttertoast.showToast(
-            msg: "${_groupName!.status}",
-            timeInSecForIosWeb: 2,
-            backgroundColor: colors.colorBlack,
-            textColor: colors.colorWhite,
-            fontSize: 14.0);
+        if (kIsWeb) {
+          ResponsiveSnackBar.showWarning(c, "${_groupName!.status}");
+        } else {
+          Fluttertoast.showToast(
+              msg: "${_groupName!.status}",
+              timeInSecForIosWeb: 2,
+              backgroundColor: colors.colorBlack,
+              textColor: colors.colorWhite,
+              fontSize: 14.0);
+        }
       }
     } catch (e) {}
   }
@@ -2124,7 +2157,11 @@ changeHoldingsTabIndex(int index) {
             _placeOrderModel!.stat == "Not_Ok") {
           ref.read(authProvider).ifSessionExpired(context);
         } else {
-              successMessage(context, "${_placeOrderModel!.emsg}");
+          if (kIsWeb) {
+            ResponsiveSnackBar.showSuccess(context, "${_placeOrderModel!.emsg}");
+          } else {
+            successMessage(context, "${_placeOrderModel!.emsg}");
+          }
         }
       }
 
@@ -2237,17 +2274,29 @@ changeHoldingsTabIndex(int index) {
         // Refresh position book after conversion
         await fetchPositionBook(context, _isDay);
         Navigator.pop(context);
-            successMessage(context, "Position converted successfully");
+        if (kIsWeb) {
+          ResponsiveSnackBar.showSuccess(context, "Position converted successfully");
+        } else {
+          successMessage(context, "Position converted successfully");
+        }
       } else {
         Navigator.pop(context);
-            warningMessage(context, "${_positionConvertionModel!.emsg}");
+        if (kIsWeb) {
+          ResponsiveSnackBar.showWarning(context, "${_positionConvertionModel!.emsg}");
+        } else {
+          warningMessage(context, "${_positionConvertionModel!.emsg}");
+        }
       }
     } catch (e) {
       ref
           .read(indexListProvider)
           .logError
           .add({"type": "Position Conversion", "Error": "$e"});
-          warningMessage(context, "Failed to convert position: $e");
+      if (kIsWeb) {
+        ResponsiveSnackBar.showWarning(context, "Failed to convert position: $e");
+      } else {
+        warningMessage(context, "Failed to convert position: $e");
+      }
     } finally {
       toggleLoadingOn(false);
     }

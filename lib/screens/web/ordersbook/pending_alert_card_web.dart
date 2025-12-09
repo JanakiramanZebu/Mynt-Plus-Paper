@@ -903,32 +903,81 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb>
   }
 
   Widget _buildAlertHoverButton({
-    required String label,
+    String? label,
+    IconData? icon,
     required Color color,
-    required Color backgroundColor,
+    Color? backgroundColor,
+    Color? borderColor,
+    double? borderRadius,
+    double? iconWeight,
     required VoidCallback? onPressed,
     required ThemesProvider theme,
   }) {
-    return SizedBox(
-      height: 28,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-          backgroundColor: backgroundColor,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-          elevation: 0,
-        ),
-        onPressed: onPressed,
-        child: Text(
-          label,
-          style: WebTextStyles.custom(
-            fontSize: 12,
-            isDarkTheme: theme.isDarkMode,
-            color: color,
+    final isLongLabel = label != null && label.length > 1;
+    final borderRadiusValue = borderRadius ?? 5.0;
+    final effectiveIconWeight = iconWeight ?? 400.0;
+
+    Widget button = Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(borderRadiusValue),
+        splashColor: color.withOpacity(0.15),
+        highlightColor: color.withOpacity(0.08),
+        onTap: onPressed,
+        child: Container(
+          padding: isLongLabel
+              ? const EdgeInsets.symmetric(horizontal: 8)
+              : EdgeInsets.zero,
+          constraints: BoxConstraints(
+            minHeight: 25,
+            minWidth: isLongLabel ? 0 : 25,
+          ),
+          decoration: BoxDecoration(
+            color: backgroundColor ?? Colors.transparent,
+            borderRadius: BorderRadius.circular(borderRadiusValue),
+            border: borderColor != null
+                ? Border.all(
+                    color: borderColor,
+                    width: 1.3,
+                  )
+                : null,
+          ),
+          child: Center(
+            child: icon != null
+                ? Icon(
+                    icon,
+                    size: 16,
+                    color: color,
+                    weight: effectiveIconWeight,
+                  )
+                : Text(
+                    label ?? "",
+                    style: WebTextStyles.buttonXs(
+                      isDarkTheme: theme.isDarkMode,
+                      color: color,
+                    ),
+                    softWrap: false,
+                    overflow: TextOverflow.visible,
+                  ),
           ),
         ),
       ),
     );
+
+    if (isLongLabel) {
+      return IntrinsicWidth(
+        child: SizedBox(
+          height: 25,
+          child: button,
+        ),
+      );
+    } else {
+      return SizedBox(
+        width: 25,
+        height: 25,
+        child: button,
+      );
+    }
   }
 
   Color _getAlertStatusColor(String status, ThemesProvider theme) {

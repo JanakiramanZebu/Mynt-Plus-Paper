@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -30,10 +31,11 @@ class BasketList extends ConsumerStatefulWidget {
 }
 
 class _BasketListState extends ConsumerState<BasketList> {
-  String? _hoveredRowIndex;
   int? _sortColumnIndex;
   bool _sortAscending = true;
-  int? _hoveredColumnIndex;
+  // ✅ Use ValueNotifier instead of setState to avoid rebuilding entire widget
+  final ValueNotifier<String?> _hoveredRowIndex = ValueNotifier<String?>(null);
+  final ValueNotifier<int?> _hoveredColumnIndex = ValueNotifier<int?>(null);
   final ScrollController _horizontalScrollController = ScrollController();
   final ScrollController _verticalScrollController = ScrollController();
   bool _isDeleting = false;
@@ -42,6 +44,8 @@ class _BasketListState extends ConsumerState<BasketList> {
   void dispose() {
     _horizontalScrollController.dispose();
     _verticalScrollController.dispose();
+    _hoveredRowIndex.dispose();
+    _hoveredColumnIndex.dispose();
     super.dispose();
   }
 
@@ -137,50 +141,55 @@ class _BasketListState extends ConsumerState<BasketList> {
       return DataColumn2(
         label: SizedBox.expand(
           child: MouseRegion(
-            onEnter: (_) => setState(() => _hoveredColumnIndex = columnIndex),
-            onExit: (_) => setState(() => _hoveredColumnIndex = null),
+            onEnter: (_) => _hoveredColumnIndex.value = columnIndex,
+            onExit: (_) => _hoveredColumnIndex.value = null,
             child: Tooltip(
               message: 'Sort by $header',
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onTap: () => _onSortTable(columnIndex, true),
-                child: Container(
-                  height: double.infinity,
-                  decoration: BoxDecoration(
-                    color: _hoveredColumnIndex == columnIndex
-                        ? (theme.isDarkMode
-                            ? WebDarkColors.primary.withOpacity(0.1)
-                            : WebColors.primary.withOpacity(0.05))
-                        : Colors.transparent,
-                  ),
-                  alignment: isNumeric ? Alignment.centerRight : Alignment.centerLeft,
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: isNumeric ? MainAxisAlignment.end : MainAxisAlignment.start,
-                    children: [
-                      Flexible(
-                        child: Text(
-                          header,
-                          style: WebTextStyles.tableHeader(
-                            isDarkTheme: theme.isDarkMode,
-                            color: theme.isDarkMode
-                                ? WebDarkColors.textPrimary
-                                : WebColors.textPrimary,
+                child: ValueListenableBuilder<int?>(
+                  valueListenable: _hoveredColumnIndex,
+                  builder: (context, hoveredIndex, child) {
+                    return Container(
+                      height: double.infinity,
+                      decoration: BoxDecoration(
+                        color: hoveredIndex == columnIndex
+                            ? (theme.isDarkMode
+                                ? WebDarkColors.primary.withOpacity(0.1)
+                                : WebColors.primary.withOpacity(0.05))
+                            : Colors.transparent,
+                      ),
+                      alignment: isNumeric ? Alignment.centerRight : Alignment.centerLeft,
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: isNumeric ? MainAxisAlignment.end : MainAxisAlignment.start,
+                        children: [
+                          Flexible(
+                            child: Text(
+                              header,
+                              style: WebTextStyles.tableHeader(
+                                isDarkTheme: theme.isDarkMode,
+                                color: theme.isDarkMode
+                                    ? WebDarkColors.textPrimary
+                                    : WebColors.textPrimary,
+                              ),
+                              textAlign: isNumeric ? TextAlign.right : TextAlign.left,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
                           ),
-                          textAlign: isNumeric ? TextAlign.right : TextAlign.left,
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                        ),
+                          const SizedBox(width: 4),
+                          SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: _buildBasketSortIcon(columnIndex, theme),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 4),
-                      SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: _buildBasketSortIcon(columnIndex, theme),
-                      ),
-                    ],
-                  ),
+                    );
+                  },
                 ),
               ),
             ),
@@ -203,23 +212,21 @@ class _BasketListState extends ConsumerState<BasketList> {
       final index = entry.key;
       final basket = entry.value as Map<String, dynamic>;
       final uniqueId = '$index';
-      final isHovered = _hoveredRowIndex == uniqueId;
 
       return DataRow2(
         color: MaterialStateProperty.resolveWith((states) {
-          if (isHovered) {
+          if (states.contains(MaterialState.hovered) || _hoveredRowIndex.value == uniqueId) {
             return theme.isDarkMode
                 ? WebDarkColors.primary.withOpacity(0.06)
                 : WebColors.primary.withOpacity(0.10);
           }
-          return null;
+          return Colors.transparent;
         }),
         cells: headers.map((header) {
           return _buildBasketDataTable2Cell(
             header,
             basket,
             theme,
-            isHovered,
             uniqueId,
             index,
           );
@@ -233,18 +240,18 @@ class _BasketListState extends ConsumerState<BasketList> {
     String column,
     Map<String, dynamic> basket,
     ThemesProvider theme,
-    bool isHovered,
     String uniqueId,
     int index,
   ) {
     Widget cellContent;
+    final isNumeric = _isNumericColumn(column);
+    final alignment = isNumeric ? Alignment.centerRight : Alignment.centerLeft;
     
     switch (column) {
       case 'Basket Name':
         cellContent = _buildBasketNameCellContent(
           basket,
           theme,
-          isHovered,
           uniqueId,
           index,
         );
@@ -270,10 +277,14 @@ class _BasketListState extends ConsumerState<BasketList> {
     // Wrap with MouseRegion to detect hover anywhere on the cell
     return DataCell(
       MouseRegion(
-        onEnter: (_) => setState(() => _hoveredRowIndex = uniqueId),
-        onExit: (_) => setState(() => _hoveredRowIndex = null),
+        onEnter: (_) => _hoveredRowIndex.value = uniqueId,
+        onExit: (_) => _hoveredRowIndex.value = null,
         child: SizedBox.expand(
-          child: cellContent,
+          child: Container(
+            alignment: alignment,
+            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
+            child: cellContent,
+          ),
         ),
       ),
     );
@@ -282,76 +293,83 @@ class _BasketListState extends ConsumerState<BasketList> {
   Widget _buildBasketNameCellContent(
     Map<String, dynamic> basket,
     ThemesProvider theme,
-    bool isHovered,
     String uniqueId,
     int index,
   ) {
     final bsktName = basket['bsketName'] ?? 'N/A';
 
-    return Row(
-      children: [
-        Expanded(
-          flex: isHovered ? 1 : 2,
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: Tooltip(
-              message: bsktName,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SvgPicture.asset(
-                    assets.basketdashboard,
-                    width: 18,
-                    height: 18,
-                    color: theme.isDarkMode
-                        ? WebDarkColors.iconSecondary
-                        : WebColors.iconSecondary,
-                  ),
-                  const SizedBox(width: 8),
-                  Flexible(
-                    child: Text(
-                      bsktName,
-                      style: WebTextStyles.custom(
-                        fontSize: 13,
-                        isDarkTheme: theme.isDarkMode,
+    // ✅ Use ValueListenableBuilder to avoid rebuilding entire table on hover
+    return ValueListenableBuilder<String?>(
+      valueListenable: _hoveredRowIndex,
+      builder: (context, hoveredToken, child) {
+        final rowIsHovered = hoveredToken == uniqueId;
+
+        return Row(
+          children: [
+            Expanded(
+              flex: rowIsHovered ? 1 : 2,
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Tooltip(
+                  message: bsktName,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SvgPicture.asset(
+                        assets.basketdashboard,
+                        width: 18,
+                        height: 18,
                         color: theme.isDarkMode
-                            ? WebDarkColors.textPrimary
-                            : WebColors.textPrimary,
-                        fontWeight: WebFonts.medium,
+                            ? WebDarkColors.iconSecondary
+                            : WebColors.iconSecondary,
                       ),
-                      maxLines: 1,
-                      softWrap: false,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                      const SizedBox(width: 8),
+                      Flexible(
+                        child: Text(
+                          bsktName,
+                          style: WebTextStyles.custom(
+                            fontSize: 13,
+                            isDarkTheme: theme.isDarkMode,
+                            color: theme.isDarkMode
+                                ? WebDarkColors.textPrimary
+                                : WebColors.textPrimary,
+                            fontWeight: WebFonts.medium,
+                          ),
+                          maxLines: 1,
+                          softWrap: false,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
-          ),
-        ),
-        // Action buttons fade in on hover
-        IgnorePointer(
-          ignoring: !isHovered,
-          child: AnimatedOpacity(
-            opacity: isHovered ? 1 : 0,
-            duration: const Duration(milliseconds: 140),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildHoverButton(
-                  label: 'Delete',
-                  color: Colors.white,
-                  backgroundColor: theme.isDarkMode
-                      ? WebDarkColors.tertiary
-                      : WebColors.tertiary,
-                  onPressed: () => _handleDeleteBasket(context, basket, index),
-                  theme: theme,
+            // Action buttons fade in on hover
+            IgnorePointer(
+              ignoring: !rowIsHovered,
+              child: AnimatedOpacity(
+                opacity: rowIsHovered ? 1 : 0,
+                duration: const Duration(milliseconds: 140),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildHoverButton(
+                      label: 'Delete',
+                      color: Colors.white,
+                      backgroundColor: theme.isDarkMode
+                          ? WebDarkColors.tertiary
+                          : WebColors.tertiary,
+                      onPressed: () => _handleDeleteBasket(context, basket, index),
+                      theme: theme,
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
-          ),
-        ),
-      ],
+          ],
+        );
+      },
     );
   }
 
@@ -554,28 +572,57 @@ class _BasketListState extends ConsumerState<BasketList> {
 
 
   Widget _buildHoverButton({
-    required String label,
+    String? label,
+    IconData? icon,
     required Color color,
-    required Color backgroundColor,
+    Color? backgroundColor,
+    Color? borderColor,
+    double? borderRadius,
+    double? iconWeight,
     required VoidCallback? onPressed,
     required ThemesProvider theme,
   }) {
+    final isLongLabel = label != null && label.length > 1;
+    final borderRadiusValue = borderRadius ?? 5.0;
     return SizedBox(
-      height: 28,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-          backgroundColor: backgroundColor,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-          elevation: 0,
-        ),
-        onPressed: onPressed,
-        child: Text(
-          label,
-          style: WebTextStyles.custom(
-            fontSize: 12,
-            isDarkTheme: theme.isDarkMode,
-            color: color,
+      width: isLongLabel ? null : 25,
+      height: 25,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(borderRadiusValue),
+          splashColor: color.withOpacity(0.15),
+          highlightColor: color.withOpacity(0.08),
+          onTap: onPressed,
+          child: Container(
+            padding:
+                isLongLabel ? const EdgeInsets.symmetric(horizontal: 8) : null,
+            decoration: BoxDecoration(
+              color: backgroundColor ?? Colors.transparent,
+              borderRadius: BorderRadius.circular(borderRadiusValue),
+              border: borderColor != null
+                  ? Border.all(
+                      color: borderColor,
+                      width: 1.3,
+                    )
+                  : null,
+            ),
+            child: Center(
+              child: icon != null
+                  ? Icon(
+                      icon,
+                      size: 16,
+                      color: color,
+                      weight: iconWeight ?? 400,
+                    )
+                  : Text(
+                      label ?? "",
+                      style: WebTextStyles.buttonXs(
+                        isDarkTheme: theme.isDarkMode,
+                        color: color,
+                      ),
+                    ),
+            ),
           ),
         ),
       ),
@@ -785,6 +832,7 @@ class _BasketListState extends ConsumerState<BasketList> {
 
   @override
   Widget build(BuildContext context) {
+    // Watch basket provider to rebuild when basket data changes
     final basket = ref.watch(orderProvider);
     final theme = ref.watch(themeProvider);
 
@@ -896,10 +944,11 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
   late TabController _tabController;
   int _tabCount = 5; // For basket mode
   final Map<int, bool> _hoveredItems = {}; // For Buy/Sell button hover
-  String? _hoveredRowIndex;
+  // ✅ Use ValueNotifier instead of setState to avoid rebuilding entire widget
+  final ValueNotifier<String?> _hoveredRowIndex = ValueNotifier<String?>(null);
+  final ValueNotifier<int?> _hoveredColumnIndex = ValueNotifier<int?>(null);
   int? _sortColumnIndex;
   bool _sortAscending = true;
-  int? _hoveredColumnIndex;
   
   // Responsive breakpoints
   static const double _mobileBreakpoint = 768;
@@ -929,6 +978,8 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
     _verticalScrollController.dispose();
     _horizontalScrollController.dispose();
     _tabController.dispose();
+    _hoveredRowIndex.dispose();
+    _hoveredColumnIndex.dispose();
     super.dispose();
   }
 
@@ -1969,56 +2020,11 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
                   Expanded(
                       child: basket.bsktScripList.isEmpty
                           ? const NoDataFound()
-                          : StreamBuilder<Map>(
-                              stream:
-                                  ref.watch(websocketProvider).socketDataStream,
-                              builder: (context, snapshot) {
-                                final socketDatas = snapshot.data ?? {};
-
-                                // Check if we have socket data and need to update
-                                if (snapshot.hasData &&
-                                    socketDatas.isNotEmpty) {
-                                  bool updated = false;
-
-                                  // Update basket script list with real-time values
-                                  for (var script in basket.bsktScripList) {
-                                    final token = script['token']?.toString();
-                                    if (token != null &&
-                                        socketDatas.containsKey(token)) {
-                                      final lp =
-                                          socketDatas[token]['lp']?.toString();
-                                      final pc =
-                                          socketDatas[token]['pc']?.toString();
-
-                                      if (lp != null && lp != "null") {
-                                        if (script['lp']?.toString() != lp) {
-                                          script['lp'] = lp;
-                                          updated = true;
-                                        }
-                                      }
-
-                                      if (pc != null && pc != "null") {
-                                        if (script['pc']?.toString() != pc) {
-                                          script['pc'] = pc;
-                                          updated = true;
-                                        }
-                                      }
-                                    }
-                                  }
-
-                                  // Force a refresh if we have updates
-                                  if (updated) {
-                                    // Update in the next frame to avoid rebuild conflicts
-                                    WidgetsBinding.instance
-                                        .addPostFrameCallback((_) {
-                                      if (context.mounted) {
-                                        // This will trigger a rebuild with the new values
-                                        basket.notifyBasketUpdates();
-                                      }
-                                    });
-                                  }
-                                }
-
+                          : Builder(
+                              builder: (context) {
+                                // ✅ Removed StreamBuilder - LTP cells will handle their own updates
+                                // This prevents the entire table from rebuilding on every websocket update
+                                
                                 // Process basket items to extract symbol info
                                 final processedItems =
                                     List<Map<String, dynamic>>.from(
@@ -2206,7 +2212,8 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
                                   },
                                 );
                               },
-                            )),
+                            ),
+                  ),
                 ]),
               ),
               // Bottom action bar
@@ -2446,11 +2453,12 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
       {Alignment alignment = Alignment.centerRight}) {
     return DataCell(
       MouseRegion(
-        onEnter: (_) => setState(() => _hoveredRowIndex = token),
-        onExit: (_) => setState(() => _hoveredRowIndex = null),
+        onEnter: (_) => _hoveredRowIndex.value = token,
+        onExit: (_) => _hoveredRowIndex.value = null,
         child: SizedBox.expand(
-          child: Align(
+          child: Container(
             alignment: alignment,
+            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
             child: cell.child,
           ),
         ),
@@ -2479,50 +2487,55 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
     final isNumeric = _isNumericColumnBasketItems(label);
     return SizedBox.expand(
       child: MouseRegion(
-        onEnter: (_) => setState(() => _hoveredColumnIndex = columnIndex),
-        onExit: (_) => setState(() => _hoveredColumnIndex = null),
+        onEnter: (_) => _hoveredColumnIndex.value = columnIndex,
+        onExit: (_) => _hoveredColumnIndex.value = null,
         child: Tooltip(
           message: 'Sort by $label',
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTap: () => _onSortTable(columnIndex, true),
-            child: Container(
-              height: double.infinity,
-              decoration: BoxDecoration(
-                color: _hoveredColumnIndex == columnIndex
-                    ? (theme.isDarkMode
-                        ? WebDarkColors.primary.withOpacity(0.1)
-                        : WebColors.primary.withOpacity(0.05))
-                    : Colors.transparent,
-              ),
-              alignment: isNumeric ? Alignment.centerRight : Alignment.centerLeft,
-              padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 6.0),
-              child: Row(
-                mainAxisAlignment: isNumeric ? MainAxisAlignment.end : MainAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Flexible(
-                    child: Text(
-                      label,
-                      style: WebTextStyles.tableHeader(
-                        isDarkTheme: theme.isDarkMode,
-                        color: theme.isDarkMode
-                            ? WebDarkColors.textPrimary
-                            : WebColors.textPrimary,
+            child: ValueListenableBuilder<int?>(
+              valueListenable: _hoveredColumnIndex,
+              builder: (context, hoveredIndex, child) {
+                return Container(
+                  height: double.infinity,
+                  decoration: BoxDecoration(
+                    color: hoveredIndex == columnIndex
+                        ? (theme.isDarkMode
+                            ? WebDarkColors.primary.withOpacity(0.1)
+                            : WebColors.primary.withOpacity(0.05))
+                        : Colors.transparent,
+                  ),
+                  alignment: isNumeric ? Alignment.centerRight : Alignment.centerLeft,
+                  padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 6.0),
+                  child: Row(
+                    mainAxisAlignment: isNumeric ? MainAxisAlignment.end : MainAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          label,
+                          style: WebTextStyles.tableHeader(
+                            isDarkTheme: theme.isDarkMode,
+                            color: theme.isDarkMode
+                                ? WebDarkColors.textPrimary
+                                : WebColors.textPrimary,
+                          ),
+                          textAlign: isNumeric ? TextAlign.right : TextAlign.left,
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
                       ),
-                      textAlign: isNumeric ? TextAlign.right : TextAlign.left,
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                    ),
+                      const SizedBox(width: 4),
+                      SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: _buildBasketItemsSortIcon(columnIndex, theme),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 4),
-                  SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: _buildBasketItemsSortIcon(columnIndex, theme),
-                  ),
-                ],
-              ),
+                );
+              },
             ),
           ),
         ),
@@ -2590,11 +2603,10 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
         final item = sorted[index];
         final originalIndex = item['_originalIndex'] as int;
         final uniqueId = 'basket_$originalIndex';
-        final isHovered = _hoveredRowIndex == uniqueId;
 
         return MouseRegion(
-          onEnter: (_) => setState(() => _hoveredRowIndex = uniqueId),
-          onExit: (_) => setState(() => _hoveredRowIndex = null),
+          onEnter: (_) => _hoveredRowIndex.value = uniqueId,
+          onExit: (_) => _hoveredRowIndex.value = null,
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTap: () async {
@@ -2652,68 +2664,73 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
                 isBasket: 'BasketEdit',
               );
             },
-            child: Container(
-              decoration: BoxDecoration(
-                color: isHovered
-                    ? (theme.isDarkMode
-                        ? WebDarkColors.primary.withOpacity(0.06)
-                        : WebColors.primary.withOpacity(0.10))
-                    : Colors.transparent,
-                border: Border(
-                  bottom: BorderSide(
-                    color: theme.isDarkMode
-                        ? WebDarkColors.divider
-                        : WebColors.divider,
-                    width: 1,
-                  ),
-                ),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              child: needHorizontalScroll
-                  ? IntrinsicWidth(
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: headers.map((label) {
-                          final flex = columnFlex[label] ?? 1;
-                          final minW = columnMinWidth[label] ?? 80.0;
-                          return _buildBasketColumnCell(
-                            needHorizontalScroll: needHorizontalScroll,
-                            flex: flex,
-                            minW: minW,
-                            child: _buildBasketCellWidget(
-                              label,
-                              item,
-                              originalIndex,
-                              theme,
-                              isHovered,
-                              uniqueId,
-                              needHorizontalScroll: needHorizontalScroll,
-                            ),
-                          );
-                        }).toList(),
+            child: ValueListenableBuilder<String?>(
+              valueListenable: _hoveredRowIndex,
+              builder: (context, hoveredToken, child) {
+                final rowIsHovered = hoveredToken == uniqueId;
+                
+                return Container(
+                  decoration: BoxDecoration(
+                    color: rowIsHovered
+                        ? (theme.isDarkMode
+                            ? WebDarkColors.primary.withOpacity(0.06)
+                            : WebColors.primary.withOpacity(0.10))
+                        : Colors.transparent,
+                    border: Border(
+                      bottom: BorderSide(
+                        color: theme.isDarkMode
+                            ? WebDarkColors.divider
+                            : WebColors.divider,
+                        width: 1,
                       ),
-                    )
-                  : Row(
-                      mainAxisSize: MainAxisSize.max,
-                      children: headers.map((label) {
-                        final flex = columnFlex[label] ?? 1;
-                        final minW = columnMinWidth[label] ?? 80.0;
-                        return _buildBasketColumnCell(
-                          needHorizontalScroll: needHorizontalScroll,
-                          flex: flex,
-                          minW: minW,
-                          child: _buildBasketCellWidget(
-                            label,
-                            item,
-                            originalIndex,
-                            theme,
-                            isHovered,
-                            uniqueId,
-                            needHorizontalScroll: needHorizontalScroll,
-                          ),
-                        );
-                      }).toList(),
                     ),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  child: needHorizontalScroll
+                      ? IntrinsicWidth(
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: headers.map((label) {
+                              final flex = columnFlex[label] ?? 1;
+                              final minW = columnMinWidth[label] ?? 80.0;
+                              return _buildBasketColumnCell(
+                                needHorizontalScroll: needHorizontalScroll,
+                                flex: flex,
+                                minW: minW,
+                                child: _buildBasketCellWidget(
+                                  label,
+                                  item,
+                                  originalIndex,
+                                  theme,
+                                  uniqueId,
+                                  needHorizontalScroll: needHorizontalScroll,
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        )
+                      : Row(
+                          mainAxisSize: MainAxisSize.max,
+                          children: headers.map((label) {
+                            final flex = columnFlex[label] ?? 1;
+                            final minW = columnMinWidth[label] ?? 80.0;
+                            return _buildBasketColumnCell(
+                              needHorizontalScroll: needHorizontalScroll,
+                              flex: flex,
+                              minW: minW,
+                              child: _buildBasketCellWidget(
+                                label,
+                                item,
+                                originalIndex,
+                                theme,
+                                uniqueId,
+                                needHorizontalScroll: needHorizontalScroll,
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                );
+              },
             ),
           ),
         );
@@ -2726,7 +2743,6 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
     Map<String, dynamic> item,
     int originalIndex,
     ThemesProvider theme,
-    bool isHovered,
     String uniqueId, {
     required bool needHorizontalScroll,
   }) {
@@ -2736,7 +2752,6 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
           item,
           originalIndex,
           theme,
-          isHovered,
           uniqueId,
           needHorizontalScroll: needHorizontalScroll,
         );
@@ -2778,13 +2793,26 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
           Alignment.centerRight,
           needHorizontalScroll: needHorizontalScroll,
         );
+      // Dynamic columns - use isolated widgets that manage their own state
+      // Each widget only rebuilds itself, not the table
       case 'LTP':
-        return _buildBasketTextCell(
-          item["lp"]?.toString() ?? '0.00',
-          theme,
-          Alignment.centerRight,
-          needHorizontalScroll: needHorizontalScroll,
-        );
+        final token = item['token']?.toString();
+        if (token == null || token.isEmpty) {
+          return _buildBasketTextCell(
+            item["lp"]?.toString() ?? '0.00',
+            theme,
+            Alignment.centerRight,
+            needHorizontalScroll: needHorizontalScroll,
+          );
+        } else {
+          return _BasketLTPCell(
+            token: token,
+            initialLtp: item["lp"]?.toString() ?? '0.00',
+            item: item, // Pass item reference to update model for sorting
+            theme: theme, // Pass theme for proper styling
+            needHorizontalScroll: needHorizontalScroll,
+          );
+        }
       case 'Status':
         final status = item["orderStatus"]?.toString() ?? '-';
         return _buildBasketTextCell(
@@ -2802,7 +2830,6 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
     Map<String, dynamic> item,
     int originalIndex,
     ThemesProvider theme,
-    bool isHovered,
     String uniqueId, {
     required bool needHorizontalScroll,
   }) {
@@ -2818,12 +2845,18 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
       displayText += ' $option';
     }
 
-    return ClipRect(
-      child: Row(
-        mainAxisSize: MainAxisSize.max,
-        children: [
-          Flexible(
-            flex: isHovered ? 1 : 2,
+    // ✅ Use ValueListenableBuilder to avoid rebuilding entire table on hover
+    return ValueListenableBuilder<String?>(
+      valueListenable: _hoveredRowIndex,
+      builder: (context, hoveredToken, child) {
+        final rowIsHovered = hoveredToken == uniqueId;
+        
+        return ClipRect(
+          child: Row(
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              Flexible(
+                flex: rowIsHovered ? 1 : 2,
             child: Align(
               alignment: Alignment.centerLeft,
               child: Tooltip(
@@ -2847,9 +2880,9 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
           ),
           // Delete button fade in on hover
           IgnorePointer(
-            ignoring: !isHovered,
+            ignoring: !rowIsHovered,
             child: AnimatedOpacity(
-              opacity: isHovered ? 1 : 0,
+              opacity: rowIsHovered ? 1 : 0,
               duration: const Duration(milliseconds: 140),
               child: _buildBasketHoverButton(
                 label: 'Delete',
@@ -2868,6 +2901,8 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
           ),
         ],
       ),
+    );
+      },
     );
   }
 
@@ -2933,8 +2968,6 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
 
   DataCell _buildBasketInstrumentCellWithHover(Map<String, dynamic> item,
       int index, ThemesProvider theme, String token) {
-    final isHovered = _hoveredRowIndex == token;
-
     String symbol = '${item['symbol']?.replaceAll("-EQ", "") ?? 'N/A'}';
     String expDate = item['expDate'] ?? '';
     String option = item['option'] ?? '';
@@ -2947,63 +2980,71 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
       displayText += ' $option';
     }
 
+    // ✅ Use ValueListenableBuilder to avoid rebuilding entire table on hover
     return DataCell(
-      MouseRegion(
-        onEnter: (_) => setState(() => _hoveredRowIndex = token),
-        onExit: (_) => setState(() => _hoveredRowIndex = null),
-        child: SizedBox.expand(
-          child: Row(
-            children: [
-              // Text that takes at least 50% of width, leaves space for buttons
-              Expanded(
-                flex: isHovered
-                    ? 1
-                    : 2, // When hovered, text takes less space but still visible
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Tooltip(
-                    message: displayText,
-                    child: Text(
-                      displayText,
-                      style: WebTextStyles.tableDataCompact(
-                        isDarkTheme: theme.isDarkMode,
-                        color: theme.isDarkMode
-                            ? WebDarkColors.textPrimary
-                            : WebColors.textPrimary,
+      ValueListenableBuilder<String?>(
+        valueListenable: _hoveredRowIndex,
+        builder: (context, hoveredToken, child) {
+          final isHovered = hoveredToken == token;
+          
+          return MouseRegion(
+            onEnter: (_) => _hoveredRowIndex.value = token,
+            onExit: (_) => _hoveredRowIndex.value = null,
+            child: SizedBox.expand(
+              child: Row(
+                children: [
+                  // Text that takes at least 50% of width, leaves space for buttons
+                  Expanded(
+                    flex: isHovered
+                        ? 1
+                        : 2, // When hovered, text takes less space but still visible
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Tooltip(
+                        message: displayText,
+                        child: Text(
+                          displayText,
+                          style: WebTextStyles.tableDataCompact(
+                            isDarkTheme: theme.isDarkMode,
+                            color: theme.isDarkMode
+                                ? WebDarkColors.textPrimary
+                                : WebColors.textPrimary,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
                       ),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
                     ),
                   ),
-                ),
-              ),
-              // Buttons on the right side - fade in/out
-              IgnorePointer(
-                ignoring: !isHovered,
-                child: AnimatedOpacity(
-                  opacity: isHovered ? 1.0 : 0.0,
-                  duration: const Duration(milliseconds: 150),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Delete button
-                      _buildBasketHoverButton(
-                        label: 'Delete',
-                        color: Colors.white,
-                        backgroundColor: theme.isDarkMode
-                            ? WebDarkColors.tertiary
-                            : WebColors.tertiary,
-                        onPressed: () =>
-                            _handleDeleteBasketScript(item, index, theme),
-                        theme: theme,
+                  // Buttons on the right side - fade in/out
+                  IgnorePointer(
+                    ignoring: !isHovered,
+                    child: AnimatedOpacity(
+                      opacity: isHovered ? 1.0 : 0.0,
+                      duration: const Duration(milliseconds: 150),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Delete button
+                          _buildBasketHoverButton(
+                            label: 'Delete',
+                            color: Colors.white,
+                            backgroundColor: theme.isDarkMode
+                                ? WebDarkColors.tertiary
+                                : WebColors.tertiary,
+                            onPressed: () =>
+                                _handleDeleteBasketScript(item, index, theme),
+                            theme: theme,
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
+                ],
               ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -3084,17 +3125,31 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
 
   DataCell _buildBasketLTPCell(
       Map<String, dynamic> item, ThemesProvider theme) {
-    String ltp = item['lp']?.toString() ?? "0.00";
-
-    return DataCell(
-      Text(
-        ltp,
-        style: WebTextStyles.tableDataCompact(
-          isDarkTheme: theme.isDarkMode,
-          color: theme.isDarkMode
-              ? WebDarkColors.textPrimary
-              : WebColors.textPrimary,
+    final token = item['token']?.toString();
+    final initialLtp = item['lp']?.toString() ?? "0.00";
+    
+    if (token == null || token.isEmpty) {
+      return DataCell(
+        Text(
+          initialLtp,
+          style: WebTextStyles.tableDataCompact(
+            isDarkTheme: theme.isDarkMode,
+            color: theme.isDarkMode
+                ? WebDarkColors.textPrimary
+                : WebColors.textPrimary,
+          ),
         ),
+      );
+    }
+    
+    // Use isolated widget for real-time updates
+    return DataCell(
+      _BasketLTPCell(
+        token: token,
+        initialLtp: initialLtp,
+        item: item,
+        theme: theme,
+        needHorizontalScroll: false,
       ),
     );
   }
@@ -3318,5 +3373,69 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
       await basket.removeBsktScrip(index, widget.bsktName);
       await basket.fetchBasketMargin();
     }
+  }
+}
+
+// Isolated widget for Basket LTP - only this rebuilds when LTP changes
+class _BasketLTPCell extends ConsumerStatefulWidget {
+  final String token;
+  final String initialLtp;
+  final Map<String, dynamic> item; // Pass item to update model for sorting
+  final ThemesProvider theme; // Pass theme for proper styling
+  final bool needHorizontalScroll;
+
+  const _BasketLTPCell({
+    required this.token,
+    required this.initialLtp,
+    required this.item,
+    required this.theme,
+    required this.needHorizontalScroll,
+  });
+
+  @override
+  ConsumerState<_BasketLTPCell> createState() => _BasketLTPCellState();
+}
+
+class _BasketLTPCellState extends ConsumerState<_BasketLTPCell> {
+  late String ltp;
+  StreamSubscription? _subscription;
+
+  @override
+  void initState() {
+    super.initState();
+    ltp = widget.initialLtp;
+
+    _subscription = ref.read(websocketProvider).socketDataStream.listen((data) {
+      if (!mounted || !data.containsKey(widget.token)) return;
+
+      final newLtp = data[widget.token]['lp']?.toString();
+      if (newLtp != null && newLtp != ltp && newLtp != '0.00' && newLtp != 'null') {
+        // Update both widget state and model for sorting to work
+        setState(() => ltp = newLtp);
+        // Update model's ltp field so sorting works correctly
+        // This doesn't trigger parent rebuild because we're not calling setState on parent
+        widget.item['lp'] = newLtp;
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      ltp,
+      textAlign: TextAlign.right,
+      style: WebTextStyles.tableDataCompact(
+        isDarkTheme: widget.theme.isDarkMode,
+        color: widget.theme.isDarkMode
+            ? WebDarkColors.textPrimary
+            : WebColors.textPrimary,
+      ),
+    );
   }
 }

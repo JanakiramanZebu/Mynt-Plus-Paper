@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'dart:html' as html;
 
 import 'package:mynt_plus/models/marketwatch_model/scrip_info.dart';
 import 'package:mynt_plus/models/order_book_model/place_order_model.dart';
@@ -25,8 +26,10 @@ import 'package:mynt_plus/utils/responsive_navigation.dart';
 import 'package:mynt_plus/utils/responsive_snackbar.dart';
 
 import '../../../res/web_colors.dart';
+import '../market_watch/tv_chart/chart_iframe_guard.dart';
 import 'margin_charges_sheet_web.dart';
 import 'slice_order_sheet_web.dart';
+import 'package:pointer_interceptor/pointer_interceptor.dart';
 
 class QuickOrderScreenWeb extends ConsumerStatefulWidget {
   final OrderScreenArgs orderArg;
@@ -124,6 +127,48 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
   void initState() {
     super.initState();
     _initializeFromProps();
+  }
+
+  // Directly disable all chart iframes and reset cursor (like chart's onExit)
+  void _disableAllChartIframes() {
+    try {
+      final iframes = html.document.querySelectorAll('iframe');
+      for (var iframe in iframes) {
+        if (iframe is html.IFrameElement && iframe.id.contains('chart-iframe')) {
+          iframe.style.pointerEvents = 'none';
+          // Reset cursor style to prevent cursor bleeding
+          iframe.style.cursor = 'default';
+        }
+      }
+      // Also reset cursor on document body to ensure it's reset globally
+      html.document.body?.style.cursor = 'default';
+    } catch (e) {
+      debugPrint('Error disabling iframes: $e');
+    }
+  }
+
+  void _enableAllChartIframes() {
+    try {
+      final iframes = html.document.querySelectorAll('iframe');
+      for (var iframe in iframes) {
+        if (iframe is html.IFrameElement && iframe.id.contains('chart-iframe')) {
+          iframe.style.pointerEvents = 'auto';
+          iframe.style.cursor = '';
+        }
+      }
+      html.document.body?.style.cursor = '';
+    } catch (e) {
+      debugPrint('Error enabling iframes: $e');
+    }
+  }
+
+  @override
+  void dispose() {
+    if (_showSurveillanceDialog) {
+      ChartIframeGuard.release();
+      _enableAllChartIframes();
+    }
+    super.dispose();
   }
 
   @override
@@ -267,16 +312,36 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
             child: Container(
               color: Colors.black.withOpacity(0.5),
               child: Center(
-                child: Container(
-                  constraints: const BoxConstraints(maxWidth: 400),
-                  margin: const EdgeInsets.symmetric(horizontal: 16),
-                  decoration: BoxDecoration(
-                    color: theme.isDarkMode
-                        ? WebDarkColors.surface
-                        : WebColors.surface,
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  child: Column(
+                child: PointerInterceptor(
+                  child: MouseRegion(
+                    cursor: SystemMouseCursors.basic,
+                    onEnter: (_) {
+                      ChartIframeGuard.acquire();
+                      _disableAllChartIframes();
+                    },
+                    onHover: (_) {
+                      _disableAllChartIframes();
+                    },
+                    onExit: (_) {
+                      ChartIframeGuard.release();
+                      _enableAllChartIframes();
+                    },
+                    child: Listener(
+                      onPointerMove: (_) {
+                        _disableAllChartIframes();
+                      },
+                      child: GestureDetector(
+                        onTap: () {}, // Prevent tap from propagating to background
+                        child: Container(
+                          constraints: const BoxConstraints(maxWidth: 400),
+                          margin: const EdgeInsets.symmetric(horizontal: 16),
+                          decoration: BoxDecoration(
+                            color: theme.isDarkMode
+                                ? WebDarkColors.surface
+                                : WebColors.surface,
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                          child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -325,6 +390,8 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
                                   ? Colors.white.withOpacity(.08)
                                   : Colors.black.withOpacity(.08),
                               onTap: () {
+                                ChartIframeGuard.release();
+                                _enableAllChartIframes();
                                 setState(() {
                                   _showSurveillanceDialog = false;
                                   _pendingSurveillanceAction = null;
@@ -368,6 +435,8 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
                             height: 40,
                             child: ElevatedButton(
                               onPressed: () async {
+                                ChartIframeGuard.release();
+                                _enableAllChartIframes();
                                 setState(() {
                                   _showSurveillanceDialog = false;
                                 });
@@ -401,6 +470,10 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
                       ),
                     ),
                   ],
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),

@@ -43,6 +43,7 @@ import '../screens/Mobile/market_watch/scrip_depth_info.dart';
 // import '../screens/market_watch/scrip_depth_info.dart';
 import '../sharedWidget/functions.dart';
 import '../sharedWidget/snack_bar.dart';
+import '../utils/responsive_snackbar.dart';
 import 'auth_provider.dart';
 import 'core/default_change_notifier.dart';
 import 'index_list_provider.dart';
@@ -1489,7 +1490,11 @@ class MarketWatchProvider extends DefaultChangeNotifier {
               element.tsym!.toLowerCase().contains(value.toLowerCase()))
           .toList();
       if (_alertPendingSearch!.isEmpty) {
-        warningMessage(context, 'No Data Found');
+        if (kIsWeb) {
+          ResponsiveSnackBar.showWarning(context, 'No Data Found');
+        } else {
+          warningMessage(context, 'No Data Found');
+        }
       } else {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
       }
@@ -3137,7 +3142,11 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
     // Check if this is the last user watchlist
     if (userWatchlistCount == 1 && !_preDefWL.contains(walName)) {
-      error(context, "Cannot delete the last watchlist");
+      if (kIsWeb) {
+        ResponsiveSnackBar.showError(context, "Cannot delete the last watchlist");
+      } else {
+        error(context, "Cannot delete the last watchlist");
+      }
       return;
     }
 
@@ -3169,7 +3178,11 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         await changeWLScrip(newActiveWatchlist, context);
       }
 
-      successMessage(context, "Watchlist deleted successfully");
+      if (kIsWeb) {
+        ResponsiveSnackBar.showSuccess(context, "Watchlist deleted successfully");
+      } else {
+        successMessage(context, "Watchlist deleted successfully");
+      }
       notifyListeners();
       return;
     }
@@ -3223,11 +3236,19 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           await changeWLScrip(newActiveWatchlist, context);
         }
 
-        successMessage(context, "Watchlist deleted successfully");
+        if (kIsWeb) {
+          ResponsiveSnackBar.showSuccess(context, "Watchlist deleted successfully");
+        } else {
+          successMessage(context, "Watchlist deleted successfully");
+        }
         // Update UI to reflect changes
         notifyListeners();
       }else{
-        error(context, "Failed to delete watchlist");
+        if (kIsWeb) {
+          ResponsiveSnackBar.showError(context, "Failed to delete watchlist");
+        } else {
+          error(context, "Failed to delete watchlist");
+        }
       }
     } catch (e) {
       print("Error in deleteWatchList: $e");
@@ -3242,7 +3263,11 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     // Validate watchlist name using centralized validation
     final validationError = validateWatchlistName(wlName);
     if (validationError != null) {
-      error(context, validationError);
+      if (kIsWeb) {
+        ResponsiveSnackBar.showError(context, validationError);
+      } else {
+        error(context, validationError);
+      }
       return;
     }
 
@@ -3294,7 +3319,11 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       if (newWatchlistIndex != -1) {
         setCurrentWatchlistPageIndex(newWatchlistIndex);
       }
-      successMessage(context, "Watchlist created successfully");
+      if (kIsWeb) {
+        ResponsiveSnackBar.showSuccess(context, "Watchlist created successfully");
+      } else {
+        successMessage(context, "Watchlist created successfully");
+      }
     }
 
     notifyListeners();
@@ -3364,7 +3393,11 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           // Wrap ScaffoldMessenger calls in try-catch to handle disposed widgets
           try {
             ScaffoldMessenger.of(context).hideCurrentSnackBar();
-            successMessage(context, "Scrip order was changed");
+            if (kIsWeb) {
+              ResponsiveSnackBar.showSuccess(context, "Scrip order was changed");
+            } else {
+              successMessage(context, "Scrip order was changed");
+            }
           } catch (e) {
             if (e.toString().contains("widget was disposed") ||
                 e.toString().contains("after the widget was disposed")) {
@@ -3378,11 +3411,19 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           // Wrap ScaffoldMessenger calls in try-catch to handle disposed widgets
           try {
             ScaffoldMessenger.of(context).hideCurrentSnackBar();
-            successMessage(
-                context,
-                isAdd
-                    ? "Scrip was added to watchlist $wlName"
-                    : "Scrip was removed from watchlist $wlName");
+            if (kIsWeb) {
+              ResponsiveSnackBar.showSuccess(
+                  context,
+                  isAdd
+                      ? "Scrip was added to watchlist $wlName"
+                      : "Scrip was removed from watchlist $wlName");
+            } else {
+              successMessage(
+                  context,
+                  isAdd
+                      ? "Scrip was added to watchlist $wlName"
+                      : "Scrip was removed from watchlist $wlName");
+            }
           } catch (e) {
             if (e.toString().contains("widget was disposed") ||
                 e.toString().contains("after the widget was disposed")) {
@@ -3415,7 +3456,11 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       } else if (_addDeleteScripModel!.emsg ==
           "Invalid Input : At least one stock must remain in the Market Watch.") {
         // _delScripQty = 1;
-        error(context, "At least one stock must remain in the Market Watch.");
+        if (kIsWeb) {
+          ResponsiveSnackBar.showError(context, "At least one stock must remain in the Market Watch.");
+        } else {
+          error(context, "At least one stock must remain in the Market Watch.");
+        }
       }
       return false;
     } catch (e) {
@@ -4251,7 +4296,11 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         ref.read(orderProvider).tabSize();
 
         // Display success message
-        successMessage(context, "Alert created successfully");
+        if (kIsWeb) {
+          ResponsiveSnackBar.showSuccess(context, "Alert created successfully");
+        } else {
+          successMessage(context, "Alert created successfully");
+        }
 
         // Close the alert creation screens
         Navigator.pop(context);
@@ -4273,7 +4322,11 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       }
 
       if (_setAlertModel!.stat! != "OI created") {
-        warningMessage(context, "Alert not created");
+        if (kIsWeb) {
+          ResponsiveSnackBar.showWarning(context, "Alert not created");
+        } else {
+          warningMessage(context, "Alert not created");
+        }
       }
 
       notifyListeners();
@@ -4307,7 +4360,11 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         ref.read(orderProvider).tabSize();
 
         // Display success message
-        successMessage(context, "Alert created successfully");
+        if (kIsWeb) {
+          ResponsiveSnackBar.showSuccess(context, "Alert created successfully");
+        } else {
+          successMessage(context, "Alert created successfully");
+        }
         
             // Close the dialog
             Navigator.of(context).pop();
@@ -4331,7 +4388,11 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           _setAlertModel!.stat == "Session Expired :  Invalid Session Key") {
         ref.read(authProvider).ifSessionExpired(context);
       } else if (_setAlertModel!.stat! != "OI created") {
-        warningMessage(context, "Alert not created");
+        if (kIsWeb) {
+          ResponsiveSnackBar.showWarning(context, "Alert not created");
+        } else {
+          warningMessage(context, "Alert not created");
+        }
       }
 
       notifyListeners();
@@ -4406,7 +4467,11 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         // This should be safe since we're using the context from the caller
         // which should be the order book screen that remains active
         try {
-          successMessage(context, "Alert deleted successfully");
+          if (kIsWeb) {
+            ResponsiveSnackBar.showSuccess(context, "Alert deleted successfully");
+          } else {
+            successMessage(context, "Alert deleted successfully");
+          }
         } catch (e) {
           print("Could not show SnackBar: $e");
         }
@@ -4441,7 +4506,11 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
         // Update the tab count immediately
         ref.read(orderProvider).tabSize();
-        successMessage(context, "Alert modified successfully");
+        if (kIsWeb) {
+          ResponsiveSnackBar.showSuccess(context, "Alert modified successfully");
+        } else {
+          successMessage(context, "Alert modified successfully");
+        }
       } else if (_modifyalertmodel!.stat == "Not_Ok") {
         ref.read(authProvider).ifSessionExpired(context);
       }
@@ -4507,8 +4576,13 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
         toggleLoadingOn(false);
         Navigator.pop(context);
-        successMessage(context,
-            "The name of the watchlist has been successfully changed.");
+        if (kIsWeb) {
+          ResponsiveSnackBar.showSuccess(context,
+              "The name of the watchlist has been successfully changed.");
+        } else {
+          successMessage(context,
+              "The name of the watchlist has been successfully changed.");
+        }
         notifyListeners();
         return;
       }
@@ -4538,13 +4612,22 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
         Navigator.pop(context);
         Navigator.pop(context);
-        successMessage(context,
-            "The name of the watchlist has been successfully changed.");
+        if (kIsWeb) {
+          ResponsiveSnackBar.showSuccess(context,
+              "The name of the watchlist has been successfully changed.");
+        } else {
+          successMessage(context,
+              "The name of the watchlist has been successfully changed.");
+        }
         notifyListeners();
       } else if (_watchlistRenameModel!.stat == "Not_Ok") {
         Navigator.pop(context);
         Navigator.pop(context);
-        warningMessage(context, "${_watchlistRenameModel!.emsg}");
+        if (kIsWeb) {
+          ResponsiveSnackBar.showWarning(context, "${_watchlistRenameModel!.emsg}");
+        } else {
+          warningMessage(context, "${_watchlistRenameModel!.emsg}");
+        }
       } else if (_watchlistRenameModel!.emsg ==
           "Session Expired :  Invalid Session Key") {
         ref.read(authProvider).ifSessionExpired(context);

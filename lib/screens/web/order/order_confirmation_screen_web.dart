@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/utils/custom_navigator.dart';
+import 'dart:html' as html;
 import '../../../models/order_book_model/order_history_model.dart';
 import '../../../models/order_book_model/place_order_model.dart';
 import '../../../provider/order_provider.dart';
@@ -10,6 +11,8 @@ import '../../../provider/index_list_provider.dart';
 import '../../../provider/portfolio_provider.dart';
 import '../../../res/web_colors.dart';
 import '../../../res/global_font_web.dart';
+import '../market_watch/tv_chart/chart_iframe_guard.dart';
+import 'package:pointer_interceptor/pointer_interceptor.dart';
 
 class OrderConfirmationScreenWeb extends ConsumerStatefulWidget {
   final List<PlaceOrderModel> orderData;
@@ -34,6 +37,46 @@ class _OrderConfirmationScreenWebState extends ConsumerState<OrderConfirmationSc
   void initState() {
     super.initState();
     _initializeOrderStates();
+  }
+
+  // Directly disable all chart iframes and reset cursor (like chart's onExit)
+  void _disableAllChartIframes() {
+    try {
+      final iframes = html.document.querySelectorAll('iframe');
+      for (var iframe in iframes) {
+        if (iframe is html.IFrameElement && iframe.id.contains('chart-iframe')) {
+          iframe.style.pointerEvents = 'none';
+          // Reset cursor style to prevent cursor bleeding
+          iframe.style.cursor = 'default';
+        }
+      }
+      // Also reset cursor on document body to ensure it's reset globally
+      html.document.body?.style.cursor = 'default';
+    } catch (e) {
+      debugPrint('Error disabling iframes: $e');
+    }
+  }
+
+  void _enableAllChartIframes() {
+    try {
+      final iframes = html.document.querySelectorAll('iframe');
+      for (var iframe in iframes) {
+        if (iframe is html.IFrameElement && iframe.id.contains('chart-iframe')) {
+          iframe.style.pointerEvents = 'auto';
+          iframe.style.cursor = '';
+        }
+      }
+      html.document.body?.style.cursor = '';
+    } catch (e) {
+      debugPrint('Error enabling iframes: $e');
+    }
+  }
+
+  @override
+  void dispose() {
+    ChartIframeGuard.release();
+    _enableAllChartIframes();
+    super.dispose();
   }
 
   void _initializeOrderStates() {
@@ -130,7 +173,27 @@ class _OrderConfirmationScreenWebState extends ConsumerState<OrderConfirmationSc
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(5),
       ),
-      child: Container(
+      child: PointerInterceptor(
+        child: MouseRegion(
+          cursor: SystemMouseCursors.basic,
+          onEnter: (_) {
+            ChartIframeGuard.acquire();
+            _disableAllChartIframes();
+          },
+          onHover: (_) {
+            _disableAllChartIframes();
+          },
+          onExit: (_) {
+            ChartIframeGuard.release();
+            _enableAllChartIframes();
+          },
+          child: Listener(
+            onPointerMove: (_) {
+              _disableAllChartIframes();
+            },
+            child: GestureDetector(
+              onTap: () {}, // Prevent tap from propagating to background
+              child: Container(
         width: 500,
         constraints: const BoxConstraints(maxHeight: 700),
         child: Column(
@@ -204,7 +267,9 @@ class _OrderConfirmationScreenWebState extends ConsumerState<OrderConfirmationSc
                       padding: const EdgeInsets.all(20),
                       margin: const EdgeInsets.only(bottom: 16),
                       decoration: BoxDecoration(
-                        color: WebDarkColors.textPrimary,
+                        color: theme.isDarkMode
+                            ? WebDarkColors.backgroundTertiary
+                            : WebColors.backgroundTertiary,
                         borderRadius: BorderRadius.circular(5),
                       ),
                       child: Column(
@@ -456,6 +521,10 @@ class _OrderConfirmationScreenWebState extends ConsumerState<OrderConfirmationSc
               ),
             ),
           ],
+        ),
+              ),
+            ),
+          ),
         ),
       ),
     );

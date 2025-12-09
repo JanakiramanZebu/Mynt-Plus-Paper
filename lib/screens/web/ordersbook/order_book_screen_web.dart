@@ -45,7 +45,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
   final Set<int> _selectedOrders = <int>{};
   TabController?
       _tabController; // Make nullable to allow deferred initialization
-  StreamSubscription? _socketSubscription;
+  // ✅ REMOVED: _socketSubscription - isolated cell widgets handle socket updates directly
   final ScrollController _openOrdersHorizontalScrollController = ScrollController();
   final ScrollController _openOrdersVerticalScrollController = ScrollController();
   final ScrollController _executedOrdersHorizontalScrollController = ScrollController();
@@ -55,8 +55,9 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
       ScrollController();
   final ScrollController _gttVerticalScrollController = ScrollController();
   final ScrollController _tabScrollController = ScrollController();
-  String? _hoveredRowToken; // Track which row is being hovered
-  int? _hoveredColumnIndex; // Track which column is being hovered
+  // ✅ Use ValueNotifier instead of setState to avoid rebuilding entire widget
+  final ValueNotifier<String?> _hoveredRowToken = ValueNotifier<String?>(null);
+  final ValueNotifier<int?> _hoveredColumnIndex = ValueNotifier<int?>(null);
 
   // Track processing states for order actions
   bool _isProcessingCancel = false;
@@ -135,14 +136,20 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
       _tabController!.addListener(() {
         if (!_tabController!.indexIsChanging) {
           // Only call when tab change is complete, not during animation
+          if (mounted) {
+            setState(() {
+              // Trigger rebuild to update tab selection UI
+            });
+          }
           ref
               .read(orderProvider)
               .changeTabIndex(_tabController!.index, context);
         }
       });
 
-      // Set up WebSocket subscription listener (for receiving updates, not subscribing)
-      _setupSocketSubscription();
+      // ✅ REMOVED: _setupSocketSubscription()
+      // Isolated cell widgets handle socket updates directly
+      // No need for parent widget to listen to socket at all
 
       if (mounted) {
         setState(() {
@@ -162,7 +169,6 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
 
   @override
   void dispose() {
-    _socketSubscription?.cancel();
     _tabController?.dispose(); // Handle nullable TabController
     _openOrdersHorizontalScrollController.dispose();
     _openOrdersVerticalScrollController.dispose();
@@ -170,243 +176,21 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     _executedOrdersVerticalScrollController.dispose();
     _tradeBookHorizontalScrollController.dispose();
     _tradeBookVerticalScrollController.dispose();
+    _hoveredRowToken.dispose();
+    _hoveredColumnIndex.dispose();
     _gttVerticalScrollController.dispose();
     _gttHorizontalScrollController.dispose();
     _tabScrollController.dispose();
     super.dispose();
   }
 
-  void _setupSocketSubscription() {
-    Future.microtask(() {
-      final socketProvider = ref.read(websocketProvider);
+  // ✅ REMOVED: _setupSocketSubscription(), _processUpdates(), _updateOrderBook()
+  // Isolated cell widgets handle socket updates directly
+  // No need for parent widget to listen to socket at all
 
-      _socketSubscription =
-          socketProvider.socketDataStream.listen((socketDatas) {
-        if (socketDatas.isEmpty) return;
-
-        if (mounted) {
-          _processUpdates(socketDatas);
-        }
-      });
-    });
-  }
-
-  void _processUpdates(Map socketDatas) {
-    // Check if widget is still mounted before accessing providers
-    if (!mounted) return;
-
-    bool hasUpdates = false;
-    final orderBook = ref.read(orderProvider);
-
-    // Helper function to check if a string is a valid numeric price
-    bool isValidNumeric(String? value) {
-      if (value == null || value == "null") {
-        return false;
-      }
-      return double.tryParse(value) != null;
-    }
-
-    // Update order book with LTP changes
-    _updateOrderBook(orderBook, socketDatas, isValidNumeric,
-        (updated) => hasUpdates = hasUpdates || updated);
-
-    // Update trade book with LTP changes
-    _updateTradeBook(orderBook, socketDatas, isValidNumeric,
-        (updated) => hasUpdates = hasUpdates || updated);
-
-    // Update GTT order book with LTP changes
-    _updateGttOrderBook(orderBook, socketDatas, isValidNumeric,
-        (updated) => hasUpdates = hasUpdates || updated);
-
-    // Notify listener if there were updates
-    if (hasUpdates && mounted) {
-      setState(() {});
-    }
-  }
-
-  void _updateOrderBook(OrderProvider orderBook, Map socketDatas,
-      bool Function(String?) isValidNumeric, Function(bool) setHasUpdates) {
-    // Update open orders
-    if (orderBook.openOrder != null) {
-      for (var order in orderBook.openOrder!) {
-        if (order.token == null || order.token!.isEmpty) continue;
-        if (!socketDatas.containsKey(order.token)) continue;
-
-        final socketData = socketDatas[order.token];
-        if (socketData == null || socketData.isEmpty) continue;
-
-        final lp = socketData['lp']?.toString();
-        if (isValidNumeric(lp) && lp != order.ltp) {
-          order.ltp = lp;
-          setHasUpdates(true);
-        }
-
-        final chng = socketData['chng']?.toString();
-        if (isValidNumeric(chng) && chng != order.change) {
-          order.change = chng;
-          setHasUpdates(true);
-        }
-
-        final pc = socketData['pc']?.toString();
-        if (isValidNumeric(pc) && pc != order.perChange) {
-          order.perChange = pc;
-          setHasUpdates(true);
-        }
-      }
-    }
-
-    // Update executed orders
-    if (orderBook.executedOrder != null) {
-      for (var order in orderBook.executedOrder!) {
-        if (order.token == null || order.token!.isEmpty) continue;
-        if (!socketDatas.containsKey(order.token)) continue;
-
-        final socketData = socketDatas[order.token];
-        if (socketData == null || socketData.isEmpty) continue;
-
-        final lp = socketData['lp']?.toString();
-        if (isValidNumeric(lp) && lp != order.ltp) {
-          order.ltp = lp;
-          setHasUpdates(true);
-        }
-      }
-    }
-
-    // Update search items
-    if (orderBook.orderSearchItem != null) {
-      for (var order in orderBook.orderSearchItem!) {
-        if (order.token == null || order.token!.isEmpty) continue;
-        if (!socketDatas.containsKey(order.token)) continue;
-
-        final socketData = socketDatas[order.token];
-        if (socketData == null || socketData.isEmpty) continue;
-
-        final lp = socketData['lp']?.toString();
-        if (isValidNumeric(lp) && lp != order.ltp) {
-          order.ltp = lp;
-          setHasUpdates(true);
-        }
-      }
-    }
-  }
-
-  void _updateTradeBook(OrderProvider orderBook, Map socketDatas,
-      bool Function(String?) isValidNumeric, Function(bool) setHasUpdates) {
-    if (orderBook.tradeBook != null) {
-      for (var trade in orderBook.tradeBook!) {
-        if (trade.token == null || trade.token!.isEmpty) continue;
-        if (!socketDatas.containsKey(trade.token)) continue;
-
-        final socketData = socketDatas[trade.token];
-        if (socketData == null || socketData.isEmpty) continue;
-
-        final lp = socketData['lp']?.toString();
-        if (isValidNumeric(lp) && lp != trade.ltp) {
-          trade.ltp = lp;
-          setHasUpdates(true);
-        }
-
-        final chng = socketData['chng']?.toString();
-        if (isValidNumeric(chng) && chng != trade.change) {
-          trade.change = chng;
-          setHasUpdates(true);
-        }
-
-        final pc = socketData['pc']?.toString();
-        if (isValidNumeric(pc) && pc != trade.perChange) {
-          trade.perChange = pc;
-          setHasUpdates(true);
-        }
-      }
-    }
-
-    if (orderBook.tradeBooksearch != null) {
-      for (var trade in orderBook.tradeBooksearch!) {
-        if (trade.token == null || trade.token!.isEmpty) continue;
-        if (!socketDatas.containsKey(trade.token)) continue;
-
-        final socketData = socketDatas[trade.token];
-        if (socketData == null || socketData.isEmpty) continue;
-
-        final lp = socketData['lp']?.toString();
-        if (isValidNumeric(lp) && lp != trade.ltp) {
-          trade.ltp = lp;
-          setHasUpdates(true);
-        }
-
-        final chng = socketData['chng']?.toString();
-        if (isValidNumeric(chng) && chng != trade.change) {
-          trade.change = chng;
-          setHasUpdates(true);
-        }
-
-        final pc = socketData['pc']?.toString();
-        if (isValidNumeric(pc) && pc != trade.perChange) {
-          trade.perChange = pc;
-          setHasUpdates(true);
-        }
-      }
-    }
-  }
-
-  void _updateGttOrderBook(OrderProvider orderBook, Map socketDatas,
-      bool Function(String?) isValidNumeric, Function(bool) setHasUpdates) {
-    if (orderBook.gttOrderBookModel != null) {
-      for (var gttOrder in orderBook.gttOrderBookModel!) {
-        if (gttOrder.token == null || gttOrder.token!.isEmpty) continue;
-        if (!socketDatas.containsKey(gttOrder.token)) continue;
-
-        final socketData = socketDatas[gttOrder.token];
-        if (socketData == null || socketData.isEmpty) continue;
-
-        final lp = socketData['lp']?.toString();
-        if (isValidNumeric(lp) && lp != gttOrder.ltp) {
-          gttOrder.ltp = lp;
-          setHasUpdates(true);
-        }
-
-        final chng = socketData['chng']?.toString();
-        if (isValidNumeric(chng) && chng != gttOrder.change) {
-          gttOrder.change = chng;
-          setHasUpdates(true);
-        }
-
-        final pc = socketData['pc']?.toString();
-        if (isValidNumeric(pc) && pc != gttOrder.perChange) {
-          gttOrder.perChange = pc;
-          setHasUpdates(true);
-        }
-      }
-    }
-
-    if (orderBook.gttOrderBookSearch != null) {
-      for (var gttOrder in orderBook.gttOrderBookSearch!) {
-        if (gttOrder.token == null || gttOrder.token!.isEmpty) continue;
-        if (!socketDatas.containsKey(gttOrder.token)) continue;
-
-        final socketData = socketDatas[gttOrder.token];
-        if (socketData == null || socketData.isEmpty) continue;
-
-        final lp = socketData['lp']?.toString();
-        if (isValidNumeric(lp) && lp != gttOrder.ltp) {
-          gttOrder.ltp = lp;
-          setHasUpdates(true);
-        }
-
-        final chng = socketData['chng']?.toString();
-        if (isValidNumeric(chng) && chng != gttOrder.change) {
-          gttOrder.change = chng;
-          setHasUpdates(true);
-        }
-
-        final pc = socketData['pc']?.toString();
-        if (isValidNumeric(pc) && pc != gttOrder.perChange) {
-          gttOrder.perChange = pc;
-          setHasUpdates(true);
-        }
-      }
-    }
-  }
+  // ✅ REMOVED: _updateTradeBook(), _updateGttOrderBook()
+  // Isolated cell widgets handle socket updates directly
+  // No need for parent widget to listen to socket at all
 
   @override
   Widget build(BuildContext context) {
@@ -427,7 +211,8 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
   }
 
   Widget _buildInitializedContent(ThemesProvider theme) {
-    final orderBook = ref.watch(orderProvider);
+    // ✅ Access orderBook without watching to avoid rebuilds
+    final orderBook = ref.read(orderProvider);
 
     return SizedBox.expand(
       child: RefreshIndicator(
@@ -927,7 +712,12 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
       String title,
       ScrollController horizontalScrollController,
       ScrollController verticalScrollController) {
-    final orderBook = ref.watch(orderProvider);
+    // ✅ Use ref.read instead of ref.watch to avoid rebuilds when orderBook changes
+    // Only rebuild when orders list changes (which happens less frequently)
+    final orderBook = ref.read(orderProvider);
+    
+    // ✅ Debug: Uncomment to see when table rebuilds (should be rare now)
+    // debugPrint('📋 _buildOrderBookTable called for $title - orders: ${orders.length}');
 
     // Show loading indicator if data is being fetched and no existing data
     if (orders.isEmpty) {
@@ -1131,55 +921,60 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
         label: SizedBox.expand(
           child: MouseRegion(
             cursor: SystemMouseCursors.click,
-            onEnter: (_) => setState(() => _hoveredColumnIndex = columnIndex),
-            onExit: (_) => setState(() => _hoveredColumnIndex = null),
+            onEnter: (_) => _hoveredColumnIndex.value = columnIndex,
+            onExit: (_) => _hoveredColumnIndex.value = null,
             child: Tooltip(
               message: 'Sort by $header',
               child: GestureDetector(
                 onTap: () => _onSortOrderTable(columnIndex),
                 behavior: HitTestBehavior.opaque,
-                child: Container(
-                  width: double.infinity,
-                  height: double.infinity,
-                  decoration: BoxDecoration(
-                    color: _hoveredColumnIndex == columnIndex
-                        ? (theme.isDarkMode
-                            ? WebDarkColors.primary.withOpacity(0.1)
-                            : WebColors.primary.withOpacity(0.05))
-                        : Colors.transparent,
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.max,
-                    mainAxisAlignment: isNumeric ? MainAxisAlignment.end : MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Flexible(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              header,
-                              style: WebTextStyles.tableHeader(
-                                isDarkTheme: theme.isDarkMode,
-                                color: theme.isDarkMode
-                                    ? WebDarkColors.textPrimary
-                                    : WebColors.textPrimary,
-                              ),
-                              textAlign: isNumeric ? TextAlign.right : TextAlign.left,
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                            ),
-                            const SizedBox(width: 4),
-                            SizedBox(
-                              width: 16, // Fixed width for the icon
-                              child: _buildOrderBookSortIcon(columnIndex, theme),
-                            ),
-                          ],
-                        ),
+                child: ValueListenableBuilder<int?>(
+                  valueListenable: _hoveredColumnIndex,
+                  builder: (context, hoveredIndex, child) {
+                    return Container(
+                      width: double.infinity,
+                      height: double.infinity,
+                      decoration: BoxDecoration(
+                        color: hoveredIndex == columnIndex
+                            ? (theme.isDarkMode
+                                ? WebDarkColors.primary.withOpacity(0.1)
+                                : WebColors.primary.withOpacity(0.05))
+                            : Colors.transparent,
                       ),
-                    ],
-                  ),
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.max,
+                        mainAxisAlignment: isNumeric ? MainAxisAlignment.end : MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Flexible(
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  header,
+                                  style: WebTextStyles.tableHeader(
+                                    isDarkTheme: theme.isDarkMode,
+                                    color: theme.isDarkMode
+                                        ? WebDarkColors.textPrimary
+                                        : WebColors.textPrimary,
+                                  ),
+                                  textAlign: isNumeric ? TextAlign.right : TextAlign.left,
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                ),
+                                const SizedBox(width: 4),
+                                SizedBox(
+                                  width: 16, // Fixed width for the icon
+                                  child: _buildOrderBookSortIcon(columnIndex, theme),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
                 ),
               ),
             ),
@@ -1202,23 +997,21 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
       final uniqueId = order.norenordno?.toString() ??
           order.token?.toString() ??
           '';
-      final isHovered = _hoveredRowToken == uniqueId;
 
       return DataRow2(
         color: MaterialStateProperty.resolveWith((states) {
-          if (isHovered) {
+          if (states.contains(MaterialState.hovered) || _hoveredRowToken.value == uniqueId) {
             return theme.isDarkMode
                 ? WebDarkColors.primary.withOpacity(0.06)
                 : WebColors.primary.withOpacity(0.10);
           }
-          return null;
+          return Colors.transparent;
         }),
         cells: headers.map((header) {
           return _buildOrderBookDataTable2Cell(
             header,
             order,
             theme,
-            isHovered,
             uniqueId,
           );
         }).toList(),
@@ -1231,7 +1024,6 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     String column,
     OrderBookModel order,
     ThemesProvider theme,
-    bool isHovered,
     String uniqueId,
   ) {
     Widget cellContent;
@@ -1241,7 +1033,6 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
         cellContent = _buildOrderBookInstrumentCellContent(
           order,
           theme,
-          isHovered,
           uniqueId,
         );
         break;
@@ -1278,12 +1069,23 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
           Alignment.centerRight,
         );
         break;
+      // Dynamic columns - use isolated widgets that manage their own state
+      // Each widget only rebuilds itself, not the table
       case 'LTP':
-        cellContent = _buildOrderBookTextCell(
-          _getValidLTP(order),
-          theme,
-          Alignment.centerRight,
-        );
+        if (order.token == null || order.token!.isEmpty) {
+          cellContent = _buildOrderBookTextCell(
+            _getValidLTP(order),
+            theme,
+            Alignment.centerRight,
+          );
+        } else {
+          cellContent = _OrderBookLTPCell(
+            token: order.token!,
+            initialLtp: _getValidLTP(order),
+            order: order, // Pass order reference to update model for sorting
+            theme: theme, // Pass theme for proper styling
+          );
+        }
         break;
       case 'Price':
         cellContent = _buildOrderBookTextCell(
@@ -1342,12 +1144,19 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     }
 
     // Wrap with MouseRegion to detect hover anywhere on the cell
+    final isNumeric = _isNumericColumn(column);
+    final alignment = isNumeric ? Alignment.centerRight : Alignment.centerLeft;
+    
     return DataCell(
       MouseRegion(
-        onEnter: (_) => setState(() => _hoveredRowToken = uniqueId),
-        onExit: (_) => setState(() => _hoveredRowToken = null),
+        onEnter: (_) => _hoveredRowToken.value = uniqueId,
+        onExit: (_) => _hoveredRowToken.value = null,
         child: SizedBox.expand(
-          child: cellContent,
+          child: Container(
+            alignment: alignment,
+            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
+            child: cellContent,
+          ),
         ),
       ),
     );
@@ -1356,7 +1165,6 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
   Widget _buildOrderBookInstrumentCellContent(
     OrderBookModel order,
     ThemesProvider theme,
-    bool isHovered,
     String uniqueId,
   ) {
     final isProcessing = _processingOrderToken == uniqueId;
@@ -1371,10 +1179,16 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
       displayText += ' ${exchange.trim()}';
     }
 
-    return Row(
-      children: [
-        Expanded(
-          flex: isHovered ? 1 : 2,
+    // ✅ Use ValueListenableBuilder to avoid rebuilding entire table on hover
+    return ValueListenableBuilder<String?>(
+      valueListenable: _hoveredRowToken,
+      builder: (context, hoveredToken, child) {
+        final rowIsHovered = hoveredToken == uniqueId;
+
+        return Row(
+          children: [
+            Expanded(
+              flex: rowIsHovered ? 1 : 2,
           child: Align(
             alignment: Alignment.centerLeft,
             child: Tooltip(
@@ -1398,9 +1212,9 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
         ),
         // Action buttons fade in on hover
         IgnorePointer(
-          ignoring: !isHovered,
+          ignoring: !rowIsHovered,
           child: AnimatedOpacity(
-            opacity: isHovered ? 1 : 0,
+            opacity: rowIsHovered ? 1 : 0,
             duration: const Duration(milliseconds: 140),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -1460,6 +1274,8 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
         ),
       ],
     );
+      },
+    );
   }
 
   Widget _buildOrderBookSortIcon(int columnIndex, ThemesProvider theme) {
@@ -1518,7 +1334,8 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
 
   Widget _buildTradeBookTable(
       ThemesProvider theme, List<TradeBookModel> trades) {
-    final orderBook = ref.watch(orderProvider);
+    // ✅ Access orderBook without watching to avoid rebuilds
+    final orderBook = ref.read(orderProvider);
 
     // Show loading indicator if data is being fetched and no existing data
     if (trades.isEmpty) {
@@ -1703,55 +1520,60 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
         label: SizedBox.expand(
           child: MouseRegion(
             cursor: SystemMouseCursors.click,
-            onEnter: (_) => setState(() => _hoveredColumnIndex = columnIndex),
-            onExit: (_) => setState(() => _hoveredColumnIndex = null),
+            onEnter: (_) => _hoveredColumnIndex.value = columnIndex,
+            onExit: (_) => _hoveredColumnIndex.value = null,
             child: Tooltip(
               message: 'Sort by $header',
               child: GestureDetector(
                 onTap: () => _onSortTradeTable(columnIndex),
                 behavior: HitTestBehavior.opaque,
-                child: Container(
-                  width: double.infinity,
-                  height: double.infinity,
-                  decoration: BoxDecoration(
-                    color: _hoveredColumnIndex == columnIndex
-                        ? (theme.isDarkMode
-                            ? WebDarkColors.primary.withOpacity(0.1)
-                            : WebColors.primary.withOpacity(0.05))
-                        : Colors.transparent,
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.max,
-                    mainAxisAlignment: isNumeric ? MainAxisAlignment.end : MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Flexible(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              header,
-                              style: WebTextStyles.tableHeader(
-                                isDarkTheme: theme.isDarkMode,
-                                color: theme.isDarkMode
-                                    ? WebDarkColors.textPrimary
-                                    : WebColors.textPrimary,
-                              ),
-                              textAlign: isNumeric ? TextAlign.right : TextAlign.left,
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                            ),
-                            const SizedBox(width: 4),
-                            SizedBox(
-                              width: 16, // Fixed width for the icon
-                              child: _buildTradeBookSortIcon(columnIndex, theme),
-                            ),
-                          ],
-                        ),
+                child: ValueListenableBuilder<int?>(
+                  valueListenable: _hoveredColumnIndex,
+                  builder: (context, hoveredIndex, child) {
+                    return Container(
+                      width: double.infinity,
+                      height: double.infinity,
+                      decoration: BoxDecoration(
+                        color: hoveredIndex == columnIndex
+                            ? (theme.isDarkMode
+                                ? WebDarkColors.primary.withOpacity(0.1)
+                                : WebColors.primary.withOpacity(0.05))
+                            : Colors.transparent,
                       ),
-                    ],
-                  ),
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.max,
+                        mainAxisAlignment: isNumeric ? MainAxisAlignment.end : MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Flexible(
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  header,
+                                  style: WebTextStyles.tableHeader(
+                                    isDarkTheme: theme.isDarkMode,
+                                    color: theme.isDarkMode
+                                        ? WebDarkColors.textPrimary
+                                        : WebColors.textPrimary,
+                                  ),
+                                  textAlign: isNumeric ? TextAlign.right : TextAlign.left,
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                ),
+                                const SizedBox(width: 4),
+                                SizedBox(
+                                  width: 16, // Fixed width for the icon
+                                  child: _buildTradeBookSortIcon(columnIndex, theme),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
                 ),
               ),
             ),
@@ -1774,11 +1596,21 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
       final token = trade.token ?? '';
       final index = sorted.indexOf(trade);
       final uniqueId = '$token$index';
-      final isHovered = _hoveredRowToken == uniqueId;
 
       return DataRow2(
+        color: MaterialStateProperty.resolveWith((states) {
+          if (states.contains(MaterialState.hovered) || _hoveredRowToken.value == uniqueId) {
+            return theme.isDarkMode
+                ? WebDarkColors.primary.withOpacity(0.06)
+                : WebColors.primary.withOpacity(0.10);
+          }
+          return Colors.transparent;
+        }),
         cells: headers.map((header) {
           Widget cellContent;
+          final isNumeric = _isNumericColumnTradeBook(header);
+          final alignment = isNumeric ? Alignment.centerRight : Alignment.centerLeft;
+          
           switch (header) {
             case 'Instrument':
               cellContent = _buildTradeBookInstrumentCellContent(trade, theme, uniqueId);
@@ -1853,22 +1685,18 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
           
           return DataCell(
             MouseRegion(
-              onEnter: (_) => setState(() => _hoveredRowToken = uniqueId),
-              onExit: (_) => setState(() => _hoveredRowToken = null),
+              onEnter: (_) => _hoveredRowToken.value = uniqueId,
+              onExit: (_) => _hoveredRowToken.value = null,
               child: SizedBox.expand(
-                child: cellContent,
+                child: Container(
+                  alignment: alignment,
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
+                  child: cellContent,
+                ),
               ),
             ),
           );
         }).toList(),
-        color: MaterialStateProperty.resolveWith((states) {
-          if (isHovered) {
-            return theme.isDarkMode
-                ? WebDarkColors.primary.withOpacity(0.06)
-                : WebColors.primary.withOpacity(0.10);
-          }
-          return null;
-        }),
         onTap: () => _openTradeDetail(trade),
       );
     }).toList();
@@ -2066,55 +1894,60 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
         label: SizedBox.expand(
           child: MouseRegion(
             cursor: SystemMouseCursors.click,
-            onEnter: (_) => setState(() => _hoveredColumnIndex = columnIndex),
-            onExit: (_) => setState(() => _hoveredColumnIndex = null),
+            onEnter: (_) => _hoveredColumnIndex.value = columnIndex,
+            onExit: (_) => _hoveredColumnIndex.value = null,
             child: Tooltip(
               message: 'Sort by $header',
               child: GestureDetector(
                 onTap: () => _onSortGttTable(columnIndex),
                 behavior: HitTestBehavior.opaque,
-                child: Container(
-                  width: double.infinity,
-                  height: double.infinity,
-                  decoration: BoxDecoration(
-                    color: _hoveredColumnIndex == columnIndex
-                        ? (theme.isDarkMode
-                            ? WebDarkColors.primary.withOpacity(0.1)
-                            : WebColors.primary.withOpacity(0.05))
-                        : Colors.transparent,
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.max,
-                    mainAxisAlignment: isNumeric ? MainAxisAlignment.end : MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Flexible(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              header,
-                              style: WebTextStyles.tableHeader(
-                                isDarkTheme: theme.isDarkMode,
-                                color: theme.isDarkMode
-                                    ? WebDarkColors.textPrimary
-                                    : WebColors.textPrimary,
-                              ),
-                              textAlign: isNumeric ? TextAlign.right : TextAlign.left,
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                            ),
-                            const SizedBox(width: 4),
-                            SizedBox(
-                              width: 16, // Fixed width for the icon
-                              child: _buildGttSortIcon(columnIndex, theme),
-                            ),
-                          ],
-                        ),
+                child: ValueListenableBuilder<int?>(
+                  valueListenable: _hoveredColumnIndex,
+                  builder: (context, hoveredIndex, child) {
+                    return Container(
+                      width: double.infinity,
+                      height: double.infinity,
+                      decoration: BoxDecoration(
+                        color: hoveredIndex == columnIndex
+                            ? (theme.isDarkMode
+                                ? WebDarkColors.primary.withOpacity(0.1)
+                                : WebColors.primary.withOpacity(0.05))
+                            : Colors.transparent,
                       ),
-                    ],
-                  ),
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.max,
+                        mainAxisAlignment: isNumeric ? MainAxisAlignment.end : MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Flexible(
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  header,
+                                  style: WebTextStyles.tableHeader(
+                                    isDarkTheme: theme.isDarkMode,
+                                    color: theme.isDarkMode
+                                        ? WebDarkColors.textPrimary
+                                        : WebColors.textPrimary,
+                                  ),
+                                  textAlign: isNumeric ? TextAlign.right : TextAlign.left,
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                ),
+                                const SizedBox(width: 4),
+                                SizedBox(
+                                  width: 16, // Fixed width for the icon
+                                  child: _buildGttSortIcon(columnIndex, theme),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
                 ),
               ),
             ),
@@ -2135,23 +1968,21 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     final sorted = _sortedGtt(gttOrders);
     return sorted.map((gttOrder) {
       final uniqueId = '${gttOrder.alId ?? ''}_${gttOrder.tsym ?? ''}';
-      final isHovered = _hoveredRowToken == uniqueId;
 
       return DataRow2(
         color: MaterialStateProperty.resolveWith((states) {
-          if (isHovered) {
+          if (states.contains(MaterialState.hovered) || _hoveredRowToken.value == uniqueId) {
             return theme.isDarkMode
                 ? WebDarkColors.primary.withOpacity(0.06)
                 : WebColors.primary.withOpacity(0.10);
           }
-          return null;
+          return Colors.transparent;
         }),
         cells: headers.map((header) {
           return _buildGttDataTable2Cell(
             header,
             gttOrder,
             theme,
-            isHovered,
             uniqueId,
           );
         }).toList(),
@@ -2164,17 +1995,17 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     String column,
     GttOrderBookModel gttOrder,
     ThemesProvider theme,
-    bool isHovered,
     String uniqueId,
   ) {
     Widget cellContent;
+    final isNumeric = _isNumericColumnGtt(column);
+    final alignment = isNumeric ? Alignment.centerRight : Alignment.centerLeft;
     
     switch (column) {
       case 'Instrument':
         cellContent = _buildGttInstrumentCellContent(
           gttOrder,
           theme,
-          isHovered,
           uniqueId,
         );
         break;
@@ -2204,12 +2035,23 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
           Alignment.centerRight,
         );
         break;
+      // Dynamic columns - use isolated widgets that manage their own state
+      // Each widget only rebuilds itself, not the table
       case 'LTP':
-        cellContent = _buildGttTextCell(
-          _getValidLTPForGtt(gttOrder),
-          theme,
-          Alignment.centerRight,
-        );
+        if (gttOrder.token == null || gttOrder.token!.isEmpty) {
+          cellContent = _buildGttTextCell(
+            _getValidLTPForGtt(gttOrder),
+            theme,
+            Alignment.centerRight,
+          );
+        } else {
+          cellContent = _GttLTPCell(
+            token: gttOrder.token!,
+            initialLtp: _getValidLTPForGtt(gttOrder),
+            gttOrder: gttOrder, // Pass gttOrder reference to update model for sorting
+            theme: theme, // Pass theme for proper styling
+          );
+        }
         break;
       case 'Trigger':
         cellContent = _buildGttTextCell(
@@ -2243,10 +2085,14 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     // Wrap with MouseRegion to detect hover anywhere on the cell
     return DataCell(
       MouseRegion(
-        onEnter: (_) => setState(() => _hoveredRowToken = uniqueId),
-        onExit: (_) => setState(() => _hoveredRowToken = null),
+        onEnter: (_) => _hoveredRowToken.value = uniqueId,
+        onExit: (_) => _hoveredRowToken.value = null,
         child: SizedBox.expand(
-          child: cellContent,
+          child: Container(
+            alignment: alignment,
+            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
+            child: cellContent,
+          ),
         ),
       ),
     );
@@ -2255,7 +2101,6 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
   Widget _buildGttInstrumentCellContent(
     GttOrderBookModel gttOrder,
     ThemesProvider theme,
-    bool isHovered,
     String uniqueId,
   ) {
     final isProcessing = _processingOrderToken == uniqueId;
@@ -2269,36 +2114,42 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
       displayText += ' ${exchange.trim()}';
     }
 
-    return Row(
-      children: [
-        Expanded(
-          flex: isHovered ? 1 : 2,
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: Tooltip(
-              message: displayText,
-              child: Text(
-                displayText,
-                style: WebTextStyles.custom(
-                  fontSize: 13,
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
-                  fontWeight: WebFonts.medium,
+    // ✅ Use ValueListenableBuilder to avoid rebuilding entire table on hover
+    return ValueListenableBuilder<String?>(
+      valueListenable: _hoveredRowToken,
+      builder: (context, hoveredToken, child) {
+        final rowIsHovered = hoveredToken == uniqueId;
+
+        return Row(
+          children: [
+            Expanded(
+              flex: rowIsHovered ? 1 : 2,
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Tooltip(
+                  message: displayText,
+                  child: Text(
+                    displayText,
+                    style: WebTextStyles.custom(
+                      fontSize: 13,
+                      isDarkTheme: theme.isDarkMode,
+                      color: theme.isDarkMode
+                          ? WebDarkColors.textPrimary
+                          : WebColors.textPrimary,
+                      fontWeight: WebFonts.medium,
+                    ),
+                    maxLines: 1,
+                    softWrap: false,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-                maxLines: 1,
-                softWrap: false,
-                overflow: TextOverflow.ellipsis,
               ),
             ),
-          ),
-        ),
-        // Action buttons fade in on hover
-        IgnorePointer(
-          ignoring: !isHovered,
-          child: AnimatedOpacity(
-            opacity: isHovered ? 1 : 0,
+            // Action buttons fade in on hover
+            IgnorePointer(
+              ignoring: !rowIsHovered,
+              child: AnimatedOpacity(
+                opacity: rowIsHovered ? 1 : 0,
             duration: const Duration(milliseconds: 140),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -2334,6 +2185,8 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
         ),
       ],
     );
+      },
+    );
   }
 
   Widget _buildGttSortIcon(int columnIndex, ThemesProvider theme) {
@@ -2361,7 +2214,8 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
 
   Widget _buildGttOrderBookTable(
       ThemesProvider theme, List<GttOrderBookModel> gttOrders) {
-    final orderBook = ref.watch(orderProvider);
+    // ✅ Access orderBook without watching to avoid rebuilds
+    final orderBook = ref.read(orderProvider);
 
     // Show loading indicator if data is being fetched and no existing data
     if (gttOrders.isEmpty) {
@@ -2560,25 +2414,59 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
   }
 
   Widget _buildOrderHoverButton({
-    required String label,
+    String? label,
+    IconData? icon,
     required Color color,
-    required Color backgroundColor,
+    Color? backgroundColor,
+    Color? borderColor,
+    double? borderRadius,
+    double? iconWeight,
     required VoidCallback? onPressed,
     required ThemesProvider theme,
   }) {
+    final isLongLabel = label != null && label.length > 1;
+    final borderRadiusValue = borderRadius ?? 5.0;
     return SizedBox(
-      height: 28,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-          backgroundColor: backgroundColor,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-          elevation: 0,
+      width: isLongLabel ? null : 25,
+      height: 25,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(borderRadiusValue),
+          splashColor: color.withOpacity(0.15),
+          highlightColor: color.withOpacity(0.08),
+          onTap: onPressed,
+          child: Container(
+            padding:
+                isLongLabel ? const EdgeInsets.symmetric(horizontal: 8) : null,
+            decoration: BoxDecoration(
+              color: backgroundColor ?? Colors.transparent,
+              borderRadius: BorderRadius.circular(borderRadiusValue),
+              border: borderColor != null
+                  ? Border.all(
+                      color: borderColor,
+                      width: 1.3,
+                    )
+                  : null,
+            ),
+            child: Center(
+              child: icon != null
+                  ? Icon(
+                      icon,
+                      size: 16,
+                      color: color,
+                      weight: iconWeight ?? 400,
+                    )
+                  : Text(
+                      label ?? "",
+                      style: WebTextStyles.buttonXs(
+                        isDarkTheme: theme.isDarkMode,
+                        color: color,
+                      ),
+                    ),
+            ),
+          ),
         ),
-        onPressed: onPressed,
-        child: Text(label,
-            style: WebTextStyles.custom(
-                fontSize: 12, isDarkTheme: theme.isDarkMode, color: color)),
       ),
     );
   }
@@ -2623,8 +2511,8 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
       {Alignment alignment = Alignment.centerRight}) {
     return DataCell(
       MouseRegion(
-        onEnter: (_) => setState(() => _hoveredRowToken = token),
-        onExit: (_) => setState(() => _hoveredRowToken = null),
+        onEnter: (_) => _hoveredRowToken.value = token,
+        onExit: (_) => _hoveredRowToken.value = null,
         child: SizedBox.expand(
           child: Align(
             alignment: alignment,
@@ -2874,8 +2762,8 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
       {Alignment alignment = Alignment.centerRight}) {
     return DataCell(
       MouseRegion(
-        onEnter: (_) => setState(() => _hoveredRowToken = token),
-        onExit: (_) => setState(() => _hoveredRowToken = null),
+        onEnter: (_) => _hoveredRowToken.value = token,
+        onExit: (_) => _hoveredRowToken.value = null,
         child: SizedBox.expand(
           child: Align(
             alignment: alignment,
@@ -3613,8 +3501,8 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
 
     return DataCell(
       MouseRegion(
-        onEnter: (_) => setState(() => _hoveredRowToken = orderToken),
-        onExit: (_) => setState(() => _hoveredRowToken = null),
+        onEnter: (_) => _hoveredRowToken.value = orderToken,
+        onExit: (_) => _hoveredRowToken.value = null,
         child: SizedBox.expand(
           child: Row(
             children: [
@@ -4244,8 +4132,8 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
 
     return DataCell(
       MouseRegion(
-        onEnter: (_) => setState(() => _hoveredRowToken = gttOrderToken),
-        onExit: (_) => setState(() => _hoveredRowToken = null),
+        onEnter: (_) => _hoveredRowToken.value = gttOrderToken,
+        onExit: (_) => _hoveredRowToken.value = null,
         child: SizedBox.expand(
           child: Row(
             children: [
@@ -4691,6 +4579,145 @@ class _DraggablePlaceOrderDialogState
           ),
         ),
       ],
+    );
+  }
+}
+
+// Isolated widget for Order Book LTP - only this rebuilds when LTP changes
+class _OrderBookLTPCell extends ConsumerStatefulWidget {
+  final String token;
+  final String initialLtp;
+  final OrderBookModel order; // Pass order to update model for sorting
+  final ThemesProvider theme; // Pass theme for proper styling
+
+  const _OrderBookLTPCell({
+    required this.token,
+    required this.initialLtp,
+    required this.order,
+    required this.theme,
+  });
+
+  @override
+  ConsumerState<_OrderBookLTPCell> createState() => _OrderBookLTPCellState();
+}
+
+class _OrderBookLTPCellState extends ConsumerState<_OrderBookLTPCell> {
+  late String ltp;
+  StreamSubscription? _subscription;
+  // ✅ Debug counter to verify only this cell rebuilds (remove in production)
+  static int _rebuildCount = 0;
+  final int _instanceId = _rebuildCount++;
+
+  @override
+  void initState() {
+    super.initState();
+    ltp = widget.initialLtp;
+    // debugPrint('🟢 _OrderBookLTPCell[$_instanceId] created for token: ${widget.token}');
+
+    _subscription = ref.read(websocketProvider).socketDataStream.listen((data) {
+      if (!mounted || !data.containsKey(widget.token)) return;
+
+      final newLtp = data[widget.token]['lp']?.toString();
+      if (newLtp != null && newLtp != ltp && newLtp != '0.00' && newLtp != 'null') {
+        // ✅ ONLY THIS CELL REBUILDS - not the entire table!
+        // debugPrint('🔄 _OrderBookLTPCell[$_instanceId] updating LTP: $ltp -> $newLtp');
+        setState(() => ltp = newLtp);
+        // Update model's ltp field so sorting works correctly
+        // This doesn't trigger parent rebuild because we're not calling setState on parent
+        widget.order.ltp = newLtp;
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    // debugPrint('🔴 _OrderBookLTPCell[$_instanceId] disposed');
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // ✅ This build() is ONLY called when THIS cell's LTP changes
+    // NOT when other cells change or when hovering
+    // Uncomment the line below to verify: you'll see this print ONLY when LTP changes
+    // debugPrint('📊 _OrderBookLTPCell[$_instanceId] build() - LTP: $ltp');
+    
+    return Text(
+      ltp,
+      textAlign: TextAlign.right,
+      style: WebTextStyles.custom(
+        fontSize: 13,
+        isDarkTheme: widget.theme.isDarkMode,
+        color: widget.theme.isDarkMode
+            ? WebDarkColors.textPrimary
+            : WebColors.textPrimary,
+        fontWeight: WebFonts.medium,
+      ),
+    );
+  }
+}
+
+// Isolated widget for GTT LTP - only this rebuilds when LTP changes
+class _GttLTPCell extends ConsumerStatefulWidget {
+  final String token;
+  final String initialLtp;
+  final GttOrderBookModel gttOrder; // Pass gttOrder to update model for sorting
+  final ThemesProvider theme; // Pass theme for proper styling
+
+  const _GttLTPCell({
+    required this.token,
+    required this.initialLtp,
+    required this.gttOrder,
+    required this.theme,
+  });
+
+  @override
+  ConsumerState<_GttLTPCell> createState() => _GttLTPCellState();
+}
+
+class _GttLTPCellState extends ConsumerState<_GttLTPCell> {
+  late String ltp;
+  StreamSubscription? _subscription;
+
+  @override
+  void initState() {
+    super.initState();
+    ltp = widget.initialLtp;
+
+    _subscription = ref.read(websocketProvider).socketDataStream.listen((data) {
+      if (!mounted || !data.containsKey(widget.token)) return;
+
+      final newLtp = data[widget.token]['lp']?.toString();
+      if (newLtp != null && newLtp != ltp && newLtp != '0.00' && newLtp != 'null') {
+        // Update both widget state and model for sorting to work
+        setState(() => ltp = newLtp);
+        // Update model's ltp field so sorting works correctly
+        // This doesn't trigger parent rebuild because we're not calling setState on parent
+        widget.gttOrder.ltp = newLtp;
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      ltp,
+      textAlign: TextAlign.right,
+      style: WebTextStyles.custom(
+        fontSize: 13,
+        isDarkTheme: widget.theme.isDarkMode,
+        color: widget.theme.isDarkMode
+            ? WebDarkColors.textPrimary
+            : WebColors.textPrimary,
+        fontWeight: WebFonts.medium,
+      ),
     );
   }
 }

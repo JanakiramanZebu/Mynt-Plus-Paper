@@ -30,14 +30,14 @@ class PositionScreenWeb extends ConsumerStatefulWidget {
 }
 
 class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
-  StreamSubscription? _socketSubscription;
   int _selectedTabIndex = 0; // 0 for Positions, 1 for All Positions
   String _searchQuery = '';
   String _selectedFilter = 'All';
   int? _sortColumnIndex;
   bool _sortAscending = true;
-  String? _hoveredRowToken; // Track which row is being hovered
-  int? _hoveredColumnIndex; // Track which column is being hovered
+  // ✅ Use ValueNotifier instead of setState to avoid rebuilding entire widget
+  final ValueNotifier<String?> _hoveredRowToken = ValueNotifier<String?>(null);
+  final ValueNotifier<int?> _hoveredColumnIndex = ValueNotifier<int?>(null);
   final ScrollController _horizontalScrollController = ScrollController();
   final ScrollController _verticalScrollController = ScrollController();
   final ScrollController _tabScrollController = ScrollController();
@@ -45,64 +45,35 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
   @override
   void initState() {
     super.initState();
-    _setupSocketSubscription();
+    // ✅ REMOVED: _setupSocketSubscription()
+    // Isolated cell widgets handle socket updates directly
+    // No need for parent widget to listen to socket at all
   }
 
   @override
   void dispose() {
-    // Note: WebSubscriptionManager handles unsubscription automatically
-    // when screen is replaced or removed via updateActiveScreen()
-    // No need to unsubscribe here to avoid double calls
-    
-    _socketSubscription?.cancel();
     _horizontalScrollController.dispose();
     _verticalScrollController.dispose();
     _tabScrollController.dispose();
+    _hoveredRowToken.dispose();
+    _hoveredColumnIndex.dispose();
 
     super.dispose();
   }
 
-  void _setupSocketSubscription() {
-    Future.microtask(() {
-      final websocket = ref.read(websocketProvider);
-      final positionBook = ref.read(portfolioProvider);
-
-      _socketSubscription = websocket.socketDataStream.listen((socketDatas) {
-        bool needsUpdate = false;
-
-        for (var position in widget.listofPosition) {
-          if (socketDatas.containsKey(position.token)) {
-            final socketData = socketDatas[position.token];
-            final lp = socketData['lp']?.toString();
-            if (lp != null && lp != "null" && lp != position.lp) {
-              position.lp = lp;
-              needsUpdate = true;
-            }
-
-            final pc = socketData['pc']?.toString();
-            if (pc != null && pc != "null" && pc != position.perChange) {
-              position.perChange = pc;
-              needsUpdate = true;
-            }
-          }
-        }
-
-        if (needsUpdate) {
-          positionBook.positionCal(positionBook.isDay);
-          if (mounted) setState(() {});
-        }
-      });
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    final positionBook = ref.watch(portfolioProvider);
+    // ✅ CRITICAL FIX: Only watch posloader to prevent unnecessary rebuilds
+    // Using select() ensures we only rebuild when loading state changes
+    final isLoading = ref.watch(portfolioProvider.select((p) => p.posloader));
     final theme = ref.read(themeProvider);
 
-    if (positionBook.posloader) {
+    if (isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
+
+    // ✅ Access positionBook without watching to avoid rebuilds
+    final positionBook = ref.read(portfolioProvider);
 
     return SizedBox.expand(
       child: Container(
@@ -1031,58 +1002,63 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
         ) : SizedBox.expand(
           child: MouseRegion(
             cursor: SystemMouseCursors.click,
-            onEnter: (_) => setState(() => _hoveredColumnIndex = columnIndex),
-            onExit: (_) => setState(() => _hoveredColumnIndex = null),
+            onEnter: (_) => _hoveredColumnIndex.value = columnIndex,
+            onExit: (_) => _hoveredColumnIndex.value = null,
             child: Tooltip(
               message: 'Sort by $header',
               child: GestureDetector(
                 onTap: () => _onSortTable(columnIndex),
                 behavior: HitTestBehavior.opaque,
-                child: Container(
-                  width: double.infinity,
-                  height: double.infinity,
-                  decoration: BoxDecoration(
-                    color: _hoveredColumnIndex == columnIndex
-                        ? (theme.isDarkMode
-                            ? WebDarkColors.primary.withOpacity(0.1)
-                            : WebColors.primary.withOpacity(0.05))
-                        : Colors.transparent,
-                  ),
-                  padding: EdgeInsets.symmetric(
-                    horizontal: isActAvgPrice ? 6.0 : 8.0, 
-                    vertical: 12.0
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.max,
-                    mainAxisAlignment: isNumeric ? MainAxisAlignment.end : MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Flexible(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              header,
-                              style: WebTextStyles.tableHeader(
-                                isDarkTheme: theme.isDarkMode,
-                                color: theme.isDarkMode
-                                    ? WebDarkColors.textPrimary
-                                    : WebColors.textPrimary,
-                              ),
-                              textAlign: isNumeric ? TextAlign.right : TextAlign.left,
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                            ),
-                            const SizedBox(width: 4),
-                            SizedBox(
-                              width: 16, // Fixed width for the icon
-                              child: _buildSortIcon(columnIndex, theme),
-                            ),
-                          ],
-                        ),
+                child: ValueListenableBuilder<int?>(
+                  valueListenable: _hoveredColumnIndex,
+                  builder: (context, hoveredIndex, child) {
+                    return Container(
+                      width: double.infinity,
+                      height: double.infinity,
+                      decoration: BoxDecoration(
+                        color: hoveredIndex == columnIndex
+                            ? (theme.isDarkMode
+                                ? WebDarkColors.primary.withOpacity(0.1)
+                                : WebColors.primary.withOpacity(0.05))
+                            : Colors.transparent,
                       ),
-                    ],
-                  ),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: isActAvgPrice ? 6.0 : 8.0, 
+                        vertical: 12.0
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.max,
+                        mainAxisAlignment: isNumeric ? MainAxisAlignment.end : MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Flexible(
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  header,
+                                  style: WebTextStyles.tableHeader(
+                                    isDarkTheme: theme.isDarkMode,
+                                    color: theme.isDarkMode
+                                        ? WebDarkColors.textPrimary
+                                        : WebColors.textPrimary,
+                                  ),
+                                  textAlign: isNumeric ? TextAlign.right : TextAlign.left,
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                ),
+                                const SizedBox(width: 4),
+                                SizedBox(
+                                  width: 16, // Fixed width for the icon
+                                  child: _buildSortIcon(columnIndex, theme),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
                 ),
               ),
             ),
@@ -1105,23 +1081,21 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
       final isClosed = _isPositionClosed(position);
       final uniqueId =
           '${position.token ?? ''}_${position.exch ?? ''}_${position.prd ?? ''}_${position.tsym ?? ''}';
-      final isHovered = _hoveredRowToken == uniqueId;
 
       return DataRow2(
         color: MaterialStateProperty.resolveWith((states) {
-          if (isHovered) {
+          if (states.contains(MaterialState.hovered) || _hoveredRowToken.value == uniqueId) {
             return theme.isDarkMode
                 ? WebDarkColors.primary.withOpacity(0.06)
                 : WebColors.primary.withOpacity(0.10);
           }
-          return null;
+          return Colors.transparent;
         }),
         cells: headers.map((header) {
           return _buildDataTable2Cell(
             header,
             position,
             theme,
-            isHovered,
             isClosed,
             uniqueId,
             positionBook,
@@ -1136,7 +1110,6 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
     String column,
     PositionBookModel position,
     ThemesProvider theme,
-    bool isHovered,
     bool isClosed,
     String uniqueId,
     PortfolioProvider positionBook,
@@ -1153,9 +1126,9 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
         cellContent = _buildInstrumentCellContent(
           position,
           theme,
-          isHovered,
           isClosed,
           positionBook,
+          uniqueId,
         );
         break;
       case 'Product':
@@ -1182,33 +1155,68 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
           color: _getPositionTextColor(position, theme),
         );
         break;
+      // Dynamic columns - use isolated widgets that manage their own state
+      // Each widget only rebuilds itself, not the table
       case 'LTP':
-        cellContent = _buildPositionTextCell(
-          position.lp ?? '0.00',
-          theme,
-          alignment,
-          color: _getPositionTextColor(position, theme),
-        );
+        if (position.token == null || position.token!.isEmpty) {
+          cellContent = _buildPositionTextCell(
+            position.lp ?? '0.00',
+            theme,
+            alignment,
+            color: _getPositionTextColor(position, theme),
+          );
+        } else {
+          cellContent = _LTPCell(
+            token: position.token!,
+            initialLtp: position.lp ?? '0.00',
+          );
+        }
         break;
       case 'P&L':
-        cellContent = _buildPositionTextCell(
-          position.profitNloss ?? '0.00',
-          theme,
-          alignment,
-          color: isClosed
-              ? Colors.grey
-              : _getValueColor(position.profitNloss ?? '0.00', theme),
-        );
+        if (position.token == null || position.token!.isEmpty) {
+          cellContent = _buildPositionTextCell(
+            position.profitNloss ?? '0.00',
+            theme,
+            alignment,
+            color: isClosed
+                ? Colors.grey
+                : _getValueColor(position.profitNloss ?? '0.00', theme),
+          );
+        } else {
+          final qty = int.tryParse(position.qty ?? '0') ?? 0;
+          final avgPrice = double.tryParse(position.avgPrc ?? '0') ?? 0.0;
+          cellContent = _PnLCell(
+            token: position.token!,
+            qty: qty,
+            avgPrice: avgPrice,
+            initialValue: position.profitNloss ?? '0.00',
+            theme: theme,
+            isClosed: isClosed,
+          );
+        }
         break;
       case 'MTM':
-        cellContent = _buildPositionTextCell(
-          position.mTm ?? '0.00',
-          theme,
-          alignment,
-          color: isClosed
-              ? Colors.grey
-              : _getValueColor(position.mTm ?? '0.00', theme),
-        );
+        if (position.token == null || position.token!.isEmpty) {
+          cellContent = _buildPositionTextCell(
+            position.mTm ?? '0.00',
+            theme,
+            alignment,
+            color: isClosed
+                ? Colors.grey
+                : _getValueColor(position.mTm ?? '0.00', theme),
+          );
+        } else {
+          final qty = int.tryParse(position.qty ?? '0') ?? 0;
+          final avgPrice = double.tryParse(position.avgPrc ?? '0') ?? 0.0;
+          cellContent = _MTMCell(
+            token: position.token!,
+            qty: qty,
+            avgPrice: avgPrice,
+            initialValue: position.mTm ?? '0.00',
+            theme: theme,
+            isClosed: isClosed,
+          );
+        }
         break;
       case 'Avg Price':
         cellContent = _buildPositionTextCell(
@@ -1257,10 +1265,14 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
     // Wrap with MouseRegion to detect hover anywhere on the cell
     return DataCell(
       MouseRegion(
-        onEnter: (_) => setState(() => _hoveredRowToken = uniqueId),
-        onExit: (_) => setState(() => _hoveredRowToken = null),
+        onEnter: (_) => _hoveredRowToken.value = uniqueId,
+        onExit: (_) => _hoveredRowToken.value = null,
         child: SizedBox.expand(
-          child: cellContent,
+          child: Container(
+            alignment: alignment,
+            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
+            child: cellContent,
+          ),
         ),
       ),
     );
@@ -1269,105 +1281,113 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
   Widget _buildInstrumentCellContent(
     PositionBookModel position,
     ThemesProvider theme,
-    bool isHovered,
     bool isClosed,
     PortfolioProvider positionBook,
+    String uniqueId,
   ) {
     final displayText =
         '${position.symbol ?? ''} ${position.exch ?? ''} ${position.expDate ?? ''} ${position.option ?? ''}';
 
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Expanded(
-          flex: isHovered ? 1 : 2,
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: Tooltip(
-              message: displayText,
-              child: Text(
-                displayText,
-                style: WebTextStyles.custom(
-                  fontSize: 13,
-                  isDarkTheme: theme.isDarkMode,
-                  color: _getPositionTextColor(position, theme),
-                  fontWeight: WebFonts.medium,
+    // ✅ Use ValueListenableBuilder to avoid rebuilding entire table on hover
+    return ValueListenableBuilder<String?>(
+      valueListenable: _hoveredRowToken,
+      builder: (context, hoveredToken, child) {
+        final rowIsHovered = hoveredToken == uniqueId;
+
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Expanded(
+              flex: rowIsHovered ? 1 : 2,
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Tooltip(
+                  message: displayText,
+                  child: Text(
+                    displayText,
+                    style: WebTextStyles.custom(
+                      fontSize: 13,
+                      isDarkTheme: theme.isDarkMode,
+                      color: _getPositionTextColor(position, theme),
+                      fontWeight: WebFonts.medium,
+                    ),
+                    maxLines: 1,
+                    softWrap: false,
+                    overflow: TextOverflow.visible,
+                  ),
                 ),
-                maxLines: 1,
-                softWrap: false,
-                overflow: TextOverflow.visible,
               ),
             ),
-          ),
-        ),
-        // Action buttons fade in on hover
-        IgnorePointer(
-          ignoring: !isHovered,
-          child: AnimatedOpacity(
-            opacity: isHovered ? 1 : 0,
-            duration: const Duration(milliseconds: 140),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (!isClosed &&
-                    position.qty != "0" &&
-                    position.sPrdtAli != "BO" &&
-                    position.sPrdtAli != "CO" &&
-                    !positionBook.isDay) ...[
-                  _buildHoverButton(
-                    label: 'Add',
-                    color: Colors.white,
-                    backgroundColor: theme.isDarkMode
-                        ? WebDarkColors.primary
-                        : WebColors.primary,
-                    onPressed: () async {
-                      await _handleAddPosition(context, position);
-                    },
-                    theme: theme,
-                  ),
-                  const SizedBox(width: 6),
-                  _buildHoverButton(
-                    label: 'Exit',
-                    color: Colors.white,
-                    backgroundColor: theme.isDarkMode
-                        ? WebDarkColors.tertiary
-                        : WebColors.tertiary,
-                    onPressed: () async {
-                      await _handleExitPosition(context, position);
-                    },
-                    theme: theme,
-                  ),
-                  const SizedBox(width: 6),
-                ],
-                _buildHoverButton(
-                  icon: Icons.bar_chart,
-                  color: Colors.black,
-                  backgroundColor: Colors.white,
-                  borderRadius: 5.0,
-                  onPressed: () async {
-                    await _handleChartTap(context, position);
-                  },
-                  theme: theme,
+            // Action buttons fade in on hover
+            IgnorePointer(
+              ignoring: !rowIsHovered,
+              child: AnimatedOpacity(
+                opacity: rowIsHovered ? 1 : 0,
+                duration: const Duration(milliseconds: 140),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (!isClosed &&
+                        position.qty != "0" &&
+                        position.sPrdtAli != "BO" &&
+                        position.sPrdtAli != "CO" &&
+                        !positionBook.isDay) ...[
+                      _buildHoverButton(
+                        label: 'Add',
+                        color: Colors.white,
+                        backgroundColor: theme.isDarkMode
+                            ? WebDarkColors.primary
+                            : WebColors.primary,
+                        onPressed: () async {
+                          await _handleAddPosition(context, position);
+                        },
+                        theme: theme,
+                      ),
+                      const SizedBox(width: 6),
+                      _buildHoverButton(
+                        label: 'Exit',
+                        color: Colors.white,
+                        backgroundColor: theme.isDarkMode
+                            ? WebDarkColors.tertiary
+                            : WebColors.tertiary,
+                        onPressed: () async {
+                          await _handleExitPosition(context, position);
+                        },
+                        theme: theme,
+                      ),
+                      const SizedBox(width: 6),
+                    ],
+                    _buildHoverButton(
+                      icon: Icons.bar_chart,
+                      color: Colors.black,
+                      backgroundColor: Colors.white,
+                      borderRadius: 5.0,
+                      onPressed: () async {
+                        await _handleChartTap(context, position);
+                      },
+                      theme: theme,
+                    ),
+                    if (!isClosed && position.qty != "0") ...[
+                      const SizedBox(width: 6),
+                      _buildHoverButton(
+                        icon: Icons.swap_horiz,
+                        color: Colors.black,
+                        backgroundColor: Colors.white,
+                        borderRadius: 5.0,
+                        iconWeight: 700,
+                        onPressed: () {
+                          _handleConvertPosition(context, position);
+                        },
+                        theme: theme,
+                      ),
+                    ],
+                  ],
                 ),
-                if (!isClosed && position.qty != "0") ...[
-                  const SizedBox(width: 6),
-                  _buildHoverButton(
-                    icon: Icons.swap_horiz,
-                    color: Colors.black,
-                    backgroundColor: Colors.white,
-                    borderRadius: 5.0,
-                    iconWeight: 700,
-                    onPressed: () {
-                      _handleConvertPosition(context, position);
-                    },
-                    theme: theme,
-                  ),
-                ],
-              ],
+              ),
             ),
-          ),
-        ),
-      ],
+          ],
+        );
+      },
     );
   }
 
@@ -2051,6 +2071,208 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
       builder: (BuildContext context) {
         return ConvertPositionDialogueWeb(convertPosition: position);
       },
+    );
+  }
+}
+
+// Isolated widget for LTP - only this rebuilds when LTP changes
+class _LTPCell extends ConsumerStatefulWidget {
+  final String token;
+  final String initialLtp;
+
+  const _LTPCell({required this.token, required this.initialLtp});
+
+  @override
+  ConsumerState<_LTPCell> createState() => _LTPCellState();
+}
+
+class _LTPCellState extends ConsumerState<_LTPCell> {
+  late String ltp;
+  StreamSubscription? _subscription;
+
+  @override
+  void initState() {
+    super.initState();
+    ltp = widget.initialLtp;
+
+    _subscription = ref.read(websocketProvider).socketDataStream.listen((data) {
+      if (!mounted || !data.containsKey(widget.token)) return;
+
+      final newLtp = data[widget.token]['lp']?.toString();
+      if (newLtp != null && newLtp != ltp && newLtp != '0.00' && newLtp != 'null') {
+        setState(() => ltp = newLtp);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(ltp, textAlign: TextAlign.right);
+  }
+}
+
+// Isolated widget for P&L
+class _PnLCell extends ConsumerStatefulWidget {
+  final String token;
+  final int qty;
+  final double avgPrice;
+  final String initialValue;
+  final ThemesProvider theme;
+  final bool isClosed;
+
+  const _PnLCell({
+    required this.token,
+    required this.qty,
+    required this.avgPrice,
+    required this.initialValue,
+    required this.theme,
+    required this.isClosed,
+  });
+
+  @override
+  ConsumerState<_PnLCell> createState() => _PnLCellState();
+}
+
+class _PnLCellState extends ConsumerState<_PnLCell> {
+  late String pnl;
+  StreamSubscription? _subscription;
+
+  @override
+  void initState() {
+    super.initState();
+    pnl = widget.initialValue;
+
+    _subscription = ref.read(websocketProvider).socketDataStream.listen((data) {
+      if (!mounted || !data.containsKey(widget.token)) return;
+
+      final newLtp = data[widget.token]['lp']?.toString();
+      if (newLtp != null && newLtp != '0.00' && newLtp != 'null') {
+        final ltp = double.tryParse(newLtp) ?? 0.0;
+        // Simplified P&L calculation: (LTP - avgPrice) * qty
+        final newPnL = ((ltp - widget.avgPrice) * widget.qty).toStringAsFixed(2);
+        if (newPnL != pnl) {
+          setState(() => pnl = newPnL);
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
+  }
+
+  Color _getValueColor(String value, ThemesProvider theme) {
+    final numValue = double.tryParse(value) ?? 0.0;
+    if (numValue > 0) {
+      return theme.isDarkMode ? WebDarkColors.success : WebColors.success;
+    } else if (numValue < 0) {
+      return theme.isDarkMode ? WebDarkColors.error : WebColors.error;
+    } else {
+      return theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      pnl,
+      style: WebTextStyles.custom(
+        fontSize: 13,
+        isDarkTheme: widget.theme.isDarkMode,
+        color: widget.isClosed
+            ? Colors.grey
+            : _getValueColor(pnl, widget.theme),
+        fontWeight: WebFonts.medium,
+      ),
+      textAlign: TextAlign.right,
+    );
+  }
+}
+
+// Isolated widget for MTM
+class _MTMCell extends ConsumerStatefulWidget {
+  final String token;
+  final int qty;
+  final double avgPrice;
+  final String initialValue;
+  final ThemesProvider theme;
+  final bool isClosed;
+
+  const _MTMCell({
+    required this.token,
+    required this.qty,
+    required this.avgPrice,
+    required this.initialValue,
+    required this.theme,
+    required this.isClosed,
+  });
+
+  @override
+  ConsumerState<_MTMCell> createState() => _MTMCellState();
+}
+
+class _MTMCellState extends ConsumerState<_MTMCell> {
+  late String mtm;
+  StreamSubscription? _subscription;
+
+  @override
+  void initState() {
+    super.initState();
+    mtm = widget.initialValue;
+
+    _subscription = ref.read(websocketProvider).socketDataStream.listen((data) {
+      if (!mounted || !data.containsKey(widget.token)) return;
+
+      final newLtp = data[widget.token]['lp']?.toString();
+      if (newLtp != null && newLtp != '0.00' && newLtp != 'null') {
+        final ltp = double.tryParse(newLtp) ?? 0.0;
+        // Simplified MTM calculation: (LTP - avgPrice) * qty
+        final newMtm = ((ltp - widget.avgPrice) * widget.qty).toStringAsFixed(2);
+        if (newMtm != mtm) {
+          setState(() => mtm = newMtm);
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
+  }
+
+  Color _getValueColor(String value, ThemesProvider theme) {
+    final numValue = double.tryParse(value) ?? 0.0;
+    if (numValue > 0) {
+      return theme.isDarkMode ? WebDarkColors.success : WebColors.success;
+    } else if (numValue < 0) {
+      return theme.isDarkMode ? WebDarkColors.error : WebColors.error;
+    } else {
+      return theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      mtm,
+      style: WebTextStyles.custom(
+        fontSize: 13,
+        isDarkTheme: widget.theme.isDarkMode,
+        color: widget.isClosed
+            ? Colors.grey
+            : _getValueColor(mtm, widget.theme),
+        fontWeight: WebFonts.medium,
+      ),
+      textAlign: TextAlign.right,
     );
   }
 }

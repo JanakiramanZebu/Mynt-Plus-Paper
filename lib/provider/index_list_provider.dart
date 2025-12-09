@@ -22,6 +22,8 @@ import '../res/global_state_text.dart';
 import '../res/res.dart';
 import '../routes/route_names.dart';
 import '../sharedWidget/snack_bar.dart';
+import '../utils/responsive_snackbar.dart';
+import 'package:flutter/foundation.dart';
 import 'auth_provider.dart';
 import 'core/default_change_notifier.dart';
 import 'market_watch_provider.dart';
@@ -264,8 +266,13 @@ class IndexListProvider extends DefaultChangeNotifier {
             ref.read(authProvider).loginMethCtrl.text =
                 localstorage.getString("userId") ?? "";
             ConstantName.timer!.cancel();
-            warningMessage(context,
-                _indexList!.emsg!.replaceAll("Invalid Input :", "* "));
+            if (kIsWeb) {
+              ResponsiveSnackBar.showWarning(context,
+                  _indexList!.emsg!.replaceAll("Invalid Input :", "* "));
+            } else {
+              warningMessage(context,
+                  _indexList!.emsg!.replaceAll("Invalid Input :", "* "));
+            }
 
             Navigator.pushNamedAndRemoveUntil(
                 context,
@@ -520,7 +527,11 @@ class IndexListProvider extends DefaultChangeNotifier {
     ref
         .read(marketWatchProvider)
         .requestMWScrip(isSubscribe: true, context: context);
-    successMessage(context, "Index scrip modified");
+    if (kIsWeb) {
+      ResponsiveSnackBar.showSuccess(context, "Index scrip modified");
+    } else {
+      successMessage(context, "Index scrip modified");
+    }
   }
 
 // Retrieve from locally stored index data

@@ -35,6 +35,7 @@ import '../screens/Mobile/profile_screen/fund_screen/upi_id_screens/upi_id_payme
 import '../sharedWidget/functions.dart';
 import '../sharedWidget/fund_function.dart';
 import '../sharedWidget/snack_bar.dart';
+import '../utils/responsive_snackbar.dart';
 import 'auth_provider.dart';
 import 'core/default_change_notifier.dart';
 import 'index_list_provider.dart';
@@ -959,13 +960,20 @@ class TranctionProvider extends DefaultChangeNotifier {
       print("WITHDRAW - Payload: ${jsonEncode(payload)} | Response: ${jsonEncode(_paymentWithdraw?.toJson() ?? {})}");
       
       if (_paymentWithdraw!.msg == "Sucess") {
-            successMessage(context, 'Withdrawal request sent successfully');
+        if (kIsWeb) {
+          ResponsiveSnackBar.showSuccess(context, 'Withdrawal request sent successfully');
+        } else {
+          successMessage(context, 'Withdrawal request sent successfully');
+        }
         withdrawamount.clear();
         fetchPaymentWithDrawStatus(context);
       } else {
         print("Withdrawal failed with message: ${_paymentWithdraw!.msg}");
-        warningMessage(
-            context, 'Withdrawal failed: ${_paymentWithdraw!.msg}');
+        if (kIsWeb) {
+          ResponsiveSnackBar.showWarning(context, 'Withdrawal failed: ${_paymentWithdraw!.msg}');
+        } else {
+          warningMessage(context, 'Withdrawal failed: ${_paymentWithdraw!.msg}');
+        }
       }
     } catch (e) {
       print("========== WITHDRAW ERROR ==========");

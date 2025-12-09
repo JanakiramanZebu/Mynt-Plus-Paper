@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/res/res.dart';
-import 'package:mynt_plus/res/web_colors.dart';
 import 'package:mynt_plus/res/global_font_web.dart';
 import 'package:mynt_plus/provider/thems.dart';
+
+import '../res/web_colors.dart';
 
 /// Responsive SnackBar utility that adapts to screen size
 /// Shows toast-style notification in bottom-right corner on desktop
@@ -262,41 +263,65 @@ class _DesktopToastWidgetState extends ConsumerState<_DesktopToastWidget>
             child: FadeTransition(
               opacity: _fadeAnimation,
               child: Material(
-                elevation: 0,
-                shadowColor: Colors.transparent,
+                elevation: 4,
+                shadowColor: Colors.black.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(8),
                 color: Colors.transparent,
                 child: Container(
                   constraints: BoxConstraints(
                     maxWidth: screenSize.width * 0.3,
-                    minWidth: 300,
+                    minWidth: 320,
                   ),
                   decoration: BoxDecoration(
-                    color: toastColors.backgroundColor,
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        toastColors.backgroundColor,
+                        toastColors.backgroundColor.withOpacity(0.9),
+                      ],
+                    ),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.all(16),
                     child: Row(
-                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Checkmark icon in circle (for success type)
-                        if (widget.type == SnackBarType.success)
-                          _buildSuccessIcon(theme.isDarkMode)
-                        else
-                          _buildTypeIcon(widget.type, theme.isDarkMode),
+                        // Circular icon on the left
+                        _buildTypeIcon(widget.type, toastColors.iconColor),
                         const SizedBox(width: 12),
-                        // Message text
+                        // Text content on the right
                         Expanded(
-                          child: Text(
-                            widget.message,
-                            style: WebTextStyles.bodySmall(
-                              isDarkTheme: theme.isDarkMode,
-                              color: Colors.white,
-                              fontWeight: WebFonts.medium,
-                            ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Type label (SUCCESS, ERROR, INFO, WARNING)
+                              Text(
+                                _getTypeLabel(widget.type),
+                                style: WebTextStyles.custom(
+                                  fontSize: 13,
+                                  isDarkTheme: theme.isDarkMode,
+                                  color: toastColors.textColor,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              // Message text
+                              Text(
+                                widget.message,
+                                style: WebTextStyles.bodySmall(
+                                  isDarkTheme: theme.isDarkMode,
+                                  color:  Color(0xFF000000),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        // Close button (X icon)
+                        // Close button
                         const SizedBox(width: 8),
                         Material(
                           color: Colors.transparent,
@@ -308,7 +333,7 @@ class _DesktopToastWidgetState extends ConsumerState<_DesktopToastWidget>
                               child: Icon(
                                 Icons.close,
                                 size: 18,
-                                color: Colors.white,
+                                color: toastColors.textColor.withOpacity(0.7),
                               ),
                             ),
                           ),
@@ -325,81 +350,88 @@ class _DesktopToastWidgetState extends ConsumerState<_DesktopToastWidget>
     );
   }
   
-  Widget _buildSuccessIcon(bool isDarkMode) {
-    return Container(
-      width: 24,
-      height: 24,
-      decoration: BoxDecoration(
-        color: isDarkMode 
-            ? WebDarkColors.success.withOpacity(0.2)
-            : WebColors.success.withOpacity(0.2),
-        shape: BoxShape.circle,
-      ),
-      child: Icon(
-        Icons.check,
-        size: 16,
-        color: Colors.white,
-      ),
-    );
+  String _getTypeLabel(SnackBarType type) {
+    switch (type) {
+      case SnackBarType.success:
+        return 'SUCCESS';
+      case SnackBarType.error:
+        return 'ERROR';
+      case SnackBarType.warning:
+        return 'WARNING';
+      case SnackBarType.info:
+      default:
+        return 'INFO';
+    }
   }
   
-  Widget _buildTypeIcon(SnackBarType type, bool isDarkMode) {
+  Widget _buildTypeIcon(SnackBarType type, Color iconBgColor) {
     IconData icon;
-    Color iconColor;
     
     switch (type) {
       case SnackBarType.success:
-        icon = Icons.check_circle;
-        iconColor = Colors.white;
+        icon = Icons.check;
         break;
       case SnackBarType.error:
         icon = Icons.error;
-        iconColor = Colors.white;
         break;
       case SnackBarType.warning:
         icon = Icons.warning;
-        iconColor = Colors.white;
         break;
       case SnackBarType.info:
       default:
         icon = Icons.info;
-        iconColor = Colors.white;
         break;
     }
     
-    return Icon(
-      icon,
-      color: iconColor,
-      size: 20,
+    return Container(
+      width: 32,
+      height: 32,
+      decoration: BoxDecoration(
+        color: iconBgColor,
+        shape: BoxShape.circle,
+      ),
+      child: Icon(
+        icon,
+        size: 18,
+        color: Colors.white,
+      ),
     );
   }
   
   _ToastColors _getToastColors(SnackBarType type, bool isDarkMode) {
     switch (type) {
       case SnackBarType.success:
-        return _ToastColors(
-          backgroundColor: isDarkMode 
-              ? WebDarkColors.success.withOpacity(0.9)
-              : WebColors.success.withOpacity(0.7),
+        return const _ToastColors(
+          backgroundColor: Color(0xFFE8F5E9), // Light green background
+          borderColor: Color(0xFF4CAF50), // Green border (not used but kept for consistency)
+          headerColor: Color(0xFF2E7D32), // Dark green text
+          iconColor: Color(0xFF4CAF50), // Green icon background
+          textColor: Color(0xFF1B5E20), // Dark green text color
         );
       case SnackBarType.error:
-        return _ToastColors(
-          backgroundColor: isDarkMode 
-              ? WebDarkColors.error.withOpacity(0.9)
-              : WebColors.error.withOpacity(0.7),
+        return const _ToastColors(
+          backgroundColor: Color(0xFFFFEBEE), // Light red background
+          borderColor: Color(0xFFF44336), // Red border
+          headerColor: Color(0xFFC62828), // Dark red text
+          iconColor: Color(0xFFF44336), // Red icon background
+          textColor: Color(0xFFB71C1C), // Dark red text color
         );
       case SnackBarType.warning:
-        return _ToastColors(
-          backgroundColor: isDarkMode 
-              ? WebDarkColors.warning.withOpacity(0.9)
-              : WebColors.warning.withOpacity(0.7),
+        return const _ToastColors(
+          backgroundColor: Color(0xFFFFF3E0), // Light orange background
+          borderColor: Color(0xFFFF9800), // Orange border
+          headerColor: Color(0xFFE65100), // Dark orange text
+          iconColor: Color(0xFFFF9800), // Orange icon background
+          textColor: Color(0xFFBF360C), // Dark orange text color
         );
       case SnackBarType.info:
       default:
-        return _ToastColors(
-          backgroundColor: isDarkMode 
-              ? WebDarkColors.info.withOpacity(0.9)
-              : WebColors.info.withOpacity(0.7),
+        return const _ToastColors(
+          backgroundColor: Color(0xFFE3F2FD), // Light blue background
+          borderColor: Color(0xFF2196F3), // Blue border
+          headerColor: Color(0xFF1565C0), // Dark blue text
+          iconColor: Color(0xFF2196F3), // Blue icon background
+          textColor: Color(0xFF0D47A1), // Dark blue text color
         );
     }
   }
@@ -408,9 +440,17 @@ class _DesktopToastWidgetState extends ConsumerState<_DesktopToastWidget>
 /// Toast color scheme
 class _ToastColors {
   final Color backgroundColor;
+  final Color borderColor;
+  final Color headerColor;
+  final Color iconColor;
+  final Color textColor;
   
   const _ToastColors({
     required this.backgroundColor,
+    required this.borderColor,
+    required this.headerColor,
+    required this.iconColor,
+    required this.textColor,
   });
 }
 
