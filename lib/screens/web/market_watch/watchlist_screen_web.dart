@@ -124,8 +124,35 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
   late final PageController _pageController;
 
   final TextEditingController _searchController = TextEditingController();
-  final double _tabWidth = 120.0; // Slightly wider for web
   final List<String> _lastTabNames = [];
+
+  /// Get responsive tab width based on watchlist panel width
+  double _getResponsiveTabWidth(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    // Estimate watchlist width (assuming 20-35% of screen based on breakpoints)
+    double watchlistWidth;
+    if (screenWidth >= 1600) {
+      watchlistWidth = screenWidth * 0.20;
+    } else if (screenWidth >= 1200) {
+      watchlistWidth = screenWidth * 0.25;
+    } else if (screenWidth >= 992) {
+      watchlistWidth = screenWidth * 0.28;
+    } else if (screenWidth >= 768) {
+      watchlistWidth = screenWidth * 0.30;
+    } else {
+      watchlistWidth = screenWidth * 0.35;
+    }
+
+    // Tab width based on available watchlist space
+    if (watchlistWidth >= 400) {
+      return 120.0; // Wide watchlist: comfortable tab width
+    } else if (watchlistWidth >= 320) {
+      return 100.0; // Medium watchlist: slightly narrower tabs
+    } else {
+      return 90.0;  // Narrow watchlist: compact tabs
+    }
+  }
 
   Timer? _scrollDebounce;
   String _lastWatchlistName = '';
@@ -229,8 +256,9 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
 
     final viewW = _tabScrollController.position.viewportDimension;
     final max = _tabScrollController.position.maxScrollExtent;
+    final tabWidth = _getResponsiveTabWidth(context);
 
-    final target = (index * _tabWidth) - (viewW / 2) + (_tabWidth / 2);
+    final target = (index * tabWidth) - (viewW / 2) + (tabWidth / 2);
     final offset = target.clamp(0.0, max);
 
     if ((_tabScrollController.offset - offset).abs() < 1.0) return;
@@ -659,6 +687,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
   }
 
   // Build index slots widget - shows 2 index slots below tabs (pinned like tabs)
+  // Responsive: shows 1 slot on narrow watchlist, 2 slots on wide watchlist
   Widget _buildIndexSlots(WidgetRef ref, ThemesProvider theme) {
     final indexContent = Consumer(
       builder: (context, ref, _) {
@@ -669,6 +698,11 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
         if (indexValues == null || indexValues.isEmpty) {
           return const SizedBox.shrink();
         }
+
+        // Determine layout based on screen width
+        final screenWidth = MediaQuery.of(context).size.width;
+        final watchlistWidth = _getWatchlistWidth(screenWidth);
+        final showSingleSlot = watchlistWidth < 350; // Show 1 slot if watchlist < 350px
 
         // Show only first 2 indices
         final displayIndices = indexValues.length >= 2
@@ -681,37 +715,10 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
             color: theme.isDarkMode
                 ? WebDarkColors.background
                 : WebColors.background,
-            // border: Border(
-            //   bottom: BorderSide(
-            //     color: theme.isDarkMode
-            //         ? WebDarkColors.inputBorder
-            //         : WebColors.inputBorder,
-            //     width: 1,
-            //   ),
-            // ),
           ),
-          child: Row(
-            children: List.generate(2, (index) {
-              if (index >= displayIndices.length) {
-                return Expanded(child: const SizedBox.shrink());
-              }
-              final item = displayIndices[index];
-              return Expanded(
-                child: Padding(
-                  padding: EdgeInsets.only(
-                    right: index < 1 ? 8 : 0,
-                  ),
-                  child: _WatchlistIndexSlotWeb(
-                    indexItem: item,
-                    indexPosition: index,
-                    theme: theme,
-                    marketWatch: marketWatch,
-                    indexProvider: indexProvider,
-                  ),
-                ),
-              );
-            }),
-          ),
+          child: showSingleSlot
+              ? _buildSingleIndexSlot(displayIndices, theme, marketWatch, indexProvider)
+              : _buildDoubleIndexSlots(displayIndices, theme, marketWatch, indexProvider),
         );
       },
     );
@@ -724,6 +731,91 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
       delegate: _SliverIndexSlotsDelegate(
         child: indexContent,
         height: indexSlotsHeight,
+      ),
+    );
+  }
+
+  // Helper to calculate watchlist width based on screen width
+  double _getWatchlistWidth(double screenWidth) {
+    if (screenWidth >= 1600) {
+      return screenWidth * 0.20;
+    } else if (screenWidth >= 1200) {
+      return screenWidth * 0.25;
+    } else if (screenWidth >= 992) {
+      return screenWidth * 0.28;
+    } else if (screenWidth >= 768) {
+      return screenWidth * 0.30;
+    } else {
+      return screenWidth * 0.35;
+    }
+  }
+
+  // Build double index slots layout (2 slots side by side with horizontal scroll)
+  Widget _buildDoubleIndexSlots(
+    List<dynamic> displayIndices,
+    ThemesProvider theme,
+    dynamic marketWatch,
+    dynamic indexProvider,
+  ) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      physics: const ClampingScrollPhysics(),
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: List.generate(2, (index) {
+            if (index >= displayIndices.length) {
+              return const SizedBox.shrink();
+            }
+            final item = displayIndices[index];
+            return Padding(
+              padding: EdgeInsets.only(
+                right: index < 1 ? 8 : 0,
+              ),
+              child: _WatchlistIndexSlotWeb(
+                indexItem: item,
+                indexPosition: index,
+                theme: theme,
+                marketWatch: marketWatch,
+                indexProvider: indexProvider,
+              ),
+            );
+          }),
+        ),
+      ),
+    );
+  }
+
+  // Build single index slot layout with horizontal scroll (for narrow watchlist)
+  Widget _buildSingleIndexSlot(
+    List<dynamic> displayIndices,
+    ThemesProvider theme,
+    dynamic marketWatch,
+    dynamic indexProvider,
+  ) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      physics: const ClampingScrollPhysics(),
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: List.generate(
+            displayIndices.length,
+            (index) {
+              final item = displayIndices[index];
+              return Padding(
+                padding: EdgeInsets.only(right: index < displayIndices.length - 1 ? 8 : 0),
+                child: _WatchlistIndexSlotWeb(
+                  indexItem: item,
+                  indexPosition: index,
+                  theme: theme,
+                  marketWatch: marketWatch,
+                  indexProvider: indexProvider,
+                ),
+              );
+            },
+          ),
+        ),
       ),
     );
   }
@@ -2398,6 +2490,7 @@ class _WatchlistLivePriceWidgetState
     return RepaintBoundary(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Text(
             "$_ltp  ",
@@ -2407,7 +2500,7 @@ class _WatchlistLivePriceWidgetState
               1,
             ),
           ),
-          
+
           Text(
             "$_change ",
             style: _getTextStyle(
@@ -2416,7 +2509,7 @@ class _WatchlistLivePriceWidgetState
               1,
             ),
           ),
-        
+
           Text(
             "($_perChange%)",
             style: _getTextStyle(

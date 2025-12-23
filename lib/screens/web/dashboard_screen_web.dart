@@ -99,20 +99,50 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
         final portfolio = ref.watch(portfolioProvider);
         final orders = ref.watch(orderProvider);
         final fund = ref.watch(fundProvider);
-        
-        return GridView.count(
-          crossAxisCount: 2,
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          childAspectRatio: 3.5,
-          children: [
-            _buildHoldingsCard(theme, portfolio),
-            _buildPositionCard(theme, portfolio),
-            _buildOrdersCard(theme, orders),
-            _buildMarginsCard(theme, fund),
-          ],
+
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            // Responsive grid configuration based on available width
+            final width = constraints.maxWidth;
+            int crossAxisCount;
+
+            if (width >= 800) {
+              // Large and medium screens: 2 columns
+              crossAxisCount = 2;
+            } else {
+              // Small screens: 1 column
+              crossAxisCount = 1;
+            }
+
+            // Calculate card width based on columns
+            final cardWidth = crossAxisCount == 2
+                ? (width - 12) / 2  // Subtract spacing and divide by 2
+                : width;
+
+            // Use Wrap instead of GridView to allow natural card heights
+            return Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: [
+                SizedBox(
+                  width: cardWidth,
+                  child: _buildHoldingsCard(theme, portfolio),
+                ),
+                SizedBox(
+                  width: cardWidth,
+                  child: _buildPositionCard(theme, portfolio),
+                ),
+                SizedBox(
+                  width: cardWidth,
+                  child: _buildOrdersCard(theme, orders),
+                ),
+                SizedBox(
+                  width: cardWidth,
+                  child: _buildMarginsCard(theme, fund),
+                ),
+              ],
+            );
+          },
         );
       },
     );
@@ -325,68 +355,97 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
             ],
           ),
           const SizedBox(height: 16),
-          // Metrics grid
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 4,
-              crossAxisSpacing: 8,
-              mainAxisSpacing: 6,
-              childAspectRatio: 3,
-            ),
-            itemCount: metrics.length,
-            itemBuilder: (context, index) {
-              final metric = metrics[index];
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    metric['label'] ?? '',
-                    style: WebTextStyles.para(
-                      isDarkTheme: theme.isDarkMode,
-                      color: theme.isDarkMode
-                          ? WebDarkColors.textSecondary
-                          : WebColors.textSecondary,
-                          fontWeight: WebFonts.semiBold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        metric['value'] ?? '0.00',
-                        style: WebTextStyles.sub(
-                          isDarkTheme: theme.isDarkMode,
-                          color: theme.isDarkMode
-                              ? WebDarkColors.textPrimary
-                              : WebColors.textPrimary,
-                          fontWeight: WebFonts.semiBold,
-                        ),
-                      ),
-                      if (metric['percent'] != null) ...[
-                        const SizedBox(width: 4),
-                        Text(
-                          metric['percent']!,
-                          style: WebTextStyles.sub(
-                            isDarkTheme: theme.isDarkMode,
-                            color: theme.isDarkMode
-                                ? WebDarkColors.textSecondary
-                                : WebColors.textSecondary,
-                            fontWeight: WebFonts.semiBold,
+          // Metrics grid - responsive based on card width, no fixed aspect ratio
+          LayoutBuilder(
+            builder: (context, constraints) {
+              // Calculate responsive metrics grid columns
+              final cardWidth = constraints.maxWidth;
+              int metricsColumns;
+
+              if (cardWidth >= 600) {
+                // Wide cards: 4 columns (original)
+                metricsColumns = 4;
+              } else if (cardWidth >= 400) {
+                // Medium cards: 2 columns, 2 rows
+                metricsColumns = 2;
+              } else {
+                // Narrow cards: 2 columns
+                metricsColumns = 2;
+              }
+
+              // Use Wrap instead of GridView to allow natural sizing
+              return Wrap(
+                spacing: 8,
+                runSpacing: 12,
+                children: List.generate(
+                  metrics.length,
+                  (index) {
+                    final metric = metrics[index];
+                    return SizedBox(
+                      width: (cardWidth - (8 * (metricsColumns - 1))) / metricsColumns,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            metric['label'] ?? '',
+                            style: WebTextStyles.para(
+                              isDarkTheme: theme.isDarkMode,
+                              color: theme.isDarkMode
+                                  ? WebDarkColors.textSecondary
+                                  : WebColors.textSecondary,
+                              fontWeight: WebFonts.semiBold,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
                           ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ],
+                          const SizedBox(height: 8),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  metric['value'] ?? '0.00',
+                                  style: WebTextStyles.sub(
+                                    isDarkTheme: theme.isDarkMode,
+                                    color: theme.isDarkMode
+                                        ? WebDarkColors.textPrimary
+                                        : WebColors.textPrimary,
+                                    fontWeight: WebFonts.semiBold,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                ),
+                              ),
+                              if (metric['percent'] != null) ...[
+                                const SizedBox(width: 4),
+                                Flexible(
+                                  child: Text(
+                                    metric['percent']!,
+                                    style: WebTextStyles.sub(
+                                      isDarkTheme: theme.isDarkMode,
+                                      color: theme.isDarkMode
+                                          ? WebDarkColors.textSecondary
+                                          : WebColors.textSecondary,
+                                      fontWeight: WebFonts.semiBold,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
               );
             },
           ),
-          // Summary and buttons
+      // Summary and buttons
           if (summary != null || showPositiveNegative) ...[
             const SizedBox(height: 10),
             Row(

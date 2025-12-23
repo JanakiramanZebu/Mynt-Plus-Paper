@@ -202,9 +202,8 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
 
   Widget _buildDivider(ThemesProvider theme) {
     return Container(
-      height: 40,
       width: 1,
-      margin: const EdgeInsets.symmetric(horizontal: 16),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       color: const Color(0xFFE5E7EB), // Light grey divider
     );
   }
@@ -735,33 +734,35 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
       mainAxisSize: MainAxisSize.max,
       mainAxisAlignment: isNumeric ? MainAxisAlignment.end : MainAxisAlignment.start,
       children: [
-        Expanded(
+        Flexible(
           child: Row(
-            mainAxisSize: MainAxisSize.max,
+            mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: isNumeric ? MainAxisAlignment.end : MainAxisAlignment.start,
             children: [
-              Text(
-                header,
-                style: WebTextStyles.tableHeader(
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
+              Flexible(
+                child: Text(
+                  header,
+                  style: WebTextStyles.tableHeader(
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode
+                        ? WebDarkColors.textPrimary
+                        : WebColors.textPrimary,
+                  ),
+                  textAlign: isNumeric ? TextAlign.right : TextAlign.left,
+                  maxLines: 2,
+                  overflow: TextOverflow.visible,
+                  softWrap: true,
                 ),
-                textAlign: isNumeric ? TextAlign.right : TextAlign.left,
               ),
               const SizedBox(width: 4),
-              SizedBox(
-                width: 16, // Fixed width for the icon
-                child: Icon(
-                  sortIcon,
-                  size: 16,
-                  color: isCurrentlySorted
-                      ? (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary)
-                      : (theme.isDarkMode
-                          ? WebDarkColors.textSecondary.withOpacity(0.6)
-                          : WebColors.textSecondary.withOpacity(0.6)),
-                ),
+              Icon(
+                sortIcon,
+                size: 16,
+                color: isCurrentlySorted
+                    ? (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary)
+                    : (theme.isDarkMode
+                        ? WebDarkColors.textSecondary.withOpacity(0.6)
+                        : WebColors.textSecondary.withOpacity(0.6)),
               ),
             ],
           ),

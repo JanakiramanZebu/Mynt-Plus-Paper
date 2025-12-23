@@ -650,6 +650,58 @@ class _CustomizableSplitHomeScreenState
     return _buildGridContent(theme);
   }
 
+  /// Calculate responsive split ratio for watchlist based on screen width
+  /// Uses Bootstrap-inspired breakpoints for optimal layout at different screen sizes
+  ///
+  /// Breakpoints:
+  /// - XL (>= 1600px): 20% watchlist width
+  /// - LG (>= 1200px): 25% watchlist width (default)
+  /// - MD (>= 992px): 28% watchlist width
+  /// - SM (>= 768px): 30% watchlist width
+  /// - XS (< 768px): 35% watchlist width
+  ///
+  /// [isLeftPanel] - true if watchlist is in left panel, false if in right panel
+  double _getResponsiveWatchlistRatio(BuildContext context, {required bool isLeftPanel}) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    double watchlistRatio;
+
+    // Calculate watchlist width percentage based on screen size
+    if (screenWidth >= 1600) {
+      // Extra Large screens (>= 1600px): 20% watchlist
+      watchlistRatio = 0.20;
+    } else if (screenWidth >= 1200) {
+      // Large screens (>= 1200px): 25% watchlist (default)
+      watchlistRatio = 0.25;
+    } else if (screenWidth >= 992) {
+      // Medium screens (>= 992px): 28% watchlist
+      watchlistRatio = 0.28;
+    } else if (screenWidth >= 768) {
+      // Small screens (>= 768px): 30% watchlist
+      watchlistRatio = 0.30;
+    } else {
+      // Extra Small screens (< 768px): 35% watchlist
+      watchlistRatio = 0.35;
+    }
+
+    // Apply min/max constraints to prevent extreme widths
+    const double minWatchlistWidth = 280.0;  // Minimum 280px for readability
+    const double maxWatchlistWidth = 450.0;  // Maximum 450px to prevent oversized
+
+    // Calculate actual pixel width
+    double actualWidth = screenWidth * watchlistRatio;
+
+    // Clamp to min/max bounds
+    actualWidth = actualWidth.clamp(minWatchlistWidth, maxWatchlistWidth);
+
+    // Recalculate ratio based on clamped width
+    watchlistRatio = actualWidth / screenWidth;
+
+    // Return appropriate ratio based on panel position
+    // If watchlist is on left: return the ratio directly (left panel = ratio, right panel = 1-ratio)
+    // If watchlist is on right: return 1-ratio (left panel = 1-ratio, right panel = ratio)
+    return isLeftPanel ? watchlistRatio : (1.0 - watchlistRatio);
+  }
+
   Widget _buildGridContent(ThemesProvider theme) {
     return _buildTwoPanels(theme);
   }
@@ -672,17 +724,17 @@ class _CustomizableSplitHomeScreenState
                 _panels[1].screens[_panels[1].activeScreenIndex] ==
                     ScreenType.watchlist));
 
-    // Determine split ratio based on watchlist position
+    // Determine split ratio based on watchlist position and screen size
     double splitRatio = 0.5; // Default 50/50
     bool enableResize = true; // Default to resizable
 
     if (hasWatchlistInFirstPanel) {
-      // Watchlist is in left panel, give it 25% width
-      splitRatio = 0.25; // Watchlist gets 25%, other panel gets 75%
+      // Watchlist is in left panel - calculate responsive width
+      splitRatio = _getResponsiveWatchlistRatio(context, isLeftPanel: true);
       enableResize = false; // Disable resize to maintain fixed ratio
     } else if (hasWatchlistInSecondPanel) {
-      // Watchlist is in right panel, give other panel 75% width
-      splitRatio = 0.75; // First panel gets 75%, watchlist gets 25%
+      // Watchlist is in right panel - calculate responsive width
+      splitRatio = _getResponsiveWatchlistRatio(context, isLeftPanel: false);
       enableResize = false; // Disable resize to maintain fixed ratio
     }
 

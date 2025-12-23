@@ -320,7 +320,6 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
         // final negativeCount = _getNegativeMutualFundsCount(mfData);
 
         return Container(
-          height: 120,
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: theme.isDarkMode
@@ -431,9 +430,8 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
 
   Widget _buildDivider(ThemesProvider theme) {
     return Container(
-      height: 40,
       width: 1,
-      margin: const EdgeInsets.symmetric(horizontal: 16),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
     );
   }
@@ -516,10 +514,23 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
           // Search Bar - Show different search based on selected tab
           if (_selectedTabIndex == 0) ...[
             // Stocks tab search
-            SizedBox(
-              width: 400,
-              child: Container(
-                height: 40,
+            LayoutBuilder(
+              builder: (context, constraints) {
+                // Responsive search bar width
+                final screenWidth = MediaQuery.of(context).size.width;
+                double searchWidth;
+                if (screenWidth >= 1200) {
+                  searchWidth = 400;
+                } else if (screenWidth >= 800) {
+                  searchWidth = 300;
+                } else {
+                  searchWidth = 200;
+                }
+
+                return SizedBox(
+                  height: 40,
+                  width: searchWidth,
+                  child: Container(
                 decoration: BoxDecoration(
                   color: theme.isDarkMode
                       ? WebDarkColors.inputBackground
@@ -565,14 +576,29 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
                   ),
                 ),
               ),
+            );
+              },
             ),
             const SizedBox(width: 16),
           ] else if (_selectedTabIndex == 1) ...[
             // Mutual Funds tab search
-            SizedBox(
-              width: 400,
-              child: Container(
-                height: 40,
+            LayoutBuilder(
+              builder: (context, constraints) {
+                // Responsive search bar width
+                final screenWidth = MediaQuery.of(context).size.width;
+                double searchWidth;
+                if (screenWidth >= 1200) {
+                  searchWidth = 400;
+                } else if (screenWidth >= 800) {
+                  searchWidth = 300;
+                } else {
+                  searchWidth = 200;
+                }
+
+                return SizedBox(
+                  height: 40,
+                  width: searchWidth,
+                  child: Container(
                 decoration: BoxDecoration(
                   color: theme.isDarkMode
                       ? WebDarkColors.inputBackground
@@ -618,6 +644,8 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
                   ),
                 ),
               ),
+            );
+              },
             ),
             const SizedBox(width: 16),
           ],
@@ -665,11 +693,9 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
       'Mutual Funds ($mutualFundsCount)',
     ];
 
-    return SizedBox(
-      height: 45,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
           // Left arrow button
           // _buildTabArrowButton(
           //   icon: Icons.chevron_left,
@@ -707,7 +733,6 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
           //   theme: theme,
           // ),
         ],
-      ),
     );
   }
 
@@ -1073,7 +1098,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
                     ),
                     // Remove vertical lines by not setting left, right, and verticalInside
                   ),
-              columns: _buildDataTable2Columns(headers, columnMinWidth, theme),
+              columns: _buildDataTable2Columns(headers, columnMinWidth, theme, screenWidth),
               rows: _buildDataTable2Rows(filteredHoldings, headers, theme),
               ),
             ),
@@ -1121,33 +1146,35 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
       mainAxisSize: MainAxisSize.max,
       mainAxisAlignment: isNumeric ? MainAxisAlignment.end : MainAxisAlignment.start,
       children: [
-        Expanded(
+        Flexible(
           child: Row(
-            mainAxisSize: MainAxisSize.max,
+            mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: isNumeric ? MainAxisAlignment.end : MainAxisAlignment.start,
             children: [
-              Text(
-                header,
-                style: WebTextStyles.tableHeader(
-                  isDarkTheme: theme.isDarkMode,
-        color: theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
+              Flexible(
+                child: Text(
+                  header,
+                  style: WebTextStyles.tableHeader(
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode
+                        ? WebDarkColors.textPrimary
+                        : WebColors.textPrimary,
+                  ),
+                  textAlign: isNumeric ? TextAlign.right : TextAlign.left,
+                  maxLines: 2,
+                  overflow: TextOverflow.visible,
+                  softWrap: true,
                 ),
-                textAlign: isNumeric ? TextAlign.right : TextAlign.left,
               ),
               const SizedBox(width: 4),
-              SizedBox(
-                width: 16, // Fixed width for the icon
-                child: Icon(
-                  sortIcon,
-                  size: 16,
-                  color: isCurrentlySorted
-                      ? (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary)
-                      : (theme.isDarkMode
-            ? WebDarkColors.textSecondary.withOpacity(0.6)
-                          : WebColors.textSecondary.withOpacity(0.6)),
-                ),
+              Icon(
+                sortIcon,
+                size: 16,
+                color: isCurrentlySorted
+                    ? (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary)
+                    : (theme.isDarkMode
+                        ? WebDarkColors.textSecondary.withOpacity(0.6)
+                        : WebColors.textSecondary.withOpacity(0.6)),
               ),
             ],
           ),
@@ -1160,11 +1187,24 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
     List<String> headers,
     Map<String, double> columnMinWidth,
     ThemesProvider theme,
+    double screenWidth,
   ) {
+    // Responsive Instrument column width based on screen size
+    double instrumentWidth;
+    if (screenWidth >= _desktopBreakpoint) {
+      instrumentWidth = 300.0;
+    } else if (screenWidth >= _tabletBreakpoint) {
+      instrumentWidth = 280.0;
+    } else if (screenWidth >= _mobileBreakpoint) {
+      instrumentWidth = 250.0;
+    } else {
+      instrumentWidth = 200.0;
+    }
+
     return headers.map((header) {
       final columnIndex = _getColumnIndexForHeader(header);
       final isNumeric = _isNumericColumn(header);
-      
+
       return DataColumn2(
         label: SizedBox.expand(
           child: MouseRegion(
@@ -1200,7 +1240,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
           ),
         ),
         size: header == 'Instrument' ? ColumnSize.L : ColumnSize.S,
-        fixedWidth: header == 'Instrument' ? 300.0 : null,
+        fixedWidth: header == 'Instrument' ? instrumentWidth : null,
         onSort: null, // Disable DataTable2's onSort
       );
     }).toList();
