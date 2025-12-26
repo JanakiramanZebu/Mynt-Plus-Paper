@@ -27,7 +27,7 @@ class MfHoldingsScreenWeb extends ConsumerStatefulWidget {
 }
 
 class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
-  String _searchQuery = '';
+  // ✅ Removed _searchQuery - use widget.searchQuery directly since parent uses ValueNotifier
   int? _sortColumnIndex;
   bool _sortAscending = true;
   final ScrollController _horizontalScrollController = ScrollController();
@@ -38,26 +38,13 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
   @override
   void initState() {
     super.initState();
-    // Use search query from parent if provided
-    if (widget.searchQuery != null) {
-      _searchQuery = widget.searchQuery!;
-    }
     // Fetch mutual fund holdings data when screen initializes
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(mfProvider).fetchmfholdingnew();
     });
   }
 
-  @override
-  void didUpdateWidget(MfHoldingsScreenWeb oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    // Update search query when parent changes it
-    if (widget.searchQuery != oldWidget.searchQuery) {
-      setState(() {
-        _searchQuery = widget.searchQuery ?? '';
-      });
-    }
-  }
+  // ✅ REMOVED: didUpdateWidget - no longer needed since we use widget.searchQuery directly
 
   @override
   void dispose() {
@@ -166,7 +153,7 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
               Expanded(
                 child: _buildStatItem(
                   'Percentage',
-                  '${absReturnPercent}%',
+                  '$absReturnPercent%',
                   _getValueColor(absReturnPercent, theme),
                   theme,
                 ),
@@ -313,7 +300,7 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
         final headerHeight = widget.showSummaryCards ? 120.0 : 0.0; // Summary cards height
         final actionBarHeight = widget.showSummaryCards ? 60.0 : 0.0; // Action bar height
         final spacing = widget.showSummaryCards ? 24.0 : 0.0; // Spacing between sections
-        final bottomMargin = 20.0; // Bottom margin
+        const bottomMargin = 20.0; // Bottom margin
         final tableHeight =
             screenHeight - padding - headerHeight - actionBarHeight - spacing - bottomMargin;
 
@@ -351,11 +338,11 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
               data: Theme.of(context).copyWith(
                 scrollbarTheme: ScrollbarThemeData(
                   // Make both scrollbars always visible
-                  thumbVisibility: MaterialStateProperty.all(true),
-                  trackVisibility: MaterialStateProperty.all(true),
+                  thumbVisibility: WidgetStateProperty.all(true),
+                  trackVisibility: WidgetStateProperty.all(true),
                   
                   // Consistent thickness for both horizontal and vertical
-                  thickness: MaterialStateProperty.all(6.0),
+                  thickness: WidgetStateProperty.all(6.0),
                   crossAxisMargin: 0.0,
                   mainAxisMargin: 0.0,
                   
@@ -363,18 +350,18 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
                   radius: const Radius.circular(3),
                   
                   // Consistent colors for both scrollbars
-                  thumbColor: MaterialStateProperty.resolveWith((states) {
+                  thumbColor: WidgetStateProperty.resolveWith((states) {
                     return theme.isDarkMode 
                         ? WebDarkColors.textSecondary.withOpacity(0.3)
                         : WebColors.textSecondary.withOpacity(0.3);
                   }),
-                  trackColor: MaterialStateProperty.resolveWith((states) {
+                  trackColor: WidgetStateProperty.resolveWith((states) {
                     return theme.isDarkMode 
                         ? WebDarkColors.divider.withOpacity(0.1)
                         : WebColors.divider.withOpacity(0.1);
                   }),
                   
-                  trackBorderColor: MaterialStateProperty.all(Colors.transparent),
+                  trackBorderColor: WidgetStateProperty.all(Colors.transparent),
                   minThumbLength: 48.0,
                 ),
               ),
@@ -392,7 +379,7 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
                 horizontalScrollController: _horizontalScrollController,
                 scrollController: _verticalScrollController,
                 showCheckboxColumn: false,
-                headingRowColor: MaterialStateProperty.all(
+                headingRowColor: WidgetStateProperty.all(
                   theme.isDarkMode
                       ? WebDarkColors.primary
                       : WebColors.primary.withOpacity(0.05),
@@ -518,7 +505,7 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
       final isHovered = _hoveredRowToken == uniqueId;
 
       return DataRow2(
-        color: MaterialStateProperty.resolveWith((states) {
+        color: WidgetStateProperty.resolveWith((states) {
           if (isHovered) {
             return theme.isDarkMode
                 ? WebDarkColors.primary.withOpacity(0.06)
@@ -640,7 +627,7 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
       case 'P&L %':
         final pnlPercent = holding.changeprofitLoss ?? '0.00';
         return Text(
-          '${pnlPercent}%',
+          '$pnlPercent%',
           style: WebTextStyles.custom(
             fontSize: 13,
             isDarkTheme: theme.isDarkMode,
@@ -777,11 +764,12 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
   List<dynamic> _getFilteredHoldings(MFProvider mfData) {
     List<dynamic> holdings = mfData.mfholdingnew?.data ?? [];
 
-    // Apply search filter
-    if (_searchQuery.isNotEmpty) {
+    // Apply search filter - use widget.searchQuery directly
+    final searchQuery = widget.searchQuery ?? '';
+    if (searchQuery.isNotEmpty) {
       holdings = holdings.where((holding) {
         final name = holding.name?.toLowerCase() ?? '';
-        final searchLower = _searchQuery.toLowerCase();
+        final searchLower = searchQuery.toLowerCase();
         return name.contains(searchLower);
       }).toList();
     }

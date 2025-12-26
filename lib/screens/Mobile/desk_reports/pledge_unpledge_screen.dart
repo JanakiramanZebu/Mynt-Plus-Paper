@@ -5,7 +5,6 @@ import 'package:mynt_plus/provider/ledger_provider.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/sharedWidget/custom_back_btn.dart';
 import 'package:mynt_plus/sharedWidget/functions.dart';
-import 'package:mynt_plus/sharedWidget/loader_ui.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 
 import '../../../provider/thems.dart';
@@ -16,9 +15,6 @@ import '../../../sharedWidget/splash_loader.dart';
 import 'bottom_sheets/pledge_details.dart';
 import 'bottom_sheets/pledge_list.dart';
 import 'pledge_and_unpledge/pledge_filter_screen.dart';
-import 'tax_pnl_screens/charges_value_screen.dart';
-import 'tax_pnl_screens/pnl_value_screen.dart';
-import 'tax_pnl_screens/turnover_value_screen.dart';
 
 class PledgenUnpledge extends StatefulWidget {
   final String ddd;
@@ -96,9 +92,9 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
     double screenWidth = MediaQuery.of(context).size.width;
     double screenheight = MediaQuery.of(context).size.height;
     List<Tab> orderTabName = [
-      Tab(text: "Pledge"),
-      Tab(text: " Unpledge"),
-      Tab(text: "Un-Approved"),
+      const Tab(text: "Pledge"),
+      const Tab(text: " Unpledge"),
+      const Tab(text: "Un-Approved"),
     ];
 
     return Consumer(builder: (context, WidgetRef ref, _) {
@@ -107,8 +103,8 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
       var noncash = 0.0;
       var pledgedvalue = [];
       final ledgerprovider = ref.watch(ledgerProvider);
-      Future<void> _refresh() async {
-        await Future.delayed(Duration(seconds: 0)); // simulate refresh delay
+      Future<void> refresh() async {
+        await Future.delayed(const Duration(seconds: 0)); // simulate refresh delay
         print("refresh ");
         ledgerprovider.getCurrentDate("pandu");
         ledgerprovider.fetchpledgeandunpledge(context);
@@ -291,12 +287,12 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
             ? Center(
                 child: Container(
                   color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                  child: CircularLoaderImage(),
+                  child: const CircularLoaderImage(),
                 ),
               )
             : SafeArea(
                 child: RefreshIndicator(
-                  onRefresh: _refresh,
+                  onRefresh: refresh,
                   child: Stack(
                     children: [
                       Column(
@@ -392,7 +388,7 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                                     Row(
                                       children: [
                                         TextWidget.subText(
-                                            text: "${displayLabel}",
+                                            text: displayLabel,
                                             color: theme.isDarkMode
                                                 ? colors.textPrimaryDark
                                                 : colors.textPrimaryLight,
@@ -409,7 +405,7 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                                             fs: 14,
                                             fw: 1),
                                             TextWidget.subText(
-                                            text: "${displayLabel1}",
+                                            text: displayLabel1,
                                             color: theme.isDarkMode
                                                 ? colors.textPrimaryDark
                                                 : colors.textPrimaryLight,
@@ -418,11 +414,11 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                                             fw: 0),
                                       ],
                                     ),
-                                    SizedBox(height: 5),
+                                    const SizedBox(height: 5),
                                     Row(
                                       children: [
                                         TextWidget.headText(
-                                            text: "${displayValue}",
+                                            text: displayValue,
                                             maxLines: 1,
                                             color: theme.isDarkMode
                                                 ? colors.textSecondaryDark
@@ -440,7 +436,7 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                                             fs: 14,
                                             fw: 1),
                                         TextWidget.headText(
-                                            text: "${displayValue1}",
+                                            text: displayValue1,
                                             maxLines: 1,
                                             color: theme.isDarkMode
                                                 ? colors.textSecondaryDark
@@ -463,9 +459,9 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                                         textOverflow: TextOverflow.ellipsis,
                                         theme: theme.isDarkMode,
                                         fw: 0),
-                                    SizedBox(height: 5),
+                                    const SizedBox(height: 5),
                                     TextWidget.headText(
-                                        text: "${displayValue}",
+                                        text: displayValue,
                                         maxLines: 1,
                                         color: theme.isDarkMode
                                             ? colors.textSecondaryDark
@@ -1034,7 +1030,7 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         TextWidget.paraText(
-                                            text: "${title}",
+                                            text: title,
                                             theme: false,
                                             color :  isActive ? theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight : theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                             fw: isActive ? 2 : 2, // 2 for active (bold), 0 for inactive (w500)
@@ -1046,7 +1042,7 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                               }).toList(),
                             ),
                           ),
-                          SizedBox(height: 10),
+                          const SizedBox(height: 10),
                           Expanded(
                               child: TabBarView(
                                   controller: tabController,
@@ -1060,7 +1056,7 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                                 // OrderBook(orderBook: orderBook.allOrder!),
                               ])),
 
-                          if (ledgerprovider.listforpledge.length > 0)
+                          if (ledgerprovider.listforpledge.isNotEmpty)
                             Container(
                               height: screenheight * 0.07,
                               // decoration: BoxDecoration(
@@ -1070,7 +1066,7 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                             ),
                         ],
                       ),
-                      if (ledgerprovider.listforpledge.length > 0)
+                      if (ledgerprovider.listforpledge.isNotEmpty)
                         Positioned(
                           bottom: 1,
                           left: 1,
@@ -1125,7 +1121,7 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                                                           colors.primaryLight,
                                                       width: 1,
                                                     ),
-                                              minimumSize: Size(double.infinity,
+                                              minimumSize: const Size(double.infinity,
                                                   45), // height: 48
                                               shape: RoundedRectangleBorder(
                                                 borderRadius:
@@ -1205,7 +1201,7 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                                                           .pledgeorunpledge ==
                                                       'pledge') {
                                                     _showBottomSheet(
-                                                        context, PledgeList());
+                                                        context, const PledgeList());
                                                   }
                                                 }
                                               },
@@ -1236,7 +1232,7 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
     return ledgerprovider.pledgeandunpledge == null ||
             ledgerprovider.pledgeandunpledge?.data == null
         // Handle the null or empty case
-        ? Center(
+        ? const Center(
             child: Padding(
             padding: EdgeInsets.only(top: 60),
             child: NoDataFound(),
@@ -1247,7 +1243,7 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 16.0),
                 child: ListView.separated(
-                  physics: ClampingScrollPhysics(),
+                  physics: const ClampingScrollPhysics(),
                   itemCount:
                       ledgerprovider.pledgeandunpledge?.data?.length ?? 0,
                   shrinkWrap: true,
@@ -1313,7 +1309,7 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                                                         10,
                                                         FontWeight.w500)),
                                               )
-                                            : SizedBox(),
+                                            : const SizedBox(),
                                         ((((value.cashEqColl!.foCashEq != null
                                                             ? value.cashEqColl!
                                                                     .foCashEq ==
@@ -1393,7 +1389,7 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                                                         10,
                                                         FontWeight.w500)),
                                               )
-                                            : SizedBox(),
+                                            : const SizedBox(),
                                       ],
                                     ),
                                   ),
@@ -1502,7 +1498,7 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                                             ),
                                           ),
                                         )
-                                      : SizedBox(),
+                                      : const SizedBox(),
                             ],
                           ),
                         ),
@@ -1566,7 +1562,7 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                                       children: [
                                         TextWidget.subText(
                                             text: "Pledged Qty : ",
-                                            color: Color(0xFF696969),
+                                            color: const Color(0xFF696969),
                                             textOverflow: TextOverflow.ellipsis,
                                             theme: theme.isDarkMode,
                                             fw: 0),
@@ -1641,7 +1637,7 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                                                             8.0),
                                                     child: TextWidget.paraText(
                                                       text:
-                                                          "${(value.unPlegeQty != "0" && value.unPlegeQty != "") ? "${value.unPlegeQty! + " /"} " : value.dummunpledgevalue != 'null' ? "${value.dummunpledgevalue!} /" : ''} ${(double.parse(value.cOLQTY.toString()).toInt())} -",
+                                                          "${(value.unPlegeQty != "0" && value.unPlegeQty != "") ? "${"${value.unPlegeQty!} /"} " : value.dummunpledgevalue != 'null' ? "${value.dummunpledgevalue!} /" : ''} ${(double.parse(value.cOLQTY.toString()).toInt())} -",
                                                       textOverflow:
                                                           TextOverflow.ellipsis,
                                                       theme: theme.isDarkMode,
@@ -1659,7 +1655,7 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                                                   ),
                                                 ),
                                               )
-                                            : Text("-"),
+                                            : const Text("-"),
                                         if ((value.unPlegeQty != "0" &&
                                             value.unPlegeQty != ""))
                                           InkWell(
@@ -1698,7 +1694,7 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                                         //     FontWeight.w600)),
                                       ],
                                     )
-                                  : SizedBox(),
+                                  : const SizedBox(),
                             ],
                           ),
                         ),
@@ -1760,7 +1756,7 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
       children: [
         TextWidget.subText(
             text: heading,
-            color: Color(0xFF696969),
+            color: const Color(0xFF696969),
             textOverflow: TextOverflow.ellipsis,
             theme: theme.isDarkMode,
             fw: 0),

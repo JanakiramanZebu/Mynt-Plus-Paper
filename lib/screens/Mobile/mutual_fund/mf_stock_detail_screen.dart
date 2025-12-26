@@ -1,11 +1,6 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:mynt_plus/models/mf_model/mf_bestnewapi_list_model.dart';
-import 'package:mynt_plus/sharedWidget/custom_back_btn.dart';
-import 'package:vertical_scrollable_tabview/vertical_scrollable_tabview.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
 import '../../../models/mf_model/mutual_fundmodel.dart';
 import '../../../provider/fund_provider.dart';
@@ -15,12 +10,8 @@ import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
 import '../../../sharedWidget/custom_drag_handler.dart';
-import '../../../sharedWidget/custom_exch_badge.dart';
-import '../../../sharedWidget/functions.dart';
-import '../../../sharedWidget/loader_ui.dart';
 import '../../../sharedWidget/splash_loader.dart';
 import 'widget/allocation.dart';
-import 'widget/comparition.dart';
 import 'widget/overview.dart';
 import 'widget/performance.dart';
 import 'widget/scheme.dart';
@@ -60,10 +51,6 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
     super.initState();
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -146,7 +133,7 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                               // Tab Content - Scrollable
                               Expanded(
                                 child: SingleChildScrollView(
-                                  physics: ClampingScrollPhysics(),
+                                  physics: const ClampingScrollPhysics(),
                                   controller: scrollController,
                                   child: Column(
                                     children: [

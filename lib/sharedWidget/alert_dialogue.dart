@@ -4,7 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../provider/thems.dart';
 import '../../res/res.dart';
 import '../res/global_state_text.dart';
-import 'custom_exch_badge.dart';
 
 class AlertDialogue extends ConsumerWidget {
   final String scripName;

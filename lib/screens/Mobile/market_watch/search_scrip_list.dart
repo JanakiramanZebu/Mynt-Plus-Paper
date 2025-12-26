@@ -478,7 +478,7 @@ class _searchScripList extends State<SearchScripList> {
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     CustomExchBadge(exch: "${stock.exch}"),
-                                    SizedBox(width: 4),
+                                    const SizedBox(width: 4),
                                     if (stock.cname != null)
                                       Expanded(
                                         child: TextWidget.paraText(
@@ -636,7 +636,7 @@ class _searchScripList extends State<SearchScripList> {
         }
 
         return ListView.separated(
-          physics: ClampingScrollPhysics(),
+          physics: const ClampingScrollPhysics(),
           itemCount: widget.searchValue.length,
           separatorBuilder: (context, index) => const ListDivider(),
           itemBuilder: (BuildContext context, int index) {

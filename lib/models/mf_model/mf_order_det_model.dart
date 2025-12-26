@@ -9,7 +9,7 @@ class mf_order_sig_det {
     if (json['data'] != null) {
       data = <Data>[];
       json['data'].forEach((v) {
-        data!.add(new Data.fromJson(v));
+        data!.add(Data.fromJson(v));
       });
     }
     stat = json['stat'];
@@ -17,12 +17,12 @@ class mf_order_sig_det {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     if (this.data != null) {
       data['data'] = this.data!.map((v) => v.toJson()).toList();
     }
-    data['stat'] = this.stat;
-    data['emsg'] = this.emsg;
+    data['stat'] = stat;
+    data['emsg'] = emsg;
     return data;
   }
 }
@@ -108,32 +108,32 @@ class Data {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['TransCode'] = this.transCode;
-    data['TransNo'] = this.transNo;
-    data['OrderId'] = this.orderId;
-    data['UserId'] = this.userId;
-    data['MemberCode'] = this.memberCode;
-    data['ClientCode'] = this.clientCode;
-    data['Remarks'] = this.remarks;
-    data['status'] = this.status;
-    data['name'] = this.name;
-    data['stat'] = this.stat;
-    data['source'] = this.source;
-    data['placed_by'] = this.placedBy;
-    data['IPAddress'] = this.iPAddress;
-    data['datetime'] = this.datetime;
-    data['OrderVal'] = this.orderVal;
-    data['FolioNo'] = this.folioNo;
-    data['ISIN'] = this.iSIN;
-    data['DPFolioNo'] = this.dPFolioNo;
-    data['SettType'] = this.settType;
-    data['OrderType'] = this.orderType;
-    data['SubOrderType'] = this.subOrderType;
-    data['buy_sell'] = this.buySell;
-    data['AllRedeem'] = this.allRedeem;
-    data['AccVPA'] = this.accVPA;
-    data['PaymentType'] = this.paymentType;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['TransCode'] = transCode;
+    data['TransNo'] = transNo;
+    data['OrderId'] = orderId;
+    data['UserId'] = userId;
+    data['MemberCode'] = memberCode;
+    data['ClientCode'] = clientCode;
+    data['Remarks'] = remarks;
+    data['status'] = status;
+    data['name'] = name;
+    data['stat'] = stat;
+    data['source'] = source;
+    data['placed_by'] = placedBy;
+    data['IPAddress'] = iPAddress;
+    data['datetime'] = datetime;
+    data['OrderVal'] = orderVal;
+    data['FolioNo'] = folioNo;
+    data['ISIN'] = iSIN;
+    data['DPFolioNo'] = dPFolioNo;
+    data['SettType'] = settType;
+    data['OrderType'] = orderType;
+    data['SubOrderType'] = subOrderType;
+    data['buy_sell'] = buySell;
+    data['AllRedeem'] = allRedeem;
+    data['AccVPA'] = accVPA;
+    data['PaymentType'] = paymentType;
     return data;
   }
 }

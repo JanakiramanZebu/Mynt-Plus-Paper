@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/provider/ledger_provider.dart';
-import 'package:mynt_plus/screens/Mobile/authentication/password/forgot_pass_unblock_user.dart';
 
 import '../../../../provider/thems.dart';
 import '../../../../res/global_state_text.dart';
@@ -65,10 +64,10 @@ class _LedgerBillBottomState extends State<LedgerBillBottom> {
                     ),
               child:
                   Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Row(
+                const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                     const CustomDragHandler(),
+                     CustomDragHandler(),
                   ],
                 ),
                 Padding(
@@ -82,7 +81,7 @@ class _LedgerBillBottomState extends State<LedgerBillBottom> {
                       fw: 1),
                 ),
                 ledgerdata.ledgerBillData?.expenses == null
-                    ? Center(
+                    ? const Center(
                         child: Padding(
                         padding: EdgeInsets.only(top: 60),
                         child: NoDataFound(
@@ -92,12 +91,12 @@ class _LedgerBillBottomState extends State<LedgerBillBottom> {
                     : Expanded(
                         // height: screenheight * 0.5,
                         child: SingleChildScrollView(
-                          physics: ClampingScrollPhysics(),
+                          physics: const ClampingScrollPhysics(),
                            controller: scrollController,
                           child: Column(
                             children: [
                               const ListDivider(),
-                              Container(
+                              SizedBox(
                                 width: screenWidth,
                                 child: Padding(
                                   padding: const EdgeInsets.only(
@@ -135,9 +134,9 @@ class _LedgerBillBottomState extends State<LedgerBillBottom> {
                                   ),
                                 ),
                               ),
-                                ListDivider(),
+                                const ListDivider(),
                               ListView.separated(
-                                physics: ClampingScrollPhysics(),
+                                physics: const ClampingScrollPhysics(),
                                 itemCount: ledgerdata
                                     .ledgerBillData!.transactions!.length,
                                 shrinkWrap: true,
@@ -162,7 +161,7 @@ class _LedgerBillBottomState extends State<LedgerBillBottom> {
                                                 fw: 0),
                                           ],
                                         ),
-                                         SizedBox(height: 8),
+                                         const SizedBox(height: 8),
                                         Padding(
                                           padding:
                                               const EdgeInsets.only(top: 4.0),
@@ -381,7 +380,7 @@ class _LedgerBillBottomState extends State<LedgerBillBottom> {
                                 },
                                 separatorBuilder:
                                     (BuildContext context, int index) {
-                                  return ListDivider();
+                                  return const ListDivider();
                                 },
                               )
                             ],

@@ -392,10 +392,10 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb>
       builder: (context, constraints) {
         // Calculate available height
         final screenHeight = MediaQuery.of(context).size.height;
-        final padding = 32.0; // Top and bottom padding (16 * 2)
-        final headerHeight = 50.0; // Header height (tabs + search bar)
-        final spacing = 16.0; // Spacing between header and content
-        final bottomMargin = 20.0; // Bottom margin
+        const padding = 32.0; // Top and bottom padding (16 * 2)
+        const headerHeight = 50.0; // Header height (tabs + search bar)
+        const spacing = 16.0; // Spacing between header and content
+        const bottomMargin = 20.0; // Bottom margin
         final tableHeight =
             screenHeight - padding - headerHeight - spacing - bottomMargin;
 
@@ -433,11 +433,11 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb>
               data: Theme.of(context).copyWith(
                 scrollbarTheme: ScrollbarThemeData(
                   // Make both scrollbars always visible
-                  thumbVisibility: MaterialStateProperty.all(true),
-                  trackVisibility: MaterialStateProperty.all(true),
+                  thumbVisibility: WidgetStateProperty.all(true),
+                  trackVisibility: WidgetStateProperty.all(true),
                   
                   // Consistent thickness for both horizontal and vertical
-                  thickness: MaterialStateProperty.all(6.0),
+                  thickness: WidgetStateProperty.all(6.0),
                   crossAxisMargin: 0.0,
                   mainAxisMargin: 0.0,
                   
@@ -445,18 +445,18 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb>
                   radius: const Radius.circular(3),
                   
                   // Consistent colors for both scrollbars
-                  thumbColor: MaterialStateProperty.resolveWith((states) {
+                  thumbColor: WidgetStateProperty.resolveWith((states) {
                     return theme.isDarkMode 
                         ? WebDarkColors.textSecondary.withOpacity(0.3)
                         : WebColors.textSecondary.withOpacity(0.3);
                   }),
-                  trackColor: MaterialStateProperty.resolveWith((states) {
+                  trackColor: WidgetStateProperty.resolveWith((states) {
                     return theme.isDarkMode 
                         ? WebDarkColors.divider.withOpacity(0.1)
                         : WebColors.divider.withOpacity(0.1);
                   }),
                   
-                  trackBorderColor: MaterialStateProperty.all(Colors.transparent),
+                  trackBorderColor: WidgetStateProperty.all(Colors.transparent),
                   minThumbLength: 48.0,
                 ),
               ),
@@ -474,7 +474,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb>
                 horizontalScrollController: _horizontalScrollController,
                 scrollController: _verticalScrollController,
                 showCheckboxColumn: false,
-                headingRowColor: MaterialStateProperty.all(
+                headingRowColor: WidgetStateProperty.all(
                   theme.isDarkMode
                       ? WebDarkColors.primary
                       : WebColors.primary.withOpacity(0.05),
@@ -632,7 +632,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb>
       final isHovered = _hoveredRowToken == uniqueId;
 
       return DataRow2(
-        color: MaterialStateProperty.resolveWith((states) {
+        color: WidgetStateProperty.resolveWith((states) {
           if (isHovered) {
             return theme.isDarkMode
                 ? WebDarkColors.primary.withOpacity(0.06)

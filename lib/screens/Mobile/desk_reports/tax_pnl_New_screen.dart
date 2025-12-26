@@ -7,7 +7,6 @@ import '../../../provider/thems.dart';
 import '../../../res/global_state_text.dart';
 import '../../../sharedWidget/loader_ui.dart';
 import 'tax_pnl_screens/charges_value_screen.dart';
-import 'tax_pnl_screens/chart_for_tax_scree.dart';
 import 'tax_pnl_screens/pnl_value_screen.dart';
 import 'tax_pnl_screens/turnover_value_screen.dart';
 
@@ -116,7 +115,7 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                   //   padding: const EdgeInsets.only(left : 16.0, top : 24.0),
                   //   child: BarChartWidget(),
                   // ),
-                  Container(
+                  SizedBox(
                       width: screenWidth,
                       child: Padding(
                         padding:
@@ -263,7 +262,7 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                     child: TabBarView(
                       physics: const NeverScrollableScrollPhysics(),
                       controller: _tabController,
-                      children: [
+                      children: const [
                         TaxpnlvalueScreen(),
                         TaxTurnOver(),
                         TaxCharges(),
@@ -307,7 +306,7 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                                 12,
                                 FontWeight.w500)))),
               ),
-              SizedBox(
+              const SizedBox(
                 height: 20.0,
               )
             ],
@@ -355,7 +354,7 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                     : const Color(0xffB5C0CF).withOpacity(.15)
                 : tab == ledgerprovider.activeTabTaxPnl
                     ? const Color(0xff000000)
-                    : Color.fromARGB(0, 241, 243, 248),
+                    : const Color.fromARGB(0, 241, 243, 248),
             shape: const StadiumBorder()),
         child: Row(
             mainAxisSize: MainAxisSize.min,

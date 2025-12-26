@@ -2,7 +2,6 @@ import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../models/order_book_model/sip_order_book.dart';
 import '../../../provider/sip_order_provider.dart';
 import '../../../provider/thems.dart';
@@ -141,7 +140,7 @@ class _SipOrderDetailsState extends ConsumerState<SipOrderDetails> {
           ]),
         ),
         body: SingleChildScrollView(
-          physics: ClampingScrollPhysics(),
+          physics: const ClampingScrollPhysics(),
           child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,

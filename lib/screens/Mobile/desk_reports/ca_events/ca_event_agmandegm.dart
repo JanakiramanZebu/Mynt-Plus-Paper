@@ -1,18 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/provider/ledger_provider.dart';
 import 'package:mynt_plus/res/res.dart';
-import 'package:mynt_plus/screens/Mobile/desk_reports/bottom_sheets/ledger_bill.dart';
-import 'package:mynt_plus/sharedWidget/custom_back_btn.dart';
-import 'package:mynt_plus/sharedWidget/custom_exch_badge.dart';
 import 'package:mynt_plus/sharedWidget/functions.dart';
 import 'package:mynt_plus/sharedWidget/loader_ui.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 
 import '../../../../provider/thems.dart';
 import '../../../../res/global_state_text.dart';
-import '../bottom_sheets/ledger_filter.dart';
 
 class CAEventAgmandEgm extends StatelessWidget {
   const CAEventAgmandEgm({super.key});
@@ -155,7 +150,7 @@ class CAEventAgmandEgm extends StatelessWidget {
               // ),
 
               ledgerprovider.caeventalldata?.aGMEGM?.isEmpty ?? true
-                  ? Center(
+                  ? const Center(
                       child: Padding(
                       padding: EdgeInsets.only(top: 60),
                       child: NoDataFound(),
@@ -163,7 +158,7 @@ class CAEventAgmandEgm extends StatelessWidget {
                   : Expanded(
                       child: SingleChildScrollView(
                         child: ListView.separated(
-                          physics: ScrollPhysics(),
+                          physics: const ScrollPhysics(),
                           itemCount:
                               ledgerprovider.caeventalldata?.aGMEGM?.length ??
                                   0,
@@ -228,7 +223,7 @@ class CAEventAgmandEgm extends StatelessWidget {
                                         child: TextWidget.paraText(
                                             align: TextAlign.right,
                                             text:
-                                                "${ledgerprovider.caeventalldata!.aGMEGM![index].eGMDate ?? '-'}",
+                                                ledgerprovider.caeventalldata!.aGMEGM![index].eGMDate ?? '-',
                                             color: Colors.black,
                                             textOverflow: TextOverflow.ellipsis,
                                             theme: theme.isDarkMode,
@@ -238,11 +233,11 @@ class CAEventAgmandEgm extends StatelessWidget {
                                   ),
                                 ),
 
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
+                                const Padding(
+                                  padding: EdgeInsets.symmetric(
                                       horizontal: 16.0),
                                   child: Divider(
-                                    color: const Color.fromARGB(
+                                    color: Color.fromARGB(
                                         255, 212, 212, 212),
                                     thickness: 0.5,
                                   ),
@@ -252,7 +247,7 @@ class CAEventAgmandEgm extends StatelessWidget {
                                       horizontal: 16.0),
                                   child: ExpandableText(
                                     text:
-                                        "${ledgerprovider.caeventalldata!.aGMEGM![index].agenda ?? '-'}",
+                                        ledgerprovider.caeventalldata!.aGMEGM![index].agenda ?? '-',
                                     style: textStyle(
                                       const Color(0xFF696969),
                                       12,
@@ -317,10 +312,10 @@ class ExpandableText extends StatefulWidget {
   final TextStyle style;
 
   const ExpandableText({
-    Key? key,
+    super.key,
     required this.text,
     required this.style,
-  }) : super(key: key);
+  });
 
   @override
   _ExpandableTextState createState() => _ExpandableTextState();
@@ -352,7 +347,7 @@ class _ExpandableTextState extends State<ExpandableText> {
             padding: const EdgeInsets.only(top: 4.0),
             child: Text(
               _expanded ? 'Show less' : 'Show more',
-              style: TextStyle(
+              style: const TextStyle(
                 color: Colors.blue,
                 fontSize: 12,
                 fontWeight: FontWeight.w500,

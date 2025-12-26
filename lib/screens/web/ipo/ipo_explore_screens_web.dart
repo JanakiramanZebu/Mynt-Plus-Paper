@@ -98,12 +98,12 @@ class _ExploreScreensState extends ConsumerState<IpoExploreScreens>
             Expanded(
               child: _CustomTabBarView(
                 controller: _tabController,
+                onBoundaryReached: widget.onBoundaryReached,
                 children: const [
                   MainSmeListCard(),
                   UpcomingIpo(),
                   IpoOrderbookMainScreen(),
                 ],
-                onBoundaryReached: widget.onBoundaryReached,
               ),
             ),
           ],
@@ -115,7 +115,7 @@ class _ExploreScreensState extends ConsumerState<IpoExploreScreens>
   Widget _buildTabsAndSearchBar(ThemesProvider theme, IPOProvider ipo) {
     return Container(
       padding: const EdgeInsets.only(bottom: 8, left: 0, right: 16 , top: 8),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         // border: Border(
         //   bottom: BorderSide(
         //     color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
@@ -332,7 +332,7 @@ class _CustomTabBarView extends StatefulWidget {
 
 class _CustomTabBarViewState extends State<_CustomTabBarView> {
   late PageController _pageController;
-  bool _isExternalTabChange = false;
+  final bool _isExternalTabChange = false;
 
   // Track pointer events for edge swipes
   double _startX = 0;

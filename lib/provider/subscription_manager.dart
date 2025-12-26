@@ -35,6 +35,11 @@ class SubscriptionManager extends ChangeNotifier with WidgetsBindingObserver {
   BuildContext? _lastValidContext;
   DateTime? _lastContextUpdate;
   
+  // Reconnection management - prevent duplicate reconnection attempts
+  bool _isReconnecting = false;
+  DateTime? _lastReconnectionAttempt;
+  Timer? _reconnectionDebounceTimer;
+  
   // Getters
   Set<String> get activeSubscriptions => Set.from(_activeSubscriptions);
   int get subscriptionCount => _activeSubscriptions.length;
@@ -160,14 +165,19 @@ class SubscriptionManager extends ChangeNotifier with WidgetsBindingObserver {
     _lastContextUpdate = DateTime.now();
     log('SubscriptionManager: Context updated from active screen');
     
-    // If we have pending subscriptions and were waiting for context, try reconnecting
-    if (hasActiveSubscriptions && !ref.read(websocketProvider).wsConnected) {
-      final shouldReconnect = _shouldReconnect();
-      if (shouldReconnect) {
-        log('SubscriptionManager: Fresh context available, attempting deferred reconnection');
-        Future.microtask(() => _reconnectWithActiveSubscriptions());
+    // Debounce reconnection attempts to prevent rapid calls
+    _reconnectionDebounceTimer?.cancel();
+    _reconnectionDebounceTimer = Timer(const Duration(seconds: 2), () {
+      // Only reconnect if we have pending subscriptions and websocket is disconnected
+      final wsProvider = ref.read(websocketProvider);
+      if (hasActiveSubscriptions && !wsProvider.wsConnected && !_isReconnecting) {
+        final shouldReconnect = _shouldReconnect();
+        if (shouldReconnect) {
+          log('SubscriptionManager: Fresh context available, attempting deferred reconnection');
+          _reconnectWithActiveSubscriptions();
+        }
       }
-    }
+    });
   }
   
   /// Get a valid context, preferring fresh context over potentially stale ones
@@ -353,6 +363,21 @@ class SubscriptionManager extends ChangeNotifier with WidgetsBindingObserver {
   
   /// Reconnect websocket and restore all active subscriptions in batches of 50
   Future<void> _reconnectWithActiveSubscriptions() async {
+    // Prevent multiple simultaneous reconnection attempts
+    if (_isReconnecting) {
+      log('SubscriptionManager: ⏸️  Reconnection already in progress, skipping');
+      return;
+    }
+    
+    // Throttle reconnection attempts - don't reconnect if we just tried recently
+    if (_lastReconnectionAttempt != null) {
+      final timeSinceLastAttempt = DateTime.now().difference(_lastReconnectionAttempt!);
+      if (timeSinceLastAttempt < const Duration(seconds: 5)) {
+        log('SubscriptionManager: ⏸️  Reconnection attempted too recently (${timeSinceLastAttempt.inSeconds}s ago), skipping');
+        return;
+      }
+    }
+    
     log('SubscriptionManager: _reconnectWithActiveSubscriptions called');
     log('SubscriptionManager: hasActiveSubscriptions = $hasActiveSubscriptions');
     log('SubscriptionManager: _activeSubscriptions.length = ${_activeSubscriptions.length}');
@@ -369,7 +394,19 @@ class SubscriptionManager extends ChangeNotifier with WidgetsBindingObserver {
     }
     
     try {
+      _isReconnecting = true;
+      _lastReconnectionAttempt = DateTime.now();
+      
       final wsProvider = ref.read(websocketProvider);
+      
+      // Check if already connected - if so, just restore subscriptions without reconnecting
+      if (wsProvider.wsConnected) {
+        log('SubscriptionManager: ✅ WebSocket already connected, restoring subscriptions only');
+        // Restore subscriptions without reconnecting
+        await _restoreSubscriptionsOnly(wsProvider);
+        _isReconnecting = false;
+        return;
+      }
       
       // Get a valid context using improved context management
       final context = _getValidContext();
@@ -422,7 +459,7 @@ class SubscriptionManager extends ChangeNotifier with WidgetsBindingObserver {
       const batchSize = 50;
       int totalBatches = (subscriptionList.length / batchSize).ceil();
       
-      log('SubscriptionManager: Will send ${totalBatches} batches of up to $batchSize symbols each');
+      log('SubscriptionManager: Will send $totalBatches batches of up to $batchSize symbols each');
       
       for (int i = 0; i < subscriptionList.length; i += batchSize) {
         final endIndex = (i + batchSize < subscriptionList.length) 
@@ -478,11 +515,52 @@ class SubscriptionManager extends ChangeNotifier with WidgetsBindingObserver {
         }
       }
       
-      log('🎯 SubscriptionManager: Restoration completed - sent ${subscriptionList.length} symbols in ${totalBatches} batches');
+      log('🎯 SubscriptionManager: Restoration completed - sent ${subscriptionList.length} symbols in $totalBatches batches');
       log('━━━ END RESTORATION DEBUG ━━━');
       
     } catch (e) {
       log('SubscriptionManager: Error during reconnection: $e');
+    } finally {
+      _isReconnecting = false;
+    }
+  }
+  
+  /// Restore subscriptions only (when websocket is already connected)
+  Future<void> _restoreSubscriptionsOnly(dynamic wsProvider) async {
+    try {
+      final context = _getValidContext();
+      if (context == null) {
+        log('SubscriptionManager: ❌ No valid context for subscription restoration');
+        return;
+      }
+      
+      final subscriptionList = _activeSubscriptions.toList();
+      const batchSize = 50;
+      
+      for (int i = 0; i < subscriptionList.length; i += batchSize) {
+        final endIndex = (i + batchSize < subscriptionList.length) 
+            ? i + batchSize 
+            : subscriptionList.length;
+        
+        final batch = subscriptionList.sublist(i, endIndex);
+        final batchString = batch.join('#');
+        
+        if (wsProvider.wsConnected) {
+          wsProvider.connectTouchLine(
+            task: "t",
+            input: batchString,
+            context: context,
+          );
+        }
+        
+        if (endIndex < subscriptionList.length) {
+          await Future.delayed(const Duration(milliseconds: 100));
+        }
+      }
+      
+      log('SubscriptionManager: ✅ Subscriptions restored (${subscriptionList.length} symbols)');
+    } catch (e) {
+      log('SubscriptionManager: Error restoring subscriptions: $e');
     }
   }
   
@@ -559,6 +637,7 @@ class SubscriptionManager extends ChangeNotifier with WidgetsBindingObserver {
   
   @override
   void dispose() {
+    _reconnectionDebounceTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     _connectivitySubscription.cancel();
     _activeSubscriptions.clear();

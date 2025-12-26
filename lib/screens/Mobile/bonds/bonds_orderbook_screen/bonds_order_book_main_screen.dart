@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 // import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/provider/bonds_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
-import 'package:mynt_plus/screens/Mobile/bonds/bonds_loader/logo_loader.dart';
 // import 'package:mynt_plus/sharedWidget/loader_ui.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import '../../../../res/global_state_text.dart';
@@ -57,7 +56,7 @@ class _BondsOrderbookMainScreenState
     }
 
     if(bonds.bondsOrderBook!.isEmpty){
-      return NoDataFound(
+      return const NoDataFound(
         title: "No Open or Closed Orders Found",
         subtitle: "There's nothing here yet. Buy some Bonds to see them here.",
         primaryEnabled: false,
@@ -66,7 +65,7 @@ class _BondsOrderbookMainScreenState
     }
 
     return SingleChildScrollView(
-      physics: ClampingScrollPhysics(),
+      physics: const ClampingScrollPhysics(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

@@ -28,7 +28,6 @@ import '../../../../utils/responsive_navigation.dart';
 import '../../../../sharedWidget/list_divider.dart';
 import '../../../../sharedWidget/functions.dart';
 import '../../../../sharedWidget/snack_bar.dart';
-import '../search_dialog_web.dart';
 
 class OptionChainSSWeb extends ConsumerStatefulWidget {
   final DepthInputArgs wlValue;
@@ -299,7 +298,7 @@ class _OptionChainSSState extends ConsumerState<OptionChainSSWeb> {
               ),
 
               if (isBasketMode)
-                Positioned(
+                const Positioned(
                   bottom: 0,
                   left: 0,
                   right: 0,
@@ -327,21 +326,20 @@ class _NewAppBarTitle extends ConsumerWidget {
   final VoidCallback scrollToStrikePrice;
 
   const _NewAppBarTitle({
-    Key? key,
     required this.wlValue,
     required this.showPriceView,
     required this.isBasketMode,
     required this.onToggleView,
     required this.onToggleBasketMode,
     required this.scrollToStrikePrice,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final scripInfo = ref.watch(marketWatchProvider);
     final theme = ref.read(themeProvider);
 
-    return Row(
+    return const Row(
       children: [
         // Symbol Name and Expiry Dropdown
         // Row(
@@ -716,7 +714,7 @@ void _showStrikesDropdown(
     position: position,
     color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
     elevation: 8,
-    shape: RoundedRectangleBorder(
+    shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.zero,
     ),
     items: scripInfo.numStrikes.map((String value) {
@@ -773,11 +771,10 @@ class _ColumnHeaders extends ConsumerWidget {
   final VoidCallback onToggleView;
 
   const _ColumnHeaders({
-    Key? key,
     required this.scrollToStrikePrice,
     required this.showPriceView,
     required this.onToggleView,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -917,7 +914,7 @@ class _ColumnHeaders extends ConsumerWidget {
                       Expanded(
                         child: Row(
                           children: [
-                            SizedBox(width: 20),
+                            const SizedBox(width: 20),
                             _buildSubHeader(context, ref, "OI(ch)", theme),
                             Expanded(child: _buildSubHeader(context, ref, "OI", theme)),
                           ],
@@ -926,7 +923,7 @@ class _ColumnHeaders extends ConsumerWidget {
                       Expanded(
                         child: Row(
                           children: [
-                            SizedBox(width: 15),
+                            const SizedBox(width: 15),
                             _buildSubHeader(context, ref, "CH", theme),
                             Expanded(child: _buildSubHeader(context, ref, "LTP", theme)),
                           ],
@@ -945,7 +942,7 @@ class _ColumnHeaders extends ConsumerWidget {
                       Expanded(
                         child: Row(
                           children: [
-                            SizedBox(width: 15),
+                            const SizedBox(width: 15),
                             Expanded(child: _buildSubHeader(context, ref, "LTP", theme)),
                             _buildSubHeader(context, ref, "CH", theme),
                           ],
@@ -954,7 +951,7 @@ class _ColumnHeaders extends ConsumerWidget {
                       Expanded(
                         child: Row(
                           children: [
-                            SizedBox(width: 15),
+                            const SizedBox(width: 15),
                             Expanded(child: _buildSubHeader(context, ref, "OI", theme)),
                             _buildSubHeader(context, ref, "OI(ch)", theme),
                           ],
@@ -989,7 +986,7 @@ class _ColumnHeaders extends ConsumerWidget {
 
 // Widget for predefined watchlist banner (conditional)
 class _PreDefinedWatchlistBanner extends ConsumerWidget {
-  const _PreDefinedWatchlistBanner({Key? key}) : super(key: key);
+  const _PreDefinedWatchlistBanner();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -1029,13 +1026,12 @@ class _OptionChainContent extends ConsumerWidget {
   final bool isBasketMode;
 
   const _OptionChainContent({
-    Key? key,
     required this.strikePriceKey,
     required this.mainScrollController,
     required this.swipecontroller,
     required this.showPriceView,
     required this.isBasketMode,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -1065,7 +1061,7 @@ class _OptionChainContent extends ConsumerWidget {
                   children: [
                     TextWidget.subText(
                       text: "Data loading is taking longer than expected",
-                      color: Color(0xff666666),
+                      color: const Color(0xff666666),
                       theme: false,
                     ),
                     const SizedBox(height: 16),
@@ -1210,9 +1206,8 @@ class _ActionButtons extends ConsumerWidget {
   final DepthInputArgs wlValue;
 
   const _ActionButtons({
-    Key? key,
     required this.wlValue,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -1321,7 +1316,7 @@ Future<void> _placeOrderInput(BuildContext context, WidgetRef ref,
 
 // Enhanced Basket Bottom Sheet Widget with full BasketScripList functionality
 class _BasketBottomSheet extends ConsumerStatefulWidget {
-  const _BasketBottomSheet({Key? key}) : super(key: key);
+  const _BasketBottomSheet();
 
   @override
   ConsumerState<_BasketBottomSheet> createState() => _BasketBottomSheetState();
@@ -1454,7 +1449,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
 
             // Header with current basket name and action icons
             _buildBasketHeader(theme, orderProv),
-            ListDivider(),
+            const ListDivider(),
 
             // Scrollable content section
             if (orderProv.selectedBsktName.isNotEmpty &&
@@ -1525,7 +1520,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                   shape: const CircleBorder(),
                   child: InkWell(
                     onTap: () async {
-                      await Future.delayed(Duration(milliseconds: 100));
+                      await Future.delayed(const Duration(milliseconds: 100));
                       _showBasketSelector(context);
                     },
                     borderRadius: BorderRadius.circular(20),
@@ -1556,7 +1551,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                   shape: const CircleBorder(),
                   child: InkWell(
                     onTap: () async {
-                      await Future.delayed(Duration(milliseconds: 100));
+                      await Future.delayed(const Duration(milliseconds: 100));
                       await orderProv.fetchBasketMargin();
                     },
                     borderRadius: BorderRadius.circular(20),
@@ -1586,7 +1581,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                 shape: const CircleBorder(),
                 child: InkWell(
                   onTap: () async {
-                    await Future.delayed(Duration(milliseconds: 100));
+                    await Future.delayed(const Duration(milliseconds: 100));
                     _showCreateBasket(context);
                   },
                   borderRadius: BorderRadius.circular(20),
@@ -1712,7 +1707,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
           Column(
             children: [
               SvgPicture.asset(assets.noDatafound,
-                  color: Color(0xff777777)),
+                  color: const Color(0xff777777)),
               const SizedBox(height: 2),
               Text("No Data Found",
                   style: WebTextStyles.bodySmall(
@@ -1726,7 +1721,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
               //   theme: theme.isDarkMode,
               //   color: colors.colorGrey,
               // ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () => _showCreateBasket(context),
                 style: ElevatedButton.styleFrom(
@@ -1758,7 +1753,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
             children: [
               SvgPicture.asset(
                 assets.noDatafound,
-                color: Color(0xff777777),
+                color: const Color(0xff777777),
               ),
               const SizedBox(height: 2),
               TextWidget.subText(
@@ -1799,7 +1794,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
             children: [
               SvgPicture.asset(
                 assets.noDatafound,
-                color: Color(0xff777777),
+                color: const Color(0xff777777),
               ),
               const SizedBox(height: 2),
               TextWidget.subText(
@@ -1923,7 +1918,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                 children: [
                   TextWidget.subText(
                     text:
-                        "${script['symbol'].toString().replaceAll("-EQ", "")}",
+                        script['symbol'].toString().replaceAll("-EQ", ""),
                     theme: theme.isDarkMode,
                     textOverflow: TextOverflow.ellipsis,
                     color: theme.isDarkMode
@@ -2670,7 +2665,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                           : colors.textPrimaryLight,
                       fw: 1,
                     ),
-                    ListDivider(),
+                    const ListDivider(),
                     Material(
                       color: Colors.transparent,
                       shape: const CircleBorder(),

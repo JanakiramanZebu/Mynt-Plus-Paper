@@ -20,9 +20,9 @@ class IpoPerformanceModel {
         try {
           final parsedList = jsonDecode(json['data'] as String);
           if (parsedList is List) {
-            parsedList.forEach((v) {
+            for (var v in parsedList) {
               data!.add(IpoScrip.fromJson(v));
-            });
+            }
           }
         } catch (e) {
           print("Error parsing data string: $e");

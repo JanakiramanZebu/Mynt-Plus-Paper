@@ -4,21 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/provider/ledger_provider.dart';
 import 'package:mynt_plus/res/res.dart';
-import 'package:mynt_plus/screens/Mobile/desk_reports/bottom_sheets/ledger_bill.dart';
 import 'package:mynt_plus/sharedWidget/custom_back_btn.dart';
 import 'package:mynt_plus/sharedWidget/functions.dart';
 import 'package:mynt_plus/sharedWidget/loader_ui.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 
-import '../../../provider/mf_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../res/global_state_text.dart';
-import '../market_watch/tv_chart/resolution_bottom.dart';
 import 'bottom_sheets/ledger_filter.dart';
-import 'bottom_sheets/pnl_filter.dart';
 import 'bottom_sheets/pnl_summary.dart';
 
 enum SingingCharacter { all, eq, fno, com, cur }
@@ -34,8 +29,8 @@ class PnlScreen extends StatelessWidget {
     return Consumer(builder: (context, WidgetRef ref, _) {
       final theme = ref.watch(themeProvider);
       final ledgerprovider = ref.watch(ledgerProvider);
-      Future<void> _refresh() async {
-        await Future.delayed(Duration(seconds: 0)); // simulate refresh delay
+      Future<void> refresh() async {
+        await Future.delayed(const Duration(seconds: 0)); // simulate refresh delay
         print("refresh ");
         await ledgerprovider.getCurrentDate('else');
         ledgerprovider.fetchpnldata(
@@ -113,7 +108,7 @@ class PnlScreen extends StatelessWidget {
           //   child: Icon(Icons.ios_share)),
         ),
         body: RefreshIndicator(
-          onRefresh: _refresh,
+          onRefresh: refresh,
           child: TransparentLoaderScreen(
             isLoading: ledgerprovider.pnlloading,
             child: Column(
@@ -129,7 +124,7 @@ class PnlScreen extends StatelessWidget {
                 Row(
                   // mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Container(
+                    SizedBox(
                       width: screenWidth,
                       child: Column(
                         children: [
@@ -166,7 +161,7 @@ class PnlScreen extends StatelessWidget {
                                                                 'SingingCharacter.cur'
                                                             ? 'Currency'
                                                             : "-".toString(),
-                                        color: Color(0xFF696969),
+                                        color: const Color(0xFF696969),
                                         textOverflow: TextOverflow.ellipsis,
                                         theme: theme.isDarkMode,
                                         fw: 3),
@@ -175,7 +170,7 @@ class PnlScreen extends StatelessWidget {
                                           const EdgeInsets.only(top: 8.0),
                                       child: TextWidget.subText(
                                           text:
-                                              "${allnotional.toStringAsFixed(2)}",
+                                              allnotional.toStringAsFixed(2),
                                           color: allnotional > 0
                                               ? Colors.green
                                               : allnotional < 0
@@ -192,14 +187,14 @@ class PnlScreen extends StatelessWidget {
                                   children: [
                                     TextWidget.paraText(
                                         text: "Charges and Taxes",
-                                        color: Color(0xFF696969),
+                                        color: const Color(0xFF696969),
                                         textOverflow: TextOverflow.ellipsis,
                                         theme: theme.isDarkMode,
                                         fw: 3),
                                     ledgerprovider.reportsloadingforcharges ==
                                             true
-                                        ? Padding(
-                                            padding: const EdgeInsets.only(
+                                        ? const Padding(
+                                            padding: EdgeInsets.only(
                                                 top: 8.0),
                                             child: SpinKitThreeBounce(
                                               color: Colors.grey,
@@ -428,7 +423,7 @@ class PnlScreen extends StatelessWidget {
                                       ? const Color(0xffB5C0CF).withOpacity(.15)
                                       : const Color(0xffF1F3F8),
                                 ),
-                                child: Text("${ledgerprovider.startDate}",
+                                child: Text(ledgerprovider.startDate,
                                     style: textStyle(
                                         theme.isDarkMode
                                             ? colors.colorWhite
@@ -440,7 +435,7 @@ class PnlScreen extends StatelessWidget {
                           ),
                         ),
                       ),
-                      SizedBox(width: 15),
+                      const SizedBox(width: 15),
                       Expanded(
                         child: InkWell(
                           onTap: () {
@@ -465,7 +460,7 @@ class PnlScreen extends StatelessWidget {
                                       ? const Color(0xffB5C0CF).withOpacity(.15)
                                       : const Color(0xffF1F3F8),
                                 ),
-                                child: Text("${ledgerprovider.endDate}",
+                                child: Text(ledgerprovider.endDate,
                                     style: textStyle(
                                         theme.isDarkMode
                                             ? colors.colorWhite
@@ -477,7 +472,7 @@ class PnlScreen extends StatelessWidget {
                           ),
                         ),
                       ),
-                      SizedBox(width: 15),
+                      const SizedBox(width: 15),
                       Padding(
                         padding: const EdgeInsets.only(right: 16.0, top: 16.0),
                         child: SizedBox(
@@ -539,7 +534,7 @@ class PnlScreen extends StatelessWidget {
                           onTap: () {
                             ledgerprovider.setfilterpage = 'pnl';
 
-                            _showBottomSheet(context, LedgerFilter());
+                            _showBottomSheet(context, const LedgerFilter());
                           },
                           child: Padding(
                             padding: const EdgeInsets.only(top: 12),
@@ -548,7 +543,7 @@ class PnlScreen extends StatelessWidget {
                                     ? const Color(0xffBDBDBD)
                                     : colors.colorGrey),
                           )),
-                      SizedBox(width: 8),
+                      const SizedBox(width: 8),
                       Padding(
                         padding: const EdgeInsets.only(top: 14.0),
                         child: IconButton(
@@ -752,7 +747,7 @@ class PnlScreen extends StatelessWidget {
 
                 ledgerprovider.pnlAllData == null ||
                         ledgerprovider.pnlAllData?.transactions == null
-                    ? Center(
+                    ? const Center(
                         child: Padding(
                         padding: EdgeInsets.only(top: 60),
                         child: NoDataFound(),
@@ -761,7 +756,7 @@ class PnlScreen extends StatelessWidget {
                         child: SingleChildScrollView(
                           physics: const AlwaysScrollableScrollPhysics(),
                           child: ListView.separated(
-                            physics: ClampingScrollPhysics(),
+                            physics: const ClampingScrollPhysics(),
                             itemCount: ledgerprovider
                                     .pnlAllData?.transactions?.length ??
                                 0,

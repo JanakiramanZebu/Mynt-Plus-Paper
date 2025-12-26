@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 // ignore: implementation_imports
 import 'package:mobile_scanner/src/mobile_scanner_controller.dart';
 import '../../../models/profile_model/qr_response.dart';

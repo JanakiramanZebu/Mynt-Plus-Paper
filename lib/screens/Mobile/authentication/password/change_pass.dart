@@ -6,8 +6,6 @@ import '../../../../provider/change_password_provider.dart';
 import '../../../../provider/thems.dart';
 import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
-import '../../../../sharedWidget/cus_list_widget.dart';
-import '../../../../sharedWidget/custom_text_form_field.dart';
 import '../../../../sharedWidget/functions.dart';
 
 class ChangePass extends ConsumerStatefulWidget {
@@ -75,7 +73,7 @@ class _ChangePassState extends ConsumerState<ChangePass> {
                 BoxShadow(
                   color: Colors.black.withOpacity(0.1), // shadow color
                   blurRadius: 4, // how soft the shadow is
-                  offset: Offset(0, 4), // shadow position
+                  offset: const Offset(0, 4), // shadow position
                 ),
               ],
             ),
@@ -84,7 +82,7 @@ class _ChangePassState extends ConsumerState<ChangePass> {
             child: Scaffold(
               appBar: AppBar(
                 backgroundColor:
-                    theme.isDarkMode ? Color(0xff000000) : Color(0xffFFFFFF),
+                    theme.isDarkMode ? const Color(0xff000000) : const Color(0xffFFFFFF),
                 elevation: 0,
                 centerTitle: false,
                 leadingWidth: 48,
@@ -137,7 +135,7 @@ class _ChangePassState extends ConsumerState<ChangePass> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      SizedBox(height: 29.0),
+                      const SizedBox(height: 29.0),
                       Padding(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 16, vertical: 20),
@@ -197,7 +195,7 @@ class _ChangePassState extends ConsumerState<ChangePass> {
                                         color: theme.isDarkMode
                                             ? colors.textSecondaryDark
                                                 .withOpacity(0.2)
-                                            : Color(0xffDBDBDB),
+                                            : const Color(0xffDBDBDB),
                                         width: 1),
                                   ),
                                   focusedBorder: UnderlineInputBorder(
@@ -205,7 +203,7 @@ class _ChangePassState extends ConsumerState<ChangePass> {
                                         color: theme.isDarkMode
                                             ? colors.textSecondaryDark
                                                 .withOpacity(0.2)
-                                            : Color(0xffDBDBDB),
+                                            : const Color(0xffDBDBDB),
                                         width: 1),
                                   ),
                                   counterText: "",
@@ -301,7 +299,7 @@ class _ChangePassState extends ConsumerState<ChangePass> {
                                         color: theme.isDarkMode
                                             ? colors.textSecondaryDark
                                                 .withOpacity(0.2)
-                                            : Color(0xffECEDEE),
+                                            : const Color(0xffECEDEE),
                                         width: 1.5),
                                   ),
                                   focusedBorder: UnderlineInputBorder(
@@ -309,7 +307,7 @@ class _ChangePassState extends ConsumerState<ChangePass> {
                                         color: theme.isDarkMode
                                             ? colors.textSecondaryDark
                                                 .withOpacity(0.2)
-                                            : Color(0xffECEDEE),
+                                            : const Color(0xffECEDEE),
                                         width: 1.5),
                                   ),
                                   counterText: "",

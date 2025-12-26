@@ -12,9 +12,9 @@ class OnorOffSharingModel {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['msg'] = this.msg;
-    data['stat'] = this.stat;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['msg'] = msg;
+    data['stat'] = stat;
     if (this.data != null) {
       data['data'] = this.data!.toJson();
     }
@@ -32,8 +32,8 @@ class Data {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['uq_code'] = this.uqCode;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['uq_code'] = uqCode;
     return data;
   }
 }

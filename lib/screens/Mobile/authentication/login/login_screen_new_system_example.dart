@@ -30,7 +30,7 @@ class LoginScreenNewSystemExample extends StatelessWidget {
         ),
       ),
       body: SingleChildScrollView(
-        physics: ClampingScrollPhysics(),
+        physics: const ClampingScrollPhysics(),
         padding: AppSpacing.screenPaddingAll,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -38,7 +38,7 @@ class LoginScreenNewSystemExample extends StatelessWidget {
             AppSpacing.verticalSpace(AppSpacing.xl), // 32px spacing
 
             // === MAIN TITLE ===
-            AppTextWidget.headlineLarge(
+            const AppTextWidget.headlineLarge(
               "Sign in with MYNT",
               fontWeight: AppFontWeight.semiBold,
             ),
@@ -46,7 +46,7 @@ class LoginScreenNewSystemExample extends StatelessWidget {
             AppSpacing.verticalSpaceItem, // 8px spacing
 
             // === SUBTITLE (Optional) ===
-            AppTextWidget.bodyMedium(
+            const AppTextWidget.bodyMedium(
               "Every login is a step closer to your goals.",
               colorVariant: AppTextColorVariant.secondary,
             ),
@@ -83,7 +83,7 @@ class LoginScreenNewSystemExample extends StatelessWidget {
             AppSpacing.verticalSpaceElement, // 4px spacing
 
             // === CHARACTER COUNTER ===
-            Row(
+            const Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 // Error message would go here
@@ -186,7 +186,7 @@ class LoginScreenNewSystemExample extends StatelessWidget {
             AppSpacing.verticalSpace(AppSpacing.massive), // 48px spacing
 
             // === VERSION INFO ===
-            Center(
+            const Center(
               child: AppTextWidget.caption(
                 "Version 3.0.2",
                 colorVariant: AppTextColorVariant.tertiary,
@@ -206,7 +206,7 @@ class LoginScreenVariations {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        AppTextWidget.headlineLarge(
+        const AppTextWidget.headlineLarge(
           "Welcome back,",
           fontWeight: AppFontWeight.medium,
           colorVariant: AppTextColorVariant.secondary,
@@ -221,7 +221,7 @@ class LoginScreenVariations {
 
   // Quick login variation
   static Widget quickLoginTitle(BuildContext context) {
-    return AppTextWidget.headlineMedium(
+    return const AppTextWidget.headlineMedium(
       "Quick Login",
       fontWeight: AppFontWeight.semiBold,
     );
@@ -237,7 +237,7 @@ class LoginScreenVariations {
       ),
       child: Row(
         children: [
-          Icon(
+          const Icon(
             Icons.error_outline,
             color: AppColors.error,
             size: AppSpacing.iconSize,
@@ -264,7 +264,7 @@ class LoginScreenVariations {
       ),
       child: Row(
         children: [
-          Icon(
+          const Icon(
             Icons.check_circle_outline,
             color: AppColors.success,
             size: AppSpacing.iconSize,

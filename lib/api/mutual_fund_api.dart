@@ -1,6 +1,5 @@
 import 'dart:developer';
 
-import 'package:flutter/cupertino.dart';
 import 'package:mynt_plus/models/mf_model/all_category_new_model.dart';
 import 'package:mynt_plus/models/mf_model/mf_bestnewapi_list_model.dart';
 import 'package:mynt_plus/models/mf_model/mf_hold_singlepage_model.dart';
@@ -25,7 +24,6 @@ import '../models/mf_model/mf_factsheet_data_model.dart';
 import '../models/mf_model/mf_factsheet_graph.dart';
 import '../models/mf_model/mf_lumpsum_order.dart';
 import '../models/mf_model/mf_nav_graph_model.dart';
-import '../models/mf_model/mf_nfo_model.dart';
 import '../models/mf_model/mf_orderbook_lumpsum_model.dart';
 import '../models/mf_model/mf_scheme_peers_model.dart';
 import '../models/mf_model/mf_search_model.dart';
@@ -283,7 +281,7 @@ mixin MutualFundApi on ApiCore {
           body: jsonEncode({
             "ClientCode": "${prefs.clientId}",
             "CaseNo": droupreason,
-            "CaseRemarks": droupreason == "13" ? "${retext}" : "",
+            "CaseRemarks": droupreason == "13" ? "$retext" : "",
             "placed_by": "${prefs.clientId}",
             "source": "MOB",
             "SIPRegnNo": orderno,
@@ -317,7 +315,7 @@ mixin MutualFundApi on ApiCore {
 
       final json = jsonDecode((res.body));
 
-      print("pause res p resss ==>${json}");
+      print("pause res p resss ==>$json");
 
       return pause_spi_res.fromJson(json as Map<String, dynamic>);
     } catch (e) {
@@ -393,7 +391,7 @@ mixin MutualFundApi on ApiCore {
 
       final json = jsonDecode((res.body));
 
-      log("reddapiresppp==>${json}");
+      log("reddapiresppp==>$json");
 
       return RedemptionModel.fromJson(json as Map<String, dynamic>);
     } catch (e) {
@@ -791,7 +789,7 @@ mixin MutualFundApi on ApiCore {
             "allow_loop_back": "Y"
           }));
       final json = jsonDecode((res.body));
-      print("mf======>${json}");
+      print("mf======>$json");
       return UpiIdOrderResponse.fromJson(json as Map<String, dynamic>);
     } catch (e) {
       rethrow;
@@ -867,7 +865,7 @@ mixin MutualFundApi on ApiCore {
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body: jsonEncode(
-              {"client_code": "${prefs.clientId}", "sipregnno": "${value}"}));
+              {"client_code": "${prefs.clientId}", "sipregnno": value}));
       // body: jsonEncode({"client_code": "ZE1A40","sipregnno":"126150781"}));
 
       final json = jsonDecode((res.body));
@@ -914,7 +912,7 @@ mixin MutualFundApi on ApiCore {
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body: jsonEncode(
-              {"client_code": "${prefs.clientId}", "isin": "${value}"}));
+              {"client_code": "${prefs.clientId}", "isin": value}));
       // body: jsonEncode({"client_code": "ZE1A40","sipregnno":"126150781"}));
 
       final json = jsonDecode((res.body));

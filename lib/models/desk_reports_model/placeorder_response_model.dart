@@ -8,8 +8,8 @@ class placeOrderResponseCopModel {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['msg'] = this.msg;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['msg'] = msg;
     return data;
   }
 }

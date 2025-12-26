@@ -23,7 +23,6 @@ import '../../../../res/res.dart';
 import '../../../../routes/route_names.dart';
 import '../../../../sharedWidget/custom_drag_handler.dart';
 import '../../../../sharedWidget/list_divider.dart';
-import '../../../../sharedWidget/custom_exch_badge.dart';
 import '../../../../sharedWidget/functions.dart';
 import '../../../../sharedWidget/no_data_found.dart';
 import 'cur_strike_price.dart';
@@ -262,7 +261,7 @@ class _OptionChainSSState extends ConsumerState<OptionChainSS> {
                   ),
 
                   // Pre-defined watchlist info banner (conditional)
-                  _PreDefinedWatchlistBanner(),
+                  const _PreDefinedWatchlistBanner(),
 
                   // Option chain data - main content
                   Expanded(
@@ -283,7 +282,7 @@ class _OptionChainSSState extends ConsumerState<OptionChainSS> {
               ),
 
               if (isBasketMode)
-                Positioned(
+                const Positioned(
                   bottom: 0,
                   left: 0,
                   right: 0,
@@ -311,14 +310,13 @@ class _NewAppBarTitle extends ConsumerWidget {
   final VoidCallback scrollToStrikePrice;
 
   const _NewAppBarTitle({
-    Key? key,
     required this.wlValue,
     required this.showPriceView,
     required this.isBasketMode,
     required this.onToggleView,
     required this.onToggleBasketMode,
     required this.scrollToStrikePrice,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -669,11 +667,10 @@ class _ColumnHeaders extends ConsumerWidget {
   final VoidCallback onToggleView;
 
   const _ColumnHeaders({
-    Key? key,
     required this.scrollToStrikePrice,
     required this.showPriceView,
     required this.onToggleView,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -797,7 +794,7 @@ class _ColumnHeaders extends ConsumerWidget {
 
 // Widget for predefined watchlist banner (conditional)
 class _PreDefinedWatchlistBanner extends ConsumerWidget {
-  const _PreDefinedWatchlistBanner({Key? key}) : super(key: key);
+  const _PreDefinedWatchlistBanner();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -836,13 +833,12 @@ class _OptionChainContent extends ConsumerWidget {
   final bool isBasketMode;
 
   const _OptionChainContent({
-    Key? key,
     required this.strikePriceKey,
     required this.mainScrollController,
     required this.swipecontroller,
     required this.showPriceView,
     required this.isBasketMode,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -870,7 +866,7 @@ class _OptionChainContent extends ConsumerWidget {
                   children: [
                     TextWidget.subText(
                       text: "Data loading is taking longer than expected",
-                      color: Color(0xff666666),
+                      color: const Color(0xff666666),
                       theme: false,
                     ),
                     const SizedBox(height: 16),
@@ -1000,9 +996,8 @@ class _ActionButtons extends ConsumerWidget {
   final DepthInputArgs wlValue;
 
   const _ActionButtons({
-    Key? key,
     required this.wlValue,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -1107,7 +1102,7 @@ Future<void> _placeOrderInput(BuildContext context, WidgetRef ref,
 
 // Enhanced Basket Bottom Sheet Widget with full BasketScripList functionality
 class _BasketBottomSheet extends ConsumerStatefulWidget {
-  const _BasketBottomSheet({Key? key}) : super(key: key);
+  const _BasketBottomSheet();
 
   @override
   ConsumerState<_BasketBottomSheet> createState() => _BasketBottomSheetState();
@@ -1240,7 +1235,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
 
             // Header with current basket name and action icons
             _buildBasketHeader(theme, orderProv),
-            ListDivider(),
+            const ListDivider(),
 
             // Scrollable content section
             if (orderProv.selectedBsktName.isNotEmpty &&
@@ -1308,7 +1303,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                   shape: const CircleBorder(),
                   child: InkWell(
                     onTap: () async {
-                      await Future.delayed(Duration(milliseconds: 100));
+                      await Future.delayed(const Duration(milliseconds: 100));
                       _showBasketSelector(context);
                     },
                     borderRadius: BorderRadius.circular(20),
@@ -1339,7 +1334,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                   shape: const CircleBorder(),
                   child: InkWell(
                     onTap: () async {
-                      await Future.delayed(Duration(milliseconds: 100));
+                      await Future.delayed(const Duration(milliseconds: 100));
                       await orderProv.fetchBasketMargin();
                     },
                     borderRadius: BorderRadius.circular(20),
@@ -1369,7 +1364,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                 shape: const CircleBorder(),
                 child: InkWell(
                   onTap: () async {
-                    await Future.delayed(Duration(milliseconds: 100));
+                    await Future.delayed(const Duration(milliseconds: 100));
                     _showCreateBasket(context);
                   },
                   borderRadius: BorderRadius.circular(20),
@@ -1540,7 +1535,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
             children: [
               SvgPicture.asset(
                 assets.noDatafound,
-                color: Color(0xff777777),
+                color: const Color(0xff777777),
               ),
               const SizedBox(height: 2),
               TextWidget.subText(
@@ -1581,7 +1576,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
             children: [
               SvgPicture.asset(
                 assets.noDatafound,
-                color: Color(0xff777777),
+                color: const Color(0xff777777),
               ),
               const SizedBox(height: 2),
               TextWidget.subText(
@@ -1705,7 +1700,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                 children: [
                   TextWidget.subText(
                     text:
-                        "${script['symbol'].toString().replaceAll("-EQ", "")}",
+                        script['symbol'].toString().replaceAll("-EQ", ""),
                     theme: theme.isDarkMode,
                     textOverflow: TextOverflow.ellipsis,
                     color: theme.isDarkMode
@@ -2467,7 +2462,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                           : colors.textPrimaryLight,
                       fw: 1,
                     ),
-                    ListDivider(),
+                    const ListDivider(),
                     Material(
                       color: Colors.transparent,
                       shape: const CircleBorder(),
@@ -2504,7 +2499,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
               ),
               Expanded(
                 child: ListView.separated(
-                  physics: ClampingScrollPhysics(),
+                  physics: const ClampingScrollPhysics(),
                   itemCount: orderProv.bsktList.length,
                   separatorBuilder: (_, __) => const ListDivider(),
                   itemBuilder: (context, index) {

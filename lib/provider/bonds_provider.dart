@@ -347,7 +347,7 @@ class BondsProvider extends DefaultChangeNotifier {
         print(order.toJson());
       }
     } catch (e) {
-      print("ordersplit :: ${e}");
+      print("ordersplit :: $e");
     } finally {
       togglefundLoadingOn(false);
     }

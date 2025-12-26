@@ -9,23 +9,23 @@ class mf_holdoing_new {
     if (json['data'] != null) {
       data = <Data>[];
       json['data'].forEach((v) {
-        data!.add(new Data.fromJson(v));
+        data!.add(Data.fromJson(v));
       });
     }
     summary =
-        json['summary'] != null ? new Summary.fromJson(json['summary']) : null;
+        json['summary'] != null ? Summary.fromJson(json['summary']) : null;
     stat = json['stat'];
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     if (this.data != null) {
       data['data'] = this.data!.map((v) => v.toJson()).toList();
     }
-    if (this.summary != null) {
-      data['summary'] = this.summary!.toJson();
+    if (summary != null) {
+      data['summary'] = summary!.toJson();
     }
-    data['stat'] = this.stat;
+    data['stat'] = stat;
     return data;
   }
 }
@@ -84,33 +84,33 @@ class Data {
     if (json['transactions'] != null) {
       transactions = <Transactions>[];
       json['transactions'].forEach((v) {
-        transactions!.add(new Transactions.fromJson(v));
+        transactions!.add(Transactions.fromJson(v));
       });
     }
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['ClientCode'] = this.clientCode;
-    data['name'] = this.name;
-    data['foliono'] = this.foliono;
-    data['ISIN'] = this.iSIN;
-    data['stampduty'] = this.stampduty;
-    data['stt'] = this.stt;
-    data['avg_qty'] = this.avgQty;
-    data['avg_nav'] = this.avgNav;
-    data['Cur_Nav'] = this.curNav;
-    data['invested_value'] = this.investedValue;
-    data['current_value'] = this.currentValue;
-    data['profit_loss'] = this.profitLoss;
-    data['Minimum_Redemption_Qty'] = this.minRedemptionQty;
-    data['Scheme_Code'] = this.sCHEMECODE;
-    data['changeprofitLoss'] = this.changeprofitLoss;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['ClientCode'] = clientCode;
+    data['name'] = name;
+    data['foliono'] = foliono;
+    data['ISIN'] = iSIN;
+    data['stampduty'] = stampduty;
+    data['stt'] = stt;
+    data['avg_qty'] = avgQty;
+    data['avg_nav'] = avgNav;
+    data['Cur_Nav'] = curNav;
+    data['invested_value'] = investedValue;
+    data['current_value'] = currentValue;
+    data['profit_loss'] = profitLoss;
+    data['Minimum_Redemption_Qty'] = minRedemptionQty;
+    data['Scheme_Code'] = sCHEMECODE;
+    data['changeprofitLoss'] = changeprofitLoss;
     
     
  
-    if (this.transactions != null) {
-      data['transactions'] = this.transactions!.map((v) => v.toJson()).toList();
+    if (transactions != null) {
+      data['transactions'] = transactions!.map((v) => v.toJson()).toList();
     }
     return data;
   }
@@ -160,19 +160,19 @@ class Transactions {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['TxnDate'] = this.txnDate;
-    data['txnType'] = this.txnType;
-    data['txnNo'] = this.txnNo;
-    data['seqNo'] = this.seqNo;
-    data['arnNo'] = this.arnNo;
-    data['units'] = this.units;
-    data['avg_nav'] = this.avgNav;
-    data['Inv_amount'] = this.invAmount;
-    data['stampDuty'] = this.stampDuty;
-    data['STT'] = this.sTT;
-    data['PR'] = this.pR;
-    data['pur_red'] = this.purRed;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['TxnDate'] = txnDate;
+    data['txnType'] = txnType;
+    data['txnNo'] = txnNo;
+    data['seqNo'] = seqNo;
+    data['arnNo'] = arnNo;
+    data['units'] = units;
+    data['avg_nav'] = avgNav;
+    data['Inv_amount'] = invAmount;
+    data['stampDuty'] = stampDuty;
+    data['STT'] = sTT;
+    data['PR'] = pR;
+    data['pur_red'] = purRed;
     return data;
   }
 }
@@ -197,11 +197,11 @@ class Summary {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['invested'] = this.invested;
-    data['current_value'] = this.currentValue;
-    data['abs_return_value'] = this.absReturnValue;
-    data['abs_return_percent'] = this.absReturnPercent;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['invested'] = invested;
+    data['current_value'] = currentValue;
+    data['abs_return_value'] = absReturnValue;
+    data['abs_return_percent'] = absReturnPercent;
     return data;
   }
 }

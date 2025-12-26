@@ -243,7 +243,7 @@ class _PreviousLoginDeciveState extends State<PreviousLoginDecive> {
                 title: TextWidget.titleText(
                   text: "Exit App",
                   theme: false,
-                  color: Color(0xff000000),
+                  color: const Color(0xff000000),
                   fw: 0,
                 ),
                 content: SizedBox(
@@ -254,7 +254,7 @@ class _PreviousLoginDeciveState extends State<PreviousLoginDecive> {
                           TextWidget.paraText(
                             text: "Do you want to Exit an App?",
                             theme: false,
-                            color: Color(0xff000000),
+                            color: const Color(0xff000000),
                             fw: 0,
                           )
                         ])),

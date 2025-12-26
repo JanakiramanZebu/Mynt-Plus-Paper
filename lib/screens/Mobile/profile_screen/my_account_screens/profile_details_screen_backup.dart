@@ -24,7 +24,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
   }
 
 
-var _formKey = GlobalKey<FormState>();
+final _formKey = GlobalKey<FormState>();
 var isLoading = false;
 
 void _submit() {
@@ -196,7 +196,7 @@ void _submit() {
                                 // SizedBox(height: 10,),
                                 headerText("NAME AS PER PAN", theme),
                                 // const SizedBox(height: 5),
-                                 SizedBox(height: 2,),
+                                 const SizedBox(height: 2,),
                                  Text(
                                     profileprovider
                                           .clientAllDetails.clientData?.panName ??
@@ -210,7 +210,7 @@ void _submit() {
                                   ),
                                 ),
 
-                                  SizedBox(height: 10,),
+                                  const SizedBox(height: 10,),
 
 
                                   Row(
@@ -219,7 +219,7 @@ void _submit() {
                                       Column(
                                         children: [
                                           headerText("PHONE NUMBER", theme),
-                                           SizedBox(height: 2,),
+                                           const SizedBox(height: 2,),
                                             Text(
                                                   profileprovider
                                                         .clientAllDetails.clientData?.mOBILENO ??
@@ -644,7 +644,7 @@ void _submit() {
                               },
                               style: ElevatedButton.styleFrom(
                                 elevation: 0,
-                                padding: EdgeInsets.symmetric(
+                                padding: const EdgeInsets.symmetric(
                                     horizontal: 0,
                                     vertical: 0), // maximumSize:Size.square(2),
                                 backgroundColor: theme.isDarkMode
@@ -715,7 +715,7 @@ void _submit() {
                               },
                               style: ElevatedButton.styleFrom(
                                 elevation: 0,
-                                padding: EdgeInsets.symmetric(
+                                padding: const EdgeInsets.symmetric(
                                     horizontal: 0,
                                     vertical: 0), // maximumSize:Size.square(2),
                                 backgroundColor: theme.isDarkMode
@@ -847,7 +847,7 @@ void _submit() {
                               },
                               style: ElevatedButton.styleFrom(
                                 elevation: 0,
-                                padding: EdgeInsets.symmetric(
+                                padding: const EdgeInsets.symmetric(
                                     horizontal: 0,
                                     vertical: 0), // maximumSize:Size.square(2),
                                 backgroundColor: theme.isDarkMode
@@ -953,7 +953,7 @@ void _submit() {
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(7),
                                       ),
-                                       visualDensity: VisualDensity(horizontal: 0.0, vertical: -4)
+                                       visualDensity: const VisualDensity(horizontal: 0.0, vertical: -4)
                                     ),
                                     Chip(
                                       backgroundColor: profileprovider
@@ -973,7 +973,7 @@ void _submit() {
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(7),
                                       ),
-                                       visualDensity: VisualDensity(horizontal: 0.0, vertical: -4)
+                                       visualDensity: const VisualDensity(horizontal: 0.0, vertical: -4)
                                     ),
                                   ],
                                 ),
@@ -1039,7 +1039,7 @@ void _submit() {
                                 style: textStyle(const Color(0xff000000), 15,
                                     FontWeight.w600)),
                             if (profileprovider
-                                    .clientAllDetails!.clientData!.dDPI ==
+                                    .clientAllDetails.clientData!.dDPI ==
                                 'N')
                               Padding(
                                 padding: const EdgeInsets.only(top: 15),
@@ -1056,7 +1056,7 @@ void _submit() {
                                         isDismissible: false,
                                         enableDrag: false,
                                         isScrollControlled: true,
-                                        shape: RoundedRectangleBorder(
+                                        shape: const RoundedRectangleBorder(
                                           borderRadius: BorderRadius.vertical(
                                               top: Radius.circular(20.0)),
                                         ),
@@ -1065,20 +1065,20 @@ void _submit() {
                                               (context, WidgetRef ref, _) {
                                             // final popproprv = ref.watch(profileProvider);
                                             return Container(
-                                              padding: EdgeInsets.all(16),
+                                              padding: const EdgeInsets.all(16),
                                               child: Column(
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.start,
                                                 children: [
-                                                  SizedBox(height: 40),
-                                                  Text(
+                                                  const SizedBox(height: 40),
+                                                  const Text(
                                                     'Debit Alert ',
                                                     style: TextStyle(
                                                         fontSize: 20,
                                                         fontWeight:
                                                             FontWeight.bold),
                                                   ),
-                                                  SizedBox(height: 20),
+                                                  const SizedBox(height: 20),
                                                   // SizedBox(height: 15),
                                                   Center(
                                                     child: Text(
@@ -1091,7 +1091,7 @@ void _submit() {
                                                       ),
                                                     ),
                                                   ),
-                                                  SizedBox(height: 10),
+                                                  const SizedBox(height: 10),
                                                   Center(
                                                     child: Card(
                                                       color: Colors.grey[
@@ -1121,7 +1121,7 @@ void _submit() {
                                                       ),
                                                     ),
                                                   ),
-                                                  SizedBox(height: 20),
+                                                  const SizedBox(height: 20),
                                                   Center(
                                                     child: Text(
                                                       " Available ledger ",
@@ -1133,7 +1133,7 @@ void _submit() {
                                                       ),
                                                     ),
                                                   ),
-                                                  SizedBox(height: 5),
+                                                  const SizedBox(height: 5),
                                                   Center(
                                                     child: Text(
                                                       " ₹${profileprovider.ddpiledgerbalace}",
@@ -1169,7 +1169,7 @@ void _submit() {
                                                               onPressed: () {
                                                                 // Handle approve button press
                                                               },
-                                                              child: Text(
+                                                              child: const Text(
                                                                   'Approve'),
                                                             )
                                                           : const SizedBox();
@@ -1244,13 +1244,13 @@ void _submit() {
                                                                   const Center(
                                                                 child: Padding(
                                                                   padding:
-                                                                      const EdgeInsets
+                                                                      EdgeInsets
                                                                           .all(
                                                                           8.0),
                                                                   child: Text(
                                                                     "Insufficient Balance",
                                                                     style:
-                                                                        const TextStyle(
+                                                                        TextStyle(
                                                                       fontSize:
                                                                           15,
                                                                       color: Colors
@@ -1270,7 +1270,7 @@ void _submit() {
                                                     },
                                                   ),
 
-                                                  SizedBox(height: 30),
+                                                  const SizedBox(height: 30),
                                                   Row(
                                                     children: [
                                                       Expanded(
@@ -1316,7 +1316,7 @@ void _submit() {
                                                         ),
                                                       ),
 
-                                                      SizedBox(
+                                                      const SizedBox(
                                                           width:
                                                               10), // Adds spacing between buttons
                                                       Expanded(
@@ -1373,7 +1373,7 @@ void _submit() {
                                                                               25),
                                                                 ),
                                                               ),
-                                                              child: Text(
+                                                              child: const Text(
                                                                   'Submit'),
                                                             );
                                                           },
@@ -1403,7 +1403,7 @@ void _submit() {
                                 ),
                               ),
                             if ((profileprovider
-                                    .clientAllDetails!.clientData!.dDPI ==
+                                    .clientAllDetails.clientData!.dDPI ==
                                 'Y')) ...[
                               Padding(
                                 padding: const EdgeInsets.only(top: 15),
@@ -1446,7 +1446,7 @@ void _submit() {
                     child: Card(
                       elevation: 0, // No shadow
                       shape: RoundedRectangleBorder(
-                        side: BorderSide(
+                        side: const BorderSide(
                             color: Color.fromARGB(255, 255, 255, 255),
                             width: 1), // Outlined border
                         borderRadius:
@@ -1493,7 +1493,7 @@ void _submit() {
                                               255, 201, 67, 62)
                                           : const Color.fromARGB(
                                               255, 105, 231, 115),
-                                      label: Text(
+                                      label: const Text(
                                         'DDPI',
                                         style:
                                             TextStyle(color: Color(0xffffffff)),
@@ -1501,7 +1501,7 @@ void _submit() {
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(7),
                                       ),
-                                       visualDensity: VisualDensity(horizontal: 0.0, vertical: -4)
+                                       visualDensity: const VisualDensity(horizontal: 0.0, vertical: -4)
                                     ),
                                     Chip(
                                       backgroundColor: profileprovider
@@ -1513,7 +1513,7 @@ void _submit() {
                                               255, 201, 67, 62)
                                           : const Color.fromARGB(
                                               255, 105, 231, 115),
-                                      label: Text(
+                                      label: const Text(
                                         'POI',
                                         style:
                                             TextStyle(color: Color(0xffffffff)),
@@ -1521,7 +1521,7 @@ void _submit() {
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(7),
                                       ),
-                                       visualDensity: VisualDensity(horizontal: 0.0, vertical: -4)
+                                       visualDensity: const VisualDensity(horizontal: 0.0, vertical: -4)
                                     ),
                                   ],
                                 ),
@@ -1529,37 +1529,37 @@ void _submit() {
                             ),
                             const SizedBox(height: 16),
                             Text(
-                              (profileprovider.clientAllDetails!.clientData!
+                              (profileprovider.clientAllDetails.clientData!
                                               .dDPI ==
                                           'N' &&
-                                      profileprovider.clientAllDetails!
+                                      profileprovider.clientAllDetails
                                               .clientData!.pOA ==
                                           "N")
                                   ? "You need to enable DDPI before you can proceed with processing MTF (Margin Trading Facility)."
                                   : "",
-                              style: TextStyle(
+                              style: const TextStyle(
                                 color: Color.fromARGB(255, 206, 47, 47),
                               ),
                             ),
                             if ((profileprovider
-                                        .clientAllDetails!.clientData!.mTFCl ==
+                                        .clientAllDetails.clientData!.mTFCl ==
                                     'Y' &&
-                                profileprovider.clientAllDetails!.clientData!
+                                profileprovider.clientAllDetails.clientData!
                                         .mTFClAuto ==
                                     "Y")) ...[
                               Row(
                                 children: [
                                   Chip(
-                                    label: Text(
+                                    label: const Text(
                                       'MTF Enabled',
                                       style: TextStyle(
                                           color:
                                               Color(0xff43a833)), // Text color
                                     ),
                                     backgroundColor:
-                                        Color(0xffecf8f1), // Background color
+                                        const Color(0xffecf8f1), // Background color
                                     shape: RoundedRectangleBorder(
-                                      side: BorderSide(
+                                      side: const BorderSide(
                                         color:
                                             Color(0xffc1e7ba), // Border color
                                       ),
@@ -1570,16 +1570,16 @@ void _submit() {
                                 ],
                               ),
                             ],
-                            if ((profileprovider.clientAllDetails!.clientData!
+                            if ((profileprovider.clientAllDetails.clientData!
                                             .mTFCl ==
                                         'N' &&
                                     profileprovider.clientAllDetails.clientData!
                                             .mTFClAuto ==
                                         'N') &&
-                                (profileprovider.clientAllDetails!.clientData!
+                                (profileprovider.clientAllDetails.clientData!
                                             .dDPI ==
                                         'Y' ||
-                                    profileprovider.clientAllDetails!
+                                    profileprovider.clientAllDetails
                                             .clientData!.pOA ==
                                         "Y"))
                               Padding(
@@ -1619,7 +1619,7 @@ void _submit() {
                     child: Card(
                       elevation: 0, // No shadow
                       shape: RoundedRectangleBorder(
-                        side: BorderSide(
+                        side: const BorderSide(
                             color: Color.fromARGB(255, 255, 255, 255),
                             width: 1), // Outlined border
                         borderRadius:
@@ -1670,7 +1670,7 @@ void _submit() {
                                       isDismissible: false,
                                       enableDrag: false,
                                       isScrollControlled: true,
-                                      shape: RoundedRectangleBorder(
+                                      shape: const RoundedRectangleBorder(
                                         borderRadius: BorderRadius.vertical(
                                             top: Radius.circular(20.0)),
                                       ),
@@ -1690,16 +1690,16 @@ void _submit() {
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.start,
                                                 children: [
-                                                  SizedBox(height: 40),
-                                                  Text(
+                                                  const SizedBox(height: 40),
+                                                  const Text(
                                                     'Income change request',
                                                     style: TextStyle(
                                                         fontSize: 20,
                                                         fontWeight:
                                                             FontWeight.bold),
                                                   ),
-                                                  SizedBox(height: 20),
-                                                  Text(
+                                                  const SizedBox(height: 20),
+                                                  const Text(
                                                     "Select Income per annum",
                                                     style: TextStyle(
                                                       color: Colors.black,
@@ -1708,7 +1708,7 @@ void _submit() {
                                                           FontWeight.w500,
                                                     ),
                                                   ),
-                                                  SizedBox(height: 20),
+                                                  const SizedBox(height: 20),
                                                   //  Column(
                                                   //                       children: List.generate(incomeLabels.length, (index) {
                                                   //                         return RadioListTile<int>(
@@ -1820,10 +1820,8 @@ void _submit() {
                                                         );
                                                       }),
                                                     ),
-                                                    SizedBox(height: 20),
+                                                    const SizedBox(height: 20),
                                                     ElevatedButton(
-                                                      child: const Text(
-                                                          'UPLOAD FILE'),
                                                       onPressed: () async {
                                                         var picked =
                                                             await FilePicker
@@ -1853,7 +1851,7 @@ void _submit() {
                                                           //     .state = filePath;
                                                         }
 
-                                                        Text("elseee");
+                                                        const Text("elseee");
                                                       },
                                                       style: ElevatedButton
                                                           .styleFrom(
@@ -1872,10 +1870,12 @@ void _submit() {
                                                                   .circular(25),
                                                         ),
                                                       ),
+                                                      child: const Text(
+                                                          'UPLOAD FILE'),
                                                     ),
                                                   ],
 
-                                                  SizedBox(height: 30),
+                                                  const SizedBox(height: 30),
                                                   if (profileprovider
                                                           .imcomeptsenres ==
                                                       "otp send") ...[
@@ -1900,8 +1900,8 @@ void _submit() {
                                                             UnderlineInputBorder(),
                                                       ),
                                                     ),
-                                                    SizedBox(height: 20),
-                                                    Text(
+                                                    const SizedBox(height: 20),
+                                                    const Text(
                                                       "OTP *",
                                                       style: TextStyle(
                                                           color: Colors.black,
@@ -1927,7 +1927,7 @@ void _submit() {
                                                       ),
                                                     ),
                                                   ],
-                                                  SizedBox(height: 30),
+                                                  const SizedBox(height: 30),
                                                   Row(
                                                     children: [
                                                       Expanded(
@@ -1939,7 +1939,7 @@ void _submit() {
                                                           },
                                                           style: OutlinedButton
                                                               .styleFrom(
-                                                            side: BorderSide(
+                                                            side: const BorderSide(
                                                                 color: Colors
                                                                     .black),
                                                             backgroundColor:
@@ -1959,7 +1959,7 @@ void _submit() {
                                                                           25),
                                                             ),
                                                           ),
-                                                          child: Text(
+                                                          child: const Text(
                                                             'Close',
                                                             style: TextStyle(
                                                                 color: Colors
@@ -1967,7 +1967,7 @@ void _submit() {
                                                           ),
                                                         ),
                                                       ),
-                                                      SizedBox(width: 10),
+                                                      const SizedBox(width: 10),
                                                       if (profileprovider
                                                               .imcomeptsenres !=
                                                           "otp send")
@@ -2004,7 +2004,7 @@ void _submit() {
                                                                             25),
                                                               ),
                                                             ),
-                                                            child: Text(
+                                                            child: const Text(
                                                                 'Submit btn'),
                                                           ),
                                                         ),
@@ -2084,7 +2084,7 @@ void _submit() {
                                                                             25),
                                                               ),
                                                             ),
-                                                            child: Text(
+                                                            child: const Text(
                                                                 'Submit otp'),
                                                           ),
                                                         ),
@@ -2101,7 +2101,7 @@ void _submit() {
                               },
                               style: ElevatedButton.styleFrom(
                                 elevation: 0,
-                                padding: EdgeInsets.symmetric(
+                                padding: const EdgeInsets.symmetric(
                                     horizontal: 0,
                                     vertical: 0), // maximumSize:Size.square(2),
                                 backgroundColor: theme.isDarkMode
@@ -2241,7 +2241,7 @@ void _submit() {
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(7),
                                       ),
-                                       visualDensity: VisualDensity(horizontal: 0, vertical: -4)
+                                       visualDensity: const VisualDensity(horizontal: 0, vertical: -4)
                                     ),
 
                                   // Text(segment.aCTIVEINACTIVE == "A"
@@ -2260,7 +2260,7 @@ void _submit() {
                               const SizedBox(height: 8),
                             ],
                           );
-                        }).toList(),
+                        }),
 
                         // F&O section
              
@@ -2291,7 +2291,7 @@ void _submit() {
                               const SizedBox(height: 8),
                             ],
                           );
-                        }).toList(),
+                        }),
 
                         // Currency section
                                Text(
@@ -2321,7 +2321,7 @@ void _submit() {
                               const SizedBox(height: 8),
                             ],
                           );
-                        }).toList(),
+                        }),
 
                         // Commodities section
                               Text(
@@ -2351,7 +2351,7 @@ void _submit() {
                               const SizedBox(height: 8),
                             ],
                           );
-                        }).toList(),
+                        }),
                       ],
                     ),
                   ),
@@ -2362,7 +2362,7 @@ void _submit() {
                           child: Card(
                             elevation: 0, // No shadow
                             shape: RoundedRectangleBorder(
-                              side: BorderSide(
+                              side: const BorderSide(
                                   color: Color.fromARGB(255, 255, 255, 255),
                                   width: 1), // Outlined border
                               borderRadius:
@@ -2425,12 +2425,12 @@ void _submit() {
                                                   //     ref.watch(closedroup).state;
                                                   // final popproprv = ref.watch(profileProvider);
                                                   return Container(
-                                                    padding: EdgeInsets.all(16),
+                                                    padding: const EdgeInsets.all(16),
                                                     child: Column(
                                                       crossAxisAlignment:
                                                           CrossAxisAlignment.start,
                                                       children: [
-                                                        SizedBox(height: 40),
+                                                        const SizedBox(height: 40),
                                                         const Text(
                                                           '  Account Closure ? ',
                                                           style: TextStyle(
@@ -2443,7 +2443,7 @@ void _submit() {
                                                                     .chackaccbalace[
                                                                 'stage'] ==
                                                             null) ...{
-                                                          SizedBox(height: 20),
+                                                          const SizedBox(height: 20),
                                                           const Text(
                                                             '  Are you sure you want to Deactivate your account ?',
                                                             style: TextStyle(
@@ -2451,7 +2451,7 @@ void _submit() {
                                                                 fontWeight:
                                                                     FontWeight.bold),
                                                           ),
-                                                          SizedBox(height: 20),
+                                                          const SizedBox(height: 20),
 
                                                           DropdownButton<String>(
                                                             value: profileprovider
@@ -2506,7 +2506,7 @@ void _submit() {
 
                                                           // Text("Stage: ${popproprv.chackaccbalace['stage'] ?? 'Loading...'}"),
                                                           // Text("Balance: ${popproprv.chackaccbalace['balance'] ?? 'Loading...'}"),
-                                                          SizedBox(height: 20),
+                                                          const SizedBox(height: 20),
 
                                                           Row(
                                                             children: [
@@ -2548,7 +2548,7 @@ void _submit() {
                                                                   ),
                                                                 ),
                                                               ),
-                                                              SizedBox(width: 10),
+                                                              const SizedBox(width: 10),
                                                               Expanded(
                                                                 flex: 1,
                                                                 child: ElevatedButton(
@@ -2590,7 +2590,7 @@ void _submit() {
                                                                     ),
                                                                   ),
                                                                   child:
-                                                                      Text('Submit'),
+                                                                      const Text('Submit'),
                                                                 ),
                                                               ),
                                                             ],
@@ -2732,7 +2732,7 @@ void _submit() {
                                                                     .chackaccbalace[
                                                                 'stage'] ==
                                                             "Stage 5: Zero Balance & Some Holdings") ...{
-                                                          SizedBox(height: 20),
+                                                          const SizedBox(height: 20),
                                                           const Text(
                                                             'Kindly transfer  your stocks to another demat account according to your wish',
                                                             style: TextStyle(
@@ -2740,7 +2740,7 @@ void _submit() {
                                                                 fontWeight:
                                                                     FontWeight.bold),
                                                           ),
-                                                          SizedBox(height: 20),
+                                                          const SizedBox(height: 20),
                                                           const Text(
                                                             'Please enter your another Demat account details',
                                                             style: TextStyle(
@@ -2748,8 +2748,8 @@ void _submit() {
                                                                 fontWeight:
                                                                     FontWeight.bold),
                                                           ),
-                                                          SizedBox(height: 20),
-                                                          SizedBox(height: 15),
+                                                          const SizedBox(height: 20),
+                                                          const SizedBox(height: 15),
                                                           Text("DP ID *",
                                                               style: textStyle(
                                                                   const Color
@@ -2773,7 +2773,7 @@ void _submit() {
                                                                   UnderlineInputBorder(),
                                                             ),
                                                           ),
-                                                          SizedBox(height: 15),
+                                                          const SizedBox(height: 15),
                                                           Text("BO ID *",
                                                               style: textStyle(
                                                                   const Color
@@ -2797,7 +2797,7 @@ void _submit() {
                                                                   UnderlineInputBorder(),
                                                             ),
                                                           ),
-                                                          SizedBox(height: 20),
+                                                          const SizedBox(height: 20),
                                                           Text(
                                                               "Attach a copy of the CMR that is either digitally signed or sealed, and physically signed by the respective DP *",
                                                               style: textStyle(
@@ -2806,8 +2806,8 @@ void _submit() {
                                                                       255, 0, 0, 0),
                                                                   15,
                                                                   FontWeight.w600)),
-                                                          SizedBox(height: 15),
-                                                          SizedBox(height: 0),
+                                                          const SizedBox(height: 15),
+                                                          const SizedBox(height: 0),
                                                           Text("Proof Type *",
                                                               style: textStyle(
                                                                   const Color
@@ -2816,8 +2816,6 @@ void _submit() {
                                                                   15,
                                                                   FontWeight.w600)),
                                                           ElevatedButton(
-                                                            child:
-                                                                Text('UPLOAD FILE'),
                                                             onPressed: () async {
                                                               var picked =
                                                                   await FilePicker
@@ -2846,7 +2844,7 @@ void _submit() {
                                                                 //     .state = filePath;
                                                               }
 
-                                                              Text("elseee");
+                                                              const Text("elseee");
                                                             },
                                                             style: ElevatedButton
                                                                 .styleFrom(
@@ -2865,6 +2863,8 @@ void _submit() {
                                                                         .circular(25),
                                                               ),
                                                             ),
+                                                            child:
+                                                                const Text('UPLOAD FILE'),
                                                           ),
                                                           const SizedBox(height: 20),
                                                           Row(
@@ -2907,7 +2907,7 @@ void _submit() {
                                                                   ),
                                                                 ),
                                                               ),
-                                                              SizedBox(width: 10),
+                                                              const SizedBox(width: 10),
                                                               Expanded(
                                                                 flex: 1,
                                                                 child: ElevatedButton(
@@ -2971,7 +2971,7 @@ void _submit() {
                                                                     ),
                                                                   ),
                                                                   child:
-                                                                      Text('Submit'),
+                                                                      const Text('Submit'),
                                                                 ),
                                                               ),
                                                             ],
@@ -3026,7 +3026,7 @@ void _submit() {
       ProfileProvider profileprovider, ThemesProvider theme) {
     return SingleChildScrollView(
       child: Container(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,
           child: Column(
@@ -3037,7 +3037,7 @@ void _submit() {
                 ' Email change request ',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               Text("Old email id",
                   style: textStyle(
                       const Color.fromARGB(255, 0, 0, 0), 14, FontWeight.w600)),
@@ -3051,7 +3051,7 @@ void _submit() {
                   border: UnderlineInputBorder(),
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               Text("New email id *",
                   style: textStyle(
                       const Color.fromARGB(255, 0, 0, 0), 16, FontWeight.w600)),
@@ -3073,7 +3073,7 @@ void _submit() {
                   border: UnderlineInputBorder(),
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               if (profileprovider.responseval == "success send mail") ...[
                 Text(
                   "Enter a 4-digit Otp *",
@@ -3095,7 +3095,7 @@ void _submit() {
                   ),
                 ),
               ],
-              SizedBox(height: 30),
+              const SizedBox(height: 30),
               Row(
                 children: [
                   Expanded(
@@ -3124,7 +3124,7 @@ void _submit() {
                     ),
                   ),
           
-                  SizedBox(width: 10), // Adds spacing between buttons
+                  const SizedBox(width: 10), // Adds spacing between buttons
                   if (profileprovider.responseval != "success send mail")
                     Expanded(
                       flex: 1, // Takes 50% width
@@ -3157,7 +3157,7 @@ void _submit() {
                             borderRadius: BorderRadius.circular(25),
                           ),
                         ),
-                        child: Text('Submit'),
+                        child: const Text('Submit'),
                       ),
                     ),
           
@@ -3187,7 +3187,7 @@ void _submit() {
                             borderRadius: BorderRadius.circular(25),
                           ),
                         ),
-                        child: Text('Submit otp'),
+                        child: const Text('Submit otp'),
                       ),
                     ),
                 ],
@@ -3203,7 +3203,7 @@ void _submit() {
       ProfileProvider profileprovider, ThemesProvider theme) {
     return SingleChildScrollView(
       child: Container(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -3218,7 +3218,7 @@ void _submit() {
               ' Mobile change request ',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
 
             Text("Present Number",
                 style: textStyle(
@@ -3231,7 +3231,7 @@ void _submit() {
                 border: UnderlineInputBorder(),
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Text("New Mobile number  *",
                 style: textStyle(
                     const Color.fromARGB(255, 0, 0, 0), 17, FontWeight.w600)),
@@ -3268,7 +3268,7 @@ void _submit() {
                 ),
               ),
             ],
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
             Row(
               children: [
                 Expanded(
@@ -3294,7 +3294,7 @@ void _submit() {
                   ),
                 ),
 
-                SizedBox(width: 10), // Adds spacing between buttons
+                const SizedBox(width: 10), // Adds spacing between buttons
 
                 if (profileprovider.mobileotp != "otp sent")
                   Expanded(
@@ -3323,7 +3323,7 @@ void _submit() {
                           borderRadius: BorderRadius.circular(25),
                         ),
                       ),
-                      child: Text('Submit'),
+                      child: const Text('Submit'),
                     ),
                   ),
 
@@ -3366,20 +3366,20 @@ void _submit() {
       ProfileProvider profileprovider, ThemesProvider theme) {
     return SingleChildScrollView(
       child: Container(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(height: 40),
+            const SizedBox(height: 40),
             const Text(
               ' Address change request ',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
             Text("Old Address",
                 style: textStyle(
                     const Color.fromARGB(255, 0, 0, 0), 15, FontWeight.w600)),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             Text(
               "${profileprovider.clientAllDetails.clientData?.cLRESIADD1}, ${profileprovider.clientAllDetails.clientData?.cLRESIADD2}, ${profileprovider.clientAllDetails.clientData?.cLRESIADD3}" ??
                   "",
@@ -3392,7 +3392,7 @@ void _submit() {
               overflow: TextOverflow.visible,
             ),
             const Divider(color: Color(0xffDDDDDD)),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Text(
               'New Address *',
               style: textStyle(
@@ -3412,7 +3412,7 @@ void _submit() {
                 border: UnderlineInputBorder(),
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Row(
               children: [
                 Expanded(
@@ -3446,7 +3446,7 @@ void _submit() {
                   ),
                 ),
 
-                SizedBox(width: 10), // Adds spacing between buttons
+                const SizedBox(width: 10), // Adds spacing between buttons
 
                 Expanded(
                   flex: 1, // Takes 50% width
@@ -3480,10 +3480,10 @@ void _submit() {
                   ),
                 ),
 
-                SizedBox(width: 10),
+                const SizedBox(width: 10),
               ],
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Row(
               children: [
                 Expanded(
@@ -3517,7 +3517,7 @@ void _submit() {
                   ),
                 ),
 
-                SizedBox(width: 10), // Adds spacing between buttons
+                const SizedBox(width: 10), // Adds spacing between buttons
 
                 Expanded(
                   flex: 1, // Takes 50% width
@@ -3550,10 +3550,10 @@ void _submit() {
                   ),
                 ),
 
-                SizedBox(width: 10),
+                const SizedBox(width: 10),
               ],
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Text(
               "Proof Type *",
               style: textStyle(
@@ -3573,9 +3573,8 @@ void _submit() {
                 border: UnderlineInputBorder(),
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
-              child: Text('UPLOAD FILE'),
               onPressed: () async {
                 var picked = await FilePicker.platform.pickFiles();
 
@@ -3592,7 +3591,7 @@ void _submit() {
                   //     .state = filePath;
                 }
 
-                Text("elseee");
+                const Text("elseee");
               },
               style: ElevatedButton.styleFrom(
                 elevation: 0,
@@ -3603,8 +3602,9 @@ void _submit() {
                   borderRadius: BorderRadius.circular(25),
                 ),
               ),
+              child: const Text('UPLOAD FILE'),
             ),
-            SizedBox(height: 50),
+            const SizedBox(height: 50),
             // SizedBox(height: 30),
             Row(
               children: [
@@ -3631,7 +3631,7 @@ void _submit() {
                     ),
                   ),
                 ),
-                SizedBox(width: 10),
+                const SizedBox(width: 10),
                 Expanded(
                   flex: 1, // Takes 50% width
                   child: ElevatedButton(
@@ -3749,7 +3749,7 @@ void _submit() {
               const SizedBox(height: 8),
             ],
           );
-        }).toList(),
+        }),
       ],
     );
   }

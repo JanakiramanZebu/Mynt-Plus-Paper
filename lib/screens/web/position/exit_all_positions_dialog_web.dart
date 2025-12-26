@@ -22,7 +22,7 @@ class ExitAllPositionsDialogWeb extends ConsumerStatefulWidget {
 }
 
 class _ExitAllPositionsDialogWebState extends ConsumerState<ExitAllPositionsDialogWeb> {
-  bool _isLoading = false;
+  final bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -290,8 +290,8 @@ class _ExitAllPositionsDialogWebState extends ConsumerState<ExitAllPositionsDial
   Widget _buildFooter(ThemesProvider theme, PortfolioProvider positionBook) {
     return Container(
       padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16, top: 16),
-      decoration: BoxDecoration(       
-        borderRadius: const BorderRadius.only(
+      decoration: const BoxDecoration(       
+        borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(5),
           bottomRight: Radius.circular(5),
         ),
@@ -383,14 +383,14 @@ class _ExitAllPositionsDialogWebState extends ConsumerState<ExitAllPositionsDial
             child: SizedBox(
               height: 40,
               child: ElevatedButton(
-                onPressed: _isLoading || widget.selectedPositions.length == 0
+                onPressed: _isLoading || widget.selectedPositions.isEmpty
                           ? null
                           : () => positionBook.exitPosition(context, true),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: widget.selectedPositions.length == 0 
+                  backgroundColor: widget.selectedPositions.isEmpty 
                       ? (theme.isDarkMode ? WebDarkColors.divider : WebColors.divider)
                       : WebColors.tertiary,
-                  foregroundColor: widget.selectedPositions.length == 0 
+                  foregroundColor: widget.selectedPositions.isEmpty 
                       ? (theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary)
                       : Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),

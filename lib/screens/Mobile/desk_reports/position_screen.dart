@@ -6,7 +6,6 @@ import 'package:mynt_plus/provider/index_list_provider.dart';
 import 'package:mynt_plus/provider/ledger_provider.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/sharedWidget/custom_drag_handler.dart';
-import 'package:mynt_plus/sharedWidget/loader_ui.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import 'package:mynt_plus/sharedWidget/splash_loader.dart';
 import 'package:mynt_plus/utils/no_emoji_inputformatter.dart';
@@ -161,8 +160,8 @@ class _PositionScreen extends State<PositionScreen>
       final theme = ref.watch(themeProvider);
 
       final ledgerprovider = ref.watch(ledgerProvider);
-      Future<void> _refresh() async {
-        await Future.delayed(Duration(milliseconds: 100)); // simulate refresh delay
+      Future<void> refresh() async {
+        await Future.delayed(const Duration(milliseconds: 100)); // simulate refresh delay
         ledgerprovider.fetchposition(context);
       }
 
@@ -190,7 +189,6 @@ class _PositionScreen extends State<PositionScreen>
                 0.0;
             realisedmtm +=
                 double.parse(rmtm.toStringAsFixed(2)); // optional rounding
-            ;
             closed = closed + 1;
           } else {
             final rpnl = double.tryParse(
@@ -220,7 +218,7 @@ class _PositionScreen extends State<PositionScreen>
       // String tcredit = ledgerprovider.ledgerAllData?.crAmt ?? '0.0';
 
       return RefreshIndicator(
-        onRefresh: _refresh,
+        onRefresh: refresh,
         child: WillPopScope(
           onWillPop: () async {
             ledgerprovider.falseloader('ledger');
@@ -303,7 +301,7 @@ class _PositionScreen extends State<PositionScreen>
             body: ledgerprovider.positionloading ? Center(
                       child: Container(
                         color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                        child: CircularLoaderImage(),
+                        child: const CircularLoaderImage(),
                       ),
                     ) :
             Column(
@@ -445,7 +443,7 @@ class _PositionScreen extends State<PositionScreen>
                         child: SingleChildScrollView(
                           physics: const ClampingScrollPhysics(),
                           child: ListView.separated(
-                            physics: ClampingScrollPhysics(),
+                            physics: const ClampingScrollPhysics(),
                             itemCount: _getFilteredPositions(ledgerprovider).length,
                             shrinkWrap: true,
                             itemBuilder: (context, index) {

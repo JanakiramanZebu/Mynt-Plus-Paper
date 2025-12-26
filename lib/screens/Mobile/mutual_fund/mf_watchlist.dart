@@ -8,9 +8,6 @@ import '../../../provider/mf_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
-import '../../../routes/route_names.dart';
-import '../../../sharedWidget/custom_exch_badge.dart';
-import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/list_divider.dart';
 import 'mf_stock_detail_screen.dart';
 
@@ -74,7 +71,7 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
                   _buildHeader(theme),
                   Expanded(
                     child: ListView.separated(
-                      physics: ClampingScrollPhysics(),
+                      physics: const ClampingScrollPhysics(),
                       padding: EdgeInsets.zero,
                       // padding: const EdgeInsets.all(8),
                       itemCount: sortedList?.length ?? 0,

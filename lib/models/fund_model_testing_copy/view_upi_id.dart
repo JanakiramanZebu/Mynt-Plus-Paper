@@ -15,11 +15,11 @@ class ViewUpiIdModel {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['client_id'] = this.clientId;
-    data['bank_name'] = this.bankName;
-    data['account_number'] = this.accountNumber;
-    data['upi_id'] = this.upiId;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['client_id'] = clientId;
+    data['bank_name'] = bankName;
+    data['account_number'] = accountNumber;
+    data['upi_id'] = upiId;
     return data;
   }
 }

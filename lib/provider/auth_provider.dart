@@ -3,11 +3,8 @@ import 'dart:async';
 import 'dart:io' show SocketException, HttpException; // Used in non-web builds
 import 'package:flutter/foundation.dart'
     show kIsWeb, defaultTargetPlatform, TargetPlatform;
-import 'package:flutter/foundation.dart'
-    show kIsWeb, defaultTargetPlatform, TargetPlatform;
 import 'package:device_info_plus/device_info_plus.dart';
 // import 'package:firebase_analytics/firebase_analytics.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -42,8 +39,6 @@ import '../routes/app_routes.dart';
 import '../routes/route_names.dart';
 import '../screens/Mobile/authentication/login/bottom_otp_screen.dart';
 // import '../sharedWidget/functions.dart';
-import '../screens/web/main_screen_control_web.dart';
-import '../screens/web/main_screen_control_web.dart';
 import '../sharedWidget/functions.dart';
 import '../sharedWidget/risk_disclosure_bottom_sheet.dart';
 import '../sharedWidget/snack_bar.dart';
@@ -290,7 +285,7 @@ class AuthProvider extends DefaultChangeNotifier {
   bool _isDisableOtpBtn = true;
   bool _hideOtp = true;
 
-  bool _bannervisble = false;
+  final bool _bannervisble = false;
 
   String _logoutMsg = "";
   String get logoutMsg => _logoutMsg;
@@ -337,7 +332,7 @@ class AuthProvider extends DefaultChangeNotifier {
 
   int currentYear = DateTime.now().year;
 
-  String _imeiLocal = "";
+  final String _imeiLocal = "";
   String get imeilocal => _imeiLocal;
 
   // ValidateSession? _validateSession;
@@ -353,12 +348,12 @@ class AuthProvider extends DefaultChangeNotifier {
 
 // Switch login option mobile to client id
 
-  imieJson(String value_client) {
+  imieJson(String valueClient) {
     String checkimei = "";
     for (var element in _loggedMobile) {
-      if (element.clientId == value_client) {
+      if (element.clientId == valueClient) {
         checkimei = element.imei;
-      } else if (element.mobile == value_client) {
+      } else if (element.mobile == valueClient) {
         checkimei = element.imei;
       }
     }
@@ -1281,7 +1276,7 @@ class AuthProvider extends DefaultChangeNotifier {
         _showAuthenticationFailedDialog(context, s, ref.read(themeProvider));
       }
     } on PlatformException catch (e) {
-      print("cvbghnjmk ${e}");
+      print("cvbghnjmk $e");
       if (e.code == auth_error.notAvailable) {
         if (defaultTargetPlatform == TargetPlatform.iOS) {
           _showAuthenticationRequiredDialog(
@@ -1782,137 +1777,262 @@ class AuthProvider extends DefaultChangeNotifier {
         _logoutMsg = "";
 
         if (ref.read(indexListProvider).checkSess!.stat == "Ok") {
+          // Clear data first (quick operation)
           await ref.read(portfolioProvider).clearAllportfolio();
           await ref.read(fundProvider).clearFunds();
           await ref.read(orderProvider).clearAllorders();
           ref.read(indexListProvider).fetchNotifyMsg();
           ref.read(portfolioProvider).changeTabIndex(0);
           await ref.read(themeProvider).navigateToNewPage(context);
-          await ref.read(portfolioProvider).fetchHoldings(context, "");
-
-          await ref.read(indexListProvider).getDeafultIndexList(context);
-
-          // Reset watchlist page index to first tab when switching accounts
-          ref.read(marketWatchProvider).resetCurrentWatchlistPageIndex();
-
-          await ref.read(stocksProvide).fetchCAevents();
-
-          // Fetch watchlist data with proper initialization
-          await ref.read(marketWatchProvider).fetchMWList(context, false);
-
           
-          ref.read(ledgerProvider).setterfornullallSwitch = null;
-          
+          // For web: Navigate immediately, then load data asynchronously
+          // For mobile: Keep existing behavior but optimize
+          if (kIsWeb || s.isEmpty) {
+            // Navigate to home screen IMMEDIATELY without waiting for data
+            if (s.isEmpty) {
+              final targetRoute = getResponsiveWidth(context) == 600
+                  ? Routes.mainControlerScreenForWeb
+                  : Routes.homeScreen;
+              
+              Navigator.pushNamedAndRemoveUntil(
+                  context, targetRoute, (route) => false);
+              
+              // Show risk disclosure if needed (non-blocking)
+              if (pref.showRiskDis != 'true') {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (context.mounted) {
+                    getResponsiveWidth(context) == 600
+                        ? showDialog(
+                            context: context,
+                            barrierDismissible: false,
+                            builder: (BuildContext context) {
+                              return PopScope(
+                                canPop: false,
+                                onPopInvokedWithResult: (didPop, result) async {
+                                  if (didPop) return;
+                                },
+                                child: Dialog(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  child: SizedBox(
+                                    width: MediaQuery.of(context).size.width *
+                                        0.3,
+                                    child: const RiskDisclousreBottomSheet(),
+                                  ),
+                                ),
+                              );
+                            },
+                          )
+                        : showModalBottomSheet(
+                            shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.vertical(
+                                    top: Radius.circular(16))),
+                            backgroundColor: const Color(0xffffffff),
+                            isDismissible: false,
+                            enableDrag: false,
+                            showDragHandle: false,
+                            useSafeArea: false,
+                            isScrollControlled: true,
+                            context: context,
+                            builder: (BuildContext context) {
+                              return PopScope(
+                                  canPop: false,
+                                  onPopInvokedWithResult: (didPop, result) async {
+                                    if (didPop) return;
+                                  },
+                                  child: const RiskDisclousreBottomSheet());
+                            });
+                  }
+                });
+              }
+            }
+            
+            // Turn off global loader immediately so screen shows
+            initLaod(false);
+            ref.read(userProfileProvider).profileloaderfun(false);
+            
+            // Load data asynchronously in the background (non-blocking)
+            Future.microtask(() async {
+              try {
+                // Load essential data first (for current tab)
+                await ref.read(indexListProvider).getDeafultIndexList(context);
+                ref.read(marketWatchProvider).resetCurrentWatchlistPageIndex();
+                
+                // Load data in parallel batches for better performance
+                // Batch 1: Essential portfolio data (for first tab)
+                final essentialFutures = [
+                  ref.read(portfolioProvider).fetchHoldings(context, ""),
+                  ref.read(indexListProvider).getDeafultIndexList(context),
+                ];
+                await Future.wait(essentialFutures);
+                
+                // Batch 2: Market watch and stocks data
+                final marketFutures = [
+                  ref.read(marketWatchProvider).fetchMWList(context, false),
+                  ref.read(stocksProvide).fetchCAevents(),
+                ];
+                Future.wait(marketFutures); // Don't await - let it run in background
+                
+                // Batch 3: Order and trade data (load in background)
+                Future.microtask(() {
+                  ref.read(orderProvider).fetchOrderBook(context, false);
+                  ref.read(orderProvider).fetchTradeBook(context);
+                  ref.read(orderProvider).fetchGTTOrderBook(context, "initLoad");
+                });
+                
+                // Batch 4: Portfolio additional data (load in background)
+                Future.microtask(() {
+                  ref.read(portfolioProvider).fetchPositionBook(context, false);
+                  ref.read(portfolioProvider).fetchOplist(context);
+                  ref.read(portfolioProvider).fetchPosGroupSymbol("", false);
+                });
+                
+                // Batch 5: Transaction and funds data (load in background)
+                Future.microtask(() {
+                //   if (!kIsWeb) {
+                //   ref.read(transcationProvider).fetchcwithdraw(context);
+                //   ref.read(transcationProvider).fetchfundbank(context);
+                // }
+                  ref.read(transcationProvider).fetchc(context);
+                  ref.read(fundProvider).fetchFunds(context);
+                  ref.read(fundProvider).fetchPledgeDetails();
+                });
+                
+                // Batch 6: Profile and other data (load in background)
+                Future.microtask(() {
+                  ref.read(userProfileProvider).getProfileimage();
+                  ref.read(userProfileProvider).fetchUserDetail(context);
+                  ref.read(ledgerProvider).setterfornullallSwitch = null;
+                });
+                
+                // Batch 7: MF and other API calls (load in background)
+                Future.microtask(() {
+                  // if (!kIsWeb) {
+                  // setmfapicalls(context);
+                  //   ref.read(mfProvider).mfApicallinit(context, 0);
+                  // }
+                  setProfileAPicalls();
+                  setPrefOrderPrefer(context);
+                  ref.read(orderProvider).setOrderIp();
+                });
+                
+                // App version logging (non-critical, can be delayed)
+                Future.microtask(() {
+                  Map data = {
+                    "uid": "${pref.clientId}_${pref.imei}",
+                    "log": {
+                      "version": _version,
+                      "os": defaultTargetPlatform.toString(),
+                      "devices": pref.deviceName!.toString(),
+                      "date": DateFormat('dd/MM/yyyy HH:mm').format(DateTime.now())
+                    }
+                  };
+                  api.setAppversion(data, context);
+                });
+              } catch (e) {
+                print("Error loading background data: $e");
+              }
+            });
+          } else {
+            // Mobile: Keep existing synchronous behavior but optimize
+            await ref.read(portfolioProvider).fetchHoldings(context, "");
+            await ref.read(indexListProvider).getDeafultIndexList(context);
+            ref.read(marketWatchProvider).resetCurrentWatchlistPageIndex();
+            await ref.read(stocksProvide).fetchCAevents();
+            await ref.read(marketWatchProvider).fetchMWList(context, false);
+            
+            ref.read(ledgerProvider).setterfornullallSwitch = null;
             ref.read(userProfileProvider).getProfileimage();
 
-          // initLaod(false);
-          ref.read(orderProvider).fetchOrderBook(context, false);
-          ref.read(portfolioProvider).fetchPositionBook(context, false);
-          ref.read(portfolioProvider).fetchHoldings(context, "");
-          ref.read(orderProvider).fetchTradeBook(context);
-          ref.read(orderProvider).fetchGTTOrderBook(context, "initLoad");
-          ref.read(transcationProvider).fetchcwithdraw(context);
-          ref.read(transcationProvider).fetchfundbank(context);
-          ref.read(portfolioProvider).fetchOplist(context);
-          ref.read(userProfileProvider).fetchUserDetail(context);
-          ref.read(portfolioProvider).fetchPosGroupSymbol("", false);
-          ref.read(transcationProvider).fetchc(context);
-          // ref.read(ipoProvide).getDashboardIpos();
-
-          // FirebaseAnalytics.instance.setUserId(id: pref.clientId);
-          // // IPOs
-          // setIposAPicalls();
-          // // mf
-          // setmfapicalls(context);
-          // Explore
-          // await ref.read(stocksProvide).fetchStockMonitor("NSE", "NIFTY50", "VolUpPriceUp");
-          // await ref.read(indexListProvider).fetchStockTopIndex();
-
-          // await ref.read(stocksProvide).fetchCorporateAction();
-          // await ref.read(stocksProvide).fetchCAevents();
-          // await ref.read(stocksProvide).defaultSectorThemematicData();
-          // await ref.read(stocksProvide).getNews();
-          // await ref.read(stocksProvide).chngTradeAct("Equity");
-
-          // ref.read(mfProvider).fetchcommonsearchWadd(null, "", context, false);
-          // ref.read(mfProvider).fetchmfCommonsearch("Z", context);
-          // ref.read(mfProvider).fetchMFWatchlist(null, "", context, false,"");
-          // ref.read(mfProvider).fetchBestMF();
-
-          // ref.read(mfProvider).fetchMfOrderbook(context);
-          ref.read(fundProvider).fetchPledgeDetails();
-          setmfapicalls(context);
-          ref.read(mfProvider).mfApicallinit(context, 0);
-          setProfileAPicalls();
-          setPrefOrderPrefer(context);
-          ref.read(orderProvider).setOrderIp();
-          // End Explore
-          if (s.isEmpty) {
-            getResponsiveWidth(context) == 600
-                ? Navigator.pushNamedAndRemoveUntil(
-                    context, Routes.mainControlerScreenForWeb, (route) => false)
-                : Navigator.pushNamedAndRemoveUntil(
-                    context, Routes.homeScreen, (route) => false);
-            // if (pref.islogIn!) {
-            if (pref.showRiskDis != 'true') {
+            // Load remaining data in parallel
+            final futures = [
+              ref.read(orderProvider).fetchOrderBook(context, false),
+              ref.read(portfolioProvider).fetchPositionBook(context, false),
+              ref.read(orderProvider).fetchTradeBook(context),
+            ];
+            await Future.wait(futures);
+            
+            // Load other data in background
+            ref.read(orderProvider).fetchGTTOrderBook(context, "initLoad");
+            ref.read(transcationProvider).fetchcwithdraw(context);
+            ref.read(transcationProvider).fetchfundbank(context);
+            ref.read(portfolioProvider).fetchOplist(context);
+            ref.read(userProfileProvider).fetchUserDetail(context);
+            ref.read(portfolioProvider).fetchPosGroupSymbol("", false);
+            ref.read(transcationProvider).fetchc(context);
+            
+            ref.read(fundProvider).fetchPledgeDetails();
+            setmfapicalls(context);
+            ref.read(mfProvider).mfApicallinit(context, 0);
+            setProfileAPicalls();
+            setPrefOrderPrefer(context);
+            ref.read(orderProvider).setOrderIp();
+            
+            if (s.isEmpty) {
               getResponsiveWidth(context) == 600
-                  ? showDialog(
-                      context: context,
-                      barrierDismissible: false,
-                      builder: (BuildContext context) {
-                        return PopScope(
-                          canPop: false,
-                          onPopInvokedWithResult: (didPop, result) async {
-                            if (didPop) return;
-                            // Prevent closing with ESC key
-                          },
-                          child: Dialog(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: SizedBox(
-                              width: MediaQuery.of(context).size.width *
-                                  0.3, // set your desired width here
-                              child: const RiskDisclousreBottomSheet(),
-                            ),
-                          ),
-                        );
-                      },
-                    )
-                  : showModalBottomSheet(
-                      shape: const RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.vertical(top: Radius.circular(16))),
-                      backgroundColor: const Color(0xffffffff),
-                      isDismissible: false,
-                      enableDrag: false,
-                      showDragHandle: false,
-                      useSafeArea: false,
-                      isScrollControlled: true,
-                      context: context,
-                      builder: (BuildContext context) {
-                        return PopScope(
+                  ? Navigator.pushNamedAndRemoveUntil(
+                      context, Routes.mainControlerScreenForWeb, (route) => false)
+                  : Navigator.pushNamedAndRemoveUntil(
+                      context, Routes.homeScreen, (route) => false);
+              
+              if (pref.showRiskDis != 'true') {
+                getResponsiveWidth(context) == 600
+                    ? showDialog(
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (BuildContext context) {
+                          return PopScope(
                             canPop: false,
                             onPopInvokedWithResult: (didPop, result) async {
                               if (didPop) return;
                             },
-                            child: const RiskDisclousreBottomSheet());
-                      });
+                            child: Dialog(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: SizedBox(
+                                width: MediaQuery.of(context).size.width * 0.3,
+                                child: const RiskDisclousreBottomSheet(),
+                              ),
+                            ),
+                          );
+                        },
+                      )
+                    : showModalBottomSheet(
+                        shape: const RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.vertical(top: Radius.circular(16))),
+                        backgroundColor: const Color(0xffffffff),
+                        isDismissible: false,
+                        enableDrag: false,
+                        showDragHandle: false,
+                        useSafeArea: false,
+                        isScrollControlled: true,
+                        context: context,
+                        builder: (BuildContext context) {
+                          return PopScope(
+                              canPop: false,
+                              onPopInvokedWithResult: (didPop, result) async {
+                                if (didPop) return;
+                              },
+                              child: const RiskDisclousreBottomSheet());
+                        });
+              }
             }
+            
+            await ref.read(fundProvider).fetchFunds(context);
+            Map data = {
+              "uid": "${pref.clientId}_${pref.imei}",
+              "log": {
+                "version": _version,
+                "os": defaultTargetPlatform.toString(),
+                "devices": pref.deviceName!.toString(),
+                "date": DateFormat('dd/MM/yyyy HH:mm').format(DateTime.now())
+              }
+            };
+            api.setAppversion(data, context);
           }
-          // {
-          await ref.read(fundProvider).fetchFunds(context);
-          Map data = {
-            "uid": "${pref.clientId}_${pref.imei}",
-            "log": {
-              "version": _version,
-              "os": defaultTargetPlatform.toString(),
-              "devices": pref.deviceName!.toString(),
-              "date": DateFormat('dd/MM/yyyy HH:mm').format(DateTime.now())
-            }
-          };
-          api.setAppversion(data, context);
-          // }
         } else {
           // Handle invalid session by redirecting to login
           _handleNetworkFailure(context, "Session invalid");
@@ -1928,7 +2048,10 @@ class AuthProvider extends DefaultChangeNotifier {
     } catch (_) {
       _handleNetworkFailure(context, "Error connecting to server");
     } finally {
-      initLaod(false);
+      // Only set loader to false if not already done (for web case)
+      if (s != "switchAc") {
+        initLaod(false);
+      }
       ref.read(userProfileProvider).profileloaderfun(false);
     }
   }

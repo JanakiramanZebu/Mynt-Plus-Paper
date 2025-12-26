@@ -53,7 +53,7 @@ class OrderScreenHeader extends ConsumerWidget {
         return Row(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            TextWidget.subText(text: "${ltp} ", theme: theme.isDarkMode, color: percentageColor, fw: 0, ),
+            TextWidget.subText(text: "$ltp ", theme: theme.isDarkMode, color: percentageColor, fw: 0, ),
 
 
             // Text(
@@ -61,7 +61,7 @@ class OrderScreenHeader extends ConsumerWidget {
             //    style: textStyle(percentageColor, 16, FontWeight.w500)
             // ),
 
-            TextWidget.subText(text: " (${perChange}%)", theme: theme.isDarkMode, color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight, fw: 0, ),
+            TextWidget.subText(text: " ($perChange%)", theme: theme.isDarkMode, color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight, fw: 0, ),
             // Text(
             //   " (${perChange}%)",
             //   style: textStyle(

@@ -33,7 +33,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
   bool tradingPreferenceActive = false;
   bool formDownActive = false;
 
-  var _formKey = GlobalKey<FormState>();
+  final _formKey = GlobalKey<FormState>();
 
   var isLoading = false;
 
@@ -108,7 +108,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
           //           FontWeight.w600)),
           // ),
           body: SingleChildScrollView(
-            physics: ClampingScrollPhysics(),
+            physics: const ClampingScrollPhysics(),
             // padding: EdgeInsets.all(0.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -493,7 +493,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                           );
                         },
                         body: Container(
-                          padding: EdgeInsets.symmetric(horizontal: 16),
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -576,7 +576,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
 
                                 // Text("Stage: ${popproprv.chackaccbalace['stage'] ?? 'Loading...'}"),
                                 // Text("Balance: ${popproprv.chackaccbalace['balance'] ?? 'Loading...'}"),
-                                SizedBox(height: 20),
+                                const SizedBox(height: 20),
 
                                 Row(
                                   children: [
@@ -919,7 +919,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
       ProfileProvider profileprovider, ThemesProvider theme) {
     return SingleChildScrollView(
       child: Container(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,
           child: Column(
@@ -931,7 +931,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                 theme: theme.isDarkMode,
                 fw: 2,
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               TextWidget.subText(
                   text: "Old email id",
                   theme: theme.isDarkMode,
@@ -945,7 +945,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                   border: UnderlineInputBorder(),
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               TextWidget.titleText(
                   text: "New email id *",
                   theme: theme.isDarkMode,
@@ -972,7 +972,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                   border: UnderlineInputBorder(),
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               if (profileprovider.responseval == "success send mail") ...[
                 TextWidget.titleText(
                   text: "Enter a 4-digit Otp *",
@@ -991,7 +991,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                   ),
                 ),
               ],
-              SizedBox(height: 30),
+              const SizedBox(height: 30),
               Row(
                 children: [
                   Expanded(
@@ -1020,7 +1020,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                     ),
                   ),
 
-                  SizedBox(width: 10), // Adds spacing between buttons
+                  const SizedBox(width: 10), // Adds spacing between buttons
                   if (profileprovider.responseval != "success send mail")
                     Expanded(
                       flex: 1, // Takes 50% width
@@ -1053,7 +1053,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                             borderRadius: BorderRadius.circular(25),
                           ),
                         ),
-                        child: Text('Submit'),
+                        child: const Text('Submit'),
                       ),
                     ),
 
@@ -1083,7 +1083,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                             borderRadius: BorderRadius.circular(25),
                           ),
                         ),
-                        child: Text('Submit otp'),
+                        child: const Text('Submit otp'),
                       ),
                     ),
                 ],
@@ -1099,7 +1099,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
       ProfileProvider profileprovider, ThemesProvider theme) {
     return SingleChildScrollView(
       child: Container(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -1115,7 +1115,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
               theme: theme.isDarkMode,
               fw: 2,
             ),
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
 
             TextWidget.titleText(
                 text: "Present Number",
@@ -1129,7 +1129,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                 border: UnderlineInputBorder(),
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             TextWidget.titleText(
                 text: "New Mobile number  *",
                 theme: theme.isDarkMode,
@@ -1164,7 +1164,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                 ),
               ),
             ],
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
             Row(
               children: [
                 Expanded(
@@ -1190,7 +1190,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                   ),
                 ),
 
-                SizedBox(width: 10), // Adds spacing between buttons
+                const SizedBox(width: 10), // Adds spacing between buttons
 
                 if (profileprovider.mobileotp != "otp sent")
                   Expanded(
@@ -1219,7 +1219,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                           borderRadius: BorderRadius.circular(25),
                         ),
                       ),
-                      child: Text('Submit'),
+                      child: const Text('Submit'),
                     ),
                   ),
 
@@ -1262,22 +1262,22 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
       ProfileProvider profileprovider, ThemesProvider theme) {
     return SingleChildScrollView(
       child: Container(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(height: 40),
+            const SizedBox(height: 40),
             TextWidget.headText(
               text: ' Address change request ',
               theme: theme.isDarkMode,
               fw: 2,
             ),
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
             TextWidget.subText(
                 text: "Old Address",
                 theme: theme.isDarkMode,
                 fw: 1),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             Text(
               "${profileprovider.clientAllDetails.clientData?.cLRESIADD1 ?? ''}, ${profileprovider.clientAllDetails.clientData?.cLRESIADD2 ?? ''}, ${profileprovider.clientAllDetails.clientData?.cLRESIADD3 ?? ''}",
               style: const TextStyle(
@@ -1289,7 +1289,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
               overflow: TextOverflow.visible,
             ),
             const Divider(color: Color(0xffDDDDDD)),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             TextWidget.titleText(
               text: 'New Address *',
               theme: theme.isDarkMode,
@@ -1306,7 +1306,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                 border: UnderlineInputBorder(),
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Row(
               children: [
                 Expanded(
@@ -1337,7 +1337,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                   ),
                 ),
 
-                SizedBox(width: 10), // Adds spacing between buttons
+                const SizedBox(width: 10), // Adds spacing between buttons
 
                 Expanded(
                   flex: 1, // Takes 50% width
@@ -1368,10 +1368,10 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                   ),
                 ),
 
-                SizedBox(width: 10),
+                const SizedBox(width: 10),
               ],
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Row(
               children: [
                 Expanded(
@@ -1402,7 +1402,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                   ),
                 ),
 
-                SizedBox(width: 10), // Adds spacing between buttons
+                const SizedBox(width: 10), // Adds spacing between buttons
 
                 Expanded(
                   flex: 1, // Takes 50% width
@@ -1432,10 +1432,10 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                   ),
                 ),
 
-                SizedBox(width: 10),
+                const SizedBox(width: 10),
               ],
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             TextWidget.titleText(
               text: "Proof Type *",
               theme: theme.isDarkMode,
@@ -1452,9 +1452,8 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                 border: UnderlineInputBorder(),
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
-              child: Text('UPLOAD FILE'),
               onPressed: () async {
                 var picked = await FilePicker.platform.pickFiles();
 
@@ -1471,7 +1470,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                   //     .state = filePath;
                 }
 
-                Text("elseee");
+                const Text("elseee");
               },
               style: ElevatedButton.styleFrom(
                 elevation: 0,
@@ -1482,8 +1481,9 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                   borderRadius: BorderRadius.circular(25),
                 ),
               ),
+              child: const Text('UPLOAD FILE'),
             ),
-            SizedBox(height: 50),
+            const SizedBox(height: 50),
             // SizedBox(height: 30),
             Row(
               children: [
@@ -1510,7 +1510,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                     ),
                   ),
                 ),
-                SizedBox(width: 10),
+                const SizedBox(width: 10),
                 Expanded(
                   flex: 1, // Takes 50% width
                   child: ElevatedButton(
@@ -1699,7 +1699,7 @@ class UserInfoCard extends StatelessWidget {
 
             // const Text("Personal Details",
             //     style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
-            SizedBox(
+            const SizedBox(
               height: 8,
             ),
             Row(
@@ -1778,7 +1778,7 @@ class UserNomineeInfoCard extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       elevation: 0,
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -1815,7 +1815,7 @@ class UserNomineeInfoCard extends StatelessWidget {
                       },
                       style: ElevatedButton.styleFrom(
                         elevation: 0,
-                        minimumSize: Size(double.infinity, 30),
+                        minimumSize: const Size(double.infinity, 30),
                         backgroundColor: theme.isDarkMode
                             ? colors.colorBlack
                             : colors.colorWhite,
@@ -2033,7 +2033,7 @@ class DematDetailsCard extends StatelessWidget {
                                 ? const Color.fromARGB(255, 9, 163, 17)
                                 : colors.colorGrey
                             : DDPIActive
-                                ? Color.fromARGB(255, 9, 255, 0).withOpacity(.1)
+                                ? const Color.fromARGB(255, 9, 255, 0).withOpacity(.1)
                                 : const Color(0xff666666).withOpacity(.1),
                       ),
                       child: Text("DDPI",
@@ -2058,7 +2058,7 @@ class DematDetailsCard extends StatelessWidget {
                                 ? const Color.fromARGB(255, 9, 163, 17)
                                 : colors.colorGrey
                             : POAActive
-                                ? Color.fromARGB(255, 9, 255, 0).withOpacity(.1)
+                                ? const Color.fromARGB(255, 9, 255, 0).withOpacity(.1)
                                 : const Color(0xff666666).withOpacity(.1),
                       ),
                       child: Text("POA",
@@ -2220,7 +2220,7 @@ class TradingPreferencesCard extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       elevation: 0,
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16.0), // , vertical: 16.0
+        padding: const EdgeInsets.symmetric(horizontal: 16.0), // , vertical: 16.0
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -2423,7 +2423,7 @@ class CustomTFExchBadge extends ConsumerWidget {
                         ? const Color.fromARGB(255, 9, 163, 17)
                         : colors.colorGrey
                     : isactive
-                        ? Color.fromARGB(255, 9, 255, 0).withOpacity(.1)
+                        ? const Color.fromARGB(255, 9, 255, 0).withOpacity(.1)
                         : const Color(0xff666666).withOpacity(.1),
               ),
               child: Text(
@@ -2471,7 +2471,7 @@ class MTFSection extends ConsumerWidget {
       color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -2496,7 +2496,7 @@ class MTFSection extends ConsumerWidget {
                                 ? const Color.fromARGB(255, 9, 163, 17)
                                 : colors.colorGrey
                             : DDPIActive
-                                ? Color.fromARGB(255, 9, 255, 0).withOpacity(.1)
+                                ? const Color.fromARGB(255, 9, 255, 0).withOpacity(.1)
                                 : const Color(0xff666666).withOpacity(.1),
                       ),
                       child: Text("DDPI",
@@ -2521,7 +2521,7 @@ class MTFSection extends ConsumerWidget {
                                 ? const Color.fromARGB(255, 9, 163, 17)
                                 : colors.colorGrey
                             : POAActive
-                                ? Color.fromARGB(255, 9, 255, 0).withOpacity(.1)
+                                ? const Color.fromARGB(255, 9, 255, 0).withOpacity(.1)
                                 : const Color(0xff666666).withOpacity(.1),
                       ),
                       child: Text("POA",
@@ -2589,7 +2589,7 @@ class MTFSection extends ConsumerWidget {
                                   ? const Color.fromARGB(255, 9, 163, 17)
                                   : colors.colorGrey
                               : mtfCl && mtfClAuto
-                                  ? Color.fromARGB(255, 9, 255, 0)
+                                  ? const Color.fromARGB(255, 9, 255, 0)
                                       .withOpacity(.1)
                                   : const Color(0xff666666)
                                       .withOpacity(.1), // Color(0xffecf8f1),

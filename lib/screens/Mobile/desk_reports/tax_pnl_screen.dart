@@ -3,21 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/provider/ledger_provider.dart';
 import 'package:mynt_plus/res/res.dart';
-import 'package:mynt_plus/screens/Mobile/desk_reports/com_taxpnl_screen.dart';
-import 'package:mynt_plus/screens/Mobile/desk_reports/cur_taxpnl_screen.dart';
-import 'package:mynt_plus/screens/Mobile/desk_reports/der_taxpnl_screen.dart';
-import 'package:mynt_plus/screens/Mobile/desk_reports/equity_taxpnl_screen.dart';
-import 'package:mynt_plus/sharedWidget/functions.dart';
 
 import '../../../provider/thems.dart';
 import '../../../res/global_state_text.dart';
-import '../../../sharedWidget/loader_ui.dart';
 import '../../../sharedWidget/snack_bar.dart';
-import 'tax_pnl_screens/charges_value_screen.dart';
-import 'tax_pnl_screens/chart_for_tax_scree.dart';
-import 'tax_pnl_screens/pnl_value_screen.dart';
-import 'tax_pnl_screens/turnover_value_screen.dart';
-import '../../../sharedWidget/custom_drag_handler.dart';
 
 class TaxPnlScreen extends StatefulWidget {
   const TaxPnlScreen({super.key});

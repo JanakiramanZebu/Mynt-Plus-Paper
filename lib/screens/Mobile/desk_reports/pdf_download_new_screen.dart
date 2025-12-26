@@ -52,8 +52,8 @@ class PdfDownload extends StatelessWidget {
       final theme = ref.watch(themeProvider);
 
       final ledgerprovider = ref.watch(ledgerProvider);
-      Future<void> _refresh() async {
-        await Future.delayed(Duration(seconds: 0)); // simulate refresh delay
+      Future<void> refresh() async {
+        await Future.delayed(const Duration(seconds: 0)); // simulate refresh delay
         print("refresh ");
         await ledgerprovider.getCurrentDate('else');
         ledgerprovider.fetchpdfdownload(
@@ -86,7 +86,7 @@ class PdfDownload extends StatelessWidget {
           //   child: Icon(Icons.ios_share)),
         ),
         body: RefreshIndicator(
-          onRefresh: _refresh,
+          onRefresh: refresh,
           child: TransparentLoaderScreen(
             isLoading: ledgerprovider.pdfdownloadloading,
             child: Column(
@@ -129,7 +129,7 @@ class PdfDownload extends StatelessWidget {
                                       ? const Color(0xffB5C0CF).withOpacity(.15)
                                       : const Color(0xffF1F3F8),
                                 ),
-                                child: Text("${ledgerprovider.startDate}",
+                                child: Text(ledgerprovider.startDate,
                                     style: textStyle(
                                         theme.isDarkMode
                                             ? colors.colorWhite
@@ -141,7 +141,7 @@ class PdfDownload extends StatelessWidget {
                           ),
                         ),
                       ),
-                      SizedBox(width: 15),
+                      const SizedBox(width: 15),
                       Expanded(
                         child: InkWell(
                           onTap: () {
@@ -166,7 +166,7 @@ class PdfDownload extends StatelessWidget {
                                       ? const Color(0xffB5C0CF).withOpacity(.15)
                                       : const Color(0xffF1F3F8),
                                 ),
-                                child: Text("${ledgerprovider.endDate}",
+                                child: Text(ledgerprovider.endDate,
                                     style: textStyle(
                                         theme.isDarkMode
                                             ? colors.colorWhite
@@ -178,7 +178,7 @@ class PdfDownload extends StatelessWidget {
                           ),
                         ),
                       ),
-                      SizedBox(width: 15),
+                      const SizedBox(width: 15),
                       Padding(
                         padding: const EdgeInsets.only(right: 16.0, top: 16.0),
                         child: SizedBox(
@@ -211,7 +211,7 @@ class PdfDownload extends StatelessWidget {
                           onTap: () async {
                             ledgerprovider.setfilterpage = 'pdfdownload';
 
-                            _showBottomSheet(context, LedgerFilter());
+                            _showBottomSheet(context, const LedgerFilter());
                           },
                           child: Padding(
                             padding: const EdgeInsets.only(top: 12),
@@ -329,7 +329,7 @@ class PdfDownload extends StatelessWidget {
                 // ),
 
                 ledgerprovider.pdfdownload == null
-                    ? Center(
+                    ? const Center(
                         child: Padding(
                         padding: EdgeInsets.only(top: 60),
                         child: NoDataFound(
@@ -340,7 +340,7 @@ class PdfDownload extends StatelessWidget {
                         child: SingleChildScrollView(
                           physics: const ClampingScrollPhysics(),
                           child: ListView.separated(
-                            physics: ClampingScrollPhysics(),
+                            physics: const ClampingScrollPhysics(),
                             itemCount: ledgerprovider.pdfdownload!.data!.length,
                             shrinkWrap: true,
                             itemBuilder: (context, index) {

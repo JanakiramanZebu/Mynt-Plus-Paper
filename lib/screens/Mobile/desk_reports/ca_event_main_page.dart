@@ -2,10 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/provider/ledger_provider.dart';
 import 'package:mynt_plus/res/res.dart';
-import 'package:mynt_plus/screens/Mobile/desk_reports/com_taxpnl_screen.dart';
-import 'package:mynt_plus/screens/Mobile/desk_reports/cur_taxpnl_screen.dart';
-import 'package:mynt_plus/screens/Mobile/desk_reports/der_taxpnl_screen.dart';
-import 'package:mynt_plus/screens/Mobile/desk_reports/equity_taxpnl_screen.dart';
 import 'package:mynt_plus/sharedWidget/functions.dart';
 
 import '../../../provider/thems.dart';
@@ -17,10 +13,6 @@ import 'ca_events/ca_event_bonus.dart';
 import 'ca_events/ca_event_dividend.dart';
 import 'ca_events/ca_event_rights.dart';
 import 'ca_events/ca_event_split.dart';
-import 'tax_pnl_screens/charges_value_screen.dart';
-import 'tax_pnl_screens/chart_for_tax_scree.dart';
-import 'tax_pnl_screens/pnl_value_screen.dart';
-import 'tax_pnl_screens/turnover_value_screen.dart';
 
 class CAEventMainPage extends StatefulWidget {
   const CAEventMainPage({super.key});
@@ -137,7 +129,7 @@ class _CAEventMainPage extends State<CAEventMainPage>
               //   padding: const EdgeInsets.only(left : 16.0, top : 24.0),
               //   child: BarChartWidget(),
               // ),
-              Container(
+              SizedBox(
                 width: screenWidth,
                 child: Padding(
                   padding: const EdgeInsets.only(
@@ -168,7 +160,7 @@ class _CAEventMainPage extends State<CAEventMainPage>
                                         ? const Color(0xffB5C0CF)
                                             .withOpacity(.15)
                                         : const Color(0xffF1F3F8)),
-                                child: Text("${ledgerprovider.startDate}",
+                                child: Text(ledgerprovider.startDate,
                                     style: textStyle(
                                         theme.isDarkMode
                                             ? colors.colorWhite
@@ -180,7 +172,7 @@ class _CAEventMainPage extends State<CAEventMainPage>
                           ),
                         ),
                       ),
-                      SizedBox(width: 15),
+                      const SizedBox(width: 15),
                       Expanded(
                         child: InkWell(
                           onTap: () {
@@ -205,7 +197,7 @@ class _CAEventMainPage extends State<CAEventMainPage>
                                         ? const Color(0xffB5C0CF)
                                             .withOpacity(.15)
                                         : const Color(0xffF1F3F8)),
-                                child: Text("${ledgerprovider.endDate}",
+                                child: Text(ledgerprovider.endDate,
                                     style: textStyle(
                                         theme.isDarkMode
                                             ? colors.colorWhite
@@ -217,7 +209,7 @@ class _CAEventMainPage extends State<CAEventMainPage>
                           ),
                         ),
                       ),
-                      SizedBox(width: 15),
+                      const SizedBox(width: 15),
                       Padding(
                         padding: const EdgeInsets.only(right: 16.0, top: 16.0),
                         child: SizedBox(
@@ -282,7 +274,7 @@ class _CAEventMainPage extends State<CAEventMainPage>
                 child: TabBarView(
                   physics: const NeverScrollableScrollPhysics(),
                   controller: _tabController,
-                  children: [
+                  children: const [
                     CAEventBoardMeeting(),
                     CAEventAgmandEgm(),
                     CAEventBonus(),
@@ -337,7 +329,7 @@ class _CAEventMainPage extends State<CAEventMainPage>
                     : const Color(0xffB5C0CF).withOpacity(.15)
                 : tab == ledgerprovider.activeTabTaxPnl
                     ? const Color(0xff000000)
-                    : Color.fromARGB(0, 241, 243, 248),
+                    : const Color.fromARGB(0, 241, 243, 248),
             shape: const StadiumBorder()),
         child: Row(
             mainAxisSize: MainAxisSize.min,

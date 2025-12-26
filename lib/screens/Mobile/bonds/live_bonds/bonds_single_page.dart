@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:mynt_plus/provider/transcation_provider.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -179,24 +180,14 @@ class _BondsSinglePageState extends State<BondsSinglePage> {
         height: 50,
         child: Container(
           padding: const EdgeInsets.all(8),
-          child: Image.network(
-            singlepage.iposinglepage!.data!['image_link'].toString(),
-            loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
-              if (loadingProgress == null) {
-                return child;
-              } else {
-                return Center(
-                  child: CircularProgressIndicator(
-                    value: loadingProgress.expectedTotalBytes != null
-                        ? loadingProgress.cumulativeBytesLoaded / (loadingProgress.expectedTotalBytes ?? 1)
-                        : null,
-                  ),
-                );
-              }
-            },
-            errorBuilder: (context, error, stackTrace) {
-              return const Text('Failed to load image');
-            },
+          child: CachedNetworkImage(
+            imageUrl: singlepage.iposinglepage!.data!['image_link'].toString(),
+            memCacheWidth: 100,
+            memCacheHeight: 100,
+            placeholder: (context, url) => const Center(
+              child: CircularProgressIndicator(),
+            ),
+            errorWidget: (context, url, error) => const Text('Failed to load image'),
           ),
         ),
       ),
@@ -254,7 +245,7 @@ class _BondsSinglePageState extends State<BondsSinglePage> {
     BuildContext context
   ) {
     return ListView(
-      physics: ClampingScrollPhysics(),
+      physics: const ClampingScrollPhysics(),
       padding: EdgeInsets.zero,
       shrinkWrap: true,
       controller: scrollController,
@@ -707,7 +698,7 @@ class _BondsSinglePageState extends State<BondsSinglePage> {
             minHeight: 10,
             value: progress,
             backgroundColor: Colors.grey[300],
-            color: progress < 1 ? const Color.fromARGB(255, 233, 196, 7) : const Color(0xFFFF148564),
+            color: progress < 1 ? const Color.fromARGB(255, 233, 196, 7) : const Color(0xffff148564),
           ),
         ),
         const SizedBox(width: 20),

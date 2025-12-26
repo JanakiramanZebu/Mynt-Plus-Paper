@@ -4,7 +4,6 @@ import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/provider/ledger_provider.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/sharedWidget/custom_back_btn.dart';
-import 'package:mynt_plus/sharedWidget/custom_exch_badge.dart';
 import 'package:mynt_plus/sharedWidget/functions.dart';
 import 'package:mynt_plus/sharedWidget/loader_ui.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
@@ -44,8 +43,8 @@ class LedgerScreen extends StatelessWidget {
       double dtamount = 0.0;
 
       final ledgerprovider = ref.watch(ledgerProvider);
-      Future<void> _refresh() async {
-        await Future.delayed(Duration(seconds: 0)); // simulate refresh delay
+      Future<void> refresh() async {
+        await Future.delayed(const Duration(seconds: 0)); // simulate refresh delay
         print("refresh ");
         await ledgerprovider.getCurrentDate('else');
         ledgerprovider.fetchLegerData(
@@ -58,7 +57,7 @@ class LedgerScreen extends StatelessWidget {
       String clbalance = ledgerprovider.ledgerAllData?.closingBalance ?? '0.0';
 
       return RefreshIndicator(
-        onRefresh: _refresh,
+        onRefresh: refresh,
         child: Scaffold(
           appBar: AppBar(
             // automaticallyImplyLeading: false,
@@ -98,7 +97,7 @@ class LedgerScreen extends StatelessWidget {
                 Row(
                   // mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Container(
+                    SizedBox(
                       width: screenWidth,
                       child: Column(
                         children: [
@@ -114,7 +113,7 @@ class LedgerScreen extends StatelessWidget {
                                   children: [
                                     TextWidget.paraText(
                                         text: "Opening Balance",
-                                        color: Color(0xFF696969),
+                                        color: const Color(0xFF696969),
                                         textOverflow: TextOverflow.ellipsis,
                                         theme: theme.isDarkMode,
                                         fw: 3),
@@ -140,7 +139,7 @@ class LedgerScreen extends StatelessWidget {
                                   children: [
                                     TextWidget.paraText(
                                         text: "Total Debit",
-                                        color: Color(0xFF696969),
+                                        color: const Color(0xFF696969),
                                         textOverflow: TextOverflow.ellipsis,
                                         theme: theme.isDarkMode,
                                         fw: 3),
@@ -173,7 +172,7 @@ class LedgerScreen extends StatelessWidget {
                                   children: [
                                     TextWidget.paraText(
                                         text: "Closing Balance  ",
-                                        color: Color(0xFF696969),
+                                        color: const Color(0xFF696969),
                                         textOverflow: TextOverflow.ellipsis,
                                         theme: theme.isDarkMode,
                                         fw: 3),
@@ -194,7 +193,7 @@ class LedgerScreen extends StatelessWidget {
                                   children: [
                                     TextWidget.paraText(
                                         text: "Total Credit",
-                                        color: Color(0xFF696969),
+                                        color: const Color(0xFF696969),
                                         textOverflow: TextOverflow.ellipsis,
                                         theme: theme.isDarkMode,
                                         fw: 0),
@@ -295,7 +294,7 @@ Padding(
                                         ? const Color(0xffB5C0CF)
                                             .withOpacity(.15)
                                         : const Color(0xffF1F3F8)),
-                                child: Text("${ledgerprovider.startDate}",
+                                child: Text(ledgerprovider.startDate,
                                     style: textStyle(
                                         theme.isDarkMode
                                             ? colors.colorWhite
@@ -307,7 +306,7 @@ Padding(
                           ),
                         ),
                       ),
-                      SizedBox(width: 15),
+                      const SizedBox(width: 15),
                       Expanded(
                         child: InkWell(
                           onTap: () {
@@ -332,7 +331,7 @@ Padding(
                                         ? const Color(0xffB5C0CF)
                                             .withOpacity(.15)
                                         : const Color(0xffF1F3F8)),
-                                child: Text("${ledgerprovider.endDate}",
+                                child: Text(ledgerprovider.endDate,
                                     style: textStyle(
                                         theme.isDarkMode
                                             ? colors.colorWhite
@@ -344,7 +343,7 @@ Padding(
                           ),
                         ),
                       ),
-                      SizedBox(width: 15),
+                      const SizedBox(width: 15),
                       Padding(
                         padding: const EdgeInsets.only(right: 16.0, top: 16.0),
                         child: SizedBox(
@@ -377,7 +376,7 @@ Padding(
                       InkWell(
                           onTap: () async {
                             ledgerprovider.setfilterpage = 'ledger';
-                            _showBottomSheet(context, LedgerFilter());
+                            _showBottomSheet(context, const LedgerFilter());
                           },
                           child: Padding(
                             padding: const EdgeInsets.only(top: 12),
@@ -386,7 +385,7 @@ Padding(
                                     ? const Color(0xffBDBDBD)
                                     : colors.colorGrey),
                           )),
-                      SizedBox(width: 8),
+                      const SizedBox(width: 8),
                       Padding(
                         padding: const EdgeInsets.only(top: 14.0),
                         child: IconButton(
@@ -445,7 +444,7 @@ Padding(
                                             onChanged: (bool value) {
                                                ledgerprovider
                                                   .billnotbill(value);
-                                                  print("${value}");
+                                                  print("$value");
                                             },
                                             color: theme.isDarkMode
                                                 ? const Color(0xffB5C0CF)
@@ -574,7 +573,7 @@ Padding(
                   ),
                 ),
                 ledgerprovider.ledgerAllData?.fullStat?.isEmpty ?? true
-                    ? Center(
+                    ? const Center(
                         child: Padding(
                         padding: EdgeInsets.only(top: 60),
                         child: NoDataFound(),
@@ -583,7 +582,7 @@ Padding(
                         child: SingleChildScrollView(
                           physics: const ClampingScrollPhysics(),
                           child: ListView.separated(
-                            physics: ClampingScrollPhysics(),
+                            physics: const ClampingScrollPhysics(),
                             itemCount: ledgerprovider
                                     .ledgerAllData?.fullStat?.length ??
                                 0,
@@ -759,7 +758,7 @@ Padding(
                                         ],
                                       ),
                                     ),
-                                    SizedBox(height:8),
+                                    const SizedBox(height:8),
                                     Padding(
                                       padding: const EdgeInsets.only(
                                           left: 16.0,

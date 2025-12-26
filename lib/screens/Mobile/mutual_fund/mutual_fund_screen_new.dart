@@ -6,8 +6,6 @@ import '../../../provider/mf_provider.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
-import '../../../sharedWidget/functions.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../../sharedWidget/list_divider.dart';
 
@@ -55,7 +53,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
 
 
     return SingleChildScrollView(
-      physics: ClampingScrollPhysics(),
+      physics: const ClampingScrollPhysics(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -267,9 +265,9 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
                     fw: 1),
                 const SizedBox(height: 10),
                 sipcaltor(context, mfData, theme),
-                ListDivider(),
+                const ListDivider(),
                 cargrcalss(context, mfData, theme),
-                ListDivider(),
+                const ListDivider(),
               ],
             ),
           ),
@@ -351,7 +349,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
 
           // const SizedBox(height: 24),
           SingleChildScrollView(
-            physics: ClampingScrollPhysics(),
+            physics: const ClampingScrollPhysics(),
             child: Column(
               children: [
                 Builder(
@@ -526,7 +524,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Padding(
-                      padding: EdgeInsets.only(bottom: 0),
+                      padding: const EdgeInsets.only(bottom: 0),
                       child: TextWidget.paraText(
                           align: TextAlign.left,
                           text: "INVEST IN",
@@ -708,10 +706,9 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       separatorBuilder: (_, __) => const ListDivider(),
-                      itemCount: mfData.bestMFListStaticnew?.length ?? 0,
+                      itemCount: mfData.bestMFListStaticnew.length ?? 0,
                       itemBuilder: (BuildContext context, int index) {
-                        if (mfData.bestMFListStaticnew == null ||
-                            index >= mfData.bestMFListStaticnew.length) {
+                        if (index >= mfData.bestMFListStaticnew.length) {
                           return const SizedBox.shrink();
                         }
 
@@ -775,7 +772,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
 
   Widget buildCategoriesTab(MFProvider mfData, ThemesProvider theme) {
     return SingleChildScrollView(
-      physics: ClampingScrollPhysics(),
+      physics: const ClampingScrollPhysics(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

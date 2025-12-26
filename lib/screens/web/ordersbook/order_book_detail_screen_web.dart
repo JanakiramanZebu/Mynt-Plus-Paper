@@ -283,9 +283,9 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
 
     return Material(
       color: Colors.transparent,
-      shape: RoundedRectangleBorder(),
+      shape: const RoundedRectangleBorder(),
       child: InkWell(
-        customBorder: RoundedRectangleBorder(),
+        customBorder: const RoundedRectangleBorder(),
         borderRadius: BorderRadius.circular(0),
         splashColor: theme.isDarkMode ? colors.primaryDark.withOpacity(0.1) : colors.primaryLight.withOpacity(0.1),
         highlightColor: theme.isDarkMode ? colors.primaryDark.withOpacity(0.2) : colors.primaryLight.withOpacity(0.2),
@@ -309,7 +309,7 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  "${displayData.exch ?? ''}",
+                  displayData.exch ?? '',
                   style: WebTextStyles.dialogTitle(
                     isDarkTheme: theme.isDarkMode,
                     color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
@@ -323,7 +323,7 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
             Row(
               children: [
                 Text(
-                  "${displayData.ltp ?? displayData.close ?? '0.00'}",
+                  displayData.ltp ?? displayData.close ?? '0.00',
                   style: WebTextStyles.title(
                     isDarkTheme: theme.isDarkMode,
                     color: (displayData.change == "null" || displayData.change == null) ||
@@ -579,9 +579,9 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
                 _buildInfoRow("Status", _getStatusText(displayData.status), theme, color),
                 _buildInfoRow("Type", displayData.trantype == "B" ? "Buy" : "Sell", theme),
                 _buildInfoRow("Qty", _getQuantityDisplay(displayData), theme),
-                _buildInfoRow("Price", "${displayData.prc ?? "-"}", theme),
-                _buildInfoRow("Avg Price", "${displayData.avgprc ?? "0.00"}", theme),
-                _buildInfoRow("Trigger Price", "${displayData.trgprc ?? "0.00"}", theme),
+                _buildInfoRow("Price", displayData.prc ?? "-", theme),
+                _buildInfoRow("Avg Price", displayData.avgprc ?? "0.00", theme),
+                _buildInfoRow("Trigger Price", displayData.trgprc ?? "0.00", theme),
                 _buildInfoRow("Product / Type", "${displayData.sPrdtAli} / ${displayData.prctyp ?? "-"}", theme),
               ],
             ),
@@ -599,10 +599,10 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildInfoRow("Market Protection", "${displayData.mktProtection ?? "-"}", theme),
-                _buildInfoRow("AMO", "${displayData.amo ?? "-"}", theme),
-                _buildInfoRow("Order Id", "${displayData.norenordno ?? "-"}", theme),
-                _buildInfoRow("Exchange", "${displayData.exchordid ?? "-"}", theme),
+                _buildInfoRow("Market Protection", displayData.mktProtection ?? "-", theme),
+                _buildInfoRow("AMO", displayData.amo ?? "-", theme),
+                _buildInfoRow("Order Id", displayData.norenordno ?? "-", theme),
+                _buildInfoRow("Exchange", displayData.exchordid ?? "-", theme),
                 _buildInfoRow("Date & Time", formatDateTime(value: displayData.norentm ?? "-"), theme),
               ],
             ),
@@ -715,8 +715,8 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
       int lotSize = order.exch == 'MCX' ? (int.tryParse(order.ls.toString()) ?? 1) : 1;
       
       // Calculate display quantities
-      int displayFilledQty = (filledQty / lotSize).toInt();
-      int displayTotalQty = ((int.tryParse(order.qty.toString()) ?? 0) / lotSize).toInt();
+      int displayFilledQty = filledQty ~/ lotSize;
+      int displayTotalQty = (int.tryParse(order.qty.toString()) ?? 0) ~/ lotSize;
       
       return "$displayFilledQty / $displayTotalQty";
     } catch (e) {

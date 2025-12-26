@@ -1,12 +1,9 @@
 import 'dart:async';
-import 'dart:ui';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 
-import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/screens/Mobile/portfolio_screens/positions/position_detail_screen.dart';
 // import 'package:remove_emoji_input_formatter/remove_emoji_input_formatter.dart';
 import '../../../../models/portfolio_model/position_book_model.dart';
@@ -19,16 +16,11 @@ import '../../../../provider/websocket_provider.dart';
 import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
 import '../../../../routes/route_names.dart';
-import '../../../../sharedWidget/custom_switch_btn.dart';
-import '../../../../sharedWidget/custom_text_btn.dart';
 import '../../../../sharedWidget/snack_bar.dart';
 import '../../../../sharedWidget/custom_text_form_field.dart';
-import '../../../../sharedWidget/functions.dart';
 import '../../../../sharedWidget/no_data_found.dart';
 import '../../../../utils/no_emoji_inputformatter.dart';
-import '../../../home_screen.dart';
 import 'filter_scrip_bottom_sheet.dart';
-import 'group/create_group.dart';
 import 'group/position_group_symbol.dart';
 
 class PositionScreen extends ConsumerStatefulWidget {
@@ -465,7 +457,7 @@ class _PositionScreenState extends ConsumerState<PositionScreen> with TickerProv
                             ),
                           ),
                         ),
-                        if (positionBook.allPostionList!.length > 1)
+                        if (positionBook.allPostionList.length > 1)
                           Material(
                             color: Colors.transparent,
                             shape: const CircleBorder(),
@@ -783,9 +775,9 @@ class _PositionScreenState extends ConsumerState<PositionScreen> with TickerProv
     }
 
     if (itemsToDisplay.isEmpty) {
-      return SizedBox(
+      return const SizedBox(
         height: 500,
-        child: const Center(
+        child: Center(
           child: NoDataFound(
             title: "No Results Found",
             subtitle: "Try searching with different keywords",
@@ -797,7 +789,7 @@ class _PositionScreenState extends ConsumerState<PositionScreen> with TickerProv
     }
     
     return ListView.builder(
-      padding: EdgeInsets.only(bottom: 0),
+      padding: const EdgeInsets.only(bottom: 0),
       physics: const NeverScrollableScrollPhysics(),
       shrinkWrap: true,
       itemBuilder: (context, idx) {
@@ -985,7 +977,7 @@ class _PnLDisplay extends StatelessWidget {
 
   Widget _buildValueText(String value, Color color) {
     return TextWidget.headText(
-        text: "$value", fw: 0, theme: false, color: color);
+        text: value, fw: 0, theme: false, color: color);
   }
 
   Color _getValueColor(String value) {
@@ -1159,7 +1151,7 @@ class _PositionItemState extends ConsumerState<_PositionItem> {
 
       // Get formatted quantity value
       final qty =
-          "${((int.tryParse(widget.position.qty.toString()) ?? 0) / (widget.position.exch == 'MCX' ? (int.tryParse(widget.position.ls.toString()) ?? 1) : 1)).toInt()}";
+          "${(int.tryParse(widget.position.qty.toString()) ?? 0) ~/ (widget.position.exch == 'MCX' ? (int.tryParse(widget.position.ls.toString()) ?? 1) : 1)}";
 
       // Get PNL and determine its color
       final pnlValue = positions.isNetPnl

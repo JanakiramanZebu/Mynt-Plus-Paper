@@ -3,16 +3,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/provider/ledger_provider.dart';
-import 'package:mynt_plus/screens/Mobile/desk_reports/bottom_sheets/cp_cancelorder_screen.dart';
-import 'package:mynt_plus/sharedWidget/functions.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../../../provider/profile_all_details_provider.dart';
 import '../../../../provider/thems.dart';
 import '../../../../provider/fund_provider.dart';
 import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
 import '../../../../sharedWidget/cust_text_formfield.dart';
-import '../../../../sharedWidget/custom_drag_handler.dart';
 import '../../../../sharedWidget/list_divider.dart';
 import '../../../../sharedWidget/snack_bar.dart';
 
@@ -52,7 +48,7 @@ class _CPActionOrderScreen extends State<CPActionOrderScreen> {
 
       final dataval = widget.data;
 
-      void _handleOrderAction(BuildContext context) {
+      void handleOrderAction(BuildContext context) {
         if (ledgerprovider.selectvalueofcpaction == 'OFS') {
           ledgerprovider.setordervalueforofs(
             '1',
@@ -332,7 +328,7 @@ class _CPActionOrderScreen extends State<CPActionOrderScreen> {
                           ],
                         ),
                       ),
-                      ListDivider(),
+                      const ListDivider(),
                       if ((profiledetails.clientAllDetails.clientData?.pOA ==
                                   'Y' ||
                               profiledetails
@@ -1024,7 +1020,7 @@ class _CPActionOrderScreen extends State<CPActionOrderScreen> {
                                               bottom: 8.0),
                                           child: TextWidget.captionText(
                                               text:
-                                                  "${ledgerprovider.captionforofs}",
+                                                  ledgerprovider.captionforofs,
                                               textOverflow:
                                                   TextOverflow.ellipsis,
                                               theme: theme.isDarkMode,
@@ -1033,7 +1029,7 @@ class _CPActionOrderScreen extends State<CPActionOrderScreen> {
                                         ),
                                         TextWidget.paraText(
                                             text:
-                                                "${ledgerprovider.requiredamountforofs}",
+                                                ledgerprovider.requiredamountforofs,
                                             textOverflow: TextOverflow.ellipsis,
                                             theme: theme.isDarkMode,
                                             color: colors.colorBlack,

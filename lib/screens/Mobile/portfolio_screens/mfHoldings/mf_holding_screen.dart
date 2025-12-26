@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 // import 'package:mynt_plus/provider/mf_provider.dart';
 import 'package:mynt_plus/provider/portfolio_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/res/global_state_text.dart';
 // import 'package:mynt_plus/routes/route_names.dart';
-import 'package:mynt_plus/screens/Mobile/mutual_fund/redemption_bottomsheet_mf.dart';
 import 'package:mynt_plus/screens/Mobile/portfolio_screens/mfHoldings/filter_scrip_bottom_sheet.dart';
 import 'package:mynt_plus/sharedWidget/custom_exch_badge.dart';
 import 'package:mynt_plus/sharedWidget/custom_text_form_field.dart';
@@ -337,10 +335,10 @@ class _MFHoldingScreen extends State<MFHoldingScreen> {
             SizedBox(
               width: MediaQuery.of(context).size.width * 0.5, // 70% of the screen width
               child: Text(
-                 "${mfHolding.mfHoldingsModel![index].exchTsym![0].cname!
+                 mfHolding.mfHoldingsModel![index].exchTsym![0].cname!
       .split(' ')
       .map((word) => word.isNotEmpty ? word[0].toUpperCase() + word.substring(1).toLowerCase() : '')
-      .join(' ')}",
+      .join(' '),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 softWrap: true,

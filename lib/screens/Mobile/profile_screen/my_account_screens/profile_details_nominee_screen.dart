@@ -22,7 +22,7 @@ class _ProfileDetailsNomineeState extends ConsumerState<ProfileDetailsNominee> {
   }
 
 
-var _formKey = GlobalKey<FormState>();
+final _formKey = GlobalKey<FormState>();
 var isLoading = false;
 
 void _submit() {
@@ -221,7 +221,7 @@ void _submit() {
       ProfileProvider profileprovider, ThemesProvider theme) {
     return SingleChildScrollView(
       child: Container(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,
           child: Column(
@@ -232,7 +232,7 @@ void _submit() {
                 ' Email change request ',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               Text("Old email id",
                   style: textStyle(
                       const Color.fromARGB(255, 0, 0, 0), 14, FontWeight.w600)),
@@ -246,7 +246,7 @@ void _submit() {
                   border: UnderlineInputBorder(),
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               Text("New email id *",
                   style: textStyle(
                       const Color.fromARGB(255, 0, 0, 0), 16, FontWeight.w600)),
@@ -268,7 +268,7 @@ void _submit() {
                   border: UnderlineInputBorder(),
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               if (profileprovider.responseval == "success send mail") ...[
                 Text(
                   "Enter a 4-digit Otp *",
@@ -290,7 +290,7 @@ void _submit() {
                   ),
                 ),
               ],
-              SizedBox(height: 30),
+              const SizedBox(height: 30),
               Row(
                 children: [
                   Expanded(
@@ -319,7 +319,7 @@ void _submit() {
                     ),
                   ),
           
-                  SizedBox(width: 10), // Adds spacing between buttons
+                  const SizedBox(width: 10), // Adds spacing between buttons
                   if (profileprovider.responseval != "success send mail")
                     Expanded(
                       flex: 1, // Takes 50% width
@@ -352,7 +352,7 @@ void _submit() {
                             borderRadius: BorderRadius.circular(25),
                           ),
                         ),
-                        child: Text('Submit'),
+                        child: const Text('Submit'),
                       ),
                     ),
           
@@ -382,7 +382,7 @@ void _submit() {
                             borderRadius: BorderRadius.circular(25),
                           ),
                         ),
-                        child: Text('Submit otp'),
+                        child: const Text('Submit otp'),
                       ),
                     ),
                 ],
@@ -398,7 +398,7 @@ void _submit() {
       ProfileProvider profileprovider, ThemesProvider theme) {
     return SingleChildScrollView(
       child: Container(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -413,7 +413,7 @@ void _submit() {
               ' Mobile change request ',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
 
             Text("Present Number",
                 style: textStyle(
@@ -426,7 +426,7 @@ void _submit() {
                 border: UnderlineInputBorder(),
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Text("New Mobile number  *",
                 style: textStyle(
                     const Color.fromARGB(255, 0, 0, 0), 17, FontWeight.w600)),
@@ -463,7 +463,7 @@ void _submit() {
                 ),
               ),
             ],
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
             Row(
               children: [
                 Expanded(
@@ -489,7 +489,7 @@ void _submit() {
                   ),
                 ),
 
-                SizedBox(width: 10), // Adds spacing between buttons
+                const SizedBox(width: 10), // Adds spacing between buttons
 
                 if (profileprovider.mobileotp != "otp sent")
                   Expanded(
@@ -518,7 +518,7 @@ void _submit() {
                           borderRadius: BorderRadius.circular(25),
                         ),
                       ),
-                      child: Text('Submit'),
+                      child: const Text('Submit'),
                     ),
                   ),
 
@@ -561,20 +561,20 @@ void _submit() {
       ProfileProvider profileprovider, ThemesProvider theme) {
     return SingleChildScrollView(
       child: Container(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(height: 40),
+            const SizedBox(height: 40),
             const Text(
               ' Address change request ',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
             Text("Old Address",
                 style: textStyle(
                     const Color.fromARGB(255, 0, 0, 0), 15, FontWeight.w600)),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             Text(
               "${profileprovider.clientAllDetails.clientData?.cLRESIADD1}, ${profileprovider.clientAllDetails.clientData?.cLRESIADD2}, ${profileprovider.clientAllDetails.clientData?.cLRESIADD3}" ??
                   "",
@@ -587,7 +587,7 @@ void _submit() {
               overflow: TextOverflow.visible,
             ),
             const Divider(color: Color(0xffDDDDDD)),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Text(
               'New Address *',
               style: textStyle(
@@ -607,7 +607,7 @@ void _submit() {
                 border: UnderlineInputBorder(),
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Row(
               children: [
                 Expanded(
@@ -641,7 +641,7 @@ void _submit() {
                   ),
                 ),
 
-                SizedBox(width: 10), // Adds spacing between buttons
+                const SizedBox(width: 10), // Adds spacing between buttons
 
                 Expanded(
                   flex: 1, // Takes 50% width
@@ -675,10 +675,10 @@ void _submit() {
                   ),
                 ),
 
-                SizedBox(width: 10),
+                const SizedBox(width: 10),
               ],
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Row(
               children: [
                 Expanded(
@@ -712,7 +712,7 @@ void _submit() {
                   ),
                 ),
 
-                SizedBox(width: 10), // Adds spacing between buttons
+                const SizedBox(width: 10), // Adds spacing between buttons
 
                 Expanded(
                   flex: 1, // Takes 50% width
@@ -745,10 +745,10 @@ void _submit() {
                   ),
                 ),
 
-                SizedBox(width: 10),
+                const SizedBox(width: 10),
               ],
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Text(
               "Proof Type *",
               style: textStyle(
@@ -768,9 +768,8 @@ void _submit() {
                 border: UnderlineInputBorder(),
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
-              child: Text('UPLOAD FILE'),
               onPressed: () async {
                 var picked = await FilePicker.platform.pickFiles();
 
@@ -787,7 +786,7 @@ void _submit() {
                   //     .state = filePath;
                 }
 
-                Text("elseee");
+                const Text("elseee");
               },
               style: ElevatedButton.styleFrom(
                 elevation: 0,
@@ -798,8 +797,9 @@ void _submit() {
                   borderRadius: BorderRadius.circular(25),
                 ),
               ),
+              child: const Text('UPLOAD FILE'),
             ),
-            SizedBox(height: 50),
+            const SizedBox(height: 50),
             // SizedBox(height: 30),
             Row(
               children: [
@@ -826,7 +826,7 @@ void _submit() {
                     ),
                   ),
                 ),
-                SizedBox(width: 10),
+                const SizedBox(width: 10),
                 Expanded(
                   flex: 1, // Takes 50% width
                   child: ElevatedButton(
@@ -944,7 +944,7 @@ void _submit() {
               const SizedBox(height: 8),
             ],
           );
-        }).toList(),
+        }),
       ],
     );
   }

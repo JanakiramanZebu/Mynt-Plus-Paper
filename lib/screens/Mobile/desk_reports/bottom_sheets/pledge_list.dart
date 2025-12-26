@@ -1,20 +1,13 @@
-import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:mynt_plus/provider/ledger_provider.dart';
-import 'package:mynt_plus/screens/Mobile/authentication/password/forgot_pass_unblock_user.dart'
-    as auth;
-import 'package:mynt_plus/sharedWidget/functions.dart';
 
-import '../../../../models/desk_reports_model/holdings_model.dart';
 import '../../../../provider/thems.dart';
 import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
-import '../../../../sharedWidget/cust_text_formfield.dart';
 import '../../../../sharedWidget/custom_drag_handler.dart';
 import '../../../../sharedWidget/list_divider.dart';
-import '../../../../sharedWidget/no_data_found.dart';
 
 class PledgeList extends StatefulWidget {
   const PledgeList({super.key, required});
@@ -66,7 +59,7 @@ class _PledgeList extends State<PledgeList> {
       final seen = <String>{};
       dropdownItems =
           dropdownItems.where((item) => seen.add(item.value)).toList();
-      print("${dropdownItems} printprintprintpritn");
+      print("$dropdownItems printprintprintpritn");
       return Stack(
         children: [
           DraggableScrollableSheet(
@@ -104,10 +97,10 @@ class _PledgeList extends State<PledgeList> {
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
+                      const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const CustomDragHandler(),
+                          CustomDragHandler(),
                         ],
                       ),
                       Padding(
@@ -122,15 +115,15 @@ class _PledgeList extends State<PledgeList> {
                             theme: theme.isDarkMode,
                             fw: 1),
                       ),
-                      ListDivider(),
+                      const ListDivider(),
                       Expanded(
                         child: SingleChildScrollView(
-                          physics: ClampingScrollPhysics(),
+                          physics: const ClampingScrollPhysics(),
                           child: Padding(
                             padding: const EdgeInsets.only(
                                 left: 16.0, right: 16.0, top: 8.0),
                             child: ListView.separated(
-                              physics: ScrollPhysics(),
+                              physics: const ScrollPhysics(),
                               itemCount: ledgerprovider.listforpledge.length,
                               shrinkWrap: true,
                               itemBuilder: (context, index) {
@@ -290,7 +283,7 @@ class _PledgeList extends State<PledgeList> {
                                       width: 1,
                                     ),
                               minimumSize:
-                                  Size(double.infinity, 45), // height: 48
+                                  const Size(double.infinity, 45), // height: 48
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(5),
                               ),
@@ -337,7 +330,7 @@ class _PledgeList extends State<PledgeList> {
                                 // First close this bottom sheet to avoid context issues
                               },
                               child: ledgerprovider.pledgeloader == true
-                                  ? SpinKitThreeBounce(
+                                  ? const SpinKitThreeBounce(
                                       color: Colors.grey,
                                       size: 24,
                                     )

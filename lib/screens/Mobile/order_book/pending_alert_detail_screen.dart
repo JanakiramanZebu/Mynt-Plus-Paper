@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../models/marketwatch_model/alert_model/alert_pending_model.dart';
 import '../../../provider/market_watch_provider.dart';
@@ -12,7 +11,6 @@ import '../../../provider/thems.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/cust_text_formfield.dart';
-import '../../../sharedWidget/custom_back_btn.dart';
 import '../../../sharedWidget/custom_drag_handler.dart';
 import '../../../sharedWidget/custom_exch_badge.dart';
 import '../../../sharedWidget/functions.dart';
@@ -145,7 +143,7 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
                       children: [
                         Expanded(
                           child: SingleChildScrollView(
-                            physics: ClampingScrollPhysics(),
+                            physics: const ClampingScrollPhysics(),
                             controller: scrollController,
                             child: Padding(
                               padding:
@@ -309,9 +307,10 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
                                                                       .fetchPendingAlert(
                                                                           context);
 
-                                                                  if (mounted)
+                                                                  if (mounted) {
                                                                     Navigator.pop(
                                                                         context);
+                                                                  }
                                                                 } catch (e) {
                                                                   if (mounted) {
                                                                     showResponsiveErrorMessage(
@@ -428,9 +427,10 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
                                                                       .fetchPendingAlert(
                                                                           context);
 
-                                                                  if (mounted)
+                                                                  if (mounted) {
                                                                     Navigator.pop(
                                                                         context);
+                                                                  }
                                                                 } catch (e) {
                                                                   if (mounted) {
                                                                     showResponsiveErrorMessage(

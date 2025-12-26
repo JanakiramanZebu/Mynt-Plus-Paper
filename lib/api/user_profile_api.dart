@@ -1,6 +1,5 @@
 // import 'dart:developer';
 
-import 'dart:convert';
 import 'dart:io';
 
 import '../models/profile_model/algo_strategy_model.dart';
@@ -282,7 +281,7 @@ Future uploadImage(File imageFile) async {
         return {'data': 'ServerSide error'};
       }
     } catch (e) {
-      print("error in upload image ${e}");
+      print("error in upload image $e");
       rethrow;
     }
 }

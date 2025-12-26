@@ -5,7 +5,6 @@ import '../../../../provider/mf_provider.dart';
 import '../../../../provider/thems.dart';
 import '../../../../res/res.dart';
 import '../../../../res/global_state_text.dart';
-import '../../../../sharedWidget/functions.dart';
 
 class MFRollingReturns extends ConsumerWidget {
   final MutualFundList mfStockData;
@@ -25,7 +24,7 @@ class MFRollingReturns extends ConsumerWidget {
     final isDarkMode = theme.isDarkMode;
     
     // Check if rolling data is available
-    final hasRollingData = false; // Replace with actual check when data is available
+    const hasRollingData = false; // Replace with actual check when data is available
     
     if (!hasRollingData) {
       return const SizedBox();

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:dropdown_button2/dropdown_button2.dart';
 import '../../../../models/marketwatch_model/get_quotes.dart';
 import '../../../../provider/index_list_provider.dart';
 import '../../../../provider/market_watch_provider.dart';
@@ -13,7 +12,6 @@ import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
 import '../../../../sharedWidget/custom_drag_handler.dart';
 import '../../../../sharedWidget/custom_exch_badge.dart';
-import '../../../../sharedWidget/functions.dart';
 import '../../../../sharedWidget/list_divider.dart';
 
 class IndexBottomSheet extends ConsumerStatefulWidget {
@@ -119,7 +117,7 @@ class _IndexBottomSheetState extends ConsumerState<IndexBottomSheet> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         // Tabs content
-                        Container(
+                        SizedBox(
                           height: 40,
                           child: Row(
                             children: [
@@ -129,7 +127,7 @@ class _IndexBottomSheetState extends ConsumerState<IndexBottomSheet> {
                                 final exchange = entry.value;
                                 final isSelected = _currentPageIndex == index;
 
-                                return Container(
+                                return SizedBox(
                                   width:
                                       95.0, // Fixed width to match watchlist tabs
                                   child: Material(
@@ -192,7 +190,7 @@ class _IndexBottomSheetState extends ConsumerState<IndexBottomSheet> {
                                     ),
                                   ),
                                 );
-                              }).toList(),
+                              }),
                             ],
                           ),
                         ),
@@ -295,7 +293,7 @@ class _IndexBottomSheetState extends ConsumerState<IndexBottomSheet> {
                                       : Center(
                                           child: TextWidget.subText(
                                             text: "No Data found",
-                                            color: Color(0xff777777),
+                                            color: const Color(0xff777777),
                                             theme: theme.isDarkMode,
                                             fw: 0,
                                           ),
@@ -324,14 +322,13 @@ class IndexListItemWithStream extends StatefulWidget {
   final int indexPosition;
 
   const IndexListItemWithStream(
-      {Key? key,
+      {super.key,
       required this.itemData,
       required this.indexProvider,
       required this.marketWatch,
       required this.ischeck,
       required this.isDarkMode,
-      required this.indexPosition})
-      : super(key: key);
+      required this.indexPosition});
 
   @override
   State<IndexListItemWithStream> createState() =>
@@ -642,11 +639,10 @@ class _StaticIndexContent extends StatelessWidget {
   final bool isDarkMode;
 
   const _StaticIndexContent({
-    Key? key,
     required this.itemData,
     required this.exch,
     required this.isDarkMode,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -689,12 +685,11 @@ class _DynamicPriceContent extends StatelessWidget {
   static final Map<String, Color> _colorCache = {};
 
   const _DynamicPriceContent({
-    Key? key,
     required this.ltp,
     required this.ch,
     required this.chp,
     required this.isDarkMode,
-  }) : super(key: key);
+  });
 
   // Get cached text style
   TextStyle _getCachedStyle(Color color, double size, [int? fw]) {
@@ -755,7 +750,7 @@ class _DynamicPriceContent extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.only(bottom: 5),
-            child: Text("$ltp", style: changeStyle),
+            child: Text(ltp, style: changeStyle),
           ),
           Padding(
             padding: const EdgeInsets.only(top: 5),
@@ -776,13 +771,11 @@ class _ActionButton extends StatelessWidget {
   final int indexPosition;
 
   const _ActionButton(
-      {Key? key,
-      required this.ischeck,
+      {required this.ischeck,
       required this.itemData,
       required this.indexProvider,
       required this.isDarkMode,
-      required this.indexPosition})
-      : super(key: key);
+      required this.indexPosition});
 
   @override
   Widget build(BuildContext context) {

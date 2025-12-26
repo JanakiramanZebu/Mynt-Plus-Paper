@@ -12,16 +12,16 @@ class Upcoming_ipo {
       // Check if upcoming is a List or String
       if (json['upcoming'] is List) {
         json['upcoming'].forEach((v) {
-          upcoming!.add(new Upcoming.fromJson(v));
+          upcoming!.add(Upcoming.fromJson(v));
         });
       } else if (json['upcoming'] is String) {
         // If upcoming is a string, try to parse it as JSON
         try {
           final parsedList = jsonDecode(json['upcoming'] as String);
           if (parsedList is List) {
-            parsedList.forEach((v) {
-              upcoming!.add(new Upcoming.fromJson(v));
-            });
+            for (var v in parsedList) {
+              upcoming!.add(Upcoming.fromJson(v));
+            }
           }
         } catch (e) {
           print("Error parsing upcoming string: $e");
@@ -32,11 +32,11 @@ class Upcoming_ipo {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    if (this.upcoming != null) {
-      data['upcoming'] = this.upcoming!.map((v) => v.toJson()).toList();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    if (upcoming != null) {
+      data['upcoming'] = upcoming!.map((v) => v.toJson()).toList();
     }
-    data['msg'] = this.msg;
+    data['msg'] = msg;
     return data;
   }
 }
@@ -76,16 +76,16 @@ class Upcoming {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['Company Name'] = this.companyName;
-    data['DRHP status'] = this.dRHPStatus;
-    data['Issue Size'] = this.issueSize;
-    data['Last Updated'] = this.lastUpdated;
-    data['Stock Exchanges'] = this.stockExchanges;
-    data['drhp'] = this.drhp;
-    data['image_link'] = this.imageLink;
-    data['ipo_type'] = this.ipoType;
-    data['year'] = this.year;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['Company Name'] = companyName;
+    data['DRHP status'] = dRHPStatus;
+    data['Issue Size'] = issueSize;
+    data['Last Updated'] = lastUpdated;
+    data['Stock Exchanges'] = stockExchanges;
+    data['drhp'] = drhp;
+    data['image_link'] = imageLink;
+    data['ipo_type'] = ipoType;
+    data['year'] = year;
     return data;
   }
 }

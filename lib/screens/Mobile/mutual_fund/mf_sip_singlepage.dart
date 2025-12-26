@@ -108,7 +108,7 @@ class _MFSipSinglePageScreen extends State<MFSipSinglePageScreen>
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Container(
+                                SizedBox(
                                   width:
                                       MediaQuery.of(context).size.width * 0.9,
                                   child: Column(
@@ -174,7 +174,7 @@ class _MFSipSinglePageScreen extends State<MFSipSinglePageScreen>
                     onPressed: () {
                       _showBottomSheet(
                         context,
-                        RedemptionBottomScreenNew(),
+                        const RedemptionBottomScreenNew(),
                       );
                       mfdata.recdemevalu();
                     },
@@ -186,7 +186,7 @@ class _MFSipSinglePageScreen extends State<MFSipSinglePageScreen>
                         color: colors.btnOutlinedBorder,
                         width: 1,
                       ),
-                      minimumSize: Size(double.infinity, 45), // height: 48
+                      minimumSize: const Size(double.infinity, 45), // height: 48
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(5),
                       ),

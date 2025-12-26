@@ -257,7 +257,7 @@ class UserAccountScreenWeb extends ConsumerWidget {
                                               ? colors.textPrimaryLight
                                               : colors.textPrimaryDark,
                                         )
-                                      : SizedBox.shrink(),
+                                      : const SizedBox.shrink(),
                                 ),
                               ],
                             ),
@@ -305,7 +305,7 @@ class UserAccountScreenWeb extends ConsumerWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     child: Column(
                       children: [
-                        ListDivider(),
+                        const ListDivider(),
                         _buildAccountBalanceSection(
                             context, ref, theme, funds, trancation),
                       ],
@@ -452,7 +452,7 @@ class UserAccountScreenWeb extends ConsumerWidget {
                             PageRouteBuilder(
                               pageBuilder:
                                   (context, animation, secondaryAnimation) =>
-                                      ReportsScreen(),
+                                      const ReportsScreen(),
                               transitionsBuilder: (context, animation,
                                   secondaryAnimation, child) {
                                 final slideTween = Tween(
@@ -502,7 +502,7 @@ class UserAccountScreenWeb extends ConsumerWidget {
                             PageRouteBuilder(
                               pageBuilder:
                                   (context, animation, secondaryAnimation) =>
-                                      SettingsScreen(),
+                                      const SettingsScreen(),
                               transitionsBuilder: (context, animation,
                                   secondaryAnimation, child) {
                                 final slideTween = Tween(
@@ -706,7 +706,7 @@ class UserAccountScreenWeb extends ConsumerWidget {
                           color: colors.primaryLight,
                           width: 1,
                         ),
-                  minimumSize: Size(0, 40),
+                  minimumSize: const Size(0, 40),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(5),
                   ),
@@ -801,6 +801,8 @@ class UserAccountScreenWeb extends ConsumerWidget {
 
 // Settings Screen
 class SettingsScreen extends ConsumerWidget {
+  const SettingsScreen({super.key});
+
   String _truncateProfileName(String text, {int maxLength = 18}) {
     return (text.length > maxLength)
         ? '${text.substring(0, maxLength)}...'
@@ -971,7 +973,7 @@ class SettingsScreen extends ConsumerWidget {
             //   padding: const EdgeInsets.symmetric(horizontal: 16),
             //   child: ListDivider(),
             // ),
-            settingsItems.length > 0
+            settingsItems.isNotEmpty
                 ? ListView.separated(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
@@ -1161,7 +1163,7 @@ class SettingsScreen extends ConsumerWidget {
                     },
                     separatorBuilder: (context, index) => Container(
                       margin: const EdgeInsets.symmetric(horizontal: 16),
-                      child: ListDivider(),
+                      child: const ListDivider(),
                     ),
                   )
                 : const SizedBox.shrink(),
@@ -1318,7 +1320,7 @@ class SettingsScreen extends ConsumerWidget {
                                         ],
                                       ),
                                     ),
-                                    ListDivider(),
+                                    const ListDivider(),
                                     const SizedBox(height: 8.0),
                                     TextWidget.subText(
                                       text:
@@ -1557,7 +1559,7 @@ class SettingsScreen extends ConsumerWidget {
                                 topRight: Radius.circular(16),
                               ),
                             ),
-                            builder: (_) => ApiKeyScreen());
+                            builder: (_) => const ApiKeyScreen());
                         break;
                       case 'Generate TOTP':
                         await apikeys.fetchTotp();
@@ -1599,7 +1601,7 @@ class SettingsScreen extends ConsumerWidget {
                     : colors.textSecondaryDark,
               ),
             ),
-            SizedBox(height: 8.0)
+            const SizedBox(height: 8.0)
           ],
         ),
       ),
@@ -1902,7 +1904,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
         centerTitle: false,
         leadingWidth: 48,
         titleSpacing: 0,
-        leading: CustomBackBtn(),
+        leading: const CustomBackBtn(),
         title: TextWidget.titleText(
           text: "Account",
           theme: false,
@@ -2278,7 +2280,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                                     ? colors.textSecondaryDark
                                     : colors.textSecondaryLight,
                               ),
-                              SizedBox(height: 5.0),
+                              const SizedBox(height: 5.0),
                               TextWidget.paraText(
                                 text: 'IFSC: ${bank.iFSCCode ?? "N/A"}',
                                 theme: theme.isDarkMode,
@@ -2347,7 +2349,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                             //       color: colors.iconColor,
                             //     ),
                             //   ),
-                            SizedBox(height: 4),
+                            const SizedBox(height: 4),
                             Material(
                               color: Colors.transparent,
                               child: InkWell(
@@ -2365,7 +2367,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                                     ? colors.highlightDark
                                     : colors.highlightLight,
                                 child: Padding(
-                                  padding: EdgeInsets.all(8),
+                                  padding: const EdgeInsets.all(8),
                                   child: Icon(
                                     Icons.edit_outlined,
                                     color: theme.isDarkMode
@@ -2384,8 +2386,8 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                 ),
               ),
             );
-          }).toList(),
-        SizedBox(height: 16.0),
+          }),
+        const SizedBox(height: 16.0),
       ],
     );
   }
@@ -2540,7 +2542,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                     color: colors.colorWhite,
                     fw: 2),
               ),
-              SizedBox(height: 10.0),
+              const SizedBox(height: 10.0),
             ],
           ),
       ],
@@ -2583,7 +2585,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
             onPressed: null,
             style: ElevatedButton.styleFrom(
               elevation: 0,
-              minimumSize: Size(100, 45),
+              minimumSize: const Size(100, 45),
               backgroundColor: colors.colorbluegrey,
               disabledBackgroundColor: colors.colorbluegrey,
               shape: RoundedRectangleBorder(
@@ -2631,7 +2633,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
             },
             style: ElevatedButton.styleFrom(
               elevation: 0,
-              minimumSize: Size(100, 45),
+              minimumSize: const Size(100, 45),
               backgroundColor:
                   theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
               shape: RoundedRectangleBorder(
@@ -2748,7 +2750,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                       ? colors.highlightDark
                       : colors.highlightLight,
                   child: Padding(
-                    padding: EdgeInsets.all(8),
+                    padding: const EdgeInsets.all(8),
                     child: Icon(
                       Icons.edit_outlined,
                       color: theme.isDarkMode
@@ -2866,7 +2868,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                         ? Colors.white.withOpacity(0.08)
                         : Colors.black.withOpacity(0.08),
                     child: Padding(
-                      padding: EdgeInsets.all(8),
+                      padding: const EdgeInsets.all(8),
                       child: Icon(
                         Icons.edit_outlined,
                         color: theme.isDarkMode
@@ -2920,7 +2922,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                 },
                 style: ElevatedButton.styleFrom(
                     elevation: 0,
-                    minimumSize: Size(100, 45),
+                    minimumSize: const Size(100, 45),
                     backgroundColor: theme.isDarkMode
                         ? colors.primaryDark
                         : colors.primaryLight,
@@ -2957,7 +2959,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
           //     fw: 1,
           //   ),
           // ),
-          SizedBox(height: 10.0),
+          const SizedBox(height: 10.0),
         ],
       ),
     );
@@ -2988,7 +2990,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
             },
             style: ElevatedButton.styleFrom(
                 elevation: 0,
-                minimumSize: Size(100, 45),
+                minimumSize: const Size(100, 45),
                 backgroundColor:
                     theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
                 shape: RoundedRectangleBorder(
@@ -3435,7 +3437,7 @@ class ReportsScreen extends ConsumerWidget {
                                         .viewInsets
                                         .bottom,
                                   ),
-                                  child: TaxPnlScreen()),
+                                  child: const TaxPnlScreen()),
                             );
 
                             break;
@@ -3895,7 +3897,7 @@ class ReportsScreen extends ConsumerWidget {
                                         .viewInsets
                                         .bottom,
                                   ),
-                                  child: ContractCalendarScreen()),
+                                  child: const ContractCalendarScreen()),
                             );
 
                             // Navigator.pushNamed(context, Routes.contractCalendar);
@@ -3922,7 +3924,7 @@ class ReportsScreen extends ConsumerWidget {
                   },
                   separatorBuilder: (context, index) => Container(
                     margin: const EdgeInsets.symmetric(horizontal: 16),
-                    child: ListDivider(),
+                    child: const ListDivider(),
                   ),
                 ),
               ),
@@ -3950,6 +3952,8 @@ class ReportsScreen extends ConsumerWidget {
   }
 
   final selectedBtmIndx = 4;
+
+  const ReportsScreen({super.key});
 
   // Add this function
   // Widget buildBottomNav(int selectedTab, ThemesProvider theme,

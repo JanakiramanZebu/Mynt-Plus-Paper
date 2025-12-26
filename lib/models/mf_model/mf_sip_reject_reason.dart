@@ -8,18 +8,18 @@ class mf_sip_reject_res {
     if (json['data'] != null) {
       data = <Data>[];
       json['data'].forEach((v) {
-        data!.add(new Data.fromJson(v));
+        data!.add(Data.fromJson(v));
       });
     }
     stat = json['stat'];
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     if (this.data != null) {
       data['data'] = this.data!.map((v) => v.toJson()).toList();
     }
-    data['stat'] = this.stat;
+    data['stat'] = stat;
     return data;
   }
 }
@@ -36,9 +36,9 @@ class Data {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['reason_name'] = this.reasonName;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    data['reason_name'] = reasonName;
     return data;
   }
 }

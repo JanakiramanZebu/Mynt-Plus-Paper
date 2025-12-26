@@ -303,9 +303,9 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
   Widget _buildSymbolSection(ThemesProvider theme, MarketWatchProvider scripInfo, DepthInputArgs depthArgs) {
     return Material(
       color: Colors.transparent,
-      shape: RoundedRectangleBorder(),
+      shape: const RoundedRectangleBorder(),
       child: InkWell(
-        customBorder: RoundedRectangleBorder(),
+        customBorder: const RoundedRectangleBorder(),
         borderRadius: BorderRadius.circular(0),
         splashColor: theme.isDarkMode ? colors.primaryDark.withOpacity(0.1) : colors.primaryLight.withOpacity(0.1),
         highlightColor: theme.isDarkMode ? colors.primaryDark.withOpacity(0.2) : colors.primaryLight.withOpacity(0.2),
@@ -519,7 +519,7 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
             ),
             const SizedBox(height: 6),
             Text(
-              "${_exchTsym.profitNloss ?? "0.00"}",
+              _exchTsym.profitNloss ?? "0.00",
               style: WebTextStyles.head(
                 isDarkTheme: theme.isDarkMode,
                 color: _getPnLColor(theme),

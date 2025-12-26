@@ -98,7 +98,7 @@ class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWe
               }
             }
 
-            return Container(
+            return SizedBox(
               width: 700,
               // decoration: BoxDecoration(
               //   color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
@@ -203,9 +203,9 @@ class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWe
   Widget _buildSymbolSection(ThemesProvider theme, MarketWatchProvider marketwatch, PositionBookModel position, DepthInputArgs depthArgs) {
     return Material(
       color: Colors.transparent,
-      shape: RoundedRectangleBorder(),
+      shape: const RoundedRectangleBorder(),
       child: InkWell(
-        customBorder: RoundedRectangleBorder(),
+        customBorder: const RoundedRectangleBorder(),
         borderRadius: BorderRadius.circular(0),
         splashColor: theme.isDarkMode ? colors.primaryDark.withOpacity(0.1) : colors.primaryLight.withOpacity(0.1),
         highlightColor: theme.isDarkMode ? colors.primaryDark.withOpacity(0.2) : colors.primaryLight.withOpacity(0.2),
@@ -525,7 +525,7 @@ class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWe
                 children: [
                   _buildInfoRow(
                     "Net Qty",
-                    "${((int.tryParse(position.netqty.toString()) ?? 0) / (position.exch == 'MCX' ? (int.tryParse(position.ls.toString()) ?? 1) : 1)).toInt()}",
+                    "${(int.tryParse(position.netqty.toString()) ?? 0) ~/ (position.exch == 'MCX' ? (int.tryParse(position.ls.toString()) ?? 1) : 1)}",
                     theme,
                   ),
                   _buildInfoRow(
@@ -535,12 +535,12 @@ class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWe
                   ),
                   _buildInfoRow(
                     "Product",
-                    "${position.sPrdtAli ?? ""}",
+                    position.sPrdtAli ?? "",
                     theme,
                   ),
                   _buildInfoRow(
                     "Buy Qty ( Day / CF )",
-                    "${((int.tryParse(position.daybuyqty.toString()) ?? 0) / (position.exch == 'MCX' ? (int.tryParse(position.ls.toString()) ?? 1) : 1)).toInt()} / ${position.cfbuyqty}",
+                    "${(int.tryParse(position.daybuyqty.toString()) ?? 0) ~/ (position.exch == 'MCX' ? (int.tryParse(position.ls.toString()) ?? 1) : 1)} / ${position.cfbuyqty}",
                     theme,
                   ),
                 ],
@@ -561,7 +561,7 @@ class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWe
                 children: [
                   _buildInfoRow(
                     "Sell Qty ( Day / CF )",
-                    "${((int.tryParse(position.daysellqty.toString()) ?? 0) / (position.exch == 'MCX' ? (int.tryParse(position.ls.toString()) ?? 1) : 1)).toInt()} / ${position.cfsellqty}",
+                    "${(int.tryParse(position.daysellqty.toString()) ?? 0) ~/ (position.exch == 'MCX' ? (int.tryParse(position.ls.toString()) ?? 1) : 1)} / ${position.cfsellqty}",
                     theme,
                   ),
                   _buildInfoRow(

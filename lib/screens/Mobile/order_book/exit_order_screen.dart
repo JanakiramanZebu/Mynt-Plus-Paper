@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../../provider/thems.dart';
 import '../../../../provider/websocket_provider.dart';
 import '../../../../res/res.dart';
@@ -112,7 +111,7 @@ class ExitOrderScreen extends ConsumerWidget {
               ],
             ),
             body: ListView.builder(
-              physics: ClampingScrollPhysics(),
+              physics: const ClampingScrollPhysics(),
               shrinkWrap: false,
               itemBuilder: (context, index) {
                 final itemIndex = index ~/ 2;

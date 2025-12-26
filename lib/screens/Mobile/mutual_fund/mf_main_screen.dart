@@ -1,16 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../res/res.dart';
-import '../../../provider/index_list_provider.dart';
-import '../../../provider/mf_provider.dart';
-import '../../../provider/portfolio_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../res/global_state_text.dart';
 import '../../../routes/route_names.dart';
-import '../../../sharedWidget/custom_back_btn.dart';
 import 'mf_explore_screens.dart';
 
 class MfmainScreen extends StatefulWidget {
@@ -78,7 +73,7 @@ class _MfmainScreenState extends State<MfmainScreen> {
                       child: AbsorbPointer(
                         // Prevents user input but allows onTap
                         child: SearchBar(
-                          textStyle: MaterialStateProperty.all(
+                          textStyle: WidgetStateProperty.all(
                               TextWidget.textStyle(
                                   color: theme.isDarkMode
                                       ? colors.textPrimaryDark
@@ -86,7 +81,7 @@ class _MfmainScreenState extends State<MfmainScreen> {
                                   fontSize: 16,
                                   theme: theme.isDarkMode)),
                           hintText: "Search Mutual Fund",
-                          hintStyle: MaterialStateProperty.all(
+                          hintStyle: WidgetStateProperty.all(
                               TextWidget.textStyle(
                                   color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
                                   fontSize: 14,

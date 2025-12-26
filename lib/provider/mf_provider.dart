@@ -163,7 +163,7 @@ class MFProvider extends DefaultChangeNotifier {
   List<MandateDetails>? _mandateData = [];
   List<MandateDetails>? get mandateData => _mandateData;
 
-  List<MutualFundList>? _mutualFundList = [];
+  final List<MutualFundList> _mutualFundList = [];
   List<MutualFundList>? get mutualFundList => _mutualFundList;
 
   List _paymentMethod = [];
@@ -194,57 +194,57 @@ class MFProvider extends DefaultChangeNotifier {
   List<MutualFundList>? _mfWatchlist = [];
   List<MutualFundList>? get mfWatchlist => _mfWatchlist;
 
-  List<Xsip>? _mfsiplistview = [];
+  final List<Xsip> _mfsiplistview = [];
   List<Xsip>? get mfsiplistview => _mfsiplistview;
 
   List<MutualFundList>? _topmutualfund = [];
   List<MutualFundList>? get topmutualfund => _topmutualfund;
 
-  List<MutualFundList>? _equityMf = [];
+  final List<MutualFundList> _equityMf = [];
   List<MutualFundList>? get equityMf => _equityMf;
-  List<MutualFundList>? _hybridMf = [];
+  final List<MutualFundList> _hybridMf = [];
   List<MutualFundList>? get hybridMf => _hybridMf;
-  List<MutualFundList>? _debutMf = [];
+  final List<MutualFundList> _debutMf = [];
   List<MutualFundList>? get debutMf => _debutMf;
-  List<MutualFundList>? _otherMf = [];
+  final List<MutualFundList> _otherMf = [];
   List<MutualFundList>? get otherMf => _otherMf;
-  List<MutualFundList>? _solutionOMf = [];
+  final List<MutualFundList> _solutionOMf = [];
   List<MutualFundList>? get solutionOMf => _solutionOMf;
 
-  List<MutualFundList>? _filteredMf = [];
+  final List<MutualFundList> _filteredMf = [];
   List<MutualFundList>? get filteredMf => _filteredMf;
 
-  List<MFCategory> _mfCategorys = [];
+  final List<MFCategory> _mfCategorys = [];
   List<MFCategory> get mfCategorys => _mfCategorys;
 
-  List<String>? _subCat = [];
+  final List<String> _subCat = [];
   List<String>? get subCat => _subCat;
 
-  List<String>? _uniqueList = [];
+  final List<String> _uniqueList = [];
   List<String>? get uniqueList => _uniqueList;
 
-  List<String>? _amc = [];
+  final List<String> _amc = [];
   List<String>? get amc => _amc;
 
-  List<String>? _amcfilter = [];
+  final List<String> _amcfilter = [];
   List<String>? get amcfilter => _amcfilter;
 
-  List<double>? _schmemin = [];
+  final List<double> _schmemin = [];
   List<double>? get schmemin => _schmemin;
 
-  List<int>? _schmeminfilter = [];
+  final List<int> _schmeminfilter = [];
   List<int>? get schmeminfilter => _schmeminfilter;
 
-  List<String>? _aum = [];
+  final List<String> _aum = [];
   List<String>? get aum => _aum;
 
-  bool? _isFiltered = false;
+  final bool _isFiltered = false;
   bool? get isFiltered => _isFiltered;
 
   bool? _singleloader = false;
   bool? get singleloader => _singleloader;
 
-  bool? _timer = false;
+  final bool _timer = false;
   bool? get timer => _timer;
 
   String _selechip = "";
@@ -429,19 +429,19 @@ class MFProvider extends DefaultChangeNotifier {
   List<BankData>? _bankData = [];
   List<BankData>? get bankData => _bankData;
 
-  int get startValue => _schmeminfilter![_currentRangeValues.start.round()];
-  int get endValue => _schmeminfilter![_currentRangeValues.end.round()];
+  int get startValue => _schmeminfilter[_currentRangeValues.start.round()];
+  int get endValue => _schmeminfilter[_currentRangeValues.end.round()];
 
-  List<String>? _aumfilter = [];
+  final List<String> _aumfilter = [];
   List<String>? get aumfilter => _aumfilter;
 
   String _mfCategory = "Top Mutual Funds";
   String get mfCategory => _mfCategory;
 
-  String _bestmfselected = "";
+  final String _bestmfselected = "";
   String get bestmfselected => _bestmfselected;
 
-  String _redemtionres = "";
+  final String _redemtionres = "";
   String get redemtionres => _redemtionres;
 
   MFWatchlistModel? _mfWatchlistModel;
@@ -481,7 +481,7 @@ class MFProvider extends DefaultChangeNotifier {
   AllPaymentMfModel? _allPaymentMfModel;
   AllPaymentMfModel? get allPaymentMfModel => _allPaymentMfModel;
 
-  List<MutualFundList>? _bestmfFilter = [];
+  final List<MutualFundList> _bestmfFilter = [];
   List<MutualFundList>? get bestmfFilter => _bestmfFilter;
 
   List<Fund>? _catnewlist = [];
@@ -749,7 +749,7 @@ class MFProvider extends DefaultChangeNotifier {
 
   List get mfReturnsGridview => _mfReturnsGridview;
 
-  bool? _mfPlaceorderload = true;
+  final bool _mfPlaceorderload = true;
   bool? get mfPlaceorderload => _mfPlaceorderload;
 
   String _comYear = "10 Years";
@@ -782,7 +782,7 @@ class MFProvider extends DefaultChangeNotifier {
   String _freqName = "";
   String _dates = "1";
   String get freqName => _freqName;
-  String _sipreason = "";
+  final String _sipreason = "";
   String get sipreason => _sipreason;
 
   String get dates => _dates;
@@ -827,16 +827,16 @@ class MFProvider extends DefaultChangeNotifier {
   String _mandateStatus = "";
   String get mandateStatus => _mandateStatus;
 
-  List<String> _subcatselected = [];
+  final List<String> _subcatselected = [];
   List<String> get subcatselected => _subcatselected;
 
-  List<String> _amcselected = [];
+  final List<String> _amcselected = [];
   List<String> get amcselected => _amcselected;
 
-  String _aumselected = "";
+  final String _aumselected = "";
   String get aumselected => _aumselected;
 
-  bool? _mfloader = false;
+  final bool _mfloader = false;
   bool? get mfloader => _mfloader;
 
   bool _showSearch = false;
@@ -845,10 +845,10 @@ class MFProvider extends DefaultChangeNotifier {
   int _shoew = 10;
   int get shoew => _shoew;
 
-  int _minpurchase = 0;
+  final int _minpurchase = 0;
   int get minpurchase => _minpurchase;
 
-  int _bestshoew = 10;
+  final int _bestshoew = 10;
   int get bestshoew => _bestshoew;
 
   // selectedSubCat(String value) {
@@ -1095,13 +1095,13 @@ class MFProvider extends DefaultChangeNotifier {
     }
 
     for (var watchListMf in _mfWatchlist!) {
-      for (var masterMf in _mutualFundList!) {
+      for (var masterMf in _mutualFundList) {
         if (watchListMf.iSIN == masterMf.iSIN) {
           masterMf.isAdd = true;
         }
       }
     }
-    _mutualFundList!.sort((a, b) {
+    _mutualFundList.sort((a, b) {
       return double.parse(b.aUM.toString() == "null" || b.aUM!.isEmpty
               ? "0.00"
               : b.aUM.toString())
@@ -1803,12 +1803,14 @@ class MFProvider extends DefaultChangeNotifier {
         // }
 
         // First, reset all isAdd to false
-        _mutualFundList?.forEach((m) => m.isAdd = false);
+        for (var m in _mutualFundList) {
+          m.isAdd = false;
+        }
         _mutualFundsearchdata?.forEach((m) => m.isAdd = false);
         
         // Then, set isAdd to true only for items in the watchlist
         for (var watchListMf in _mfWatchlist!) {
-          _mutualFundList!
+          _mutualFundList
               .where((m) => m.iSIN == watchListMf.iSIN)
               .forEach((m) => m.isAdd = true);
           _mutualFundsearchdata!
@@ -1863,13 +1865,11 @@ class MFProvider extends DefaultChangeNotifier {
         //   }
         // }
         if (_mfWatchlist!.isNotEmpty) {
-          if (_mutualFundList != null) {
-            for (var m in _mutualFundList!) {
-              m.isAdd = _mfWatchlist!
-                  .any((watchListMf) => watchListMf.iSIN == m.iSIN);
-            }
+          for (var m in _mutualFundList) {
+            m.isAdd = _mfWatchlist!
+                .any((watchListMf) => watchListMf.iSIN == m.iSIN);
           }
-          if (_bestMFList != null) {
+                  if (_bestMFList != null) {
             for (var m in _bestMFList!.bestMFList!) {
               m.isAdd = _mfWatchlist!
                   .any((watchListMf) => watchListMf.iSIN == m.iSIN);
@@ -2613,7 +2613,7 @@ class MFProvider extends DefaultChangeNotifier {
         setLoadingMessage("Order Initiated");
 
         // Add a small delay to show the success message
-        await Future.delayed(Duration(milliseconds: 1000));
+        await Future.delayed(const Duration(milliseconds: 1000));
 
         _investloader = false;
         _loadingMessage = null;
@@ -2725,7 +2725,7 @@ class MFProvider extends DefaultChangeNotifier {
       // print(
       //     "object ${_createMandateModel!.error} ${_createMandateModel!.url1} ::${_createMandateModel!.mandate}");
     } catch (e) {
-      warningMessage(context, "Error${e}");
+      warningMessage(context, "Error$e");
 
       _investloader = false;
       _loadingMessage = null;
@@ -2792,7 +2792,7 @@ class MFProvider extends DefaultChangeNotifier {
         notifyListeners();
 
         // Add a small delay to show the success message
-        await Future.delayed(Duration(milliseconds: 1000));
+        await Future.delayed(const Duration(milliseconds: 1000));
 
         successMessage(context, "${_xsipOrderResponces!.remarks}");
         _investloader = false;
@@ -2884,7 +2884,6 @@ class MFProvider extends DefaultChangeNotifier {
           //     {
 
           // })
-          ;
         }
       }
       // print("object ${_xsipOrderCancleResone?.data![0].id}");
@@ -3069,7 +3068,7 @@ class MFProvider extends DefaultChangeNotifier {
             value: item.reasonName.toString(),
             child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                child: Text("${item.reasonName!}",
+                child: Text(item.reasonName!,
                     style: textStyle(
                         const Color(0xff000000), 13, 0)))),
         if (item != _xsipOrderCancleResone!.data!.last)

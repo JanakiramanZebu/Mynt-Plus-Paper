@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../res/res.dart';
 import '../main.dart';
 import '../utils/responsive_snackbar.dart';
 

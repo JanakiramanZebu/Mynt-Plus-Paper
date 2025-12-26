@@ -202,7 +202,7 @@ class FBalSheetCahrtState extends State<FBalSheetCahrt> {
                   isVisibleInLegend: true,
                   legendItemText: "Assets",
                   enableTooltip: true,
-                  dataSource: balanceSheet!,
+                  dataSource: balanceSheet,
                   xValueMapper: (BalanceSheet data, _) => data.convDate,
                   yValueMapper: (BalanceSheet data, _) =>
                       double.parse(data.totalAssets!),
@@ -312,7 +312,7 @@ class FIncomeChartState extends State<FIncomeChart> {
                     isVisibleInLegend: true,
                     legendItemText: "Revenue",
                     enableTooltip: true,
-                    dataSource: incomeSheet!,
+                    dataSource: incomeSheet,
                     xValueMapper: (IncomeSheet data, _) => data.convDate,
                     yValueMapper: (IncomeSheet data, _) =>
                         double.parse(data.revenue!),
@@ -438,7 +438,7 @@ class FCashFlowChartState extends State<FCashFlowChart> {
                   isVisibleInLegend: true,
                   legendItemText: "Operating",
                   enableTooltip: true,
-                  dataSource: cashflowSheet!,
+                  dataSource: cashflowSheet,
                   xValueMapper: (CashflowSheet data, _) => data.convDate,
                   yValueMapper: (CashflowSheet data, _) =>
                       double.parse(data.cashFromOperatingActivities!),

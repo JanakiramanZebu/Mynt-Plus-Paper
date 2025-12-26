@@ -6,15 +6,11 @@ import 'package:intl/intl.dart';
 import 'package:mynt_plus/provider/ledger_provider.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/screens/Mobile/desk_reports/bottom_sheets/ledger_bill.dart';
-import 'package:mynt_plus/sharedWidget/custom_back_btn.dart';
-import 'package:mynt_plus/sharedWidget/custom_exch_badge.dart';
 import 'package:mynt_plus/sharedWidget/functions.dart';
-import 'package:mynt_plus/sharedWidget/loader_ui.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 
 import '../../../provider/thems.dart';
 import '../../../res/global_state_text.dart';
-import '../../../sharedWidget/custom_switch_btn.dart';
 import '../../../sharedWidget/custom_text_form_field.dart';
 import '../../../sharedWidget/list_divider.dart';
 import '../../../sharedWidget/splash_loader.dart';
@@ -247,7 +243,7 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                 ? Center(
                     child: Container(
                       color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                      child: CircularLoaderImage(),
+                      child: const CircularLoaderImage(),
                     ),
                   )
                 : SafeArea(
@@ -264,7 +260,7 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                         Row(
                           // mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Container(
+                            SizedBox(
                               width: screenWidth,
                               child: Column(
                                 children: [
@@ -353,7 +349,7 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                                               theme: theme.isDarkMode,
                                               fw: 0,
                                             ),
-                                            SizedBox(
+                                            const SizedBox(
                                               height: 6,
                                             ),
                                             TextWidget.subText(
@@ -926,7 +922,7 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                         // ),
                         const ListDivider(),
                         ledgerprovider.ledgerAllData?.fullStat?.isEmpty ?? true
-                            ? Expanded(
+                            ? const Expanded(
                               child: Center(
                                   child: NoDataFound(
                                     secondaryEnabled: false,
@@ -936,7 +932,7 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                                 child: SingleChildScrollView(
                                   physics: const ClampingScrollPhysics(),
                                   child: ListView.separated(
-                                    physics: ClampingScrollPhysics(),
+                                    physics: const ClampingScrollPhysics(),
                                     itemCount: ledgerprovider
                                             .ledgerAllData?.fullStat?.length ??
                                         0,
@@ -1445,7 +1441,7 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
 
   _showBottomSheet(BuildContext context, Widget bottomSheet, ThemesProvider theme) {
     showModalBottomSheet(
-        shape:  RoundedRectangleBorder(
+        shape:  const RoundedRectangleBorder(
             borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
         useSafeArea: true,
         isDismissible: true,

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/provider/order_provider.dart';
 import 'package:mynt_plus/res/res.dart';
 import '../../../models/order_book_model/sip_order_book.dart';

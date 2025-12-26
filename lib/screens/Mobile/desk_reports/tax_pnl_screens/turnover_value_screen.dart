@@ -1,15 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/provider/ledger_provider.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/sharedWidget/functions.dart';
-import 'package:mynt_plus/sharedWidget/loader_ui.dart';
-import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 
 import '../../../../provider/thems.dart';
 import '../../../../res/global_state_text.dart';
-import 'chart_for_tax_scree.dart';
 
 class TaxTurnOver extends StatefulWidget {
   const TaxTurnOver({super.key});
@@ -25,6 +21,7 @@ class _TaxTurnOver extends State<TaxTurnOver> {
     super.initState();
   }
 
+  @override
   Widget build(BuildContext context) {
     final List<String> staticColumn = [
       'Row 1',
@@ -62,8 +59,8 @@ class _TaxTurnOver extends State<TaxTurnOver> {
       final eqtypestring = ref.watch(ledgerProvider).eqtypestring;
       final dertypestring = ref.watch(ledgerProvider).dertypestring;
       final ledgerprovider = ref.watch(ledgerProvider);
-      Future<void> _refresh() async {
-        await Future.delayed(Duration(seconds: 0)); // simulate refresh delay
+      Future<void> refresh() async {
+        await Future.delayed(const Duration(seconds: 0)); // simulate refresh delay
         print("refresh ");
         await ledgerprovider.getYearlistTaxpnl();
         ledgerprovider.getCurrentDate('');
@@ -76,7 +73,7 @@ class _TaxTurnOver extends State<TaxTurnOver> {
 
       return Scaffold(
         body: RefreshIndicator(
-          onRefresh: _refresh,
+          onRefresh: refresh,
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             child: Column(
@@ -92,7 +89,7 @@ class _TaxTurnOver extends State<TaxTurnOver> {
                 // SizedBox(height: 36.0),
                 // BarChartWidget(),
 
-                SizedBox(height: 8.0),
+                const SizedBox(height: 8.0),
                 // Container(
                 //     width: screenWidth,
                 //     child: Container(
@@ -167,7 +164,7 @@ class _TaxTurnOver extends State<TaxTurnOver> {
                 //   color: const Color.fromARGB(
                 //       255, 117, 117, 117),
                 // ),
-                SizedBox(height: 8.0),
+                const SizedBox(height: 8.0),
                 Column(
                   children: [
                     headingstat(
@@ -939,7 +936,7 @@ class _TaxTurnOver extends State<TaxTurnOver> {
                   ledgerprovider.taxpnlcomselectedtab();
                 });
               },
-              child: Text("${text}",
+              child: Text(text,
                   textAlign: TextAlign.center,
                   style: textStyle(
                       !theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
@@ -947,7 +944,7 @@ class _TaxTurnOver extends State<TaxTurnOver> {
                       FontWeight.w500))));
     } else {
       print("${ledgerprovider.taxpnleq!.data!.aSSETS}");
-      return SizedBox();
+      return const SizedBox();
     }
   }
 
@@ -960,7 +957,7 @@ class _TaxTurnOver extends State<TaxTurnOver> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               TextWidget.paraText(
-                  text: "${heading}",
+                  text: heading,
                   
                        color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                   textOverflow: TextOverflow.ellipsis,

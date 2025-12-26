@@ -6,7 +6,6 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'websocket_provider.dart';
 import 'market_watch_provider.dart';
 import 'portfolio_provider.dart';
-import 'order_provider.dart';
 import 'index_list_provider.dart';
 import 'stocks_provider.dart';
 import '../locator/constant.dart';
@@ -86,14 +85,30 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
     };
   }
   
-  /// Update active screen for a panel
+  // Debounce timer to prevent rapid screen updates
+  Timer? _updateDebounceTimer;
+  static const Duration _updateDebounceDelay = Duration(milliseconds: 300);
+  
+  /// Update active screen for a panel (with debouncing to prevent rapid calls)
   void updateActiveScreen(int panelIndex, ScreenType? screenType) {
     final previousScreen = _activeScreens[panelIndex];
     
+    // Early return if no actual change
     if (previousScreen == screenType) {
-      return; // No change
+      return; // No change - skip unnecessary processing
     }
     
+    // Cancel any pending debounce timer
+    _updateDebounceTimer?.cancel();
+    
+    // Debounce the update to prevent rapid screen changes
+    _updateDebounceTimer = Timer(_updateDebounceDelay, () {
+      _performScreenUpdate(panelIndex, previousScreen, screenType);
+    });
+  }
+  
+  /// Actually perform the screen update (called after debounce)
+  void _performScreenUpdate(int panelIndex, ScreenType? previousScreen, ScreenType? screenType) {
     print('\n🔄 [WebSubscriptionManager] Panel $panelIndex screen change:');
     print('   From: ${previousScreen ?? "none"}');
     print('   To: ${screenType ?? "none"}');
@@ -661,6 +676,7 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
   
   @override
   void dispose() {
+    _updateDebounceTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     _connectivitySubscription.cancel();
     _activeScreens.clear();

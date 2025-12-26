@@ -8,7 +8,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/main.dart';
 import 'package:mynt_plus/provider/chart_provider.dart';
-import 'package:mynt_plus/routes/app_routes.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../locator/constant.dart';
 import '../../../../locator/locator.dart';
@@ -22,10 +21,7 @@ import '../../../../provider/user_profile_provider.dart';
 import '../../../../provider/webview_chart_provider.dart';
 import '../../../../res/res.dart';
 import '../../../../routes/route_names.dart';
-import '../../../../sharedWidget/functions.dart';
-import '../../../../utils/responsive_navigation.dart';
 import '../../../../res/global_state_text.dart';
-import '../../portfolio_screens/holdings/holding_detail_screen.dart';
 // import '../scrip_depth_info.dart';
 
 /// Responsive utility class for chart screen
@@ -449,7 +445,7 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                     if( ref.read(chartProvider.notifier).isfromOption == false){
                       if(ref.read(chartUpdateProvider).orientation != 'portrait'){
                   ref.read(chartUpdateProvider).changeOrientation('portrait');
-                  await Future.delayed(Duration(milliseconds: 700));
+                  await Future.delayed(const Duration(milliseconds: 700));
                       }
                   ref.read(chartProvider.notifier).hideChart();
                   mktwth.chngDephBtn("Overview");
@@ -463,7 +459,7 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                   else {
                     if(ref.read(chartUpdateProvider).orientation != 'portrait'){
                   ref.read(chartUpdateProvider).changeOrientation('portrait');
-                  await Future.delayed(Duration(milliseconds: 700));
+                  await Future.delayed(const Duration(milliseconds: 700));
                     }
                   ref.read(chartProvider.notifier).hideChart();
                   mktwth.setChartScript('ABC', '0123', 'ABCD');
@@ -583,7 +579,7 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                 },
                 child: Padding(
                   padding:
-                      EdgeInsets.all(8), // Slight padding for ripple visibility
+                      const EdgeInsets.all(8), // Slight padding for ripple visibility
                   child: SvgPicture.asset(
                     assets.rotationIcon,
                     width: 20,
@@ -624,7 +620,7 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                 },
                 child: Padding(
                   padding:
-                      EdgeInsets.all(8), // Gives space for ripple visibility
+                      const EdgeInsets.all(8), // Gives space for ripple visibility
                   child: SvgPicture.asset(
                     assets.searchIcon1,
                     width: 20,
@@ -647,8 +643,8 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
     final screenWidth = screenSize.width;
     
     // Calculate available height for chart using responsive helper
-    final topBarHeight = 40.0;
-    final spacingHeight = 4.0;
+    const topBarHeight = 40.0;
+    const spacingHeight = 4.0;
     
     // Check if transaction buttons should be shown
     final bool transbtn = tvChart.getQuotes?.instname != "UNDIND" &&

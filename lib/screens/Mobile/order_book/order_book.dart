@@ -4,20 +4,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/provider/index_list_provider.dart';
 import 'package:mynt_plus/sharedWidget/custom_text_form_field.dart';
 
 import '../../../models/order_book_model/order_book_model.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/order_provider.dart';
-import '../../../provider/shocase_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/websocket_provider.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
-import '../../../sharedWidget/custom_exch_badge.dart';
 import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/no_data_found.dart';
 import '../../../utils/no_emoji_inputformatter.dart';
@@ -254,8 +251,9 @@ class _OrderBookState extends ConsumerState<OrderBook> {
 
       // Update the orders with the fetched data
       for (var order in items) {
-        if (order.token == null || !res["data"].containsKey(order.token))
+        if (order.token == null || !res["data"].containsKey(order.token)) {
           continue;
+        }
 
         final data = res["data"][order.token];
 
@@ -348,7 +346,7 @@ class _OrderBookState extends ConsumerState<OrderBook> {
                         )
                   : searchorder!.isNotEmpty
                       ? _buildOrderList(searchorder, order, theme)
-                      : NoDataFound(
+                      : const NoDataFound(
                           title: "No Results Found",
                           subtitle: "Try searching with different keywords",
                           secondaryLabel: "Explore",
@@ -506,7 +504,7 @@ class _OrderBookState extends ConsumerState<OrderBook> {
     //   return ;
     // }
     return ListView.separated(
-      padding: EdgeInsets.only(bottom: 80),
+      padding: const EdgeInsets.only(bottom: 80),
       physics: const ClampingScrollPhysics(),
       shrinkWrap: false,
       itemBuilder: (context, index) {
@@ -884,10 +882,9 @@ class _OrderItemState extends State<_OrderItem> {
         ? (int.tryParse(widget.orderItem.ls.toString()) ?? 1)
         : 1;
 
-    final displayFilledQty = (filledQty / lotSize).toInt();
+    final displayFilledQty = filledQty ~/ lotSize;
     final displayTotalQty =
-        ((int.tryParse(widget.orderItem.qty.toString()) ?? 0) / lotSize)
-            .toInt();
+        (int.tryParse(widget.orderItem.qty.toString()) ?? 0) ~/ lotSize;
 
     return "$displayFilledQty / $displayTotalQty";
   }

@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../provider/portfolio_provider.dart';
 import '../../../../../provider/thems.dart'; 
 import '../../../../../res/res.dart';
-import '../../../../../sharedWidget/functions.dart';
 import '../../../../../res/global_state_text.dart';
 
 class PositionListGrpCard extends ConsumerWidget {

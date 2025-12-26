@@ -10,7 +10,6 @@ import '../../../provider/websocket_provider.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
-import '../../../sharedWidget/custom_back_btn.dart';
 import '../../../utils/responsive_navigation.dart';
 import '../../../sharedWidget/custom_drag_handler.dart';
 import '../../../sharedWidget/custom_exch_badge.dart';
@@ -168,7 +167,7 @@ class _OrderBookDetailState extends ConsumerState<OrderBookDetail> {
                                                     assets.bellIcon,
                                                     width: 18,
                                                     height: 18,
-                                                    color: Color(0xFF0037B7),
+                                                    color: const Color(0xFF0037B7),
                                                   ),
                                                 ),
                                               ),
@@ -400,7 +399,7 @@ class _OrderDetailsSection extends ConsumerWidget {
           const SizedBox(height: 4),
           _buildInfoRow(
               "Filled Qty",
-              "${((orderBookData.status != "COMPLETE" && (orderBookData.fillshares?.isNotEmpty ?? false) ? (int.tryParse(orderBookData.fillshares.toString()) ?? 0) : orderBookData.status == "COMPLETE" ? (int.tryParse(orderBookData.rqty.toString()) ?? 0) : (int.tryParse(orderBookData.dscqty.toString()) ?? 0)).toInt() / (orderBookData.exch == 'MCX' ? (int.tryParse(orderBookData.ls.toString()) ?? 1) : 1)).toInt()}/${((int.tryParse(orderBookData.qty.toString()) ?? 0) / (orderBookData.exch == 'MCX' ? (int.tryParse(orderBookData.ls.toString()) ?? 1) : 1)).toInt()}",
+              "${(orderBookData.status != "COMPLETE" && (orderBookData.fillshares?.isNotEmpty ?? false) ? (int.tryParse(orderBookData.fillshares.toString()) ?? 0) : orderBookData.status == "COMPLETE" ? (int.tryParse(orderBookData.rqty.toString()) ?? 0) : (int.tryParse(orderBookData.dscqty.toString()) ?? 0)).toInt() ~/ (orderBookData.exch == 'MCX' ? (int.tryParse(orderBookData.ls.toString()) ?? 1) : 1)}/${(int.tryParse(orderBookData.qty.toString()) ?? 0) ~/ (orderBookData.exch == 'MCX' ? (int.tryParse(orderBookData.ls.toString()) ?? 1) : 1)}",
               "MKT Protection",
               orderBookData.mktProtection ?? "-",
               theme),

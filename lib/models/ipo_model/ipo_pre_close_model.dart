@@ -12,16 +12,16 @@ class IpoPreCloseModel {
       // Check if msg is a List or String
       if (json['msg'] is List) {
         json['msg'].forEach((v) {
-          msg.add(new Msg.fromJson(v));
+          msg.add(Msg.fromJson(v));
         });
       } else if (json['msg'] is String) {
         // If msg is a string, try to parse it as JSON
         try {
           final parsedList = jsonDecode(json['msg'] as String);
           if (parsedList is List) {
-            parsedList.forEach((v) {
-              msg.add(new Msg.fromJson(v));
-            });
+            for (var v in parsedList) {
+              msg.add(Msg.fromJson(v));
+            }
           }
         } catch (e) {
           print("Error parsing msg string: $e");
@@ -33,7 +33,7 @@ class IpoPreCloseModel {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     if (msg.isNotEmpty) {
       data['msg'] = msg.map((v) => v.toJson()).toList();
     }
@@ -126,7 +126,7 @@ class Msg {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     data['Company Name'] = companyName;
     data['IPO End Date'] = iPOEndDate;
     data['IPO Start Date'] = iPOStartDate;

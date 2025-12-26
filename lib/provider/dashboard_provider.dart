@@ -4,7 +4,6 @@ import 'package:mynt_plus/models/explore_model/basket_backtest_analysis_model.da
 import 'package:mynt_plus/models/explore_model/basketcollection_model.dart';
 import 'package:mynt_plus/models/mf_model/mutual_fundmodel.dart';
 import 'package:mynt_plus/models/trading_personality_model.dart';
-import 'package:mynt_plus/models/mf_model/sip_mf_list_model.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/sharedWidget/snack_bar.dart';
@@ -191,23 +190,23 @@ class DashboardProvider extends DefaultChangeNotifier {
   Color getAccountTypeColor(String accountType) {
     switch (accountType.toLowerCase()) {
       case 'equity':
-        return Color(0xFF60A5FA); // Light blue
+        return const Color(0xFF60A5FA); // Light blue
       case 'mutual funds':
-        return Color(0xFF3B82F6); // Medium blue
+        return const Color(0xFF3B82F6); // Medium blue
       case 'bonds':
-        return Color(0xFF1D4ED8); // Darker blue
+        return const Color(0xFF1D4ED8); // Darker blue
       case 'cash':
-        return Color(0xFF1E3A8A); // Darkest blue
+        return const Color(0xFF1E3A8A); // Darkest blue
       case 'commodities':
-        return Color(0xFF0F172A); // Very dark blue
+        return const Color(0xFF0F172A); // Very dark blue
       default:
         // Use a blue color palette for other account types
         List<Color> blueColors = [
-          Color(0xFF60A5FA), // Light blue
-          Color(0xFF3B82F6), // Medium blue
-          Color(0xFF1D4ED8), // Darker blue
-          Color(0xFF1E3A8A), // Darkest blue
-          Color(0xFF0F172A), // Very dark blue
+          const Color(0xFF60A5FA), // Light blue
+          const Color(0xFF3B82F6), // Medium blue
+          const Color(0xFF1D4ED8), // Darker blue
+          const Color(0xFF1E3A8A), // Darkest blue
+          const Color(0xFF0F172A), // Very dark blue
         ];
         return blueColors[accountType.hashCode % blueColors.length];
     }
@@ -235,22 +234,22 @@ class DashboardProvider extends DefaultChangeNotifier {
 
 Color getSectorAllocationColor(String sector) {
  List<Color> uniqueColors = [
-  Color(0xFF4F46E5), // Indigo - professional
-  Color(0xFF059669), // Emerald - growth
-  Color(0xFFDC2626), // Red - energy
-  Color(0xFF7C3AED), // Purple - unique
-  Color(0xFFEA580C), // Orange - warm
-  Color(0xFF0891B2), // Cyan - tech
-  Color(0xFFCA8A04), // Amber - stable
-  Color(0xFFBE185D), // Pink - creative
-  Color(0xFF0D9488), // Teal - balance
-  Color(0xFF9333EA), // Violet - premium
-  Color(0xFF16A34A), // Green - nature
-  Color(0xFFDC2626), // Red - finance
-  Color(0xFF2563EB), // Blue - trust
-  Color(0xFF7C2D12), // Brown - industrial
-  Color(0xFF1F2937), // Gray - neutral
-  Color(0xFF059669), // Green - healthcare
+  const Color(0xFF4F46E5), // Indigo - professional
+  const Color(0xFF059669), // Emerald - growth
+  const Color(0xFFDC2626), // Red - energy
+  const Color(0xFF7C3AED), // Purple - unique
+  const Color(0xFFEA580C), // Orange - warm
+  const Color(0xFF0891B2), // Cyan - tech
+  const Color(0xFFCA8A04), // Amber - stable
+  const Color(0xFFBE185D), // Pink - creative
+  const Color(0xFF0D9488), // Teal - balance
+  const Color(0xFF9333EA), // Violet - premium
+  const Color(0xFF16A34A), // Green - nature
+  const Color(0xFFDC2626), // Red - finance
+  const Color(0xFF2563EB), // Blue - trust
+  const Color(0xFF7C2D12), // Brown - industrial
+  const Color(0xFF1F2937), // Gray - neutral
+  const Color(0xFF059669), // Green - healthcare
 ];
 
 
@@ -270,15 +269,15 @@ Color getSectorAllocationColor(String sector) {
   Color getMarketCapAllocationColor(String marketCapType) {
     switch (marketCapType.toLowerCase()) {
       case 'large cap':
-        return Color(0xFF4F46E5); // Indigo - professional and trustworthy
+        return const Color(0xFF4F46E5); // Indigo - professional and trustworthy
       case 'mid cap':
-        return Color(0xFF059669); // Emerald - growth and stability
+        return const Color(0xFF059669); // Emerald - growth and stability
       case 'small cap':
-        return Color(0xFFDC2626); // Red - energy and potential
+        return const Color(0xFFDC2626); // Red - energy and potential
       case 'others':
-        return Color(0xFF7C3AED); // Purple - unique and diverse
+        return const Color(0xFF7C3AED); // Purple - unique and diverse
       default:
-        return Color(0xFF6B7280); // Gray - neutral fallback
+        return const Color(0xFF6B7280); // Gray - neutral fallback
     }
   }
 
@@ -289,11 +288,11 @@ Color getSectorAllocationColor(String sector) {
       case 'large cap':
         return theme.isDarkMode ? colors.successDark : colors.successLight;
       case 'mid cap':
-        return Color(0xFF1976D2);
+        return const Color(0xFF1976D2);
       case 'small cap':
-        return Color(0xFFFF7043);
+        return const Color(0xFFFF7043);
       default:
-        return Color(0xFF6C7B93);
+        return const Color(0xFF6C7B93);
     }
   }
 
@@ -716,7 +715,7 @@ Color getSectorAllocationColor(String sector) {
   TextEditingController get searchController => _searchController;
   TextEditingController get strategyNameController => _strategyNameController;
   // Strategy State basket
-  List<FundListModel> _selectedFunds = [];
+  final List<FundListModel> _selectedFunds = [];
   List<FundListModel> get selectedFunds => _selectedFunds;
 
   // Trading Personality Selection
@@ -752,7 +751,7 @@ Color getSectorAllocationColor(String sector) {
   bool get isEditingMode => _editingStrategy != null;
 
   // Text controllers for percentage input fields
-  Map<String, TextEditingController> _percentageControllers = {};
+  final Map<String, TextEditingController> _percentageControllers = {};
   Map<String, TextEditingController> get percentageControllers {
     _initializeControllers();
     return _percentageControllers;
@@ -1752,7 +1751,7 @@ Color getSectorAllocationColor(String sector) {
       
       // Fallback to default values if search fails
       return [{
-        'name': '${category} Fund',
+        'name': '$category Fund',
         'percentage': 0.0,
         'schemeType': category.toUpperCase(),
         'isin': '',
@@ -1766,7 +1765,7 @@ Color getSectorAllocationColor(String sector) {
       print("Error fetching real fund data for $category: $e");
       // Return fallback data
       return [{
-        'name': '${category} Fund',
+        'name': '$category Fund',
         'percentage': 0.0,
         'schemeType': category.toUpperCase(),
         'isin': '',

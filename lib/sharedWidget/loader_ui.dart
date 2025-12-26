@@ -3,8 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../provider/thems.dart';
-import '../provider/user_profile_provider.dart';
-import '../res/res.dart';
 
 class TransparentLoaderScreen extends ConsumerWidget {
   final bool isLoading;

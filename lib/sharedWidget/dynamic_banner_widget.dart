@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../models/banner_model/banner_model.dart';
 import '../provider/banner_provider.dart';
 
@@ -296,32 +297,30 @@ class _BannerDialogState extends ConsumerState<BannerDialog>
         filterQuality: FilterQuality.high,
       );
     } else {
-      log('No image data available for banner: ${banner.id}, falling back to NetworkImage');
-      return Image.network(
-        banner.imageUrl,
+      log('No image data available for banner: ${banner.id}, using cached network image');
+      return CachedNetworkImage(
+        imageUrl: banner.imageUrl,
         width: displaySize.width,
         height: displaySize.height,
-        fit: BoxFit.contain, // Use contain to prevent cropping
-        headers: const {
+        fit: BoxFit.contain,
+        httpHeaders: const {
           'User-Agent': 'Flutter App',
         },
-        loadingBuilder: (context, child, loadingProgress) {
-          if (loadingProgress == null) return child;
-
-          return Container(
-            width: displaySize.width,
-            height: displaySize.height,
-            decoration: BoxDecoration(
-              color: Colors.grey[300],
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: const Center(
-              child: CircularProgressIndicator(),
-            ),
-          );
-        },
-        errorBuilder: (context, error, stackTrace) {
-          log('NetworkImage failed to load: $error');
+        memCacheWidth: 800, // Optimize for web
+        memCacheHeight: 600,
+        placeholder: (context, url) => Container(
+          width: displaySize.width,
+          height: displaySize.height,
+          decoration: BoxDecoration(
+            color: Colors.grey[300],
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: const Center(
+            child: CircularProgressIndicator(),
+          ),
+        ),
+        errorWidget: (context, url, error) {
+          log('CachedNetworkImage failed to load: $error');
           return Container(
             width: displaySize.width,
             height: displaySize.height,

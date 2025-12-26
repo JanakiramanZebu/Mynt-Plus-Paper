@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 // import 'package:remove_emoji_input_formatter/remove_emoji_input_formatter.dart';
 import '../../../../locator/preference.dart';
 import '../../../../provider/auth_provider.dart';
@@ -215,7 +214,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             color:
                                 Colors.black.withOpacity(0.1), // shadow color
                             blurRadius: 4, // how soft the shadow is
-                            offset: Offset(0, 4), // shadow position
+                            offset: const Offset(0, 4), // shadow position
                           ),
                         ],
                       ),
@@ -288,7 +287,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                                   (pref.clientId!.isNotEmpty ||
                                                       pref.clientMob!
                                                           .isNotEmpty)
-                                              ? SizedBox.shrink()
+                                              ? const SizedBox.shrink()
                                               : Column(
                                                   children: [
                                                     const SizedBox(height: 30),
@@ -319,7 +318,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                                           0xFFF1F3F8),
                                                       border: Border.all(
                                                         color:
-                                                            Color(0xFF0037B7),
+                                                            const Color(0xFF0037B7),
                                                         width: 1.5,
                                                       ),
                                                     ),
@@ -368,7 +367,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                                   (pref.clientId!.isNotEmpty ||
                                                       pref.clientMob!
                                                           .isNotEmpty)
-                                              ? SizedBox.shrink()
+                                              ? const SizedBox.shrink()
                                               : Column(
                                                   children: [
                                                     const SizedBox(height: 18),
@@ -471,7 +470,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                                                       .textSecondaryDark
                                                                       .withOpacity(
                                                                           0.2)
-                                                                  : Color(
+                                                                  : const Color(
                                                                       0xffDBDBDB),
                                                               width: 1),
                                                         ),
@@ -484,7 +483,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                                                       .textSecondaryDark
                                                                       .withOpacity(
                                                                           0.2)
-                                                                  : Color(
+                                                                  : const Color(
                                                                       0xffDBDBDB),
                                                               width: 1),
                                                         ),
@@ -632,7 +631,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                                         ? colors
                                                             .textSecondaryDark
                                                             .withOpacity(0.2)
-                                                        : Color(0xffDBDBDB),
+                                                        : const Color(0xffDBDBDB),
                                                     width: 1),
                                               ),
                                               focusedBorder:
@@ -642,7 +641,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                                         ? colors
                                                             .textSecondaryDark
                                                             .withOpacity(0.2)
-                                                        : Color(0xffDBDBDB),
+                                                        : const Color(0xffDBDBDB),
                                                     width: 1),
                                               ),
                                               contentPadding:

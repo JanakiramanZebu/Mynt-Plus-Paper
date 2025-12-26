@@ -31,7 +31,7 @@ class _MarginDetailsSheetWebState extends State<MarginDetailsSheetWeb> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(5),
         ),
-        child: Container(
+        child: SizedBox(
           width: 400,
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -325,7 +325,7 @@ class _MarginDetailsSheetWebState extends State<MarginDetailsSheetWeb> {
                                           fontWeight: WebFonts.semiBold,
                                         )),
                                     Text(
-                                        "${orderBrokerage?.brkageAmt}",
+                                        "${orderBrokerage.brkageAmt}",
                                         style: WebTextStyles.custom(
                                           fontSize: 13,
                                           isDarkTheme: theme.isDarkMode,
@@ -352,7 +352,7 @@ class _MarginDetailsSheetWebState extends State<MarginDetailsSheetWeb> {
                                           fontWeight: WebFonts.semiBold,
                                         )),
                                     Text(
-                                        "${orderBrokerage?.sttAmt}",
+                                        "${orderBrokerage.sttAmt}",
                                         style: WebTextStyles.custom(
                                           fontSize: 13,
                                           isDarkTheme: theme.isDarkMode,
@@ -379,7 +379,7 @@ class _MarginDetailsSheetWebState extends State<MarginDetailsSheetWeb> {
                                           fontWeight: WebFonts.semiBold,
                                         )),
                                     Text(
-                                        "${orderBrokerage?.exchChrg}",
+                                        "${orderBrokerage.exchChrg}",
                                         style: WebTextStyles.custom(
                                           fontSize: 13,
                                           isDarkTheme: theme.isDarkMode,
@@ -406,7 +406,7 @@ class _MarginDetailsSheetWebState extends State<MarginDetailsSheetWeb> {
                                           fontWeight: WebFonts.semiBold,
                                         )),
                                     Text(
-                                        "${orderBrokerage?.sebiChrg}",
+                                        "${orderBrokerage.sebiChrg}",
                                         style: WebTextStyles.custom(
                                           fontSize: 13,
                                           isDarkTheme: theme.isDarkMode,
@@ -433,7 +433,7 @@ class _MarginDetailsSheetWebState extends State<MarginDetailsSheetWeb> {
                                             fontWeight: WebFonts.semiBold,
                                           )),
                                       Text(
-                                          "${orderBrokerage?.stampDuty}",
+                                          "${orderBrokerage.stampDuty}",
                                           style: WebTextStyles.custom(
                                             fontSize: 13,
                                             isDarkTheme: theme.isDarkMode,
@@ -459,7 +459,7 @@ class _MarginDetailsSheetWebState extends State<MarginDetailsSheetWeb> {
                                             fontWeight: WebFonts.semiBold,
                                           )),
                                       Text(
-                                          "${orderBrokerage?.clrChrg}",
+                                          "${orderBrokerage.clrChrg}",
                                           style: WebTextStyles.custom(
                                             fontSize: 13,
                                             isDarkTheme: theme.isDarkMode,
@@ -485,7 +485,7 @@ class _MarginDetailsSheetWebState extends State<MarginDetailsSheetWeb> {
                                             fontWeight: WebFonts.semiBold,
                                           )),
                                       Text(
-                                          "${orderBrokerage?.gst}",
+                                          "${orderBrokerage.gst}",
                                           style: WebTextStyles.custom(
                                             fontSize: 13,
                                             isDarkTheme: theme.isDarkMode,
@@ -574,7 +574,7 @@ class _ChargesDetailsBottomsheetState extends State<ChargesDetailsBottomsheet> {
                                   : WebColors.textPrimary,
                               fontWeight: WebFonts.medium,
                             )),
-                        SizedBox(
+                        const SizedBox(
                           height: 10,
                         ),
                         SizedBox(

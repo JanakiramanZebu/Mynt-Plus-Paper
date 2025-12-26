@@ -60,7 +60,7 @@ class TranctionProvider extends DefaultChangeNotifier {
   int _intValue = 0;
   int get intValue => _intValue;
 
-  int _indexss = 0;
+  final int _indexss = 0;
   int get indexss => _indexss;
 
   String _ifsc = '';
@@ -101,10 +101,10 @@ class TranctionProvider extends DefaultChangeNotifier {
   bool _upiIdbutton = true;
   bool get upiIdbutton => _upiIdbutton;
 
-  List<String>? _urls = [];
+  final List<String> _urls = [];
   List<String>? get url => _urls;
 
-  Map<String, dynamic>? _dsds = {};
+  final Map<String, dynamic> _dsds = {};
   Map<String, dynamic>? get dsds => _dsds;
 
   upiAppsAccnoFormat(String accono) {
@@ -173,13 +173,13 @@ class TranctionProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-  FocusNode _focusNode = FocusNode();
+  final FocusNode _focusNode = FocusNode();
   FocusNode get focusNode => _focusNode;
 
   List<String> _companycode = [];
   List<String> get companycodes => _companycode;
 
-  RegExp _upiPattern = RegExp(r'^[\w.-]+@[\w.-]+$');
+  final RegExp _upiPattern = RegExp(r'^[\w.-]+@[\w.-]+$');
   RegExp get upiPattern => _upiPattern;
 
   // Replace single bottom sheet flag with two separate flags

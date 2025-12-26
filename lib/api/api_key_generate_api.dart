@@ -79,7 +79,7 @@ Future<GenerateApikeyModel> generateapikeynewuser(String month) async {
       };
 
       String sessionKey = prefs.clientSession ?? '';
-      final body = 'jData=' + jsonEncode(jDataMap) + '&jKey=' + sessionKey;
+      final body = 'jData=${jsonEncode(jDataMap)}&jKey=$sessionKey';
 
       print('=== AppKeyStore REQUEST === $body');
       final res = await apiClient.post(

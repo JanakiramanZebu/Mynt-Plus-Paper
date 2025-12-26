@@ -5,9 +5,6 @@ import '../../../provider/market_watch_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
-import '../../../sharedWidget/functions.dart';
-import '../../../sharedWidget/list_divider.dart';
-import '../../../sharedWidget/custom_drag_handler.dart';
 import '../../../sharedWidget/cust_text_formfield.dart';
 
 class WatchListRename extends ConsumerStatefulWidget {

@@ -17,7 +17,6 @@ import '../models/profile_model/option_z_model.dart';
 import '../res/res.dart';
 import '../routes/route_names.dart';
 import '../sharedWidget/functions.dart';
-import '../sharedWidget/snack_bar.dart';
 import 'auth_provider.dart';
 import 'core/default_change_notifier.dart';
 import 'index_list_provider.dart';

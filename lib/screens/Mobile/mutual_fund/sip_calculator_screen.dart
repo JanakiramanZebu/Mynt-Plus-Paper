@@ -4,12 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/screens/Mobile/authentication/password/forgot_pass_unblock_user.dart';
-import 'package:mynt_plus/screens/Mobile/mutual_fund/widget/allocation.dart';
 import 'package:mynt_plus/sharedWidget/cust_text_formfield.dart';
 import 'package:mynt_plus/sharedWidget/snack_bar.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
-import '../../../../provider/fund_provider.dart';
-import '../../../../provider/mf_provider.dart';
 import '../../../../provider/thems.dart';
 import '../../../res/global_state_text.dart';
 import '../../../sharedWidget/custom_back_btn.dart';
@@ -111,8 +108,8 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
       final theme = ref.watch(themeProvider);
 
       final List<ChartData> donutChart = [
-        ChartData('Returns', double.parse("${_returns}"), const Color(0xff015FEC)),
-        ChartData('Investment', double.parse("${_investedAmount}"), colors.colorBlack)
+        ChartData('Returns', double.parse("$_returns"), const Color(0xff015FEC)),
+        ChartData('Investment', double.parse("$_investedAmount"), colors.colorBlack)
       ];
 
       return Scaffold(
@@ -136,7 +133,7 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
           child: Padding(
             padding: const EdgeInsets.only(left: 16, right: 16, top: 16),
             child: SingleChildScrollView(
-              physics: ClampingScrollPhysics(),
+              physics: const ClampingScrollPhysics(),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -209,7 +206,7 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
               theme: theme.isDarkMode,
               fw: 1,
             ),
-            Container(
+            SizedBox(
               width: 150,
               height: 40,
               child: CustomTextFormField(

@@ -308,7 +308,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                   : widget.orderArg.lotSize!.replaceAll("-", ""));
 
       if (widget.orderArg.isExit && widget.orderArg.exchange == "MCX") {
-        qtyCtrl.text = (int.parse(qtyCtrl.text) / lotSize).toInt().toString();
+        qtyCtrl.text = (int.parse(qtyCtrl.text) ~/ lotSize).toString();
       } else if (!widget.orderArg.isExit && isUserOrderPreferenceAvailable) {
         qtyCtrl.text = (int.parse(qtyCtrl.text) * int.parse(userOrderPreference['qty'])).toString();
       }
@@ -806,7 +806,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                   body: SafeArea(
                     child: Stack(children: [
                       SingleChildScrollView(
-                        physics: ClampingScrollPhysics(),
+                        physics: const ClampingScrollPhysics(),
                         padding: EdgeInsets.only(bottom: ((priceType == "Market" || priceType == "SL MKT") && isAvbSecu) ? 120 : 90),
                         // reverse: true,
                         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -1368,7 +1368,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                           headerTitleText("Price", theme),
                                           const SizedBox(width: 4),
                                           TextWidget.subText(
-                                            text: "${orderInput.actPrcType}",
+                                            text: orderInput.actPrcType,
                                             color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                                             theme: theme.isDarkMode,
                                             fw: 1,
@@ -1904,7 +1904,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                             headerTitleText("Price", theme),
                                             const SizedBox(width: 4),
                                             TextWidget.subText(
-                                              text: "${orderInput.actOcoPrcType}",
+                                              text: orderInput.actOcoPrcType,
                                               color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                                               theme: theme.isDarkMode,
                                               fw: 1,
@@ -2868,7 +2868,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                   headerTitleText("Price", theme),
                                                   const SizedBox(width: 4),
                                                   TextWidget.subText(
-                                                      text: "$priceType",
+                                                      text: priceType,
                                                       theme: theme.isDarkMode,
                                                       fw: 1,
                                                       color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight)

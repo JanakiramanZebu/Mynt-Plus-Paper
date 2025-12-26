@@ -1,11 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:crypto/crypto.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:mynt_plus/sharedWidget/list_divider.dart';
 import 'package:mynt_plus/sharedWidget/snack_bar.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -13,7 +10,6 @@ import '../../../provider/api_key_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
-import '../../../sharedWidget/custom_drag_handler.dart';
 import '../../../sharedWidget/functions.dart';
 
 class ApiKeyScreen extends ConsumerStatefulWidget {
@@ -186,7 +182,7 @@ class _TotpScreenState extends ConsumerState<ApiKeyScreen> {
                             ),
                           ],
                         )
-                      : SizedBox(),
+                      : const SizedBox(),
               
                   apikeys.apikeyres!.apistatus != "NOT_PRESENT"
                       ? Column(
@@ -242,7 +238,7 @@ class _TotpScreenState extends ConsumerState<ApiKeyScreen> {
                                 ),
                               ],
                             ),
-                            SizedBox(height: 20.0),
+                            const SizedBox(height: 20.0),
                             Container(
                               decoration: BoxDecoration(
                                 color: theme.isDarkMode
@@ -320,7 +316,7 @@ class _TotpScreenState extends ConsumerState<ApiKeyScreen> {
                                             "API Key\n${apikeys.apikeyres!.apikey}",
                                           );
                                         },
-                                        child: Container(
+                                        child: SizedBox(
                                           height: 32,
                                           width: 32,
                                           child: Center(
@@ -358,7 +354,7 @@ class _TotpScreenState extends ConsumerState<ApiKeyScreen> {
               
                                           Navigator.pop(context);
                                         },
-                                        child: Container(
+                                        child: SizedBox(
                                           height: 32,
                                           width: 32,
                                           child: Center(
@@ -373,8 +369,8 @@ class _TotpScreenState extends ConsumerState<ApiKeyScreen> {
                             ),
                           ],
                         )
-                      : SizedBox(),
-                  SizedBox(height: 18.0),
+                      : const SizedBox(),
+                  const SizedBox(height: 18.0),
                   apikeys.apikeyres!.apistatus != "NOT_PRESENT" &&
                           apikeys.apikeyres!.apistatus != "VALID"
                       ? Padding(
@@ -413,11 +409,11 @@ class _TotpScreenState extends ConsumerState<ApiKeyScreen> {
                             ),
                           ),
                         )
-                      : SizedBox(),
+                      : const SizedBox(),
                 ],
               ),
             ),
-            SizedBox(height: 30.0)
+            const SizedBox(height: 30.0)
           ],
         ),
       ),

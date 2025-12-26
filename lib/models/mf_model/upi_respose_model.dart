@@ -10,7 +10,7 @@ class UpiIdOrderResponse {
 
   UpiIdOrderResponse.fromJson(Map<String, dynamic> json) {
     stat = json['stat'];
-    data = json['data'] != null ? new Data.fromJson(json['data']) : null;
+    data = json['data'] != null ? Data.fromJson(json['data']) : null;
     msg = json['msg'];
     emsg = json['emsg'];
     type = json['type'];
@@ -18,15 +18,15 @@ class UpiIdOrderResponse {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['stat'] = this.stat;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['stat'] = stat;
     if (this.data != null) {
       data['data'] = this.data!.toJson();
     }
-    data['msg'] = this.msg;
-    data['emsg'] = this.emsg;
-    data['type'] = this.type;
-    data['file'] = this.file;
+    data['msg'] = msg;
+    data['emsg'] = emsg;
+    data['type'] = type;
+    data['file'] = file;
     return data;
   }
 }
@@ -60,14 +60,14 @@ class Data {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['responsestring'] = this.responsestring;
-    data['statuscode'] = this.statuscode;
-    data['internalrefno'] = this.internalrefno;
-    data['filler1'] = this.filler1;
-    data['filler2'] = this.filler2;
-    data['filler3'] = this.filler3;
-    data['filler4'] = this.filler4;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['responsestring'] = responsestring;
+    data['statuscode'] = statuscode;
+    data['internalrefno'] = internalrefno;
+    data['filler1'] = filler1;
+    data['filler2'] = filler2;
+    data['filler3'] = filler3;
+    data['filler4'] = filler4;
     return data;
   }
 }

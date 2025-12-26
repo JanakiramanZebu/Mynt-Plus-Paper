@@ -50,6 +50,12 @@ class WebSocketProvider extends ChangeNotifier {
   BuildContext? _context;
   bool _reconnecting = false; // Track if we're already in the reconnection process
   bool _reconnectionSuccess = false; // Track if we've successfully reconnected
+  
+  // Track server-initiated closures to prevent reconnection loops
+  DateTime? _lastServerClosure;
+  int _consecutiveServerClosures = 0;
+  static const int _maxConsecutiveClosures = 3; // Stop reconnecting after 3 consecutive closures
+  static const Duration _serverClosureCooldown = Duration(seconds: 10); // Cooldown period
 
   // WebSocket and subscription management
   WebSocketChannel? _channel;
@@ -145,11 +151,11 @@ class WebSocketProvider extends ChangeNotifier {
       log('ℹ️  WebSocket: Already closed, skipping');
       return;
     }
-    
+
     // Get stack trace to see who is calling closeSocket
     final stackTrace = StackTrace.current;
     final caller = stackTrace.toString().split('\n').take(3).join('\n');
-    
+
     print('\n═══════════════════════════════════════════════════════════');
     print('🔴 [WEBSOCKET] CLOSING CONNECTION');
     print('   Status: ${_wsConnected ? "Connected" : "Not Connected"}');
@@ -159,7 +165,7 @@ class WebSocketProvider extends ChangeNotifier {
     print('═══════════════════════════════════════════════════════════\n');
     log('🔴 WebSocket: Closing connection (mounted: $mounted)');
     log('   Caller: $caller');
-    
+
     wsmount = mounted;
     _wsConnected = false;
     _connecting = false;
@@ -186,6 +192,16 @@ class WebSocketProvider extends ChangeNotifier {
     // Cancel backoff timer if it exists
     _reconnectBackoff?.cancel();
     _reconnectBackoff = null;
+
+    // Cancel subscription debounce timer
+    _subscriptionDebounce?.cancel();
+    _subscriptionDebounce = null;
+
+    // Clear sent subscriptions tracking to allow resubscription on reconnect
+    _sentSubscriptions.clear();
+    _pendingSubscriptions['t'] = [];
+    _pendingSubscriptions['d'] = [];
+    log('Cleared all WebSocket subscriptions tracking');
 
     print('✅ [WEBSOCKET] Connection closed successfully\n');
     log('✅ WebSocket: Connection closed successfully');
@@ -354,7 +370,7 @@ class WebSocketProvider extends ChangeNotifier {
     print('   URL: ${ApiLinks.wsURL}');
     print('   Task: $task');
     print('   Connection Attempt: ${_connectionCount + 1}/$_maxReconnectAttempts');
-    print('   Current State: Connected=${_wsConnected}, Connecting=${_connecting}, Reconnecting=${_reconnecting}');
+    print('   Current State: Connected=$_wsConnected, Connecting=$_connecting, Reconnecting=$_reconnecting');
     print('═══════════════════════════════════════════════════════════\n');
     log('🟡 WebSocket: Attempting connection (attempt ${_connectionCount + 1})');
 
@@ -487,6 +503,10 @@ class WebSocketProvider extends ChangeNotifier {
 
     // Reset low bandwidth mode on successful connection
     _isLowBandwidth = false;
+    
+    // Reset consecutive server closures counter on successful connection
+    _consecutiveServerClosures = 0;
+    _lastServerClosure = null;
 
     // Start ping timer for connection monitoring
     _startPingTimer();
@@ -719,6 +739,16 @@ class WebSocketProvider extends ChangeNotifier {
     connectTouchLine(input: channelInput, task: task, context: context);
   }
 
+  // Track recently sent subscriptions to prevent duplicates
+  // Format: "taskType:symbol" (e.g., "t:NSE|1234" or "d:NSE|1234")
+  // This allows the same symbol to have both touchline and depth subscriptions
+  final Set<String> _sentSubscriptions = {};
+  Timer? _subscriptionDebounce;
+  final Map<String, List<String>> _pendingSubscriptions = {
+    't': [],
+    'd': [],
+  };
+
   void connectTouchLine({
     required String task,
     required String input,
@@ -731,26 +761,99 @@ class WebSocketProvider extends ChangeNotifier {
 
     // Update SubscriptionManager based on task type
     final subscriptionManager = ref.read(subscriptionManagerProvider);
-    
+
     log("🔌 WebSocket: connectTouchLine called - task: '$task', input: '$input'");
-    
+
     // Update context in subscription manager when actively used
     subscriptionManager.updateContext(context);
-    
+
     if (task.toLowerCase() == "t" || task.toLowerCase() == "d") {
       // Subscribe tasks - add to subscription manager
       subscriptionManager.addSubscription(input);
+
+      // Filter out already sent subscriptions for THIS task type
+      final taskKey = task.toLowerCase();
       final symbols = input.split('#').where((s) => s.isNotEmpty).toList();
-      log("WebSocket: ➕ Added ${symbols.length} subscriptions for task '$task'");
-      log("  Symbols: ${symbols.join(', ')}");
+      
+      // Create task-specific subscription keys (e.g., "t:NSE|1234" or "d:NSE|1234")
+      final subscriptionKeys = symbols.map((s) => "$taskKey:$s").toList();
+      final newSubscriptionKeys = subscriptionKeys.where((key) => !_sentSubscriptions.contains(key)).toList();
+      
+      // Extract just the symbols from the new subscription keys
+      final newSymbols = newSubscriptionKeys.map((key) => key.split(':')[1]).toList();
+
+      if (newSymbols.isEmpty) {
+        log("WebSocket: ℹ️ All ${symbols.length} symbols already subscribed for task '$taskKey', skipping");
+        return;
+      }
+
+      log("WebSocket: ➕ Adding ${newSymbols.length} new $taskKey subscriptions (${symbols.length - newSymbols.length} already subscribed)");
+      if (newSymbols.length <= 10) {
+        log("  New symbols: ${newSymbols.join(', ')}");
+      }
+
+      // Add to pending batch
+      _pendingSubscriptions[taskKey] = (_pendingSubscriptions[taskKey] ?? [])..addAll(newSymbols);
+
+      // Debounce the subscription to batch multiple rapid calls
+      _subscriptionDebounce?.cancel();
+      _subscriptionDebounce = Timer(const Duration(milliseconds: 200), () {
+        _sendBatchedSubscriptions(taskKey, context);
+      });
+
     } else if (task.toLowerCase() == "u" || task.toLowerCase() == "ud") {
-      // Unsubscribe tasks - remove from subscription manager
+      // Unsubscribe tasks - remove from subscription manager and tracking
       subscriptionManager.removeSubscription(input);
       final symbols = input.split('#').where((s) => s.isNotEmpty).toList();
-      log("WebSocket: ➖ Removed ${symbols.length} subscriptions for task '$task'");
-      log("  Symbols: ${symbols.join(', ')}");
+      
+      // Determine which task type to unsubscribe (touchline by default)
+      final taskKey = task.toLowerCase() == "ud" ? "d" : "t";
+      
+      // Remove task-specific subscription keys
+      for (final symbol in symbols) {
+        _sentSubscriptions.remove("$taskKey:$symbol");
+      }
+      
+      log("WebSocket: ➖ Removed ${symbols.length} $taskKey subscriptions for task '$task'");
+      if (symbols.length <= 10) {
+        log("  Symbols: ${symbols.join(', ')}");
+      }
+
+      // Send unsubscribe immediately (no debouncing for unsubscribe)
+      _sendToWebSocket(task, input);
+    } else {
+      // For other tasks (like connection), send immediately
+      _sendToWebSocket(task, input);
+    }
+  }
+
+  void _sendBatchedSubscriptions(String task, BuildContext context) {
+    final pending = _pendingSubscriptions[task];
+    if (pending == null || pending.isEmpty) return;
+
+    // Remove duplicates and create batch string
+    final uniqueSymbols = pending.toSet().toList();
+    final batchInput = uniqueSymbols.join('#');
+
+    log("WebSocket: 📦 Sending batched $task request for ${uniqueSymbols.length} symbols");
+    if (uniqueSymbols.length <= 10) {
+      log("  Symbols: ${uniqueSymbols.join(', ')}");
     }
 
+    // Track these as sent with task-specific keys (e.g., "t:NSE|1234")
+    final subscriptionKeys = uniqueSymbols.map((s) => "$task:$s").toList();
+    _sentSubscriptions.addAll(subscriptionKeys);
+    
+    log("WebSocket: 📝 Tracked ${subscriptionKeys.length} $task subscriptions");
+
+    // Clear pending for this task
+    _pendingSubscriptions[task] = [];
+
+    // Send to websocket
+    _sendToWebSocket(task, batchInput);
+  }
+
+  void _sendToWebSocket(String task, String input) {
     if (_wsConnected && _channel != null) {
       final symbolCount = input.split('#').where((s) => s.isNotEmpty).length;
       print('📤 [WEBSOCKET] Sending ${task.toUpperCase()} request for $symbolCount symbol(s)');
@@ -762,9 +865,9 @@ class WebSocketProvider extends ChangeNotifier {
     } else {
       // If socket isn't ready yet, schedule a retry
       print('⚠️  [WEBSOCKET] Connection not ready, scheduling retry in 500ms');
-      print('   Current State: Connected=${_wsConnected}, Channel=${_channel != null}');
+      print('   Current State: Connected=$_wsConnected, Channel=${_channel != null}');
       log('⚠️  WebSocket: Connection not ready, scheduling retry');
-      Future.delayed(Duration(milliseconds: 500), () {
+      Future.delayed(const Duration(milliseconds: 500), () {
         if (_wsConnected && _channel != null) {
           print('🔄 [WEBSOCKET] Retrying ${task.toUpperCase()} request after delay');
           log('🔄 WebSocket: Retrying request after delay');
@@ -772,11 +875,11 @@ class WebSocketProvider extends ChangeNotifier {
         } else {
           print('❌ [WEBSOCKET] Still not connected after delay, attempting full reconnection');
           log('❌ WebSocket: Still not connected, attempting reconnection');
-          if (_context != null) {
+          if (_context != null && input.isNotEmpty) {
             establishConnection(
               channelInput: input,
               task: task,
-              context: context,
+              context: _context!,
             );
           }
         }
@@ -790,6 +893,7 @@ class WebSocketProvider extends ChangeNotifier {
     print('   Reason: Server closed the connection');
     print('   Reconnecting: ${!_reconnecting}');
     print('   Connection Count: $_connectionCount/$_maxReconnectAttempts');
+    print('   Consecutive Closures: $_consecutiveServerClosures/$_maxConsecutiveClosures');
     print('═══════════════════════════════════════════════════════════\n');
     log('🔴 WebSocket: Connection closed by server');
     
@@ -798,6 +902,69 @@ class WebSocketProvider extends ChangeNotifier {
       print('⏸️  [WEBSOCKET] Already reconnecting, ignoring connection closed event');
       log('⏸️  WebSocket: Already reconnecting, ignoring');
       return;
+    }
+    
+    // Track server closures
+    final now = DateTime.now();
+    if (_lastServerClosure != null && 
+        now.difference(_lastServerClosure!) < const Duration(seconds: 5)) {
+      // Server closed connection again within 5 seconds - increment counter
+      _consecutiveServerClosures++;
+    } else {
+      // Reset counter if enough time has passed
+      _consecutiveServerClosures = 1;
+    }
+    _lastServerClosure = now;
+    
+    // Check if server keeps closing - stop reconnecting if too many consecutive closures
+    if (_consecutiveServerClosures >= _maxConsecutiveClosures) {
+      print('⛔ [WEBSOCKET] Server closed connection $_consecutiveServerClosures times consecutively');
+      print('   Stopping reconnection attempts to prevent loop');
+      log('⛔ WebSocket: Too many consecutive server closures, stopping reconnection');
+      
+      // Reset after cooldown period
+      Future.delayed(_serverClosureCooldown, () {
+        _consecutiveServerClosures = 0;
+        print('✅ [WEBSOCKET] Server closure cooldown expired, reconnection allowed again');
+      });
+      
+      // Only close if not already closed
+      if (_wsConnected || _channel != null) {
+        closeSocket(true);
+      }
+      return;
+    }
+    
+    // Check if we're in cooldown period
+    if (_lastServerClosure != null && 
+        now.difference(_lastServerClosure!) < _serverClosureCooldown &&
+        _consecutiveServerClosures > 1) {
+      print('⏸️  [WEBSOCKET] In cooldown period after server closure, skipping reconnection');
+      log('⏸️  WebSocket: In cooldown period, skipping reconnection');
+      
+      // Only close if not already closed
+      if (_wsConnected || _channel != null) {
+        closeSocket(true);
+      }
+      return;
+    }
+    
+    // Check if there are active subscriptions before reconnecting
+    try {
+      final subscriptionManager = ref.read(subscriptionManagerProvider);
+      if (!subscriptionManager.hasActiveSubscriptions) {
+        print('ℹ️  [WEBSOCKET] No active subscriptions, skipping reconnection');
+        log('ℹ️  WebSocket: No active subscriptions, skipping reconnection');
+        
+        // Only close if not already closed
+        if (_wsConnected || _channel != null) {
+          closeSocket(true);
+        }
+        return;
+      }
+    } catch (e) {
+      // Subscription manager might not be available, continue with reconnection
+      log('⚠️  WebSocket: Could not check subscriptions: $e');
     }
     
     if (!_reconnecting) {
@@ -821,10 +988,12 @@ class WebSocketProvider extends ChangeNotifier {
     }
 
     if (_connectionCount < _maxReconnectAttempts) {
-      print('🔄 [WEBSOCKET] Scheduling reconnection attempt in 1 second...');
-      log('🔄 WebSocket: Scheduling reconnection');
-      // Add a small delay before reconnecting to avoid immediate reconnection loop
-      Future.delayed(const Duration(seconds: 1), () {
+      // Use longer delay if server has closed multiple times
+      final delaySeconds = _consecutiveServerClosures > 1 ? 5 : 2;
+      print('🔄 [WEBSOCKET] Scheduling reconnection attempt in $delaySeconds seconds...');
+      log('🔄 WebSocket: Scheduling reconnection in $delaySeconds seconds');
+      
+      Future.delayed(Duration(seconds: delaySeconds), () {
         if (!_wsConnected && !_reconnecting && context.mounted) {
           reconnect(context);
         }
@@ -897,7 +1066,7 @@ class WebSocketProvider extends ChangeNotifier {
     print('🔄 [WEBSOCKET] INITIATING RECONNECTION');
     print('   Connection Count: $_connectionCount/$_maxReconnectAttempts');
     print('   Low Bandwidth Mode: $_isLowBandwidth');
-    print('   Current State: Connected=${_wsConnected}, Connecting=${_connecting}');
+    print('   Current State: Connected=$_wsConnected, Connecting=$_connecting');
     print('   Caller: ${caller.split('\n')[1].trim()}');
     print('═══════════════════════════════════════════════════════════\n');
     log('🔄 WebSocket: Initiating reconnection (attempt $_connectionCount)');
@@ -1055,13 +1224,14 @@ class WebSocketProvider extends ChangeNotifier {
     print('   Cleaning up all resources...');
     print('═══════════════════════════════════════════════════════════\n');
     log('🔴 WebSocket: Disposing provider');
-    
+
     // Ensure all timers are canceled
     print('⏹️  [WEBSOCKET] Stopping ping timer');
     _stopPingTimer();
     _holdStartTime?.cancel();
     _reconnectBackoff?.cancel();
     _debounceTimer?.cancel(); // Cancel debounce timer
+    _subscriptionDebounce?.cancel(); // Cancel subscription debounce timer
 
     // Cancel all subscription timers
     print('⏹️  [WEBSOCKET] Canceling ${_subscriptionTimers.length} subscription timer(s)');
@@ -1077,6 +1247,10 @@ class WebSocketProvider extends ChangeNotifier {
     // Close data stream
     print('📡 [WEBSOCKET] Closing data stream');
     _socketDataController.close();
+
+    // Clear subscription tracking
+    _sentSubscriptions.clear();
+    _pendingSubscriptions.clear();
 
     print('✅ [WEBSOCKET] Provider disposed successfully\n');
     log('✅ WebSocket: Provider disposed');

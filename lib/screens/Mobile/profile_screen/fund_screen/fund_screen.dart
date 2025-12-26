@@ -15,23 +15,18 @@ import '../../../../../provider/thems.dart';
 import '../../../../../provider/transcation_provider.dart';
 // import '../../../../sharedWidget/custom_back_btn.dart';
 import '../../../../../sharedWidget/custom_drag_handler.dart';
-import '../../../../../sharedWidget/custom_switch_btn.dart';
 import '../../../../../sharedWidget/fund_function.dart';
 import '../../../../provider/fund_provider.dart';
 import '../../../../res/global_state_text.dart';
 import '../../../../sharedWidget/custom_back_btn.dart';
 import '../../../../sharedWidget/list_divider.dart';
 import '../../../../sharedWidget/loader_ui.dart';
-import '../../../../sharedWidget/splash_loader.dart';
 import '../../../../utils/no_emoji_inputformatter.dart';
-import '../../../../models/fund_model_testing_copy/secured_bank_detalis_model.dart';
-import '../../../../models/fund_model_testing_copy/secured_client_data_model.dart';
 import 'ios_fund_screen/ios_no_upi_apps_ui.dart';
 import 'ios_fund_screen/ios_upi_apps_bottomsheet.dart';
 import 'razorpay/razorpay_failed_ui.dart';
 import 'razorpay/razorpay_success_ui.dart';
 import 'upi_id_screens/upi_id_cancel_alert.dart';
-import 'withdraw/withdraw_screen.dart';
 
 class FundScreen extends ConsumerStatefulWidget {
   final TranctionProvider dd;
@@ -207,7 +202,7 @@ class _FundScreenState extends ConsumerState<FundScreen> {
             MediaQuery.of(context).viewInsets.bottom, // Add keyboard padding
       ),
       child: SingleChildScrollView(
-        physics: ClampingScrollPhysics(),
+        physics: const ClampingScrollPhysics(),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -436,7 +431,7 @@ class _FundScreenState extends ConsumerState<FundScreen> {
               centerTitle: false,
               leadingWidth: 48,
               titleSpacing: 6,
-              leading: CustomBackBtn(),
+              leading: const CustomBackBtn(),
               elevation: .2,
               title: TextWidget.titleText(
                 text: 'Add Money',
@@ -463,7 +458,7 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                   fund.focusNode.unfocus();
                                 },
                                 child: SingleChildScrollView(
-                                  physics: ClampingScrollPhysics(),
+                                  physics: const ClampingScrollPhysics(),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -805,7 +800,7 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                               fund.focusNode.unfocus();
                                               showBottomSheetbank(fund, theme);
                                             },
-                                            child: Container(
+                                            child: SizedBox(
                                               height: 32,
                                               width: 32,
                                               child: Center(

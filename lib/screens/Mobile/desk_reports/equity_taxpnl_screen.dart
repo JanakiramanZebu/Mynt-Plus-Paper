@@ -25,6 +25,7 @@ class EqTaxpnl extends State<EqTaxpnlEq> {
     super.initState();
   }
 
+  @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenheight = MediaQuery.of(context).size.height;
@@ -92,7 +93,7 @@ class EqTaxpnl extends State<EqTaxpnlEq> {
               isLoading: ledgerprovider.taxderloading,
               child: ledgerprovider.taxpnleq?.data == null &&
                       ledgerprovider.taxpnldercomcur?.data == null
-                  ? Center(
+                  ? const Center(
                       child: Padding(
                       padding: EdgeInsets.only(top: 60),
                       child: NoDataFound(),
@@ -170,7 +171,7 @@ class EqTaxpnl extends State<EqTaxpnlEq> {
                                     FontWeight.w600)),
                           ),
                         ),
-                        Container(
+                        SizedBox(
                           width: screenWidth,
                           child: Container(
                             decoration: BoxDecoration(
@@ -191,7 +192,7 @@ class EqTaxpnl extends State<EqTaxpnlEq> {
                                         children: [
                                           Text(
                                             "Long Term Realized",
-                                            style: textStyle(Color(0xFF696969),
+                                            style: textStyle(const Color(0xFF696969),
                                                 14, FontWeight.w500),
                                           ),
                                           Padding(
@@ -249,7 +250,7 @@ class EqTaxpnl extends State<EqTaxpnlEq> {
                                           Text(
                                             "Short Term Realized",
                                             textAlign: TextAlign.right,
-                                            style: textStyle(Color(0xFF696969),
+                                            style: textStyle(const Color(0xFF696969),
                                                 14, FontWeight.w500),
                                           ),
                                           Padding(
@@ -319,7 +320,7 @@ class EqTaxpnl extends State<EqTaxpnlEq> {
                                         children: [
                                           Text(
                                             "Trading",
-                                            style: textStyle(Color(0xFF696969),
+                                            style: textStyle(const Color(0xFF696969),
                                                 14, FontWeight.w500),
                                           ),
                                           Padding(
@@ -378,7 +379,7 @@ class EqTaxpnl extends State<EqTaxpnlEq> {
                                           Text(
                                             "Assets",
                                             textAlign: TextAlign.right,
-                                            style: textStyle(Color(0xFF696969),
+                                            style: textStyle(const Color(0xFF696969),
                                                 14, FontWeight.w500),
                                           ),
                                           Padding(
@@ -449,7 +450,7 @@ class EqTaxpnl extends State<EqTaxpnlEq> {
                                         children: [
                                           Text(
                                             "Trading Turnover",
-                                            style: textStyle(Color(0xFF696969),
+                                            style: textStyle(const Color(0xFF696969),
                                                 14, FontWeight.w500),
                                           ),
                                           Padding(
@@ -508,7 +509,7 @@ class EqTaxpnl extends State<EqTaxpnlEq> {
                                           Text(
                                             "Total Charges",
                                             textAlign: TextAlign.right,
-                                            style: textStyle(Color(0xFF696969),
+                                            style: textStyle(const Color(0xFF696969),
                                                 14, FontWeight.w500),
                                           ),
                                           Padding(
@@ -517,7 +518,7 @@ class EqTaxpnl extends State<EqTaxpnlEq> {
                                             child: ledgerprovider
                                                         .reportsloadingforcharges ==
                                                     true
-                                                ? CircularProgressIndicator()
+                                                ? const CircularProgressIndicator()
                                                 : Text(
                                                     "${ledgerprovider.taxpnleqCharge?.total ?? 0.00}",
                                                     textAlign: TextAlign.right,
@@ -542,7 +543,7 @@ class EqTaxpnl extends State<EqTaxpnlEq> {
                                     FontWeight.w600)),
                           ),
                         ),
-                        Container(
+                        SizedBox(
                           width: screenWidth,
                           child: Container(
                             decoration: BoxDecoration(
@@ -564,7 +565,7 @@ class EqTaxpnl extends State<EqTaxpnlEq> {
                                         children: [
                                           Text(
                                             "Futures",
-                                            style: textStyle(Color(0xFF696969),
+                                            style: textStyle(const Color(0xFF696969),
                                                 14, FontWeight.w500),
                                           ),
                                           Padding(
@@ -622,7 +623,7 @@ class EqTaxpnl extends State<EqTaxpnlEq> {
                                           Text(
                                             "Futures Turnover",
                                             textAlign: TextAlign.right,
-                                            style: textStyle(Color(0xFF696969),
+                                            style: textStyle(const Color(0xFF696969),
                                                 14, FontWeight.w500),
                                           ),
                                           Padding(
@@ -692,7 +693,7 @@ class EqTaxpnl extends State<EqTaxpnlEq> {
                                         children: [
                                           Text(
                                             "Options",
-                                            style: textStyle(Color(0xFF696969),
+                                            style: textStyle(const Color(0xFF696969),
                                                 14, FontWeight.w500),
                                           ),
                                           Padding(
@@ -751,7 +752,7 @@ class EqTaxpnl extends State<EqTaxpnlEq> {
                                           Text(
                                             "Options Turnover",
                                             textAlign: TextAlign.right,
-                                            style: textStyle(Color(0xFF696969),
+                                            style: textStyle(const Color(0xFF696969),
                                                 14, FontWeight.w500),
                                           ),
                                           Padding(
@@ -822,7 +823,7 @@ class EqTaxpnl extends State<EqTaxpnlEq> {
                                         children: [
                                           Text(
                                             "Total Charges",
-                                            style: textStyle(Color(0xFF696969),
+                                            style: textStyle(const Color(0xFF696969),
                                                 14, FontWeight.w500),
                                           ),
                                           Padding(
@@ -861,7 +862,7 @@ class EqTaxpnl extends State<EqTaxpnlEq> {
                                     FontWeight.w600)),
                           ),
                         ),
-                        Container(
+                        SizedBox(
                           width: screenWidth,
                           child: Container(
                             decoration: BoxDecoration(
@@ -883,7 +884,7 @@ class EqTaxpnl extends State<EqTaxpnlEq> {
                                         children: [
                                           Text(
                                             "Futures",
-                                            style: textStyle(Color(0xFF696969),
+                                            style: textStyle(const Color(0xFF696969),
                                                 14, FontWeight.w500),
                                           ),
                                           Padding(
@@ -946,7 +947,7 @@ class EqTaxpnl extends State<EqTaxpnlEq> {
                                           Text(
                                             "Futures Turnover",
                                             textAlign: TextAlign.right,
-                                            style: textStyle(Color(0xFF696969),
+                                            style: textStyle(const Color(0xFF696969),
                                                 14, FontWeight.w500),
                                           ),
                                           Padding(
@@ -1021,7 +1022,7 @@ class EqTaxpnl extends State<EqTaxpnlEq> {
                                         children: [
                                           Text(
                                             "Options",
-                                            style: textStyle(Color(0xFF696969),
+                                            style: textStyle(const Color(0xFF696969),
                                                 14, FontWeight.w500),
                                           ),
                                           Padding(
@@ -1085,7 +1086,7 @@ class EqTaxpnl extends State<EqTaxpnlEq> {
                                           Text(
                                             "Options Turnover",
                                             textAlign: TextAlign.right,
-                                            style: textStyle(Color(0xFF696969),
+                                            style: textStyle(const Color(0xFF696969),
                                                 14, FontWeight.w500),
                                           ),
                                           Padding(
@@ -1161,7 +1162,7 @@ class EqTaxpnl extends State<EqTaxpnlEq> {
                                         children: [
                                           Text(
                                             "Total Charges",
-                                            style: textStyle(Color(0xFF696969),
+                                            style: textStyle(const Color(0xFF696969),
                                                 14, FontWeight.w500),
                                           ),
                                           Padding(
@@ -1205,7 +1206,7 @@ class EqTaxpnl extends State<EqTaxpnlEq> {
                                     FontWeight.w600)),
                           ),
                         ),
-                        Container(
+                        SizedBox(
                           width: screenWidth,
                           child: Container(
                             decoration: BoxDecoration(
@@ -1227,7 +1228,7 @@ class EqTaxpnl extends State<EqTaxpnlEq> {
                                         children: [
                                           Text(
                                             "Futures",
-                                            style: textStyle(Color(0xFF696969),
+                                            style: textStyle(const Color(0xFF696969),
                                                 14, FontWeight.w500),
                                           ),
                                           Padding(
@@ -1285,7 +1286,7 @@ class EqTaxpnl extends State<EqTaxpnlEq> {
                                           Text(
                                             "Futures Turnover",
                                             textAlign: TextAlign.right,
-                                            style: textStyle(Color(0xFF696969),
+                                            style: textStyle(const Color(0xFF696969),
                                                 14, FontWeight.w500),
                                           ),
                                           Padding(
@@ -1355,7 +1356,7 @@ class EqTaxpnl extends State<EqTaxpnlEq> {
                                         children: [
                                           Text(
                                             "Options",
-                                            style: textStyle(Color(0xFF696969),
+                                            style: textStyle(const Color(0xFF696969),
                                                 14, FontWeight.w500),
                                           ),
                                           Padding(
@@ -1414,7 +1415,7 @@ class EqTaxpnl extends State<EqTaxpnlEq> {
                                           Text(
                                             "Options Turnover",
                                             textAlign: TextAlign.right,
-                                            style: textStyle(Color(0xFF696969),
+                                            style: textStyle(const Color(0xFF696969),
                                                 14, FontWeight.w500),
                                           ),
                                           Padding(
@@ -1485,7 +1486,7 @@ class EqTaxpnl extends State<EqTaxpnlEq> {
                                         children: [
                                           Text(
                                             "Total Charges",
-                                            style: textStyle(Color(0xFF696969),
+                                            style: textStyle(const Color(0xFF696969),
                                                 14, FontWeight.w500),
                                           ),
                                           Padding(
@@ -1938,7 +1939,7 @@ class EqTaxpnl extends State<EqTaxpnlEq> {
                   ledgerprovider.taxpnleqselectedtab(text);
                 });
               },
-              child: Text("${text}",
+              child: Text(text,
                   textAlign: TextAlign.center,
                   style: textStyle(
                       !theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
@@ -1946,7 +1947,7 @@ class EqTaxpnl extends State<EqTaxpnlEq> {
                       FontWeight.w500))));
     } else {
       // print("${ledgerprovider.taxpnleq?.data!.aSSETS}");
-      return SizedBox();
+      return const SizedBox();
     }
   }
 
@@ -1957,11 +1958,11 @@ class EqTaxpnl extends State<EqTaxpnlEq> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            "${heading}",
-            style: textStyle(Color(0xFF696969), 14, FontWeight.w400),
+            heading,
+            style: textStyle(const Color(0xFF696969), 14, FontWeight.w400),
           ),
           Text(
-            "${value}",
+            value,
             style: textStyle(colors.colorBlack, 13, FontWeight.w500),
           )
         ],

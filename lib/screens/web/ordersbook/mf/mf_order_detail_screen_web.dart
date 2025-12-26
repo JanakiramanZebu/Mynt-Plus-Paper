@@ -346,7 +346,7 @@ class _MFOrderDetailScreenWebState
                   ),
                   _buildInfoRow(
                     "Amount",
-                    "${widget.mfOrderData.orderVal ?? "0.00"}",
+                    widget.mfOrderData.orderVal ?? "0.00",
                     theme,
                   ),
                   _buildInfoRow(

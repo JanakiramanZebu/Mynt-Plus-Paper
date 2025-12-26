@@ -7,15 +7,15 @@ class TradeBookModel {
     if (json['trades'] != null) {
       trades = <Trades>[];
       json['trades'].forEach((v) {
-        trades!.add(new Trades.fromJson(v));
+        trades!.add(Trades.fromJson(v));
       });
     }
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    if (this.trades != null) {
-      data['trades'] = this.trades!.map((v) => v.toJson()).toList();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    if (trades != null) {
+      data['trades'] = trades!.map((v) => v.toJson()).toList();
     }
     return data;
   }
@@ -106,32 +106,32 @@ class Trades {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['CLIENT_CODE'] = this.cLIENTCODE;
-    data['STRIKE_PRICE'] = this.sTRIKEPRICE;
-    data['ISIN'] = this.iSIN;
-    data['USER_ID'] = this.uSERID;
-    data['EXPIRY_DATE'] = this.eXPIRYDATE;
-    data['BUY_QUANTITY'] = this.bUYQUANTITY;
-    data['BUY_PRICE'] = this.bUYPRICE;
-    data['SELL_QUANTITY'] = this.sELLQUANTITY;
-    data['SELL_PRICE'] = this.sELLPRICE;
-    data['COMPANY_CODE'] = this.cOMPANYCODE;
-    data['ORDER_TIME'] = this.oRDERTIME;
-    data['ORDER_NUMBER'] = this.oRDERNUMBER;
-    data['TRADE_TYPE'] = this.tRADETYPE;
-    data['TRADE_NUMBER'] = this.tRADENUMBER;
-    data['TRADE_DATE'] = this.tRADEDATE;
-    data['TRADE_TIME'] = this.tRADETIME;
-    data['SCRIP_NAME'] = this.sCRIPNAME;
-    data['SERIES'] = this.sERIES;
-    data['SCRIP_SERIES'] = this.sCRIPSERIES;
-    data['OPTION_TYPE'] = this.oPTIONTYPE;
-    data['showtype'] = this.showtype;
-    data['showprice'] = this.showprice;
-    data['showqnt'] = this.showqnt;
-    data['showamt'] = this.showamt;
-    data['showseries'] = this.showseries;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['CLIENT_CODE'] = cLIENTCODE;
+    data['STRIKE_PRICE'] = sTRIKEPRICE;
+    data['ISIN'] = iSIN;
+    data['USER_ID'] = uSERID;
+    data['EXPIRY_DATE'] = eXPIRYDATE;
+    data['BUY_QUANTITY'] = bUYQUANTITY;
+    data['BUY_PRICE'] = bUYPRICE;
+    data['SELL_QUANTITY'] = sELLQUANTITY;
+    data['SELL_PRICE'] = sELLPRICE;
+    data['COMPANY_CODE'] = cOMPANYCODE;
+    data['ORDER_TIME'] = oRDERTIME;
+    data['ORDER_NUMBER'] = oRDERNUMBER;
+    data['TRADE_TYPE'] = tRADETYPE;
+    data['TRADE_NUMBER'] = tRADENUMBER;
+    data['TRADE_DATE'] = tRADEDATE;
+    data['TRADE_TIME'] = tRADETIME;
+    data['SCRIP_NAME'] = sCRIPNAME;
+    data['SERIES'] = sERIES;
+    data['SCRIP_SERIES'] = sCRIPSERIES;
+    data['OPTION_TYPE'] = oPTIONTYPE;
+    data['showtype'] = showtype;
+    data['showprice'] = showprice;
+    data['showqnt'] = showqnt;
+    data['showamt'] = showamt;
+    data['showseries'] = showseries;
     return data;
   }
 }

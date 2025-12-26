@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/provider/thems.dart';
-import 'package:mynt_plus/sharedWidget/loader_ui.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import '../../../../provider/iop_provider.dart';
 import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
-import '../../../../sharedWidget/functions.dart';
 import 'ipo_order_book_tab/close_ipo_tab.dart';
 import 'ipo_order_book_tab/open_ipo_tab.dart';
 
@@ -54,7 +51,7 @@ class _IpoOrderbookMainScreenState extends ConsumerState<IpoOrderbookMainScreen>
     }
 
     if(!hasOrders){
-      return NoDataFound(
+      return const NoDataFound(
         title: "No Open or Closed Orders Found",
         subtitle: "There's nothing here yet. Buy some IPO to see them here.",
         primaryEnabled: false,
@@ -63,7 +60,7 @@ class _IpoOrderbookMainScreenState extends ConsumerState<IpoOrderbookMainScreen>
     }
 
     return SingleChildScrollView(
-      physics: ClampingScrollPhysics(),
+      physics: const ClampingScrollPhysics(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

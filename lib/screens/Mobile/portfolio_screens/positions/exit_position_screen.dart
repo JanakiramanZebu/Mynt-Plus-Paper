@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../../provider/portfolio_provider.dart';
 import '../../../../provider/thems.dart';
 import '../../../../provider/websocket_provider.dart';
@@ -279,7 +278,7 @@ class ExitPositionScreen extends ConsumerWidget {
                                             : colors.textSecondaryLight,
                                         fw: 0),
                                     TextWidget.paraText(
-                                        text: "${((int.tryParse(position.qty.toString()) ?? 0) / (position.exch == 'MCX' ? (int.tryParse(position.ls.toString()) ?? 1) : 1)).toInt()}",
+                                        text: "${(int.tryParse(position.qty.toString()) ?? 0) ~/ (position.exch == 'MCX' ? (int.tryParse(position.ls.toString()) ?? 1) : 1)}",
                                         theme: false,
                                         color: theme.isDarkMode
                                             ? colors.textSecondaryDark

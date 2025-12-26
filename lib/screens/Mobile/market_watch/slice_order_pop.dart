@@ -12,7 +12,6 @@ import '../../../res/res.dart';
 import '../../../sharedWidget/custom_drag_handler.dart';
 import '../../../sharedWidget/custom_exch_badge.dart';
 import '../../../res/global_state_text.dart';
-import '../../../sharedWidget/snack_bar.dart';
 
 class SliceOrderSheet extends StatefulWidget {
   final ScripInfoModel scripInfo;

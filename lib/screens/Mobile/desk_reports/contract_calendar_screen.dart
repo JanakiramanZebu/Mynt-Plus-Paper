@@ -3,10 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:mynt_plus/provider/ledger_provider.dart';
 import 'package:mynt_plus/res/res.dart';
-import 'package:mynt_plus/sharedWidget/custom_back_btn.dart';
-import 'package:mynt_plus/sharedWidget/functions.dart';
-import 'package:mynt_plus/sharedWidget/loader_ui.dart';
-import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import '../../../provider/thems.dart';
 import '../../../res/global_state_text.dart';
 
@@ -399,7 +395,7 @@ class _ContractCalendarState extends State<_ContractCalendar> {
           ? () {
               ledgerprovider.pdfdownloadfunction(
                 context,
-                doc!.recno,
+                doc.recno,
                 doc.docFileName,
               );
             }

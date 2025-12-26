@@ -1,13 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:mynt_plus/locator/constant.dart';
-import 'package:mynt_plus/screens/Mobile/mutual_fund/mf_timeline.dart';
-import 'package:mynt_plus/sharedWidget/functions.dart';
-import 'package:mynt_plus/sharedWidget/ipo_time_line.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 
 import '../../../provider/fund_provider.dart';
@@ -17,17 +11,10 @@ import '../../../provider/transcation_provider.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/custom_drag_handler.dart';
-import '../../../sharedWidget/custom_exch_badge.dart';
 // import '../../sharedWidget/loader_ui.dart';
-import '../../../sharedWidget/loader_ui.dart';
-import '../mutual_fund_old/cancle_xsip_resone.dart';
 // import '../mutual_fund_old/mf_order_filter_sheet.dart';
-import '../portfolio_screens/mfHoldings/mf_holding_screen.dart';
 import 'mf_cancel_alert.dart';
-import '../profile_screen/fund_screen/upi_id_screens/mf_payment_resp_alert.dart';
-import '../profile_screen/fund_screen/upi_id_screens/upi_id_cancel_alert.dart';
 import 'mf_order_bottomsheet.dart';
-import 'mf_processing_screen.dart';
 
 class mforderdetscreen extends StatefulWidget {
   const mforderdetscreen({super.key});
@@ -49,6 +36,7 @@ class _mforderdetscreen extends State<mforderdetscreen>
     "MODIFY REJECTED",
     "PAYMENT REJECTED"
   };
+  @override
   Widget build(BuildContext context) {
     return DraggableScrollableSheet(
         expand: false,
@@ -76,7 +64,7 @@ class _mforderdetscreen extends State<mforderdetscreen>
                 body: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: SingleChildScrollView(
-                        physics: ClampingScrollPhysics(),
+                        physics: const ClampingScrollPhysics(),
                         controller: scrollController,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -252,7 +240,7 @@ class _mforderdetscreen extends State<mforderdetscreen>
                                                           colors.primaryLight,
                                                       width: 1,
                                                     ),
-                                              minimumSize: Size(double.infinity,
+                                              minimumSize: const Size(double.infinity,
                                                   45), // height: 48
                                               shape: RoundedRectangleBorder(
                                                 borderRadius:
@@ -289,7 +277,7 @@ class _mforderdetscreen extends State<mforderdetscreen>
                               TextWidget.subText(
                                   align: TextAlign.start,
                                   text:
-                                      "${mfdata.mforderdet?.data![0].remarks ?? "No remarks available"}",
+                                      mfdata.mforderdet?.data![0].remarks ?? "No remarks available",
                                   color: theme.isDarkMode ? colors.lossDark : colors.lossLight,
                                   textOverflow: TextOverflow.ellipsis,
                                   theme: theme.isDarkMode,
@@ -455,7 +443,7 @@ class _mforderdetscreen extends State<mforderdetscreen>
             theme),
 
         rowOfInfoData("Amount",
-            "${double.tryParse(mfdata.mforderdet?.data?[0].orderVal?.toString() ?? '0')?.toStringAsFixed(2) ?? '0.00'}", theme),
+            double.tryParse(mfdata.mforderdet?.data?[0].orderVal?.toString() ?? '0')?.toStringAsFixed(2) ?? '0.00', theme),
 
         // rowOfInfoData(
         //     "Units", "${mfdata.mforderdet?.data?[0].units ?? "0.00"}", theme),
@@ -517,7 +505,7 @@ class _mforderdetscreen extends State<mforderdetscreen>
                               color: colors.primaryLight,
                               width: 1,
                             ),
-                minimumSize: Size(double.infinity, 40), // height: 48
+                minimumSize: const Size(double.infinity, 40), // height: 48
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(5),
                 ),

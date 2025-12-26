@@ -4,19 +4,13 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/provider/transcation_provider.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:url_launcher/url_launcher_string.dart';
 import '../../../../../provider/mf_provider.dart';
 import '../../../../../provider/thems.dart';
 import '../../../../../res/global_state_text.dart';
 import '../../../../../res/res.dart';
 import '../../../../../sharedWidget/custom_drag_handler.dart';
-import '../../../../../sharedWidget/functions.dart';
 import '../../../../../sharedWidget/payment_loader.dart';
-import '../../../../../sharedWidget/snack_bar.dart';
-import 'mf_payment_resp_alert.dart';
 
 class UPIIDPaymentCancelAlert extends ConsumerStatefulWidget {
   const UPIIDPaymentCancelAlert({super.key, this.data});
@@ -170,7 +164,7 @@ class _UPIIDPaymentCancelAlertState
                                   color: colors.colorWhite,
                                   fw: 2))),
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 10,
                     )
                   ])),

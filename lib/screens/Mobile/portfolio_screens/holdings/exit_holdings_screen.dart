@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../../provider/fund_provider.dart';
 import '../../../../provider/portfolio_provider.dart';
 import '../../../../provider/thems.dart';
@@ -207,7 +206,7 @@ class ExitHoldingsScreen extends ConsumerWidget {
               }
 
               return ListView(
-                physics: ClampingScrollPhysics(),
+                physics: const ClampingScrollPhysics(),
                 children: [
                   if (holdings.sealableHoldings.isNotEmpty) ...[
                     Container(

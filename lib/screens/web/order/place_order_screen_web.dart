@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:mynt_plus/res/web_colors.dart';
 import 'package:mynt_plus/res/global_font_web.dart';
 import '../market_watch/tv_chart/chart_iframe_guard.dart';
@@ -480,7 +479,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                   : widget.orderArg.lotSize!.replaceAll("-", ""));
 
       if (widget.orderArg.isExit && widget.orderArg.exchange == "MCX") {
-        qtyCtrl.text = (int.parse(qtyCtrl.text) / lotSize).toInt().toString();
+        qtyCtrl.text = (int.parse(qtyCtrl.text) ~/ lotSize).toString();
       } else if (!widget.orderArg.isExit && isUserOrderPreferenceAvailable) {
         qtyCtrl.text =
             (int.parse(qtyCtrl.text) * int.parse(userOrderPreference['qty']))
@@ -717,8 +716,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
           final sip = ref.watch(siprovider);
           int frezQtyOrderSliceMaxLimit =
               ref.read(orderProvider).frezQtyOrderSliceMaxLimit;
-          if (internet.connectionStatus == ConnectivityResult.none)
+          if (internet.connectionStatus == ConnectivityResult.none) {
             return const NoInternetWidget();
+          }
 
           return Stack(
             children: [
@@ -2060,7 +2060,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                         const SizedBox(
                                                             width: 4),
                                                         Text(
-                                                          "${orderInput.actPrcType}",
+                                                          orderInput.actPrcType,
                                                           style: WebTextStyles
                                                               .formLabel(
                                                             isDarkTheme: theme
@@ -2805,7 +2805,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                           const SizedBox(
                                                               width: 4),
                                                           Text(
-                                                            "${orderInput.actOcoPrcType}",
+                                                            orderInput.actOcoPrcType,
                                                             style: WebTextStyles
                                                                 .formLabel(
                                                               isDarkTheme: theme
@@ -4127,7 +4127,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                             "Price", theme),
                                                         const SizedBox(
                                                             width: 4),
-                                                        Text("$priceType",
+                                                        Text(priceType,
                                                             style: WebTextStyles
                                                                 .formLabel(
                                                               isDarkTheme: theme
@@ -5417,7 +5417,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                 ),
                                                 const SizedBox(width: 8),
                                                 Expanded(
-                                                  child: Container(
+                                                  child: SizedBox(
                                                     height: 40,
                                                     child: ElevatedButton(
                                                       onPressed: internet
@@ -8190,7 +8190,7 @@ class _DraggablePlaceOrderScreenDialogState
     final screenSize = MediaQuery.of(context).size;
 
     // Constrain position to screen bounds
-    final dialogWidth = 550.0;
+    const dialogWidth = 550.0;
     final dialogHeight = screenSize.height * 0.8;
     final constrainedPosition = Offset(
       _position.dx.clamp(0, screenSize.width - dialogWidth),

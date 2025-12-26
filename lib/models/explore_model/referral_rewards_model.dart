@@ -12,29 +12,29 @@ class ReferralRewards {
     if (json['pending_removed_list'] != null) {
       pendingRemovedList = <PendingRemovedList>[];
       json['pending_removed_list'].forEach((v) {
-        pendingRemovedList!.add(new PendingRemovedList.fromJson(v));
+        pendingRemovedList!.add(PendingRemovedList.fromJson(v));
       });
     }
     if (json['completed'] != null) {
       completed = <Completed>[];
       json['completed'].forEach((v) {
-        completed!.add(new Completed.fromJson(v));
+        completed!.add(Completed.fromJson(v));
       });
     }
     coin = json['coin'];
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['msg'] = this.msg;
-    if (this.pendingRemovedList != null) {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['msg'] = msg;
+    if (pendingRemovedList != null) {
       data['pending_removed_list'] =
-          this.pendingRemovedList!.map((v) => v.toJson()).toList();
+          pendingRemovedList!.map((v) => v.toJson()).toList();
     }
-    if (this.completed != null) {
-      data['completed'] = this.completed!.map((v) => v.toJson()).toList();
+    if (completed != null) {
+      data['completed'] = completed!.map((v) => v.toJson()).toList();
     }
-    data['coin'] = this.coin;
+    data['coin'] = coin;
     return data;
   }
 }
@@ -62,12 +62,12 @@ class PendingRemovedList {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['clientcode'] = this.clientcode;
-    data['mobile'] = this.mobile;
-    data['initiated_dt'] = this.initiatedDt;
-    data['app_status'] = this.appStatus;
-    data['stage'] = this.stage;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['clientcode'] = clientcode;
+    data['mobile'] = mobile;
+    data['initiated_dt'] = initiatedDt;
+    data['app_status'] = appStatus;
+    data['stage'] = stage;
     return data;
   }
 }
@@ -76,7 +76,7 @@ class Completed {
   String? clientcode;
   String? mobile;
   String? activateDt;
-  Null? appStatus;
+  Null appStatus;
 
   Completed({this.clientcode, this.mobile, this.activateDt, this.appStatus});
 
@@ -88,11 +88,11 @@ class Completed {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['clientcode'] = this.clientcode;
-    data['mobile'] = this.mobile;
-    data['activate_dt'] = this.activateDt;
-    data['app_status'] = this.appStatus;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['clientcode'] = clientcode;
+    data['mobile'] = mobile;
+    data['activate_dt'] = activateDt;
+    data['app_status'] = appStatus;
     return data;
   }
 }

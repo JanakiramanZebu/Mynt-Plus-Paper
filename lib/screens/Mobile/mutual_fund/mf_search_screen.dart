@@ -7,7 +7,6 @@ import '../../../provider/thems.dart';
 import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
 import '../../../sharedWidget/custom_exch_badge.dart';
-import '../../../sharedWidget/functions.dart';
 import '../../../res/global_state_text.dart';
 
 class MfCommonSearch extends ConsumerWidget {
@@ -49,7 +48,7 @@ class MfCommonSearch extends ConsumerWidget {
                     : colors.colorBlack),
         ),
         body: SingleChildScrollView(
-          physics: ClampingScrollPhysics(),
+          physics: const ClampingScrollPhysics(),
           child: Column(
             children: [
               Container(

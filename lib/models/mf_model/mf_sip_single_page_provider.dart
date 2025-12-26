@@ -30,7 +30,7 @@ class Sip_single_page {
     internalrefernumber = json['internalrefernumber'];
     if (json['inv_list'] != null) {
       invList =json['inv_list'];
-      };
+      }
       liveCancel = json['live_cancel'];
       schemename = json['schemename'];
     nextInstallmentDate = json['next_installment_date'];
@@ -42,20 +42,20 @@ class Sip_single_page {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['client_code'] = this.clientCode;
-    data['installment_amount'] = this.installmentAmount;
-    data['internalrefernumber'] = this.internalrefernumber;
-    if (this.invList != null) {
-      data['inv_list'] = this.invList!.map((v) => v.toJson()).toList();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['client_code'] = clientCode;
+    data['installment_amount'] = installmentAmount;
+    data['internalrefernumber'] = internalrefernumber;
+    if (invList != null) {
+      data['inv_list'] = invList!.map((v) => v.toJson()).toList();
     }
-    data['live_cancel'] = this.liveCancel;
-     data['schemename'] = this.schemename;
-    data['next_installment_date'] = this.nextInstallmentDate;
-    data['sipregnno'] = this.sipregnno;
-    data['stat'] = this.stat;
-     data['msg'] = this.Msg;
-     data['frequency_type'] = this.frequency_type;
+    data['live_cancel'] = liveCancel;
+     data['schemename'] = schemename;
+    data['next_installment_date'] = nextInstallmentDate;
+    data['sipregnno'] = sipregnno;
+    data['stat'] = stat;
+     data['msg'] = Msg;
+     data['frequency_type'] = frequency_type;
     return data;
   }
 }
@@ -105,19 +105,19 @@ class InvList {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['ISIN'] = this.iSIN;
-    data['amc_code'] = this.amcCode;
-    data['amount'] = this.amount;
-    data['date'] = this.date;
-    data['foliono'] = this.foliono;
-    data['installments'] = this.installments;
-    data['ordernumber'] = this.ordernumber;
-    data['orderremarks'] = this.orderremarks;
-    data['orderstatus'] = this.orderstatus;
-    data['register_cancel'] = this.registerCancel;
-    data['schemename'] = this.schemename;
-    data['sipregndate'] = this.sipregndate;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['ISIN'] = iSIN;
+    data['amc_code'] = amcCode;
+    data['amount'] = amount;
+    data['date'] = date;
+    data['foliono'] = foliono;
+    data['installments'] = installments;
+    data['ordernumber'] = ordernumber;
+    data['orderremarks'] = orderremarks;
+    data['orderstatus'] = orderstatus;
+    data['register_cancel'] = registerCancel;
+    data['schemename'] = schemename;
+    data['sipregndate'] = sipregndate;
     return data;
   }
 }

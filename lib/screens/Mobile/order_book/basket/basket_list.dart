@@ -1,4 +1,3 @@
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -26,7 +25,7 @@ class BasketList extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final basket = ref.watch(orderProvider);
     final theme = ref.watch(themeProvider);
-    bool _isDeleting = false;
+    bool isDeleting = false;
 
     print("=== BASKET LIST BUILD ===");
     print("isBasketLoading: ${basket.isBasketLoading}");
@@ -123,7 +122,7 @@ class BasketList extends ConsumerWidget {
             ? const SizedBox(
                 height: 400, child: Center(child: CircularProgressIndicator()))                
                 : ListView.separated(
-                  padding: EdgeInsets.only(bottom: 80),
+                  padding: const EdgeInsets.only(bottom: 80),
                   physics: const ClampingScrollPhysics(),
                   shrinkWrap: true,
                   itemCount: basket.bsktList.length,
@@ -227,18 +226,18 @@ class BasketList extends ConsumerWidget {
                                     SizedBox(
                                       width: double.infinity,
                                       child: OutlinedButton(
-                                        onPressed: _isDeleting
+                                        onPressed: isDeleting
                                             ? null
                                             : () async {
                                                 setDialogState(() {
-                                                  _isDeleting = true;
+                                                  isDeleting = true;
                                                 });
                                                 Navigator.pop(context);
                                                 await basket
                                                     .removeBasket(index);
                                                 if (context.mounted) {
                                                   setDialogState(() {
-                                                    _isDeleting = false;
+                                                    isDeleting = false;
                                                   });
                                                 }
                                               },
@@ -254,7 +253,7 @@ class BasketList extends ConsumerWidget {
                                           backgroundColor:
                                               colors.primaryDark,
                                         ),
-                                        child: _isDeleting
+                                        child: isDeleting
                                             ? SizedBox(
                                                 width: 18,
                                                 height: 20,
@@ -412,7 +411,7 @@ class BasketScripList extends ConsumerWidget {
                       leading: const CustomBackBtn(),
                       title: TextWidget.titleText(
                           text:
-                              "${bsktName}   (${basket.bsktScripList.length} / ${basket.frezQtyOrderSliceMaxLimit})",
+                              "$bsktName   (${basket.bsktScripList.length} / ${basket.frezQtyOrderSliceMaxLimit})",
                           theme: false,
                           color: theme.isDarkMode
                               ? colors.textPrimaryDark
@@ -616,8 +615,8 @@ class BasketScripList extends ConsumerWidget {
                             }
                 
                             return ListView.separated(
-                              physics: ClampingScrollPhysics(),
-                              padding: EdgeInsets.only(bottom: 80),
+                              physics: const ClampingScrollPhysics(),
+                              padding: const EdgeInsets.only(bottom: 80),
                               shrinkWrap: true,
                               itemCount: basket.bsktScripList.length,
                               separatorBuilder: (_, __) => const ListDivider(),

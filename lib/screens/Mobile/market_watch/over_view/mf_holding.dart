@@ -60,7 +60,7 @@ class _MutualFundholdingsState extends ConsumerState<MutualFundholdings> {
                         ? colors.textPrimaryDark
                         : colors.textPrimaryLight,
                     fw: 1),
-                Container(
+                SizedBox(
                   width: 200,
                   // height: 40,
                   child: DropdownButtonHideUnderline(
@@ -79,7 +79,7 @@ class _MutualFundholdingsState extends ConsumerState<MutualFundholdings> {
                           color: theme.isDarkMode
                               ? colors.darkGrey
                               : const Color(0xffF1F3F8),
-                          borderRadius: BorderRadius.all(Radius.circular(5)),
+                          borderRadius: const BorderRadius.all(Radius.circular(5)),
                         ),
                       ),
                       dropdownStyleData: DropdownStyleData(
@@ -186,7 +186,7 @@ class _MutualFundholdingsState extends ConsumerState<MutualFundholdings> {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Container(
+                    SizedBox(
                       width: 232,
                       child: TextWidget.subText(
                         align: TextAlign.start,

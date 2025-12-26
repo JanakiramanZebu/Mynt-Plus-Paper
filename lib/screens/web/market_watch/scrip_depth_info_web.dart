@@ -343,7 +343,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
     // Helper function to build a column or empty space
     Widget buildColumn(String title, String value, bool isEmpty) {
       if (isEmpty) {
-        return Expanded(child: SizedBox.shrink());
+        return const Expanded(child: SizedBox.shrink());
       }
       return Expanded(
         child: Column(
@@ -493,7 +493,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
               final depthData = ref.watch(marketWatchProvider).getQuotes!;
               final scripInfo = ref.watch(marketWatchProvider);
               final theme = ref.read(themeProvider);
-              final instname = widget.wlValue.instname?.toString() ?? "";
+              final instname = widget.wlValue.instname.toString() ?? "";
               final isIndexOrCommodity =
                   instname == "UNDIND" || instname == "COM";
 
@@ -543,7 +543,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                 width: double.infinity,
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 10, vertical: 10),
-                                decoration: BoxDecoration(
+                                decoration: const BoxDecoration(
                                     // color:
                                     //     const Color(0xffa3a3a3).withOpacity(0.2),
                                     // border: Border.all(
@@ -1266,7 +1266,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                     CircularProgressIndicator(),
                                               ),
                                             ),
-                                          SizedBox.shrink(),
+                                          const SizedBox.shrink(),
                                           /*
                                       Chart and Options buttons row (temporarily commented)
                                       Padding(
@@ -1688,7 +1688,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                               .medium,
                                                                     ),
                                                                   ),
-                                                                  SizedBox(
+                                                                  const SizedBox(
                                                                     width: 4,
                                                                   ),
                                                                   Text(
@@ -1986,8 +1986,8 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                             builder: (context, constraints) {
                                                               // Calculate how many items can fit per row
                                                               // Each item: 120px width + 12px spacing
-                                                              final itemWidth = 120.0;
-                                                              final spacing = 12.0;
+                                                              const itemWidth = 120.0;
+                                                              const spacing = 12.0;
                                                               final availableWidth = constraints.maxWidth;
                                                               final itemsPerRow = ((availableWidth + spacing) / (itemWidth + spacing)).floor();
                                                               final calculatedWidth = itemsPerRow > 0 
@@ -2118,8 +2118,9 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                         isSubscribe:
                                                                             true);
 
-                                                                    if (!mounted)
+                                                                    if (!mounted) {
                                                                       return;
+                                                                    }
 
                                                                     // Open only futures screen in a dialog
                                                                     showDialog(
@@ -2279,8 +2280,9 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                           "${widget.wlValue.exch}:${widget.wlValue.tsym}",
                                                                     );
 
-                                                                    if (!mounted)
+                                                                    if (!mounted) {
                                                                       return;
+                                                                    }
 
                                                                     if (scripInfo.fundamentalData !=
                                                                             null &&
@@ -2565,11 +2567,11 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
       exch: widget.wlValue.exch.toString(),
       token: widget.wlValue.token.toString(),
       tsym: widget.wlValue.tsym.toString(),
-      instname: widget.wlValue.instname?.toString() ??
+      instname: widget.wlValue.instname.toString() ??
           widget.wlValue.symbol.toString(),
       symbol: widget.wlValue.symbol.toString(),
-      expDate: widget.wlValue.expDate?.toString() ?? "",
-      option: widget.wlValue.option?.toString() ?? "",
+      expDate: widget.wlValue.expDate.toString() ?? "",
+      option: widget.wlValue.option.toString() ?? "",
     );
   }
 

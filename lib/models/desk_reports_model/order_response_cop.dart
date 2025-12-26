@@ -7,15 +7,15 @@ class GetOrderlistCopModel {
     if (json['msg'] != null) {
       msg = <Msg>[];
       json['msg'].forEach((v) {
-        msg!.add(new Msg.fromJson(v));
+        msg!.add(Msg.fromJson(v));
       });
     }
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    if (this.msg != null) {
-      data['msg'] = this.msg!.map((v) => v.toJson()).toList();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    if (msg != null) {
+      data['msg'] = msg!.map((v) => v.toJson()).toList();
     }
     return data;
   }
@@ -53,15 +53,15 @@ class Msg {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['application_no'] = this.applicationNo;
-    data['bid_quan'] = this.bidQuan;
-    data['order_type'] = this.orderType;
-    data['price'] = this.price;
-    data['rejectionreason'] = this.rejectionreason;
-    data['series'] = this.series;
-    data['status'] = this.status;
-    data['symbol'] = this.symbol;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['application_no'] = applicationNo;
+    data['bid_quan'] = bidQuan;
+    data['order_type'] = orderType;
+    data['price'] = price;
+    data['rejectionreason'] = rejectionreason;
+    data['series'] = series;
+    data['status'] = status;
+    data['symbol'] = symbol;
     return data;
   }
 }

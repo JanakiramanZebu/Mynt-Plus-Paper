@@ -147,7 +147,7 @@ class DetailsChangeCurrentStatus {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     data['DDPI_client_email'] = dDPIClientEmail;
     data['DDPI_e_signed_pdf_path'] = dDPIESignedPdfPath;
     data['DDPI_fileid'] = dDPIFileid;

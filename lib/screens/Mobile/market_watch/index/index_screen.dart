@@ -12,7 +12,6 @@ import '../../../../provider/market_watch_provider.dart';
 import '../../../../provider/thems.dart';
 import '../../../../provider/websocket_provider.dart';
 
-import '../../../../res/colors.dart';
 import 'index_bottom_sheet.dart';
 
 class DefaultIndexList extends ConsumerStatefulWidget {
@@ -52,7 +51,7 @@ class _DefaultIndexListState extends ConsumerState<DefaultIndexList>
 
     // Calculate pages (2 items per page)
     final totalItems = indexValues.length;
-    final itemsPerPage = 2;
+    const itemsPerPage = 2;
     final totalPages = (totalItems / itemsPerPage).ceil();
 
     // Width calculation for 2 items per page
@@ -305,10 +304,10 @@ class OptimizedIndexItem extends ConsumerWidget {
   final double itemWidth;
 
   const OptimizedIndexItem({
-    Key? key,
+    super.key,
     required this.indexItem,
     required this.itemWidth,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -477,14 +476,14 @@ class _LivePriceWidget extends StatefulWidget {
   final bool src;
 
   const _LivePriceWidget({
-    Key? key,
+    super.key,
     required this.token,
     required this.initialLtp,
     required this.initialChange,
     required this.initialPerChange,
     required this.isDarkMode,
     required this.src,
-  }) : super(key: key);
+  });
 
   @override
   State<_LivePriceWidget> createState() => _LivePriceWidgetState();
@@ -765,10 +764,9 @@ class _StaticIndexName extends StatelessWidget {
   static final Map<String, TextStyle> _styleCache = {};
 
   const _StaticIndexName({
-    Key? key,
     required this.name,
     required this.isDarkMode,
-  }) : super(key: key);
+  });
 
   // Get cached text style
   TextStyle _getNameStyle() {

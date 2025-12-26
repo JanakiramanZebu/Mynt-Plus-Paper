@@ -587,7 +587,7 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    "${orderInput.actPrcType}",
+                    orderInput.actPrcType,
                     style: WebTextStyles.formLabel(
                       isDarkTheme: theme.isDarkMode,
                       color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
@@ -793,7 +793,7 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    "${orderInput.actOcoPrcType}",
+                    orderInput.actOcoPrcType,
                     style: WebTextStyles.formLabel(
                       isDarkTheme: theme.isDarkMode,
                       color: theme.isDarkMode ? WebDarkColors.icon : WebColors.icon,
@@ -922,7 +922,7 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
           ),
           const SizedBox(width: 8),
           Expanded(
-            child: Container(
+            child: SizedBox(
               height: 40,
               child: ElevatedButton(
                 onPressed: internet.connectionStatus == ConnectivityResult.none ||
@@ -1171,7 +1171,7 @@ class _DraggableModifyGttDialogState extends ConsumerState<_DraggableModifyGttDi
     final screenSize = MediaQuery.of(context).size;
 
     // Constrain position to screen bounds
-    final dialogWidth = 550.0;
+    const dialogWidth = 550.0;
     final dialogHeight = screenSize.height * 0.8;
     final constrainedPosition = Offset(
       _position.dx.clamp(0, screenSize.width - dialogWidth),

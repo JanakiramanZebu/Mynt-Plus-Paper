@@ -314,8 +314,6 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                                         _isNavigating = true;
                                       });
 
-                                      ref.read(marketWatchProvider).setIsDepthVisibleWeb(true);
-
                                       DepthInputArgs depthArgs = DepthInputArgs(
                                           exch: widget.watchListData["exch"].toString(),
                                           token: widget.watchListData["token"].toString(),
@@ -331,7 +329,19 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                                       );
 
                                       marketWatch.scripdepthsize(false);
+                                      // Call depth APIs first to set active tab
                                       await marketWatch.calldepthApis(context, depthArgs, "");
+                                      
+                                      // Set depth visible AFTER calldepthApis completes
+                                      // Pass depth args directly to ensure correct token/exch/tsym are used
+                                      // This triggers lazy load of depth data with proper context
+                                      await ref.read(marketWatchProvider).setIsDepthVisibleWeb(
+                                        true,
+                                        context: context,
+                                        exch: depthArgs.exch,
+                                        token: depthArgs.token,
+                                        tsym: depthArgs.tsym,
+                                      );
                                     } catch (e) {
                                       debugPrint('Error opening chart: $e');
                                     } finally {
@@ -962,7 +972,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                   letterSpacing: 0.0,
                 ),
               ),
-              SizedBox(
+              const SizedBox(
                 width: 4,
               ),
               Text(
@@ -1250,7 +1260,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
               color:
                   theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
               elevation: 8,
-              shape: RoundedRectangleBorder(
+              shape: const RoundedRectangleBorder(
                 // borderRadius: BorderRadius.circular(),
               ),
               items: [
@@ -1904,10 +1914,10 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
         print('⚠️ ERROR: No valid price data - blocking order screen');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
+            const SnackBar(
               content: Text('Price data not available yet. Please wait a moment and try again.'),
               backgroundColor: Colors.red,
-              duration: const Duration(seconds: 2),
+              duration: Duration(seconds: 2),
             ),
           );
         }

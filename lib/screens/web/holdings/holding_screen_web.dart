@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:developer' as developer;
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
@@ -51,8 +49,9 @@ class _HoldingScreenContent extends ConsumerStatefulWidget {
 
 class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
   int _selectedTabIndex = 0; // 0 for Stocks, 1 for Mutual Funds
-  String _searchQuery = '';
-  String _mfSearchQuery = ''; // Search query for Mutual Funds tab
+  // ✅ Use ValueNotifier for search queries to avoid rebuilding entire widget
+  final ValueNotifier<String> _searchQuery = ValueNotifier<String>('');
+  final ValueNotifier<String> _mfSearchQuery = ValueNotifier<String>('');
   int? _sortColumnIndex;
   bool _sortAscending = true;
   final ScrollController _horizontalScrollController = ScrollController();
@@ -78,6 +77,8 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
     _tabScrollController.dispose();
     _hoveredRowToken.dispose();
     _hoveredColumnIndex.dispose();
+    _searchQuery.dispose(); // ✅ Dispose search query ValueNotifier
+    _mfSearchQuery.dispose(); // ✅ Dispose MF search query ValueNotifier
 
     super.dispose();
   }
@@ -374,7 +375,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
                   Expanded(
                     child: _buildStatItem(
                       'Percentage',
-                      '${absReturnPercent}%',
+                      '$absReturnPercent%',
                       _getValueColor(absReturnPercent, theme),
                       theme,
                     ),
@@ -480,9 +481,14 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
                   _buildHoldingsTable(theme, portfolioData)
                 : // Mutual Funds Tab - Child has its own ScrollControllers
                   // Don't use parent ScrollControllers to avoid conflicts
-                  MfHoldingsScreenWeb(
-                    showSummaryCards: false,
-                    searchQuery: _mfSearchQuery,
+                  ValueListenableBuilder<String>(
+                    valueListenable: _mfSearchQuery,
+                    builder: (context, searchQuery, child) {
+                      return MfHoldingsScreenWeb(
+                        showSummaryCards: false,
+                        searchQuery: searchQuery,
+                      );
+                    },
                   ),
           ),
         ],
@@ -544,7 +550,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
                   ),
                 ),
                 child: TextField(
-                  onChanged: (value) => setState(() => _searchQuery = value),
+                  onChanged: (value) => _searchQuery.value = value, // ✅ Use ValueNotifier instead of setState
                   style: WebTextStyles.formInput(
                     isDarkTheme: theme.isDarkMode,
                     color: theme.isDarkMode
@@ -612,7 +618,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
                   ),
                 ),
                 child: TextField(
-                  onChanged: (value) => setState(() => _mfSearchQuery = value),
+                  onChanged: (value) => _mfSearchQuery.value = value, // ✅ Use ValueNotifier instead of setState
                   style: WebTextStyles.formInput(
                     isDarkTheme: theme.isDarkMode,
                     color: theme.isDarkMode
@@ -960,24 +966,36 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
 
   Widget _buildHoldingsTable(
       ThemesProvider theme, PortfolioProvider portfolioData) {
-    final filteredHoldings = _getFilteredHoldings(portfolioData);
+    // ✅ Use ValueListenableBuilder to only rebuild table when search query changes
+    return ValueListenableBuilder<String>(
+      valueListenable: _selectedTabIndex == 0 ? _searchQuery : _mfSearchQuery,
+      builder: (context, searchQuery, child) {
+        final filteredHoldings = _getFilteredHoldings(portfolioData);
 
-    if (filteredHoldings.isEmpty) {
-      return const SizedBox(
-        height: 400,
-        child: Center(child: NoDataFound()),
-      );
-    }
+        if (filteredHoldings.isEmpty) {
+          return const SizedBox(
+            height: 400,
+            child: Center(child: NoDataFound()),
+          );
+        }
+        
+        return _buildTableContent(theme, portfolioData, filteredHoldings);
+      },
+    );
+  }
+
+  Widget _buildTableContent(
+      ThemesProvider theme, PortfolioProvider portfolioData, List<dynamic> filteredHoldings) {
 
     return LayoutBuilder(
       builder: (context, constraints) {
         // Calculate available height: screen height minus all UI elements
         final screenHeight = MediaQuery.of(context).size.height;
-        final padding = 32.0; // Top and bottom padding (16 * 2)
-        final headerHeight = 120.0; // Summary cards height
-        final tabsAndSearchHeight = 100.0; // Tabs and search bar
-        final spacing = 24.0 + 16.0; // Spacing between sections
-        final bottomMargin = 20.0; // Bottom margin
+        const padding = 32.0; // Top and bottom padding (16 * 2)
+        const headerHeight = 120.0; // Summary cards height
+        const tabsAndSearchHeight = 100.0; // Tabs and search bar
+        const spacing = 24.0 + 16.0; // Spacing between sections
+        const bottomMargin = 20.0; // Bottom margin
         final tableHeight =
             screenHeight - padding - headerHeight - tabsAndSearchHeight - spacing - bottomMargin;
 
@@ -1015,11 +1033,11 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
               data: Theme.of(context).copyWith(
                 scrollbarTheme: ScrollbarThemeData(
                   // Make both scrollbars always visible
-                  thumbVisibility: MaterialStateProperty.all(true),
-                  trackVisibility: MaterialStateProperty.all(true),
+                  thumbVisibility: WidgetStateProperty.all(true),
+                  trackVisibility: WidgetStateProperty.all(true),
                   
                   // Consistent thickness for both horizontal and vertical
-                  thickness: MaterialStateProperty.all(6.0),
+                  thickness: WidgetStateProperty.all(6.0),
                   crossAxisMargin: 0.0, // Remove margin to align scrollbars properly
                   mainAxisMargin: 0.0,
                   
@@ -1027,19 +1045,19 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
                   radius: const Radius.circular(3),
                   
                   // Consistent colors for both scrollbars
-                  thumbColor: MaterialStateProperty.resolveWith((states) {
+                  thumbColor: WidgetStateProperty.resolveWith((states) {
                     return theme.isDarkMode 
                         ? WebDarkColors.textSecondary.withOpacity(0.3)
                         : WebColors.textSecondary.withOpacity(0.3);
                   }),
-                  trackColor: MaterialStateProperty.resolveWith((states) {
+                  trackColor: WidgetStateProperty.resolveWith((states) {
                     return theme.isDarkMode 
                         ? WebDarkColors.divider.withOpacity(0.1)
                         : WebColors.divider.withOpacity(0.1);
                   }),
                   
                   // Ensure consistent behavior for both directions
-                  trackBorderColor: MaterialStateProperty.all(Colors.transparent),
+                  trackBorderColor: WidgetStateProperty.all(Colors.transparent),
                   minThumbLength: 48.0, // Minimum thumb length for both scrollbars
                 ),
               ),
@@ -1058,7 +1076,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
               scrollController: _verticalScrollController,
               // Make scrollbars always visible
               showCheckboxColumn: false,
-              headingRowColor: MaterialStateProperty.all(
+              headingRowColor: WidgetStateProperty.all(
                 theme.isDarkMode
                     ? WebDarkColors.primary
                     : WebColors.primary.withOpacity(0.05),
@@ -1263,8 +1281,8 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
 
       return DataRow2(
         onTap: () => _showHoldingDetail(holding),
-        color: MaterialStateProperty.resolveWith<Color>((states) {
-          if (states.contains(MaterialState.hovered) || _hoveredRowToken.value == uniqueId) {
+        color: WidgetStateProperty.resolveWith<Color>((states) {
+          if (states.contains(WidgetState.hovered) || _hoveredRowToken.value == uniqueId) {
             return theme.isDarkMode
                 ? WebDarkColors.primary.withOpacity(0.06)
                 : WebColors.primary.withOpacity(0.10);
@@ -1448,7 +1466,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
       case 'Day %':
         final dayPercent = exchTsym?.perChange ?? '0.00';
         return Text(
-          '${dayPercent}%',
+          '$dayPercent%',
           style: WebTextStyles.custom(
             fontSize: 13,
             isDarkTheme: theme.isDarkMode,
@@ -1472,7 +1490,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
       case 'Overall %':
         final overallPercent = exchTsym?.pNlChng ?? '0.00';
         return Text(
-          '${overallPercent}%',
+          '$overallPercent%',
           style: WebTextStyles.custom(
             fontSize: 13,
             isDarkTheme: theme.isDarkMode,
@@ -1707,7 +1725,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
         ? holding.exchTsym![0]
         : null;
 
-    if (exchTsym == null)
+    if (exchTsym == null) {
       return DataCell(
         Text(
           'N/A',
@@ -1719,6 +1737,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
           ),
         ),
       );
+    }
 
     final holdingToken = exchTsym.token ?? '';
     final displayText = '${exchTsym.tsym ?? ''} ${exchTsym.exch ?? ''}';
@@ -1857,7 +1876,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
         ? holding.exchTsym![0]
         : null;
 
-    if (exchTsym == null)
+    if (exchTsym == null) {
       return DataCell(
         Text(
           'N/A',
@@ -1869,6 +1888,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
           ),
         ),
       );
+    }
 
     return DataCell(
       Text(
@@ -1990,7 +2010,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
 
     return DataCell(
       Text(
-        '${dayPercent}%',
+        '$dayPercent%',
         style: WebTextStyles.tableDataCompact(
           isDarkTheme: theme.isDarkMode,
           color: _getValueColor(dayPercent, theme),
@@ -2026,7 +2046,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
 
     return DataCell(
       Text(
-        '${overallPercent}%',
+        '$overallPercent%',
         style: WebTextStyles.tableDataCompact(
           isDarkTheme: theme.isDarkMode,
           color: _getValueColor(overallPercent, theme),
@@ -2056,7 +2076,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
         }
       }
     }
-    return '${totalChange.toStringAsFixed(2)}';
+    return totalChange.toStringAsFixed(2);
   }
 
   String _calculateDayChangePercent(PortfolioProvider portfolioData) {
@@ -2101,7 +2121,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
         }
       }
     }
-    return '${totalPnL.toStringAsFixed(2)}';
+    return totalPnL.toStringAsFixed(2);
   }
 
   String _calculateProfitLossPercent(PortfolioProvider portfolioData) {
@@ -2174,14 +2194,15 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
             .where((holding) => holding.sPrdtAli == 'MF')
             .toList();
 
-    // Apply search filter
-    if (_searchQuery.isNotEmpty) {
+    // Apply search filter - use ValueNotifier value
+    final searchQuery = _selectedTabIndex == 0 ? _searchQuery.value : _mfSearchQuery.value;
+    if (searchQuery.isNotEmpty) {
       holdings = holdings.where((holding) {
         if (holding.exchTsym != null && holding.exchTsym!.isNotEmpty) {
           final exchTsym = holding.exchTsym![0];
           final symbol = exchTsym.tsym?.toLowerCase() ?? '';
           final exch = exchTsym.exch?.toLowerCase() ?? '';
-          final searchLower = _searchQuery.toLowerCase();
+          final searchLower = searchQuery.toLowerCase();
           return symbol.contains(searchLower) || exch.contains(searchLower);
         }
         return false;

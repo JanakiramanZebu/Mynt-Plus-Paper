@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 
 class PortfolioResponse {
   final double xirrResult;
@@ -100,20 +99,20 @@ class TopStocks {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['name'] = this.name;
-    data['tsym'] = this.tsym;
-    data['allocation_percent'] = this.allocationPercent;
-    data['inversted_amount'] = this.inverstedAmount;
-    data['exch'] = this.exch;
-    data['qty'] = this.qty;
-    data['category'] = this.category;
-    data['zebuToken'] = this.zebuToken;
-    data['market_cap_type'] = this.marketCapType;
-    data['current_price'] = this.currentPrice;
-    data['current_amount'] = this.currentAmount;
-    data['pnl'] = this.pnl;
-    data['pnl_percent'] = this.pnlPercent;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['name'] = name;
+    data['tsym'] = tsym;
+    data['allocation_percent'] = allocationPercent;
+    data['inversted_amount'] = inverstedAmount;
+    data['exch'] = exch;
+    data['qty'] = qty;
+    data['category'] = category;
+    data['zebuToken'] = zebuToken;
+    data['market_cap_type'] = marketCapType;
+    data['current_price'] = currentPrice;
+    data['current_amount'] = currentAmount;
+    data['pnl'] = pnl;
+    data['pnl_percent'] = pnlPercent;
     return data;
   }
 }

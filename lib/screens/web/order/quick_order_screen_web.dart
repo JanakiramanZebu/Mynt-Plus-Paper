@@ -510,7 +510,7 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "${widget.scripInfo.symbol?.replaceAll("-EQ", "") ?? widget.orderArg.tSym}",
+                widget.scripInfo.symbol?.replaceAll("-EQ", "") ?? widget.orderArg.tSym,
                 style: WebTextStyles.sub(
                   isDarkTheme: theme.isDarkMode,
                   fontWeight: WebFonts.bold,
@@ -548,7 +548,7 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
   }
 
   Widget _orderTypeTabs(ThemesProvider theme) {
-    final tabs = const [
+    const tabs = [
       "Delivery",
       "Intraday"
     ]; // keep scope same as quick order

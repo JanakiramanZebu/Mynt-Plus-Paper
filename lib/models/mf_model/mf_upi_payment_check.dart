@@ -51,22 +51,22 @@ class UPIPaymentStatusCheck {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['TransCode'] = this.transCode;
-    data['TransNo'] = this.transNo;
-    data['OrderId'] = this.orderId;
-    data['UserId'] = this.userId;
-    data['MemberCode'] = this.memberCode;
-    data['ClientCode'] = this.clientCode;
-    data['Remarks'] = this.remarks;
-    data['status'] = this.status;
-    data['name'] = this.name;
-    data['stat'] = this.stat;
-    data['source'] = this.source;
-    data['placed_by'] = this.placedBy;
-    data['IPAddress'] = this.iPAddress;
-    data['datetime'] = this.datetime;
-    data['OrderVal'] = this.orderVal;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['TransCode'] = transCode;
+    data['TransNo'] = transNo;
+    data['OrderId'] = orderId;
+    data['UserId'] = userId;
+    data['MemberCode'] = memberCode;
+    data['ClientCode'] = clientCode;
+    data['Remarks'] = remarks;
+    data['status'] = status;
+    data['name'] = name;
+    data['stat'] = stat;
+    data['source'] = source;
+    data['placed_by'] = placedBy;
+    data['IPAddress'] = iPAddress;
+    data['datetime'] = datetime;
+    data['OrderVal'] = orderVal;
     return data;
   }
 }

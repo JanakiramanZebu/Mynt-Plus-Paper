@@ -10,14 +10,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/provider/chart_provider.dart';
 import 'package:mynt_plus/provider/ledger_provider.dart';
-import 'package:mynt_plus/provider/profile_all_details_provider.dart';
 import 'package:mynt_plus/screens/dashboard_screen.dart';
 import 'package:mynt_plus/screens/Mobile/stocks/explore/stocks/etf_category_detail_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../locator/constant.dart';
 import '../locator/preference.dart';
 import '../models/banner_model/banner_model.dart';
-import '../models/marketwatch_model/market_watch_scrip_model.dart';
 import '../provider/api_key_provider.dart';
 import '../provider/auth_provider.dart';
 import '../provider/banner_provider.dart';
@@ -36,24 +34,19 @@ import '../provider/user_profile_provider.dart';
 import '../provider/version_provider.dart';
 import '../provider/websocket_provider.dart';
 import '../provider/webview_chart_provider.dart';
-import '../res/assets.dart';
 import '../res/global_state_text.dart';
 import '../res/res.dart';
 import '../routes/route_names.dart';
 import '../sharedWidget/dynamic_banner_widget.dart';
-import '../sharedWidget/functions.dart';
 import '../sharedWidget/internet_widget.dart';
 import '../utils/overlay_manager.dart';
 import 'Mobile/market_watch/index/index_screen.dart';
 import 'Mobile/market_watch/scrip_filter_bottom_sheet.dart';
-import 'Mobile/market_watch/tv_chart/webview_chart.dart';
 import 'Mobile/market_watch/watchlist_screen.dart';
 import 'Mobile/market_watch/watchlists_bottom_sheet.dart';
 import 'Mobile/mutual_fund/mf_main_screen.dart';
 import 'Mobile/order_book/basket/create_basket.dart';
-import 'Mobile/order_book/order_book_screen.dart';
 import 'Mobile/portfolio_screens/portfolio_screen.dart';
-import 'Mobile/portfolio_screens/positions/group/position_group_bottomsheet.dart';
 import 'Mobile/profile_screen/logged_user_bottom_sheet.dart';
 import 'Mobile/profile_screen/profile_main_screen.dart';
 
@@ -172,7 +165,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         // Force UI refresh with latest data
         if (mounted) {
           // Give a slight delay for data to arrive
-          Future.delayed(Duration(milliseconds: 300), () {
+          Future.delayed(const Duration(milliseconds: 300), () {
             if (mounted) {
               setState(() {
                 // This will force the current tab to rebuild with fresh data
@@ -520,8 +513,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   ),
                   Text(
                       wlName == "My Stocks"
-                          ? "(${holdingsLength})"
-                          : "(${scripsLength})",
+                          ? "($holdingsLength)"
+                          : "($scripsLength)",
                       style: TextWidget.textStyle(
                           fontSize: 15,
                           theme: theme.isDarkMode,
@@ -650,7 +643,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           ],
         );
       }
-      return SizedBox.shrink();
+      return const SizedBox.shrink();
     });
   }
 
@@ -1133,7 +1126,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       if( ref.read(chartProvider.notifier).isfromOption == false){
         if(ref.read(chartUpdateProvider).orientation != 'portrait'){
       ref.read(chartUpdateProvider).changeOrientation('portrait');
-      await Future.delayed(Duration(milliseconds: 700));
+      await Future.delayed(const Duration(milliseconds: 700));
       }
       ref.read(chartProvider.notifier).hideChart();
 
@@ -1184,7 +1177,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       }else{
         if(ref.read(chartUpdateProvider).orientation != 'portrait'){
         ref.read(chartUpdateProvider).changeOrientation('portrait');
-        await Future.delayed(Duration(milliseconds: 700));
+        await Future.delayed(const Duration(milliseconds: 700));
         }
         ref.read(chartProvider.notifier).hideChart();
         ref.read(marketWatchProvider).setChartScript('ABC', '0123', 'ABCD');
@@ -1388,7 +1381,7 @@ class _PortfolioActions extends ConsumerWidget {
       // return _FundsWebActions();
     }
 
-    return SizedBox.shrink();
+    return const SizedBox.shrink();
   }
 }
 
@@ -1462,6 +1455,8 @@ class _PortfolioActions extends ConsumerWidget {
 
 // Position group actions
 class PositionGroupActions extends ConsumerWidget {
+  const PositionGroupActions({super.key});
+
   // Make this a ConsumerWidget
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -1729,7 +1724,7 @@ class _OrderbookActions extends ConsumerWidget {
       ]);
     }
 
-    return SizedBox.shrink();
+    return const SizedBox.shrink();
   }
 }
 
@@ -1750,22 +1745,22 @@ class _UserProfileTile extends ConsumerWidget {
         contentPadding: const EdgeInsets.symmetric(horizontal: 16),
         leading: CircleAvatar(
           backgroundColor:
-              !theme.isDarkMode ? Colors.grey[300] : Color(0xff666666),
+              !theme.isDarkMode ? Colors.grey[300] : const Color(0xff666666),
         ),
         title: Container(
           height: 16,
           width: 150,
-          color: !theme.isDarkMode ? Colors.grey[300] : Color(0xff666666),
+          color: !theme.isDarkMode ? Colors.grey[300] : const Color(0xff666666),
         ),
         subtitle: Container(
           height: 12,
           width: 100,
-          color: !theme.isDarkMode ? Colors.grey[300] : Color(0xff666666),
+          color: !theme.isDarkMode ? Colors.grey[300] : const Color(0xff666666),
         ),
         trailing: Container(
           height: 24,
           width: 50,
-          color: !theme.isDarkMode ? Colors.grey[300] : Color(0xff666666),
+          color: !theme.isDarkMode ? Colors.grey[300] : const Color(0xff666666),
         ),
       );
     }

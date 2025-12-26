@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/models/marketwatch_model/market_watch_scrip_model.dart';
@@ -16,9 +15,6 @@ import '../../../../models/marketwatch_model/get_quotes.dart';
 import '../../../../models/order_book_model/order_book_model.dart';
 import '../../../../provider/market_watch_provider.dart';
 import '../../../../provider/thems.dart';
-import '../../../../provider/user_profile_provider.dart';
-import '../../../../provider/webview_chart_provider.dart';
-import '../../../../res/res.dart';
 import 'chart_iframe_guard.dart';
 
 class ChartScreenWebViews extends StatefulWidget {
@@ -43,7 +39,7 @@ class _ChartScreenWebViewsState extends State<ChartScreenWebViews> {
   bool isWebViewRegistered = false;
   
   // Flutter-side overlay to block pointer events over the iframe
-  bool _blockIframe = false;
+  final bool _blockIframe = false;
   // Track hover state to control overlay when cursor leaves without exit events
   bool _isHovering = false;
   

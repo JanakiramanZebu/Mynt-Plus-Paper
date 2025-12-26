@@ -9,7 +9,6 @@ import '../../../../provider/thems.dart';
 import '../../../../provider/websocket_provider.dart';
 import '../../../../res/res.dart';
 import '../../../../routes/route_names.dart';
-import '../../../../sharedWidget/functions.dart';
 
 class PositionListCard extends ConsumerStatefulWidget {
   final PositionBookModel positionList;
@@ -83,7 +82,7 @@ class _PositionListCardState extends ConsumerState<PositionListCard> {
 
   // Get cached text style to avoid rebuilding styles
   TextStyle _getStyle(Color color, double size, int? fw, {String? key}) {
-    final cacheKey = key ?? '${color.value}|$size|${fw}';
+    final cacheKey = key ?? '${color.value}|$size|$fw';
 
     if (!_cachedStyles.containsKey(cacheKey)) {
       _cachedStyles[cacheKey] = TextWidget.textStyle(
@@ -128,7 +127,7 @@ class _PositionListCardState extends ConsumerState<PositionListCard> {
 
       // Get formatted quantity value
       final qty =
-          "${((int.tryParse(widget.positionList.qty.toString()) ?? 0) / (widget.positionList.exch == 'MCX' ? (int.tryParse(widget.positionList.ls.toString()) ?? 1) : 1)).toInt()}";
+          "${(int.tryParse(widget.positionList.qty.toString()) ?? 0) ~/ (widget.positionList.exch == 'MCX' ? (int.tryParse(widget.positionList.ls.toString()) ?? 1) : 1)}";
 
       // Get PNL and determine its color
       final pnlValue = positions.isNetPnl

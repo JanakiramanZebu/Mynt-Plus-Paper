@@ -51,7 +51,7 @@ class BrokerMsg extends ConsumerWidget {
     return noftification.loading
         ? const Center(child: CircularProgressIndicator())
         : SingleChildScrollView(
-          physics: ClampingScrollPhysics(),
+          physics: const ClampingScrollPhysics(),
             child: noftification.brokermsg![0].dmsg == null
                 ? const Padding(
                     padding: EdgeInsets.symmetric(vertical: 220),
@@ -62,7 +62,7 @@ class BrokerMsg extends ConsumerWidget {
                 : ListView.separated(
                     padding: const EdgeInsets.symmetric(vertical: 20),
                     shrinkWrap: true,
-                    physics: ClampingScrollPhysics(),
+                    physics: const ClampingScrollPhysics(),
                     itemCount: noftification.brokermsg!.length,
                     itemBuilder: (BuildContext context, int index) {
                       return Padding(

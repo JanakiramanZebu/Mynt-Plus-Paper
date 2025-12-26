@@ -7,13 +7,13 @@ class TpSeries {
     if (json['data'] != null) {
       data = <Data>[];
       json['data'].forEach((v) {
-        data!.add(new Data.fromJson(v));
+        data!.add(Data.fromJson(v));
       });
     }
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     if (this.data != null) {
       data['data'] = this.data!.map((v) => v.toJson()).toList();
     }
@@ -65,19 +65,19 @@ class Data {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['stat'] = this.stat;
-    data['time'] = this.time;
-    data['ssboe'] = this.ssboe;
-    data['into'] = this.into;
-    data['inth'] = this.inth;
-    data['intl'] = this.intl;
-    data['intc'] = this.intc;
-    data['intvwap'] = this.intvwap;
-    data['intv'] = this.intv;
-    data['intoi'] = this.intoi;
-    data['v'] = this.v;
-    data['oi'] = this.oi;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['stat'] = stat;
+    data['time'] = time;
+    data['ssboe'] = ssboe;
+    data['into'] = into;
+    data['inth'] = inth;
+    data['intl'] = intl;
+    data['intc'] = intc;
+    data['intvwap'] = intvwap;
+    data['intv'] = intv;
+    data['intoi'] = intoi;
+    data['v'] = v;
+    data['oi'] = oi;
     return data;
   }
 }

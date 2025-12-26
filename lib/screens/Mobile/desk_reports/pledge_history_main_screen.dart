@@ -9,7 +9,6 @@ import '../../../res/global_state_text.dart';
 import '../../../sharedWidget/custom_back_btn.dart';
 import '../../../sharedWidget/loader_ui.dart';
 import 'pledge_history_screen.dart';
-import 'tax_pnl_screens/pnl_value_screen.dart';
 import 'unpledge_history_screen.dart';
 
 class PledgeHistoryMainScreen extends StatefulWidget {
@@ -188,7 +187,7 @@ class _PledgeMainScreen extends State<PledgeHistoryMainScreen>
                 Expanded(
                   child: TabBarView( 
                     controller: _tabController,
-                    children: [
+                    children: const [
                       PledgeHistoryScreen(),
                       UnpledgeHistoryScreen(),
                     ],

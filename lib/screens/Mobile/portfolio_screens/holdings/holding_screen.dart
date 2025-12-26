@@ -1,20 +1,14 @@
 import 'dart:async';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import '../../../../utils/custom_navigator.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:mynt_plus/provider/mf_provider.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 // import 'package:remove_emoji_input_formatter/remove_emoji_input_formatter.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart'
-    hide Consumer, ConsumerWidget;
 import '../../../../provider/fund_provider.dart';
 import '../../../../provider/index_list_provider.dart';
-import '../../../../provider/ledger_provider copy.dart';
 import '../../../../provider/ledger_provider.dart';
 import '../../../../provider/market_watch_provider.dart';
 import '../../../../provider/portfolio_provider.dart';
@@ -591,7 +585,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> with TickerProvid
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           // Summary section with all stats (original UI) - hide when scrolling up
-                          if (!_isScrollingUp && !holdingProvider.holdingsModel!.isEmpty)
+                          if (!_isScrollingUp && holdingProvider.holdingsModel!.isNotEmpty)
                             _buildSummarySection(),
 
                           // Action buttons section - using cached buttons when possible
@@ -612,7 +606,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> with TickerProvid
             ),
             
             // Fixed Total PNL card overlaying the content - show until search bar becomes visible
-            if (_isScrollingUp && !holdingProvider.holdingsModel!.isEmpty)
+            if (_isScrollingUp && holdingProvider.holdingsModel!.isNotEmpty)
               Positioned(
                 top: -1,
                 left: 0,
@@ -748,7 +742,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> with TickerProvid
                       const SizedBox(width: 4),
                       TextWidget.headText(
                         text:
-                            "${getFormatter(value: _totalPnlHolding, v4d: false, noDecimal: false)}",
+                            getFormatter(value: _totalPnlHolding, v4d: false, noDecimal: false),
                         theme: false,
                         color: _totalPnlHolding.toString().startsWith("-")
                             ? theme.isDarkMode
@@ -785,8 +779,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> with TickerProvid
 
       // Create a memoized version that only updates when the key data changes
       final memoKey =
-          '${_totalPnlHolding.toStringAsFixed(2)}-${_oneDayChng.toStringAsFixed(2)}-' +
-              '${_invest.toStringAsFixed(2)}-${_totalCurrentVal.toStringAsFixed(2)}';
+          '${_totalPnlHolding.toStringAsFixed(2)}-${_oneDayChng.toStringAsFixed(2)}-' '${_invest.toStringAsFixed(2)}-${_totalCurrentVal.toStringAsFixed(2)}';
 
       // Add this field to the class to store the cached summary section
       if (_cachedSummarySection != null && _cachedSummaryKey == memoKey) {
@@ -829,7 +822,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> with TickerProvid
                                 children: [
                                   TextWidget.subText(
                                       text:
-                                          "${getFormatter(value: _oneDayChng, v4d: false, noDecimal: false)}",
+                                          getFormatter(value: _oneDayChng, v4d: false, noDecimal: false),
                                       theme: false,
                                       color: _oneDayChng
                                               .toStringAsFixed(2)
@@ -887,7 +880,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> with TickerProvid
                               const SizedBox(width: 4),
                               TextWidget.headText(
                                   text:
-                                      "${getFormatter(value: _totalPnlHolding, v4d: false, noDecimal: false)}",
+                                      getFormatter(value: _totalPnlHolding, v4d: false, noDecimal: false),
                                   theme: false,
                                   color: _totalPnlHolding
                                           .toString()
@@ -922,7 +915,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> with TickerProvid
                             const SizedBox(height: 4),
                             TextWidget.subText(
                                 text:
-                                    "${getFormatter(value: _invest, v4d: false, noDecimal: false)}",
+                                    getFormatter(value: _invest, v4d: false, noDecimal: false),
                                 theme: theme.isDarkMode,
                                 color: theme.isDarkMode
                                     ? colors.textPrimaryDark
@@ -943,7 +936,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> with TickerProvid
                             const SizedBox(height: 4),
                             TextWidget.subText(
                                 text:
-                                    "${getFormatter(value: _totalCurrentVal, v4d: false, noDecimal: false)}",
+                                    getFormatter(value: _totalCurrentVal, v4d: false, noDecimal: false),
                                 theme: theme.isDarkMode,
                                 color: theme.isDarkMode
                                     ? colors.textPrimaryDark
@@ -1137,7 +1130,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> with TickerProvid
                                       ? colors.highlightDark
                                       : colors.highlightLight,
                                   onTap: () async {
-                                    Future.delayed(Duration(milliseconds: 150),
+                                    Future.delayed(const Duration(milliseconds: 150),
                                         () async {
                                       await ref
                                           .read(fundProvider)
@@ -1174,7 +1167,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> with TickerProvid
                                     ? colors.highlightDark
                                     : colors.highlightLight,
                                 onTap: () async {
-                                  Future.delayed(Duration(milliseconds: 150),
+                                  Future.delayed(const Duration(milliseconds: 150),
                                       () async {
                                     if (ledgerdate.pledgeandunpledge == null) {
                                       await ledgerdate.getCurrentDate("pandu");
@@ -1448,8 +1441,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> with TickerProvid
 
       // Show "No Data Found" only when search is active with text and no results found
       if (showSearch && searchText.isNotEmpty && items.isEmpty) {
-        if (_cachedEmptyState == null) {
-          _cachedEmptyState = SizedBox(
+        _cachedEmptyState ??= const SizedBox(
             height: 400,
             child: Center(child: NoDataFound(
                           title: "No Results Found",
@@ -1458,7 +1450,6 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> with TickerProvid
                           secondaryEnabled: false,
                         ),),
           );
-        }
         return _cachedEmptyState!;
       }
 
@@ -1474,7 +1465,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> with TickerProvid
       // Wrap in RepaintBoundary to isolate the whole list
       return RepaintBoundary(
         child: ListView.builder(
-          padding: EdgeInsets.only(bottom: 0),
+          padding: const EdgeInsets.only(bottom: 0),
           // Use a key that only changes when the list fundamentally changes
           key: ValueKey('holdings-list-${items.length}'),
           physics: const NeverScrollableScrollPhysics(),
@@ -1521,12 +1512,12 @@ class _HoldingItemWrapper extends ConsumerStatefulWidget {
   final VoidCallback onLongPress;
 
   const _HoldingItemWrapper({
-    Key? key,
+    super.key,
     required this.holding,
     required this.theme,
     required this.onTap,
     required this.onLongPress,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<_HoldingItemWrapper> createState() =>

@@ -3,13 +3,15 @@ import 'package:flutter_heatmap_calendar/flutter_heatmap_calendar.dart';
 import '../../../../res/global_state_text.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       debugShowCheckedModeBanner: false,
       home: HeatmapCalendarScreen(),
     );
@@ -17,6 +19,8 @@ class MyApp extends StatelessWidget {
 }
 
 class HeatmapCalendarScreen extends StatefulWidget {
+  const HeatmapCalendarScreen({super.key});
+
   @override
   _HeatmapCalendarScreenState createState() => _HeatmapCalendarScreenState();
 }
@@ -50,22 +54,22 @@ class _HeatmapCalendarScreenState extends State<HeatmapCalendarScreen> {
       appBar: AppBar(
         title: Text(
           "${_getMonthName(selectedMonth.month)} ${selectedMonth.year}",
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
         backgroundColor: Colors.white,
         elevation: 0, 
-        actions: [
+        actions: const [
           
         ],
       ),
       body: Column(
         children: [
           IconButton(
-          icon: Icon(Icons.arrow_back_ios, color: Colors.black),
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
           onPressed: () => _changeMonth(-1),),
           IconButton(
-            icon: Icon(Icons.arrow_forward_ios, color: Colors.black),
+            icon: const Icon(Icons.arrow_forward_ios, color: Colors.black),
             onPressed: () => _changeMonth(1),
           ),
           Padding(
@@ -111,18 +115,18 @@ class _HeatmapCalendarScreenState extends State<HeatmapCalendarScreen> {
             theme: false,
             color: Colors.grey,
           ),
-          SizedBox(width: 5),
+          const SizedBox(width: 5),
           for (int i = 1; i <= 6; i++)
             Container(
               width: 20,
               height: 10,
-              margin: EdgeInsets.symmetric(horizontal: 2),
+              margin: const EdgeInsets.symmetric(horizontal: 2),
               decoration: BoxDecoration(
                 color: Colors.red[100 * i],
                 borderRadius: BorderRadius.circular(3),
               ),
             ),
-          SizedBox(width: 5),
+          const SizedBox(width: 5),
           TextWidget.captionText(
             text: "more",
             theme: false,

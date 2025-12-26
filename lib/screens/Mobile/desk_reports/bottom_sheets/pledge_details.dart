@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/provider/ledger_provider.dart';
-import 'package:mynt_plus/sharedWidget/functions.dart';
 import '../../../../provider/thems.dart';
 import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
@@ -197,7 +196,7 @@ class _PledgeDeytails extends State<PledgeDeytails> {
       dropdownItems =
           dropdownItems.where((item) => seen.add(item.value)).toList();
 
-      print("${dropdownItems} printprintprintpritn");
+      print("$dropdownItems printprintprintpritn");
 
       return WillPopScope(
         onWillPop: () async {
@@ -210,7 +209,7 @@ class _PledgeDeytails extends State<PledgeDeytails> {
           return true;
         },
         child: SingleChildScrollView(
-          physics: ClampingScrollPhysics(),
+          physics: const ClampingScrollPhysics(),
           child: Container(
             decoration: BoxDecoration(
               borderRadius: const BorderRadius.only(
@@ -239,7 +238,7 @@ class _PledgeDeytails extends State<PledgeDeytails> {
             child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
+                  const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [CustomDragHandler()],
                   ),
@@ -260,7 +259,7 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                                     textOverflow: TextOverflow.ellipsis,
                                     theme: theme.isDarkMode,
                                     fw: 1),
-                                SizedBox(height: 8.0),
+                                const SizedBox(height: 8.0),
                                 ledgerdata.screenpledge == 'pledge'
                                     ? TextWidget.paraText(
                                         text:
@@ -273,7 +272,7 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                                         fw: 0)
                                     : TextWidget.paraText(
                                         text:
-                                            "${double.tryParse(widget.data.margin.toString())!.toStringAsFixed(2)}",
+                                            double.tryParse(widget.data.margin.toString())!.toStringAsFixed(2),
                                         textOverflow: TextOverflow.ellipsis,
                                         theme: theme.isDarkMode,
                                         color: theme.isDarkMode
@@ -433,7 +432,7 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                             fw: 1),
                         Padding(
                           padding: const EdgeInsets.only(top: 8.0),
-                          child: Container(
+                          child: SizedBox(
                               height: 44,
                               child: CustomTextFormField(
                                   textAlign: TextAlign.start,
@@ -496,7 +495,7 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                                         : colors.textPrimaryLight,
                                     fw: 0),
                               )
-                            : SizedBox(),
+                            : const SizedBox(),
                         ledgerdata.screenpledge == 'pledge'
                             ? Padding(
                                 padding: const EdgeInsets.only(
@@ -583,7 +582,7 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                                   ),
                                 ),
                               )
-                            : SizedBox(),
+                            : const SizedBox(),
                         ledgerdata.screenpledge == 'pledge'
                             ? Container(
                                 margin:
@@ -605,7 +604,7 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                                     maxLines: 7,
                                     fw: 0),
                               )
-                            : SizedBox(),
+                            : const SizedBox(),
                         ledgerdata.dayforpledgeunpledge == 'Saturday' ||
                                 ledgerdata.dayforpledgeunpledge == 'Sunday'
                             ? Container(
@@ -628,7 +627,7 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                                     maxLines: 7,
                                     fw: 0),
                               )
-                            : SizedBox(),
+                            : const SizedBox(),
                         SafeArea(
                           child: Container(
                               height: 45,
@@ -715,7 +714,7 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                       ],
                     ),
                   ),
-                  SizedBox(
+                  const SizedBox(
                     height: 20.0,
                   ),
                 ]),

@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:syncfusion_flutter_charts/charts.dart';
 import '../../../../provider/fund_provider.dart';
 import '../../../../provider/thems.dart';
 import '../../../../provider/transcation_provider.dart';
 import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
 import '../../../../routes/route_names.dart';
-import '../../../../sharedWidget/custom_widget_button.dart';
 import '../../../../sharedWidget/functions.dart';
-import 'fund_collateral.dart';
 
 class SecureFund extends ConsumerStatefulWidget {
   const SecureFund({super.key});
@@ -32,7 +29,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
     return Container(
       color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
       child: ListView(
-        physics: ClampingScrollPhysics(),
+        physics: const ClampingScrollPhysics(),
         padding: EdgeInsets.zero,
         children: [
           // Available Margin Section
@@ -350,7 +347,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                   ),
                   TextWidget.subText(
                     text:
-                        "${getFormatter(value: _safeParseDouble("${funds.fundDetailModel?.payin ?? 0.00}"), v4d: false, noDecimal: false)}",
+                        getFormatter(value: _safeParseDouble("${funds.fundDetailModel?.payin ?? 0.00}"), v4d: false, noDecimal: false),
                     theme: false,
                     color: theme.isDarkMode
                         ? colors.textPrimaryDark
@@ -378,7 +375,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                   ),
                   TextWidget.subText(
                     text:
-                        "${getFormatter(value: _safeParseDouble("${funds.pledgeAndUnpledgeModel?.noncashEquivalent ?? 0.00}"), v4d: false, noDecimal: false)}",
+                        getFormatter(value: _safeParseDouble("${funds.pledgeAndUnpledgeModel?.noncashEquivalent ?? 0.00}"), v4d: false, noDecimal: false),
                     theme: false,
                     color: theme.isDarkMode
                         ? colors.textPrimaryDark
@@ -406,7 +403,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                   ),
                   TextWidget.subText(
                     text:
-                        "${getFormatter(value: _safeParseDouble("${funds.pledgeAndUnpledgeModel?.cashEquivalent ?? 0.00}"), v4d: false, noDecimal: false)}",
+                        getFormatter(value: _safeParseDouble("${funds.pledgeAndUnpledgeModel?.cashEquivalent ?? 0.00}"), v4d: false, noDecimal: false),
                     theme: false,
                     color: theme.isDarkMode
                         ? colors.textPrimaryDark
@@ -436,7 +433,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                         ),
                         TextWidget.subText(
                           text:
-                              "${getFormatter(value: _safeParseDouble("${funds.fundDetailModel?.brkcollamt ?? 0.00}"), v4d: false, noDecimal: false)}",
+                              getFormatter(value: _safeParseDouble("${funds.fundDetailModel?.brkcollamt ?? 0.00}"), v4d: false, noDecimal: false),
                           theme: false,
                           color: theme.isDarkMode
                               ? colors.textPrimaryDark
@@ -499,7 +496,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                     ],
                   );
                 }),
-            SizedBox(height: 14),
+            const SizedBox(height: 14),
           ],
         ],
       ),

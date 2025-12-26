@@ -273,9 +273,9 @@ class _TradeBookDetailScreenWebState extends ConsumerState<TradeBookDetailScreen
 
     return Material(
       color: Colors.transparent,
-      shape: RoundedRectangleBorder(),
+      shape: const RoundedRectangleBorder(),
       child: InkWell(
-        customBorder: RoundedRectangleBorder(),
+        customBorder: const RoundedRectangleBorder(),
         borderRadius: BorderRadius.circular(0),
         splashColor: theme.isDarkMode ? colors.primaryDark.withOpacity(0.1) : colors.primaryLight.withOpacity(0.1),
         highlightColor: theme.isDarkMode ? colors.primaryDark.withOpacity(0.2) : colors.primaryLight.withOpacity(0.2),
@@ -313,7 +313,7 @@ class _TradeBookDetailScreenWebState extends ConsumerState<TradeBookDetailScreen
             Row(
               children: [
                 Text(
-                  "${displayData.ltp ?? displayData.prc ?? '0.00'}",
+                  displayData.ltp ?? displayData.prc ?? '0.00',
                   style: WebTextStyles.title(
                     isDarkTheme: theme.isDarkMode,
                     color: (displayData.change == "null" || displayData.change == null) ||
@@ -473,10 +473,10 @@ class _TradeBookDetailScreenWebState extends ConsumerState<TradeBookDetailScreen
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildInfoRow("Transaction Type", displayData.trantype == "B" ? "Buy" : "Sell", theme),
-                  _buildInfoRow("Quantity", "${displayData.qty ?? '0'}", theme),
-                  _buildInfoRow("Price", "${displayData.avgprc ?? '0.00'}", theme),
-                  _buildInfoRow("Product", "${displayData.sPrdtAli ?? '-'}", theme),
-                  _buildInfoRow("Order Number", "${displayData.norenordno ?? '-'}", theme),
+                  _buildInfoRow("Quantity", displayData.qty ?? '0', theme),
+                  _buildInfoRow("Price", displayData.avgprc ?? '0.00', theme),
+                  _buildInfoRow("Product", displayData.sPrdtAli ?? '-', theme),
+                  _buildInfoRow("Order Number", displayData.norenordno ?? '-', theme),
                   _buildInfoRow("Trade Time", displayData.norentm ?? "-", theme),
                 ],
               ),
@@ -494,12 +494,12 @@ class _TradeBookDetailScreenWebState extends ConsumerState<TradeBookDetailScreen
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildInfoRow("Fill Quantity", "${displayData.flqty ?? '0'}", theme),
-                  _buildInfoRow("Fill Price", "${displayData.flprc ?? '0.00'}", theme),
-                  _buildInfoRow("Fill ID", "${displayData.flid ?? '-'}", theme),
+                  _buildInfoRow("Fill Quantity", displayData.flqty ?? '0', theme),
+                  _buildInfoRow("Fill Price", displayData.flprc ?? '0.00', theme),
+                  _buildInfoRow("Fill ID", displayData.flid ?? '-', theme),
                   _buildInfoRow("Fill Time", displayData.fltm ?? "-", theme),
-                  _buildInfoRow("Fill Shares", "${displayData.fillshares ?? '0'}", theme),
-                  _buildInfoRow("Product Type", "${displayData.prctyp ?? '-'}", theme),
+                  _buildInfoRow("Fill Shares", displayData.fillshares ?? '0', theme),
+                  _buildInfoRow("Product Type", displayData.prctyp ?? '-', theme),
                 ],
               ),
             ),

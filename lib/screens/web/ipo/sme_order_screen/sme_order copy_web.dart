@@ -1142,7 +1142,7 @@ class _SMEApplyIpoScreenState extends ConsumerState<SMEApplyIpoScreen> {
     //   print(
     //       "Text: ${iposbids[i].bitis} Checkbox: ${iposbids[i].qty}, requried:${iposbids[i].cutoff},bidprice:${iposbids[i].price} value Total: ${iposbids[i].total}");
     // }
-print("IPO PLACE ORDERS :: ${upiid.upiid.text} ,${inspect(menudata)} ,${inspect(iposbids)} ,${iposupiid}");
+print("IPO PLACE ORDERS :: ${upiid.upiid.text} ,${inspect(menudata)} ,${inspect(iposbids)} ,$iposupiid");
     await ref.read(ipoProvide).fetchupiidvalidation(
         context, upiid.upiid.text, "343245", menudata, iposbids, iposupiid);
   }

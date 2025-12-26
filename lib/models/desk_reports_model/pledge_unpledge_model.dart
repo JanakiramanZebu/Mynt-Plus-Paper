@@ -38,7 +38,7 @@ class PledgeAndUnpledgeModel {
     if (json['data'] != null) {
       data = <Data>[];
       json['data'].forEach((v) {
-        data!.add(new Data.fromJson(v));
+        data!.add(Data.fromJson(v));
       });
     }
     estTotalAvailable = json['est_total_available'].toString();
@@ -53,7 +53,7 @@ class PledgeAndUnpledgeModel {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     data['BOID'] = bOID;
     data['CLIENTCODE'] = cLIENTCODE;
     data['CLIENTTEXT'] = cLIENTTEXT;
@@ -190,7 +190,7 @@ class Data {
     sYMB = json['SYMB'].toString();
     status = json['Status'].toString();
     cashEqColl = json['cash_eq_coll'] != null
-        ? new CashEqColl.fromJson(json['cash_eq_coll'])
+        ? CashEqColl.fromJson(json['cash_eq_coll'])
         : null;
     eligibleSegments = json['eligible_segments'].cast<String>();
     estPercentage = json['est_percentage'].toString();
@@ -207,7 +207,7 @@ class Data {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     data['AMOUNT'] = aMOUNT;
     data['AMOUNT1'] = aMOUNT1;
     data['BENQTY'] = bENQTY;
@@ -265,7 +265,7 @@ class CashEqColl {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     data['com_cash_eq'] = comCashEq;
     data['fo_cash_eq'] = foCashEq;
     data['cd_cash_eq'] = cdCashEq;

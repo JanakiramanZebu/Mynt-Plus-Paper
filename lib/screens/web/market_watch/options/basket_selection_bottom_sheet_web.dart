@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../models/marketwatch_model/opt_chain_model.dart';
 import '../../../../provider/order_provider.dart';
 import '../../../../provider/thems.dart';
@@ -12,10 +11,10 @@ class BasketSelectionBottomSheet extends ConsumerStatefulWidget {
   final Function(String) onBasketSelected;
 
   const BasketSelectionBottomSheet({
-    Key? key,
+    super.key,
     required this.selectedOptions,
     required this.onBasketSelected,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<BasketSelectionBottomSheet> createState() =>
@@ -72,7 +71,7 @@ class _BasketSelectionBottomSheetState
     if (_basketNameController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Please enter a basket name'),
+          content: const Text('Please enter a basket name'),
           backgroundColor: colors.error,
         ),
       );

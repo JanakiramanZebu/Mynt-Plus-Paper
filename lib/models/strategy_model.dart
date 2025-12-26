@@ -1,5 +1,4 @@
 // models/strategy_model.dart
-import 'dart:convert';
 
 class StrategyRequest {
   final String uid;
@@ -209,13 +208,13 @@ class StrategyList {
     if (json['data'] != null) {
       data = <Data>[];
       json['data'].forEach((v) {
-        data!.add(new Data.fromJson(v));
+        data!.add(Data.fromJson(v));
       });
     }
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     if (this.data != null) {
       data['data'] = this.data!.map((v) => v.toJson()).toList();
     }
@@ -273,13 +272,13 @@ class Data {
   if (json['statlegs'] != null) {
     statlegs = <Statlegs>[];
     json['statlegs'].forEach((v) {
-      statlegs!.add(new Statlegs.fromJson(v));
+      statlegs!.add(Statlegs.fromJson(v));
     });
   }
   
-  target = json['target'] != null ? new Target.fromJson(json['target']) : null;
+  target = json['target'] != null ? Target.fromJson(json['target']) : null;
   stoploss = json['stoploss'] != null && json['stoploss'].isNotEmpty 
-      ? new Target.fromJson(json['stoploss']) : null;
+      ? Target.fromJson(json['stoploss']) : null;
   
   starttime = json['starttime'];
   endtime = json['endtime'];
@@ -300,31 +299,31 @@ class Data {
 
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['uid'] = this.uid;
-    data['email'] = this.email;
-    data['statname'] = this.statname;
-    data['exch'] = this.exch;
-    data['product'] = this.product;
-    if (this.statlegs != null) {
-      data['statlegs'] = this.statlegs!.map((v) => v.toJson()).toList();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['uid'] = uid;
+    data['email'] = email;
+    data['statname'] = statname;
+    data['exch'] = exch;
+    data['product'] = product;
+    if (statlegs != null) {
+      data['statlegs'] = statlegs!.map((v) => v.toJson()).toList();
     }
-    if (this.target != null) {
-      data['target'] = this.target!.toJson();
+    if (target != null) {
+      data['target'] = target!.toJson();
     }
-    if (this.stoploss != null) {
-      data['stoploss'] = this.stoploss!.toJson();
+    if (stoploss != null) {
+      data['stoploss'] = stoploss!.toJson();
     }
-    data['starttime'] = this.starttime;
-    data['endtime'] = this.endtime;
-    data['executionon'] = this.executionon;
-    data['broker'] = this.broker;
-    data['datetime'] = this.datetime;
-    data['idxtoken'] = this.idxtoken;
-    data['symbol'] = this.symbol;
-    data['status'] = this.status;
-    data['strategyid'] = this.strategyid;
-    data['idxexch'] = this.idxexch;
+    data['starttime'] = starttime;
+    data['endtime'] = endtime;
+    data['executionon'] = executionon;
+    data['broker'] = broker;
+    data['datetime'] = datetime;
+    data['idxtoken'] = idxtoken;
+    data['symbol'] = symbol;
+    data['status'] = status;
+    data['strategyid'] = strategyid;
+    data['idxexch'] = idxexch;
     return data;
   }
 }
@@ -359,14 +358,14 @@ class Statlegs {
 
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['action'] = this.action;
-    data['expiry'] = this.expiry;
-    data['strike'] = this.strike;
-    data['prctype'] = this.prctype;
-    data['quantity'] = this.quantity;
-    data['OptionType'] = this.optionType;
-    data['near_premium'] = this.nearPremium;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['action'] = action;
+    data['expiry'] = expiry;
+    data['strike'] = strike;
+    data['prctype'] = prctype;
+    data['quantity'] = quantity;
+    data['OptionType'] = optionType;
+    data['near_premium'] = nearPremium;
     return data;
   }
 }
@@ -383,9 +382,9 @@ class Target {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['type'] = this.type;
-    data['VALUE'] = this.value;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['type'] = type;
+    data['VALUE'] = value;
     return data;
   }
 }

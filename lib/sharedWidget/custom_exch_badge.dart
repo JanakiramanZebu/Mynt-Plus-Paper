@@ -4,7 +4,6 @@ import 'package:mynt_plus/res/res.dart';
 
 import '../provider/thems.dart';
 import '../res/global_state_text.dart';
-import '../res/res.dart';
 
 // A cached map of exchange badges to avoid recreating them
 final _exchangeBadgeCache = <String, Widget>{};

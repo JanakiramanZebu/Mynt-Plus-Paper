@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -8,21 +7,13 @@ import 'package:mynt_plus/provider/ledger_provider.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/sharedWidget/custom_drag_handler.dart';
 import 'package:mynt_plus/sharedWidget/functions.dart';
-import 'package:mynt_plus/sharedWidget/loader_ui.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../../../models/desk_reports_model/calender_pnl_model.dart';
 import '../../../provider/thems.dart';
 import '../../../res/global_state_text.dart';
-import '../../../sharedWidget/custom_back_btn.dart';
-import '../../../sharedWidget/custom_switch_btn.dart';
 import '../../../sharedWidget/custom_text_form_field.dart';
-import '../../../sharedWidget/list_divider.dart';
-import '../../../sharedWidget/snack_bar.dart';
 import '../../../sharedWidget/splash_loader.dart';
 import '../../../utils/no_emoji_inputformatter.dart';
-import '../../splash_screen.dart';
-import 'bottom_sheets/sharing_screen.dart';
 
 class CalenderpnlScreen extends ConsumerStatefulWidget {
   const CalenderpnlScreen({super.key});
@@ -140,7 +131,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                 !date.isAfter(ledgerprovider.endTaxDate))
             .toList()
           ..sort((a, b) => b.compareTo(a));
-        Future<void> _refresh() async {
+        Future<void> refresh() async {
           try {
             await Future.delayed(const Duration(seconds: 0)); // simulate refresh delay
             
@@ -259,7 +250,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                         : colors.textPrimaryLight,
                     fw: 1),
                 bottom: PreferredSize(
-                  preferredSize: Size.fromHeight(40),
+                  preferredSize: const Size.fromHeight(40),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
@@ -321,12 +312,12 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                   ? Center(
                       child: Container(
                         color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                        child: CircularLoaderImage(),
+                        child: const CircularLoaderImage(),
                       ),
                     )
                   : SafeArea(
                     child: RefreshIndicator(
-                        onRefresh: _refresh,
+                        onRefresh: refresh,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -804,7 +795,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                                                                             Row(
                                                                           children: [
                                                                             TextWidget.subText(
-                                                                                text: "${dateString}  ",
+                                                                                text: "$dateString  ",
                                                                                 color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                                                                                 textOverflow: TextOverflow.ellipsis,
                                                                                 theme: theme.isDarkMode,
@@ -1160,7 +1151,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
   void _showBottomSheetcharges(
       BuildContext context, ThemesProvider theme, LDProvider ledgerprovider) {
     showModalBottomSheet(
-      shape:  RoundedRectangleBorder(
+      shape:  const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       useSafeArea: true,
@@ -1317,7 +1308,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       child: TextWidget.titleText(
-                          text: "Trades in ${date}",
+                          text: "Trades in $date",
                           textOverflow: TextOverflow.ellipsis,
                           theme: theme.isDarkMode,
                           color: theme.isDarkMode
@@ -1332,7 +1323,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                     ),
                     Expanded(
                       child: ListView.separated(
-                        physics: ClampingScrollPhysics(),
+                        physics: const ClampingScrollPhysics(),
                         controller: scrollController,
                         itemCount: trade.length,
                         itemBuilder: (context, index) {
@@ -1418,7 +1409,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                                                   fw: 0),
                                               TextWidget.subText(
                                                   text:
-                                                      "${double.parse(trade[index].realisedpnl).toStringAsFixed(2)}",
+                                                      double.parse(trade[index].realisedpnl).toStringAsFixed(2),
                                                   theme: false,
                                                   color: double.parse(trade[index]
                                                                   .realisedpnl)
@@ -1532,7 +1523,7 @@ class _CalendarTabsState extends State<CalendarTabs> {
           elevation: 0,
           color:
               widget.theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-          child: Container(
+          child: SizedBox(
             width: screenWidth * 0.9, // Adjust as needed
 
             child: Column(

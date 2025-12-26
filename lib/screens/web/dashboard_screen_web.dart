@@ -645,7 +645,7 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
         const SizedBox(height: 16),
         // Index cards - horizontal scrollable
         if (hasIndices)
-          Container(
+          SizedBox(
             height: 140, // Fixed height for index cards
             child: SingleChildScrollView(
               controller: _indexScrollController,
@@ -669,7 +669,7 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
             ),
           )
         else
-          Container(
+          SizedBox(
             height: 120,
             child: Center(
               child: Text(
@@ -756,8 +756,8 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
             const cardSpacing = 16.0;
             const minCardWidth = 300.0;
             const totalCards = 4;
-            final totalSpacing = cardSpacing * (totalCards - 1);
-            final totalMinWidth = (minCardWidth * totalCards) + totalSpacing;
+            const totalSpacing = cardSpacing * (totalCards - 1);
+            const totalMinWidth = (minCardWidth * totalCards) + totalSpacing;
             
             // Calculate card width
             double cardWidth;
@@ -791,7 +791,7 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
                         iconColor: theme.isDarkMode ? WebDarkColors.success : WebColors.success,
                         width: cardWidth,
                       ),
-                      SizedBox(width: cardSpacing),
+                      const SizedBox(width: cardSpacing),
                       // Top Losers Card
                       _buildTradeActionCard(
                         tabIndex: 1, // Top losers tab
@@ -802,7 +802,7 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
                         iconColor: theme.isDarkMode ? WebDarkColors.error : WebColors.error,
                         width: cardWidth,
                       ),
-                      SizedBox(width: cardSpacing),
+                      const SizedBox(width: cardSpacing),
                       // Volume Breakout Card
                       _buildTradeActionCard(
                         tabIndex: 2, // Volume breakout tab
@@ -813,7 +813,7 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
                         iconColor: Colors.blue,
                         width: cardWidth,
                       ),
-                      SizedBox(width: cardSpacing),
+                      const SizedBox(width: cardSpacing),
                       // Most Active Card
                       _buildTradeActionCard(
                         tabIndex: 3, // Most active tab
@@ -1809,14 +1809,14 @@ class _TradeActionStockItemState extends ConsumerState<_TradeActionStockItem> {
     final symbolName = widget.stock.tsym?.split("-").isNotEmpty == true
         ? widget.stock.tsym!.split("-").first.toUpperCase()
         : widget.stock.tsym?.toUpperCase() ?? "";
-    bool _isHovered = false;
+    bool isHovered = false;
 
     return StatefulBuilder(
       builder: (context, setState) {
         return MouseRegion(
           cursor: SystemMouseCursors.click,
-          onEnter: (_) => setState(() => _isHovered = true),
-          onExit: (_) => setState(() => _isHovered = false),
+          onEnter: (_) => setState(() => isHovered = true),
+          onExit: (_) => setState(() => isHovered = false),
           child: GestureDetector(
         onTap: () async {
           try {
@@ -1850,7 +1850,7 @@ class _TradeActionStockItemState extends ConsumerState<_TradeActionStockItem> {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 0),
           decoration: BoxDecoration(
-            color: _isHovered
+            color: isHovered
                 ? (widget.isDarkMode
                     ? WebDarkColors.surfaceVariant.withOpacity(0.3)
                     : WebColors.surfaceVariant.withOpacity(0.3))

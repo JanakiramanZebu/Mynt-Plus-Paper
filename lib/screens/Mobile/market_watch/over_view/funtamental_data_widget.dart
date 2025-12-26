@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../provider/market_watch_provider.dart';
 import '../../../../provider/thems.dart';
@@ -148,7 +147,7 @@ class _FundamentalRatiosSection extends StatelessWidget {
                   children: [  
                          TextWidget.captionText(
                       text:title1 ,
-                      color:Color(0xff666666) ,
+                      color:const Color(0xff666666) ,
                       theme: theme.isDarkMode,
                       fw: 00),
                 const SizedBox(height: 4),
@@ -170,7 +169,7 @@ class _FundamentalRatiosSection extends StatelessWidget {
                   children: [  
                          TextWidget.captionText(
                       text: title2,
-                      color: Color(0xff666666),
+                      color: const Color(0xff666666),
                       theme: theme.isDarkMode,
                       fw: 00),
                 const SizedBox(height: 4),               
@@ -191,7 +190,7 @@ class _FundamentalRatiosSection extends StatelessWidget {
                   children: [
                         TextWidget.captionText(
                       text:title3 ,
-                      color:Color(0xff666666) ,
+                      color:const Color(0xff666666) ,
                       theme: theme.isDarkMode,
                       fw: 00),
                 const SizedBox(height: 4),

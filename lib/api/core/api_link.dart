@@ -193,7 +193,7 @@ class ApiLinks {
   String get getQrScanner => '$mainBaseURL/QRMobileReq';
 
   ///ipo///
-  String get ipourlendpoint => "${dashBoardURL}/ipo/";
+  String get ipourlendpoint => "$dashBoardURL/ipo/";
   String get dashboardipos => "${ipourlendpoint}IpoDashboard";
   String get smeipos => "${ipourlendpoint}getcurrentSMEIPOdetails";
   String get mainstreamipo => "${ipourlendpoint}getcurrentIPOdetails";
@@ -272,7 +272,7 @@ class ApiLinks {
   //fund urlss///
   String get viewupiid => 'https://fundapi.mynt.in/withdraw/view_upi_id';
 // Bonds
-  String get bondBaseURL => "${dashBoardURL}/ipo"; // 'https://besim.zebull.in';
+  String get bondBaseURL => "$dashBoardURL/ipo"; // 'https://besim.zebull.in';
   String get getSGB => "$bondBaseURL/getcurrentSGBdetails";
   String get getGSec => "$bondBaseURL/getcurrentNCB_Gsecdetails";
   String get getTBill => "$bondBaseURL/getcurrentNCB_TBilldetails";

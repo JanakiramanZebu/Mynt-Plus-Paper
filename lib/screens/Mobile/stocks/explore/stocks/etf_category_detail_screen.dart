@@ -11,7 +11,6 @@ import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/res/global_state_text.dart';
 import 'package:mynt_plus/sharedWidget/list_divider.dart';
 
-import '../../../../../sharedWidget/custom_back_btn.dart';
 import '../../../../../sharedWidget/no_data_found.dart';
 
 class ETFCategoryDetailScreen extends ConsumerStatefulWidget {
@@ -214,7 +213,7 @@ class _ETFCategoryDetailScreenState extends ConsumerState<ETFCategoryDetailScree
                   ),
                 ),
                 child: SingleChildScrollView(
-                  physics: ClampingScrollPhysics(),
+                  physics: const ClampingScrollPhysics(),
                   controller: _scrollController,
                   scrollDirection: Axis.horizontal,
                   child: Row(
@@ -426,7 +425,7 @@ class _ETFCategoryDetailScreenState extends ConsumerState<ETFCategoryDetailScree
 
 class _ETFListView extends ConsumerStatefulWidget {
   final List<dynamic> etfList;
-  const _ETFListView({super.key, required this.etfList});
+  const _ETFListView({required this.etfList});
 
   @override
   ConsumerState<_ETFListView> createState() => _ETFListViewState();
@@ -484,7 +483,7 @@ class _ETFListViewState extends ConsumerState<_ETFListView> {
   Widget build(BuildContext context) {
     final theme = ref.watch(themeProvider);
     return ListView.separated(
-      physics: ClampingScrollPhysics(),
+      physics: const ClampingScrollPhysics(),
       itemCount: widget.etfList.length,
       separatorBuilder: (_, __) => const ListDivider(),
       itemBuilder: (context, index) {

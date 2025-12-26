@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:flutter/foundation.dart';
 import 'package:mynt_plus/provider/user_profile_provider.dart';
 import '../../../models/marketwatch_model/get_quotes.dart';
 import '../../../models/order_book_model/order_book_model.dart';
@@ -11,7 +10,6 @@ import '../../../provider/thems.dart';
 import '../../../provider/websocket_provider.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
-import '../../../routes/route_names.dart';
 import '../../../sharedWidget/custom_exch_badge.dart';
 import '../../../sharedWidget/snack_bar.dart';
 import '../../../utils/responsive_navigation.dart';
@@ -201,7 +199,7 @@ class _WatchlistCardState extends ConsumerState<WatchlistCard> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 _isHovered
-                    ? Container(
+                    ? SizedBox(
                         width: 160,
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -270,7 +268,7 @@ class _WatchlistCardState extends ConsumerState<WatchlistCard> {
                           ],
                         ),
                       )
-                    : SizedBox(),
+                    : const SizedBox(),
                 RepaintBoundary(
                   child: _PriceDataWidget(
                       token: widget.watchListData['token'],

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -10,7 +9,6 @@ import '../../../../provider/thems.dart';
 import '../../../../provider/websocket_provider.dart';
 import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
-import '../../../../routes/route_names.dart';
 import '../../../../sharedWidget/custom_exch_badge.dart';
 import '../../../../sharedWidget/list_divider.dart';
 import '../../../../sharedWidget/snack_bar.dart';
@@ -259,7 +257,7 @@ class _StocksScreenState extends State<StocksScreen> {
                                                     // Navigate to place order screen with Sell action
                                                   },
                                                 ),
-                                                SizedBox(
+                                                const SizedBox(
                                                   width: 10.0,
                                                 ),
                                                 _buildHoverButton(
@@ -270,12 +268,12 @@ class _StocksScreenState extends State<StocksScreen> {
                                                           .textSecondaryLight,
                                                   onPressed: () {},
                                                 ),
-                                                SizedBox(
+                                                const SizedBox(
                                                   width: 10.0,
                                                 ),
                                               ],
                                             )
-                                          : SizedBox(),
+                                          : const SizedBox(),
                                       Column(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.end,

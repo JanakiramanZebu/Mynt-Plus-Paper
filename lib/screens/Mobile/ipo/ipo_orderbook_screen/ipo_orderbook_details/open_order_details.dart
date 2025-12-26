@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/res/global_state_text.dart';
@@ -146,7 +145,7 @@ class _IpoOpenOrderDetailsState extends ConsumerState<IpoOpenOrderDetails> {
                               color: colors.primaryLight,
                               width: 1,
                             ),
-                      minimumSize: Size(double.infinity, 45), 
+                      minimumSize: const Size(double.infinity, 45), 
                        shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(5),
                       ),
@@ -164,7 +163,7 @@ class _IpoOpenOrderDetailsState extends ConsumerState<IpoOpenOrderDetails> {
                             const SizedBox(height: 20),
                             Expanded(
                               child: SingleChildScrollView(
-                                physics: ClampingScrollPhysics(),
+                                physics: const ClampingScrollPhysics(),
                                 controller: scrollController,
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -337,8 +336,8 @@ class _IpoOpenOrderDetailsState extends ConsumerState<IpoOpenOrderDetails> {
                                         _buildInfoRow(
                                           "Total amount",
                                           widget.ipodetails.type == "BSE"
-                                              ? "${getFormatter(noDecimal: true, v4d: false, value: double.parse(widget.ipodetails.bidDetail![0].rate!) * double.parse(widget.ipodetails.bidDetail![0].quantity!)).toString()}"
-                                              : "${getFormatter(
+                                              ? getFormatter(noDecimal: true, v4d: false, value: double.parse(widget.ipodetails.bidDetail![0].rate!) * double.parse(widget.ipodetails.bidDetail![0].quantity!)).toString()
+                                              : getFormatter(
                                                   noDecimal: true,
                                                   v4d: false,
                                                   value: double.parse(widget
@@ -346,7 +345,7 @@ class _IpoOpenOrderDetailsState extends ConsumerState<IpoOpenOrderDetails> {
                                                           .bidDetail![0]
                                                           .amount!)
                                                       .toDouble(),
-                                                )}",
+                                                ),
                                           theme,
                                         ),
                                         const SizedBox(height: 8),
@@ -394,7 +393,7 @@ class _IpoOpenOrderDetailsState extends ConsumerState<IpoOpenOrderDetails> {
                                               data: Theme.of(context).copyWith(
                                                 cardColor: Colors
                                                     .transparent, // To ensure background matches
-                                                textTheme: TextTheme(
+                                                textTheme: const TextTheme(
                                                     bodyMedium: TextStyle(
                                                         color: Colors.white)),
                                                 dataTableTheme:
@@ -412,7 +411,7 @@ class _IpoOpenOrderDetailsState extends ConsumerState<IpoOpenOrderDetails> {
                                                 columnSpacing: 16.0,
                                                 horizontalMargin: 0,
                                                 headingRowHeight: 40.0,
-                                                border: TableBorder(
+                                                border: const TableBorder(
                                                   horizontalInside: BorderSide(
                                                       color: Colors.white54,
                                                       width:

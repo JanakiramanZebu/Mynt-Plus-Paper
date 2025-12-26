@@ -1,7 +1,6 @@
 // BondsOrderBookModel
 
 
-import 'dart:convert';
 //BidDetail
 class BondsOrderBookModel {
 
@@ -66,7 +65,7 @@ class BondsOrderBookModel {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     data['applicationNumber'] = applicationNumber;
     data['bid_detail'] = bidDetail;
     data['clearingReason'] = clearingReason;
@@ -108,7 +107,7 @@ class BidDetail {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     data['requestfor'] = requestfor;
     data['symbol'] = symbol;
     data['investmentValue'] = investmentValue;

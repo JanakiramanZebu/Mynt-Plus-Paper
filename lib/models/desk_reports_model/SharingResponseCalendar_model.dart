@@ -8,18 +8,18 @@ class SharingResponse {
     if (json['data'] != null) {
       data = <Data>[];
       json['data'].forEach((v) {
-        data!.add(new Data.fromJson(v));
+        data!.add(Data.fromJson(v));
       });
     }
     stat = json['stat'];
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     if (this.data != null) {
       data['data'] = this.data!.map((v) => v.toJson()).toList();
     }
-    data['stat'] = this.stat;
+    data['stat'] = stat;
     return data;
   }
 }
@@ -36,9 +36,9 @@ class Data {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['sharing'] = this.sharing;
-    data['uq_code'] = this.uqCode;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['sharing'] = sharing;
+    data['uq_code'] = uqCode;
     return data;
   }
 }

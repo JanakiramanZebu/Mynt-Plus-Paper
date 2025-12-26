@@ -2046,7 +2046,7 @@ class _ModifyPlaceOrderScreenState
                                           ),
                                           const SizedBox(width: 8),
                                           Expanded(
-                                            child: Container(
+                                            child: SizedBox(
                                               height: 40,
                                               child: ElevatedButton(
                                                   onPressed:
@@ -3073,7 +3073,7 @@ class _DraggableModifyPlaceOrderScreenDialogState
     final screenSize = MediaQuery.of(context).size;
 
     // Constrain position to screen bounds
-    final dialogWidth = 550.0;
+    const dialogWidth = 550.0;
     final dialogHeight = screenSize.height * 0.8;
     final constrainedPosition = Offset(
       _position.dx.clamp(0, screenSize.width - dialogWidth),

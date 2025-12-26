@@ -6,7 +6,6 @@ import '../../../../provider/mf_provider.dart';
 import '../../../../provider/thems.dart';
 import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
-import '../../../../sharedWidget/functions.dart';
 
 class MFSchemeInfo extends ConsumerWidget {
   final MutualFundList mfStockData;

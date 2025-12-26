@@ -9,13 +9,13 @@ class PnlSegCharge {
     if (json['expenses'] != null) {
       expenses = <Expenses>[];
       json['expenses'].forEach((v) {
-        expenses!.add(new Expenses.fromJson(v));
+        expenses!.add(Expenses.fromJson(v));
       });
     }
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     data['expense_amt'] = expenseAmt;
     if (expenses != null) {
       data['expenses'] = expenses!.map((v) => v.toJson()).toList();
@@ -89,7 +89,7 @@ class Expenses {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     data['BUY_AMOUNT'] = bUYAMOUNT;
     data['BUY_QUANTITY'] = bUYQUANTITY;
     data['BUY_RATE'] = bUYRATE;

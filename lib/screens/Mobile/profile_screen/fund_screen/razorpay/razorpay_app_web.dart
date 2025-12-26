@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 
 class RazorpayPaymentScreen extends StatefulWidget {
+  const RazorpayPaymentScreen({super.key});
+
   @override
   _RazorpayPaymentScreenState createState() => _RazorpayPaymentScreenState();
 }
@@ -62,11 +64,11 @@ class _RazorpayPaymentScreenState extends State<RazorpayPaymentScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Razorpay Payment")),
+      appBar: AppBar(title: const Text("Razorpay Payment")),
       body: Center(
         child: ElevatedButton(
           onPressed: openCheckout,
-          child: Text("Pay with Razorpay"),
+          child: const Text("Pay with Razorpay"),
         ),
       ),
     );

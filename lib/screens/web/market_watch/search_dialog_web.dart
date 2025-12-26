@@ -10,7 +10,6 @@ import '../../../provider/thems.dart';
 import '../../../res/global_font_web.dart';
 import '../../../res/web_colors.dart';
 import '../../../res/res.dart';
-import '../../../sharedWidget/no_data_found.dart';
 import '../../../locator/preference.dart';
 import '../../../sharedWidget/no_data_found_web.dart';
 import '../../../sharedWidget/snack_bar.dart';
@@ -33,6 +32,7 @@ class SearchDialogWeb extends ConsumerStatefulWidget {
 class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
     with TickerProviderStateMixin {
   late TabController _tabController;
+  VoidCallback? _tabControllerListener; // Store listener reference for proper cleanup
   String _searchValue = "";
   int _tabCount = 5;
   final TextEditingController _textController = TextEditingController();
@@ -63,20 +63,27 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
       perchangisAscending = pref.isMWPerchang ?? true;
     });
 
-    _tabController.addListener(() {
+    // Store listener reference for proper cleanup
+    _tabControllerListener = () {
       if (_tabController.indexIsChanging) {
         ref.read(marketWatchProvider).searchClear();
         ref.read(marketWatchProvider).scripSearch(
             _searchValue, context, _tabController.index, widget.isBasket);
         _scrollToSelectedTab(_tabController.index);
       }
-    });
+    };
+    _tabController.addListener(_tabControllerListener!);
   }
 
   @override
   void dispose() {
     _tabScrollController.dispose();
     _scrollController.dispose();
+    // Remove listener before disposing to prevent memory leaks
+    if (_tabControllerListener != null) {
+      _tabController.removeListener(_tabControllerListener!);
+      _tabControllerListener = null;
+    }
     _tabController.dispose();
     _textController.dispose();
     super.dispose();
@@ -88,7 +95,7 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
     // Simplified scroll calculation for dynamic-width tabs
     // Each tab has padding (16*2) + text width + spacing (6*2) = approximately 50-150px depending on text
     // We'll use an average width estimate
-    final double estimatedTabWidth =
+    const double estimatedTabWidth =
         120.0; // Average width for tabs with padding
     final double viewportWidth =
         _tabScrollController.position.viewportDimension;
@@ -577,9 +584,9 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
       MarketWatchProvider searchScrip, ThemesProvider theme) {
     if (searchScrip.allSearchScrip?.isEmpty ?? true) {
       return Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           color: Colors.white,
-          borderRadius: const BorderRadius.only(
+          borderRadius: BorderRadius.only(
             bottomLeft: Radius.circular(12),
             bottomRight: Radius.circular(12),
           ),
@@ -592,9 +599,9 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
 
     return Container(
       padding: const EdgeInsets.only(bottom: 10),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: Colors.white,
-        borderRadius: const BorderRadius.only(
+        borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(12),
           bottomRight: Radius.circular(12),
         ),

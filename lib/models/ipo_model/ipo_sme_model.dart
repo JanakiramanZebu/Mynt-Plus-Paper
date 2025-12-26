@@ -20,9 +20,9 @@ class SmeIpoModel {
         try {
           final parsedList = jsonDecode(json['SMEIPO'] as String);
           if (parsedList is List) {
-            parsedList.forEach((v) {
+            for (var v in parsedList) {
               sMEIPO!.add(SMEIPO.fromJson(v));
-            });
+            }
           }
         } catch (e) {
           print("Error parsing SMEIPO string: $e");
@@ -154,9 +154,9 @@ class SMEIPO {
         try {
           final parsedList = jsonDecode(json['categoryDetails'] as String);
           if (parsedList is List) {
-            parsedList.forEach((v) {
+            for (var v in parsedList) {
               categoryDetails!.add(CategoryDetails.fromJson(v));
-            });
+            }
           }
         } catch (e) {
           print("Error parsing categoryDetails string: $e");
@@ -202,9 +202,9 @@ class SMEIPO {
         try {
           final parsedList = jsonDecode(json['subCategorySettings'] as String);
           if (parsedList is List) {
-            parsedList.forEach((v) {
+            for (var v in parsedList) {
               subCategorySettings!.add(SubCategorySettings.fromJson(v));
-            });
+            }
           }
         } catch (e) {
           print("Error parsing subCategorySettings string: $e");

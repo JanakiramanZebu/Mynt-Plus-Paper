@@ -4,7 +4,6 @@ import 'dart:io' show SocketException, HttpException;
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:mynt_plus/api/core/api_link.dart';
 
 import '../models/auth_model/forgot_pass_model.dart';
 import '../models/auth_model/logout_model.dart';
@@ -52,6 +51,7 @@ mixin AuthApi on ApiCore {
           error(context, "An error occurred. Please try again.");
       return null;
     }
+    return null;
   }
 
 // Verify OTP
@@ -83,6 +83,7 @@ mixin AuthApi on ApiCore {
           error(context, "An error occurred. Please try again.");
       return null;
     }
+    return null;
   }
 
 // Logout

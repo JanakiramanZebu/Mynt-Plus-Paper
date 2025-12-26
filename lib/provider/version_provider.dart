@@ -53,7 +53,7 @@ class VersionProvider extends DefaultChangeNotifier {
               onPopInvokedWithResult: (didPop, result) async {
                 if (didPop) return;
               },
-              child: VersionBottomSheet()),
+              child: const VersionBottomSheet()),
         );
       }
     } catch (e) {}
@@ -63,7 +63,7 @@ class VersionProvider extends DefaultChangeNotifier {
     int update = int.parse(updatedversion.replaceAll('.', ''));
     int current = int.parse(currentVersion.replaceAll('.', ''));
 
-    print('completed ${update > current}  ${update} ${current}');
+    print('completed ${update > current}  $update $current');
     return update > current;
   }
 }

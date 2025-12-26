@@ -42,7 +42,7 @@ class IpoOrderUsageExample {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      builder: (context) => Container(
+      builder: (context) => SizedBox(
         height: MediaQuery.of(context).size.height * 0.9,
         child: UnifiedIpoOrderScreen(
           ipoData: smeIpo,
@@ -62,7 +62,7 @@ class IpoOrderUsageExample {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      builder: (context) => Container(
+      builder: (context) => SizedBox(
         height: MediaQuery.of(context).size.height * 0.9,
         child: UnifiedIpoOrderScreen(
           ipoData: mainstreamIpo,
@@ -78,10 +78,10 @@ class IpoOrderButton extends StatelessWidget {
   final bool useModal;
 
   const IpoOrderButton({
-    Key? key,
+    super.key,
     required this.ipoData,
     this.useModal = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -101,7 +101,7 @@ class IpoOrderButton extends StatelessWidget {
           }
         }
       },
-      child: Text('Apply for IPO'),
+      child: const Text('Apply for IPO'),
     );
   }
 }

@@ -125,7 +125,7 @@ class _DefaultIndexListWebState extends ConsumerState<DefaultIndexListWeb>
                           width: double.infinity,
                           height: double.infinity,
                           padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             color: WebDarkColors.background, // Use web color system
                           ),
                           child: Column(
@@ -211,10 +211,10 @@ class OptimizedIndexItemWeb extends ConsumerWidget {
   final double? itemWidth; // Make nullable to allow flexible width
 
   const OptimizedIndexItemWeb({
-    Key? key,
+    super.key,
     required this.indexItem,
     this.itemWidth, // Optional - if null, content determines width
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -244,7 +244,7 @@ class OptimizedIndexItemWeb extends ConsumerWidget {
               : WebColors.primary.withOpacity(0.2),
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: Colors.transparent, // Transparent to match glassmorphism appbar
             ),
             constraints: BoxConstraints(
@@ -376,14 +376,14 @@ class _LivePriceWidgetWeb extends StatefulWidget {
   final bool src;
 
   const _LivePriceWidgetWeb({
-    Key? key,
+    super.key,
     required this.token,
     required this.initialLtp,
     required this.initialChange,
     required this.initialPerChange,
     required this.isDarkMode,
     required this.src,
-  }) : super(key: key);
+  });
 
   @override
   State<_LivePriceWidgetWeb> createState() => _LivePriceWidgetWebState();
@@ -622,10 +622,9 @@ class _StaticIndexNameWeb extends StatelessWidget {
   static final Map<String, TextStyle> _styleCache = {};
 
   const _StaticIndexNameWeb({
-    Key? key,
     required this.name,
     required this.isDarkMode,
-  }) : super(key: key);
+  });
 
   // Get cached text style
   TextStyle _getNameStyle() {

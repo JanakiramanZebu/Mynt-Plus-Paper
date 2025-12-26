@@ -26,7 +26,7 @@ class _ProfileDetailsBankState extends ConsumerState<ProfileDetailsBank> {
     super.initState();
   }
 
-  var _formKey = GlobalKey<FormState>();
+  final _formKey = GlobalKey<FormState>();
   var isLoading = false;
 
   void _submit() {
@@ -183,7 +183,7 @@ class _ProfileDetailsBankState extends ConsumerState<ProfileDetailsBank> {
                                         backgroundColor: colors.colorWhite,
                                         radius: 20,
                                         child: SvgPicture.network(
-                                          "https://rekycbe.mynt.in/autho/banklogo?bank=${(profileprovider.clientAllDetails!.bankData![index].iFSCCode ?? "").substring(0, 4).toLowerCase()}&type=svg&t=${DateTime.now().millisecondsSinceEpoch}",
+                                          "https://rekycbe.mynt.in/autho/banklogo?bank=${(profileprovider.clientAllDetails.bankData![index].iFSCCode ?? "").substring(0, 4).toLowerCase()}&type=svg&t=${DateTime.now().millisecondsSinceEpoch}",
                                           fit: BoxFit.contain,
                                           // width:150,
                                           height: 25,
@@ -248,7 +248,7 @@ class _ProfileDetailsBankState extends ConsumerState<ProfileDetailsBank> {
                                   width: 8,
                                 ),
 
-                                if ("${profileprovider.clientAllDetails!.bankData![index].defaultAc}" ==
+                                if ("${profileprovider.clientAllDetails.bankData![index].defaultAc}" ==
                                     "Yes")
                                   InkWell(
                                     onTap: () async {
@@ -291,10 +291,10 @@ class _ProfileDetailsBankState extends ConsumerState<ProfileDetailsBank> {
                                     TextWidget.paraText(
                                         text: 'IFSC CODE',
                                         theme: theme.isDarkMode),
-                                    SizedBox(height: 8),
+                                    const SizedBox(height: 8),
                                     TextWidget.subText(
                                         text:
-                                            "${profileprovider.clientAllDetails!.bankData![index].iFSCCode}",
+                                            "${profileprovider.clientAllDetails.bankData![index].iFSCCode}",
                                         theme: theme.isDarkMode,
                                         fw: 1),
                                   ],
@@ -305,10 +305,10 @@ class _ProfileDetailsBankState extends ConsumerState<ProfileDetailsBank> {
                                     TextWidget.paraText(
                                         text: 'A/C Type',
                                         theme: theme.isDarkMode),
-                                    SizedBox(height: 8),
+                                    const SizedBox(height: 8),
                                     TextWidget.subText(
                                         text:
-                                            '${profileprovider.clientAllDetails!.bankData![index].bANKACCTYPE}',
+                                            '${profileprovider.clientAllDetails.bankData![index].bANKACCTYPE}',
                                         theme: theme.isDarkMode,
                                         fw: 1),
                                   ],
@@ -768,7 +768,7 @@ class _ProfileDetailsBankState extends ConsumerState<ProfileDetailsBank> {
                     ),
                   ),
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 TextWidget.paraText(
                     text:
                         "*As per the regulation, you can have upto 5 bank a/c linked to trading a/c",
@@ -790,7 +790,7 @@ class _ProfileDetailsBankState extends ConsumerState<ProfileDetailsBank> {
       ProfileProvider profileprovider, ThemesProvider theme) {
     return SingleChildScrollView(
       child: Container(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,
           child: Column(
@@ -801,7 +801,7 @@ class _ProfileDetailsBankState extends ConsumerState<ProfileDetailsBank> {
                 ' Email change request ',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               Text("Old email id",
                   style: textStyle(
                       const Color.fromARGB(255, 0, 0, 0), 14, FontWeight.w600)),
@@ -814,7 +814,7 @@ class _ProfileDetailsBankState extends ConsumerState<ProfileDetailsBank> {
                   border: UnderlineInputBorder(),
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               Text("New email id *",
                   style: textStyle(
                       const Color.fromARGB(255, 0, 0, 0), 16, FontWeight.w600)),
@@ -840,7 +840,7 @@ class _ProfileDetailsBankState extends ConsumerState<ProfileDetailsBank> {
                   border: UnderlineInputBorder(),
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               if (profileprovider.responseval == "success send mail") ...[
                 Text(
                   "Enter a 4-digit Otp *",
@@ -862,7 +862,7 @@ class _ProfileDetailsBankState extends ConsumerState<ProfileDetailsBank> {
                   ),
                 ),
               ],
-              SizedBox(height: 30),
+              const SizedBox(height: 30),
               Row(
                 children: [
                   Expanded(
@@ -891,7 +891,7 @@ class _ProfileDetailsBankState extends ConsumerState<ProfileDetailsBank> {
                     ),
                   ),
 
-                  SizedBox(width: 10), // Adds spacing between buttons
+                  const SizedBox(width: 10), // Adds spacing between buttons
                   if (profileprovider.responseval != "success send mail")
                     Expanded(
                       flex: 1, // Takes 50% width
@@ -924,7 +924,7 @@ class _ProfileDetailsBankState extends ConsumerState<ProfileDetailsBank> {
                             borderRadius: BorderRadius.circular(25),
                           ),
                         ),
-                        child: Text('Submit'),
+                        child: const Text('Submit'),
                       ),
                     ),
 
@@ -954,7 +954,7 @@ class _ProfileDetailsBankState extends ConsumerState<ProfileDetailsBank> {
                             borderRadius: BorderRadius.circular(25),
                           ),
                         ),
-                        child: Text('Submit otp'),
+                        child: const Text('Submit otp'),
                       ),
                     ),
                 ],
@@ -970,7 +970,7 @@ class _ProfileDetailsBankState extends ConsumerState<ProfileDetailsBank> {
       ProfileProvider profileprovider, ThemesProvider theme) {
     return SingleChildScrollView(
       child: Container(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -985,7 +985,7 @@ class _ProfileDetailsBankState extends ConsumerState<ProfileDetailsBank> {
               ' Mobile change request ',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
 
             Text("Present Number",
                 style: textStyle(
@@ -998,7 +998,7 @@ class _ProfileDetailsBankState extends ConsumerState<ProfileDetailsBank> {
                 border: UnderlineInputBorder(),
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Text("New Mobile number  *",
                 style: textStyle(
                     const Color.fromARGB(255, 0, 0, 0), 17, FontWeight.w600)),
@@ -1035,7 +1035,7 @@ class _ProfileDetailsBankState extends ConsumerState<ProfileDetailsBank> {
                 ),
               ),
             ],
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
             Row(
               children: [
                 Expanded(
@@ -1061,7 +1061,7 @@ class _ProfileDetailsBankState extends ConsumerState<ProfileDetailsBank> {
                   ),
                 ),
 
-                SizedBox(width: 10), // Adds spacing between buttons
+                const SizedBox(width: 10), // Adds spacing between buttons
 
                 if (profileprovider.mobileotp != "otp sent")
                   Expanded(
@@ -1090,7 +1090,7 @@ class _ProfileDetailsBankState extends ConsumerState<ProfileDetailsBank> {
                           borderRadius: BorderRadius.circular(25),
                         ),
                       ),
-                      child: Text('Submit'),
+                      child: const Text('Submit'),
                     ),
                   ),
 
@@ -1133,20 +1133,20 @@ class _ProfileDetailsBankState extends ConsumerState<ProfileDetailsBank> {
       ProfileProvider profileprovider, ThemesProvider theme) {
     return SingleChildScrollView(
       child: Container(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(height: 40),
+            const SizedBox(height: 40),
             const Text(
               ' Address change request ',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
             Text("Old Address",
                 style: textStyle(
                     const Color.fromARGB(255, 0, 0, 0), 15, FontWeight.w600)),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             Text(
               "${profileprovider.clientAllDetails.clientData?.cLRESIADD1}, ${profileprovider.clientAllDetails.clientData?.cLRESIADD2}, ${profileprovider.clientAllDetails.clientData?.cLRESIADD3}" ??
                   "",
@@ -1159,7 +1159,7 @@ class _ProfileDetailsBankState extends ConsumerState<ProfileDetailsBank> {
               overflow: TextOverflow.visible,
             ),
             const Divider(color: Color(0xffDDDDDD)),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Text(
               'New Address *',
               style: textStyle(
@@ -1179,7 +1179,7 @@ class _ProfileDetailsBankState extends ConsumerState<ProfileDetailsBank> {
                 border: UnderlineInputBorder(),
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Row(
               children: [
                 Expanded(
@@ -1213,7 +1213,7 @@ class _ProfileDetailsBankState extends ConsumerState<ProfileDetailsBank> {
                   ),
                 ),
 
-                SizedBox(width: 10), // Adds spacing between buttons
+                const SizedBox(width: 10), // Adds spacing between buttons
 
                 Expanded(
                   flex: 1, // Takes 50% width
@@ -1247,10 +1247,10 @@ class _ProfileDetailsBankState extends ConsumerState<ProfileDetailsBank> {
                   ),
                 ),
 
-                SizedBox(width: 10),
+                const SizedBox(width: 10),
               ],
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Row(
               children: [
                 Expanded(
@@ -1284,7 +1284,7 @@ class _ProfileDetailsBankState extends ConsumerState<ProfileDetailsBank> {
                   ),
                 ),
 
-                SizedBox(width: 10), // Adds spacing between buttons
+                const SizedBox(width: 10), // Adds spacing between buttons
 
                 Expanded(
                   flex: 1, // Takes 50% width
@@ -1317,10 +1317,10 @@ class _ProfileDetailsBankState extends ConsumerState<ProfileDetailsBank> {
                   ),
                 ),
 
-                SizedBox(width: 10),
+                const SizedBox(width: 10),
               ],
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Text(
               "Proof Type *",
               style: textStyle(
@@ -1340,9 +1340,8 @@ class _ProfileDetailsBankState extends ConsumerState<ProfileDetailsBank> {
                 border: UnderlineInputBorder(),
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
-              child: Text('UPLOAD FILE'),
               onPressed: () async {
                 var picked = await FilePicker.platform.pickFiles();
 
@@ -1359,7 +1358,7 @@ class _ProfileDetailsBankState extends ConsumerState<ProfileDetailsBank> {
                   //     .state = filePath;
                 }
 
-                Text("elseee");
+                const Text("elseee");
               },
               style: ElevatedButton.styleFrom(
                 elevation: 0,
@@ -1370,8 +1369,9 @@ class _ProfileDetailsBankState extends ConsumerState<ProfileDetailsBank> {
                   borderRadius: BorderRadius.circular(25),
                 ),
               ),
+              child: const Text('UPLOAD FILE'),
             ),
-            SizedBox(height: 50),
+            const SizedBox(height: 50),
             // SizedBox(height: 30),
             Row(
               children: [
@@ -1398,7 +1398,7 @@ class _ProfileDetailsBankState extends ConsumerState<ProfileDetailsBank> {
                     ),
                   ),
                 ),
-                SizedBox(width: 10),
+                const SizedBox(width: 10),
                 Expanded(
                   flex: 1, // Takes 50% width
                   child: ElevatedButton(

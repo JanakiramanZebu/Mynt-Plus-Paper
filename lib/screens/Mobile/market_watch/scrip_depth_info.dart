@@ -16,20 +16,12 @@ import '../../../locator/constant.dart';
 import '../../../models/marketwatch_model/get_quotes.dart';
 import '../../../models/marketwatch_model/market_watch_scrip_model.dart';
 import '../../../models/order_book_model/order_book_model.dart';
-import '../../../provider/chart_provider.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/user_profile_provider.dart';
 import '../../../provider/websocket_provider.dart';
-import '../../../locator/constant.dart';
-import '../../../models/marketwatch_model/get_quotes.dart';
-import '../../../models/marketwatch_model/market_watch_scrip_model.dart';
-import '../../../models/order_book_model/order_book_model.dart';
 import '../../../models/portfolio_model/holdings_model.dart';
-import '../../../provider/market_watch_provider.dart';
 import '../../../provider/portfolio_provider.dart';
-import '../../../provider/thems.dart';
-import '../../../provider/user_profile_provider.dart';
 import '../portfolio_screens/holdings/holdings_list.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
@@ -415,7 +407,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
     // Helper function to build a column or empty space
     Widget buildColumn(String title, String value, bool isEmpty) {
       if (isEmpty) {
-        return Expanded(child: SizedBox.shrink());
+        return const Expanded(child: SizedBox.shrink());
       }
       return Expanded(
         child: Column(
@@ -778,15 +770,17 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                           await Future.delayed(
                                                                               const Duration(milliseconds: 150));
                             
-                                                                          if (_isDisposed)
+                                                                          if (_isDisposed) {
                                                                             return;
+                                                                          }
                             
                                                                           try {
                                                                             // Reset state before navigation
                                                                             await scripInfo.chngDephBtn("Overview");
                             
-                                                                            if (!mounted)
+                                                                            if (!mounted) {
                                                                               return;
+                                                                            }
                             
                                                                             await Navigator.pushNamed(
                                                                               context,
@@ -825,7 +819,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                               .all(
                                                                               8),
                                                                           decoration:
-                                                                              BoxDecoration(
+                                                                              const BoxDecoration(
                                                                             shape:
                                                                                 BoxShape.circle,
                                                                           ),
@@ -2014,7 +2008,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                                 color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                                                                 theme: theme.isDarkMode,
                                                                               ),
-                                                                              SizedBox(
+                                                                              const SizedBox(
                                                                                 width: 4,
                                                                               ),
                                                                               TextWidget.subText(
@@ -2718,7 +2712,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                 } else {
                   // Show message if no fundamental data available
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
+                    const SnackBar(
                       content: Text('Fundamental data not available for this scrip'),
                       backgroundColor: Colors.orange,
                     ),

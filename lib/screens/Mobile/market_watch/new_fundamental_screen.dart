@@ -55,7 +55,7 @@ class ShareholdersDonutChartPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = size.width / 2;
-    final strokeWidth = 20.0;
+    const strokeWidth = 20.0;
 
     final paint = Paint()
       ..style = PaintingStyle.stroke
@@ -543,8 +543,9 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
     for (int i = 0; i < events.length; i++) {
       final event = events[i];
       final eventIndex = _findEventDateIndex(priceData, event.date);
-      if (eventIndex == -1)
+      if (eventIndex == -1) {
         continue; // Skip if event date not found in price data
+      }
 
       final eventColor = eventColors[event.type] ?? Colors.grey;
       final eventPrice = priceData[eventIndex].price;
@@ -780,7 +781,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                         return true;
                       },
                       child: SingleChildScrollView(
-                        physics: ClampingScrollPhysics(),
+                        physics: const ClampingScrollPhysics(),
                         padding: const EdgeInsets.all(8),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -950,7 +951,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
           if (marketWatch.fundamentalData?.fundamental?.isNotEmpty == true) ...[
             _buildRatiosSection(marketWatch.fundamentalData!.fundamental![0], theme),
           ] else ...[
-            SizedBox(height: 250, child:  Center(child: Column(
+            const SizedBox(height: 250, child:  Center(child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -1392,7 +1393,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                 : colors.textPrimaryLight,
           ),
           const SizedBox(height: 16),
-           SizedBox(height: 250, child:  Center(child: Column(
+           const SizedBox(height: 250, child:  Center(child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -1460,7 +1461,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                 // Holdings Table
                 _buildHoldingsTable(marketWatch, theme),
               ] else ...[
-                SizedBox(height: 250, child:  Center(child: Column(
+                const SizedBox(height: 250, child:  Center(child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -1751,7 +1752,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                         ),
                       )
                     : priceData.isEmpty
-                        ? Center(
+                        ? const Center(
                             child: NoDataFound(
                               secondaryEnabled: false,
                             )
@@ -1992,7 +1993,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                         : colors.primaryLight,
                     barWidth: 2,
                     isStrokeCapRound: true,
-                    dotData: FlDotData(
+                    dotData: const FlDotData(
                       show: false,
                     ),
                     belowBarData: BarAreaData(
@@ -2078,7 +2079,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                           } else {
                             marketWatch.updateSelectedEventDot(null);
                             print(
-                                "No nearby events found for date: ${touchedDate}");
+                                "No nearby events found for date: $touchedDate");
                           }
 
                           // Only set auto-hide timer for tap events, not for continuous interactions
@@ -2212,7 +2213,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                                   ],
                                 ),
                               );
-                            }).toList(),
+                            }),
                           ],
                         ],
                       );
@@ -2717,7 +2718,7 @@ class HoldingsTable extends StatelessWidget {
                       align: TextAlign.right,
                     ),
                   ))
-              .toList(),
+              ,
         ],
       ),
     );
@@ -2784,7 +2785,7 @@ class HoldingsTable extends StatelessWidget {
                               align: TextAlign.right,
                             ),
                           ))
-                      .toList(),
+                      ,
                 ],
               ),
             ))

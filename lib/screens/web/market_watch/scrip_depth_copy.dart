@@ -346,7 +346,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
     // Helper function to build a column or empty space
     Widget buildColumn(String title, String value, bool isEmpty) {
       if (isEmpty) {
-        return Expanded(child: SizedBox.shrink());
+        return const Expanded(child: SizedBox.shrink());
       }
       return Expanded(
         child: Column(
@@ -703,8 +703,9 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                         milliseconds:
                                                                             150));
 
-                                                                    if (_isDisposed)
+                                                                    if (_isDisposed) {
                                                                       return;
+                                                                    }
 
                                                                     try {
                                                                       // Reset state before showing dialog
@@ -712,8 +713,9 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                           .chngDephBtn(
                                                                               "Overview");
 
-                                                                      if (!mounted)
+                                                                      if (!mounted) {
                                                                         return;
+                                                                      }
 
                                                                       // Show dialog instead of navigating
                                                                       _showSetAlertDialog(context, depthData);
@@ -751,7 +753,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                             .all(
                                                                             8),
                                                                     decoration:
-                                                                        BoxDecoration(
+                                                                        const BoxDecoration(
                                                                       shape: BoxShape
                                                                           .circle,
                                                                     ),
@@ -1960,7 +1962,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                                 letterSpacing: 0.0,
                                                                               ),
                                                                             ),
-                                                                            SizedBox(
+                                                                            const SizedBox(
                                                                               width: 4,
                                                                             ),
                                                                             Text(

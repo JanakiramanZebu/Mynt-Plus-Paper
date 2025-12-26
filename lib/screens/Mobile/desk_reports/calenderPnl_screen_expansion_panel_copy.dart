@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
@@ -11,7 +10,6 @@ import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import '../../../models/desk_reports_model/calender_pnl_model.dart';
 import '../../../provider/thems.dart';
 import '../../../res/global_state_text.dart';
-import '../../../sharedWidget/custom_back_btn.dart';
 import '../../../sharedWidget/custom_switch_btn.dart';
 
 class CalenderpnlScreen extends StatefulWidget {
@@ -65,7 +63,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
             children: [
               Row(
                 children: [
-                  Container(
+                  SizedBox(
                     width: screenWidth,
                     child: Container(
                       decoration: BoxDecoration(
@@ -404,7 +402,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                 padding: const EdgeInsets.only(left: 16.0),
                 child: TextWidget.overlineText(
                     text: "! M and D means Monthly and Daily",
-                    color: Color(0xFF696969),
+                    color: const Color(0xFF696969),
                     textOverflow: TextOverflow.ellipsis,
                     theme: theme.isDarkMode,
                     fw: 0),
@@ -441,7 +439,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                                         left: 16.0, top: 8.0, bottom: 8.0),
                                     child: TextWidget.titleText(
                                         text: "Date-specific Information",
-                                        color: Color.fromARGB(255, 0, 0, 0),
+                                        color: const Color.fromARGB(255, 0, 0, 0),
                                         textOverflow: TextOverflow.ellipsis,
                                         theme: theme.isDarkMode,
                                         fw: 0)),
@@ -523,7 +521,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                                                               0xffF1F3F8),
                                                       thickness: 7.0,
                                                     ),
-                                                  SizedBox(
+                                                  const SizedBox(
                                                     height: 5,
                                                   )
                                                 ],
@@ -610,7 +608,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                 children: [
                   TextWidget.subText(
                       text: "Net Qty :  ",
-                      color: Color(0xFF696969),
+                      color: const Color(0xFF696969),
                       textOverflow: TextOverflow.ellipsis,
                       theme: theme.isDarkMode,
                       fw: 0),
@@ -636,7 +634,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                 children: [
                   TextWidget.subText(
                       text: "Buy Qty :  ",
-                      color: Color(0xFF696969),
+                      color: const Color(0xFF696969),
                       textOverflow: TextOverflow.ellipsis,
                       theme: theme.isDarkMode,
                       fw: 0),
@@ -654,7 +652,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                 children: [
                   TextWidget.subText(
                       text: "Sell Qty :  ",
-                      color: Color(0xFF696969),
+                      color: const Color(0xFF696969),
                       textOverflow: TextOverflow.ellipsis,
                       theme: theme.isDarkMode,
                       fw: 0),
@@ -680,7 +678,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                 children: [
                   TextWidget.subText(
                       text: "Buy Rate :  ",
-                      color: Color(0xFF696969),
+                      color: const Color(0xFF696969),
                       textOverflow: TextOverflow.ellipsis,
                       theme: theme.isDarkMode,
                       fw: 0),
@@ -698,7 +696,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                 children: [
                   TextWidget.subText(
                       text: "Sell Rate :  ",
-                      color: Color(0xFF696969),
+                      color: const Color(0xFF696969),
                       textOverflow: TextOverflow.ellipsis,
                       theme: theme.isDarkMode,
                       fw: 0),
@@ -724,7 +722,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                 children: [
                   TextWidget.subText(
                       text: "Buy Amount :  ",
-                      color: Color(0xFF696969),
+                      color: const Color(0xFF696969),
                       textOverflow: TextOverflow.ellipsis,
                       theme: theme.isDarkMode,
                       fw: 0),
@@ -742,7 +740,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                 children: [
                   TextWidget.subText(
                       text: "Sell Amount :  ",
-                      color: Color(0xFF696969),
+                      color: const Color(0xFF696969),
                       textOverflow: TextOverflow.ellipsis,
                       theme: theme.isDarkMode,
                       fw: 0),
@@ -768,7 +766,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                 children: [
                   TextWidget.subText(
                       text: "Realised :  ",
-                      color: Color(0xFF696969),
+                      color: const Color(0xFF696969),
                       textOverflow: TextOverflow.ellipsis,
                       theme: theme.isDarkMode,
                       fw: 0),
@@ -786,7 +784,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                 children: [
                   TextWidget.subText(
                       text: "Unrealised :  ",
-                      color: Color(0xFF696969),
+                      color: const Color(0xFF696969),
                       textOverflow: TextOverflow.ellipsis,
                       theme: theme.isDarkMode,
                       fw: 0),
@@ -882,7 +880,7 @@ class _CalendarTabsState extends State<CalendarTabs> {
           elevation: 0,
           color:
               widget.theme.isDarkMode ? const Color(0xff1E1E1E) : Colors.white,
-          child: Container(
+          child: SizedBox(
             width: screenWidth * 0.9, // Adjust as needed
 
             child: Column(
@@ -1173,7 +1171,7 @@ class _DailyCalendarState extends State<_DailyCalendar> {
         ),
         // Day headers (Mon–Sun)
         Padding(
-          padding: EdgeInsets.symmetric(vertical: 4.0),
+          padding: const EdgeInsets.symmetric(vertical: 4.0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [

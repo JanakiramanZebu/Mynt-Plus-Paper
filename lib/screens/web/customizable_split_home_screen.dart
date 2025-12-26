@@ -1,9 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:ui';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
@@ -74,11 +72,11 @@ class _CustomizableSplitHomeScreenState
   late WebSocketProvider socketProvider;
 
   // Panel management
-  List<PanelConfig> _panels = [];
+  final List<PanelConfig> _panels = [];
   // Arguments storage for panel-specific screens that require constructor params
   DepthInputArgs? _optionChainArgs;
   DepthInputArgs? _currentDepthArgs;
-  int _panelCount = 2; // Fixed to 2 panels
+  final int _panelCount = 2; // Fixed to 2 panels
   bool _isInitialLoad = true; // Track if this is the initial load
 
   // Track loading states for each screen type
@@ -249,6 +247,7 @@ class _CustomizableSplitHomeScreenState
 
   @override
   void dispose() {
+    _subscriptionUpdateDebounceTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     if (ConstantName.timer != null) {
       ConstantName.timer!.cancel();
@@ -391,7 +390,7 @@ class _CustomizableSplitHomeScreenState
         });
         _handleChartData();
         if (mounted) {
-          Future.delayed(Duration(milliseconds: 300), () {
+          Future.delayed(const Duration(milliseconds: 300), () {
             if (mounted) {
               setState(() {});
             }
@@ -708,7 +707,7 @@ class _CustomizableSplitHomeScreenState
 
   Widget _buildTwoPanels(ThemesProvider theme) {
     // Check if watchlist is in any panel to determine split ratio
-    bool hasWatchlistInFirstPanel = _panels.length > 0 &&
+    bool hasWatchlistInFirstPanel = _panels.isNotEmpty &&
         (_panels[0].screenType == ScreenType.watchlist ||
             (_panels[0].screens.isNotEmpty &&
                 _panels[0].activeScreenIndex >= 0 &&
@@ -807,7 +806,8 @@ class _CustomizableSplitHomeScreenState
       // margin: const EdgeInsets.all(0),
       color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
       child: DragTarget<Object>(
-        onAccept: (draggedData) {
+        onAcceptWithDetails: (details) {
+          final draggedData = details.data;
           if (draggedData is ScreenType) {
             setState(() {
               panel.screenType = draggedData;
@@ -824,7 +824,8 @@ class _CustomizableSplitHomeScreenState
             _saveLayout();
           }
         },
-        onWillAccept: (data) {
+        onWillAcceptWithDetails: (details) {
+          final data = details.data;
           if (data is ScreenType) {
             return true;
           } else if (data is PanelConfig && data.id != panel.id) {
@@ -1379,7 +1380,7 @@ class _CustomizableSplitHomeScreenState
                                           GestureDetector(
                                             onTap: () => _removeScreenFromPanel(
                                                 panel, index),
-                                            child: Icon(
+                                            child: const Icon(
                                               Icons.close,
                                               color:
                                                   WebDarkColors.textSecondary,
@@ -1598,15 +1599,15 @@ class _CustomizableSplitHomeScreenState
       case ScreenType.holdings:
         return Consumer(
           builder: (context, ref, _) {
-            final portfolio = ref.watch(portfolioProvider);
-            final theme = ref.watch(themeProvider);
-            final isLoading =
-                _screenLoadingStates[ScreenType.holdings] ?? false;
-            final hasData = portfolio.holdingsModel != null &&
-                portfolio.holdingsModel!.isNotEmpty;
+            // ✅ Optimize: Only watch specific properties instead of entire provider
+            final isLoading = _screenLoadingStates[ScreenType.holdings] ?? false;
+            final holdloader = ref.watch(portfolioProvider.select((p) => p.holdloader));
+            final holdingsModel = ref.watch(portfolioProvider.select((p) => p.holdingsModel));
+            final theme = ref.read(themeProvider); // Use read() since theme doesn't change often
+            final hasData = holdingsModel != null && holdingsModel.isNotEmpty;
 
             // Show loader if local loading state is true, provider loading is true, or no data yet
-            if (isLoading || portfolio.holdloader || !hasData) {
+            if (isLoading || holdloader || !hasData) {
               return Container(
                 width: double.infinity,
                 height: double.infinity,
@@ -1616,19 +1617,20 @@ class _CustomizableSplitHomeScreenState
               );
             }
             return HoldingScreenWeb(
-                listofHolding: portfolio.holdingsModel ?? []);
+                listofHolding: holdingsModel ?? []);
           },
         );
       case ScreenType.positions:
         return Consumer(
           builder: (context, ref, _) {
-            final portfolio = ref.watch(portfolioProvider);
-            final theme = ref.watch(themeProvider);
-            final isLoading =
-                _screenLoadingStates[ScreenType.positions] ?? false;
+            // ✅ Optimize: Only watch specific properties instead of entire provider
+            final isLoading = _screenLoadingStates[ScreenType.positions] ?? false;
+            final posloader = ref.watch(portfolioProvider.select((p) => p.posloader));
+            final allPostionList = ref.watch(portfolioProvider.select((p) => p.allPostionList));
+            final theme = ref.read(themeProvider); // Use read() since theme doesn't change often
 
             // Show loader only when actively loading, not when no data exists
-            if (isLoading || portfolio.posloader) {
+            if (isLoading || posloader) {
               return Container(
                 width: double.infinity,
                 height: double.infinity,
@@ -1637,7 +1639,7 @@ class _CustomizableSplitHomeScreenState
                 child: const CircularLoaderImage(),
               );
             }
-            return PositionScreenWeb(listofPosition: portfolio.allPostionList);
+            return PositionScreenWeb(listofPosition: allPostionList);
           },
         );
       case ScreenType.orderBook:
@@ -1645,7 +1647,7 @@ class _CustomizableSplitHomeScreenState
         // It will handle its own loading states internally
         return const OrderBookScreenWeb();
       case ScreenType.funds:
-        return _LazyFundScreen();
+        return const _LazyFundScreen();
       case ScreenType.mutualFund:
         return const MfmainScreen();
       case ScreenType.ipo:
@@ -1683,11 +1685,11 @@ class _CustomizableSplitHomeScreenState
       case ScreenType.pledgeUnpledge:
         return const PledgenUnpledge(ddd: "DDDDD");
       case ScreenType.corporateActions:
-        return CABuyback();
+        return const CABuyback();
       case ScreenType.reports:
-        return ReportsScreenWeb();
+        return const ReportsScreenWeb();
       case ScreenType.settings:
-        return SettingsScreenWeb();
+        return const SettingsScreenWeb();
       case ScreenType.tradeAction:
         // Get tab index from stored state or use null for default
         final tabIndex = _tradeActionTabIndex;
@@ -1972,7 +1974,7 @@ class _CustomizableSplitHomeScreenState
                               screenType != ScreenType.watchlist)
                           .map((screenType) =>
                               _buildScreenOption(screenType, theme))
-                          .toList(),
+                          ,
                     ],
                   ),
                 ),
@@ -2473,8 +2475,9 @@ class _CustomizableSplitHomeScreenState
           _optionChainArgs = args;
           _panels[i].activeScreenIndex =
               panel.screens.indexOf(ScreenType.optionChain);
-          if (_panels[i].activeScreenIndex == -1)
+          if (_panels[i].activeScreenIndex == -1) {
             _panels[i].activeScreenIndex = 0;
+          }
         });
         _saveLayout();
         return;
@@ -2558,8 +2561,26 @@ class _CustomizableSplitHomeScreenState
     }
   }
 
-  // Update subscription manager based on current active panels
+  // Debounce timer to prevent rapid subscription manager updates
+  Timer? _subscriptionUpdateDebounceTimer;
+  static const Duration _subscriptionUpdateDebounceDelay = Duration(milliseconds: 200);
+  
+  // Track last update to prevent duplicate calls
+  Map<int, ScreenType?> _lastSubscriptionUpdate = {};
+  
+  // Update subscription manager based on current active panels (with debouncing)
   void _updateSubscriptionManagerForPanels() {
+    // Cancel any pending debounce timer
+    _subscriptionUpdateDebounceTimer?.cancel();
+    
+    // Debounce the update to prevent rapid calls
+    _subscriptionUpdateDebounceTimer = Timer(_subscriptionUpdateDebounceDelay, () {
+      _performSubscriptionManagerUpdate();
+    });
+  }
+  
+  /// Actually perform the subscription manager update (called after debounce)
+  void _performSubscriptionManagerUpdate() {
     final subscriptionManager = ref.read(webSubscriptionManagerProvider);
     
     // Update subscription manager for each panel
@@ -2575,7 +2596,12 @@ class _CustomizableSplitHomeScreenState
         activeScreen = panel.screenType;
       }
       
-      subscriptionManager.updateActiveScreen(i, activeScreen);
+      // Only update if the screen actually changed
+      final lastScreen = _lastSubscriptionUpdate[i];
+      if (lastScreen != activeScreen) {
+        subscriptionManager.updateActiveScreen(i, activeScreen);
+        _lastSubscriptionUpdate[i] = activeScreen;
+      }
     }
   }
 
@@ -3263,7 +3289,7 @@ class _CustomizableSplitHomeScreenState
                               _shouldShowScreenOption(screenType, panel))
                           .map((screenType) => _buildScreenOptionForPanel(
                               screenType, theme, panel))
-                          .toList(),
+                          ,
                     ],
                   ),
                 ),
@@ -3345,7 +3371,7 @@ class _CustomizableSplitHomeScreenState
               panel.screenType = screenType;
             } else {
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
+                const SnackBar(
                   content: Text('Watchlist cannot be added'),
                 ),
               );
@@ -4074,8 +4100,7 @@ class _HoverableNavItemState extends State<_HoverableNavItem> {
 
 // Lazy loading wrapper for OrderBookScreenWeb to prevent blocking UI
 class _LazyOrderBookScreen extends ConsumerStatefulWidget {
-  final bool isLoading;
-  const _LazyOrderBookScreen({this.isLoading = false});
+  const _LazyOrderBookScreen();
 
   @override
   ConsumerState<_LazyOrderBookScreen> createState() =>

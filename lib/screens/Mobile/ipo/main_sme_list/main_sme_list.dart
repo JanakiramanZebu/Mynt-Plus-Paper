@@ -8,7 +8,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:mynt_plus/screens/Mobile/ipo/preclose_ipo/preclose_ipo_screen.dart';
-import 'package:mynt_plus/screens/Mobile/ipo/IPO_order_screen/ipo_order_screen.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import '../../../../models/ipo_model/ipo_sme_model.dart';
 import '../../../../models/ipo_model/ipo_mainstream_model.dart';
@@ -56,12 +55,12 @@ class MainSmeListCard extends StatelessWidget {
 
       final hasAnyData = openIpos.isNotEmpty ||
           preOpenIpos.isNotEmpty ||
-          (ipos.ipoPreClose?.msg?.isNotEmpty ?? false);
+          (ipos.ipoPreClose?.msg.isNotEmpty ?? false);
 
 
      if(ref.watch(stocksProvide).searchController.text.isNotEmpty &&
        ipos.ipoCommonSearchList.isEmpty){
-      return Center(
+      return const Center(
           child: NoDataFound(
             title: "No Results Found",
             subtitle: "Try searching with different keywords",
@@ -72,7 +71,7 @@ class MainSmeListCard extends StatelessWidget {
        }
 
       if (!hasAnyData) {
-        return Center(
+        return const Center(
           child: NoDataFound(
             title: "No Open IPOs Found",
             subtitle: "There are no open IPO listings for today",
@@ -87,7 +86,7 @@ class MainSmeListCard extends StatelessWidget {
           // _SearchField(ipoProvider: ipos, theme: theme),
           Expanded(
             child: SingleChildScrollView(
-              physics: ClampingScrollPhysics(),
+              physics: const ClampingScrollPhysics(),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -111,7 +110,7 @@ class MainSmeListCard extends StatelessWidget {
                     ),
                     _buildDivider(theme),
                   ],
-                  if (ipos.ipoPreClose?.msg?.isNotEmpty == true) ...[
+                  if (ipos.ipoPreClose?.msg.isNotEmpty == true) ...[
                     const ClosedIPOScreen(),
                   ],
                   // const SizedBox(height: 22),
@@ -540,7 +539,7 @@ class _IPOListItemState extends State<_IPOListItem> {
               pricerange:
                   "${double.parse(widget.ipo.minPrice ?? "0").toInt()} - ${double.parse(widget.ipo.maxPrice ?? "0").toInt()}",
               mininv:
-                  "${convertCurrencyINRStandard(mininv(double.parse(widget.ipo.minPrice ?? "0").toDouble(), int.parse(widget.ipo.minBidQuantity ?? "0").toInt()).toInt())}",
+                  convertCurrencyINRStandard(mininv(double.parse(widget.ipo.minPrice ?? "0").toDouble(), int.parse(widget.ipo.minBidQuantity ?? "0").toInt()).toInt()),
               enddate: "${widget.ipo.biddingEndDate ?? ""}",
               startdate: "${widget.ipo.biddingStartDate ?? ""}",
               ipotype: "${widget.ipo.key ?? ""}",

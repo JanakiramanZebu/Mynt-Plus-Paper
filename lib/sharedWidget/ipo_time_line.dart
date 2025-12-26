@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/provider/thems.dart';
-import 'package:timeline_tile/timeline_tile.dart';
 import '../res/global_state_text.dart';
 import '../res/res.dart';
 // ignore: depend_on_referenced_packages
-import 'package:intl/intl.dart'; // To format the dates
+// To format the dates
 
 class IpoTimeLineWidget extends StatelessWidget {
   final bool isfFrist;

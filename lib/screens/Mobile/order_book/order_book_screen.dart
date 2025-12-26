@@ -2,7 +2,6 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../screens/Mobile/order_book/filter_alert_pending.dart';
 
 import '../../../provider/order_provider.dart';
@@ -16,7 +15,6 @@ import 'filter_scrip_bottom_sheet.dart';
 import 'gtt_order_book.dart';
 import 'order_book.dart';
 import 'pending_alert_card.dart';
-import 'sip_order_book_screen.dart';
 import 'trade_book.dart';
 
 class OrderBookScreen extends ConsumerStatefulWidget {
@@ -303,7 +301,7 @@ class _OrderBookScreenState extends ConsumerState<OrderBookScreen>
               if(order.selectedTab != 4)
               Material(
                 color: Colors.transparent,
-                shape: CircleBorder(),
+                shape: const CircleBorder(),
                 child: InkWell(
                   customBorder: const CircleBorder(),
                   splashColor: theme.isDarkMode

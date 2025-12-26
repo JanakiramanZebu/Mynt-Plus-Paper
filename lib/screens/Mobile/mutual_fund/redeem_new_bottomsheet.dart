@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/provider/mf_provider.dart';
-import 'package:mynt_plus/provider/portfolio_provider.dart';
 
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/res/res.dart';
-import 'package:mynt_plus/screens/Mobile/authentication/password/forgot_pass_unblock_user.dart';
 
-import '../../../models/portfolio_model/mf_holdings_model.dart';
 import '../../../res/global_state_text.dart';
 import '../../../sharedWidget/snack_bar.dart';
 
@@ -107,7 +103,7 @@ class _RedemptionBottomScreenNewState extends State<RedemptionBottomScreenNew> {
                 children: [
                   Expanded(
                     child: SingleChildScrollView(
-                      physics: ClampingScrollPhysics(),
+                      physics: const ClampingScrollPhysics(),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: Column(

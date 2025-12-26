@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/screens/web/ordersbook/modify_gtt_web.dart';
 import '../../../res/global_font_web.dart';
 import '../../../res/web_colors.dart';
-import '../../../sharedWidget/custom_exch_badge.dart';
 import '../../../models/order_book_model/gtt_order_book.dart';
 import '../../../models/marketwatch_model/get_quotes.dart';
 import '../../../provider/market_watch_provider.dart';
@@ -12,7 +11,6 @@ import '../../../provider/thems.dart';
 import '../../../provider/websocket_provider.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
-import '../../../routes/route_names.dart';
 
 class GttOrderBookDetailScreenWeb extends ConsumerStatefulWidget {
   final GttOrderBookModel gttOrder;
@@ -258,9 +256,9 @@ class _GttOrderBookDetailScreenWebState extends ConsumerState<GttOrderBookDetail
 
     return Material(
       color: Colors.transparent,
-      shape: RoundedRectangleBorder(),
+      shape: const RoundedRectangleBorder(),
       child: InkWell(
-        customBorder: RoundedRectangleBorder(),
+        customBorder: const RoundedRectangleBorder(),
         borderRadius: BorderRadius.circular(0),
         splashColor: theme.isDarkMode ? colors.primaryDark.withOpacity(0.1) : colors.primaryLight.withOpacity(0.1),
         highlightColor: theme.isDarkMode ? colors.primaryDark.withOpacity(0.2) : colors.primaryLight.withOpacity(0.2),
@@ -285,7 +283,7 @@ class _GttOrderBookDetailScreenWebState extends ConsumerState<GttOrderBookDetail
 
                  const SizedBox(width: 4),
                 Text(
-                  "${displayData.exch ?? ''}",
+                  displayData.exch ?? '',
                  style: WebTextStyles.dialogTitle(
                     isDarkTheme: theme.isDarkMode,
                     color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
@@ -299,7 +297,7 @@ class _GttOrderBookDetailScreenWebState extends ConsumerState<GttOrderBookDetail
             Row(
               children: [
                 Text(
-                  "${displayData.ltp ?? displayData.prc ?? '0.00'}",
+                  displayData.ltp ?? displayData.prc ?? '0.00',
                   style: TextWidget.textStyle(
                     fontSize: 16,
                     theme: false,
@@ -651,7 +649,7 @@ class _GttOrderBookDetailScreenWebState extends ConsumerState<GttOrderBookDetail
     );
   }
 
-   Widget _buildInfoRow(String title, String value, ThemesProvider theme, [Color? valueColor]) {
+   Widget _buildInfoRow(String title, String value, ThemesProvider theme) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(

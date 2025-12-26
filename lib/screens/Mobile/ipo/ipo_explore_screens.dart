@@ -138,12 +138,12 @@ class _ExploreScreensState extends ConsumerState<IpoExploreScreens>
           Expanded(
             child: _CustomTabBarView(
               controller: _tabController,
+              onBoundaryReached: widget.onBoundaryReached,
               children: const [
                 MainSmeListCard(),
                 UpcomingIpo(),
                 IpoOrderbookMainScreen(),
               ],
-              onBoundaryReached: widget.onBoundaryReached,
             ),
           ),
         ],
@@ -209,7 +209,7 @@ class _CustomTabBarView extends StatefulWidget {
 
 class _CustomTabBarViewState extends State<_CustomTabBarView> {
   late PageController _pageController;
-  bool _isExternalTabChange = false;
+  final bool _isExternalTabChange = false;
 
   // Track pointer events for edge swipes
   double _startX = 0;

@@ -256,7 +256,7 @@ class _FundSelectionScreenState extends ConsumerState<FundSelectionScreen> {
             if (strategy.searchController.text.isEmpty)
               Expanded(
                 child: ListView.separated(     
-                  physics: ClampingScrollPhysics(),            
+                  physics: const ClampingScrollPhysics(),            
                   separatorBuilder: (context, index) => const ListDivider(),
                   itemCount: getFilteredFunds(strategy).length,
                   itemBuilder: (context, index) {
@@ -546,7 +546,7 @@ class _FundSelectionScreenState extends ConsumerState<FundSelectionScreen> {
         shrinkWrap: true,
         // padding: const EdgeInsets.symmetric(horizontal: 16),
           separatorBuilder: (context, index) => const ListDivider(),
-        physics: ClampingScrollPhysics(),
+        physics: const ClampingScrollPhysics(),
         itemCount: strategy.basketSearchItems?.length ?? 0,
         itemBuilder: (BuildContext context, int index) {
           final item = strategy.basketSearchItems?[index];

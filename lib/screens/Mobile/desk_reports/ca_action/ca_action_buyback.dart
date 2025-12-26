@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/provider/ledger_provider.dart';
 import 'package:mynt_plus/res/res.dart';
-import 'package:mynt_plus/screens/Mobile/desk_reports/bottom_sheets/ledger_bill.dart';
 import 'package:mynt_plus/sharedWidget/custom_back_btn.dart';
-import 'package:mynt_plus/sharedWidget/custom_exch_badge.dart';
-import 'package:mynt_plus/sharedWidget/functions.dart';
 import 'package:mynt_plus/sharedWidget/loader_ui.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 
@@ -17,8 +13,6 @@ import '../../../../res/global_state_text.dart';
 import '../../../../sharedWidget/list_divider.dart';
 import '../../../../sharedWidget/snack_bar.dart';
 import '../bottom_sheets/cp_action_orderscreen.dart';
-import '../bottom_sheets/cp_cancelorder_screen.dart';
-import '../bottom_sheets/ledger_filter.dart';
 
 class CABuyback extends StatefulWidget {
   const CABuyback({super.key});
@@ -312,7 +306,7 @@ class _CABuybackState extends State<CABuyback> with TickerProviderStateMixin {
                   Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Container(
+                      SizedBox(
                         height: 40,
                         child: Row(
                           children: [
@@ -333,9 +327,9 @@ class _CABuybackState extends State<CABuyback> with TickerProviderStateMixin {
                       )))
                       : Expanded(
                           child: SingleChildScrollView(
-                            physics: ClampingScrollPhysics(),
+                            physics: const ClampingScrollPhysics(),
                           child: ListView.separated(
-                            physics: ClampingScrollPhysics(),
+                            physics: const ClampingScrollPhysics(),
                             itemCount: datalist.length,
                             shrinkWrap: true,
                             itemBuilder: (context, index) {
@@ -824,7 +818,7 @@ class _CABuybackState extends State<CABuyback> with TickerProviderStateMixin {
                                                         error(
                                                                 context,
                                                                 "Not Eligible");
-                                                        return null;
+                                                        return;
                                                       }
                                                     }
 
@@ -1162,7 +1156,7 @@ class _CABuybackState extends State<CABuyback> with TickerProviderStateMixin {
                               //             .vOUCHERDATE ==
                               //         ledgerprovider.ledgerAllData!
                               //             .fullStat![index ].vOUCHERDATE) {
-                              return ListDivider();
+                              return const ListDivider();
                               // }else{
                               // return SizedBox();
                               // }
@@ -1272,7 +1266,7 @@ class _CABuybackState extends State<CABuyback> with TickerProviderStateMixin {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
           child: TextWidget.paraText(
-            text: "$label",
+            text: label,
             theme: theme.isDarkMode,
             fw: 1,
             color: value ? colors.colorWhite : colors.colorBlack,

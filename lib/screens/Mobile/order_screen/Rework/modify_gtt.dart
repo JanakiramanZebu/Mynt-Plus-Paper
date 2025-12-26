@@ -17,11 +17,8 @@ import '../../../../provider/order_provider.dart';
 import '../../../../provider/thems.dart';
 import '../../../../res/res.dart';
 import '../../../../sharedWidget/cust_text_formfield.dart';
-import '../../../../sharedWidget/custom_switch_btn.dart';
 import '../../../../sharedWidget/no_internet_widget.dart';
 import '../../../../sharedWidget/snack_bar.dart';
-import '../gtt_condition.dart';
-import '../invest_type_widget.dart';
 import '../order_screen_header.dart';
 
 class ModifyGTT extends ConsumerStatefulWidget {
@@ -240,7 +237,7 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                   child: Stack(
                     children: [
                       SingleChildScrollView(
-                        physics: ClampingScrollPhysics(),
+                        physics: const ClampingScrollPhysics(),
                           reverse: true,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -505,7 +502,7 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                     const SizedBox(width: 4),
                                                     TextWidget.subText(
                                                       text:
-                                                          "${orderInput.actPrcType}",
+                                                          orderInput.actPrcType,
                                                       theme: theme.isDarkMode,
                                                       color: theme.isDarkMode
                                                           ? colors
@@ -1156,7 +1153,7 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                       const SizedBox(width: 4),
                                                       TextWidget.subText(
                                                       text:
-                                                          "${orderInput.actOcoPrcType}",
+                                                          orderInput.actOcoPrcType,
                                                       theme: theme.isDarkMode,
                                                       color: theme.isDarkMode
                                                           ? colors

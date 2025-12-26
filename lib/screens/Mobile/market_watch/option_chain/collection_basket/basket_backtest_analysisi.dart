@@ -322,8 +322,8 @@ class _BasketBacktestAnalysisScreenState extends ConsumerState<BasketBacktestAna
     // Calculate approximate width based on text length
     // This is a rough estimation - you might want to use TextPainter for exact measurement
     final baseWidth = title.length * 8.0; // Approximate 8 pixels per character
-    final minWidth = 60.0; // Minimum width
-    final maxWidth = 200.0; // Maximum width
+    const minWidth = 60.0; // Minimum width
+    const maxWidth = 200.0; // Maximum width
     return baseWidth.clamp(minWidth, maxWidth);
   }
 
@@ -861,7 +861,7 @@ class _BasketBacktestAnalysisScreenState extends ConsumerState<BasketBacktestAna
                   horizontalInterval: 1,
                 ),
                 titlesData: FlTitlesData(
-                  leftTitles: AxisTitles(
+                  leftTitles: const AxisTitles(
                     sideTitles: SideTitles(showTitles: false),
                   ),
                   bottomTitles: AxisTitles(
@@ -900,9 +900,9 @@ class _BasketBacktestAnalysisScreenState extends ConsumerState<BasketBacktestAna
                     ),
                   ),
                   topTitles:
-                      AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                      const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                   rightTitles:
-                      AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                      const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                 ),
                 borderData: FlBorderData(show: false),
                 minX: 0,
@@ -912,7 +912,7 @@ class _BasketBacktestAnalysisScreenState extends ConsumerState<BasketBacktestAna
                   (data.debt.isNotEmpty ? [data.debt[0].chartData] : []) + 
                   (data.hybrid.isNotEmpty ? [data.hybrid[0].chartData] : [])),
                 // Add consistent padding for all charts
-                clipData: FlClipData.all(),
+                clipData: const FlClipData.all(),
                 lineTouchData: LineTouchData(
                   enabled: true,
                   touchTooltipData: LineTouchTooltipData(
@@ -1006,7 +1006,7 @@ class _BasketBacktestAnalysisScreenState extends ConsumerState<BasketBacktestAna
                       isCurved: true,
                       color: const Color(0xFF9CAF88), // Olive green
                       barWidth: 2,
-                      dotData: FlDotData(show: false),
+                      dotData: const FlDotData(show: false),
                       belowBarData: BarAreaData(
                         show: true,
                         color: const Color(0xFF9CAF88).withOpacity(0.3),
@@ -1019,7 +1019,7 @@ class _BasketBacktestAnalysisScreenState extends ConsumerState<BasketBacktestAna
                       isCurved: true,
                       color: const Color(0xFFE57373), // Light red
                       barWidth: 2,
-                      dotData: FlDotData(show: false),
+                      dotData: const FlDotData(show: false),
                       belowBarData: BarAreaData(
                         show: true,
                         color: const Color(0xFFE57373).withOpacity(0.3),
@@ -1032,7 +1032,7 @@ class _BasketBacktestAnalysisScreenState extends ConsumerState<BasketBacktestAna
                       isCurved: true,
                       color: const Color(0xFF4CAF50), // Green
                       barWidth: 2,
-                      dotData: FlDotData(show: false),
+                      dotData: const FlDotData(show: false),
                       belowBarData: BarAreaData(
                         show: true,
                         color: const Color(0xFF4CAF50).withOpacity(0.3),
@@ -1281,9 +1281,9 @@ class _BasketBacktestAnalysisScreenState extends ConsumerState<BasketBacktestAna
                       horizontalInterval: 1,
                     ),
                     titlesData: FlTitlesData(
-                      leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                      rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                      topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                      leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                      rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                      topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                       bottomTitles: AxisTitles(
                         sideTitles: SideTitles(
                           showTitles: true,
@@ -1325,7 +1325,7 @@ class _BasketBacktestAnalysisScreenState extends ConsumerState<BasketBacktestAna
                     maxX: (data.total.chartData.length - 1).toDouble(),
                     minY: _getMinYValue([data.total.chartData, data.benchmark.chartData]),
                     // Add consistent padding for all charts
-                    clipData: FlClipData.all(),
+                    clipData: const FlClipData.all(),
                     lineTouchData: LineTouchData(
                       enabled: true,
                       touchTooltipData: LineTouchTooltipData(
@@ -1416,7 +1416,7 @@ class _BasketBacktestAnalysisScreenState extends ConsumerState<BasketBacktestAna
                         isCurved: true,
                         color: const Color(0xFF3B82F6),
                         barWidth: 2,
-                        dotData: FlDotData(show: false),
+                        dotData: const FlDotData(show: false),
                       ),
                       // Your Strategy (green)
                       LineChartBarData(
@@ -1426,7 +1426,7 @@ class _BasketBacktestAnalysisScreenState extends ConsumerState<BasketBacktestAna
                         isCurved: true,
                         color: const Color(0xFF10B981),
                         barWidth: 2,
-                        dotData: FlDotData(show: false),
+                        dotData: const FlDotData(show: false),
                       ),
                     ],
                   ),
@@ -1546,15 +1546,15 @@ class _BasketBacktestAnalysisScreenState extends ConsumerState<BasketBacktestAna
           // Current row
           _buildThreeColumnDataRow(
             'Current', 
-            '${_formatNumber(data.total.currentValue)}', 
-            '${_formatNumber(data.benchmark.currentValue)}', 
+            _formatNumber(data.total.currentValue), 
+            _formatNumber(data.benchmark.currentValue), 
             theme,
           ),
           // Gain row
           _buildThreeColumnDataRow(
             'Gain', 
-            '${_formatNumber(data.total.gain)}', 
-            '${_formatNumber(data.benchmark.gain)}', 
+            _formatNumber(data.total.gain), 
+            _formatNumber(data.benchmark.gain), 
             theme,
             yourColor: data.total.gain >= 0 
               ? (theme.isDarkMode ? colors.profitDark : colors.profitLight)
@@ -1852,9 +1852,9 @@ class _BasketBacktestAnalysisScreenState extends ConsumerState<BasketBacktestAna
                   horizontalInterval: 1,
                 ),
                 titlesData: FlTitlesData(
-                  leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                   bottomTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
@@ -1896,7 +1896,7 @@ class _BasketBacktestAnalysisScreenState extends ConsumerState<BasketBacktestAna
                 maxX: (data.total.chartData.length - 1).toDouble(),
                 minY: _getMinYValue([data.total.chartData]),
                 // Add consistent padding for all charts
-                clipData: FlClipData.all(),
+                clipData: const FlClipData.all(),
                 lineTouchData: LineTouchData(
                   enabled: true,
                   touchTooltipData: LineTouchTooltipData(
@@ -1987,7 +1987,7 @@ class _BasketBacktestAnalysisScreenState extends ConsumerState<BasketBacktestAna
                     isCurved: true,
                     color: const Color(0xFF3B82F6),
                     barWidth: 2,
-                    dotData: FlDotData(show: false),
+                    dotData: const FlDotData(show: false),
                   ),
                   // Inflation adjusted (purple) - calculated using proper inflation adjustment
                   LineChartBarData(
@@ -2002,7 +2002,7 @@ class _BasketBacktestAnalysisScreenState extends ConsumerState<BasketBacktestAna
                     isCurved: true,
                     color: const Color(0xFF8B5CF6),
                     barWidth: 2,
-                    dotData: FlDotData(show: false),
+                    dotData: const FlDotData(show: false),
                   ),
                 ],
               ),
@@ -2209,15 +2209,15 @@ class _BasketBacktestAnalysisScreenState extends ConsumerState<BasketBacktestAna
           // Current row
           _buildThreeColumnDataRow(
             'Current', 
-            '${_formatNumber(data.total.currentValue)}', 
-            '${_formatNumber(data.inflationAdjusted.finalValue)}', 
+            _formatNumber(data.total.currentValue), 
+            _formatNumber(data.inflationAdjusted.finalValue), 
             theme,
           ),
           // Gain row
           _buildThreeColumnDataRow(
             'Gain', 
-            '${_formatNumber(data.total.gain)}', 
-            '${_formatNumber(data.inflationAdjusted.gain)}', 
+            _formatNumber(data.total.gain), 
+            _formatNumber(data.inflationAdjusted.gain), 
             theme,
             yourColor: data.total.gain >= 0 
               ? (theme.isDarkMode ? colors.profitDark : colors.profitLight)
@@ -2298,17 +2298,17 @@ class _BasketBacktestAnalysisScreenState extends ConsumerState<BasketBacktestAna
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _buildModernTaxComponent('Total Gains', '${totalGains}', theme.isDarkMode ? colors.profitDark : colors.profitLight, theme),
+                _buildModernTaxComponent('Total Gains', '$totalGains', theme.isDarkMode ? colors.profitDark : colors.profitLight, theme),
                 Icon(Icons.remove, 
                   color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                   size: 16,
                 ),
-                _buildModernTaxComponent('Total Tax', '${totalTax}', theme.isDarkMode ? colors.lossDark : colors.lossLight, theme),
+                _buildModernTaxComponent('Total Tax', '$totalTax', theme.isDarkMode ? colors.lossDark : colors.lossLight, theme),
                 Icon(Icons.drag_handle, 
                   color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                   size: 16,
                 ),
-                _buildModernTaxComponent('Post Tax Gains', '${postTaxGains}', theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight, theme),
+                _buildModernTaxComponent('Post Tax Gains', '$postTaxGains', theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight, theme),
               ],
             ),
           ),
@@ -2341,9 +2341,9 @@ class _BasketBacktestAnalysisScreenState extends ConsumerState<BasketBacktestAna
             ),
             child: Column(
               children: [
-                _buildDataRow('Short Term Capital Gains Tax', '${equityTax}', theme,  color: theme.isDarkMode ? colors.profitDark : colors.profitLight),
+                _buildDataRow('Short Term Capital Gains Tax', '$equityTax', theme,  color: theme.isDarkMode ? colors.profitDark : colors.profitLight),
                 
-                _buildDataRow('Long Term Capital Gains Tax', '${debtTax}', theme, 
+                _buildDataRow('Long Term Capital Gains Tax', '$debtTax', theme, 
                   color: theme.isDarkMode ? colors.profitDark : colors.profitLight),
               ],
             ),
@@ -2595,7 +2595,7 @@ class _BasketBacktestAnalysisScreenState extends ConsumerState<BasketBacktestAna
     final day = now.day;
     final monthAbbr = _getMonthAbbreviation(now.month);
     final year = now.year;
-    return '${day}${_getOrdinalSuffix(day)} $monthAbbr $year';
+    return '$day${_getOrdinalSuffix(day)} $monthAbbr $year';
   }
 
   // Helper method to get ordinal suffix for day

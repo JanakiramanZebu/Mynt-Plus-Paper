@@ -200,7 +200,7 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                                                     assets.bellIcon,
                                                     width: 18,
                                                     height: 18,
-                                                    color: Color(0xFF0037B7),
+                                                    color: const Color(0xFF0037B7),
                                                   ),
                                                 ),
                                               ),
@@ -599,7 +599,7 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                                                   const SizedBox(height: 2),
                                                   TextWidget.subText(
                                                       text:
-                                                          "${((int.tryParse(widget.positionList.netqty.toString()) ?? 0) / (widget.positionList.exch == 'MCX' ? (int.tryParse(widget.positionList.ls.toString()) ?? 1) : 1)).toInt()}",
+                                                          "${(int.tryParse(widget.positionList.netqty.toString()) ?? 0) ~/ (widget.positionList.exch == 'MCX' ? (int.tryParse(widget.positionList.ls.toString()) ?? 1) : 1)}",
                                                       theme: false,
                                                       color: theme.isDarkMode
                                                           ? colors.colorWhite
@@ -623,7 +623,7 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                                                   const SizedBox(height: 2),
                                                   TextWidget.subText(
                                                       text:
-                                                          "${((int.tryParse(widget.positionList.daybuyqty.toString()) ?? 0) / (widget.positionList.exch == 'MCX' ? (int.tryParse(widget.positionList.ls.toString()) ?? 1) : 1)).toInt()}",
+                                                          "${(int.tryParse(widget.positionList.daybuyqty.toString()) ?? 0) ~/ (widget.positionList.exch == 'MCX' ? (int.tryParse(widget.positionList.ls.toString()) ?? 1) : 1)}",
                                                       theme: false,
                                                       color: theme.isDarkMode
                                                           ? colors.colorWhite
@@ -649,7 +649,7 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                                                   const SizedBox(height: 2),
                                                   TextWidget.subText(
                                                       text:
-                                                          "${((int.tryParse(widget.positionList.daysellqty.toString()) ?? 0) / (widget.positionList.exch == 'MCX' ? (int.tryParse(widget.positionList.ls.toString()) ?? 1) : 1)).toInt()}",
+                                                          "${(int.tryParse(widget.positionList.daysellqty.toString()) ?? 0) ~/ (widget.positionList.exch == 'MCX' ? (int.tryParse(widget.positionList.ls.toString()) ?? 1) : 1)}",
                                                       theme: false,
                                                       color: theme.isDarkMode
                                                           ? colors.colorWhite
@@ -897,7 +897,7 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                                               children: [
                                                 SvgPicture.asset(
                                                   assets.chart,
-                                                  color: Color(0xFF0037B7),
+                                                  color: const Color(0xFF0037B7),
                                                   width: 16,
                                                   height: 16,
                                                 ),
@@ -945,7 +945,7 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                                                 children: [
                                                   SvgPicture.asset(
                                                     assets.options,
-                                                    color: Color(0xFF0037B7),
+                                                    color: const Color(0xFF0037B7),
                                                     width: 16,
                                                     height: 16,
                                                   ),
@@ -1052,7 +1052,7 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                                                 const SizedBox(height: 16),
                                                 SvgPicture.asset(
                                                   assets.rightarrowcur,
-                                                  color: Color(0xff777777),
+                                                  color: const Color(0xff777777),
                                                   width: 16,
                                                   height: 16,
                                                 ),
@@ -1135,7 +1135,7 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                                                   const SizedBox(height: 16),
                                                   SvgPicture.asset(
                                                     assets.rightarrowcur,
-                                                    color: Color(0xff777777),
+                                                    color: const Color(0xff777777),
                                                     width: 16,
                                                     height: 16,
                                                   ),

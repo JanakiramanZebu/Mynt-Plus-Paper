@@ -9,9 +9,6 @@ import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/provider/transcation_provider.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/routes/route_names.dart';
-import 'package:mynt_plus/screens/Mobile/authentication/password/forgot_pass_unblock_user.dart';
-import 'package:mynt_plus/sharedWidget/custom_exch_badge.dart';
-import 'package:mynt_plus/sharedWidget/ipo_error_widget.dart';
 
 import '../../../../res/global_state_text.dart';
 
@@ -48,7 +45,7 @@ class _BondOrderScreenbottomPageState
     setState(() {
       bondDetails = BondDetails(
           quantitytext:
-              "${(int.parse(widget.bondInfo.minBidQuantity!) / double.parse(widget.bondInfo.faceValue!).toInt()).toInt()}",
+              "${int.parse(widget.bondInfo.minBidQuantity!) ~/ double.parse(widget.bondInfo.faceValue!).toInt()}",
           bidprice: "${double.parse(widget.bondInfo.cutoffPrice!).toInt()}",
           lotsize: (int.parse(widget.bondInfo.lotSize!) /
                   double.parse(widget.bondInfo.faceValue!))
@@ -87,7 +84,7 @@ class _BondOrderScreenbottomPageState
       }
       return SafeArea(
         child: SingleChildScrollView(
-          physics: ClampingScrollPhysics(),
+          physics: const ClampingScrollPhysics(),
             // initialChildSize: 0.50,
             // maxChildSize: .99,
             // expand: false,
@@ -190,7 +187,7 @@ class _BondOrderScreenbottomPageState
                       )
                     ],
                   )),
-              SizedBox(
+              const SizedBox(
                 height: 16,
               ),
               // Container(
@@ -386,7 +383,7 @@ class _BondOrderScreenbottomPageState
                       fw: 0,
                     ),
                   ),
-                  SizedBox(
+                  const SizedBox(
                     height: 8,
                   ),
                 ],

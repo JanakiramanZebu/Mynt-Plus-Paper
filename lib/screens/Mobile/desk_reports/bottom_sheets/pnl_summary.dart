@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/provider/ledger_provider.dart';
-import 'package:mynt_plus/screens/Mobile/authentication/password/forgot_pass_unblock_user.dart';
 
 import '../../../../provider/thems.dart';
 import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
-import '../../../../sharedWidget/no_data_found.dart';
 
 class PnlSummarBottom extends StatefulWidget {
   const PnlSummarBottom({super.key});
@@ -43,8 +41,8 @@ class _PnlSummarBottom extends State<PnlSummarBottom> {
             decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(30),
                 color: theme.isDarkMode
-                    ? Color.fromARGB(255, 0, 0, 0)
-                    : Color.fromARGB(255, 255, 255, 255)),
+                    ? const Color.fromARGB(255, 0, 0, 0)
+                    : const Color.fromARGB(255, 255, 255, 255)),
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Row(
@@ -54,9 +52,9 @@ class _PnlSummarBottom extends State<PnlSummarBottom> {
                     color: const Color.fromARGB(255, 219, 218, 218),
                     width: 40,
                     height: 4.0,
-                    padding: EdgeInsets.only(
+                    padding: const EdgeInsets.only(
                         top: 10, bottom: 25, left: 20, right: 20),
-                    margin: EdgeInsets.only(top: 16),
+                    margin: const EdgeInsets.only(top: 16),
                   ),
                 ],
               ),
@@ -89,7 +87,7 @@ class _PnlSummarBottom extends State<PnlSummarBottom> {
                   Padding(
                     padding: const EdgeInsets.only(right: 16.0, top: 12.0),
                     child: TextWidget.subText(
-                        text: "${notional.toStringAsFixed(2)}",
+                        text: notional.toStringAsFixed(2),
                         textOverflow: TextOverflow.ellipsis,
                         theme: theme.isDarkMode,
                         color: notional != 0
@@ -108,7 +106,7 @@ class _PnlSummarBottom extends State<PnlSummarBottom> {
               Expanded(
                 // height: screenheight * 0.5,
                 child: SingleChildScrollView(
-                  physics: ClampingScrollPhysics(),
+                  physics: const ClampingScrollPhysics(),
                   child: Column(
                     children: [
                       // Container(
@@ -152,7 +150,7 @@ class _PnlSummarBottom extends State<PnlSummarBottom> {
                         ),
                       ),
                       ListView.separated(
-                        physics: ClampingScrollPhysics(),
+                        physics: const ClampingScrollPhysics(),
                         itemCount: ledgerdata.pnlSummaryData?.data?.length ?? 0,
                         shrinkWrap: true,
                         itemBuilder: (context, index) {
@@ -176,7 +174,7 @@ class _PnlSummarBottom extends State<PnlSummarBottom> {
                                   ),
                                 ],
                               ),
-                              SizedBox(height: 8),
+                              const SizedBox(height: 8),
                               Padding(
                                 padding: const EdgeInsets.only(
                                     right: 16.0, left: 16.0, top: 4.0),

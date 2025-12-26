@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart'; 
 
 import '../../../../provider/market_watch_provider.dart';
 import '../../../../res/global_state_text.dart';
@@ -20,7 +19,7 @@ class TexhDataWidget extends ConsumerWidget {
 
              TextWidget.subText(
                       text:"Returns" ,
-                      color:Color(0xff000000) ,
+                      color:const Color(0xff000000) ,
                       theme: false,
                       fw: 1),	
         const SizedBox(height: 8),
@@ -66,7 +65,7 @@ class TexhDataWidget extends ConsumerWidget {
                               TextWidget.paraText(
                       text: "${techData.returnsGridview[index]['duration']}",
                       align: TextAlign.center,
-                      color: Color(0xff666666),
+                      color: const Color(0xff666666),
                       theme: false,
                       fw: 0),	
                   ],

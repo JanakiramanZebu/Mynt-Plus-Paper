@@ -111,10 +111,10 @@ class PortfolioAnalysisModel {
   static List<T> _safeListFromJson<T>(dynamic data, T Function(Map<String, dynamic>) fromJson) {
     if (data is List<dynamic>) {
       return data
-          .where((e) => e is Map<String, dynamic>)
+          .whereType<Map<String, dynamic>>()
           .map((e) {
             try {
-              return fromJson(e as Map<String, dynamic>);
+              return fromJson(e);
             } catch (e) {
               print("Error parsing list item: $e");
               return null;

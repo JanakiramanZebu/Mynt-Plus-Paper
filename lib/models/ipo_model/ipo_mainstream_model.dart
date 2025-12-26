@@ -20,9 +20,9 @@ class MainStreamIpoModel {
         try {
           final parsedList = jsonDecode(json['MainIPO'] as String);
           if (parsedList is List) {
-            parsedList.forEach((v) {
+            for (var v in parsedList) {
               mainIPO!.add(MainIPO.fromJson(v));
-            });
+            }
           }
         } catch (e) {
           print("Error parsing MainIPO string: $e");
@@ -152,9 +152,9 @@ class MainIPO {
         try {
           final parsedList = jsonDecode(json['categoryDetails'] as String);
           if (parsedList is List) {
-            parsedList.forEach((v) {
+            for (var v in parsedList) {
               categoryDetails!.add(CategoryDetails.fromJson(v));
-            });
+            }
           }
         } catch (e) {
           print("Error parsing categoryDetails string: $e");
@@ -202,9 +202,9 @@ class MainIPO {
         try {
           final parsedList = jsonDecode(json['subCategorySettings'] as String);
           if (parsedList is List) {
-            parsedList.forEach((v) {
+            for (var v in parsedList) {
               subCategorySettings!.add(SubCategorySettings.fromJson(v));
-            });
+            }
           }
         } catch (e) {
           print("Error parsing subCategorySettings string: $e");

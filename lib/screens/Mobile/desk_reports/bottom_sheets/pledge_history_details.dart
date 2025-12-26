@@ -36,8 +36,8 @@ class _PledgeHistoryDetails extends State<PledgeHistoryDetails> {
             decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(30),
                 color: theme.isDarkMode
-                    ? Color.fromARGB(255, 0, 0, 0)
-                    : Color.fromARGB(255, 255, 255, 255)),
+                    ? const Color.fromARGB(255, 0, 0, 0)
+                    : const Color.fromARGB(255, 255, 255, 255)),
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Row(
@@ -47,14 +47,14 @@ class _PledgeHistoryDetails extends State<PledgeHistoryDetails> {
                     color: const Color.fromARGB(255, 219, 218, 218),
                     width: 40,
                     height: 4.0,
-                    padding: EdgeInsets.only(
+                    padding: const EdgeInsets.only(
                         top: 10, bottom: 25, left: 20, right: 20),
-                    margin: EdgeInsets.only(top: 16),
+                    margin: const EdgeInsets.only(top: 16),
                   ),
                 ],
               ),
               widget.data.reqList == null
-                  ? Center(
+                  ? const Center(
                       child: Padding(
                       padding: EdgeInsets.only(top: 60),
                       child: NoDataFound(
@@ -64,9 +64,9 @@ class _PledgeHistoryDetails extends State<PledgeHistoryDetails> {
                   : Expanded(
                       // height: screenheight * 0.5,
                       child: SingleChildScrollView(
-                        physics: ClampingScrollPhysics(),
+                        physics: const ClampingScrollPhysics(),
                         child: ListView.separated(
-                          physics: ClampingScrollPhysics(),
+                          physics: const ClampingScrollPhysics(),
                           itemCount: widget.data.reqList!.length ?? 0,
                           shrinkWrap: true,
                           itemBuilder: (context, index) {

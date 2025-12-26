@@ -9,7 +9,6 @@ import '../../../provider/thems.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/web_colors.dart';
 import '../../../res/global_font_web.dart';
-import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/no_internet_widget.dart';
 import 'watchlist_screen_web.dart' show deleteModeProvider;
 

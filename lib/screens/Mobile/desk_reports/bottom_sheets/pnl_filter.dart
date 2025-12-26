@@ -42,8 +42,8 @@ class _PnlFliter extends State<PnlFliter> {
                 width: 40,
                 height: 4.0,
                 padding:
-                    EdgeInsets.only(top: 10, bottom: 25, left: 20, right: 20),
-                margin: EdgeInsets.only(top: 16),
+                    const EdgeInsets.only(top: 10, bottom: 25, left: 20, right: 20),
+                margin: const EdgeInsets.only(top: 16),
               ),
               Column(
                 children: [
@@ -57,10 +57,10 @@ class _PnlFliter extends State<PnlFliter> {
                           style: textStyle(Colors.black, 20, FontWeight.w500),
                         ),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 4.0),
+                      const Padding(
+                        padding: EdgeInsets.only(top: 4.0),
                         child: Divider(
-                          color: const Color.fromARGB(255, 212, 212, 212),
+                          color: Color.fromARGB(255, 212, 212, 212),
                           thickness: 1,
                         ),
                       ),
@@ -174,7 +174,7 @@ class _PnlFliter extends State<PnlFliter> {
           setState(() {
             // Ensure UI rebuilds when selection changes
             Navigator.pop(context);
-            print("${newvalue}");
+            print("$newvalue");
             _character = newvalue;
           });
         },

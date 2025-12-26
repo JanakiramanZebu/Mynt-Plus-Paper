@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/sharedWidget/snack_bar.dart';
 
 import '../../../provider/thems.dart';
@@ -164,7 +163,7 @@ class _TotpScreenState extends ConsumerState<TotpScreen> {
                         fw: 0),
                   ),
         
-                  ListDivider(),
+                  const ListDivider(),
                   // const SizedBox(height: 16),
         
                   Padding(
@@ -236,7 +235,7 @@ class _TotpScreenState extends ConsumerState<TotpScreen> {
                                           successMessage(context, "TOTP copied to clipboard");
                                       Navigator.pop(context);
                                     },
-                                    child: Container(
+                                    child: SizedBox(
                                       height: 32,
                                       width: 32,
                                       child: Center(
@@ -330,7 +329,7 @@ class _TotpScreenState extends ConsumerState<TotpScreen> {
                                   isObscure = !isObscure;
                                 });
                               },
-                              child: Container(
+                              child: SizedBox(
                                 height: 32,
                                 width: 32,
                                 child: Center(
@@ -365,7 +364,7 @@ class _TotpScreenState extends ConsumerState<TotpScreen> {
                                         context, "Auth key copied to clipboard");
                                 Navigator.pop(context);
                               },
-                              child: Container(
+                              child: SizedBox(
                                 height: 32,
                                 width: 32,
                                 child: Center(
@@ -381,7 +380,7 @@ class _TotpScreenState extends ConsumerState<TotpScreen> {
                 ],
               ),
             ),
-            SizedBox(height: 30.0)
+            const SizedBox(height: 30.0)
           ],
         ),
       ),

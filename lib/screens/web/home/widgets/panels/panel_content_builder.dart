@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mynt_plus/models/marketwatch_model/market_watch_scrip_model.dart';
 import 'package:mynt_plus/provider/portfolio_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/res/web_colors.dart';
@@ -124,11 +123,11 @@ class PanelContentBuilder {
       case ScreenType.pledgeUnpledge:
         return const PledgenUnpledge(ddd: "DDDDD");
       case ScreenType.corporateActions:
-        return CABuyback();
+        return const CABuyback();
       case ScreenType.reports:
-        return ReportsScreenWeb();
+        return const ReportsScreenWeb();
       case ScreenType.settings:
-        return SettingsScreenWeb();
+        return const SettingsScreenWeb();
       case ScreenType.tradeAction:
         final tabIndex = tradeActionTabIndex;
         return TradeActionScreenWeb(

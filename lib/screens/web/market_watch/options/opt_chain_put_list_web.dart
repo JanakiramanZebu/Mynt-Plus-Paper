@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_swipe_action_cell/flutter_swipe_action_cell.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -68,13 +67,13 @@ class _OptionChainPutRow extends StatefulWidget {
   final bool isBasketMode;
 
   const _OptionChainPutRow({
-    Key? key,
+    super.key,
     required this.option,
     this.swipe,
     required this.index,
     required this.showPriceView,
     required this.isBasketMode,
-  }) : super(key: key);
+  });
 
   @override
   _OptionChainPutRowState createState() => _OptionChainPutRowState();
@@ -379,7 +378,7 @@ class _OptionChainPutRowState extends State<_OptionChainPutRow> {
                       ),
                       Expanded(
                         child: Text(
-                          "${_perChange}%",
+                          "$_perChange%",
                           style: WebTextStyles.tableDataCompact(
                             isDarkTheme: theme.isDarkMode,
                             color: changeColor,
@@ -505,7 +504,7 @@ class _OptionChainPutRowState extends State<_OptionChainPutRow> {
     );
   }
 
-  Widget _buildDataCell(String value, ThemesProvider theme, {bool isPrimary = false, bool isSecondary = false, Color? color, bool alignEnd = false}) {
+  Widget _buildDataCell(String value, ThemesProvider theme, {bool isPrimary = false, Color? color, bool alignEnd = false}) {
     final displayValue = value == "0.00" || value == "0" ? "0.00" : value;
     final textColor = color ?? (isPrimary 
         ? (theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary)
@@ -718,7 +717,7 @@ Widget _buildPriceData(ThemesProvider theme) {
         ),
         const SizedBox(height: 3),
         Text(
-          "(${_perChange}%)",
+          "($_perChange%)",
           style: _getPercentageStyle(_perChange, theme),
         ),
         const SizedBox(height: 2),

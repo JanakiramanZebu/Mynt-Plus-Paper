@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/locator/preference.dart';
@@ -17,6 +16,8 @@ import '../../../../../sharedWidget/custom_drag_handler.dart';
 import '../../../../../sharedWidget/splash_loader.dart';
 
 class ReferAndEarnScreen extends ConsumerStatefulWidget {
+  const ReferAndEarnScreen({super.key});
+
   @override
   ConsumerState<ReferAndEarnScreen> createState() => _ReferAndEarnScreenState();
 }
@@ -69,7 +70,7 @@ class _ReferAndEarnScreenState extends ConsumerState<ReferAndEarnScreen> {
         child: dashboard.isReferralRewardsLoading
             ? _buildLoadingState(theme)
             : SingleChildScrollView(
-              physics: ClampingScrollPhysics(),
+              physics: const ClampingScrollPhysics(),
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -96,7 +97,7 @@ class _ReferAndEarnScreenState extends ConsumerState<ReferAndEarnScreen> {
     return Center(
       child: Container(
         color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-        child: CircularLoaderImage(),
+        child: const CircularLoaderImage(),
       ),
     );
   }
@@ -159,7 +160,7 @@ class _ReferAndEarnScreenState extends ConsumerState<ReferAndEarnScreen> {
                               theme: theme.isDarkMode,
                             ),
                           ),
-                          TextSpan(text: ' too!'),
+                          const TextSpan(text: ' too!'),
                         ],
                       ),
                     ),
@@ -739,7 +740,7 @@ class _ReferAndEarnScreenState extends ConsumerState<ReferAndEarnScreen> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     SvgPicture.asset(assets.noDatafound,
-                        color: Color(0xff777777)),
+                        color: const Color(0xff777777)),
                     const SizedBox(height: 2),
                     TextWidget.subText(
                         text: "No completed referrals yet",
@@ -754,7 +755,7 @@ class _ReferAndEarnScreenState extends ConsumerState<ReferAndEarnScreen> {
           else
             Expanded(
               child: ListView.separated(
-                physics: ClampingScrollPhysics(),
+                physics: const ClampingScrollPhysics(),
                 controller: scrollController,
                 itemCount: completedReferrals.length,
                 separatorBuilder: (context, index) =>  Divider(
@@ -798,7 +799,7 @@ class _ReferAndEarnScreenState extends ConsumerState<ReferAndEarnScreen> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     SvgPicture.asset(assets.noDatafound,
-                        color: Color(0xff777777)),
+                        color: const Color(0xff777777)),
                     const SizedBox(height: 2),
                     TextWidget.subText(
                         text: _getEmptyStateText(),
@@ -813,7 +814,7 @@ class _ReferAndEarnScreenState extends ConsumerState<ReferAndEarnScreen> {
           else
             Expanded(
               child: ListView.separated(
-                physics: ClampingScrollPhysics(),
+                physics: const ClampingScrollPhysics(),
                 controller: scrollController,
                 itemCount: pendingReferrals.length,
                 separatorBuilder: (context, index) =>  Divider(

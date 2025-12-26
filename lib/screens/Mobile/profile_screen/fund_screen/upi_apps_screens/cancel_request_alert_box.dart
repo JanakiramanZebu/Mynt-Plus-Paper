@@ -2,13 +2,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../../../provider/thems.dart';
 import '../../../../../provider/transcation_provider.dart';
 import '../../../../../res/global_state_text.dart';
 import '../../../../../res/res.dart';
 import '../../../../../sharedWidget/custom_drag_handler.dart';
-import '../../../../../sharedWidget/functions.dart';
 import '../../../../../sharedWidget/payment_loader.dart';
 
 class PaymentCancelAlert extends ConsumerStatefulWidget {
@@ -118,7 +116,7 @@ class _PaymentCancelAlertState extends ConsumerState<PaymentCancelAlert> {
                               fw: 0,
                               ),
                         ])),
-                    SizedBox(
+                    const SizedBox(
                       height: 10,
                     ),
                     Padding(
@@ -150,7 +148,7 @@ class _PaymentCancelAlertState extends ConsumerState<PaymentCancelAlert> {
                                              ,
                                   fw: 2))),
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 10,
                     )
                   ])),

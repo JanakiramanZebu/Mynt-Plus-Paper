@@ -4,7 +4,6 @@ import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/res/global_font_web.dart';
 import 'package:mynt_plus/provider/thems.dart';
 
-import '../res/web_colors.dart';
 
 /// Responsive SnackBar utility that adapts to screen size
 /// Shows toast-style notification in bottom-right corner on desktop
@@ -314,7 +313,7 @@ class _DesktopToastWidgetState extends ConsumerState<_DesktopToastWidget>
                                 widget.message,
                                 style: WebTextStyles.bodySmall(
                                   isDarkTheme: theme.isDarkMode,
-                                  color:  Color(0xFF000000),
+                                  color:  const Color(0xFF000000),
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),

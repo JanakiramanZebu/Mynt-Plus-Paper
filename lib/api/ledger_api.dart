@@ -29,7 +29,6 @@ import '../models/desk_reports_model/sharing_on_off_model.dart';
 import '../models/desk_reports_model/tax_pnl_Eq_charge_model.dart';
 import '../models/desk_reports_model/taxpnl_eq_model.dart';
 import '../models/desk_reports_model/tradebook_model.dart';
-import 'dart:convert';
 
 import '../models/desk_reports_model/unpledge_history_model.dart';
 import '../sharedWidget/fund_function.dart';
@@ -117,7 +116,7 @@ mixin LedgerApi on ApiCore {
             "from": from, "to": to
           }));
 
-      print('getLedgerdata response: ' + res.body);
+      print('getLedgerdata response: ${res.body}');
       final json = jsonDecode((res.body));
       // print("${json['stat']}");
       if (json['stat'] != 'Not Ok') {
@@ -528,7 +527,7 @@ mixin LedgerApi on ApiCore {
 
       // print("${response}");
       final Uri uri = Uri.parse(
-          "${apiLinks.reportsapi}/downloaddocmob1?cc=${prefs.clientId}&recno=${recno}");
+          "${apiLinks.reportsapi}/downloaddocmob1?cc=${prefs.clientId}&recno=$recno");
       if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
         throw 'Could not launch  ';
       }
@@ -882,7 +881,7 @@ mixin LedgerApi on ApiCore {
             'withopen': yrn
           }));
       final json = jsonDecode((res.body));
-      print("${json}");
+      print("$json");
       // log("MF Master ==>$json");
       return PnlSegCharge.fromJson(json as Map<String, dynamic>);
 
@@ -909,7 +908,7 @@ mixin LedgerApi on ApiCore {
             'seg': seg
           }));
       final json = jsonDecode((res.body));
-      print("${json}");
+      print("$json");
       // log("MF Master ==>$json");
       return TaxPnlEqCharges.fromJson(json as Map<String, dynamic>);
 
@@ -934,7 +933,7 @@ mixin LedgerApi on ApiCore {
             "pledgeReq": list
           }));
       final json = jsonDecode((res.body));
-      print("${json}");
+      print("$json");
 
       // log("MF Master ==>$json");
       return json;
@@ -956,7 +955,7 @@ mixin LedgerApi on ApiCore {
             "reqid": response,
           }));
       final json = jsonDecode((res.body));
-      print("${json}");
+      print("$json");
 
       // log("MF Master ==>$json");
       return CdslReponseModel.fromJson(json as Map<String, dynamic>);
@@ -983,7 +982,7 @@ mixin LedgerApi on ApiCore {
             'withopen': yrn
           }));
       final json = jsonDecode((res.body));
-      print("${json}");
+      print("$json");
       // log("MF Master ==>$json");
       return PnlSegCharge.fromJson(json as Map<String, dynamic>);
 
@@ -1010,7 +1009,7 @@ mixin LedgerApi on ApiCore {
             "cocd": comcode
           }));
       final json = jsonDecode((res.body));
-      print("${json}");
+      print("$json");
       // log("MF Master ==>$json");
 
       return PnlSummaryModel.fromJson({'data': json});
@@ -1034,7 +1033,7 @@ mixin LedgerApi on ApiCore {
           }));
       if (res.statusCode == 200) {
         final json = jsonDecode((res.body));
-        print("${json}");
+        print("$json");
         // log("MF Master ==>$json");
         return json;
       } else {
@@ -1054,7 +1053,7 @@ mixin LedgerApi on ApiCore {
           body: jsonEncode({"clientid": uccid, "ISIN": list}));
       if (res.statusCode == 200) {
         final json = jsonDecode((res.body));
-        print("${json}");
+        print("$json");
         // log("MF Master ==>$json");
         return json;
       } else {
@@ -1095,7 +1094,7 @@ mixin LedgerApi on ApiCore {
       // return TaxPnlEqModel.fromJson(json as Map<String, dynamic>);
       // log("MF Master ==>$json");
     } catch (e) {
-      print("${e} errorerror");
+      print("$e errorerror");
       rethrow;
     }
   }

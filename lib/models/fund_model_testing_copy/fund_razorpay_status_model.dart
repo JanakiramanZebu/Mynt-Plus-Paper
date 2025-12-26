@@ -64,7 +64,7 @@ class RazorpayTranstationRes {
 
   RazorpayTranstationRes.fromJson(Map<String, dynamic> json) {
     acquirerData = json['acquirer_data'] != null
-        ? new AcquirerData.fromJson(json['acquirer_data'])
+        ? AcquirerData.fromJson(json['acquirer_data'])
         : null;
     amount = json['amount'];
     amountRefunded = json['amount_refunded'];
@@ -87,7 +87,7 @@ class RazorpayTranstationRes {
     international = json['international'];
     invoiceId = json['invoice_id'];
     method = json['method'];
-    notes = json['notes'] != null ? new Notes.fromJson(json['notes']) : null;
+    notes = json['notes'] != null ? Notes.fromJson(json['notes']) : null;
     orderId = json['order_id'];
     refundStatus = json['refund_status'];
     status = json['status'];

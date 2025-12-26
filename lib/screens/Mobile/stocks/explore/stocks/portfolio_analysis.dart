@@ -15,7 +15,6 @@ import 'dart:ui' as ui;
 import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
-import 'package:cross_file/cross_file.dart';
 import '../../../../../provider/dashboard_provider.dart';
 import '../../../../../models/explore_model/portfolioanalisys_models.dart';
 import '../../../../../provider/market_watch_provider.dart';
@@ -201,7 +200,7 @@ class _PortfolioDashboardScreenState
                   return Center(
                     child: Container(
                       color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                      child: CircularLoaderImage(),
+                      child: const CircularLoaderImage(),
                     ),
                   );
                 }
@@ -323,7 +322,7 @@ class _PortfolioDashboardScreenState
       height: screenHeight,
       color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
       child: SingleChildScrollView(
-        physics: ClampingScrollPhysics(),
+        physics: const ClampingScrollPhysics(),
         child: Padding(
           padding: const EdgeInsets.all(20),
           child: Column(
@@ -345,7 +344,7 @@ class _PortfolioDashboardScreenState
                   if (clientName.isNotEmpty) ...[
                     const SizedBox(height: 8),
                     TextWidget.titleText(
-                      text: '$clientName',
+                      text: clientName,
                       theme: theme.isDarkMode,
                       color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                       fw: 1,
@@ -399,7 +398,7 @@ class _PortfolioDashboardScreenState
     final validFundamentals = displayList.toList();
 
     return CustomScrollView(
-      physics: ClampingScrollPhysics(),
+      physics: const ClampingScrollPhysics(),
       controller: _scrollController,
       slivers: [
         // Main content section
@@ -407,7 +406,7 @@ class _PortfolioDashboardScreenState
           child: Container(
             key: _contentKey,
             child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -519,7 +518,7 @@ class _PortfolioDashboardScreenState
           delegate: _StickyHeaderDelegate(
             showSearch: dashboardState.showPortfolioSearch,
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               decoration: BoxDecoration(
                 color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
                 boxShadow: _hasScrolled
@@ -609,7 +608,7 @@ class _PortfolioDashboardScreenState
                       })
                     ],
                   ),
-                  SizedBox(height: 12),
+                  const SizedBox(height: 12),
                   // Search and Filter Section
                   _buildSearchAndFilterSection(theme),
                   // Search Bar (shown when search is active)
@@ -730,10 +729,10 @@ class _PortfolioDashboardScreenState
                   ),
                 ),
                 // Right side: Action buttons (can be customized later)
-                Row(
+                const Row(
                   children: [
                     // Placeholder for future action buttons
-                    Container(
+                    SizedBox(
                       width: 20,
                       height: 20,
                     ),
@@ -882,11 +881,11 @@ class _PortfolioDashboardScreenState
       delegate: SliverChildBuilderDelegate(
         (context, index) {
           if (index.isOdd) {
-            return ListDivider();
+            return const ListDivider();
           }
           final itemIndex = index ~/ 2;
           if (itemIndex >= validFundamentals.length) {
-            return NoDataFound(
+            return const NoDataFound(
               secondaryEnabled: false,
             );
           }
@@ -941,9 +940,9 @@ class _PortfolioDashboardScreenState
     return Container(
       color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
       child: ListView.separated(
-        physics: ClampingScrollPhysics(),
+        physics: const ClampingScrollPhysics(),
         // padding: const EdgeInsets.symmetric(horizontal: 16),
-        separatorBuilder: (_, __) => ListDivider(),
+        separatorBuilder: (_, __) => const ListDivider(),
         itemCount: validFundamentals.length,
         itemBuilder: (context, index) {
           final entry = validFundamentals[index];
@@ -1014,7 +1013,7 @@ class _PortfolioDashboardScreenState
                                   : colors.profitLight,
                       fw: 0,
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     TextWidget.subText(
                       text: 'XIRR Return',
                       theme: theme.isDarkMode,
@@ -1108,7 +1107,7 @@ class _PortfolioDashboardScreenState
                     horizontalInterval: 1,
                   ),
                   titlesData: FlTitlesData(
-                    leftTitles: AxisTitles(
+                    leftTitles: const AxisTitles(
                       sideTitles: SideTitles(showTitles: false),
                     ),
                     bottomTitles: AxisTitles(
@@ -1163,9 +1162,9 @@ class _PortfolioDashboardScreenState
                       ),
                     ),
                     topTitles:
-                        AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                        const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                     rightTitles:
-                        AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                        const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                   ),
                   borderData: FlBorderData(show: false),
                   minX: 0,
@@ -1222,14 +1221,14 @@ class _PortfolioDashboardScreenState
                       isCurved: true,
                       color: const Color(0xFF3B82F6),
                       barWidth: 2,
-                      dotData: FlDotData(show: false),
+                      dotData: const FlDotData(show: false),
                     ),
                     LineChartBarData(
                       spots: currentSpots,
                       isCurved: true,
                       color: const Color(0xFF8B5CF6),
                       barWidth: 2,
-                      dotData: FlDotData(show: false),
+                      dotData: const FlDotData(show: false),
                     ),
                   ],
                 ),
@@ -1240,9 +1239,9 @@ class _PortfolioDashboardScreenState
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _buildChartLegend('Invested', Color(0xFF3B82F6)),
+            _buildChartLegend('Invested', const Color(0xFF3B82F6)),
             const SizedBox(width: 20),
-            _buildChartLegend('Current', Color(0xFF8B5CF6)),
+            _buildChartLegend('Current', const Color(0xFF8B5CF6)),
           ],
         ),
       ],
@@ -1262,7 +1261,7 @@ class _PortfolioDashboardScreenState
             borderRadius: BorderRadius.circular(2),
           ),
         ),
-        SizedBox(width: 6),
+        const SizedBox(width: 6),
         TextWidget.paraText(
           text: label,
           theme: false,
@@ -1314,7 +1313,7 @@ class _PortfolioDashboardScreenState
                     portfolio.getAccountTypeColor(entry.key),
                     portfolio.getAccountTypeIcon(entry.key),
                   ))
-              .toList(),
+              ,
         ],
       ),
     );
@@ -1535,13 +1534,13 @@ class _PortfolioDashboardScreenState
     final tileCenterGlobal = renderBox.localToGlobal(tileRect.center);
     Offset overlayOffset = overlayBox.globalToLocal(tileCenterGlobal);
 
-    final Color bg = Colors.white;
+    const Color bg = Colors.white;
 
     // Compute clamped position so tooltip stays on screen
     const double tipMaxWidth = 220;
     const double tipApproxHeight = 88; // rough height; layout will be close
-    final double minX = 8;
-    final double minY = 8;
+    const double minX = 8;
+    const double minY = 8;
     final double maxX = overlayBox.size.width - tipMaxWidth - 8;
     final double maxY = overlayBox.size.height - tipApproxHeight - 8;
     final double left = overlayOffset.dx.clamp(minX, maxX);
@@ -1685,9 +1684,9 @@ class _PortfolioDashboardScreenState
 
   Widget _buildHeatmapLegend(double maxLoss, double maxGain, ThemesProvider theme) {
     // Match heatmap card palette: red-light -> neutral -> green-light
-    final redLight = Color(0xFFDC3545).withOpacity(0.1);   // same as negative light
-    final neutral = Color(0xFFF8F9FA);   // neutral/zero
-    final greenLight = Color(0xFF28A745).withOpacity(0.1); // same as positive light
+    final redLight = const Color(0xFFDC3545).withOpacity(0.1);   // same as negative light
+    const neutral = Color(0xFFF8F9FA);   // neutral/zero
+    final greenLight = const Color(0xFF28A745).withOpacity(0.1); // same as positive light
 
     return Container(
       height: 24,
@@ -1695,7 +1694,7 @@ class _PortfolioDashboardScreenState
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [redLight, neutral, greenLight],
-          stops: [0.0, 0.5, 1.0],
+          stops: const [0.0, 0.5, 1.0],
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
         ),
@@ -1709,7 +1708,7 @@ class _PortfolioDashboardScreenState
             padding: const EdgeInsets.only(left: 8),
             child: Text(
               '${maxLoss.toStringAsFixed(1)}%',
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w600,
                 color: Colors.black87,
@@ -1720,7 +1719,7 @@ class _PortfolioDashboardScreenState
             padding: const EdgeInsets.only(right: 8),
             child: Text(
               '${maxGain.toStringAsFixed(1)}%',
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w600,
                 color: Colors.black87,
@@ -2119,8 +2118,8 @@ class _PortfolioDashboardScreenState
             decoration: BoxDecoration(
               color: portfolio.getSectorAllocationColor(entry.key),
               borderRadius: BorderRadius.horizontal(
-                left: entry == entries.first ? Radius.circular(5) : Radius.zero,
-                right: entry == entries.last ? Radius.circular(5) : Radius.zero,
+                left: entry == entries.first ? const Radius.circular(5) : Radius.zero,
+                right: entry == entries.last ? const Radius.circular(5) : Radius.zero,
               ),
             ),
           ),
@@ -2330,7 +2329,7 @@ class _PortfolioDashboardScreenState
             // Filter Sections
             Expanded(
               child: SingleChildScrollView(
-                physics: ClampingScrollPhysics(),
+                physics: const ClampingScrollPhysics(),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Column(

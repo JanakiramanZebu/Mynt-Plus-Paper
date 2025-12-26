@@ -6,7 +6,6 @@ import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/custom_drag_handler.dart';
 import '../../../sharedWidget/custom_exch_badge.dart';
-import '../../../sharedWidget/functions.dart';
 
 class ScripDetailDialogue extends ConsumerWidget {
   const ScripDetailDialogue({super.key});
@@ -48,7 +47,7 @@ class ScripDetailDialogue extends ConsumerWidget {
                       fw: 1),    
                                      TextWidget.titleText(
                       text:' ${scripInfo.option}',   
-                      color: Color(0xff666666),               
+                      color: const Color(0xff666666),               
                       theme: theme.isDarkMode,
                       fw: 1),
 
@@ -105,7 +104,7 @@ class ScripDetailDialogue extends ConsumerWidget {
             width: MediaQuery.of(context).size.width,
             height: 600,
             child: ListView(
-              physics: ClampingScrollPhysics(),
+              physics: const ClampingScrollPhysics(),
               children: [
                 const SizedBox(height: 12),
                 rowOfInfoData("Company Name", scripInfo.cname ?? "-",
@@ -181,14 +180,14 @@ class ScripDetailDialogue extends ConsumerWidget {
                             
                                     TextWidget.paraText(
                       text:"Exposure Margin" ,
-                      color:Color(0xff666666) ,
+                      color:const Color(0xff666666) ,
                       theme: theme.isDarkMode,
                       fw: 0),
                             const SizedBox(height: 3),                        
 
                                     TextWidget.subText(
                       text: scripInfo.expmrg ?? "-",
-                      color:Color(0xff000000) ,
+                      color:const Color(0xff000000) ,
                       theme: theme.isDarkMode,
                       fw: 0),
                             const SizedBox(height: 10)
@@ -214,7 +213,7 @@ class ScripDetailDialogue extends ConsumerWidget {
                   children: [
                          TextWidget.paraText(
                       text:title1 ,
-                      color:Color(0xff666666) ,
+                      color:const Color(0xff666666) ,
                       theme: theme.isDarkMode,
                       fw: 0),
                 const SizedBox(height: 3),
@@ -238,7 +237,7 @@ class ScripDetailDialogue extends ConsumerWidget {
 
                 TextWidget.paraText(
                       text: title2,
-                      color:Color(0xff666666) ,
+                      color:const Color(0xff666666) ,
                       theme: theme.isDarkMode,
                       fw: 0),
             const SizedBox(height: 3),

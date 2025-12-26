@@ -6,7 +6,7 @@ class XsipOrderCancleResponces {
   XsipOrderCancleResponces({this.data, this.emsg, this.stat});
 
   XsipOrderCancleResponces.fromJson(Map<String, dynamic> json) {
-    data = json['data'] != null ? new Data.fromJson(json['data']) : null;
+    data = json['data'] != null ? Data.fromJson(json['data']) : null;
     emsg = json['emsg'];
     stat = json['stat'];
   }

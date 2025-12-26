@@ -3,19 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/provider/ledger_provider.dart';
 import 'package:mynt_plus/res/res.dart';
-import 'package:mynt_plus/sharedWidget/custom_back_btn.dart';
-import 'package:mynt_plus/sharedWidget/functions.dart';
-import 'package:mynt_plus/sharedWidget/loader_ui.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 
 import '../../../../models/desk_reports_model/pledge_unpledge_model.dart';
 import '../../../../provider/thems.dart';
 import '../../../../res/global_state_text.dart';
-import '../../../../routes/route_names.dart';
 import '../../../../sharedWidget/list_divider.dart';
 import '../../../../sharedWidget/snack_bar.dart';
 import '../bottom_sheets/pledge_details.dart';
-import '../bottom_sheets/pledge_list.dart';
 
 class PledgeFilter extends StatefulWidget {
   final String activetabe;
@@ -48,9 +43,9 @@ class _PledgeFilterState extends State<PledgeFilter>
     double screenheight = MediaQuery.of(context).size.height;
     List<Data> showlist = [];
     List<Tab> orderTabName = [
-      Tab(text: "Pledge"),
-      Tab(text: "Non-Pledge"),
-      Tab(text: "Non-Approved"),
+      const Tab(text: "Pledge"),
+      const Tab(text: "Non-Pledge"),
+      const Tab(text: "Non-Approved"),
     ];
 
     return Consumer(builder: (context, WidgetRef ref, _) {
@@ -108,8 +103,8 @@ class _PledgeFilterState extends State<PledgeFilter>
       }
 
       // print("Tab tapped${showlist.length}") ;
-      Future<void> _refresh() async {
-        await Future.delayed(Duration(seconds: 0)); // simulate refresh delay
+      Future<void> refresh() async {
+        await Future.delayed(const Duration(seconds: 0)); // simulate refresh delay
         print("refresh ");
         ledgerprovider.getCurrentDate("pandu");
         ledgerprovider.fetchpledgeandunpledge(context);
@@ -199,9 +194,9 @@ class _PledgeFilterState extends State<PledgeFilter>
 
       final List<dynamic> displaypledgedvalue = pledgedvalue;
 
-      if (showlist.length == 0 || showlist.isEmpty){
+      if (showlist.isEmpty || showlist.isEmpty){
         // Handle the null or empty case
-        return Center(
+        return const Center(
             child: NoDataFound(
               secondaryEnabled: false,
             ));
@@ -210,7 +205,7 @@ class _PledgeFilterState extends State<PledgeFilter>
       return Scaffold(
         backgroundColor: Colors.transparent,
         body: RefreshIndicator(
-          onRefresh: _refresh,
+          onRefresh: refresh,
           child: Stack(
             children: [
               Column(
@@ -377,7 +372,7 @@ class _PledgeFilterState extends State<PledgeFilter>
                 padding: const EdgeInsets.only(bottom: 16.0),
                 child: ListView.separated(
                   padding: EdgeInsets.zero,
-                  physics: ScrollPhysics(),
+                  physics: const ScrollPhysics(),
                   itemCount: dataval.length ?? 0,
                   shrinkWrap: true,
                   itemBuilder: (context, index) {
@@ -482,7 +477,7 @@ class _PledgeFilterState extends State<PledgeFilter>
                                                           : colors
                                                               .textPrimaryLight,
                                                       fw: 0),
-                                                  SizedBox(width: 10.0),
+                                                  const SizedBox(width: 10.0),
                                                   //         ((((value.cashEqColl!.foCashEq != null
                                                   //                 ? value.cashEqColl!
                                                   //                         .foCashEq ==
@@ -602,10 +597,10 @@ class _PledgeFilterState extends State<PledgeFilter>
                                                           
                                                           ),
                                                         )
-                                                      : SizedBox(),
+                                                      : const SizedBox(),
                                                 ],
                                               ),
-                                              SizedBox(width: 10.0),
+                                              const SizedBox(width: 10.0),
                                               (double.parse(value.cOLQTY
                                                                   .toString())
                                                               .toInt()) !=
@@ -691,7 +686,7 @@ class _PledgeFilterState extends State<PledgeFilter>
                                                             children: [
                                                               const Icon(
                                                                 Icons.lock,
-                                                                color: const Color
+                                                                color: Color
                                                                     .fromARGB(
                                                                     255,
                                                                     255,
@@ -727,7 +722,7 @@ class _PledgeFilterState extends State<PledgeFilter>
                                                         ),
                                                       ),
                                                     )
-                                                  : SizedBox()
+                                                  : const SizedBox()
                                             ],
                                           ),
                                         ],
@@ -856,7 +851,7 @@ class _PledgeFilterState extends State<PledgeFilter>
                                                               ),
                                                             ),
                                                           )
-                                                        : Text("-"),
+                                                        : const Text("-"),
                                                     if ((value.unPlegeQty !=
                                                             "0" &&
                                                         value.unPlegeQty != ""))
@@ -901,7 +896,7 @@ class _PledgeFilterState extends State<PledgeFilter>
                                                   ],
                                                 ),
                                               )
-                                            : SizedBox()
+                                            : const SizedBox()
                                         : widget.activetabe == '0'
                                             ? value.initiated == "0" &&
                                                     value.status == 'Ok' &&
@@ -1044,15 +1039,15 @@ class _PledgeFilterState extends State<PledgeFilter>
                                                           ),
                                                         ),
                                                       )
-                                                    : SizedBox()
-                                            : SizedBox(),
+                                                    : const SizedBox()
+                                            : const SizedBox(),
                               ],
                             ),
                             widget.activetabe == '1'
-                                ? SizedBox(
+                                ? const SizedBox(
                                     height: 8.0,
                                   )
-                                : SizedBox(),
+                                : const SizedBox(),
                             Row(
                               children: [
                                 TextWidget.paraText(
@@ -1101,7 +1096,7 @@ class _PledgeFilterState extends State<PledgeFilter>
                     );
                   },
                   separatorBuilder: (BuildContext context, int index) {
-                    return ListDivider();
+                    return const ListDivider();
                   },
                 ),
               ),
@@ -1144,7 +1139,7 @@ class _PledgeFilterState extends State<PledgeFilter>
       children: [
         TextWidget.subText(
             text: heading,
-            color: Color(0xFF696969),
+            color: const Color(0xFF696969),
             textOverflow: TextOverflow.ellipsis,
             theme: theme.isDarkMode,
             fw: 0),

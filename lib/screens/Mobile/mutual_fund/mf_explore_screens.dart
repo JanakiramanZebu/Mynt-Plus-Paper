@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 // import 'package:flutter_riverpod/all.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/screens/Mobile/mutual_fund/mf_order_book_screen.dart';
@@ -177,6 +176,7 @@ class _ExploreScreensState extends ConsumerState<MFExploreScreens>
                          Expanded(
                child: _CustomTabBarView(
                  controller: _tabController,
+                 onBoundaryReached: widget.onBoundaryReached,
                  children: [
                    MutualFundNewScreen(
                      tabController: _tabController,
@@ -185,7 +185,6 @@ class _ExploreScreensState extends ConsumerState<MFExploreScreens>
                    const MfOrderBookScreen(),
                    const MFSipdetScreen()
                  ],
-                 onBoundaryReached: widget.onBoundaryReached,
                ),
              ),
           ],

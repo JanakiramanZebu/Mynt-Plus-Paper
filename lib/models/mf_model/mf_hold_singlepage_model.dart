@@ -5,16 +5,16 @@ class mf_holding_sig_det {
   mf_holding_sig_det({this.data, this.stat});
 
   mf_holding_sig_det.fromJson(Map<String, dynamic> json) {
-    data = json['data'] != null ? new Data.fromJson(json['data']) : null;
+    data = json['data'] != null ? Data.fromJson(json['data']) : null;
     stat = json['stat'];
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     if (this.data != null) {
       data['data'] = this.data!.toJson();
     }
-    data['stat'] = this.stat;
+    data['stat'] = stat;
     return data;
   }
 }
@@ -138,44 +138,44 @@ class Data {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['AMC_CODE'] = this.aMCCODE;
-    data['AMOUNT'] = this.aMOUNT;
-    data['AMOUNT1'] = this.aMOUNT1;
-    data['AVG_QTY'] = this.aVGQTY;
-    data['BENQTY'] = this.bENQTY;
-    data['BOUGHT'] = this.bOUGHT;
-    data['BSE_SYMBOL'] = this.bSESYMBOL;
-    data['BUY_PRICE'] = this.bUYPRICE;
-    data['CLIENTCODE'] = this.cLIENTCODE;
-    data['CLIENTTEXT'] = this.cLIENTTEXT;
-    data['CLIENT_NAME'] = this.cLIENTNAME;
-    data['COLQTY'] = this.cOLQTY;
-    data['Client_id'] = this.clientId;
-    data['Description'] = this.description;
-    data['Exchange'] = this.exchange;
-    data['HAIRCUT'] = this.hAIRCUT;
-    data['HC_AMOUNT'] = this.hCAMOUNT;
-    data['HC_PRICE'] = this.hCPRICE;
-    data['INSHORT'] = this.iNSHORT;
-    data['ISIN'] = this.iSIN;
-    data['MINIMUM_REDEMPTION_QTY'] = this.mINIMUMREDEMPTIONQTY;
-    data['NET'] = this.nET;
-    data['NSE_SYMBOL'] = this.nSESYMBOL;
-    data['NSOHQTY'] = this.nSOHQTY;
-    data['OUTSHORT'] = this.oUTSHORT;
-    data['PLEDGE_QTY'] = this.pLEDGEQTY;
-    data['PRICE_PREMIUM'] = this.pRICEPREMIUM;
-    data['PUR_DATE'] = this.pURDATE;
-    data['QUANTITY'] = this.qUANTITY;
-    data['ROW_ID'] = this.rOWID;
-    data['SCHEME_CODE'] = this.sCHEMECODE;
-    data['SCHEME_NAME'] = this.sCHEMENAME;
-    data['SCRIP_NAME'] = this.sCRIPNAME;
-    data['SCRIP_SYMBOL'] = this.sCRIPSYMBOL;
-    data['SCRIP_VALUE'] = this.sCRIPVALUE;
-    data['SOHQTY'] = this.sOHQTY;
-    data['Sell'] = this.sell;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['AMC_CODE'] = aMCCODE;
+    data['AMOUNT'] = aMOUNT;
+    data['AMOUNT1'] = aMOUNT1;
+    data['AVG_QTY'] = aVGQTY;
+    data['BENQTY'] = bENQTY;
+    data['BOUGHT'] = bOUGHT;
+    data['BSE_SYMBOL'] = bSESYMBOL;
+    data['BUY_PRICE'] = bUYPRICE;
+    data['CLIENTCODE'] = cLIENTCODE;
+    data['CLIENTTEXT'] = cLIENTTEXT;
+    data['CLIENT_NAME'] = cLIENTNAME;
+    data['COLQTY'] = cOLQTY;
+    data['Client_id'] = clientId;
+    data['Description'] = description;
+    data['Exchange'] = exchange;
+    data['HAIRCUT'] = hAIRCUT;
+    data['HC_AMOUNT'] = hCAMOUNT;
+    data['HC_PRICE'] = hCPRICE;
+    data['INSHORT'] = iNSHORT;
+    data['ISIN'] = iSIN;
+    data['MINIMUM_REDEMPTION_QTY'] = mINIMUMREDEMPTIONQTY;
+    data['NET'] = nET;
+    data['NSE_SYMBOL'] = nSESYMBOL;
+    data['NSOHQTY'] = nSOHQTY;
+    data['OUTSHORT'] = oUTSHORT;
+    data['PLEDGE_QTY'] = pLEDGEQTY;
+    data['PRICE_PREMIUM'] = pRICEPREMIUM;
+    data['PUR_DATE'] = pURDATE;
+    data['QUANTITY'] = qUANTITY;
+    data['ROW_ID'] = rOWID;
+    data['SCHEME_CODE'] = sCHEMECODE;
+    data['SCHEME_NAME'] = sCHEMENAME;
+    data['SCRIP_NAME'] = sCRIPNAME;
+    data['SCRIP_SYMBOL'] = sCRIPSYMBOL;
+    data['SCRIP_VALUE'] = sCRIPVALUE;
+    data['SOHQTY'] = sOHQTY;
+    data['Sell'] = sell;
     return data;
   }
 }

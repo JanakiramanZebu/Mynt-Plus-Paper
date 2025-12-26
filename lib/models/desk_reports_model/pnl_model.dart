@@ -24,7 +24,7 @@ class PnlModel {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     data['expense_amt'] = expenseAmt;
     if (expenses != null) {
       data['expenses'] = expenses!.map((v) => v.toJson()).toList();
@@ -96,7 +96,7 @@ class Expenses {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     data['BUY_AMOUNT'] = bUYAMOUNT;
     data['BUY_QUANTITY'] = bUYQUANTITY;
     data['BUY_RATE'] = bUYRATE;
@@ -180,7 +180,7 @@ class Transactions {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     data['BUY_AMOUNT'] = bUYAMOUNT;
     data['BUY_QUANTITY'] = bUYQUANTITY;
     data['BUY_RATE'] = bUYRATE;

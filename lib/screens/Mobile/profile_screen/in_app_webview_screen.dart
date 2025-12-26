@@ -15,9 +15,9 @@ class InAppWebViewScreen extends ConsumerStatefulWidget {
   final String url;
 
   const InAppWebViewScreen({
-    Key? key,
+    super.key,
     required this.url,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<InAppWebViewScreen> createState() => _InAppWebViewScreenState();
@@ -28,7 +28,7 @@ class _InAppWebViewScreenState extends ConsumerState<InAppWebViewScreen> {
   bool isLoading = true;
   bool canGoBack = false;
   int navigationCount = 0;
-  List<InAppWebViewController> _popupControllers = [];
+  final List<InAppWebViewController> _popupControllers = [];
 
   @override
   void dispose() {

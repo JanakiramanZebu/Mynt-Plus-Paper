@@ -214,8 +214,8 @@ class _BasketListState extends ConsumerState<BasketList> {
       final uniqueId = '$index';
 
       return DataRow2(
-        color: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.hovered) || _hoveredRowIndex.value == uniqueId) {
+        color: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.hovered) || _hoveredRowIndex.value == uniqueId) {
             return theme.isDarkMode
                 ? WebDarkColors.primary.withOpacity(0.06)
                 : WebColors.primary.withOpacity(0.10);
@@ -439,10 +439,10 @@ class _BasketListState extends ConsumerState<BasketList> {
       builder: (context, constraints) {
         // Calculate available height
         final screenHeight = MediaQuery.of(context).size.height;
-        final padding = 32.0; // Top and bottom padding (16 * 2)
-        final headerHeight = 100.0; // Header height (button + spacing)
-        final spacing = 16.0; // Spacing between header and content
-        final bottomMargin = 20.0; // Bottom margin
+        const padding = 32.0; // Top and bottom padding (16 * 2)
+        const headerHeight = 100.0; // Header height (button + spacing)
+        const spacing = 16.0; // Spacing between header and content
+        const bottomMargin = 20.0; // Bottom margin
         final tableHeight =
             screenHeight - padding - headerHeight - spacing - bottomMargin;
 
@@ -479,11 +479,11 @@ class _BasketListState extends ConsumerState<BasketList> {
               data: Theme.of(context).copyWith(
                 scrollbarTheme: ScrollbarThemeData(
                   // Make both scrollbars always visible
-                  thumbVisibility: MaterialStateProperty.all(true),
-                  trackVisibility: MaterialStateProperty.all(true),
+                  thumbVisibility: WidgetStateProperty.all(true),
+                  trackVisibility: WidgetStateProperty.all(true),
                   
                   // Consistent thickness for both horizontal and vertical
-                  thickness: MaterialStateProperty.all(6.0),
+                  thickness: WidgetStateProperty.all(6.0),
                   crossAxisMargin: 0.0,
                   mainAxisMargin: 0.0,
                   
@@ -491,18 +491,18 @@ class _BasketListState extends ConsumerState<BasketList> {
                   radius: const Radius.circular(3),
                   
                   // Consistent colors for both scrollbars
-                  thumbColor: MaterialStateProperty.resolveWith((states) {
+                  thumbColor: WidgetStateProperty.resolveWith((states) {
                     return theme.isDarkMode 
                         ? WebDarkColors.textSecondary.withOpacity(0.3)
                         : WebColors.textSecondary.withOpacity(0.3);
                   }),
-                  trackColor: MaterialStateProperty.resolveWith((states) {
+                  trackColor: WidgetStateProperty.resolveWith((states) {
                     return theme.isDarkMode 
                         ? WebDarkColors.divider.withOpacity(0.1)
                         : WebColors.divider.withOpacity(0.1);
                   }),
                   
-                  trackBorderColor: MaterialStateProperty.all(Colors.transparent),
+                  trackBorderColor: WidgetStateProperty.all(Colors.transparent),
                   minThumbLength: 48.0,
                 ),
               ),
@@ -520,7 +520,7 @@ class _BasketListState extends ConsumerState<BasketList> {
                 horizontalScrollController: _horizontalScrollController,
                 scrollController: _verticalScrollController,
                 showCheckboxColumn: false,
-                headingRowColor: MaterialStateProperty.all(
+                headingRowColor: WidgetStateProperty.all(
                   theme.isDarkMode
                       ? WebDarkColors.primary
                       : WebColors.primary.withOpacity(0.05),
@@ -644,7 +644,7 @@ class _BasketListState extends ConsumerState<BasketList> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(5),
           ),
-          child: Container(
+          child: SizedBox(
             width: 400,
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -874,9 +874,9 @@ class _BasketListState extends ConsumerState<BasketList> {
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(5),
                               ),
-                              child: Container(
+                              child: const SizedBox(
                                 width: 400,
-                                child: const CreateBasket(),
+                                child: CreateBasket(),
                               ),
                             );
                           },
@@ -942,7 +942,8 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
   final ScrollController _horizontalScrollController = ScrollController();
   String _searchValue = "";
   late TabController _tabController;
-  int _tabCount = 5; // For basket mode
+  VoidCallback? _tabControllerListener; // Store listener reference for proper cleanup
+  final int _tabCount = 5; // For basket mode
   final Map<int, bool> _hoveredItems = {}; // For Buy/Sell button hover
   // ✅ Use ValueNotifier instead of setState to avoid rebuilding entire widget
   final ValueNotifier<String?> _hoveredRowIndex = ValueNotifier<String?>(null);
@@ -960,14 +961,16 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
     super.initState();
     _tabController =
         TabController(length: _tabCount, vsync: this, initialIndex: 0);
-    _tabController.addListener(() {
+    // Store listener reference for proper cleanup
+    _tabControllerListener = () {
       if (_tabController.indexIsChanging && _searchValue.isNotEmpty) {
         final marketWatch = ref.read(marketWatchProvider);
         marketWatch.searchClear();
         marketWatch.scripSearch(
             _searchValue, context, _tabController.index, "Basket");
       }
-    });
+    };
+    _tabController.addListener(_tabControllerListener!);
   }
 
   @override
@@ -977,6 +980,11 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
     _searchScrollController.dispose();
     _verticalScrollController.dispose();
     _horizontalScrollController.dispose();
+    // Remove listener before disposing to prevent memory leaks
+    if (_tabControllerListener != null) {
+      _tabController.removeListener(_tabControllerListener!);
+      _tabControllerListener = null;
+    }
     _tabController.dispose();
     _hoveredRowIndex.dispose();
     _hoveredColumnIndex.dispose();
@@ -3256,7 +3264,7 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(5),
           ),
-          child: Container(
+          child: SizedBox(
             width: 400,
             child: Column(
               mainAxisSize: MainAxisSize.min,

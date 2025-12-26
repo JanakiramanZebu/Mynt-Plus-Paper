@@ -5,7 +5,7 @@ class DercomcurModel {
 
   DercomcurModel.fromJson(Map<String, dynamic> json) {
     data =
-        json['data'] != null ? new Data.fromJson(json['data']['data']) : null;
+        json['data'] != null ? Data.fromJson(json['data']['data']) : null;
   }
 }
 
@@ -19,15 +19,15 @@ class Data {
 
   Data.fromJson(Map<String, dynamic> json) {
     charges =
-        json['Charges'] != null ? new Charges.fromJson(json['Charges']) : null;
+        json['Charges'] != null ? Charges.fromJson(json['Charges']) : null;
     commodity = json['Commodity'] != null
-        ? new Commodity.fromJson(json['Commodity'])
+        ? Commodity.fromJson(json['Commodity'])
         : null;
     currency = json['Currency'] != null
-        ? new Currency.fromJson(json['Currency'])
+        ? Currency.fromJson(json['Currency'])
         : null;
     derivatives = json['Derivatives'] != null
-        ? new Derivatives.fromJson(json['Derivatives'])
+        ? Derivatives.fromJson(json['Derivatives'])
         : null;
   }
   Map<String, dynamic> toJson() {

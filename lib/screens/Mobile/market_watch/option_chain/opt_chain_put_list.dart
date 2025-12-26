@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_swipe_action_cell/flutter_swipe_action_cell.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -13,11 +12,9 @@ import '../../../../provider/thems.dart';
 import '../../../../provider/websocket_provider.dart';
 import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
-import '../../../../routes/route_names.dart';
 import '../../../../sharedWidget/list_divider.dart';
 import '../../../../utils/responsive_navigation.dart';
 import '../../../../sharedWidget/snack_bar.dart';
-import 'basket_selection_bottom_sheet.dart';
 
 class OptChainPutList extends StatelessWidget {
   final List<OptionValues>? putData;
@@ -66,13 +63,13 @@ class _OptionChainPutRow extends StatefulWidget {
   final bool isBasketMode;
 
   const _OptionChainPutRow({
-    Key? key,
+    super.key,
     required this.option,
     this.swipe,
     required this.index,
     required this.showPriceView,
     required this.isBasketMode,
-  }) : super(key: key);
+  });
 
   @override
   _OptionChainPutRowState createState() => _OptionChainPutRowState();
@@ -341,7 +338,7 @@ Widget _buildPriceData(ThemesProvider theme) {
         ),
         const SizedBox(height: 3),
         Text(
-          "(${_perChange}%)",
+          "($_perChange%)",
           style: _getPercentageStyle(_perChange, theme),
         ),
         const SizedBox(height: 2),
@@ -519,7 +516,7 @@ Widget _buildOIData(ThemesProvider theme) {
     //   color,
       // () {
       Color color = colors.textSecondaryLight;
-        if (perChange != null && perChange != "0.00") {
+        if (perChange != "0.00") {
           color = perChange.startsWith("-") ?  theme.isDarkMode ? colors.lossDark : colors.lossLight : theme.isDarkMode ? colors.profitDark : colors.profitLight;
         }
           return TextWidget.textStyle(fontSize: 14, color: color, theme: false, fw: 0,);

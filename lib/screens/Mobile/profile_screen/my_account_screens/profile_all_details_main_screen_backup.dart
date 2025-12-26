@@ -24,7 +24,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
     super.initState();
   }
 
-  var _formKey = GlobalKey<FormState>();
+  final _formKey = GlobalKey<FormState>();
   var isLoading = false;
 
   void _submit() {
@@ -363,7 +363,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                               },
                               style: ElevatedButton.styleFrom(
                                 elevation: 0,
-                                padding: EdgeInsets.symmetric(
+                                padding: const EdgeInsets.symmetric(
                                     horizontal: 0,
                                     vertical: 0), // maximumSize:Size.square(2),
                                 backgroundColor: theme.isDarkMode
@@ -436,7 +436,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                               },
                               style: ElevatedButton.styleFrom(
                                 elevation: 0,
-                                padding: EdgeInsets.symmetric(
+                                padding: const EdgeInsets.symmetric(
                                     horizontal: 0,
                                     vertical: 0), // maximumSize:Size.square(2),
                                 backgroundColor: theme.isDarkMode
@@ -573,7 +573,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                               },
                               style: ElevatedButton.styleFrom(
                                 elevation: 0,
-                                padding: EdgeInsets.symmetric(
+                                padding: const EdgeInsets.symmetric(
                                     horizontal: 0,
                                     vertical: 0), // maximumSize:Size.square(2),
                                 backgroundColor: theme.isDarkMode
@@ -653,7 +653,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
 
                             ListView.builder(
                               shrinkWrap: true,
-                              physics: NeverScrollableScrollPhysics(),
+                              physics: const NeverScrollableScrollPhysics(),
                               itemCount: profileprovider
                                       .clientAllDetails.bankData?.length ??
                                   0,
@@ -670,7 +670,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                   elevation: 0,
                                   clipBehavior: Clip.hardEdge,
                                   child: Padding(
-                                    padding: EdgeInsets.all(12.0),
+                                    padding: const EdgeInsets.all(12.0),
                                     child: Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
@@ -691,11 +691,11 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                             // ),
 
                                             const CircleAvatar(
-                                              backgroundColor: const Color
+                                              backgroundColor: Color
                                                   .fromARGB(255, 255, 255,
                                                   255), // Placeholder for logo
                                               child: Icon(Icons.account_balance,
-                                                  color: const Color.fromARGB(
+                                                  color: Color.fromARGB(
                                                       255, 119, 115, 115)),
                                             ),
 
@@ -703,14 +703,14 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                             Expanded(
                                               child: TextWidget.titleText(
                                                 text:
-                                                    "${profileprovider.clientAllDetails!.bankData![index].bankName}",
+                                                    "${profileprovider.clientAllDetails.bankData![index].bankName}",
                                                 theme: false,
                                                 color: Colors.black,
                                                 fw: 1,
                                               ),
                                             ),
 
-                                            if ("${profileprovider.clientAllDetails!.bankData![index].defaultAc}" ==
+                                            if ("${profileprovider.clientAllDetails.bankData![index].defaultAc}" ==
                                                 "Yes")
                                               Container(
                                                 padding:
@@ -729,7 +729,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                                   fw: 0,
                                                 ),
                                               ),
-                                            SizedBox(
+                                            const SizedBox(
                                               width: 10,
                                             ),
 
@@ -777,12 +777,12 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                           ],
                                         ),
 
-                                        SizedBox(height: 8),
+                                        const SizedBox(height: 8),
 
                                         // Account Number with Masking
                                         TextWidget.subText(
                                           text:
-                                              'A/C No: ${profileprovider.clientAllDetails!.bankData![index].bankAcNo}',
+                                              'A/C No: ${profileprovider.clientAllDetails.bankData![index].bankAcNo}',
                                           theme: false,
                                           color: Colors.black87,
                                           fw: 0,
@@ -792,7 +792,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                         //       color: Colors.black87),
                                         // ),
 
-                                        SizedBox(height: 12),
+                                        const SizedBox(height: 12),
 
                                         // IFSC Code and Branch in a Row
                                         Row(
@@ -809,10 +809,10 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                                   color: Colors.black54,
                                                   fw: 0,
                                                 ),
-                                                SizedBox(height: 2),
+                                                const SizedBox(height: 2),
                                                 TextWidget.subText(
                                                   text:
-                                                      "${profileprovider.clientAllDetails!.bankData![index].iFSCCode}",
+                                                      "${profileprovider.clientAllDetails.bankData![index].iFSCCode}",
                                                   theme: false,
                                                   color: Colors.black,
                                                   fw: 0,
@@ -829,10 +829,10 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                                   color: Colors.black54,
                                                   fw: 0,
                                                 ),
-                                                SizedBox(height: 2),
+                                                const SizedBox(height: 2),
                                                 TextWidget.subText(
                                                   text:
-                                                      '${profileprovider.clientAllDetails!.bankData![index].bANKACCTYPE}', // Static for now, replace dynamically if needed
+                                                      '${profileprovider.clientAllDetails.bankData![index].bANKACCTYPE}', // Static for now, replace dynamically if needed
                                                   theme: false,
                                                   color: Colors.black,
                                                   fw: 0,
@@ -860,7 +860,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                       isDismissible: false,
                                       enableDrag: false,
                                       isScrollControlled: true,
-                                      shape: RoundedRectangleBorder(
+                                      shape: const RoundedRectangleBorder(
                                         borderRadius: BorderRadius.vertical(
                                             top: Radius.circular(20.0)),
                                       ),
@@ -876,12 +876,12 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                             // final isActive =
                                             //     ref.watch(radioButtonProvider).state;
                                             return Container(
-                                              padding: EdgeInsets.all(16),
+                                              padding: const EdgeInsets.all(16),
                                               child: Column(
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.start,
                                                 children: [
-                                                  SizedBox(height: 40),
+                                                  const SizedBox(height: 40),
                                                   TextWidget.heroText(
                                                       text:
                                                           '  Bank change request  ',
@@ -889,7 +889,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                                       color: colors.colorBlack,
                                                       fw: 2),
 
-                                                  SizedBox(height: 20),
+                                                  const SizedBox(height: 20),
                                                   Row(
                                                     children: [
                                                       Wrap(
@@ -939,7 +939,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                                       ),
                                                     ],
                                                   ),
-                                                  SizedBox(height: 15),
+                                                  const SizedBox(height: 15),
                                                   TextWidget.titleText(
                                                       text: " Bank A/C No *",
                                                       theme: false,
@@ -965,7 +965,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                                     ),
                                                   ),
 
-                                                  SizedBox(height: 20),
+                                                  const SizedBox(height: 20),
                                                   TextWidget.titleText(
                                                       text: "IFSC Code *",
                                                       theme: false,
@@ -998,7 +998,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                                     ),
                                                   ),
 
-                                                  SizedBox(height: 5),
+                                                  const SizedBox(height: 5),
                                                   TextWidget.titleText(
                                                       text:
                                                           "${profileprovider.ifsccoderess}",
@@ -1006,7 +1006,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                                       color: colors.colorBlack,
                                                       fw: 0),
 
-                                                  SizedBox(height: 0),
+                                                  const SizedBox(height: 0),
                                                   TextWidget.titleText(
                                                       text: "Proof Type *",
                                                       theme: false,
@@ -1165,7 +1165,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
 
                                                   const Divider(
                                                       color: Color(0xffDDDDDD)),
-                                                  SizedBox(height: 30),
+                                                  const SizedBox(height: 30),
                                                   Row(
                                                     children: [
                                                       Expanded(
@@ -1209,7 +1209,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                                         ),
                                                       ),
 
-                                                      SizedBox(
+                                                      const SizedBox(
                                                           width:
                                                               10), // Adds spacing between buttons
                                                       Expanded(
@@ -1325,7 +1325,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                 ),
                               ),
                             ),
-                            SizedBox(height: 17),
+                            const SizedBox(height: 17),
                             TextWidget.paraText(
                               text:
                                   "*As per the regulation, you can have upto 3 bank a/c linked to trading a/c",
@@ -1493,7 +1493,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                               fw: 1,
                             ),
                             if (profileprovider
-                                    .clientAllDetails!.clientData!.dDPI ==
+                                    .clientAllDetails.clientData!.dDPI ==
                                 'N')
                               Padding(
                                 padding: const EdgeInsets.only(top: 15),
@@ -1510,7 +1510,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                         isDismissible: false,
                                         enableDrag: false,
                                         isScrollControlled: true,
-                                        shape: RoundedRectangleBorder(
+                                        shape: const RoundedRectangleBorder(
                                           borderRadius: BorderRadius.vertical(
                                               top: Radius.circular(20.0)),
                                         ),
@@ -1519,12 +1519,12 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                               (context, WidgetRef ref, _) {
                                             // final popproprv = ref.watch(profileProvider);
                                             return Container(
-                                              padding: EdgeInsets.all(16),
+                                              padding: const EdgeInsets.all(16),
                                               child: Column(
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.start,
                                                 children: [
-                                                  SizedBox(height: 40),
+                                                  const SizedBox(height: 40),
                                                   TextWidget.heroText(
                                                     text: 'Debit Alert ',
                                                     theme: false,
@@ -1532,7 +1532,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                                         const Color(0xff000000),
                                                     fw: 1,
                                                   ),
-                                                  SizedBox(height: 20),
+                                                  const SizedBox(height: 20),
                                                   // SizedBox(height: 15),
                                                   Center(
                                                     child: TextWidget.titleText(
@@ -1545,7 +1545,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                                       fw: 2,
                                                     ),
                                                   ),
-                                                  SizedBox(height: 10),
+                                                  const SizedBox(height: 10),
                                                   Center(
                                                     child: Card(
                                                       color: Colors.grey[
@@ -1559,7 +1559,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                                                 8), // Optional: Rounded corners for the card
                                                       ),
                                                       child: Padding(
-                                                        padding: EdgeInsets.all(
+                                                        padding: const EdgeInsets.all(
                                                             16.0), // Padding inside the card
                                                         child:
                                                             TextWidget.heroText(
@@ -1572,7 +1572,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                                       ),
                                                     ),
                                                   ),
-                                                  SizedBox(height: 20),
+                                                  const SizedBox(height: 20),
                                                   Center(
                                                     child: TextWidget.headText(
                                                       text:
@@ -1584,7 +1584,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                                       fw: 2,
                                                     ),
                                                   ),
-                                                  SizedBox(height: 5),
+                                                  const SizedBox(height: 5),
                                                   Center(
                                                     child: Text(
                                                       " ₹${profileprovider.ddpiledgerbalace}",
@@ -1620,7 +1620,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                                               onPressed: () {
                                                                 // Handle approve button press
                                                               },
-                                                              child: Text(
+                                                              child: const Text(
                                                                   'Approve'),
                                                             )
                                                           : const SizedBox();
@@ -1695,13 +1695,13 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                                                   const Center(
                                                                 child: Padding(
                                                                   padding:
-                                                                      const EdgeInsets
+                                                                      EdgeInsets
                                                                           .all(
                                                                           8.0),
                                                                   child: Text(
                                                                     "Insufficient Balance",
                                                                     style:
-                                                                        const TextStyle(
+                                                                        TextStyle(
                                                                       fontSize:
                                                                           15,
                                                                       color: Colors
@@ -1721,7 +1721,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                                     },
                                                   ),
 
-                                                  SizedBox(height: 30),
+                                                  const SizedBox(height: 30),
                                                   Row(
                                                     children: [
                                                       Expanded(
@@ -1767,7 +1767,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                                         ),
                                                       ),
 
-                                                      SizedBox(
+                                                      const SizedBox(
                                                           width:
                                                               10), // Adds spacing between buttons
                                                       Expanded(
@@ -1824,7 +1824,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                                                               25),
                                                                 ),
                                                               ),
-                                                              child: Text(
+                                                              child: const Text(
                                                                   'Submit'),
                                                             );
                                                           },
@@ -1854,7 +1854,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                 ),
                               ),
                             if ((profileprovider
-                                    .clientAllDetails!.clientData!.dDPI ==
+                                    .clientAllDetails.clientData!.dDPI ==
                                 'Y')) ...[
                               Padding(
                                 padding: const EdgeInsets.only(top: 15),
@@ -1897,7 +1897,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                     child: Card(
                       elevation: 0, // No shadow
                       shape: RoundedRectangleBorder(
-                        side: BorderSide(
+                        side: const BorderSide(
                             color: Color.fromARGB(255, 255, 255, 255),
                             width: 1), // Outlined border
                         borderRadius:
@@ -1944,7 +1944,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                               255, 201, 67, 62)
                                           : const Color.fromARGB(
                                               255, 105, 231, 115),
-                                      label: Text(
+                                      label: const Text(
                                         'DDPI',
                                         style:
                                             TextStyle(color: Color(0xffffffff)),
@@ -1963,7 +1963,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                               255, 201, 67, 62)
                                           : const Color.fromARGB(
                                               255, 105, 231, 115),
-                                      label: Text(
+                                      label: const Text(
                                         'POI',
                                         style:
                                             TextStyle(color: Color(0xffffffff)),
@@ -1978,37 +1978,37 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                             ),
                             const SizedBox(height: 16),
                             Text(
-                              (profileprovider.clientAllDetails!.clientData!
+                              (profileprovider.clientAllDetails.clientData!
                                               .dDPI ==
                                           'N' &&
-                                      profileprovider.clientAllDetails!
+                                      profileprovider.clientAllDetails
                                               .clientData!.pOA ==
                                           "N")
                                   ? "You need to enable DDPI before you can proceed with processing MTF (Margin Trading Facility)."
                                   : "",
-                              style: TextStyle(
+                              style: const TextStyle(
                                 color: Color.fromARGB(255, 206, 47, 47),
                               ),
                             ),
                             if ((profileprovider
-                                        .clientAllDetails!.clientData!.mTFCl ==
+                                        .clientAllDetails.clientData!.mTFCl ==
                                     'Y' &&
-                                profileprovider.clientAllDetails!.clientData!
+                                profileprovider.clientAllDetails.clientData!
                                         .mTFClAuto ==
                                     "Y")) ...[
                               Row(
                                 children: [
                                   Chip(
-                                    label: Text(
+                                    label: const Text(
                                       'MTF Enabled',
                                       style: TextStyle(
                                           color:
                                               Color(0xff43a833)), // Text color
                                     ),
                                     backgroundColor:
-                                        Color(0xffecf8f1), // Background color
+                                        const Color(0xffecf8f1), // Background color
                                     shape: RoundedRectangleBorder(
-                                      side: BorderSide(
+                                      side: const BorderSide(
                                         color:
                                             Color(0xffc1e7ba), // Border color
                                       ),
@@ -2019,16 +2019,16 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                 ],
                               ),
                             ],
-                            if ((profileprovider.clientAllDetails!.clientData!
+                            if ((profileprovider.clientAllDetails.clientData!
                                             .mTFCl ==
                                         'N' &&
                                     profileprovider.clientAllDetails.clientData!
                                             .mTFClAuto ==
                                         'N') &&
-                                (profileprovider.clientAllDetails!.clientData!
+                                (profileprovider.clientAllDetails.clientData!
                                             .dDPI ==
                                         'Y' ||
-                                    profileprovider.clientAllDetails!
+                                    profileprovider.clientAllDetails
                                             .clientData!.pOA ==
                                         "Y"))
                               Padding(
@@ -2069,7 +2069,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                     child: Card(
                       elevation: 0, // No shadow
                       shape: RoundedRectangleBorder(
-                        side: BorderSide(
+                        side: const BorderSide(
                             color: Color.fromARGB(255, 255, 255, 255),
                             width: 1), // Outlined border
                         borderRadius:
@@ -2119,7 +2119,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                       isDismissible: false,
                                       enableDrag: false,
                                       isScrollControlled: true,
-                                      shape: RoundedRectangleBorder(
+                                      shape: const RoundedRectangleBorder(
                                         borderRadius: BorderRadius.vertical(
                                             top: Radius.circular(20.0)),
                                       ),
@@ -2139,16 +2139,16 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.start,
                                                 children: [
-                                                  SizedBox(height: 40),
-                                                  Text(
+                                                  const SizedBox(height: 40),
+                                                  const Text(
                                                     'Income change request',
                                                     style: TextStyle(
                                                         fontSize: 20,
                                                         fontWeight:
                                                             FontWeight.bold),
                                                   ),
-                                                  SizedBox(height: 20),
-                                                  Text(
+                                                  const SizedBox(height: 20),
+                                                  const Text(
                                                     "Select Income per annum",
                                                     style: TextStyle(
                                                       color: Colors.black,
@@ -2157,7 +2157,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                                           FontWeight.w500,
                                                     ),
                                                   ),
-                                                  SizedBox(height: 20),
+                                                  const SizedBox(height: 20),
                                                   //  Column(
                                                   //                       children: List.generate(incomeLabels.length, (index) {
                                                   //                         return RadioListTile<int>(
@@ -2269,10 +2269,8 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                                         );
                                                       }),
                                                     ),
-                                                    SizedBox(height: 20),
+                                                    const SizedBox(height: 20),
                                                     ElevatedButton(
-                                                      child: const Text(
-                                                          'UPLOAD FILE'),
                                                       onPressed: () async {
                                                         var picked =
                                                             await FilePicker
@@ -2302,7 +2300,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                                           //     .state = filePath;
                                                         }
 
-                                                        Text("elseee");
+                                                        const Text("elseee");
                                                       },
                                                       style: ElevatedButton
                                                           .styleFrom(
@@ -2321,10 +2319,12 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                                                   .circular(25),
                                                         ),
                                                       ),
+                                                      child: const Text(
+                                                          'UPLOAD FILE'),
                                                     ),
                                                   ],
 
-                                                  SizedBox(height: 30),
+                                                  const SizedBox(height: 30),
                                                   if (profileprovider
                                                           .imcomeptsenres ==
                                                       "otp send") ...[
@@ -2349,8 +2349,8 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                                             UnderlineInputBorder(),
                                                       ),
                                                     ),
-                                                    SizedBox(height: 20),
-                                                    Text(
+                                                    const SizedBox(height: 20),
+                                                    const Text(
                                                       "OTP *",
                                                       style: TextStyle(
                                                           color: Colors.black,
@@ -2376,7 +2376,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                                       ),
                                                     ),
                                                   ],
-                                                  SizedBox(height: 30),
+                                                  const SizedBox(height: 30),
                                                   Row(
                                                     children: [
                                                       Expanded(
@@ -2388,7 +2388,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                                           },
                                                           style: OutlinedButton
                                                               .styleFrom(
-                                                            side: BorderSide(
+                                                            side: const BorderSide(
                                                                 color: Colors
                                                                     .black),
                                                             backgroundColor:
@@ -2408,7 +2408,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                                                           25),
                                                             ),
                                                           ),
-                                                          child: Text(
+                                                          child: const Text(
                                                             'Close',
                                                             style: TextStyle(
                                                                 color: Colors
@@ -2416,7 +2416,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                                           ),
                                                         ),
                                                       ),
-                                                      SizedBox(width: 10),
+                                                      const SizedBox(width: 10),
                                                       if (profileprovider
                                                               .imcomeptsenres !=
                                                           "otp send")
@@ -2453,7 +2453,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                                                             25),
                                                               ),
                                                             ),
-                                                            child: Text(
+                                                            child: const Text(
                                                                 'Submit btn'),
                                                           ),
                                                         ),
@@ -2533,7 +2533,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                                                             25),
                                                               ),
                                                             ),
-                                                            child: Text(
+                                                            child: const Text(
                                                                 'Submit otp'),
                                                           ),
                                                         ),
@@ -2606,7 +2606,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                     child: Card(
                       elevation: 0, // No shadow
                       shape: RoundedRectangleBorder(
-                        side: BorderSide(
+                        side: const BorderSide(
                             color: Color.fromARGB(255, 255, 255, 255),
                             width: 1), // Outlined border
                         borderRadius:
@@ -2668,12 +2668,12 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                             //     ref.watch(closedroup).state;
                                             // final popproprv = ref.watch(profileProvider);
                                             return Container(
-                                              padding: EdgeInsets.all(16),
+                                              padding: const EdgeInsets.all(16),
                                               child: Column(
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.start,
                                                 children: [
-                                                  SizedBox(height: 40),
+                                                  const SizedBox(height: 40),
                                                   const Text(
                                                     '  Account Closure ? ',
                                                     style: TextStyle(
@@ -2686,7 +2686,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                                               .chackaccbalace[
                                                           'stage'] ==
                                                       null) ...{
-                                                    SizedBox(height: 20),
+                                                    const SizedBox(height: 20),
                                                     const Text(
                                                       '  Are you sure you want to Deactivate your account ?',
                                                       style: TextStyle(
@@ -2694,7 +2694,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                                           fontWeight:
                                                               FontWeight.bold),
                                                     ),
-                                                    SizedBox(height: 20),
+                                                    const SizedBox(height: 20),
 
                                                     DropdownButton<String>(
                                                       value: profileprovider
@@ -2749,7 +2749,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
 
                                                     // Text("Stage: ${popproprv.chackaccbalace['stage'] ?? 'Loading...'}"),
                                                     // Text("Balance: ${popproprv.chackaccbalace['balance'] ?? 'Loading...'}"),
-                                                    SizedBox(height: 20),
+                                                    const SizedBox(height: 20),
 
                                                     Row(
                                                       children: [
@@ -2791,7 +2791,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                                             ),
                                                           ),
                                                         ),
-                                                        SizedBox(width: 10),
+                                                        const SizedBox(width: 10),
                                                         Expanded(
                                                           flex: 1,
                                                           child: ElevatedButton(
@@ -2833,7 +2833,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                                               ),
                                                             ),
                                                             child:
-                                                                Text('Submit'),
+                                                                const Text('Submit'),
                                                           ),
                                                         ),
                                                       ],
@@ -2975,7 +2975,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                                               .chackaccbalace[
                                                           'stage'] ==
                                                       "Stage 5: Zero Balance & Some Holdings") ...{
-                                                    SizedBox(height: 20),
+                                                    const SizedBox(height: 20),
                                                     const Text(
                                                       'Kindly transfer  your stocks to another demat account according to your wish',
                                                       style: TextStyle(
@@ -2983,7 +2983,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                                           fontWeight:
                                                               FontWeight.bold),
                                                     ),
-                                                    SizedBox(height: 20),
+                                                    const SizedBox(height: 20),
                                                     const Text(
                                                       'Please enter your another Demat account details',
                                                       style: TextStyle(
@@ -2991,8 +2991,8 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                                           fontWeight:
                                                               FontWeight.bold),
                                                     ),
-                                                    SizedBox(height: 20),
-                                                    SizedBox(height: 15),
+                                                    const SizedBox(height: 20),
+                                                    const SizedBox(height: 15),
                                                     Text("DP ID *",
                                                         style: textStyle(
                                                             const Color
@@ -3016,7 +3016,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                                             UnderlineInputBorder(),
                                                       ),
                                                     ),
-                                                    SizedBox(height: 15),
+                                                    const SizedBox(height: 15),
                                                     Text("BO ID *",
                                                         style: textStyle(
                                                             const Color
@@ -3040,7 +3040,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                                             UnderlineInputBorder(),
                                                       ),
                                                     ),
-                                                    SizedBox(height: 20),
+                                                    const SizedBox(height: 20),
                                                     Text(
                                                         "Attach a copy of the CMR that is either digitally signed or sealed, and physically signed by the respective DP *",
                                                         style: textStyle(
@@ -3049,8 +3049,8 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                                                 255, 0, 0, 0),
                                                             15,
                                                             FontWeight.w600)),
-                                                    SizedBox(height: 15),
-                                                    SizedBox(height: 0),
+                                                    const SizedBox(height: 15),
+                                                    const SizedBox(height: 0),
                                                     Text("Proof Type *",
                                                         style: textStyle(
                                                             const Color
@@ -3059,8 +3059,6 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                                             15,
                                                             FontWeight.w600)),
                                                     ElevatedButton(
-                                                      child:
-                                                          Text('UPLOAD FILE'),
                                                       onPressed: () async {
                                                         var picked =
                                                             await FilePicker
@@ -3089,7 +3087,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                                           //     .state = filePath;
                                                         }
 
-                                                        Text("elseee");
+                                                        const Text("elseee");
                                                       },
                                                       style: ElevatedButton
                                                           .styleFrom(
@@ -3108,6 +3106,8 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                                                   .circular(25),
                                                         ),
                                                       ),
+                                                      child:
+                                                          const Text('UPLOAD FILE'),
                                                     ),
                                                     const SizedBox(height: 20),
                                                     Row(
@@ -3150,7 +3150,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                                             ),
                                                           ),
                                                         ),
-                                                        SizedBox(width: 10),
+                                                        const SizedBox(width: 10),
                                                         Expanded(
                                                           flex: 1,
                                                           child: ElevatedButton(
@@ -3214,7 +3214,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                                               ),
                                                             ),
                                                             child:
-                                                                Text('Submit'),
+                                                                const Text('Submit'),
                                                           ),
                                                         ),
                                                       ],
@@ -3301,7 +3301,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                   style: textStyle(const Color(0xff666666), 15,
                                       FontWeight.w600)),
                             ),
-                            SizedBox(height: 30),
+                            const SizedBox(height: 30),
                             Text(' Member client ID * ',
                                 style: textStyle(
                                     theme.isDarkMode
@@ -3324,7 +3324,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                 border: UnderlineInputBorder(),
                               ),
                             ),
-                            SizedBox(height: 30),
+                            const SizedBox(height: 30),
                             Text(' Relationship * ',
                                 style: textStyle(
                                     theme.isDarkMode
@@ -3348,7 +3348,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                 border: UnderlineInputBorder(),
                               ),
                             ),
-                            SizedBox(height: 30),
+                            const SizedBox(height: 30),
                             Text('  Member PAN * ',
                                 style: textStyle(
                                     theme.isDarkMode
@@ -3370,7 +3370,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                 border: UnderlineInputBorder(),
                               ),
                             ),
-                            SizedBox(height: 30),
+                            const SizedBox(height: 30),
                             Text(' Member Mobile  * ',
                                 style: textStyle(
                                     theme.isDarkMode
@@ -3461,7 +3461,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Equities section
-                        Text('Equities'),
+                        const Text('Equities'),
                         const SizedBox(height: 5),
                         ...?profileprovider
                             .clientAllDetails.clientData!.segmentsData
@@ -3480,10 +3480,10 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                               const SizedBox(height: 8),
                             ],
                           );
-                        }).toList(),
+                        }),
 
                         // F&O section
-                        Text('F&O'),
+                        const Text('F&O'),
                         const SizedBox(height: 5),
                         ...?profileprovider
                             .clientAllDetails.clientData?.segmentsData
@@ -3501,10 +3501,10 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                               const SizedBox(height: 8),
                             ],
                           );
-                        }).toList(),
+                        }),
 
                         // Currency section
-                        Text('Currency'),
+                        const Text('Currency'),
                         const SizedBox(height: 5),
                         ...?profileprovider
                             .clientAllDetails.clientData?.segmentsData
@@ -3522,10 +3522,10 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                               const SizedBox(height: 8),
                             ],
                           );
-                        }).toList(),
+                        }),
 
                         // Commodities section
-                        Text('Commodities'),
+                        const Text('Commodities'),
                         const SizedBox(height: 5),
                         ...?profileprovider
                             .clientAllDetails.clientData?.segmentsData
@@ -3543,7 +3543,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                               const SizedBox(height: 8),
                             ],
                           );
-                        }).toList(),
+                        }),
                       ],
                     ),
                   ),
@@ -3560,7 +3560,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
       ProfileProvider profileprovider, ThemesProvider theme) {
     return SingleChildScrollView(
       child: Container(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,
           child: Column(
@@ -3571,7 +3571,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                 ' Email change request ',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               Text("Old email id",
                   style: textStyle(
                       const Color.fromARGB(255, 0, 0, 0), 14, FontWeight.w600)),
@@ -3584,7 +3584,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                   border: UnderlineInputBorder(),
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               Text("New email id *",
                   style: textStyle(
                       const Color.fromARGB(255, 0, 0, 0), 16, FontWeight.w600)),
@@ -3610,7 +3610,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                   border: UnderlineInputBorder(),
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               if (profileprovider.responseval == "success send mail") ...[
                 Text(
                   "Enter a 4-digit Otp *",
@@ -3632,7 +3632,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                   ),
                 ),
               ],
-              SizedBox(height: 30),
+              const SizedBox(height: 30),
               Row(
                 children: [
                   Expanded(
@@ -3661,7 +3661,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                     ),
                   ),
 
-                  SizedBox(width: 10), // Adds spacing between buttons
+                  const SizedBox(width: 10), // Adds spacing between buttons
                   if (profileprovider.responseval != "success send mail")
                     Expanded(
                       flex: 1, // Takes 50% width
@@ -3694,7 +3694,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                             borderRadius: BorderRadius.circular(25),
                           ),
                         ),
-                        child: Text('Submit'),
+                        child: const Text('Submit'),
                       ),
                     ),
 
@@ -3724,7 +3724,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                             borderRadius: BorderRadius.circular(25),
                           ),
                         ),
-                        child: Text('Submit otp'),
+                        child: const Text('Submit otp'),
                       ),
                     ),
                 ],
@@ -3740,7 +3740,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
       ProfileProvider profileprovider, ThemesProvider theme) {
     return SingleChildScrollView(
       child: Container(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -3755,7 +3755,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
               ' Mobile change request ',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
 
             Text("Present Number",
                 style: textStyle(
@@ -3768,7 +3768,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                 border: UnderlineInputBorder(),
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Text("New Mobile number  *",
                 style: textStyle(
                     const Color.fromARGB(255, 0, 0, 0), 17, FontWeight.w600)),
@@ -3805,7 +3805,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                 ),
               ),
             ],
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
             Row(
               children: [
                 Expanded(
@@ -3831,7 +3831,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                   ),
                 ),
 
-                SizedBox(width: 10), // Adds spacing between buttons
+                const SizedBox(width: 10), // Adds spacing between buttons
 
                 if (profileprovider.mobileotp != "otp sent")
                   Expanded(
@@ -3860,7 +3860,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                           borderRadius: BorderRadius.circular(25),
                         ),
                       ),
-                      child: Text('Submit'),
+                      child: const Text('Submit'),
                     ),
                   ),
 
@@ -3903,20 +3903,20 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
       ProfileProvider profileprovider, ThemesProvider theme) {
     return SingleChildScrollView(
       child: Container(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(height: 40),
+            const SizedBox(height: 40),
             const Text(
               ' Address change request ',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
             Text("Old Address",
                 style: textStyle(
                     const Color.fromARGB(255, 0, 0, 0), 15, FontWeight.w600)),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             Text(
               "${profileprovider.clientAllDetails.clientData?.cLRESIADD1}, ${profileprovider.clientAllDetails.clientData?.cLRESIADD2}, ${profileprovider.clientAllDetails.clientData?.cLRESIADD3}" ??
                   "",
@@ -3929,7 +3929,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
               overflow: TextOverflow.visible,
             ),
             const Divider(color: Color(0xffDDDDDD)),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Text(
               'New Address *',
               style: textStyle(
@@ -3949,7 +3949,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                 border: UnderlineInputBorder(),
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Row(
               children: [
                 Expanded(
@@ -3983,7 +3983,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                   ),
                 ),
 
-                SizedBox(width: 10), // Adds spacing between buttons
+                const SizedBox(width: 10), // Adds spacing between buttons
 
                 Expanded(
                   flex: 1, // Takes 50% width
@@ -4017,10 +4017,10 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                   ),
                 ),
 
-                SizedBox(width: 10),
+                const SizedBox(width: 10),
               ],
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Row(
               children: [
                 Expanded(
@@ -4054,7 +4054,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                   ),
                 ),
 
-                SizedBox(width: 10), // Adds spacing between buttons
+                const SizedBox(width: 10), // Adds spacing between buttons
 
                 Expanded(
                   flex: 1, // Takes 50% width
@@ -4087,10 +4087,10 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                   ),
                 ),
 
-                SizedBox(width: 10),
+                const SizedBox(width: 10),
               ],
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Text(
               "Proof Type *",
               style: textStyle(
@@ -4110,9 +4110,8 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                 border: UnderlineInputBorder(),
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
-              child: Text('UPLOAD FILE'),
               onPressed: () async {
                 var picked = await FilePicker.platform.pickFiles();
 
@@ -4129,7 +4128,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                   //     .state = filePath;
                 }
 
-                Text("elseee");
+                const Text("elseee");
               },
               style: ElevatedButton.styleFrom(
                 elevation: 0,
@@ -4140,8 +4139,9 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                   borderRadius: BorderRadius.circular(25),
                 ),
               ),
+              child: const Text('UPLOAD FILE'),
             ),
-            SizedBox(height: 50),
+            const SizedBox(height: 50),
             // SizedBox(height: 30),
             Row(
               children: [
@@ -4168,7 +4168,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                     ),
                   ),
                 ),
-                SizedBox(width: 10),
+                const SizedBox(width: 10),
                 Expanded(
                   flex: 1, // Takes 50% width
                   child: ElevatedButton(
@@ -4286,7 +4286,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
               const SizedBox(height: 8),
             ],
           );
-        }).toList(),
+        }),
       ],
     );
   }

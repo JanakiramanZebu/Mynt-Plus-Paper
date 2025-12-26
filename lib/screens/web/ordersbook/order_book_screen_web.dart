@@ -45,6 +45,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
   final Set<int> _selectedOrders = <int>{};
   TabController?
       _tabController; // Make nullable to allow deferred initialization
+  VoidCallback? _tabControllerListener; // Store listener reference for proper cleanup
   // ✅ REMOVED: _socketSubscription - isolated cell widgets handle socket updates directly
   final ScrollController _openOrdersHorizontalScrollController = ScrollController();
   final ScrollController _openOrdersVerticalScrollController = ScrollController();
@@ -65,7 +66,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
   String? _processingOrderToken; // Track which order is being processed
 
   // Draggable dialog positions
-  Offset _modifyDialogPosition = const Offset(100, 100);
+  final Offset _modifyDialogPosition = const Offset(100, 100);
   Offset _placeOrderDialogPosition = const Offset(150, 150);
 
   // Sort state per table
@@ -133,7 +134,8 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
         initialIndex: 0, // Always start with Open Orders tab
       );
 
-      _tabController!.addListener(() {
+      // Store listener reference for proper cleanup
+      _tabControllerListener = () {
         if (!_tabController!.indexIsChanging) {
           // Only call when tab change is complete, not during animation
           if (mounted) {
@@ -145,7 +147,8 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
               .read(orderProvider)
               .changeTabIndex(_tabController!.index, context);
         }
-      });
+      };
+      _tabController!.addListener(_tabControllerListener!);
 
       // ✅ REMOVED: _setupSocketSubscription()
       // Isolated cell widgets handle socket updates directly
@@ -169,6 +172,11 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
 
   @override
   void dispose() {
+    // Remove listener before disposing to prevent memory leaks
+    if (_tabController != null && _tabControllerListener != null) {
+      _tabController!.removeListener(_tabControllerListener!);
+      _tabControllerListener = null;
+    }
     _tabController?.dispose(); // Handle nullable TabController
     _openOrdersHorizontalScrollController.dispose();
     _openOrdersVerticalScrollController.dispose();
@@ -508,10 +516,10 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
       builder: (context, constraints) {
         // Calculate available height: screen height minus all UI elements
         final screenHeight = MediaQuery.of(context).size.height;
-        final padding = 32.0; // Top and bottom padding (16 * 2)
-        final headerHeight = 50.0; // Header height (tabs + search bar)
-        final spacing = 16.0; // Spacing between header and content
-        final bottomMargin = 20.0; // Bottom margin to prevent overflow
+        const padding = 32.0; // Top and bottom padding (16 * 2)
+        const headerHeight = 50.0; // Header height (tabs + search bar)
+        const spacing = 16.0; // Spacing between header and content
+        const bottomMargin = 20.0; // Bottom margin to prevent overflow
         final tableHeight =
             screenHeight - padding - headerHeight - spacing - bottomMargin;
 
@@ -753,10 +761,10 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
       builder: (context, constraints) {
         // Calculate available height
         final screenHeight = MediaQuery.of(context).size.height;
-        final padding = 32.0; // Top and bottom padding (16 * 2)
-        final headerHeight = 50.0; // Header height (tabs + search bar)
-        final spacing = 16.0; // Spacing between header and content
-        final bottomMargin = 20.0; // Bottom margin
+        const padding = 32.0; // Top and bottom padding (16 * 2)
+        const headerHeight = 50.0; // Header height (tabs + search bar)
+        const spacing = 16.0; // Spacing between header and content
+        const bottomMargin = 20.0; // Bottom margin
         final tableHeight =
             screenHeight - padding - headerHeight - spacing - bottomMargin;
 
@@ -794,11 +802,11 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
               data: Theme.of(context).copyWith(
                 scrollbarTheme: ScrollbarThemeData(
                   // Make both scrollbars always visible
-                  thumbVisibility: MaterialStateProperty.all(true),
-                  trackVisibility: MaterialStateProperty.all(true),
+                  thumbVisibility: WidgetStateProperty.all(true),
+                  trackVisibility: WidgetStateProperty.all(true),
                   
                   // Consistent thickness for both horizontal and vertical
-                  thickness: MaterialStateProperty.all(6.0),
+                  thickness: WidgetStateProperty.all(6.0),
                   crossAxisMargin: 0.0,
                   mainAxisMargin: 0.0,
                   
@@ -806,18 +814,18 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                   radius: const Radius.circular(3),
                   
                   // Consistent colors for both scrollbars
-                  thumbColor: MaterialStateProperty.resolveWith((states) {
+                  thumbColor: WidgetStateProperty.resolveWith((states) {
                     return theme.isDarkMode 
                         ? WebDarkColors.textSecondary.withOpacity(0.3)
                         : WebColors.textSecondary.withOpacity(0.3);
                   }),
-                  trackColor: MaterialStateProperty.resolveWith((states) {
+                  trackColor: WidgetStateProperty.resolveWith((states) {
                     return theme.isDarkMode 
                         ? WebDarkColors.divider.withOpacity(0.1)
                         : WebColors.divider.withOpacity(0.1);
                   }),
                   
-                  trackBorderColor: MaterialStateProperty.all(Colors.transparent),
+                  trackBorderColor: WidgetStateProperty.all(Colors.transparent),
                   minThumbLength: 48.0,
                 ),
               ),
@@ -835,7 +843,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                 horizontalScrollController: horizontalScrollController,
                 scrollController: verticalScrollController,
                 showCheckboxColumn: false,
-                headingRowColor: MaterialStateProperty.all(
+                headingRowColor: WidgetStateProperty.all(
                   theme.isDarkMode
                       ? WebDarkColors.primary
                       : WebColors.primary.withOpacity(0.05),
@@ -999,8 +1007,8 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
           '';
 
       return DataRow2(
-        color: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.hovered) || _hoveredRowToken.value == uniqueId) {
+        color: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.hovered) || _hoveredRowToken.value == uniqueId) {
             return theme.isDarkMode
                 ? WebDarkColors.primary.withOpacity(0.06)
                 : WebColors.primary.withOpacity(0.10);
@@ -1172,7 +1180,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
         order.status == "OPEN" ||
         order.status == "TRIGGER_PENDING";
 
-    String symbol = '${order.tsym ?? ''}';
+    String symbol = order.tsym ?? '';
     String exchange = order.exch ?? '';
     String displayText = symbol.trim();
     if (exchange.isNotEmpty && exchange.trim().isNotEmpty) {
@@ -1402,11 +1410,11 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
               data: Theme.of(context).copyWith(
                 scrollbarTheme: ScrollbarThemeData(
                   // Make both scrollbars always visible
-                  thumbVisibility: MaterialStateProperty.all(true),
-                  trackVisibility: MaterialStateProperty.all(true),
+                  thumbVisibility: WidgetStateProperty.all(true),
+                  trackVisibility: WidgetStateProperty.all(true),
                   
                   // Consistent thickness for both horizontal and vertical
-                  thickness: MaterialStateProperty.all(6.0),
+                  thickness: WidgetStateProperty.all(6.0),
                   crossAxisMargin: 0.0,
                   mainAxisMargin: 0.0,
                   
@@ -1414,18 +1422,18 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                   radius: const Radius.circular(3),
                   
                   // Consistent colors for both scrollbars
-                  thumbColor: MaterialStateProperty.resolveWith((states) {
+                  thumbColor: WidgetStateProperty.resolveWith((states) {
                     return theme.isDarkMode 
                         ? WebDarkColors.textSecondary.withOpacity(0.3)
                         : WebColors.textSecondary.withOpacity(0.3);
                   }),
-                  trackColor: MaterialStateProperty.resolveWith((states) {
+                  trackColor: WidgetStateProperty.resolveWith((states) {
                     return theme.isDarkMode 
                         ? WebDarkColors.divider.withOpacity(0.1)
                         : WebColors.divider.withOpacity(0.1);
                   }),
                   
-                  trackBorderColor: MaterialStateProperty.all(Colors.transparent),
+                  trackBorderColor: WidgetStateProperty.all(Colors.transparent),
                   minThumbLength: 48.0,
                 ),
               ),
@@ -1441,7 +1449,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                 fixedColumnsColor: theme.isDarkMode 
                     ? WebDarkColors.backgroundSecondary.withOpacity(0.8)
                     : WebColors.backgroundSecondary.withOpacity(0.8),
-                headingRowColor: MaterialStateProperty.all(
+                headingRowColor: WidgetStateProperty.all(
                   theme.isDarkMode
                       ? WebDarkColors.primary
                       : WebColors.primary.withOpacity(0.05),
@@ -1598,8 +1606,8 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
       final uniqueId = '$token$index';
 
       return DataRow2(
-        color: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.hovered) || _hoveredRowToken.value == uniqueId) {
+        color: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.hovered) || _hoveredRowToken.value == uniqueId) {
             return theme.isDarkMode
                 ? WebDarkColors.primary.withOpacity(0.06)
                 : WebColors.primary.withOpacity(0.10);
@@ -1970,8 +1978,8 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
       final uniqueId = '${gttOrder.alId ?? ''}_${gttOrder.tsym ?? ''}';
 
       return DataRow2(
-        color: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.hovered) || _hoveredRowToken.value == uniqueId) {
+        color: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.hovered) || _hoveredRowToken.value == uniqueId) {
             return theme.isDarkMode
                 ? WebDarkColors.primary.withOpacity(0.06)
                 : WebColors.primary.withOpacity(0.10);
@@ -2107,7 +2115,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     final status = gttOrder.gttOrderCurrentStatus?.toUpperCase() ?? '';
     final isPending = status == 'PENDING' || status == 'TRIGGER_PENDING';
 
-    String symbol = '${gttOrder.tsym?.replaceAll("-EQ", "") ?? 'N/A'}';
+    String symbol = gttOrder.tsym?.replaceAll("-EQ", "") ?? 'N/A';
     String exchange = gttOrder.exch ?? '';
     String displayText = symbol.trim();
     if (exchange.isNotEmpty && exchange.trim().isNotEmpty) {
@@ -2251,10 +2259,10 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
       builder: (context, constraints) {
         // Calculate available height
         final screenHeight = MediaQuery.of(context).size.height;
-        final padding = 32.0; // Top and bottom padding (16 * 2)
-        final headerHeight = 50.0; // Header height (tabs + search bar)
-        final spacing = 16.0; // Spacing between header and content
-        final bottomMargin = 20.0; // Bottom margin
+        const padding = 32.0; // Top and bottom padding (16 * 2)
+        const headerHeight = 50.0; // Header height (tabs + search bar)
+        const spacing = 16.0; // Spacing between header and content
+        const bottomMargin = 20.0; // Bottom margin
         final tableHeight =
             screenHeight - padding - headerHeight - spacing - bottomMargin;
 
@@ -2292,11 +2300,11 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
               data: Theme.of(context).copyWith(
                 scrollbarTheme: ScrollbarThemeData(
                   // Make both scrollbars always visible
-                  thumbVisibility: MaterialStateProperty.all(true),
-                  trackVisibility: MaterialStateProperty.all(true),
+                  thumbVisibility: WidgetStateProperty.all(true),
+                  trackVisibility: WidgetStateProperty.all(true),
                   
                   // Consistent thickness for both horizontal and vertical
-                  thickness: MaterialStateProperty.all(6.0),
+                  thickness: WidgetStateProperty.all(6.0),
                   crossAxisMargin: 0.0,
                   mainAxisMargin: 0.0,
                   
@@ -2304,18 +2312,18 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                   radius: const Radius.circular(3),
                   
                   // Consistent colors for both scrollbars
-                  thumbColor: MaterialStateProperty.resolveWith((states) {
+                  thumbColor: WidgetStateProperty.resolveWith((states) {
                     return theme.isDarkMode 
                         ? WebDarkColors.textSecondary.withOpacity(0.3)
                         : WebColors.textSecondary.withOpacity(0.3);
                   }),
-                  trackColor: MaterialStateProperty.resolveWith((states) {
+                  trackColor: WidgetStateProperty.resolveWith((states) {
                     return theme.isDarkMode 
                         ? WebDarkColors.divider.withOpacity(0.1)
                         : WebColors.divider.withOpacity(0.1);
                   }),
                   
-                  trackBorderColor: MaterialStateProperty.all(Colors.transparent),
+                  trackBorderColor: WidgetStateProperty.all(Colors.transparent),
                   minThumbLength: 48.0,
                 ),
               ),
@@ -2333,7 +2341,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                 horizontalScrollController: _gttHorizontalScrollController,
                 scrollController: _gttVerticalScrollController,
                 showCheckboxColumn: false,
-                headingRowColor: MaterialStateProperty.all(
+                headingRowColor: WidgetStateProperty.all(
                   theme.isDarkMode
                       ? WebDarkColors.primary
                       : WebColors.primary.withOpacity(0.05),
@@ -3491,7 +3499,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
         order.status == "OPEN" ||
         order.status == "TRIGGER_PENDING";
 
-    String symbol = '${order.tsym ?? ''}';
+    String symbol = order.tsym ?? '';
     String exchange = order.exch ?? '';
 
     String displayText = symbol.trim();
@@ -4122,7 +4130,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     final status = gttOrder.gttOrderCurrentStatus?.toUpperCase() ?? '';
     final isPending = status == 'PENDING' || status == 'TRIGGER_PENDING';
 
-    String symbol = '${gttOrder.tsym?.replaceAll("-EQ", "") ?? 'N/A'}';
+    String symbol = gttOrder.tsym?.replaceAll("-EQ", "") ?? 'N/A';
     String exchange = gttOrder.exch ?? '';
 
     String displayText = symbol.trim();

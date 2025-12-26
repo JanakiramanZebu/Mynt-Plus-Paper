@@ -1,15 +1,11 @@
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../models/marketwatch_model/get_quotes.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
-import '../../../sharedWidget/functions.dart';
-import '../../../sharedWidget/list_divider.dart';
 import '../../../sharedWidget/cust_text_formfield.dart';
 
 class SetAlert extends StatefulWidget {
@@ -85,7 +81,7 @@ class _SetAlertState extends State<SetAlert> {
         children: [
           Expanded(
             child: SingleChildScrollView(
-              physics: ClampingScrollPhysics(),
+              physics: const ClampingScrollPhysics(),
               child: Padding(
                 padding: EdgeInsets.fromLTRB(
                     16, 0, 16, MediaQuery.of(context).viewInsets.bottom),

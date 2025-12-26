@@ -2,16 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:google_fonts/google_fonts.dart';
 import '../../../provider/fund_provider.dart';
 import '../../../provider/mf_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/cust_text_formfield.dart';
-import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/list_divider.dart';
-import '../../../sharedWidget/snack_bar.dart';
 
 class CreateMandateDialogue extends ConsumerStatefulWidget {
   const CreateMandateDialogue({super.key});
@@ -121,7 +118,7 @@ class _CreateMandateDialogueState extends ConsumerState<CreateMandateDialogue> {
               const ListDivider(),
               Flexible(
                 child: SingleChildScrollView(
-                  physics: ClampingScrollPhysics(),
+                  physics: const ClampingScrollPhysics(),
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

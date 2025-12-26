@@ -340,7 +340,7 @@ class FinancialWidget extends ConsumerWidget {
         )
       ]
     )))
-                        : FCashFlowChart(),
+                        : const FCashFlowChart(),
                     const SizedBox(height: 16),
                   
                     // Only show data table if there's data
@@ -507,7 +507,7 @@ class BalanceSheetTable extends StatelessWidget {
                       align: TextAlign.right,
                     ),
                   ))
-              .toList(),
+              ,
         ],
       ),
     );
@@ -546,7 +546,7 @@ class BalanceSheetTable extends StatelessWidget {
               fw: 0,
               align: TextAlign.right,
             ),
-          )).toList(),
+          )),
         ],
       ),
     )).toList();
@@ -734,7 +734,7 @@ class IncomeStatementTable extends StatelessWidget {
                       align: TextAlign.right,
                     ),
                   ))
-              .toList(),
+              ,
         ],
       ),
     );
@@ -776,7 +776,7 @@ class IncomeStatementTable extends StatelessWidget {
               fw: 0,
               align: TextAlign.right,
             ),
-          )).toList(),
+          )),
         ],
       ),
     )).toList();
@@ -962,7 +962,7 @@ class CashFlowTable extends StatelessWidget {
                       align: TextAlign.right,
                     ),
                   ))
-              .toList(),
+              ,
         ],
       ),
     );
@@ -1001,7 +1001,7 @@ class CashFlowTable extends StatelessWidget {
               fw: 0,
               align: TextAlign.right,
             ),
-          )).toList(),
+          )),
         ],
       ),
     )).toList();

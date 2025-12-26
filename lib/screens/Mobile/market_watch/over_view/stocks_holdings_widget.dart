@@ -1,7 +1,6 @@
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import 'package:readmore/readmore.dart';
 import '../../../../provider/market_watch_provider.dart';
@@ -107,7 +106,7 @@ class StocksHoldingsWidget extends ConsumerWidget {
       const SizedBox(height: 8),
       stockHold.isEmpty
           ? Container(
-              color: Color(0xff666666),
+              color: const Color(0xff666666),
             )
           : Row(children: [
               colorBar(
@@ -135,19 +134,19 @@ class StocksHoldingsWidget extends ConsumerWidget {
             
                  TextWidget.subText(
                       text: "Investors",
-                      color: Color(0xff666666),
+                      color: const Color(0xff666666),
                       theme: theme.isDarkMode,
                       fw: 0),	
          
                  TextWidget.subText(
                       text: "Holding %",
-                      color: Color(0xff666666),
+                      color: const Color(0xff666666),
                       theme: theme.isDarkMode,
                       fw: 0),
           ])),
       stockHold.isEmpty
           ? Container(
-              color: Color(0xff666666),
+              color: const Color(0xff666666),
             )
           : holdData(
               "Promoter Holding",
@@ -161,7 +160,7 @@ class StocksHoldingsWidget extends ConsumerWidget {
           height: 0),
       stockHold.isEmpty
           ? Container(
-              color: Color(0xff666666),
+              color: const Color(0xff666666),
             )
           : holdData(
               "Foriegin Institution",
@@ -175,7 +174,7 @@ class StocksHoldingsWidget extends ConsumerWidget {
           height: 0),
       stockHold.isEmpty
           ? Container(
-              color: Color(0xff666666),
+              color: const Color(0xff666666),
             )
           : holdData(
               "Other Domestic Institution",
@@ -189,7 +188,7 @@ class StocksHoldingsWidget extends ConsumerWidget {
           height: 0),
       stockHold.isEmpty
           ? Container(
-              color: Color(0xff666666),
+              color: const Color(0xff666666),
             )
           : holdData(
               "Retail and Others",
@@ -203,7 +202,7 @@ class StocksHoldingsWidget extends ConsumerWidget {
           height: 0),
       stockHold.isEmpty
           ? Container(
-              color: Color(0xff666666),
+              color: const Color(0xff666666),
             )
           : holdData(
               "Mutual Funds",
@@ -211,8 +210,8 @@ class StocksHoldingsWidget extends ConsumerWidget {
               const Color(0XFFdedede),
               theme),
       stockHold.isEmpty
-          ? Padding(
-              padding: const EdgeInsets.symmetric(vertical: 20),
+          ? const Padding(
+              padding: EdgeInsets.symmetric(vertical: 20),
               child: Center(child: NoDataFound()),
             )
           : Container(
@@ -233,7 +232,7 @@ class StocksHoldingsWidget extends ConsumerWidget {
                  
                            TextWidget.paraText(
                       text:"Select a segment from the breakdowns to see its pattern here" ,
-                      color: Color(0xff666666),
+                      color: const Color(0xff666666),
                       theme: theme.isDarkMode,
                       fw: 0),	
                   const SizedBox(height: 8),
@@ -317,7 +316,7 @@ class StocksHoldingsWidget extends ConsumerWidget {
       ReadMoreText("${shareHoldings.fundamentalData!.stockDescription}",
           style:
            TextWidget.textStyle(
-                 fontSize: 12 , color: Color(0xff666666), theme: theme.isDarkMode , fw: 0 ),		
+                 fontSize: 12 , color: const Color(0xff666666), theme: theme.isDarkMode , fw: 0 ),		
           textAlign: TextAlign.left,
           trimLines: 4,
           moreStyle: theme.isDarkMode
@@ -364,7 +363,7 @@ class StocksHoldingsWidget extends ConsumerWidget {
             
              TextWidget.subText(
                       text: "${double.parse(value == "null" ? "0.00" : value).toStringAsFixed(2)}%",
-                      color: Color(0xff666666),
+                      color: const Color(0xff666666),
                       theme: theme.isDarkMode,
                       fw: 0),
             

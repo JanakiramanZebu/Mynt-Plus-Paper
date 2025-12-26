@@ -2,22 +2,15 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../models/notification_model/broker_message_model.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/notification_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
-import '../../../routes/route_names.dart';
-import '../../../sharedWidget/custom_exch_badge.dart';
-import '../../../sharedWidget/custom_text_form_field.dart';
 import '../../../sharedWidget/list_divider.dart';
 import '../../../sharedWidget/no_data_found.dart';
-import 'filter_alert_pending.dart';
 import '../../../provider/order_provider.dart';
 import 'pending_alert_detail_screen.dart';
 
@@ -94,7 +87,7 @@ class _PendingAlertState extends ConsumerState<PendingAlert> {
     ];
 
     if (allAlerts.isEmpty) {
-      return Center(
+      return const Center(
         child: NoDataFound(
           title: "No Alerts Found",
           subtitle: "There's nothing here yet. Create some alerts to see them here.",
@@ -127,7 +120,7 @@ class _PendingAlertState extends ConsumerState<PendingAlert> {
 
   Widget _buildAlertList(List<dynamic> alerts, theme, double angleInRadians) {
     return ListView.builder(
-      padding: EdgeInsets.only(bottom: 80),
+      padding: const EdgeInsets.only(bottom: 80),
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: alerts.length,
@@ -203,7 +196,7 @@ class _PendingAlertState extends ConsumerState<PendingAlert> {
             ),
           ),
           const SizedBox(height: 8),
-          ListDivider(),
+          const ListDivider(),
           // Divider(
           //   color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
           //   thickness: 0,
@@ -389,7 +382,7 @@ class _PendingAlertState extends ConsumerState<PendingAlert> {
             ),
           ),
           const SizedBox(height: 8),
-          ListDivider(),
+          const ListDivider(),
         ],
       ),
     );

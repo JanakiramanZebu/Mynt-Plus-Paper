@@ -9,14 +9,14 @@ class SavedStrategyModel {
     if (json['data'] != null) {
       data = <Data>[];
       json['data'].forEach((v) {
-        data!.add(new Data.fromJson(v));
+        data!.add(Data.fromJson(v));
       });
     }
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['msg'] = this.msg;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['msg'] = msg;
     if (this.data != null) {
       data['data'] = this.data!.map((v) => v.toJson()).toList();
     }
@@ -49,7 +49,7 @@ class Data {
     if (json['schema_values'] != null) {
       schemaValues = <SchemaValues>[];
       json['schema_values'].forEach((v) {
-        schemaValues!.add(new SchemaValues.fromJson(v));
+        schemaValues!.add(SchemaValues.fromJson(v));
       });
     }
     uuid = json['uuid'];
@@ -62,18 +62,18 @@ class Data {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    if (this.schemaValues != null) {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    if (schemaValues != null) {
       data['schema_values'] =
-          this.schemaValues!.map((v) => v.toJson()).toList();
+          schemaValues!.map((v) => v.toJson()).toList();
     }
-    data['uuid'] = this.uuid;
-    data['years'] = this.years;
-    data['invest_amount'] = this.investAmount;
-    data['datetime'] = this.datetime;
-    data['investment_details'] = this.investmentDetails;
-    data['basket_name'] = this.basketName;
-    data['name'] = this.name;
+    data['uuid'] = uuid;
+    data['years'] = years;
+    data['invest_amount'] = investAmount;
+    data['datetime'] = datetime;
+    data['investment_details'] = investmentDetails;
+    data['basket_name'] = basketName;
+    data['name'] = name;
     return data;
   }
 }
@@ -100,14 +100,14 @@ class SchemaValues {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['percentage'] = this.percentage;
-    data['schema_name'] = this.schemaName;
-    data['scheme_type'] = this.schemeType;
-    data['isin'] = this.isin;
-    data['aMCCode'] = this.aMCCode;
-    data['aum'] = this.aum;
-    data['name'] = this.name;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['percentage'] = percentage;
+    data['schema_name'] = schemaName;
+    data['scheme_type'] = schemeType;
+    data['isin'] = isin;
+    data['aMCCode'] = aMCCode;
+    data['aum'] = aum;
+    data['name'] = name;
     return data;
   }
 }

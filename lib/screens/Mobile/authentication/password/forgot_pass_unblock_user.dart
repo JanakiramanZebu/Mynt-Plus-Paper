@@ -12,7 +12,6 @@ import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
 import '../../../../sharedWidget/custom_text_form_field.dart';
 import '../../../../sharedWidget/functions.dart';
-import '../../../../utils/no_emoji_inputformatter.dart';
 
 class ForgotPassUnblockUser extends StatefulWidget {
   const ForgotPassUnblockUser({super.key});

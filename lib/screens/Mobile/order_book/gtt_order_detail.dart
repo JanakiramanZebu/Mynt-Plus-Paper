@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../models/marketwatch_model/get_quotes.dart';
 import '../../../models/order_book_model/gtt_order_book.dart';
 import '../../../provider/market_watch_provider.dart';
@@ -11,12 +10,8 @@ import '../../../provider/websocket_provider.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
-import '../../../sharedWidget/custom_back_btn.dart';
 import '../../../sharedWidget/custom_drag_handler.dart';
 import '../../../sharedWidget/custom_exch_badge.dart';
-import '../../../sharedWidget/list_divider.dart';
-import '../../../sharedWidget/scrip_info_btns.dart';
-import '../market_watch/scrip_depth_info.dart';
 
 class GttOrderDetail extends ConsumerStatefulWidget {
   final GttOrderBookModel gttOrderBook;
@@ -117,7 +112,7 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
                         child: Column(
                           children: <Widget>[
                             SingleChildScrollView(
-                              physics: ClampingScrollPhysics(),
+                              physics: const ClampingScrollPhysics(),
                               controller: scrollController,
                               child: Padding(
                                 padding: const EdgeInsets.symmetric(
@@ -187,7 +182,7 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
                                                         children: [
                                                           TextWidget.titleText(
                                                               text:
-                                                                  "${displayData.ltp ?? '0.00'}",
+                                                                  displayData.ltp ?? '0.00',
                                                               theme: theme
                                                                   .isDarkMode,
                                                               color: (displayData.ltp ==

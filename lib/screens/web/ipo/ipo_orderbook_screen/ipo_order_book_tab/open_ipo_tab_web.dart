@@ -160,7 +160,7 @@ class _OpenOrderList extends StatelessWidget {
         isSearch: isSearch,
       ),
       separatorBuilder: (BuildContext context, int index) {
-        return ListDivider();
+        return const ListDivider();
       },
     );
   }
@@ -299,8 +299,8 @@ class _OpenOrderItem extends StatelessWidget {
   String _getInvestedAmount() {
     if (isSearch) {
       return order.type == "BSE"
-          ? "${getFormatter(noDecimal: true, v4d: false, value: double.parse(order.bidDetail![0].rate!) * double.parse(order.bidDetail![0].quantity!)).toString()}"
-          : "${getFormatter(noDecimal: true, v4d: false, value: double.parse(order.bidDetail![0].amount.toString()))}";
+          ? getFormatter(noDecimal: true, v4d: false, value: double.parse(order.bidDetail![0].rate!) * double.parse(order.bidDetail![0].quantity!)).toString()
+          : getFormatter(noDecimal: true, v4d: false, value: double.parse(order.bidDetail![0].amount.toString()));
     } else {
       // For regular orders, calculate max value
       List<String> stringList = [];
@@ -315,7 +315,7 @@ class _OpenOrderItem extends StatelessWidget {
           .reduce((curr, next) =>
               double.parse(curr) > double.parse(next) ? curr : next)
           .toString();
-      return "${getFormatter(noDecimal: true, v4d: false, value: double.parse(maxValue))}";
+      return getFormatter(noDecimal: true, v4d: false, value: double.parse(maxValue));
     }
   }
 }

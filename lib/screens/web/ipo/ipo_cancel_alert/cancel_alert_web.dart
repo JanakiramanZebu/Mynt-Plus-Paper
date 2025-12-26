@@ -33,7 +33,7 @@ class _IpoCancelAlertState extends ConsumerState<IpoCancelAlert> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(5),
       ),
-      child: Container(
+      child: SizedBox(
         width: 400,
         child: Column(
           mainAxisSize: MainAxisSize.min,

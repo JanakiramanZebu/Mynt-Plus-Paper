@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:mynt_plus/provider/ledger_provider.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/sharedWidget/functions.dart';
 import 'package:mynt_plus/sharedWidget/loader_ui.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../../../models/desk_reports_model/calender_pnl_model.dart';
 import '../../../provider/thems.dart';
 import '../../../res/global_state_text.dart';
@@ -34,7 +31,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
       final ledgerprovider = ref.watch(ledgerProvider);
       final sortedDates = ledgerprovider.grouped.keys.toList()
         ..sort((a, b) => b.compareTo(a));
-      Future<void> _refresh() async {
+      Future<void> refresh() async {
         await Future.delayed(
             const Duration(seconds: 0)); // simulate refresh delay
         print("refresh ");
@@ -73,14 +70,14 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
               fw: 1),
         ),
         body: RefreshIndicator(
-          onRefresh: _refresh,
+          onRefresh: refresh,
           child: TransparentLoaderScreen(
             isLoading: ledgerprovider.calendarpnlloading,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 ledgerprovider.noticenewfeature != 'yes'
-                    ? Container(
+                    ? SizedBox(
                         width: screenWidth,
                         child: Container(
                           decoration: BoxDecoration(
@@ -109,7 +106,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                                           onPressed: () {},
                                         ),
                                         Padding(
-                                            padding: EdgeInsets.symmetric(
+                                            padding: const EdgeInsets.symmetric(
                                                 vertical: 8.0),
                                             child: TextWidget.subText(
                                                 align: TextAlign.start,
@@ -141,10 +138,10 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                           ),
                         ),
                       )
-                    : SizedBox(),
+                    : const SizedBox(),
                 Row(
                   children: [
-                    Container(
+                    SizedBox(
                       width: screenWidth,
                       child: Container(
                         decoration: BoxDecoration(
@@ -351,7 +348,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                 Column(
                   children: [
                     ledgerprovider.calenderpnlAllData?.data == null
-                        ? SizedBox()
+                        ? const SizedBox()
                         : Padding(
                             padding: const EdgeInsets.only(
                                 left: 16.0, right: 4.0, top: 8.0),
@@ -445,7 +442,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                                         if (ledgerprovider.notsharing == false)
                                           {
                                             _showBottomSheetSharing(
-                                                context, SharingScreen())
+                                                context, const SharingScreen())
                                           }
                                         else
                                           {
@@ -461,7 +458,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                             ),
                           ),
                     ledgerprovider.calenderpnlAllData?.data == null
-                        ? SizedBox()
+                        ? const SizedBox()
                         : Divider(
                             color: theme.isDarkMode
                                 ? const Color(0xffB5C0CF).withOpacity(.15)
@@ -469,10 +466,10 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                             thickness: 1.0,
                           ),
                     ledgerprovider.calenderpnlAllData?.data == null
-                        ? SizedBox(
+                        ? const SizedBox(
                             height: 10.0,
                           )
-                        : SizedBox(),
+                        : const SizedBox(),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
@@ -695,7 +692,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                                         : const Color(0xffF1F3F8),
                                     thickness: 1.0,
                                   ),
-                                  sortedDates.length == 0
+                                  sortedDates.isEmpty
                                       ? const Center(
                                           child: Padding(
                                           padding: EdgeInsets.only(top: 30),
@@ -750,7 +747,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                                                       children: [
                                                         TextWidget.subText(
                                                             text:
-                                                                "${dateString} (${tradesForDate.length})",
+                                                                "$dateString (${tradesForDate.length})",
                                                             color: theme.isDarkMode
                                                                 ? colors
                                                                     .colorWhite
@@ -1145,7 +1142,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                     padding: const EdgeInsets.only(
                         left: 16.0, top: 16.0, bottom: 8.0),
                     child: TextWidget.titleText(
-                        text: "Trades in ${date}",
+                        text: "Trades in $date",
                         textOverflow: TextOverflow.ellipsis,
                         theme: theme.isDarkMode,
                         color: theme.isDarkMode
@@ -1174,7 +1171,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                   //                     ),
                   Expanded(
                     child: ListView.separated(
-                      physics: ClampingScrollPhysics(),
+                      physics: const ClampingScrollPhysics(),
                       controller: scrollController,
                       itemCount: trade.length,
                       itemBuilder: (context, index) {
@@ -1425,7 +1422,7 @@ class _CalendarTabsState extends State<CalendarTabs> {
           elevation: 0,
           color:
               widget.theme.isDarkMode ? const Color(0xff1E1E1E) : Colors.white,
-          child: Container(
+          child: SizedBox(
             width: screenWidth * 0.9, // Adjust as needed
 
             child: Column(

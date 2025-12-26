@@ -1,19 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/provider/ledger_provider.dart';
 import 'package:mynt_plus/res/res.dart';
-import 'package:mynt_plus/screens/Mobile/desk_reports/bottom_sheets/ledger_bill.dart';
-import 'package:mynt_plus/screens/Mobile/desk_reports/bottom_sheets/pledge_history_details.dart';
-import 'package:mynt_plus/sharedWidget/custom_back_btn.dart';
-import 'package:mynt_plus/sharedWidget/custom_exch_badge.dart';
-import 'package:mynt_plus/sharedWidget/functions.dart';
-import 'package:mynt_plus/sharedWidget/loader_ui.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 
 import '../../../provider/thems.dart';
 import '../../../res/global_state_text.dart';
-import 'bottom_sheets/ledger_filter.dart';
 
 class PledgeHistoryScreen extends StatelessWidget {
   const PledgeHistoryScreen({super.key});
@@ -53,9 +45,9 @@ class PledgeHistoryScreen extends StatelessWidget {
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             ledgerprovider.pledgeHistoryData?.data?.isEmpty ?? true
-                ? Center(
+                ? const Center(
                     child: Padding(
                     padding: EdgeInsets.only(top: 60),
                     child: NoDataFound(
@@ -64,7 +56,7 @@ class PledgeHistoryScreen extends StatelessWidget {
                   ))
                 : Expanded(
                     child: SingleChildScrollView(
-                      physics: ClampingScrollPhysics(),
+                      physics: const ClampingScrollPhysics(),
                       child:
                           // ListView.separated(
                           //   physics: ScrollPhysics(),
@@ -298,7 +290,7 @@ class PledgeHistoryScreen extends StatelessWidget {
                           //   },
                           // ),
                           ListView.separated(
-                        physics: ClampingScrollPhysics(),
+                        physics: const ClampingScrollPhysics(),
                         itemCount: ledgerprovider.historyalterlist.length,
                         shrinkWrap: true,
                         itemBuilder: (context, index) {
@@ -326,7 +318,7 @@ class PledgeHistoryScreen extends StatelessWidget {
                                               theme: theme.isDarkMode,
                                               fw: 0,
                                             ),
-                                            SizedBox(width: 8),
+                                            const SizedBox(width: 8),
                                             Container(
                                               
                                             padding:
@@ -615,7 +607,7 @@ class PledgeHistoryScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-            SizedBox(height: 4.0),
+            const SizedBox(height: 4.0),
           ],
         ),
       );

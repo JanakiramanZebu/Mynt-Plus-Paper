@@ -10,7 +10,6 @@ import '../../../../../res/global_state_text.dart';
 import '../../../../../res/res.dart';
 import '../../../../../sharedWidget/custom_drag_handler.dart';
 import '../../../../../sharedWidget/custom_exch_badge.dart';
-import '../../../../../sharedWidget/functions.dart';
 import '../../../../../sharedWidget/list_divider.dart';
 
 class PositionListBottomSheet extends ConsumerWidget {

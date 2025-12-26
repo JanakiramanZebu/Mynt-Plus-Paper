@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:mynt_plus/models/ipo_model/ipo_mainstream_model.dart';
 import 'package:mynt_plus/models/ipo_model/ipo_sme_model.dart';
 import 'package:mynt_plus/provider/transcation_provider.dart';
@@ -211,7 +212,7 @@ class _IPODetailsContainer extends StatelessWidget {
                 const SizedBox(height: 16),
                 Expanded(
                   child: SingleChildScrollView(
-                    physics: ClampingScrollPhysics(),
+                    physics: const ClampingScrollPhysics(),
                     controller: scrollController,
                     child: Column(
                       children: [
@@ -257,22 +258,14 @@ class _IPODetailsContainer extends StatelessWidget {
         height: 50,
         child: Container(
           padding: const EdgeInsets.all(8),
-          child: Image.network(
-            singlepage.iposinglepage!.data!['image_link'].toString(),
-            loadingBuilder: (context, child, loadingProgress) {
-              if (loadingProgress == null) return child;
-              return Center(
-                child: CircularProgressIndicator(
-                  value: loadingProgress.expectedTotalBytes != null
-                      ? loadingProgress.cumulativeBytesLoaded /
-                          (loadingProgress.expectedTotalBytes ?? 1)
-                      : null,
-                ),
-              );
-            },
-            errorBuilder: (context, error, stackTrace) {
-              return const Text('Failed to load image');
-            },
+          child: CachedNetworkImage(
+            imageUrl: singlepage.iposinglepage!.data!['image_link'].toString(),
+            memCacheWidth: 100,
+            memCacheHeight: 100,
+            placeholder: (context, url) => const Center(
+              child: CircularProgressIndicator(),
+            ),
+            errorWidget: (context, url, error) => const Text('Failed to load image'),
           ),
         ),
       ),

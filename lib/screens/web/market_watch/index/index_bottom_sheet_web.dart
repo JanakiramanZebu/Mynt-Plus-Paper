@@ -297,7 +297,7 @@ class _IndexBottomSheetWebState extends ConsumerState<IndexBottomSheetWeb> {
                                   itemBuilder: (BuildContext context, idx) {
                                     // For odd indices, show divider
                                     if (idx.isOdd) {
-                                      return ListDivider();
+                                      return const ListDivider();
                                     }
 
                                     int index = idx ~/ 2;
@@ -357,14 +357,13 @@ class IndexListItemWithStreamWeb extends StatefulWidget {
   final int indexPosition;
 
   const IndexListItemWithStreamWeb(
-      {Key? key,
+      {super.key,
       required this.itemData,
       required this.indexProvider,
       required this.marketWatch,
       required this.ischeck,
       required this.isDarkMode,
-      required this.indexPosition})
-      : super(key: key);
+      required this.indexPosition});
 
   @override
   State<IndexListItemWithStreamWeb> createState() =>
@@ -678,11 +677,10 @@ class _StaticIndexContentWeb extends StatelessWidget {
   final bool isDarkMode;
 
   const _StaticIndexContentWeb({
-    Key? key,
     required this.itemData,
     required this.exch,
     required this.isDarkMode,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -734,12 +732,11 @@ class _DynamicPriceContentWeb extends StatelessWidget {
   final bool isDarkMode;
 
   const _DynamicPriceContentWeb({
-    Key? key,
     required this.ltp,
     required this.ch,
     required this.chp,
     required this.isDarkMode,
-  }) : super(key: key);
+  });
 
   // Helper method to safely format price values
   String _safeFormatPrice(String value) {
@@ -812,13 +809,11 @@ class _ActionButtonWeb extends StatelessWidget {
   final int indexPosition;
 
   const _ActionButtonWeb(
-      {Key? key,
-      required this.ischeck,
+      {required this.ischeck,
       required this.itemData,
       required this.indexProvider,
       required this.isDarkMode,
-      required this.indexPosition})
-      : super(key: key);
+      required this.indexPosition});
 
   @override
   Widget build(BuildContext context) {

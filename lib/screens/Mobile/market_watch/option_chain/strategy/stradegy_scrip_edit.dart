@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../../models/marketwatch_model/opt_chain_model.dart';
 import '../../../../../provider/thems.dart';
@@ -10,7 +9,6 @@ import '../../../../../res/global_state_text.dart';
 import '../../../../../res/res.dart';
 import '../../../../../sharedWidget/custom_exch_badge.dart';
 import '../../../../../sharedWidget/custom_switch_btn.dart';
-import '../../../../../sharedWidget/functions.dart';
 import '../../../../../sharedWidget/list_divider.dart';
 
 class OptionStrategyEdit extends ConsumerStatefulWidget {
@@ -88,7 +86,7 @@ class _OptionStrategyEditState extends ConsumerState<OptionStrategyEdit> {
 
                         TextWidget.subText(
                       text: widget.scripData.option!,
-                      color:Color(0xff666666) ,
+                      color:const Color(0xff666666) ,
                       textOverflow: TextOverflow.ellipsis,
                       maxLines: 1,
                       theme: theme.isDarkMode,

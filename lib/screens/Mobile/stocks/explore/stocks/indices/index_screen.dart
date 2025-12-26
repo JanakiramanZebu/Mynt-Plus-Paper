@@ -16,7 +16,7 @@ class IndexScreen extends ConsumerWidget {
         await ref.read(indexListProvider).fetchAllIndex();
       },
       child: ListView.separated(
-        physics: ClampingScrollPhysics(),
+        physics: const ClampingScrollPhysics(),
         shrinkWrap: true,
         itemCount: indexData.length,
         separatorBuilder: (BuildContext context, int index) {

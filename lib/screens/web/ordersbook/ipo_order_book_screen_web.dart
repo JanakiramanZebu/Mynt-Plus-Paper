@@ -328,9 +328,9 @@ class _IpoOrderBookScreenWebState extends ConsumerState<IpoOrderBookScreenWeb> {
     if (order.bidDetail == null || order.bidDetail.isEmpty) return "0";
     
     if (order.type == "BSE") {
-      return "${getFormatter(noDecimal: true, v4d: false, value: double.parse(order.bidDetail![0].rate!) * double.parse(order.bidDetail![0].quantity!)).toString()}";
+      return getFormatter(noDecimal: true, v4d: false, value: double.parse(order.bidDetail![0].rate!) * double.parse(order.bidDetail![0].quantity!)).toString();
     } else {
-      return "${getFormatter(noDecimal: true, v4d: false, value: double.parse(order.bidDetail![0].amount.toString()))}";
+      return getFormatter(noDecimal: true, v4d: false, value: double.parse(order.bidDetail![0].amount.toString()));
     }
   }
 

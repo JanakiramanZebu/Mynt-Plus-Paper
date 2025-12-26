@@ -3,9 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/provider/ledger_provider.dart';
 import 'package:mynt_plus/res/res.dart';
-import 'package:mynt_plus/screens/Mobile/desk_reports/bottom_sheets/ledger_bill.dart';
 import 'package:mynt_plus/sharedWidget/custom_back_btn.dart';
-import 'package:mynt_plus/sharedWidget/custom_exch_badge.dart';
 import 'package:mynt_plus/sharedWidget/functions.dart';
 import 'package:mynt_plus/sharedWidget/loader_ui.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
@@ -56,8 +54,8 @@ class Tradebook extends StatelessWidget {
 
       final ledgerprovider = ref.watch(ledgerProvider);
 
-      Future<void> _refresh() async {
-        await Future.delayed(Duration(seconds: 0)); // simulate refresh delay
+      Future<void> refresh() async {
+        await Future.delayed(const Duration(seconds: 0)); // simulate refresh delay
         print("refresh ");
         await ledgerprovider.getCurrentDate('tradebook');
         ledgerprovider.fetchtradebookdata(
@@ -90,7 +88,7 @@ class Tradebook extends StatelessWidget {
           //   child: Icon(Icons.ios_share)),
         ),
         body: RefreshIndicator(
-          onRefresh: _refresh,
+          onRefresh: refresh,
           child: TransparentLoaderScreen(
             isLoading: ledgerprovider.tradebookloading,
             child: Column(
@@ -133,7 +131,7 @@ class Tradebook extends StatelessWidget {
                                       ? const Color(0xffB5C0CF).withOpacity(.15)
                                       : const Color(0xffF1F3F8),
                                 ),
-                                child: Text("${ledgerprovider.startDate}",
+                                child: Text(ledgerprovider.startDate,
                                     style: textStyle(
                                         theme.isDarkMode
                                             ? colors.colorWhite
@@ -145,7 +143,7 @@ class Tradebook extends StatelessWidget {
                           ),
                         ),
                       ),
-                      SizedBox(width: 15),
+                      const SizedBox(width: 15),
                       Expanded(
                         child: InkWell(
                           onTap: () {
@@ -170,7 +168,7 @@ class Tradebook extends StatelessWidget {
                                       ? const Color(0xffB5C0CF).withOpacity(.15)
                                       : const Color(0xffF1F3F8),
                                 ),
-                                child: Text("${ledgerprovider.endDate}",
+                                child: Text(ledgerprovider.endDate,
                                     style: textStyle(
                                         theme.isDarkMode
                                             ? colors.colorWhite
@@ -182,7 +180,7 @@ class Tradebook extends StatelessWidget {
                           ),
                         ),
                       ),
-                      SizedBox(width: 15),
+                      const SizedBox(width: 15),
                       Padding(
                         padding: const EdgeInsets.only(right: 16.0, top: 16.0),
                         child: SizedBox(
@@ -215,7 +213,7 @@ class Tradebook extends StatelessWidget {
                           onTap: () async {
                             ledgerprovider.setfilterpage = 'tradebook';
 
-                            _showBottomSheet(context, LedgerFilter());
+                            _showBottomSheet(context, const LedgerFilter());
                           },
                           child: Padding(
                             padding: const EdgeInsets.only(top: 12),
@@ -337,7 +335,7 @@ class Tradebook extends StatelessWidget {
                         ledgerprovider.tradebookdata!.trades!.isEmpty
                     // Handle the null or empty case
 
-                    ? Center(
+                    ? const Center(
                         child: Padding(
                         padding: EdgeInsets.only(top: 60),
                         child: NoDataFound(),
@@ -346,7 +344,7 @@ class Tradebook extends StatelessWidget {
                         child: SingleChildScrollView(
                           physics: const AlwaysScrollableScrollPhysics(),
                           child: ListView.separated(
-                            physics: ClampingScrollPhysics(),
+                            physics: const ClampingScrollPhysics(),
                             itemCount:
                                 ledgerprovider.tradebookdata?.trades?.length ??
                                     0,
@@ -542,7 +540,7 @@ class Tradebook extends StatelessWidget {
                                             TextWidget.paraText(
                                                 // text:  "₹ ${value.showamt}",
                                                 text:
-                                                    "${(double.tryParse(value.showamt ?? '')?.toStringAsFixed(2) ?? '0.00')}",
+                                                    (double.tryParse(value.showamt ?? '')?.toStringAsFixed(2) ?? '0.00'),
                                                  color: theme.isDarkMode
                                                         ? colors.textPrimaryDark
                                                         : colors.textPrimaryLight,
@@ -575,7 +573,7 @@ class Tradebook extends StatelessWidget {
                                                 TextWidget.paraText(
                                                     // text:  "₹ ${value.showprice}",
                                                     text:
-                                                        "${(double.tryParse(value.showprice ?? '')?.toStringAsFixed(2) ?? '0.00')}",
+                                                        (double.tryParse(value.showprice ?? '')?.toStringAsFixed(2) ?? '0.00'),
                                                      color: theme.isDarkMode
                                                         ? colors.textPrimaryDark
                                                         : colors.textPrimaryLight,

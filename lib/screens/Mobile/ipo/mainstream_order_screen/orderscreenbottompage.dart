@@ -7,8 +7,6 @@ import 'package:mynt_plus/provider/iop_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/provider/transcation_provider.dart';
 import 'package:mynt_plus/res/res.dart';
-import 'package:mynt_plus/screens/Mobile/authentication/password/forgot_pass_unblock_user.dart';
-import 'package:mynt_plus/sharedWidget/ipo_error_widget.dart';
 import 'package:mynt_plus/sharedWidget/snack_bar.dart';
 
 import '../../../../res/global_state_text.dart';

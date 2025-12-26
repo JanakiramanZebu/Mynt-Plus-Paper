@@ -6,8 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 // import 'package:flutter_riverpod/all.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/api/core/api_core.dart';
-import '../../../../locator/locator.dart';
-import '../../../../locator/preference.dart';
 
 import '../../../../res/res.dart';
 import '../../../provider/ledger_provider.dart';

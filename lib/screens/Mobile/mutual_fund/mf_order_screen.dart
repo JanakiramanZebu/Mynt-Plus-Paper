@@ -190,7 +190,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                         Row(
                           children: [
                             TextWidget.paraText(
-                                text: "${mfOrder.mfOrderTpye}",
+                                text: mfOrder.mfOrderTpye,
                                 textOverflow: TextOverflow.ellipsis,
                                 theme: theme.isDarkMode,
                                 color: theme.isDarkMode
@@ -1576,7 +1576,7 @@ void CallUpiNetbanking(BuildContext context, MFProvider mfOrder,
     isScrollControlled: true,
     builder: (context) {
       return SingleChildScrollView(
-        physics: ClampingScrollPhysics(),
+        physics: const ClampingScrollPhysics(),
         padding: EdgeInsets.only(
           top: 22.0,
           bottom: MediaQuery.of(context).viewInsets.bottom + 16.0,
@@ -1969,7 +1969,7 @@ class _SIPCalendarState extends State<_SIPCalendar> {
               width: 12,
               height: 12,
               decoration: BoxDecoration(
-                color: Color(0xffF1F3F8),
+                color: const Color(0xffF1F3F8),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),

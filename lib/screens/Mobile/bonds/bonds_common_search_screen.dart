@@ -151,7 +151,7 @@ class BondsCommonSearch extends ConsumerWidget {
 
   Widget _buildBody(BondsProvider bonds, ThemesProvider theme) {
     return SingleChildScrollView(
-      physics: ClampingScrollPhysics(),
+      physics: const ClampingScrollPhysics(),
       child: bonds.bondsCommonSearchList.isNotEmpty
           ? _buildSearchResults(bonds, theme)
           : const Center(child: NoDataFound(

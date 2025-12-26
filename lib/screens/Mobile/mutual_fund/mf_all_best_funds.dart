@@ -4,9 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/models/mf_model/mutual_fundmodel.dart';
 import 'package:mynt_plus/res/res.dart';
-import 'package:mynt_plus/sharedWidget/functions.dart';
 import 'package:mynt_plus/sharedWidget/snack_bar.dart';
-import '../../../provider/fund_provider.dart';
 import '../../../provider/mf_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../res/global_state_text.dart';
@@ -15,7 +13,6 @@ import '../../../sharedWidget/custom_back_btn.dart';
 import '../../../sharedWidget/list_divider.dart';
 import '../../../sharedWidget/loader_ui.dart';
 import '../../../sharedWidget/no_data_found.dart';
-import '../../../sharedWidget/custom_exch_badge.dart';
 import 'mf_stock_detail_screen.dart';
 
 class SaveTaxesScreen extends ConsumerStatefulWidget {
@@ -140,7 +137,7 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
           leadingWidth: 41,
           centerTitle: false,
           titleSpacing: 6,
-          leading: CustomBackBtn(),
+          leading: const CustomBackBtn(),
           title: TextWidget.titleText(
             text: "Collections",
             color:
@@ -428,7 +425,7 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
     }
 
     return ListView.separated(
-      physics: ClampingScrollPhysics(),
+      physics: const ClampingScrollPhysics(),
       itemCount: sortedList.length,
       separatorBuilder: (_, __) => const ListDivider(),
       itemBuilder: (BuildContext context, int index) {

@@ -2,21 +2,14 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/provider/index_list_provider.dart';
 import '../../../models/order_book_model/trade_book_model.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/order_provider.dart';
-import '../../../provider/shocase_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../res/res.dart';
-import '../../../routes/route_names.dart';
-import '../../../sharedWidget/custom_exch_badge.dart';
-import '../../../sharedWidget/custom_text_form_field.dart';
 import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/no_data_found.dart';
-import 'filter_trade_book.dart';
 import 'package:mynt_plus/res/global_state_text.dart';
 
 import 'trade_book_detail.dart';
@@ -160,7 +153,7 @@ class TradeBook extends ConsumerWidget {
         },
         child: order.orderSearchCtrl.text.isEmpty ? tradeBook.isNotEmpty
                 ? ListView.separated(
-                    padding: EdgeInsets.only(bottom: 80),
+                    padding: const EdgeInsets.only(bottom: 80),
                     physics: const ClampingScrollPhysics(),
                     shrinkWrap: false,
                     itemBuilder: (context, index) {
@@ -203,7 +196,7 @@ class TradeBook extends ConsumerWidget {
                                         .bottom,
                                   ),
                                   child: TradeBookDetail(
-                                      tradeData: tradeBook![index])),
+                                      tradeData: tradeBook[index])),
                             );
                             // Navigator.pushNamed(context, Routes.tradeDetail,
                             //     arguments: tradeBook[index]);
@@ -285,7 +278,7 @@ class TradeBook extends ConsumerWidget {
 
                                       TextWidget.paraText(
                                         text:
-                                            "${((int.tryParse(tradeBook[index].flqty.toString()) ?? 0) / (tradeBook[index].exch == 'MCX' ? (int.tryParse(tradeBook[index].ls.toString()) ?? 1) : 1)).toInt()}",
+                                            "${(int.tryParse(tradeBook[index].flqty.toString()) ?? 0) ~/ (tradeBook[index].exch == 'MCX' ? (int.tryParse(tradeBook[index].ls.toString()) ?? 1) : 1)}",
                                         color: theme.isDarkMode
                                             ? colors.textSecondaryDark
                                             : colors.textSecondaryLight,
@@ -385,7 +378,7 @@ class TradeBook extends ConsumerWidget {
                 ))
             : order.tradeBooksearch!.isNotEmpty
                 ? ListView.separated(
-                    padding: EdgeInsets.only(bottom: 80),
+                    padding: const EdgeInsets.only(bottom: 80),
                     physics: const ClampingScrollPhysics(),
                     shrinkWrap: false,
                     itemBuilder: (context, index) {
@@ -542,7 +535,7 @@ class TradeBook extends ConsumerWidget {
                                         const SizedBox(width: 8),
                                         TextWidget.paraText(
                                           text:
-                                              "${((int.tryParse(tradeBook[index].flqty.toString()) ?? 0) / (tradeBook[index].exch == 'MCX' ? (int.tryParse(tradeBook[index].ls.toString()) ?? 1) : 1)).toInt()}",
+                                              "${(int.tryParse(tradeBook[index].flqty.toString()) ?? 0) ~/ (tradeBook[index].exch == 'MCX' ? (int.tryParse(tradeBook[index].ls.toString()) ?? 1) : 1)}",
                                           color: theme.isDarkMode
                                               ? colors.textSecondaryDark
                                               : colors.textSecondaryLight,
@@ -613,7 +606,7 @@ class TradeBook extends ConsumerWidget {
                           height: 1);
                     },
                   )
-                : Center(
+                : const Center(
                   child: NoDataFound(
                       title: "No Results Found",
                       subtitle: "Try searching with different keywords",

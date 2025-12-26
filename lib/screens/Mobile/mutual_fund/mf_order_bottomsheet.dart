@@ -1,31 +1,21 @@
-import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/locator/constant.dart';
 import 'package:mynt_plus/provider/ledger_provider.dart';
-import 'package:mynt_plus/sharedWidget/functions.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:url_launcher/url_launcher_string.dart';
 import '../../../../provider/thems.dart';
 import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
 import '../../../../sharedWidget/cust_text_formfield.dart';
-import '../../../provider/fund_provider.dart';
 import '../../../provider/mf_provider.dart';
 import '../../../provider/transcation_provider.dart';
-import '../../../routes/route_names.dart';
 import '../../../sharedWidget/custom_drag_handler.dart';
 import '../../../sharedWidget/fund_function.dart';
 import '../../../sharedWidget/list_divider.dart';
-import '../../../sharedWidget/snack_bar.dart';
 import '../mutual_fund_old/create_mandate_daialogue.dart';
 import '../profile_screen/fund_screen/upi_id_screens/mf_payment_resp_alert.dart';
-import '../profile_screen/fund_screen/upi_id_screens/upi_id_cancel_alert.dart';
 import 'mandate_selection_screen.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import '../../../res/assets.dart';
 import 'mf_processing_screen.dart';
 
 class MfOrderBottomsheet extends StatefulWidget {
@@ -173,7 +163,7 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                   
                 ),
               child: SingleChildScrollView(
-                physics: ClampingScrollPhysics(),
+                physics: const ClampingScrollPhysics(),
                 padding: EdgeInsets.only(
                   top: 22.0,
                   bottom: MediaQuery.of(context).viewInsets.bottom + 16.0,
@@ -210,7 +200,7 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         AnimatedSwitcher(
-                                          duration: Duration(milliseconds: 650),
+                                          duration: const Duration(milliseconds: 650),
                                           transitionBuilder: (child, animation) =>
                                               ScaleTransition(
                                                   scale: animation, child: child),
@@ -218,12 +208,12 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                                   "Order Initiated"
                                               ?  Icon(
                                                   Icons.check_circle,
-                                                  key: ValueKey("verified"),
+                                                  key: const ValueKey("verified"),
                                                   size: 50,
                                                   color: theme.isDarkMode ? colors.profitDark : colors.profitLight,
                                                 )
                                               : SizedBox(
-                                                  key: ValueKey("loading"),
+                                                  key: const ValueKey("loading"),
                                                   height: 25,
                                                   width: 25,
                                                   child: CircularProgressIndicator(
@@ -298,7 +288,7 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                         decoration: BoxDecoration(
                                           color: theme.isDarkMode
                                               ? colors.darkGrey
-                                              : Color(0xffF1F3F8),
+                                              : const Color(0xffF1F3F8),
                                           borderRadius: BorderRadius.circular(5),
                                           border: Border.all(
                                             color: theme.isDarkMode
@@ -318,7 +308,7 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                                     children: [
                                                       TextWidget.subText(
                                                         text:
-                                                            "${_getSelectedMandateAmount(mfOrder)}",
+                                                            _getSelectedMandateAmount(mfOrder),
                                                         theme: theme.isDarkMode,
                                                         color: theme.isDarkMode
                                                             ? colors.textPrimaryDark
@@ -326,7 +316,7 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                                                 .textPrimaryLight,
                                                         fw: 0,
                                                       ),
-                                                      SizedBox(
+                                                      const SizedBox(
                                                         width: 4,
                                                       ),
                                                       _getSelectedMandateStatus(
@@ -334,13 +324,13 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                                     ],
                                                   ),
               
-                                                  SizedBox(
+                                                  const SizedBox(
                                                     height: 4,
                                                   ),
               
                                                   TextWidget.subText(
                                                     text:
-                                                        "${_getSelectedMandateBankName(mfOrder)}",
+                                                        _getSelectedMandateBankName(mfOrder),
                                                     theme: theme.isDarkMode,
                                                     color: theme.isDarkMode
                                                         ? colors.textPrimaryDark
@@ -529,7 +519,7 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                                       await showBottomSheetbank(
                                                           fund, theme);
                                                     },
-                                                    child: Container(
+                                                    child: SizedBox(
                                                       height: 32,
                                                       width: 32,
                                                       child:  Center(

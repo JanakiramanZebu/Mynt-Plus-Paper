@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart'; 
 
 import '../../../../provider/market_watch_provider.dart'; 
 import '../../../../provider/stocks_provider.dart';
@@ -93,7 +92,7 @@ class StockEvents extends ConsumerWidget {
 
                              TextWidget.subText(
                       text: "Agenda",
-                      color:Color(0XFF666666) ,
+                      color:const Color(0XFF666666) ,
                       theme: theme.isDarkMode,
                       fw: 0),	
                     const SizedBox(height: 4),               
@@ -111,14 +110,14 @@ class StockEvents extends ConsumerWidget {
                                  TextWidget.subText(
                       text:"Board meeting date" ,
                       textOverflow: TextOverflow.ellipsis,
-                      color:Color(0XFF666666) ,
+                      color:const Color(0XFF666666) ,
                       theme: theme.isDarkMode,
                       fw: 0),	                      
 
                                 TextWidget.subText(
                       text:"Source date",
                       textOverflow: TextOverflow.ellipsis,
-                      color:Color(0XFF666666) ,
+                      color:const Color(0XFF666666) ,
                       theme: theme.isDarkMode,
                       fw: 0),	
                       ],
@@ -171,7 +170,7 @@ class StockEvents extends ConsumerWidget {
                                 TextWidget.subText(
                       text:"Cum Bonus Date" ,
                       textOverflow: TextOverflow.ellipsis,
-                      color:Color(0XFF666666) ,
+                      color:const Color(0XFF666666) ,
                       theme: theme.isDarkMode,
                       fw: 0),	
                         
@@ -179,7 +178,7 @@ class StockEvents extends ConsumerWidget {
                                 TextWidget.subText(
                       text:"Ex Bonus Date" ,
                       textOverflow: TextOverflow.ellipsis,
-                      color:Color(0XFF666666) ,
+                      color:const Color(0XFF666666) ,
                       theme: theme.isDarkMode,
                       fw: 0),	
                       ],
@@ -194,7 +193,7 @@ class StockEvents extends ConsumerWidget {
                       text:funData.fundamentalData!.stockEvents!.bonus![index]
                                 .cumBonusDate! ,
                       textOverflow: TextOverflow.ellipsis,
-                      color:Color(0XFF666666) ,
+                      color:const Color(0XFF666666) ,
                       theme: theme.isDarkMode,
                       fw: 0),	
                         
@@ -202,7 +201,7 @@ class StockEvents extends ConsumerWidget {
                       text: funData.fundamentalData!.stockEvents!.bonus![index]
                                 .exBonusDate! ,
                       textOverflow: TextOverflow.ellipsis,
-                      color:Color(0XFF666666) ,
+                      color:const Color(0XFF666666) ,
                       theme: theme.isDarkMode,
                       fw: 0),	
                       ],
@@ -215,7 +214,7 @@ class StockEvents extends ConsumerWidget {
                                 TextWidget.subText(
                       text:"Ratio D",
                       textOverflow: TextOverflow.ellipsis,
-                      color:Color(0XFF666666) ,
+                      color:const Color(0XFF666666) ,
                       theme: theme.isDarkMode,
                       fw: 0),	
                        
@@ -223,7 +222,7 @@ class StockEvents extends ConsumerWidget {
                                 TextWidget.subText(
                       text:"Ratio N" ,
                       textOverflow: TextOverflow.ellipsis,
-                      color:Color(0XFF666666) ,
+                      color:const Color(0XFF666666) ,
                       theme: theme.isDarkMode,
                       fw: 0),	
                       ],
@@ -261,7 +260,7 @@ class StockEvents extends ConsumerWidget {
                                 TextWidget.subText(
                       text:"Record Date" ,
                       textOverflow: TextOverflow.ellipsis,
-                      color:Color(0XFF666666) ,
+                      color:const Color(0XFF666666) ,
                       theme: theme.isDarkMode,
                       fw: 0),	
                        
@@ -269,7 +268,7 @@ class StockEvents extends ConsumerWidget {
                                  TextWidget.subText(
                       text:"Source Date",
                       textOverflow: TextOverflow.ellipsis,
-                      color:Color(0XFF666666) ,
+                      color:const Color(0XFF666666) ,
                       theme: theme.isDarkMode,
                       fw: 0),	
                       ],
@@ -319,14 +318,14 @@ class StockEvents extends ConsumerWidget {
                       children: [                        
                                   TextWidget.subText(
                       text: "Dividend Percent",
-                      color: Color(0XFF666666) ,
+                      color: const Color(0XFF666666) ,
                       theme: theme.isDarkMode,
                       fw: 0),
                        
 
                                   TextWidget.subText(
                       text:"Dividend Date" ,
-                      color: Color(0XFF666666),
+                      color: const Color(0XFF666666),
 					  textOverflow: TextOverflow.ellipsis,
                       theme: theme.isDarkMode,
                       fw: 0),
@@ -357,13 +356,13 @@ class StockEvents extends ConsumerWidget {
                         TextWidget.subText(
                       text: "Dividend Per Share",
                       textOverflow: TextOverflow.ellipsis,
-                      color: Color(0XFF666666),
+                      color: const Color(0XFF666666),
                       theme: theme.isDarkMode,
                       fw: 0),
                         TextWidget.subText(
                       text: "Ex Date",
                       textOverflow: TextOverflow.ellipsis,
-                      color: Color(0XFF666666),
+                      color: const Color(0XFF666666),
                       theme: theme.isDarkMode,
                       fw: 0),
                       ],
@@ -393,13 +392,13 @@ class StockEvents extends ConsumerWidget {
                         TextWidget.subText(
                       text: "Details",
                       textOverflow: TextOverflow.ellipsis,
-                      color: Color(0XFF666666),
+                      color: const Color(0XFF666666),
                       theme: theme.isDarkMode,
                       fw: 0),
                         TextWidget.subText(
                       text: "Record Date",
                       textOverflow: TextOverflow.ellipsis,
-                      color: Color(0XFF666666),
+                      color: const Color(0XFF666666),
                       theme: theme.isDarkMode,
                       fw: 0),
                       ],
@@ -447,12 +446,12 @@ class StockEvents extends ConsumerWidget {
                       children: [
                         TextWidget.subText(
                       text: "Ex Rights Date",
-                      color: Color(0XFF666666),
+                      color: const Color(0XFF666666),
                       theme: theme.isDarkMode,
                       fw: 0),
                         TextWidget.subText(
                       text: "Offer Price",
-                      color: Color(0XFF666666),
+                      color: const Color(0XFF666666),
                       theme: theme.isDarkMode,
                       fw: 0),
                       ],
@@ -482,13 +481,13 @@ class StockEvents extends ConsumerWidget {
                         TextWidget.subText(
                       text: "Premium Rs",
                       textOverflow: TextOverflow.ellipsis,
-                      color: Color(0XFF666666),
+                      color: const Color(0XFF666666),
                       theme: theme.isDarkMode,
                       fw: 0),
                         TextWidget.subText(
                       text: "Ration D",
                       textOverflow: TextOverflow.ellipsis,
-                      color: Color(0XFF666666),
+                      color: const Color(0XFF666666),
                       theme: theme.isDarkMode,
                       fw: 0),
                       ],
@@ -518,13 +517,13 @@ class StockEvents extends ConsumerWidget {
                         TextWidget.subText(
                       text: "Ration N",
                       textOverflow: TextOverflow.ellipsis,
-                      color: Color(0XFF666666),
+                      color: const Color(0XFF666666),
                       theme: theme.isDarkMode,
                       fw: 0),
                         TextWidget.subText(
                       text: "Record Date",
                       textOverflow: TextOverflow.ellipsis,
-                      color: Color(0XFF666666),
+                      color: const Color(0XFF666666),
                       theme: theme.isDarkMode,
                       fw: 0),
                       ],
@@ -572,12 +571,12 @@ class StockEvents extends ConsumerWidget {
                       children: [
                         TextWidget.subText(
                       text: "Ex Date",
-                      color: Color(0XFF666666),
+                      color: const Color(0XFF666666),
                       theme: theme.isDarkMode,
                       fw: 0),
                         TextWidget.subText(
                       text: "Face Value Change From",
-                      color: Color(0XFF666666),
+                      color: const Color(0XFF666666),
                       theme: theme.isDarkMode,
                       fw: 0),
                       ],
@@ -607,13 +606,13 @@ class StockEvents extends ConsumerWidget {
                         TextWidget.subText(
                       text: "Face Value Change To",
                       textOverflow: TextOverflow.ellipsis,
-                      color: Color(0XFF666666),
+                      color: const Color(0XFF666666),
                       theme: theme.isDarkMode,
                       fw: 0),
                         TextWidget.subText(
                       text: "Record Date",
                       textOverflow: TextOverflow.ellipsis,
-                      color: Color(0XFF666666),
+                      color: const Color(0XFF666666),
                       theme: theme.isDarkMode,
                       fw: 0),
                       ],

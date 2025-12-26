@@ -138,7 +138,7 @@ class _CreateAlgoStrategyScreenState
           key: provider.formKey,
           autovalidateMode: AutovalidateMode.disabled,
           child: SingleChildScrollView(
-            physics: ClampingScrollPhysics(),
+            physics: const ClampingScrollPhysics(),
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -728,7 +728,7 @@ class _CreateAlgoStrategyScreenState
               ),
               Flexible(
                 child: SingleChildScrollView(
-                  physics: ClampingScrollPhysics(),
+                  physics: const ClampingScrollPhysics(),
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Column(

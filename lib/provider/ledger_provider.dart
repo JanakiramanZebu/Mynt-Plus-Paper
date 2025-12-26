@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 // import 'dart:ffi';
 
 import 'package:flutter/material.dart';
@@ -11,12 +10,10 @@ import 'package:mynt_plus/provider/websocket_provider.dart';
 import 'package:mynt_plus/sharedWidget/snack_bar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:url_launcher/url_launcher_string.dart';
 import '../api/core/api_core.dart';
 import '../api/core/api_export.dart';
 import '../locator/locator.dart';
 import '../locator/preference.dart';
-import '../models/client_profile_all_details/profile_all_details_model.dart';
 import '../models/desk_reports_model/SharingResponseCalendar_model.dart';
 import '../models/desk_reports_model/ca_events_model.dart';
 import '../models/desk_reports_model/calender_pnl_model.dart';
@@ -75,9 +72,9 @@ class LDProvider extends DefaultChangeNotifier {
   List<dynamic> _listforpledge = [];
   List<dynamic> get listforpledge => _listforpledge;
 
-  List<dynamic> _tradebookfilterarray = [];
+  final List<dynamic> _tradebookfilterarray = [];
 
-  List<dynamic> _isinlistforcopedisdata = [];
+  final List<dynamic> _isinlistforcopedisdata = [];
 
   List<dynamic> get tradebookfilterarray => _tradebookfilterarray;
 
@@ -123,7 +120,7 @@ class LDProvider extends DefaultChangeNotifier {
   PnlModel? get pnlAllDataDummy => _pnlAllDatadummy;
 
   // Calendar PNL data per segment
-  Map<String, CalenderpnlModel> _calenderpnlDataBySegment = {};
+  final Map<String, CalenderpnlModel> _calenderpnlDataBySegment = {};
   Map<String, CalenderpnlModel> get calenderpnlDataBySegment =>
       _calenderpnlDataBySegment;
 
@@ -261,7 +258,7 @@ class LDProvider extends DefaultChangeNotifier {
   bool _pnlrmtm = true;
   bool get pnlrmtm => _pnlrmtm;
 
-  bool _loader = false;
+  final bool _loader = false;
   bool get loader => _loader;
 
   String _dummyStartdate = "";
@@ -546,7 +543,7 @@ class LDProvider extends DefaultChangeNotifier {
   bool get calendarpnlloading => _calendarpnlloading;
 
   // Segment-specific loading states for Calendar PnL
-  Map<String, bool> _calendarPnlLoadingBySegment = {};
+  final Map<String, bool> _calendarPnlLoadingBySegment = {};
   bool isCalendarPnlLoadingForSegment(String segment) {
     return _calendarPnlLoadingBySegment[segment] ?? false;
   }
@@ -579,7 +576,7 @@ class LDProvider extends DefaultChangeNotifier {
   bool _pdfdownloadloading = false;
   bool get pdfdownloadloading => _pdfdownloadloading;
 
-  bool _isDaily = false;
+  final bool _isDaily = false;
   bool get isDaily => _isDaily;
 
   bool _reportsloadingforcharges = false;
@@ -636,7 +633,7 @@ class LDProvider extends DefaultChangeNotifier {
   String _startDate = "";
   String get startDate => _startDate;
 
-  String _lastweekdate = "";
+  final String _lastweekdate = "";
   String get lastweekdate => _lastweekdate;
 
   String _today = "";
@@ -678,7 +675,7 @@ class LDProvider extends DefaultChangeNotifier {
     _curDate = DateTime.now();
     _pickedStartDate = null;
 
-    DateTime seventhDayBefore = _curDate.subtract(Duration(days: 7));
+    DateTime seventhDayBefore = _curDate.subtract(const Duration(days: 7));
 
     // Define the date format
     DateFormat dateFormat = DateFormat('dd/MM/yyyy');
@@ -719,7 +716,7 @@ class LDProvider extends DefaultChangeNotifier {
       _endDate = "$date/$month/$year";
     } else {
       _startDate = "01/04/$_dummyStartYear";
-      _endDate = "31/03/${_dummyEndYear}";
+      _endDate = "31/03/$_dummyEndYear";
     }
 
     notifyListeners();
@@ -731,12 +728,12 @@ class LDProvider extends DefaultChangeNotifier {
     await showModalBottomSheet(
       context: context,
       backgroundColor: theme.isDarkMode ? Colors.black : Colors.white,
-      shape: RoundedRectangleBorder(
+      shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (BuildContext context) {
         return Padding(
-          padding: EdgeInsets.all(16),
+          padding: const EdgeInsets.all(16),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -842,12 +839,12 @@ class LDProvider extends DefaultChangeNotifier {
     await showModalBottomSheet(
       context: context,
       backgroundColor: theme.isDarkMode ? Colors.black : Colors.white,
-      shape: RoundedRectangleBorder(
+      shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (BuildContext context) {
         return Padding(
-          padding: EdgeInsets.all(16),
+          padding: const EdgeInsets.all(16),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -1102,7 +1099,7 @@ class LDProvider extends DefaultChangeNotifier {
       final time = DateFormat('hh:mm:ss a').format(DateTime.now());
       _timedis = time;
     }
-    _timer = Timer.periodic(Duration(seconds: 5), (_) async {
+    _timer = Timer.periodic(const Duration(seconds: 5), (_) async {
       final time = DateFormat('hh:mm:ss a').format(DateTime.now());
       _timedis = time;
       _positiondata = await api.getposition();
@@ -1380,7 +1377,7 @@ class LDProvider extends DefaultChangeNotifier {
           }
         }
       }
-      print("${_calendarpnlloading} printprint");
+      print("$_calendarpnlloading printprint");
     } catch (e) {
       _calendarpnlloading = false;
 
@@ -1411,7 +1408,7 @@ class LDProvider extends DefaultChangeNotifier {
           }
         }
       }
-      print('${input} sub val');
+      print('$input sub val');
     }
 
     if (input.isNotEmpty) {
@@ -1433,7 +1430,7 @@ class LDProvider extends DefaultChangeNotifier {
       _pnlloading = false;
       _reportsloadingforcharges = false;
       _selectedFilters = {}; // Reset filters
-      print("${_pnlAllData} valval");
+      print("$_pnlAllData valval");
       notifyListeners();
     } catch (e) {
       _pnlloading = false;
@@ -1648,7 +1645,7 @@ class LDProvider extends DefaultChangeNotifier {
         );
         _ledgerloading = false;
       } else {
-          warningMessage(context, '$_pdfresponse'
+          warningMessage(context, _pdfresponse
         );
         _ledgerloading = false;
       }
@@ -1675,7 +1672,7 @@ class LDProvider extends DefaultChangeNotifier {
         );
         _pnlloading = false;
       } else {
-          warningMessage(context, '$_pdfresponse'
+          warningMessage(context, _pdfresponse
         );
         _pnlloading = false;
       }
@@ -1879,7 +1876,7 @@ class LDProvider extends DefaultChangeNotifier {
         _taxderloading = false;
         notifyListeners();
 
-        print("${_taxpnleq} mainresponse");
+        print("$_taxpnleq mainresponse");
         print("Assertsvalva $charges");
 
         notifyListeners();
@@ -2039,7 +2036,7 @@ class LDProvider extends DefaultChangeNotifier {
         _taxpnleqCharge = await api.GettaxpnleqCharge('eq', from);
 
         // _pnlAllData!.expenseAmt = _pnlsegCharge!.expenseAmt;
-        print("${from}  expensevalvalvalval");
+        print("$from  expensevalvalvalval");
 
         // if (_ledgerAllData!.stat == "Ok") {
         //   // for (var element in _ledgerAllData!.topSchemes!) {
@@ -2057,7 +2054,7 @@ class LDProvider extends DefaultChangeNotifier {
       }
     } else {
       warningMessage(
-          context, 'Cant move already in ${_yearforTaxpnlDummy}');
+          context, 'Cant move already in $_yearforTaxpnlDummy');
     }
   }
 
@@ -3016,7 +3013,7 @@ class LDProvider extends DefaultChangeNotifier {
   }
 
   void changesegvaldummy(String seg) {
-    print("object ${_listforpledge}");
+    print("object $_listforpledge");
     if (_listforpledge == []) {
       _segmentvaluedummy = '';
     } else {
@@ -3073,7 +3070,7 @@ class LDProvider extends DefaultChangeNotifier {
 
       // Navigator.pushNamed(context, Routes.camsWebView,
       //     arguments: res);+
-      Future.delayed(Duration(milliseconds: 1000));
+      Future.delayed(const Duration(milliseconds: 1000));
 
       cancelpledgetotal('pledge');
       _pledgeloader = false;
@@ -3141,7 +3138,7 @@ class LDProvider extends DefaultChangeNotifier {
           "quantity": qty,
         });
         ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar();
+          .hideCurrentSnackBar();
           
             successMessage(context, 'Script Added'
           );
@@ -3254,12 +3251,12 @@ class LDProvider extends DefaultChangeNotifier {
     await showModalBottomSheet(
       context: context,
       backgroundColor: theme.isDarkMode ? Colors.black : Colors.white,
-      shape: RoundedRectangleBorder(
+      shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (BuildContext context) {
         return Padding(
-          padding: EdgeInsets.all(16),
+          padding: const EdgeInsets.all(16),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -3333,12 +3330,12 @@ class LDProvider extends DefaultChangeNotifier {
   }
 
   // Contract Calendar related variables
-  Map<DateTime, List<String>> _contractDocumentDates = {};
+  final Map<DateTime, List<String>> _contractDocumentDates = {};
   Map<DateTime, List<String>> get contractDocumentDates =>
       _contractDocumentDates;
 
   // Store full document details for each date
-  Map<DateTime, List<DocumentDetail>> _contractDocumentDetails = {};
+  final Map<DateTime, List<DocumentDetail>> _contractDocumentDetails = {};
   Map<DateTime, List<DocumentDetail>> get contractDocumentDetails =>
       _contractDocumentDetails;
 
@@ -3364,9 +3361,9 @@ class LDProvider extends DefaultChangeNotifier {
       notifyListeners();
 
       // Format dates for API (DD/MM/YYYY format)
-      final startDate = "01/${month.toString().padLeft(2, '0')}/${year}";
+      final startDate = "01/${month.toString().padLeft(2, '0')}/$year";
       final endDate =
-          "${DateTime(year, month + 1, 0).day.toString().padLeft(2, '0')}/${month.toString().padLeft(2, '0')}/${year}";
+          "${DateTime(year, month + 1, 0).day.toString().padLeft(2, '0')}/${month.toString().padLeft(2, '0')}/$year";
 
       // Call existing PDF download API
       _pdfdownload = await api.getpdfdownload(startDate, endDate);
@@ -3418,8 +3415,9 @@ class LDProvider extends DefaultChangeNotifier {
   }
 
   void searchLedgerType(String value) {
-    if (_ledgerAllDataDummy == null || _ledgerAllDataDummy!.fullStat == null)
+    if (_ledgerAllDataDummy == null || _ledgerAllDataDummy!.fullStat == null) {
       return;
+    }
 
     if (value.isEmpty) {
       // Reset to original data
@@ -3655,17 +3653,15 @@ class LDProvider extends DefaultChangeNotifier {
           await api.getcalenderpnldata(from, to, type);
 
       // Store data for this specific segment
-      if (fetchedData != null) {
-        fetchedData.segment = type;
-        _calenderpnlDataBySegment[type] = fetchedData;
+      fetchedData.segment = type;
+      _calenderpnlDataBySegment[type] = fetchedData;
 
-        // Only update the UI data if this is the currently selected segment
-        if (selectedSegment == type) {
-          // Use the centralized method to rebuild all data structures
-          _rebuildGroupedAndHeatmapForSegment(type);
-        }
+      // Only update the UI data if this is the currently selected segment
+      if (selectedSegment == type) {
+        // Use the centralized method to rebuild all data structures
+        _rebuildGroupedAndHeatmapForSegment(type);
       }
-
+    
       // Clear segment-specific loading state
       setCalendarPnlLoadingForSegment(type, false);
       _calendarpnlloading = false;

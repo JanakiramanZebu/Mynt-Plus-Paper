@@ -8,18 +8,18 @@ class Sip_list_data {
     if (json['data'] != null) {
       data = <Xsip>[];
       json['data'].forEach((v) {
-        data!.add(new Xsip.fromJson(v));
+        data!.add(Xsip.fromJson(v));
       });
     }
     stat = json['stat'];
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     if (this.data != null) {
       data['data'] = this.data!.map((v) => v.toJson()).toList();
     }
-    data['stat'] = this.stat;
+    data['stat'] = stat;
     return data;
   }
 }
@@ -122,37 +122,37 @@ class Xsip {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['TransCode'] = this.transCode;
-    data['TransNo'] = this.transNo;
-    data['OrderId'] = this.orderId;
-    data['UserId'] = this.userId;
-    data['MemberCode'] = this.memberCode;
-    data['ClientCode'] = this.clientCode;
-    data['Remarks'] = this.remarks;
-    data['status'] = this.status;
-    data['name'] = this.name;
-    data['stat'] = this.stat;
-    data['source'] = this.source;
-    data['placed_by'] = this.placedBy;
-    data['IPAddress'] = this.iPAddress;
-    data['datetime'] = this.datetime;
-    data['FolioNo'] = this.folioNo;
-    data['ISIN'] = this.iSIN;
-    data['DPFolioNo'] = this.dPFolioNo;
-    data['SettType'] = this.settType;
-    data['OrderType'] = this.orderType;
-    data['SubOrderType'] = this.subOrderType;
-    data['FrequencyType'] = this.frequencyType;
-    data['SIPRegnDate'] = this.sIPRegnDate;
-    data['SIPRegnNo'] = this.sIPRegnNo;
-    data['buy_sell'] = this.buySell;
-    data['AllRedeem'] = this.allRedeem;
-    data['InstallmentAmount'] = this.installmentAmount;
-    data['StartDate'] = this.startDate;
-    data['EndDate'] = this.endDate;
-    data['NextSIPDate'] = this.NextSIPDate;
-    data['Scheme_Code'] = this.schemeCode;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['TransCode'] = transCode;
+    data['TransNo'] = transNo;
+    data['OrderId'] = orderId;
+    data['UserId'] = userId;
+    data['MemberCode'] = memberCode;
+    data['ClientCode'] = clientCode;
+    data['Remarks'] = remarks;
+    data['status'] = status;
+    data['name'] = name;
+    data['stat'] = stat;
+    data['source'] = source;
+    data['placed_by'] = placedBy;
+    data['IPAddress'] = iPAddress;
+    data['datetime'] = datetime;
+    data['FolioNo'] = folioNo;
+    data['ISIN'] = iSIN;
+    data['DPFolioNo'] = dPFolioNo;
+    data['SettType'] = settType;
+    data['OrderType'] = orderType;
+    data['SubOrderType'] = subOrderType;
+    data['FrequencyType'] = frequencyType;
+    data['SIPRegnDate'] = sIPRegnDate;
+    data['SIPRegnNo'] = sIPRegnNo;
+    data['buy_sell'] = buySell;
+    data['AllRedeem'] = allRedeem;
+    data['InstallmentAmount'] = installmentAmount;
+    data['StartDate'] = startDate;
+    data['EndDate'] = endDate;
+    data['NextSIPDate'] = NextSIPDate;
+    data['Scheme_Code'] = schemeCode;
     return data;
   }
 }

@@ -604,7 +604,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
   }) async {
     try {
       toggleLoadingOn(true);
-       final clientId = 'ZP00285'; 
+       const clientId = 'ZP00285'; 
       //  final codeLang = _getCodeLanguage(algorithmType);
       final requestData = CreateAlgoStrategyRequestModel(
         algorithmName: algorithmName,
@@ -722,7 +722,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
     print("  Available risk levels: $riskLevels");
     
     _hasAttemptedSubmit = false;
-    _selectedFileName = strategy.filePath?.split('/').last ?? 'Existing file';
+    _selectedFileName = strategy.filePath.split('/').last ?? 'Existing file';
     _selectedFile = null; // Will need to be re-selected for update
     _acceptTerms = true; // Assume terms are accepted for existing strategy
     notifyListeners();
@@ -782,7 +782,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
 
   String formatFileSize(int bytes) {
     if (bytes < 1024) {
-      return '${bytes} B';
+      return '$bytes B';
     } else if (bytes < 1024 * 1024) {
       return '${(bytes / 1024).toStringAsFixed(1)} KB';
     } else {
@@ -864,7 +864,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
   }) async {
     try {
       toggleLoadingOn(true);
-      final clientId = 'ZP00285';
+      const clientId = 'ZP00285';
       
       final requestData = CreateAlgoStrategyRequestModel(
         algorithmName: algorithmName,
@@ -1067,7 +1067,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
         notifyListeners();
       }
     } catch (e) {
-      print("error in get profile image ${e}");
+      print("error in get profile image $e");
     } finally {
       toggleimageloader(false);
     }
@@ -1105,7 +1105,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
             'Failed to update image: ${responseData.statusCode} - $responseData');
       }
     } catch (e) {
-      print("error in upload image ${e}");
+      print("error in upload image $e");
     } finally {
       toggleimageloader(false);
     }

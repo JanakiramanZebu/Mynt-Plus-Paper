@@ -18,60 +18,60 @@ class CAEventsModel {
     if (json['rights'] != null) {
       rights = <Rights>[];
       json['rights'].forEach((v) {
-        rights!.add(new Rights.fromJson(v));
+        rights!.add(Rights.fromJson(v));
       });
     }
     if (json['AGM/EGM'] != null) {
       aGMEGM = <AGMEGM>[];
       json['AGM/EGM'].forEach((v) {
-        aGMEGM!.add(new AGMEGM.fromJson(v));
+        aGMEGM!.add(AGMEGM.fromJson(v));
       });
     }
     if (json['boardmeeting'] != null) {
       boardmeeting = <Boardmeeting>[];
       json['boardmeeting'].forEach((v) {
-        boardmeeting!.add(new Boardmeeting.fromJson(v));
+        boardmeeting!.add(Boardmeeting.fromJson(v));
       });
     }
     if (json['bonus'] != null) {
       bonus = <Bonus>[];
       json['bonus'].forEach((v) {
-        bonus!.add(new Bonus.fromJson(v));
+        bonus!.add(Bonus.fromJson(v));
       });
     }
     if (json['dividend'] != null) {
       dividend = <Dividend>[];
       json['dividend'].forEach((v) {
-        dividend!.add(new Dividend.fromJson(v));
+        dividend!.add(Dividend.fromJson(v));
       });
     }
     if (json['split'] != null) {
       split = <Split>[];
       json['split'].forEach((v) {
-        split!.add(new Split.fromJson(v));
+        split!.add(Split.fromJson(v));
       });
     }
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    if (this.rights != null) {
-      data['rights'] = this.rights!.map((v) => v.toJson()).toList();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    if (rights != null) {
+      data['rights'] = rights!.map((v) => v.toJson()).toList();
     }
-    if (this.aGMEGM != null) {
-      data['AGM/EGM'] = this.aGMEGM!.map((v) => v.toJson()).toList();
+    if (aGMEGM != null) {
+      data['AGM/EGM'] = aGMEGM!.map((v) => v.toJson()).toList();
     }
-    if (this.boardmeeting != null) {
-      data['boardmeeting'] = this.boardmeeting!.map((v) => v.toJson()).toList();
+    if (boardmeeting != null) {
+      data['boardmeeting'] = boardmeeting!.map((v) => v.toJson()).toList();
     }
-    if (this.bonus != null) {
-      data['bonus'] = this.bonus!.map((v) => v.toJson()).toList();
+    if (bonus != null) {
+      data['bonus'] = bonus!.map((v) => v.toJson()).toList();
     }
-    if (this.dividend != null) {
-      data['dividend'] = this.dividend!.map((v) => v.toJson()).toList();
+    if (dividend != null) {
+      data['dividend'] = dividend!.map((v) => v.toJson()).toList();
     }
-    if (this.split != null) {
-      data['split'] = this.split!.map((v) => v.toJson()).toList();
+    if (split != null) {
+      data['split'] = split!.map((v) => v.toJson()).toList();
     }
     return data;
   }
@@ -109,15 +109,15 @@ class Rights {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['company name'] = this.companyName;
-    data['ex_rights_date'] = this.exRightsDate;
-    data['offer price'] = this.offerPrice;
-    data['premium_rs'] = this.premiumRs;
-    data['ratio_n'] = this.ratioN;
-    data['ration_d'] = this.rationD;
-    data['record date'] = this.recordDate;
-    data['source date'] = this.sourceDate;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['company name'] = companyName;
+    data['ex_rights_date'] = exRightsDate;
+    data['offer price'] = offerPrice;
+    data['premium_rs'] = premiumRs;
+    data['ratio_n'] = ratioN;
+    data['ration_d'] = rationD;
+    data['record date'] = recordDate;
+    data['source date'] = sourceDate;
     return data;
   }
 }
@@ -136,10 +136,10 @@ class AGMEGM {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['EGM date'] = this.eGMDate;
-    data['agenda'] = this.agenda;
-    data['company name'] = this.companyName;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['EGM date'] = eGMDate;
+    data['agenda'] = agenda;
+    data['company name'] = companyName;
     return data;
   }
 }
@@ -158,10 +158,10 @@ class Boardmeeting {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['agenda'] = this.agenda;
-    data['board meeting date'] = this.boardMeetingDate;
-    data['company name'] = this.companyName;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['agenda'] = agenda;
+    data['board meeting date'] = boardMeetingDate;
+    data['company name'] = companyName;
     return data;
   }
 }
@@ -195,14 +195,14 @@ class Bonus {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['company name'] = this.companyName;
-    data['cum_bonus_date'] = this.cumBonusDate;
-    data['ex_bonus_date'] = this.exBonusDate;
-    data['ratio_d'] = this.ratioD;
-    data['ratio_n'] = this.ratioN;
-    data['record_date'] = this.recordDate;
-    data['source_date'] = this.sourceDate;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['company name'] = companyName;
+    data['cum_bonus_date'] = cumBonusDate;
+    data['ex_bonus_date'] = exBonusDate;
+    data['ratio_d'] = ratioD;
+    data['ratio_n'] = ratioN;
+    data['record_date'] = recordDate;
+    data['source_date'] = sourceDate;
     return data;
   }
 }
@@ -236,14 +236,14 @@ class Dividend {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['company name'] = this.companyName;
-    data['details'] = this.details;
-    data['dividend date'] = this.dividendDate;
-    data['dividend percent'] = this.dividendPercent;
-    data['dividendpershare'] = this.dividendpershare;
-    data['ex-date'] = this.exDate;
-    data['record date'] = this.recordDate;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['company name'] = companyName;
+    data['details'] = details;
+    data['dividend date'] = dividendDate;
+    data['dividend percent'] = dividendPercent;
+    data['dividendpershare'] = dividendpershare;
+    data['ex-date'] = exDate;
+    data['record date'] = recordDate;
     return data;
   }
 }
@@ -271,12 +271,12 @@ class Split {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['company name'] = this.companyName;
-    data['ex_date'] = this.exDate;
-    data['fv_change_from'] = this.fvChangeFrom;
-    data['fv_change_to'] = this.fvChangeTo;
-    data['record date'] = this.recordDate;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['company name'] = companyName;
+    data['ex_date'] = exDate;
+    data['fv_change_from'] = fvChangeFrom;
+    data['fv_change_to'] = fvChangeTo;
+    data['record date'] = recordDate;
     return data;
   }
 }

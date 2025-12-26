@@ -7,13 +7,13 @@ class PledgeHistoryModel {
     if (json['data'] != null) {
       data = <PledgeData>[];
       json['data'].forEach((v) {
-        data!.add(new PledgeData.fromJson(v));
+        data!.add(PledgeData.fromJson(v));
       });
     }
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     if (this.data != null) {
       data['data'] = this.data!.map((v) => v.toJson()).toList();
     }
@@ -64,7 +64,7 @@ class PledgeData {
     if (json['reqList'] != null) {
       reqList = <ReqList>[];
       json['reqList'].forEach((v) {
-        reqList!.add(new ReqList.fromJson(v));
+        reqList!.add(ReqList.fromJson(v));
       });
     }
     reqid = json['reqid'];
@@ -76,23 +76,23 @@ class PledgeData {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['CLIENT_NAME'] = this.cLIENTNAME;
-    data['cdsl_req_time'] = this.cdslReqTime;
-    data['client_bo_id'] = this.clientBoId;
-    data['dat_tim'] = this.datTim;
-    data['dates'] = this.dates;
-    data['final_stage'] = this.finalStage;
-    data['remarks'] = this.remarks;
-    if (this.reqList != null) {
-      data['reqList'] = this.reqList!.map((v) => v.toJson()).toList();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['CLIENT_NAME'] = cLIENTNAME;
+    data['cdsl_req_time'] = cdslReqTime;
+    data['client_bo_id'] = clientBoId;
+    data['dat_tim'] = datTim;
+    data['dates'] = dates;
+    data['final_stage'] = finalStage;
+    data['remarks'] = remarks;
+    if (reqList != null) {
+      data['reqList'] = reqList!.map((v) => v.toJson()).toList();
     }
-    data['reqid'] = this.reqid;
-    data['reserrmsg'] = this.reserrmsg;
-    data['resstatus'] = this.resstatus;
-    data['status'] = this.status;
-    data['times'] = this.times;
-    data['uccid'] = this.uccid;
+    data['reqid'] = reqid;
+    data['reserrmsg'] = reserrmsg;
+    data['resstatus'] = resstatus;
+    data['status'] = status;
+    data['times'] = times;
+    data['uccid'] = uccid;
     return data;
   }
 }
@@ -129,15 +129,15 @@ class ReqList {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['Symbol'] = this.symbol;
-    data['isin'] = this.isin;
-    data['isinreqid'] = this.isinreqid;
-    data['quantity'] = this.quantity;
-    data['segments'] = this.segments;
-    data['status'] = this.status;
-    data['reqid'] = this.reqid;
-    data['datetime'] = this.datetime;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['Symbol'] = symbol;
+    data['isin'] = isin;
+    data['isinreqid'] = isinreqid;
+    data['quantity'] = quantity;
+    data['segments'] = segments;
+    data['status'] = status;
+    data['reqid'] = reqid;
+    data['datetime'] = datetime;
     return data;
   }
 }

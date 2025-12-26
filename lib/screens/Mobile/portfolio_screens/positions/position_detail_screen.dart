@@ -2,20 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/res/global_state_text.dart';
-import 'package:mynt_plus/screens/Mobile/market_watch/futures/future_screen.dart';
 import '../../../../models/marketwatch_model/get_quotes.dart';
 import '../../../../models/order_book_model/order_book_model.dart';
 import '../../../../models/portfolio_model/position_book_model.dart';
 import '../../../../provider/market_watch_provider.dart';
 import '../../../../provider/portfolio_provider.dart';
 import '../../../../provider/thems.dart';
-import '../../../../provider/user_profile_provider.dart';
 import '../../../../provider/websocket_provider.dart';
 import '../../../../res/res.dart';
 import '../../../../routes/route_names.dart';
 import '../../../../sharedWidget/custom_drag_handler.dart';
-import '../../../../sharedWidget/custom_exch_badge.dart';
-import '../../market_watch/scrip_depth_info.dart';
 import 'convert_position_dialogue.dart';
 
 class PositionDetailScreen extends ConsumerStatefulWidget {
@@ -151,7 +147,7 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                         children: [
                           Expanded(
                             child: SingleChildScrollView(
-                              physics: ClampingScrollPhysics(),
+                              physics: const ClampingScrollPhysics(),
                               controller: scrollController,
                               child: Column(
                                 children: [
@@ -795,7 +791,7 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                                         const SizedBox(height: 8),
                                         _buildInfoRow(
                                             "Net Qty",
-                                            "${((int.tryParse(widget.positionList.netqty.toString()) ?? 0) / (widget.positionList.exch == 'MCX' ? (int.tryParse(widget.positionList.ls.toString()) ?? 1) : 1)).toInt()}",
+                                            "${(int.tryParse(widget.positionList.netqty.toString()) ?? 0) ~/ (widget.positionList.exch == 'MCX' ? (int.tryParse(widget.positionList.ls.toString()) ?? 1) : 1)}",
                                             theme),
                                         const SizedBox(height: 8),
                                         _buildInfoRow(
@@ -805,17 +801,17 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                                         const SizedBox(height: 8),
                                         _buildInfoRow(
                                             "Product",
-                                            "${widget.positionList.sPrdtAli ?? ""}",
+                                            widget.positionList.sPrdtAli ?? "",
                                             theme),
                                         const SizedBox(height: 8),
                                         _buildInfoRow(
                                             "Buy Qty ( Day / CF )",
-                                            "${((int.tryParse(widget.positionList.daybuyqty.toString()) ?? 0) / (widget.positionList.exch == 'MCX' ? (int.tryParse(widget.positionList.ls.toString()) ?? 1) : 1)).toInt()} / ${widget.positionList.cfbuyqty}",
+                                            "${(int.tryParse(widget.positionList.daybuyqty.toString()) ?? 0) ~/ (widget.positionList.exch == 'MCX' ? (int.tryParse(widget.positionList.ls.toString()) ?? 1) : 1)} / ${widget.positionList.cfbuyqty}",
                                             theme),
                                         const SizedBox(height: 8),
                                         _buildInfoRow(
                                             "Sell Qty ( Day / CF )",
-                                            "${((int.tryParse(widget.positionList.daysellqty.toString()) ?? 0) / (widget.positionList.exch == 'MCX' ? (int.tryParse(widget.positionList.ls.toString()) ?? 1) : 1)).toInt()} / ${widget.positionList.cfsellqty}",
+                                            "${(int.tryParse(widget.positionList.daysellqty.toString()) ?? 0) ~/ (widget.positionList.exch == 'MCX' ? (int.tryParse(widget.positionList.ls.toString()) ?? 1) : 1)} / ${widget.positionList.cfsellqty}",
                                             theme),
                                         const SizedBox(height: 8),
                                         _buildInfoRow(

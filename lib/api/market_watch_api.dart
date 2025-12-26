@@ -1,4 +1,3 @@
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import '../models/marketwatch_model/scrip_overview/eodchartdata_model.dart';
@@ -15,7 +14,6 @@ import '../models/marketwatch_model/market_watchlist_model.dart';
 import '../models/marketwatch_model/opt_chain_model.dart';
 import '../models/marketwatch_model/pre_define_wl_model.dart';
 import '../models/marketwatch_model/scrip_info.dart';
-import '../models/marketwatch_model/scrip_overview/eodchartdata_model.dart';
 import '../models/marketwatch_model/scrip_overview/stock_data.dart';
 import '../models/marketwatch_model/scrip_overview/technical_data.dart';
 import '../models/marketwatch_model/search_scrip_model.dart';
@@ -23,7 +21,6 @@ import '../models/marketwatch_model/search_scrip_new_model.dart';
 import '../models/marketwatch_model/tpseries.dart';
 import '../models/marketwatch_model/watchlist_rename_model.dart';
 import 'core/api_core.dart';
-import 'package:intl/intl.dart';
 
 mixin MarketWatchApi on ApiCore {
   // Get List of watchlist names form kambala
@@ -467,7 +464,7 @@ print("Tech Data API => ${res.body}");
           headers: defaultHeaders,
           body: payload);
 
-      print("EOD CHART DATA RESPONSE: ${res.body}");
+      // print("EOD CHART DATA RESPONSE: ${res.body}");
       
       final json = jsonDecode(res.body);
       

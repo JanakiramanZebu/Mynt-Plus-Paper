@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:readmore/readmore.dart';
 import 'package:mynt_plus/res/res.dart';
@@ -16,12 +15,12 @@ class TextNuggetWidget extends ConsumerStatefulWidget {
   final TextStyle? textStyle;
 
   const TextNuggetWidget({
-    Key? key,
+    super.key,
     required this.screenType,
     this.padding,
     this.backgroundColor,
     this.textStyle,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<TextNuggetWidget> createState() => _TextNuggetWidgetState();
@@ -32,7 +31,7 @@ class _TextNuggetWidgetState extends ConsumerState<TextNuggetWidget>
   List<TextNuggetModel> _textNuggets = [];
   int _currentIndex = 0;
   bool _isDismissing = false;
-  Set<String> _dismissingCards = {}; // Track cards being dismissed for animation
+  final Set<String> _dismissingCards = {}; // Track cards being dismissed for animation
   
   // Animation controllers for dismiss gestures
   final Map<String, AnimationController> _dismissControllers = {};
@@ -468,12 +467,12 @@ class AutoLoadTextNuggetWidget extends ConsumerStatefulWidget {
   final TextStyle? textStyle;
 
   const AutoLoadTextNuggetWidget({
-    Key? key,
+    super.key,
     required this.screenType,
     this.padding,
     this.backgroundColor,
     this.textStyle,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<AutoLoadTextNuggetWidget> createState() => _AutoLoadTextNuggetWidgetState();

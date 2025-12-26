@@ -42,7 +42,7 @@ mixin StocksAPI on ApiCore {
   Future< PortfolioResponse> fetchPortfolioAnalysis(String clientId, String session) async {
  
     try {
-      final uri = Uri.parse('${apiLinks.portfolioAnalysisURL}?client_id=${clientId}&session=${session}');
+      final uri = Uri.parse('${apiLinks.portfolioAnalysisURL}?client_id=$clientId&session=$session');
       final res = await apiClient.get(uri);
       final json = jsonDecode(res.body);
       if(json['stat'] == 'Not_Ok'){
@@ -166,7 +166,7 @@ mixin StocksAPI on ApiCore {
           
       final json = jsonDecode(response.body);
 
-      print("Strategy List: ${json}");
+      print("Strategy List: $json");
 
       return StrategyList.fromJson(json as Map<String, dynamic>);
     } catch (e) {
@@ -186,7 +186,7 @@ mixin StocksAPI on ApiCore {
           
       final json = jsonDecode(response.body);
 
-      print("Strategy List: ${json}");
+      print("Strategy List: $json");
 
       return _deploymessage = "Strategy deployed successfully";
     } catch (e) {
@@ -207,7 +207,7 @@ mixin StocksAPI on ApiCore {
 
       return json;
 
-      print("Strategy List: ${json}");
+      print("Strategy List: $json");
     } catch (e) {
       print("Strategy List Error: $e");
       rethrow;
@@ -221,7 +221,7 @@ mixin StocksAPI on ApiCore {
 
   Future<List<String>> getExpiryDates(String symbol) async {
     // Simulate API call for expiry dates
-    await Future.delayed(Duration(milliseconds: 300));
+    await Future.delayed(const Duration(milliseconds: 300));
     return [
       '28-AUG-2025',
       '04-SEP-2025',
@@ -339,7 +339,7 @@ mixin StocksAPI on ApiCore {
     try {
       final uri = Uri.parse("https://be.mynt.in/global/SearchScrip");
       
-      final body = '''jData={"uid":"","stext":"${searchText}","fil":["NFO","BFO"]}&jKey=''';
+      final body = '''jData={"uid":"","stext":"$searchText","fil":["NFO","BFO"]}&jKey=''';
 
 
       final res = await apiClient.post(uri,

@@ -10,8 +10,6 @@ import '../../../../provider/auth_provider.dart';
 import '../../../../provider/thems.dart';
 import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
-import '../../../../routes/route_names.dart';
-import '../../../../sharedWidget/custom_drag_handler.dart';
 import '../../../../sharedWidget/functions.dart';
 import '../../../../sharedWidget/splash_loader.dart';
 
@@ -148,7 +146,7 @@ class _BottomSheetContentState extends State<BottomSheetContent>
       );
 
       final submittedPinTheme = defaultPinThemes.copyBorderWith(
-        border: Border.all(color: Color(0xff0037B7), width: 2),
+        border: Border.all(color: const Color(0xff0037B7), width: 2),
       );
       return auth.initLoad
           ? PopScope(
@@ -163,7 +161,7 @@ class _BottomSheetContentState extends State<BottomSheetContent>
                         ? colors.colorBlack
                         : colors.colorWhite,
                   ),
-                  child: CircularLoaderImage()))
+                  child: const CircularLoaderImage()))
           : Center(
               child: Padding(
                 padding: getResponsiveWidth(context) == 600
@@ -181,7 +179,7 @@ class _BottomSheetContentState extends State<BottomSheetContent>
                       BoxShadow(
                         color: Colors.black.withOpacity(0.1), // shadow color
                         blurRadius: 4, // how soft the shadow is
-                        offset: Offset(0, 4), // shadow position
+                        offset: const Offset(0, 4), // shadow position
                       ),
                     ],
                   ),
@@ -526,7 +524,7 @@ class _BottomSheetContentState extends State<BottomSheetContent>
                                                     : Colors.black
                                                         .withOpacity(0.08),
                                                 onTap: () async {
-                                                  await Future.delayed(Duration(
+                                                  await Future.delayed(const Duration(
                                                       milliseconds: 100));
                                                   SmsAutoFill()
                                                       .unregisterListener();

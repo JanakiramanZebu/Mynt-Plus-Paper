@@ -2,7 +2,6 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mynt_plus/models/order_book_model/place_order_model.dart';
 import 'package:mynt_plus/models/profile_model/algo_strategy_model.dart';
 import 'package:mynt_plus/screens/Mobile/algo/algo_create.dart';
 import 'package:mynt_plus/screens/Mobile/bonds/bonds_common_search_screen.dart';
@@ -34,7 +33,6 @@ import '../screens/Mobile/bonds/bonds_orderbook_screen/bonds_orderbook_details/c
 import '../screens/Mobile/bonds/bonds_orderbook_screen/bonds_orderbook_details/open_order_details.dart';
 import '../screens/Mobile/desk_reports/ca_action/ca_action_buyback.dart';
 import '../screens/Mobile/desk_reports/ca_event_main_page.dart';
-import '../screens/Mobile/desk_reports/calendarpnl_heatmap/headmap_calendar.dart';
 import '../screens/Mobile/desk_reports/calenderPnl_screen.dart';
 import '../screens/Mobile/desk_reports/cdsl_pledge.dart';
 import '../screens/Mobile/desk_reports/contract_calendar_screen.dart';
@@ -58,20 +56,16 @@ import '../screens/Mobile/market_watch/option_chain/collection_basket/create_bas
 import '../screens/Mobile/market_watch/option_chain/collection_basket/save_strategy_screen.dart';
 import '../screens/Mobile/stocks/explore/stocks/refer_earn.dart';
 import '../screens/home_screen.dart';
-import '../screens/web/main_screen_control_web.dart';
 import '../screens/Mobile/ipo/ipo_main_screen.dart';
 import '../screens/Mobile/ipo/ipo_orderbook_screen/ipo_modify_order/modify_order_screen.dart';
 import '../screens/Mobile/ipo/ipo_orderbook_screen/ipo_order_book_main_screen.dart';
 import '../screens/Mobile/ipo/ipo_orderbook_screen/ipo_orderbook_details/close_order_details.dart';
 import '../screens/Mobile/ipo/ipo_orderbook_screen/ipo_orderbook_details/open_order_details.dart';
-import '../screens/Mobile/ipo/mainstream_order_screen/order_screen.dart';
-import '../screens/Mobile/ipo/sme_order_screen/sme_order.dart';
 import '../screens/Mobile/ipo/IPO_order_screen/ipo_order_screen.dart';
 import '../screens/Mobile/market_watch/edit_scrip.dart';
 import '../screens/Mobile/market_watch/fundamental_detail_screen.dart';
 import '../screens/Mobile/market_watch/futures/future_screen.dart';
 import '../screens/Mobile/market_watch/option_chain/option_chain_ss.dart';
-import '../screens/Mobile/market_watch/option_chain/strategy/option_strategey.dart';
 import '../screens/Mobile/market_watch/search_screen.dart';
 import '../screens/Mobile/market_watch/set_alert_screen_new.dart';
 import '../screens/Mobile/market_watch/future_screen_new.dart';
@@ -83,7 +77,6 @@ import '../screens/Mobile/mutual_fund/mf_order_book_screen.dart';
 import '../screens/Mobile/mutual_fund/mf_main_screen.dart';
 import '../screens/Mobile/mutual_fund/mf_order_screen.dart';
 import '../screens/Mobile/mutual_fund/mf_stock_detail_screen.dart';
-import '../screens/Mobile/mutual_fund_old/mf_watchlist.dart';
 import '../screens/Mobile/order_book/basket/basket_list.dart';
 import '../screens/Mobile/order_book/exit_order_screen.dart';
 import '../screens/Mobile/order_book/gtt_order_detail.dart';
@@ -93,7 +86,6 @@ import '../screens/Mobile/order_book/pending_alert_detail_screen.dart';
 import '../screens/Mobile/order_book/sip_order_details.dart';
 import '../screens/Mobile/order_book/trade_book_detail.dart';
 import '../screens/Mobile/order_screen/Rework/modify_gtt.dart';
-import '../screens/Mobile/order_screen/Rework/repeat_order.dart';
 import '../screens/Mobile/order_screen/modify_place_order_screen.dart';
 import '../screens/Mobile/order_screen/place_order_screen.dart';
 import '../screens/Mobile/portfolio_screens/holdings/edies_webview.dart';
@@ -140,7 +132,6 @@ import '../screens/Mobile/stocks/explore/stocks/trade_action/sector_themeatic_de
 import '../screens/web/market_watch/options/option_chain_ss_web.dart';
 import '../screens/web/market_watch/set_alert_web.dart';
 import '../sharedWidget/internet_widget.dart';
-import '../provider/version_provider.dart';
 import 'route_names.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../screens/Mobile/mutual_fund/sip_calculator_screen.dart';
@@ -616,7 +607,7 @@ class AppRoutes {
 
       case Routes.calenderpnlScreen:
         return _createRoute(
-          pageBuilder: (_, __, ___) => CalenderpnlScreen(),
+          pageBuilder: (_, __, ___) => const CalenderpnlScreen(),
           beginOffset: const Offset(-1.0, 0.0),
         );
 
@@ -641,36 +632,36 @@ class AppRoutes {
         );
       case Routes.taxpnlscreen:
         return _createRoute(
-          pageBuilder: (_, __, ___) => TaxPnlScreen(),
+          pageBuilder: (_, __, ___) => const TaxPnlScreen(),
           beginOffset: const Offset(-1.0, 0.0),
         );
 
       case Routes.caeventmainpage:
         return _createRoute(
-          pageBuilder: (_, __, ___) => CAEventMainPage(),
+          pageBuilder: (_, __, ___) => const CAEventMainPage(),
           beginOffset: const Offset(-1.0, 0.0),
         );
 
       case Routes.cpactionmainpage:
         return _createRoute(
-          pageBuilder: (_, __, ___) => CPActionMainpage(),
+          pageBuilder: (_, __, ___) => const CPActionMainpage(),
           beginOffset: const Offset(-1.0, 0.0),
         );
       case Routes.cabuyback:
         return _createRoute(
-          pageBuilder: (_, __, ___) => CABuyback(),
+          pageBuilder: (_, __, ___) => const CABuyback(),
           beginOffset: const Offset(-1.0, 0.0),
         );
 
       case Routes.eqtaxpnleq:
         return _createRoute(
-          pageBuilder: (_, __, ___) => EqTaxpnlEq(),
+          pageBuilder: (_, __, ___) => const EqTaxpnlEq(),
           beginOffset: const Offset(-1.0, 0.0),
         );
 
       case Routes.pledgehistorymainscreen:
         return _createRoute(
-          pageBuilder: (_, __, ___) => PledgeHistoryMainScreen(),
+          pageBuilder: (_, __, ___) => const PledgeHistoryMainScreen(),
           beginOffset: const Offset(-1.0, 0.0),
         );
 
@@ -918,12 +909,12 @@ class AppRoutes {
         );
       case Routes.brokerCalculator:
         return _createRoute(
-          pageBuilder: (_, __, ___) => BrokerageCalculatorScreen(),
+          pageBuilder: (_, __, ___) => const BrokerageCalculatorScreen(),
           beginOffset: const Offset(-1.0, 0.0),
         );
       case Routes.marginCalculator:
         return _createRoute(
-          pageBuilder: (_, __, ___) => MarginCalculatorScreen(),
+          pageBuilder: (_, __, ___) => const MarginCalculatorScreen(),
           beginOffset: const Offset(-1.0, 0.0),
         );
         case Routes.portfolioDashboard:
@@ -933,7 +924,7 @@ class AppRoutes {
           );
         case Routes.referAndEarn:
           return _createRoute(
-            pageBuilder: (_, __, ___) =>  ReferAndEarnScreen(),
+            pageBuilder: (_, __, ___) =>  const ReferAndEarnScreen(),
             beginOffset: const Offset(-1.0, 0.0),
           );
       case Routes.mfcagrcalss:

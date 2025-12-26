@@ -13,10 +13,10 @@ class MandateSelectionScreen extends StatefulWidget {
   final Function(String) onMandateSelected;
 
   const MandateSelectionScreen({
-    Key? key,
+    super.key,
     this.currentMandateId,
     required this.onMandateSelected,
-  }) : super(key: key);
+  });
 
   @override
   State<MandateSelectionScreen> createState() => _MandateSelectionScreenState();
@@ -112,7 +112,7 @@ class _MandateSelectionScreenState extends State<MandateSelectionScreen> {
                   child: mfOrder.mandateData != null &&
                           mfOrder.mandateData!.isNotEmpty
                       ? ListView.separated(
-                        physics: ClampingScrollPhysics(),
+                        physics: const ClampingScrollPhysics(),
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                           itemCount: mfOrder.mandateData!.length,
                           separatorBuilder: (context, index) =>
@@ -172,7 +172,7 @@ class _MandateSelectionScreenState extends State<MandateSelectionScreen> {
                                                 ),
                                               ),
                                               TextWidget.subText(
-                                                text: "${double.parse(mandate.amount ?? '0').toStringAsFixed(2)}",
+                                                text: double.parse(mandate.amount ?? '0').toStringAsFixed(2),
                                                 theme: theme.isDarkMode,
                                                  color: theme.isDarkMode
                                                     ? colors.textPrimaryDark

@@ -18,7 +18,6 @@ import '../../../../provider/user_profile_provider.dart';
 import '../../../../provider/webview_chart_provider.dart';
 import '../../../../res/res.dart';
 import '../../../../routes/route_names.dart';
-import '../../../../sharedWidget/functions.dart';
 import '../../../../utils/responsive_navigation.dart';
 import '../../../res/global_state_text.dart';
 // import '../scrip_depth_info.dart';
@@ -134,7 +133,7 @@ class _ChartScreenWebViewState extends ConsumerState<ChartScreenWebView> {
                           child: Center(
                             child: TextWidget.titleText(
                                 text: "BUY",
-                                color: Color(0XFFFFFFFF),
+                                color: const Color(0XFFFFFFFF),
                                 theme: theme.isDarkMode,
                                 fw: 1),
                           )),
@@ -159,7 +158,7 @@ class _ChartScreenWebViewState extends ConsumerState<ChartScreenWebView> {
                                 child: Center(
                                   child: TextWidget.titleText(
                                       text: "SELL",
-                                      color: Color(0XFFFFFFFF),
+                                      color: const Color(0XFFFFFFFF),
                                       theme: theme.isDarkMode,
                                       fw: 1),
                                 ))))

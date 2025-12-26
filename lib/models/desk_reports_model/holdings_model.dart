@@ -37,7 +37,7 @@ class HoldingModel {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     if (holdings != null) {
       data['Holdings'] = holdings!.map((v) => v.toJson()).toList();
     }

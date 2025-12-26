@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/screens/Mobile/authentication/password/forgot_pass_unblock_user.dart';
-import 'package:mynt_plus/screens/Mobile/mutual_fund/widget/allocation.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import '../../../../provider/thems.dart';
 import 'package:mynt_plus/sharedWidget/cust_text_formfield.dart';
@@ -205,7 +204,7 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
                         fw: 1,
                       ),
                       const SizedBox(width: 6),
-                      Container(
+                      SizedBox(
                         width: 150,
                         height: 40,
                         child: CustomTextFormField(
@@ -291,7 +290,7 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
                         fw: 1,
                       ),
                       const SizedBox(width: 6),
-                      Container(
+                      SizedBox(
                         width: 150,
                         height: 40,
                         child: CustomTextFormField(

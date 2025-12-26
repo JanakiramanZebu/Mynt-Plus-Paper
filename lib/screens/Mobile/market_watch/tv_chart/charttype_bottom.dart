@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart'; 
 import '../../../../locator/constant.dart'; 
 import '../../../../models/tv_chart_model/chart_types.dart';
 import '../../../../provider/thems.dart';

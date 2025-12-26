@@ -305,10 +305,10 @@ class OptionStrategyProvider extends DefaultChangeNotifier {
         await ref.read(orderProvider).slicePlaceOrder(context, placeOrderInput);
       }
 
-      List<OrderBookModel> _orderBookModel =
+      List<OrderBookModel> orderBookModel =
           await ref.read(orderProvider).fetchOrderBook(context, true);
-      if (_orderBookModel.isNotEmpty) {
-        if (_orderBookModel[0].stat != "Not_Ok") {
+      if (orderBookModel.isNotEmpty) {
+        if (orderBookModel[0].stat != "Not_Ok") {
           ref.read(indexListProvider).bottomMenu(3, context);
           HapticFeedback.heavyImpact();
           SystemSound.play(SystemSoundType.click);

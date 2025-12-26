@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:mynt_plus/routes/route_names.dart';
 import 'package:mynt_plus/screens/Mobile/mutual_fund/mf_hold_new_screen.dart';
-import 'package:mynt_plus/screens/Mobile/mutual_fund/mf_sip_screen.dart';
-import 'package:mynt_plus/sharedWidget/functions.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import 'package:mynt_plus/sharedWidget/snack_bar.dart';
 
@@ -12,10 +8,8 @@ import '../../../provider/mf_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
-import '../../../sharedWidget/custom_exch_badge.dart';
 import '../../../sharedWidget/list_divider.dart';
 import '../../../sharedWidget/loader_ui.dart';
-import '../portfolio_screens/mfHoldings/mf_holding_screen.dart';
 import 'order_single_page.dart';
 
 class MfOrderBookScreen extends ConsumerStatefulWidget {
@@ -163,7 +157,7 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
           await mforderbook.fetchMfOrderbook(context);
         },
         child: SingleChildScrollView(
-          physics: ClampingScrollPhysics(),
+          physics: const ClampingScrollPhysics(),
           child: Column(
             children: [
               
@@ -176,7 +170,7 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
     );
     }
 
-   return Center(child: NoDataFound(
+   return const Center(child: NoDataFound(
                   title: "No Orders Found",
                   subtitle: "There's nothing here yet. Buy some funds to see them here.",
                   primaryEnabled: false,
@@ -319,7 +313,7 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
                     TextWidget.paraText(
                         // align: TextAlign.start,
                         text:
-                            "${orderData.orderType == 'NRM' ? 'One-Time' : 'SIP'}",
+                            orderData.orderType == 'NRM' ? 'One-Time' : 'SIP',
                         color: theme.isDarkMode
                             ? colors.textSecondaryDark
                             : colors.textSecondaryLight,

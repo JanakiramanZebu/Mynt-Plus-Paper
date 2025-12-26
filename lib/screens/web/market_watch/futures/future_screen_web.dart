@@ -63,7 +63,7 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
           builder: (context, constraints) {
             // Calculate available height for the table
             final screenHeight = MediaQuery.of(context).size.height;
-            final padding = 32.0; // Top and bottom padding
+            const padding = 32.0; // Top and bottom padding
             final maxHeight = screenHeight * 0.75;
             final calculatedHeight = (screenHeight - padding > maxHeight
                 ? maxHeight
@@ -88,23 +88,23 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
                 child: Theme(
                   data: Theme.of(context).copyWith(
                     scrollbarTheme: ScrollbarThemeData(
-                      thumbVisibility: MaterialStateProperty.all(true),
-                      trackVisibility: MaterialStateProperty.all(true),
-                      thickness: MaterialStateProperty.all(6.0),
+                      thumbVisibility: WidgetStateProperty.all(true),
+                      trackVisibility: WidgetStateProperty.all(true),
+                      thickness: WidgetStateProperty.all(6.0),
                       crossAxisMargin: 0.0,
                       mainAxisMargin: 0.0,
                       radius: const Radius.circular(3),
-                      thumbColor: MaterialStateProperty.resolveWith((states) {
+                      thumbColor: WidgetStateProperty.resolveWith((states) {
                         return theme.isDarkMode 
                             ? WebDarkColors.textSecondary.withOpacity(0.3)
                             : WebColors.textSecondary.withOpacity(0.3);
                       }),
-                      trackColor: MaterialStateProperty.resolveWith((states) {
+                      trackColor: WidgetStateProperty.resolveWith((states) {
                         return theme.isDarkMode 
                             ? WebDarkColors.divider.withOpacity(0.1)
                             : WebColors.divider.withOpacity(0.1);
                       }),
-                      trackBorderColor: MaterialStateProperty.all(Colors.transparent),
+                      trackBorderColor: WidgetStateProperty.all(Colors.transparent),
                       minThumbLength: 48.0,
                     ),
                   ),
@@ -120,7 +120,7 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
                     horizontalScrollController: _horizontalScrollController,
                     scrollController: _verticalScrollController,
                     showCheckboxColumn: false,
-                    headingRowColor: MaterialStateProperty.all(
+                    headingRowColor: WidgetStateProperty.all(
                       theme.isDarkMode
                           ? WebDarkColors.primary
                           : WebColors.primary.withOpacity(0.05),
@@ -260,8 +260,8 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
                         onTap: () {
                           // Row tap handler if needed
                         },
-                        color: MaterialStateProperty.resolveWith<Color>((states) {
-                          if (states.contains(MaterialState.hovered) || _hoveredToken == uniqueId) {
+                        color: WidgetStateProperty.resolveWith<Color>((states) {
+                          if (states.contains(WidgetState.hovered) || _hoveredToken == uniqueId) {
                             return theme.isDarkMode
                                 ? WebDarkColors.primary.withOpacity(0.06)
                                 : WebColors.primary.withOpacity(0.10);

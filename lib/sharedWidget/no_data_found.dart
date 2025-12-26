@@ -80,7 +80,7 @@ class NoDataFound extends ConsumerWidget {
             Container(
               width: 80,
               height: 80,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 // shape: BoxShape.circle,
                 // color: accent.withOpacity(0.1),
                 // boxShadow: [

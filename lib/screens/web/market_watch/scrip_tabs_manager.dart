@@ -19,22 +19,29 @@ class ScripTabsManager extends ConsumerStatefulWidget {
 class _ScripTabsManagerState extends ConsumerState<ScripTabsManager>
     with TickerProviderStateMixin {
   late TabController _tabController;
+  VoidCallback? _tabControllerListener; // Store listener reference for proper cleanup
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 0, vsync: this);
     
-    // Add listener to sync tab controller with provider state
-    _tabController.addListener(() {
+    // Store listener reference for proper cleanup
+    _tabControllerListener = () {
       if (_tabController.indexIsChanging && mounted) {
         ref.read(scripTabsProvider.notifier).setCurrentTabIndex(_tabController.index);
       }
-    });
+    };
+    _tabController.addListener(_tabControllerListener!);
   }
 
   @override
   void dispose() {
+    // Remove listener before disposing to prevent memory leaks
+    if (_tabControllerListener != null) {
+      _tabController.removeListener(_tabControllerListener!);
+      _tabControllerListener = null;
+    }
     _tabController.dispose();
     super.dispose();
   }
@@ -69,6 +76,11 @@ class _ScripTabsManagerState extends ConsumerState<ScripTabsManager>
     }
     
     if (_tabController.length != state.openScrips.length) {
+      // Remove old listener before disposing to prevent memory leaks
+      if (_tabControllerListener != null) {
+        _tabController.removeListener(_tabControllerListener!);
+        _tabControllerListener = null;
+      }
       _tabController.dispose();
       _tabController = TabController(
         length: state.openScrips.length,
@@ -76,12 +88,13 @@ class _ScripTabsManagerState extends ConsumerState<ScripTabsManager>
         initialIndex: safeCurrentIndex,
       );
       
-      // Add listener to sync tab changes with provider
-      _tabController.addListener(() {
+      // Store listener reference for proper cleanup
+      _tabControllerListener = () {
         if (_tabController.indexIsChanging && mounted) {
           ref.read(scripTabsProvider.notifier).setCurrentTabIndex(_tabController.index);
         }
-      });
+      };
+      _tabController.addListener(_tabControllerListener!);
       
       // Force immediate update after creating new controller
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -156,7 +169,7 @@ class _ScripTabsManagerState extends ConsumerState<ScripTabsManager>
       children: [
         // Tab bar
         Container(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             // color: theme.isDarkMode 
             //     ? WebDarkColors.surfaceVariant 
             //     : WebColors.surfaceVariant,

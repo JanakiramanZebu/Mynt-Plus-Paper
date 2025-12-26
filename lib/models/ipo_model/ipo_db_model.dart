@@ -18,9 +18,9 @@ class DashbordIposIPOS {
         try {
           final parsedList = jsonDecode(json['data'] as String);
           if (parsedList is List) {
-            parsedList.forEach((v) {
+            for (var v in parsedList) {
               data!.add(Data.fromJson(v));
-            });
+            }
           }
         } catch (e) {
           print("Error parsing data string: $e");
@@ -103,9 +103,9 @@ class Data {
         try {
           final parsedList = jsonDecode(json['categoryDetails'] as String);
           if (parsedList is List) {
-            parsedList.forEach((v) {
+            for (var v in parsedList) {
               categoryDetails!.add(CategoryDetails.fromJson(v));
-            });
+            }
           }
         } catch (e) {
           print("Error parsing categoryDetails string: $e");
@@ -152,9 +152,9 @@ class Data {
         try {
           final parsedList = jsonDecode(json['subCategorySettings'] as String);
           if (parsedList is List) {
-            parsedList.forEach((v) {
+            for (var v in parsedList) {
               subCategorySettings!.add(SubCategorySettings.fromJson(v));
-            });
+            }
           }
         } catch (e) {
           print("Error parsing subCategorySettings string: $e");
@@ -177,60 +177,60 @@ class Data {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = {};
-    data['MS'] = this.mS;
-    data['asbanonasba'] = this.asbanonasba;
-    data['biddingEndDate'] = this.biddingEndDate;
-    data['biddingStartDate'] = this.biddingStartDate;
-    if (this.categoryDetails != null) {
+    data['MS'] = mS;
+    data['asbanonasba'] = asbanonasba;
+    data['biddingEndDate'] = biddingEndDate;
+    data['biddingStartDate'] = biddingStartDate;
+    if (categoryDetails != null) {
       data['categoryDetails'] =
-          this.categoryDetails!.map((v) => v.toJson()).toList();
+          categoryDetails!.map((v) => v.toJson()).toList();
     }
-    data['closedatetime'] = this.closedatetime;
-    data['company_name'] = this.companyName;
-    data['cutOffPrice'] = this.cutOffPrice;
-    data['dailyEndTime'] = this.dailyEndTime;
-    data['dailyStartTime'] = this.dailyStartTime;
-    data['days_to_end_ipo'] = this.daysToEndIpo;
-    data['discounttype'] = this.discounttype;
-    data['discountvalue'] = this.discountvalue;
-    data['errorcode'] = this.errorcode;
-    data['faceValue'] = this.faceValue;
-    data['id'] = this.id;
-    data['image_link'] = this.imageLink;
-    data['index'] = this.index;
-    data['isin'] = this.isin;
-    data['issueSize'] = this.issueSize;
-    data['issueType'] = this.issueType;
-    data['lotSize'] = this.lotSize;
-    data['maxPrice'] = this.maxPrice;
-    data['maxbidqty'] = this.maxbidqty;
-    data['maxvalue'] = this.maxvalue;
-    data['message'] = this.message;
-    data['minBidQuantity'] = this.minBidQuantity;
-    data['minPrice'] = this.minPrice;
-    data['minvalue'] = this.minvalue;
-    data['name'] = this.name;
-    data['opendatetime'] = this.opendatetime;
-    data['registrar'] = this.registrar;
-    data['seriesDetails'] = this.seriesDetails;
-    if (this.subCategorySettings != null) {
+    data['closedatetime'] = closedatetime;
+    data['company_name'] = companyName;
+    data['cutOffPrice'] = cutOffPrice;
+    data['dailyEndTime'] = dailyEndTime;
+    data['dailyStartTime'] = dailyStartTime;
+    data['days_to_end_ipo'] = daysToEndIpo;
+    data['discounttype'] = discounttype;
+    data['discountvalue'] = discountvalue;
+    data['errorcode'] = errorcode;
+    data['faceValue'] = faceValue;
+    data['id'] = id;
+    data['image_link'] = imageLink;
+    data['index'] = index;
+    data['isin'] = isin;
+    data['issueSize'] = issueSize;
+    data['issueType'] = issueType;
+    data['lotSize'] = lotSize;
+    data['maxPrice'] = maxPrice;
+    data['maxbidqty'] = maxbidqty;
+    data['maxvalue'] = maxvalue;
+    data['message'] = message;
+    data['minBidQuantity'] = minBidQuantity;
+    data['minPrice'] = minPrice;
+    data['minvalue'] = minvalue;
+    data['name'] = name;
+    data['opendatetime'] = opendatetime;
+    data['registrar'] = registrar;
+    data['seriesDetails'] = seriesDetails;
+    if (subCategorySettings != null) {
       data['subCategorySettings'] =
-          this.subCategorySettings!.map((v) => v.toJson()).toList();
+          subCategorySettings!.map((v) => v.toJson()).toList();
     }
-    data['subType'] = this.subType;
-    data['symbol'] = this.symbol;
-    data['t1ModEndDate'] = this.t1ModEndDate;
-    data['t1ModEndTime'] = this.t1ModEndTime;
-    data['t1ModStartDate'] = this.t1ModStartDate;
-    data['t1ModStartTime'] = this.t1ModStartTime;
-    data['tickSize'] = this.tickSize;
-    if (this.tlSub != null) {
-      data['tlSub'] = this.tlSub!.toJson();
+    data['subType'] = subType;
+    data['symbol'] = symbol;
+    data['t1ModEndDate'] = t1ModEndDate;
+    data['t1ModEndTime'] = t1ModEndTime;
+    data['t1ModStartDate'] = t1ModStartDate;
+    data['t1ModStartTime'] = t1ModStartTime;
+    data['tickSize'] = tickSize;
+    if (tlSub != null) {
+      data['tlSub'] = tlSub!.toJson();
     }
-    data['tplusmodificationfrom'] = this.tplusmodificationfrom;
-    data['tplusmodificationto'] = this.tplusmodificationto;
-    data['type'] = this.type;
-    data['update_ipo_date'] = this.updateIpoDate;
+    data['tplusmodificationfrom'] = tplusmodificationfrom;
+    data['tplusmodificationto'] = tplusmodificationto;
+    data['type'] = type;
+    data['update_ipo_date'] = updateIpoDate;
     return data;
   }
 }
@@ -249,10 +249,10 @@ class CategoryDetails {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['code'] = this.code;
-    data['endTime'] = this.endTime;
-    data['startTime'] = this.startTime;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['code'] = code;
+    data['endTime'] = endTime;
+    data['startTime'] = startTime;
     return data;
   }
 }
@@ -295,17 +295,17 @@ class SubCategorySettings {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['allowCutOff'] = this.allowCutOff;
-    data['allowUpi'] = this.allowUpi;
-    data['caCode'] = this.caCode;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['allowCutOff'] = allowCutOff;
+    data['allowUpi'] = allowUpi;
+    data['caCode'] = caCode;
     // data['discountPrice'] = this.discountPrice;
-    data['discountType'] = this.discountType;
-    data['maxQuantity'] = this.maxQuantity;
-    data['maxUpiLimit'] = this.maxUpiLimit;
-    data['maxValue'] = this.maxValue;
-    data['minValue'] = this.minValue;
-    data['subCatCode'] = this.subCatCode;
+    data['discountType'] = discountType;
+    data['maxQuantity'] = maxQuantity;
+    data['maxUpiLimit'] = maxUpiLimit;
+    data['maxValue'] = maxValue;
+    data['minValue'] = minValue;
+    data['subCatCode'] = subCatCode;
     return data;
   }
 }
@@ -333,12 +333,12 @@ class TlSub {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['Category'] = this.category;
-    data['Shares Offered'] = this.sharesOffered;
-    data['Shares bid for'] = this.sharesBidFor;
-    data['Subscription (times)'] = this.subscriptionTimes;
-    data['Total Application'] = this.totalApplication;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['Category'] = category;
+    data['Shares Offered'] = sharesOffered;
+    data['Shares bid for'] = sharesBidFor;
+    data['Subscription (times)'] = subscriptionTimes;
+    data['Total Application'] = totalApplication;
     return data;
   }
 }

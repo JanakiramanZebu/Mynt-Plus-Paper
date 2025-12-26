@@ -2,8 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../../../models/ipo_model/ipo_order_book_model.dart';
 import '../../../../../provider/iop_provider.dart';
 import '../../../../../provider/thems.dart';
@@ -309,14 +307,14 @@ class _IpoCloseOrderDetailsState extends ConsumerState<IpoCloseOrderDetails> {
                                   _buildInfoRow(
                                     "Total amount",
                                     widget.ipoclose.type == "BSE"
-                                        ? "${getFormatter(noDecimal: true, v4d: false, value: double.parse(widget.ipoclose.bidDetail![0].rate!) * double.parse(widget.ipoclose.bidDetail![0].quantity!)).toString()}"
-                                        : "${getFormatter(
+                                        ? getFormatter(noDecimal: true, v4d: false, value: double.parse(widget.ipoclose.bidDetail![0].rate!) * double.parse(widget.ipoclose.bidDetail![0].quantity!)).toString()
+                                        : getFormatter(
                                             noDecimal: true,
                                             v4d: false,
                                             value: double.parse(widget.ipoclose
                                                     .bidDetail![0].amount!)
                                                 .toDouble(),
-                                          )}",
+                                          ),
                                     theme,
                                   ),
                                   const SizedBox(height: 8),
@@ -362,7 +360,7 @@ class _IpoCloseOrderDetailsState extends ConsumerState<IpoCloseOrderDetails> {
                                         data: Theme.of(context).copyWith(
                                           cardColor: Colors
                                               .transparent, // To ensure background matches
-                                          textTheme: TextTheme(
+                                          textTheme: const TextTheme(
                                               bodyMedium: TextStyle(
                                                   color: Colors.white)),
                                           dataTableTheme:
@@ -379,7 +377,7 @@ class _IpoCloseOrderDetailsState extends ConsumerState<IpoCloseOrderDetails> {
                                           columnSpacing: 16.0,
                                           horizontalMargin: 0,
                                           headingRowHeight: 40.0,
-                                          border: TableBorder(
+                                          border: const TableBorder(
                                             horizontalInside: BorderSide(
                                                 color: Colors.white54,
                                                 width: 0.8), // Horizontal lines

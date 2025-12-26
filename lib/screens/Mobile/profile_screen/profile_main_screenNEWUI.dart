@@ -103,7 +103,7 @@ class UserAccountScreen extends ConsumerWidget {
                           TextWidget.subText(
                               text: "Cash + Collateral - Margin Used ",
                               theme: false,
-                              color: Color(0xFF666666),
+                              color: const Color(0xFF666666),
                               fw: 0),
                           const SizedBox(height: 24),
                           Row(
@@ -776,7 +776,7 @@ class UserAccountScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 8),
             TextWidget.subText(
-                text: subtitle, theme: false, color: Color(0xFF666666), fw: 0),
+                text: subtitle, theme: false, color: const Color(0xFF666666), fw: 0),
           ],
         ),
         trailing: Container(

@@ -89,7 +89,7 @@ class VersionBottomSheet extends ConsumerWidget {
               height: 10,
             ),
             Container(
-              padding: EdgeInsets.symmetric(horizontal: 44),
+              padding: const EdgeInsets.symmetric(horizontal: 44),
               child: Text(
                   "Enhance your experience with the latest features, improvements, and fixes.",
                   textAlign: TextAlign.center,

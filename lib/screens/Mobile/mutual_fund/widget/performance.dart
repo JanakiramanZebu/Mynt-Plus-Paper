@@ -1,15 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:readmore/readmore.dart';
-import 'package:syncfusion_flutter_charts/charts.dart';
-import '../../../../models/mf_model/mf_factsheet_graph.dart';
 import '../../../../models/mf_model/mutual_fundmodel.dart';
 import '../../../../provider/mf_provider.dart';
 import '../../../../provider/thems.dart';
 import '../../../../res/res.dart';
 import '../../../../res/global_state_text.dart';
-import '../../../../sharedWidget/functions.dart';
 
 class MFPerformance extends ConsumerWidget {
   final MutualFundList mfStockData;

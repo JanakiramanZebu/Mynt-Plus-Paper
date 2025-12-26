@@ -36,6 +36,7 @@ class _StrategyBuilderScreenState extends ConsumerState<StrategyBuilderScreen> {
     });
   }
 
+  @override
   Widget build(BuildContext context) {
     final theme = ref.watch(themeProvider);
     final strategy = ref.watch(dashboardProvider);
@@ -94,7 +95,7 @@ class _StrategyBuilderScreenState extends ConsumerState<StrategyBuilderScreen> {
                 children: [
                   TextWidget.titleText(
                     text: strategy.isEditingMode
-                        ? "${strategy.strategyNameController.text}"
+                        ? strategy.strategyNameController.text
                         : "New Strategy",
                     textOverflow: TextOverflow.ellipsis,
                     maxLines: 1,     
@@ -258,7 +259,7 @@ class _StrategyBuilderScreenState extends ConsumerState<StrategyBuilderScreen> {
             ),
             body: SafeArea(
               child: strategy.isStrategyLoading
-                  ? Center(child: CircularLoaderImage())
+                  ? const Center(child: CircularLoaderImage())
                   : Column(
                       children: [
                         Expanded(
@@ -300,7 +301,7 @@ class _StrategyBuilderScreenState extends ConsumerState<StrategyBuilderScreen> {
                                   children: [
                                     // Show NoDataFound when no funds selected
                                     if (strategy.selectedFunds.isEmpty) ...[
-                                      Container(
+                                      SizedBox(
                                         width: double.infinity,
                                         height: MediaQuery.of(context).size.height * 0.5,
                                         child: Center(
@@ -308,7 +309,7 @@ class _StrategyBuilderScreenState extends ConsumerState<StrategyBuilderScreen> {
                                             mainAxisAlignment: MainAxisAlignment.center,
                                             children: [
                                               SvgPicture.asset(assets.noDatafound,
-                                                  color: Color(0xff777777)),
+                                                  color: const Color(0xff777777)),
                                               const SizedBox(height: 16),
                                               TextWidget.subText(
                                                   text: "No Funds",
@@ -329,7 +330,7 @@ class _StrategyBuilderScreenState extends ConsumerState<StrategyBuilderScreen> {
                                               ),
                                               const SizedBox(height: 32),
                                               // Attractive CTA Button
-                                              Container(
+                                              SizedBox(
                                                 width: 150,
                                                 height: 45,
                                                 child: ElevatedButton(
@@ -631,7 +632,7 @@ class _StrategyBuilderScreenState extends ConsumerState<StrategyBuilderScreen> {
                   if (index < funds.length - 1) const ListDivider(),
                 ],
               );
-            }).toList(),
+            }),
             
             const SizedBox(height: 16),
           ],
@@ -2137,6 +2138,7 @@ class _StrategyBuilderScreenState extends ConsumerState<StrategyBuilderScreen> {
 }
 
 class _SwipeToDeleteItem extends StatefulWidget {
+  @override
   final Key key;
   final FundListModel fund;
   final ThemesProvider theme;

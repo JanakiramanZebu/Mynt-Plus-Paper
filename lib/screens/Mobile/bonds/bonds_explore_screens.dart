@@ -1,15 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/provider/bonds_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/screens/Mobile/bonds/bonds_orderbook_screen/bonds_order_book_main_screen.dart';
 import 'package:mynt_plus/screens/Mobile/bonds/live_bonds/bonds_list.dart';
-import 'package:mynt_plus/screens/Mobile/bonds/live_bonds/govt_bonds.dart';
-import 'package:mynt_plus/screens/Mobile/bonds/live_bonds/sovereign_gold_bonds.dart';
-import 'package:mynt_plus/screens/Mobile/bonds/live_bonds/state_bonds.dart';
-import 'package:mynt_plus/screens/Mobile/bonds/live_bonds/treasury_bonds.dart';
 import '../../../../provider/auth_provider.dart';
 import '../../../../res/res.dart';
 import '../../../../sharedWidget/loader_ui.dart';
@@ -157,11 +151,11 @@ class _ExploreScreensState extends ConsumerState<BondsExploreScreens>
               Expanded(
                 child: _CustomTabBarView(
                   controller: _allBondsTabController,
-                  children: [
+                  onBoundaryReached: widget.onBoundaryReached,
+                  children: const [
                     BondsListScreen(), 
                     BondsOrderbookMainScreen()
                   ],
-                  onBoundaryReached: widget.onBoundaryReached,
                 ),
               ),
             ],
@@ -229,7 +223,7 @@ class _CustomTabBarView extends StatefulWidget {
 
 class _CustomTabBarViewState extends State<_CustomTabBarView> {
   late PageController _pageController;
-  bool _isExternalTabChange = false;
+  final bool _isExternalTabChange = false;
 
   // Track pointer events for edge swipes
   double _startX = 0;

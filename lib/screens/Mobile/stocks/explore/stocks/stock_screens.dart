@@ -1,10 +1,8 @@
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/models/text_nugget_model/text_nugget_model.dart';
-import 'package:mynt_plus/provider/dashboard_provider.dart';
 import 'package:mynt_plus/provider/mf_provider.dart';
 import 'package:mynt_plus/widgets/text_nugget_widget.dart';
 import 'package:share_plus/share_plus.dart';
@@ -189,8 +187,8 @@ class _StockScreenState extends ConsumerState<StockScreen>
     final pnlData = _getPnLDataForTab(_statabController.index, portfolio, funds, mf);
     double totalCurrentVal = double.tryParse(pnlData['pnl'].toString()) ?? 0.0;
     // double _invest = double.parse("${portfolio.holdingsModel?.first.invested ?? 0.0}");
-    String _totalPnlHolding = pnlData['invested'].toString();
-    String _totalCurrentVal = pnlData['current'].toString();
+    String totalPnlHolding = pnlData['invested'].toString();
+    String totalCurrentVal0 = pnlData['current'].toString();
     // String _totPnlPercHolding = _invest > 0
     //       ? ((_totalPnlHolding / _invest) * 100).toStringAsFixed(2)
     //       : "0.00";
@@ -228,7 +226,7 @@ class _StockScreenState extends ConsumerState<StockScreen>
       },
       child: Consumer(builder: (context, ref, child) {
         return SingleChildScrollView(
-          physics: ClampingScrollPhysics(),
+          physics: const ClampingScrollPhysics(),
           child: Padding(
             padding: EdgeInsets.only(top:MediaQuery.of(context).padding.top, bottom: MediaQuery.of(context).padding.bottom),
             child: Column(
@@ -512,7 +510,7 @@ class _StockScreenState extends ConsumerState<StockScreen>
                                   ),
                                   TextWidget.titleText(
                                                 text:
-                                                    "${getFormatter(value: totalCurrentVal, v4d: false, noDecimal: false)}",
+                                                    getFormatter(value: totalCurrentVal, v4d: false, noDecimal: false),
                                     theme: false,
                                                 color: totalCurrentVal
                                                         .toString()
@@ -551,7 +549,7 @@ class _StockScreenState extends ConsumerState<StockScreen>
                                 children: [
                                   TextWidget.titleText(
                                             text:
-                                                "${getFormatter(value: totalCurrentVal, v4d: false, noDecimal: false)}",
+                                                getFormatter(value: totalCurrentVal, v4d: false, noDecimal: false),
                                     theme: false,
                                             color: totalCurrentVal
                                                     .toString()
@@ -607,7 +605,7 @@ class _StockScreenState extends ConsumerState<StockScreen>
                                     ),
                                     TextWidget.paraText(
                                             text: formatAmountCompact(
-                                                double.parse(_totalPnlHolding)),
+                                                double.parse(totalPnlHolding)),
                                       theme: false,
                                             color: theme.isDarkMode
                                                 ? colors.colorWhite
@@ -630,7 +628,7 @@ class _StockScreenState extends ConsumerState<StockScreen>
                                     TextWidget.paraText(
                                       text: _statabController.index == 2
                                           ? formatAmountCompact(double.parse(pnlData['percentage'].toString()))
-                                          : formatAmountCompact(double.parse(_totalCurrentVal)),
+                                          : formatAmountCompact(double.parse(totalCurrentVal0)),
                                       theme: false,
                                             color: theme.isDarkMode
                                                 ? colors.colorWhite
@@ -1107,7 +1105,7 @@ class _StockScreenState extends ConsumerState<StockScreen>
                                 onTap: () async {
                                   switch (item['label']) {
                                     case 'Pledge & Unpledge':
-                                      Future.delayed(Duration(milliseconds: 150),
+                                      Future.delayed(const Duration(milliseconds: 150),
                                         () async {
                                       if (ledgerdate.pledgeandunpledge == null) {
                                         await ledgerdate.getCurrentDate("pandu");
@@ -1695,7 +1693,7 @@ class _StockScreenState extends ConsumerState<StockScreen>
                               fw: 0,
                             ),
                             subtitle: TextWidget.paraText(
-                              text: "${etfCategories[index]['subtitle'] ?? ''}",
+                              text: etfCategories[index]['subtitle'] ?? '',
                               color: theme.isDarkMode
                                   ? colors.textSecondaryDark
                                   : colors.textSecondaryLight,

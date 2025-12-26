@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../models/portfolio_model/position_book_model.dart';
@@ -9,9 +8,6 @@ import '../../../../provider/thems.dart';
 import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
 import '../../../../sharedWidget/cust_text_formfield.dart';
-import '../../../../sharedWidget/custom_exch_badge.dart';
-import '../../../../sharedWidget/functions.dart';
-import '../../../../sharedWidget/list_divider.dart';
 import '../../../../sharedWidget/snack_bar.dart';
 
 class ConvertPositionDialogue extends ConsumerStatefulWidget {
@@ -39,11 +35,11 @@ class _ConvertPositionDialogueState
       int lotSize = int.parse("${widget.convertPosition.ls ?? 0}");
 
       if (widget.convertPosition.exch == "MCX") {
-        maxQty.text = (int.parse(maxQty.text) / lotSize).toInt().toString();
+        maxQty.text = (int.parse(maxQty.text) ~/ lotSize).toString();
       }
 
       if (widget.convertPosition.exch == "MCX") {
-        qty.text = (int.parse(qty.text) / lotSize).toInt().toString();
+        qty.text = (int.parse(qty.text) ~/ lotSize).toString();
       }
     });
   }

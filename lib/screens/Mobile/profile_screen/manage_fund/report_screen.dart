@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/provider/ledger_provider.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../../../locator/locator.dart';
 import '../../../../locator/preference.dart';
 import '../../../../provider/fund_provider.dart';

@@ -126,19 +126,19 @@ class AppSpacing {
   static EdgeInsets get cardPaddingAll => all(cardPadding);
 
   /// Standard vertical spacing between sections
-  static Widget get verticalSpaceSection => SizedBox(height: sectionSpacing);
+  static Widget get verticalSpaceSection => const SizedBox(height: sectionSpacing);
 
   /// Standard vertical spacing between items
-  static Widget get verticalSpaceItem => SizedBox(height: itemSpacing);
+  static Widget get verticalSpaceItem => const SizedBox(height: itemSpacing);
 
   /// Small vertical spacing between elements
-  static Widget get verticalSpaceElement => SizedBox(height: elementSpacing);
+  static Widget get verticalSpaceElement => const SizedBox(height: elementSpacing);
 
   /// Standard horizontal spacing between items
-  static Widget get horizontalSpaceItem => SizedBox(width: itemSpacing);
+  static Widget get horizontalSpaceItem => const SizedBox(width: itemSpacing);
 
   /// Small horizontal spacing between elements
-  static Widget get horizontalSpaceElement => SizedBox(width: elementSpacing);
+  static Widget get horizontalSpaceElement => const SizedBox(width: elementSpacing);
 
   /// Custom vertical spacing
   static Widget verticalSpace(double height) => SizedBox(height: height);

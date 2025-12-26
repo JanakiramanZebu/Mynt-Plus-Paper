@@ -2,10 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/provider/ledger_provider.dart';
 import 'package:mynt_plus/res/res.dart';
-import 'package:mynt_plus/screens/Mobile/desk_reports/com_taxpnl_screen.dart';
-import 'package:mynt_plus/screens/Mobile/desk_reports/cur_taxpnl_screen.dart';
-import 'package:mynt_plus/screens/Mobile/desk_reports/der_taxpnl_screen.dart';
-import 'package:mynt_plus/screens/Mobile/desk_reports/equity_taxpnl_screen.dart';
 import 'package:mynt_plus/sharedWidget/functions.dart';
 
 import '../../../provider/profile_all_details_provider.dart';
@@ -16,12 +12,6 @@ import 'ca_events/ca_event_agmandegm.dart';
 import 'ca_events/ca_event_boardmeeting.dart';
 import 'ca_events/ca_event_bonus.dart';
 import 'ca_events/ca_event_dividend.dart';
-import 'ca_events/ca_event_rights.dart';
-import 'ca_events/ca_event_split.dart';
-import 'tax_pnl_screens/charges_value_screen.dart';
-import 'tax_pnl_screens/chart_for_tax_scree.dart';
-import 'tax_pnl_screens/pnl_value_screen.dart';
-import 'tax_pnl_screens/turnover_value_screen.dart';
 
 class CPActionMainpage extends StatefulWidget {
   const CPActionMainpage({super.key});
@@ -316,7 +306,7 @@ class _CPActionMainpage extends State<CPActionMainpage>
                 child: TabBarView(
                   physics: const NeverScrollableScrollPhysics(),
                   controller: _tabController,
-                  children: [
+                  children: const [
                     CAEventBoardMeeting(),
                     CAEventAgmandEgm(),
                     CAEventBonus(),
@@ -369,7 +359,7 @@ class _CPActionMainpage extends State<CPActionMainpage>
                     : const Color(0xffB5C0CF).withOpacity(.15)
                 : tab == ledgerprovider.activeTabTaxPnl
                     ? const Color(0xff000000)
-                    : Color.fromARGB(0, 241, 243, 248),
+                    : const Color.fromARGB(0, 241, 243, 248),
             shape: const StadiumBorder()),
         child: Row(
             mainAxisSize: MainAxisSize.min,

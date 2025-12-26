@@ -1,7 +1,6 @@
 // ignore_for_file: use_build_context_synchronously, prefer_const_constructors, prefer_const_literals_to_create_immutables
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:data_table_2/data_table_2.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -60,9 +59,9 @@ class _UpcomingIpoState extends ConsumerState<UpcomingIpo> {
     return Builder(
       builder: (context) {
         final screenHeight = MediaQuery.of(context).size.height;
-        final padding = 16.0 * 2; // Top and bottom padding
-        final headerHeight = 100.0;
-        final spacing = 16.0;
+        const padding = 16.0 * 2; // Top and bottom padding
+        const headerHeight = 100.0;
+        const spacing = 16.0;
         final tableHeight = screenHeight - padding - headerHeight - spacing;
         final maxHeight = screenHeight * 0.75;
         final calculatedHeight =
@@ -85,23 +84,23 @@ class _UpcomingIpoState extends ConsumerState<UpcomingIpo> {
             child: Theme(
               data: Theme.of(context).copyWith(
                 scrollbarTheme: ScrollbarThemeData(
-                  thumbVisibility: MaterialStateProperty.all(true),
-                  trackVisibility: MaterialStateProperty.all(true),
-                  thickness: MaterialStateProperty.all(6.0),
+                  thumbVisibility: WidgetStateProperty.all(true),
+                  trackVisibility: WidgetStateProperty.all(true),
+                  thickness: WidgetStateProperty.all(6.0),
                   crossAxisMargin: 0.0,
                   mainAxisMargin: 0.0,
                   radius: const Radius.circular(3),
-                  thumbColor: MaterialStateProperty.resolveWith((states) {
+                  thumbColor: WidgetStateProperty.resolveWith((states) {
                     return theme.isDarkMode
                         ? WebDarkColors.textSecondary.withOpacity(0.3)
                         : WebColors.textSecondary.withOpacity(0.3);
                   }),
-                  trackColor: MaterialStateProperty.resolveWith((states) {
+                  trackColor: WidgetStateProperty.resolveWith((states) {
                     return theme.isDarkMode
                         ? WebDarkColors.divider.withOpacity(0.1)
                         : WebColors.divider.withOpacity(0.1);
                   }),
-                  trackBorderColor: MaterialStateProperty.all(Colors.transparent),
+                  trackBorderColor: WidgetStateProperty.all(Colors.transparent),
                   minThumbLength: 48.0,
                 ),
               ),
@@ -120,7 +119,7 @@ class _UpcomingIpoState extends ConsumerState<UpcomingIpo> {
                 scrollController: _verticalScrollController,
                 showCheckboxColumn: false,
                 dataRowHeight: 56.0,
-                headingRowColor: MaterialStateProperty.all(
+                headingRowColor: WidgetStateProperty.all(
                   theme.isDarkMode
                       ? WebDarkColors.primary
                       : WebColors.primary.withOpacity(0.05),

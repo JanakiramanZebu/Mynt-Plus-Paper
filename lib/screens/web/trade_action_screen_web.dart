@@ -24,6 +24,7 @@ class TradeActionScreenWeb extends ConsumerStatefulWidget {
 class _TradeActionScreenWebState extends ConsumerState<TradeActionScreenWeb>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  VoidCallback? _tabControllerListener; // Store listener reference for proper cleanup
   final ScrollController _horizontalScrollController = ScrollController();
   final ScrollController _verticalScrollController = ScrollController();
   final ScrollController _tabScrollController = ScrollController();
@@ -54,13 +55,15 @@ class _TradeActionScreenWebState extends ConsumerState<TradeActionScreenWeb>
       initialIndex: safeIndex
     );
     
-    _tabController.addListener(() {
+    // Store listener reference for proper cleanup
+    _tabControllerListener = () {
       if (mounted) {
         setState(() {});
         // Note: WebSocket subscription is handled by WebSubscriptionManager
         // No need to subscribe/unsubscribe on tab change since all trade action stocks are subscribed
       }
-    });
+    };
+    _tabController.addListener(_tabControllerListener!);
     
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (mounted) {
@@ -111,7 +114,9 @@ class _TradeActionScreenWebState extends ConsumerState<TradeActionScreenWeb>
       }
     });
     
-    // Listen for updates
+    // ✅ Use ValueNotifier instead of setState to avoid rebuilding entire widget
+    // Listen for updates - data is already stored in _socketDataMap
+    // Individual cells will read from this map, no need to rebuild parent
     _socketSubscription = websocket.socketDataStream.listen((socketDatas) {
       if (mounted) {
         socketDatas.forEach((key, value) {
@@ -119,7 +124,8 @@ class _TradeActionScreenWebState extends ConsumerState<TradeActionScreenWeb>
             _socketDataMap[key] = Map<String, dynamic>.from(value);
           }
         });
-        setState(() {});
+        // ✅ REMOVED: setState(() {}) - cells read from _socketDataMap directly
+        // Individual stock cards should use isolated widgets that watch specific tokens
       }
     });
   }
@@ -127,6 +133,11 @@ class _TradeActionScreenWebState extends ConsumerState<TradeActionScreenWeb>
   @override
   void dispose() {
     _socketSubscription?.cancel();
+    // Remove listener before disposing to prevent memory leaks
+    if (_tabControllerListener != null) {
+      _tabController.removeListener(_tabControllerListener!);
+      _tabControllerListener = null;
+    }
     _tabController.dispose();
     _horizontalScrollController.dispose();
     _verticalScrollController.dispose();
@@ -413,10 +424,10 @@ class _TradeActionScreenWebState extends ConsumerState<TradeActionScreenWeb>
       builder: (context, constraints) {
         // Calculate available height: screen height minus all UI elements
         final screenHeight = MediaQuery.of(context).size.height;
-        final padding = 32.0; // Top and bottom padding (16 * 2)
-        final headerHeight = 120.0; // Header with tabs
-        final spacing = 16.0; // Spacing between sections
-        final bottomMargin = 20.0; // Bottom margin
+        const padding = 32.0; // Top and bottom padding (16 * 2)
+        const headerHeight = 120.0; // Header with tabs
+        const spacing = 16.0; // Spacing between sections
+        const bottomMargin = 20.0; // Bottom margin
         final tableHeight =
             screenHeight - padding - headerHeight - spacing - bottomMargin;
 
@@ -446,23 +457,23 @@ class _TradeActionScreenWebState extends ConsumerState<TradeActionScreenWeb>
             child: Theme(
               data: Theme.of(context).copyWith(
                 scrollbarTheme: ScrollbarThemeData(
-                  thumbVisibility: MaterialStateProperty.all(true),
-                  trackVisibility: MaterialStateProperty.all(true),
-                  thickness: MaterialStateProperty.all(6.0),
+                  thumbVisibility: WidgetStateProperty.all(true),
+                  trackVisibility: WidgetStateProperty.all(true),
+                  thickness: WidgetStateProperty.all(6.0),
                   crossAxisMargin: 0.0,
                   mainAxisMargin: 0.0,
                   radius: const Radius.circular(3),
-                  thumbColor: MaterialStateProperty.resolveWith((states) {
+                  thumbColor: WidgetStateProperty.resolveWith((states) {
                     return theme.isDarkMode 
                         ? WebDarkColors.textSecondary.withOpacity(0.3)
                         : WebColors.textSecondary.withOpacity(0.3);
                   }),
-                  trackColor: MaterialStateProperty.resolveWith((states) {
+                  trackColor: WidgetStateProperty.resolveWith((states) {
                     return theme.isDarkMode 
                         ? WebDarkColors.divider.withOpacity(0.1)
                         : WebColors.divider.withOpacity(0.1);
                   }),
-                  trackBorderColor: MaterialStateProperty.all(Colors.transparent),
+                  trackBorderColor: WidgetStateProperty.all(Colors.transparent),
                   minThumbLength: 48.0,
                 ),
               ),
@@ -481,7 +492,7 @@ class _TradeActionScreenWebState extends ConsumerState<TradeActionScreenWeb>
                 horizontalScrollController: _horizontalScrollController,
                 scrollController: _verticalScrollController,
                 showCheckboxColumn: false,
-                headingRowColor: MaterialStateProperty.all(
+                headingRowColor: WidgetStateProperty.all(
                   theme.isDarkMode
                       ? WebDarkColors.primary
                       : WebColors.primary.withOpacity(0.05),
@@ -519,7 +530,7 @@ class _TradeActionScreenWebState extends ConsumerState<TradeActionScreenWeb>
                         : WebColors.divider,
                     width: 1,
                   ),
-                  verticalInside: BorderSide(
+                  verticalInside: const BorderSide(
                     color: Colors.transparent, // Hide vertical lines
                     width: 0,
                   ),
@@ -651,7 +662,7 @@ class _TradeActionScreenWebState extends ConsumerState<TradeActionScreenWeb>
       final volume = socketData?['v']?.toString() ?? stock.v ?? '0';
 
       return DataRow2(
-        color: MaterialStateProperty.resolveWith((states) {
+        color: WidgetStateProperty.resolveWith((states) {
           if (isHovered) {
             return theme.isDarkMode
                 ? WebDarkColors.primary.withOpacity(0.06)

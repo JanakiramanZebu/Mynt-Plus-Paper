@@ -12,7 +12,6 @@ import '../../../models/order_book_model/order_book_model.dart';
 import '../../../provider/shocase_provider.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
-import '../../../routes/route_names.dart';
 import '../../../sharedWidget/cust_text_formfield.dart';
 import '../../../utils/responsive_navigation.dart';
 import '../../../sharedWidget/custom_back_btn.dart';
@@ -164,7 +163,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
           children: [
             Expanded(
               child: SingleChildScrollView(
-                physics: ClampingScrollPhysics(),
+                physics: const ClampingScrollPhysics(),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -194,7 +193,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                             horizontal: 12, vertical: 0),
                                         backgroundColor: !theme.isDarkMode
                                             ? orderType == orderTypes[index]
-                                                ? Color(0xffF1F3F8)
+                                                ? const Color(0xffF1F3F8)
                                                 : Colors.transparent
                                             : orderType == orderTypes[index]
                                                 ? colors.darkGrey
@@ -254,7 +253,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                         backgroundColor: !theme.isDarkMode
                                             ? priceType ==
                                                     priceTypes[index]['type']
-                                                ? Color(0xffF1F3F8)
+                                                ? const Color(0xffF1F3F8)
                                                 : Colors.transparent
                                             : priceType ==
                                                     priceTypes[index]['type']
@@ -323,7 +322,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                               horizontal: 12),
                                           backgroundColor: !theme.isDarkMode
                                               ? isSelected
-                                                  ? Color(0xffF1F3F8)
+                                                  ? const Color(0xffF1F3F8)
                                                   : Colors.transparent
                                               : isSelected
                                                   ? colors.darkGrey
@@ -449,9 +448,9 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                         child: headerTitleText("Quantity preference", theme)),
                     Row(mainAxisAlignment: MainAxisAlignment.start, children: [
                       Radio<OrdQtyPref>(
-                          fillColor: MaterialStateProperty.resolveWith<Color>(
-                              (Set<MaterialState> states) {
-                            if (states.contains(MaterialState.disabled)) {
+                          fillColor: WidgetStateProperty.resolveWith<Color>(
+                              (Set<WidgetState> states) {
+                            if (states.contains(WidgetState.disabled)) {
                               return const Color(0xff666666);
                             }
                             return theme.isDarkMode
@@ -482,9 +481,9 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                         fw: 0,
                       ),
                       Radio<OrdQtyPref>(
-                          fillColor: MaterialStateProperty.resolveWith<Color>(
-                              (Set<MaterialState> states) {
-                            if (states.contains(MaterialState.disabled)) {
+                          fillColor: WidgetStateProperty.resolveWith<Color>(
+                              (Set<WidgetState> states) {
+                            if (states.contains(WidgetState.disabled)) {
                               return const Color(0xff666666);
                             }
                             return theme.isDarkMode
@@ -574,7 +573,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                     Padding(
                         padding: const EdgeInsets.only(left: 16, top: 16),
                         child: headerTitleText(
-                            "Position exit ${expriceType}", theme)),
+                            "Position exit $expriceType", theme)),
                     const SizedBox(height: 16),
                     Padding(
                         padding: const EdgeInsets.only(left: 16),
@@ -597,7 +596,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                         backgroundColor: !theme.isDarkMode
                                             ? expriceType ==
                                                     expriceTypes[index]['type']
-                                                ? Color(0xffF1F3F8)
+                                                ? const Color(0xffF1F3F8)
                                                 : Colors.transparent
                                             : expriceType ==
                                                     expriceTypes[index]['type']

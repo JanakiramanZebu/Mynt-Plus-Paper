@@ -24,6 +24,7 @@ class DerComCurTaxpnl extends State<DercomcurTaxpnl> {
     super.initState();
   }
 
+  @override
   Widget build(BuildContext context) {
     final List<String> staticColumn = [
       'Row 1',
@@ -82,18 +83,18 @@ class DerComCurTaxpnl extends State<DercomcurTaxpnl> {
                 Container(
                   width: screenWidth,
                   // height: screenheight * 0.30,
-                  padding: EdgeInsets.symmetric(horizontal: 22),
-                  margin: EdgeInsets.only(top: 16),
+                  padding: const EdgeInsets.symmetric(horizontal: 22),
+                  margin: const EdgeInsets.only(top: 16),
                   child: Card(
-                      color: Color(0xFFEEEEEE),
+                      color: const Color(0xFFEEEEEE),
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8.0)),
                       child: Container(
                         width: screenWidth,
                         // height: screenheight,
-                        padding: EdgeInsets.only(
+                        padding: const EdgeInsets.only(
                             top: 10, bottom: 25, left: 20, right: 20),
-                        margin: EdgeInsets.only(top: 16),
+                        margin: const EdgeInsets.only(top: 16),
                         child: Card(
                           color: Colors.white,
                           shape: RoundedRectangleBorder(
@@ -106,17 +107,17 @@ class DerComCurTaxpnl extends State<DercomcurTaxpnl> {
 
                               headingstat(
                                   "Long Term Realized P&L ${ledgerprovider.eqdertabvalue}",
-                                  "${ledgerprovider.calenderpnlAllData!.realized.toStringAsFixed(2)}"),
+                                  ledgerprovider.calenderpnlAllData!.realized.toStringAsFixed(2)),
                               headingstat("Short Term Realized P&L",
-                                  "${ledgerprovider.calenderpnlAllData!.unrealized.toStringAsFixed(2)}"),
+                                  ledgerprovider.calenderpnlAllData!.unrealized.toStringAsFixed(2)),
                               headingstat("Trading P&L",
-                                  "${ledgerprovider.calenderpnlAllData!.totalCharges!.toStringAsFixed(2)}"),
+                                  ledgerprovider.calenderpnlAllData!.totalCharges!.toStringAsFixed(2)),
                               headingstat("Assets P&L",
-                                  "${netvalue.toStringAsFixed(2)}"),
+                                  netvalue.toStringAsFixed(2)),
                               headingstat("Trading Turnover",
-                                  "${netvalue.toStringAsFixed(2)}"),
+                                  netvalue.toStringAsFixed(2)),
                               headingstat("Total Charges",
-                                  "${netvalue.toStringAsFixed(2)}"),
+                                  netvalue.toStringAsFixed(2)),
 
                               //                         NestedScrollView(
                               //   headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
@@ -193,10 +194,10 @@ class DerComCurTaxpnl extends State<DercomcurTaxpnl> {
               ],
             ),
 
-            Padding(
-              padding: const EdgeInsets.only(top: 10.0),
+            const Padding(
+              padding: EdgeInsets.only(top: 10.0),
               child: Divider(
-                color: const Color.fromARGB(255, 212, 212, 212),
+                color: Color.fromARGB(255, 212, 212, 212),
                 thickness: 2.0,
               ),
             ),
@@ -309,7 +310,7 @@ class DerComCurTaxpnl extends State<DercomcurTaxpnl> {
             ),
             // Text("${ledgerprovider.taxpnlderselectedtabdata}data"),
             ledgerprovider.taxpnleq!.data == null
-                ? Center(
+                ? const Center(
                     child: Padding(
                     padding: EdgeInsets.only(top: 60),
                     child: NoDataFound(),
@@ -318,7 +319,7 @@ class DerComCurTaxpnl extends State<DercomcurTaxpnl> {
                     child: SingleChildScrollView(
                       child: ListView.builder(
                           controller: ScrollController(),
-                          physics: ScrollPhysics(),
+                          physics: const ScrollPhysics(),
                           itemCount: ledgerprovider.taxpnlderselectedtabdata ==
                                   null
                               ? 0
@@ -337,11 +338,11 @@ class DerComCurTaxpnl extends State<DercomcurTaxpnl> {
                                         Colors.black, 14, FontWeight.w700),
                                   ),
                                 ),
-                                Padding(
-                                  padding: const EdgeInsets.only(
+                                const Padding(
+                                  padding: EdgeInsets.only(
                                       right: 30.0, left: 30.0, top: 10.0),
                                   child: Divider(
-                                    color: const Color.fromARGB(
+                                    color: Color.fromARGB(
                                         255, 117, 117, 117),
                                   ),
                                 ),
@@ -356,7 +357,7 @@ class DerComCurTaxpnl extends State<DercomcurTaxpnl> {
                                         children: [
                                           Text(
                                             "Net Qty : ",
-                                            style: textStyle(Color(0xFF696969),
+                                            style: textStyle(const Color(0xFF696969),
                                                 13, FontWeight.w500),
                                           ),
                                           Text(
@@ -380,7 +381,7 @@ class DerComCurTaxpnl extends State<DercomcurTaxpnl> {
                                         children: [
                                           Text(
                                             "Buy Qty : ",
-                                            style: textStyle(Color(0xFF696969),
+                                            style: textStyle(const Color(0xFF696969),
                                                 13, FontWeight.w500),
                                           ),
                                           Text(
@@ -397,7 +398,7 @@ class DerComCurTaxpnl extends State<DercomcurTaxpnl> {
                                               Text(
                                                 "Sell Qty : ",
                                                 style: textStyle(
-                                                    Color(0xFF696969),
+                                                    const Color(0xFF696969),
                                                     13,
                                                     FontWeight.w500),
                                               ),
@@ -430,7 +431,7 @@ class DerComCurTaxpnl extends State<DercomcurTaxpnl> {
                                               Text(
                                                 "Buy Rate : ",
                                                 style: textStyle(
-                                                    Color(0xFF696969),
+                                                    const Color(0xFF696969),
                                                     13,
                                                     FontWeight.w500),
                                               ),
@@ -453,7 +454,7 @@ class DerComCurTaxpnl extends State<DercomcurTaxpnl> {
                                               Text(
                                                 "Sell Rate : ",
                                                 style: textStyle(
-                                                    Color(0xFF696969),
+                                                    const Color(0xFF696969),
                                                     13,
                                                     FontWeight.w500),
                                               ),
@@ -472,10 +473,10 @@ class DerComCurTaxpnl extends State<DercomcurTaxpnl> {
                                     ],
                                   ),
                                 ),
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 10),
+                                const Padding(
+                                  padding: EdgeInsets.only(top: 10),
                                   child: Divider(
-                                    color: const Color.fromARGB(
+                                    color: Color.fromARGB(
                                         255, 212, 212, 212),
                                     thickness: 2.0,
                                   ),
@@ -530,7 +531,7 @@ class DerComCurTaxpnl extends State<DercomcurTaxpnl> {
                 // ledgerprovider.taxpnlderselectedtab(ledgerprovider.eqdertabvalue.toString());
               });
             },
-            child: Text("${text}",
+            child: Text(text,
                 textAlign: TextAlign.center,
                 style: textStyle(
                     !theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
@@ -549,11 +550,11 @@ headingstat(String heading, String value) {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
-          "${heading}",
-          style: textStyle(Color(0xFF696969), 14, FontWeight.w400),
+          heading,
+          style: textStyle(const Color(0xFF696969), 14, FontWeight.w400),
         ),
         Text(
-          "${value}",
+          value,
           style: textStyle(colors.colorBlack, 13, FontWeight.w500),
         )
       ],

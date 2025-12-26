@@ -2,9 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/provider/bonds_provider.dart';
-import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/screens/Mobile/bonds/live_bonds/govt_bonds.dart';
 import 'package:mynt_plus/screens/Mobile/bonds/live_bonds/sovereign_gold_bonds.dart';
 import 'package:mynt_plus/screens/Mobile/bonds/live_bonds/state_bonds.dart';
@@ -29,7 +27,7 @@ class BondsListScreen extends StatelessWidget {
     }
 
       return SingleChildScrollView(
-        physics: ClampingScrollPhysics(),
+        physics: const ClampingScrollPhysics(),
         child: Column(
           children: [
             _buildContent(bonds, devHeight, ref),
@@ -125,7 +123,7 @@ class BondsListScreen extends StatelessWidget {
   }
 
   Widget _buildEmptyState() {
-    return Center(
+    return const Center(
       child: NoDataFound(
         title: "No Bonds Found",
         subtitle: "There are no bond listings for today.",

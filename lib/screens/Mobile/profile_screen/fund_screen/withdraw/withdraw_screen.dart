@@ -2,16 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import '../../../../../provider/fund_provider.dart';
 import '../../../../../provider/transcation_provider.dart';
 import '../../../../../res/global_state_text.dart';
 import '../../../../../res/res.dart';
 import '../../../../../sharedWidget/custom_back_btn.dart';
-import '../../../../../sharedWidget/list_divider.dart';
 import '../../../../../sharedWidget/snack_bar.dart';
-import 'withdraw_break_up.dart';
 
 class WithdrawScreen extends ConsumerStatefulWidget {
   final TranctionProvider withdarw;
@@ -67,7 +64,7 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
         centerTitle: false,
         leadingWidth: 48,
         titleSpacing: 6,
-        leading: CustomBackBtn(),
+        leading: const CustomBackBtn(),
         elevation: .2,
         title: TextWidget.titleText(
           text: 'Withdraw Fund',
@@ -81,7 +78,7 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
           widget.foucs.unfocus();
         },
         child: SingleChildScrollView(
-          physics: ClampingScrollPhysics(),
+          physics: const ClampingScrollPhysics(),
           child: SafeArea(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -473,7 +470,7 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
   }
 
   showUIWithDelay() {
-    Future.delayed(Duration(seconds: 0), () {
+    Future.delayed(const Duration(seconds: 0), () {
       setState(() {
         _isVisible = true;
       });
@@ -523,13 +520,13 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
           // Available cash
           data(
             "Available Capital",
-            "${funds.fundDetailModel?.totCredit ?? "0.00"}",
+            funds.fundDetailModel?.totCredit ?? "0.00",
             widget.theme,
           ),
           // Margin used
           data(
             "Margin Used",
-            "${funds.fundDetailModel?.utilizedMrgn ?? "0.00"}",
+            funds.fundDetailModel?.utilizedMrgn ?? "0.00",
             widget.theme,
           ),
           // Withdrawable amount

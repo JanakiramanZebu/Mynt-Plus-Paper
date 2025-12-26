@@ -16,7 +16,7 @@ class CdslReponseModel {
 
   CdslReponseModel.fromJson(Map<String, dynamic> json) {
     cDSLResp = json['CDSL_resp'] != null
-        ? new CDSLResp.fromJson(json['CDSL_resp'])
+        ? CDSLResp.fromJson(json['CDSL_resp'])
         : null;
     cDSLRespTime = json['CDSL_resp_time'];
     cLIENTNAME = json['CLIENT_NAME'];
@@ -26,7 +26,7 @@ class CdslReponseModel {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     if (cDSLResp != null) {
       data['CDSL_resp'] = cDSLResp!.toJson();
     }
@@ -49,13 +49,13 @@ class CDSLResp {
   CDSLResp.fromJson(Map<String, dynamic> json) {
     pledgeidentifier = json['pledgeidentifier'];
     pledgeresdtls = json['pledgeresdtls'] != null
-        ? new Pledgeresdtls.fromJson(json['pledgeresdtls'])
+        ? Pledgeresdtls.fromJson(json['pledgeresdtls'])
         : null;
     reqid = json['reqid'];
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     data['pledgeidentifier'] = pledgeidentifier;
     if (pledgeresdtls != null) {
       data['pledgeresdtls'] = pledgeresdtls!.toJson();
@@ -72,12 +72,12 @@ class Pledgeresdtls {
 
   Pledgeresdtls.fromJson(Map<String, dynamic> json) {
     pledgeresdtlstwo = json['pledgeresdtls'] != null
-        ? new Pledgeresdtlstwo.fromJson(json['pledgeresdtls'])
+        ? Pledgeresdtlstwo.fromJson(json['pledgeresdtls'])
         : null;
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     if (pledgeresdtlstwo != null) {
       data['pledgeresdtls'] = pledgeresdtlstwo!.toJson();
     }
@@ -111,7 +111,7 @@ class Pledgeresdtlstwo {
     if (json['isinresdtls'] != null) {
       isinresdtls = <Isinresdtls>[];
       json['isinresdtls'].forEach((v) {
-        isinresdtls!.add(new Isinresdtls.fromJson(v));
+        isinresdtls!.add(Isinresdtls.fromJson(v));
       });
     }
     pledgeidentifier = json['pledgeidentifier'];
@@ -125,7 +125,7 @@ class Pledgeresdtlstwo {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     if (isinresdtls != null) {
       data['isinresdtls'] = isinresdtls!.map((v) => v.toJson()).toList();
     }
@@ -170,7 +170,7 @@ class Isinresdtls {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     data['errorcode'] = errorcode;
     data['errormsg'] = errormsg;
     data['isin'] = isin;

@@ -3,16 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/provider/ledger_provider.dart';
 import 'package:mynt_plus/res/res.dart';
-import 'package:mynt_plus/sharedWidget/custom_back_btn.dart';
 import 'package:mynt_plus/sharedWidget/functions.dart';
 import 'package:mynt_plus/sharedWidget/loader_ui.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 
 import '../../../provider/thems.dart';
 import '../../../res/global_state_text.dart';
-import '../../../sharedWidget/snack_bar.dart';
-import 'bottom_sheets/pledge_details.dart';
-import 'bottom_sheets/pledge_list.dart';
 
 class PledgenUnpledgeResponse extends StatelessWidget {
   final String ddd;
@@ -107,7 +103,7 @@ class PledgenUnpledgeResponse extends StatelessWidget {
                 //       "Financial activities through debits and credits ",
                 //       style: textStyle(colors.colorBlack, 14, FontWeight.w600),
                 //     )),
-                Container(
+                SizedBox(
                   width: screenWidth,
                   child: Container(
                     decoration: BoxDecoration(
@@ -131,7 +127,7 @@ class PledgenUnpledgeResponse extends StatelessWidget {
                                 children: [
                                   TextWidget.subText(
                                       text: "Status",
-                                      color: Color(0xFF696969),
+                                      color: const Color(0xFF696969),
                                       textOverflow: TextOverflow.ellipsis,
                                       theme: theme.isDarkMode,
                                       fw: 0),
@@ -392,7 +388,7 @@ class PledgenUnpledgeResponse extends StatelessWidget {
                                 ?.pledgeresdtlstwo?.isinresdtls ==
                             null
                     // Handle the null or empty case
-                    ? Center(
+                    ? const Center(
                         child: Padding(
                         padding: EdgeInsets.only(top: 60),
                         child: NoDataFound(
@@ -402,7 +398,7 @@ class PledgenUnpledgeResponse extends StatelessWidget {
                     : Expanded(
                         child: SingleChildScrollView(
                           child: ListView.separated(
-                            physics: ClampingScrollPhysics(),
+                            physics: const ClampingScrollPhysics(),
                             itemCount: ledgerprovider
                                     .cdslresponsedata
                                     ?.cDSLResp
@@ -454,10 +450,10 @@ class PledgenUnpledgeResponse extends StatelessWidget {
                                       ],
                                     ),
                                   ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 2.0),
+                                  const Padding(
+                                    padding: EdgeInsets.only(top: 2.0),
                                     child: Divider(
-                                      color: const Color.fromARGB(
+                                      color: Color.fromARGB(
                                           255, 212, 212, 212),
                                       thickness: 0.5,
                                     ),
@@ -473,7 +469,7 @@ class PledgenUnpledgeResponse extends StatelessWidget {
                                           children: [
                                             TextWidget.paraText(
                                                 text: "Req ID :  ",
-                                                color: Color(0xFF696969),
+                                                color: const Color(0xFF696969),
                                                 textOverflow:
                                                     TextOverflow.ellipsis,
                                                 theme: theme.isDarkMode,
@@ -504,7 +500,7 @@ class PledgenUnpledgeResponse extends StatelessWidget {
                                               children: [
                                                 TextWidget.paraText(
                                                     text: "Res ID : ",
-                                                    color: Color(0xFF696969),
+                                                    color: const Color(0xFF696969),
                                                     textOverflow:
                                                         TextOverflow.ellipsis,
                                                     theme: theme.isDarkMode,
@@ -674,7 +670,7 @@ class PledgenUnpledgeResponse extends StatelessWidget {
       children: [
         TextWidget.subText(
             text: heading,
-            color: Color(0xFF696969),
+            color: const Color(0xFF696969),
             textOverflow: TextOverflow.ellipsis,
             theme: theme.isDarkMode,
             fw: 3),
@@ -686,7 +682,7 @@ class PledgenUnpledgeResponse extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.only(top: 8.0),
           child: TextWidget.paraText(
-              text: "${value}",
+              text: value,
               textOverflow: TextOverflow.ellipsis,
               theme: theme.isDarkMode,
               fw: 3),

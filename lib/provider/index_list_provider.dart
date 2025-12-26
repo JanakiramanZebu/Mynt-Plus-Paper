@@ -38,7 +38,7 @@ class IndexListProvider extends DefaultChangeNotifier {
   final Ref ref;
   IndexListProvider(this.ref);
 
-  bool _isActiveTsym = false;
+  final bool _isActiveTsym = false;
   bool get isActiveTsym => _isActiveTsym;
   IndexListModel? _defaultIndexList;
   IndexListModel? get defaultIndexList => _defaultIndexList;

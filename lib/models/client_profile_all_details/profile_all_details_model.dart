@@ -24,7 +24,7 @@ class ProfileAllDetails {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     if (clientData != null) {
       data['client_data'] = clientData!.toJson();
     }
@@ -172,7 +172,7 @@ class ClientData {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     data['CLIENT_ID'] = cLIENTID;
     data['CLIENT_NAME'] = cLIENTNAME;
     data['MOBILE_NO'] = mOBILENO;
@@ -243,7 +243,7 @@ class SegmentsData {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     data['COMPANY_CODE'] = cOMPANYCODE;
     data['ACTIVE_INACTIVE'] = aCTIVEINACTIVE;
     data['Exchange_ACTIVE_INACTIVE'] = exchangeACTIVEINACTIVE;
@@ -285,7 +285,7 @@ class BankData {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     data['Account_Code'] = accountCode;
     data['Bank_Name'] = bankName;
     data['Bank_AcNo'] = bankAcNo;
@@ -492,7 +492,7 @@ class NomineeDetails {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     data['CLIENT_ID'] = cLIENTID;
     data['Nomination_Name'] = nominationName;
     data['Nom_Relation'] = nomRelation;

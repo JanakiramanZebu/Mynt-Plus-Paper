@@ -93,10 +93,10 @@ class StockEventsDialog extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
+            const Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const CustomDragHandler(),
+                CustomDragHandler(),
               ],
             ),
             Padding(
@@ -113,9 +113,9 @@ class StockEventsDialog extends ConsumerWidget {
               ),
             ),
             eventList.isEmpty
-                ? Center(
+                ? const Center(
                     child: Padding(
-                      padding: const EdgeInsets.only(top: 60),
+                      padding: EdgeInsets.only(top: 60),
                       child: NoDataFound(),
                     ),
                   )

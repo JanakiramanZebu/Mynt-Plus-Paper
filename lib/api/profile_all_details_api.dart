@@ -1,6 +1,5 @@
 import 'package:mynt_plus/models/client_profile_all_details/details_change_current_status_model.dart';
 import 'package:mynt_plus/models/client_profile_all_details/profile_all_details_model.dart';
-import 'package:mynt_plus/models/explore_model/portfolioanalisys_models.dart';
 import 'package:mynt_plus/sharedWidget/fund_function.dart';
 import '../api/core/api_core.dart';
 import 'package:mynt_plus/provider/transcation_provider.dart';
@@ -110,14 +109,7 @@ mixin ProfileAllDetailsApi on ApiCore {
       DateTime nowUtc = DateTime.now().toUtc();
 
       // Manually format the date
-      String formattedDateUtc = "${nowUtc.year.toString().padLeft(4, '0')}-" +
-          "${nowUtc.month.toString().padLeft(2, '0')}-" +
-          "${nowUtc.day.toString().padLeft(2, '0')}T" +
-          "${nowUtc.hour.toString().padLeft(2, '0')}:" +
-          "${nowUtc.minute.toString().padLeft(2, '0')}:" +
-          "${nowUtc.second.toString().padLeft(2, '0')}." +
-          "${nowUtc.millisecond.toString().padLeft(3, '0')}" +
-          "Z"; // You can use milliseconds instead of microseconds for simplicity.
+      String formattedDateUtc = "${nowUtc.year.toString().padLeft(4, '0')}-${nowUtc.month.toString().padLeft(2, '0')}-${nowUtc.day.toString().padLeft(2, '0')}T${nowUtc.hour.toString().padLeft(2, '0')}:${nowUtc.minute.toString().padLeft(2, '0')}:${nowUtc.second.toString().padLeft(2, '0')}.${nowUtc.millisecond.toString().padLeft(3, '0')}Z"; // You can use milliseconds instead of microseconds for simplicity.
 
       // // print("Formatted UTC date: $formattedDateUtc");
       // // print("Current date and time: $now");
@@ -126,11 +118,11 @@ mixin ProfileAllDetailsApi on ApiCore {
           headers: funddefaultHeaders,
           body: jsonEncode({
             "client_id": "${prefs.clientId}",
-            "client_email": "${globalcurrmail}",
+            "client_email": globalcurrmail,
             "dp_code": globaldpcode,
-            "date_time": "${formattedDateUtc}",
-            "present_email": "${globalNewEmail}",
-            "previous_email": "${globalcurrmail}",
+            "date_time": formattedDateUtc,
+            "present_email": globalNewEmail,
+            "previous_email": globalcurrmail,
             "client_name": "${prefs.clientName}",
           }));
 
@@ -245,7 +237,7 @@ mixin ProfileAllDetailsApi on ApiCore {
     print("Raw response: ${res.body}");
     return PendingStatus.fromJson(jsonDecode(res.body));
   } catch (e) {
-    print("error fetchpendig :::: ${e}");
+    print("error fetchpendig :::: $e");
     rethrow;
   }
 }
@@ -265,7 +257,7 @@ mixin ProfileAllDetailsApi on ApiCore {
     );
 
       final json = jsonDecode(res.body);
-      print("json :::: ${json}");
+      print("json :::: $json");
       switch (type) {
       case "email_change":
         return json["email_file_id"];
@@ -296,12 +288,13 @@ mixin ProfileAllDetailsApi on ApiCore {
     print("Error in fetctfileidapi: $e");
     return null;
   }
+  return null;
 }
 
 
   cancelPendingStatusApi(String type, String fileid) async {
   try {
-    final response;
+    final String response;
     final uri = Uri.parse(apiLinks.cancelPendingesignURL);
     final res = await apiClient.post(uri, headers: defaultHeaders, body: jsonEncode({"client_id": prefs.clientId, "file_id": fileid, "type": type}));
     if(res.statusCode == 200){
@@ -310,7 +303,7 @@ mixin ProfileAllDetailsApi on ApiCore {
       return response = "Cancel Failed";
     }
   } catch (e) {
-    print("error cancel pending status :::: ${e}");
+    print("error cancel pending status :::: $e");
     rethrow;
   }
 }
@@ -386,14 +379,7 @@ mixin ProfileAllDetailsApi on ApiCore {
       DateTime nowUtc = DateTime.now().toUtc();
 
       // Manually format the date
-      String formattedDateUtc = "${nowUtc.year.toString().padLeft(4, '0')}-" +
-          "${nowUtc.month.toString().padLeft(2, '0')}-" +
-          "${nowUtc.day.toString().padLeft(2, '0')}T" +
-          "${nowUtc.hour.toString().padLeft(2, '0')}:" +
-          "${nowUtc.minute.toString().padLeft(2, '0')}:" +
-          "${nowUtc.second.toString().padLeft(2, '0')}." +
-          "${nowUtc.millisecond.toString().padLeft(3, '0')}" +
-          "Z"; // You can use milliseconds instead of microseconds for simplicity.
+      String formattedDateUtc = "${nowUtc.year.toString().padLeft(4, '0')}-${nowUtc.month.toString().padLeft(2, '0')}-${nowUtc.day.toString().padLeft(2, '0')}T${nowUtc.hour.toString().padLeft(2, '0')}:${nowUtc.minute.toString().padLeft(2, '0')}:${nowUtc.second.toString().padLeft(2, '0')}.${nowUtc.millisecond.toString().padLeft(3, '0')}Z"; // You can use milliseconds instead of microseconds for simplicity.
 
       // // print("Formatted UTC date: $formattedDateUtc");
       final uri = Uri.parse(apiLinks.filewritemob);
@@ -434,7 +420,7 @@ mixin ProfileAllDetailsApi on ApiCore {
       // Adding form data
       request.fields['proff'] = profty;
       request.fields['cur_address'] =
-          '{"address":"${newadd}","pincode":"${pincoderes}","state":"${state}","dist":"${dist}","country":"${county}"}';
+          '{"address":"$newadd","pincode":"$pincoderes","state":"$state","dist":"$dist","country":"$county"}';
       request.fields['ext_address'] =
           ("${fulldataprf.toJson()['CL_RESI_ADD1']}, ${fulldataprf.toJson()['CL_RESI_ADD2']}, ${fulldataprf.toJson()['CL_RESI_ADD3']}");
       request.fields['dp_code'] = "${fulldataprf.toJson()['CLIENT_DP_CODE']}";
@@ -725,7 +711,7 @@ mixin ProfileAllDetailsApi on ApiCore {
       }).toList();
       try {
         final uri = Uri.parse(
-            "${apiLinks.bankURL}?mob=${fulldataprf.toJson()['MOBILE_NO']}&bankName=${globalfulldata['BANK']}&ifsc=${globalfulldata['IFSC']}&proff_type=${profftype}&branch=${globalfulldata['BRANCH']}&bank_account_type=${accty}&client_name=${prefs.clientName}&option=add&client_id=${prefs.clientId}&set_default=no&dp_code=${fulldataprf.toJson()['CLIENT_DP_CODE']}&micr=${globalfulldata['MICR']}&client_email=${fulldataprf.toJson()['CLIENT_ID_MAIL']}&password_required=NO&Password=&count=3");
+            "${apiLinks.bankURL}?mob=${fulldataprf.toJson()['MOBILE_NO']}&bankName=${globalfulldata['BANK']}&ifsc=${globalfulldata['IFSC']}&proff_type=$profftype&branch=${globalfulldata['BRANCH']}&bank_account_type=$accty&client_name=${prefs.clientName}&option=add&client_id=${prefs.clientId}&set_default=no&dp_code=${fulldataprf.toJson()['CLIENT_DP_CODE']}&micr=${globalfulldata['MICR']}&client_email=${fulldataprf.toJson()['CLIENT_ID_MAIL']}&password_required=NO&Password=&count=3");
         var request = http.MultipartRequest('POST', uri);
         request.headers.addAll(funddefaultHeaders);
         request.fields['bank_exists'] = jsonEncode(formattedBankData);

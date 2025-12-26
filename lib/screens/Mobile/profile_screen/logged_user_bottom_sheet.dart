@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
 import '../../../locator/locator.dart';
 import '../../../locator/preference.dart';
 import '../../../provider/auth_provider.dart';
@@ -15,10 +14,8 @@ import '../../../provider/user_profile_provider.dart';
 import '../../../provider/websocket_provider.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
-import '../../../routes/route_names.dart';
 import '../authentication/login/login_screen.dart';
 import '../../../sharedWidget/custom_drag_handler.dart';
-import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/list_divider.dart';
 
 class LoggedUserBottomSheet extends ConsumerWidget {
@@ -87,7 +84,7 @@ class LoggedUserBottomSheet extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SingleChildScrollView(
-                  physics: ClampingScrollPhysics(),
+                  physics: const ClampingScrollPhysics(),
                   controller: controller,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -561,7 +558,7 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                               : colors.primaryLight,
                         ),
                         padding: const EdgeInsets.symmetric(vertical: 10.5),
-                        minimumSize: Size(0, 45),
+                        minimumSize: const Size(0, 45),
                         shape: const RoundedRectangleBorder(
                           borderRadius: BorderRadius.all(Radius.circular(4)),
                         ),

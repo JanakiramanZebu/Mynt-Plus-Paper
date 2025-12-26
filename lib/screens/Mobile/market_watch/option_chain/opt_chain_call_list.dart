@@ -15,12 +15,9 @@ import '../../../../provider/thems.dart';
 import '../../../../provider/websocket_provider.dart';
 import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
-import '../../../../routes/route_names.dart';
 import '../../../../sharedWidget/list_divider.dart';
 import '../../../../utils/responsive_navigation.dart';
 import '../../../../sharedWidget/snack_bar.dart';
-import 'package:flutter/foundation.dart';
-import 'basket_selection_bottom_sheet.dart';
 
 class OptChainCallList extends StatelessWidget {
   final List<OptionValues>? callData;
@@ -69,13 +66,13 @@ class _OptionChainCallRow extends StatefulWidget {
   final bool isBasketMode;
 
   const _OptionChainCallRow({
-    Key? key,
+    super.key,
     required this.option,
     this.swipe,
     required this.index,
     required this.showPriceView,
     required this.isBasketMode,
-  }) : super(key: key);
+  });
 
   @override
   _OptionChainCallRowState createState() => _OptionChainCallRowState();
@@ -403,7 +400,7 @@ Widget _buildPriceData(ThemesProvider theme) {
         ),
         const SizedBox(height: 3),
         Text(
-          "(${_perChange}%)",
+          "($_perChange%)",
           style: _getPercentageStyle(_perChange, theme),
         ),
         const SizedBox(height: 2),
@@ -537,7 +534,7 @@ Widget _buildPriceData(ThemesProvider theme) {
     //   color,
       // () {
       Color color =  theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight;
-        if (perChange != null && perChange != "0.00") {
+        if (perChange != "0.00") {
           color = perChange.startsWith("-") ?  theme.isDarkMode ? colors.lossDark : colors.lossLight : theme.isDarkMode ? colors.profitDark : colors.profitLight;
         }
           return TextWidget.textStyle(fontSize: 14, color: color, theme: false, fw: 0,);

@@ -3,7 +3,6 @@
 //import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/models/ipo_model/ipo_pre_close_model.dart';
 import 'package:mynt_plus/screens/Mobile/ipo/main_sme_list/single_page.dart';
@@ -532,7 +531,7 @@ class _NoDataSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       height: devHeight - 600,
       child: const Center(child: NoDataFound()),
     );

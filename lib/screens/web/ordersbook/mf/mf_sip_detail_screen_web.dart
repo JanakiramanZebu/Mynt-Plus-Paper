@@ -151,7 +151,7 @@ class MFSipDetailScreenWeb extends ConsumerWidget {
                   ),
                   _buildInfoRow(
                     "Amount",
-                    "${sipData.installmentAmount ?? '0.0'}",
+                    sipData.installmentAmount ?? '0.0',
                     theme,
                   ),
                   _buildInfoRow(

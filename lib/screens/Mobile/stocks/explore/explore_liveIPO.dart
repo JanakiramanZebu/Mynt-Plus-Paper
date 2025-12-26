@@ -213,7 +213,7 @@ class LiveIPOList extends ConsumerWidget {
                           ),
                           TextWidget.paraText(
                             text:
-                                "${getIPOStatus(ipo[index].biddingStartDate ?? '', ipo[index].biddingEndDate ?? '')}"
+                                getIPOStatus(ipo[index].biddingStartDate ?? '', ipo[index].biddingEndDate ?? '')
                                     .toUpperCase(),
                             theme: theme.isDarkMode,
                             maxLines: 1,

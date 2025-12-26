@@ -15,6 +15,8 @@ import '../../../../../sharedWidget/list_divider.dart';
 import '../../../../../utils/no_emoji_inputformatter.dart';
 
 class MarginCalculatorScreen extends ConsumerStatefulWidget {
+  const MarginCalculatorScreen({super.key});
+
   @override
   ConsumerState<MarginCalculatorScreen> createState() =>
       _MarginCalculatorScreenState();
@@ -66,7 +68,7 @@ class _MarginCalculatorScreenState
           leadingWidth: 48,
           titleSpacing: 0,
           centerTitle: false,
-          leading: CustomBackBtn(),
+          leading: const CustomBackBtn(),
           elevation: 0.2,
           title: TextWidget.titleText(
               text: "F&O Margin Calculator",
@@ -79,7 +81,7 @@ class _MarginCalculatorScreenState
         ),
         body: SafeArea(
           child: SingleChildScrollView(
-            physics: ClampingScrollPhysics(),
+            physics: const ClampingScrollPhysics(),
             child: Column(
               children: [
                 // _buildHeaderSection(),
@@ -116,8 +118,8 @@ class _MarginCalculatorScreenState
 
   Widget _buildHeaderSection() {
     return Container(
-      margin: EdgeInsets.all(16),
-      padding: EdgeInsets.all(20),
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [Colors.blue[600]!, Colors.blue[700]!],
@@ -129,7 +131,7 @@ class _MarginCalculatorScreenState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          const Text(
             'F&O Margin (Span) Calculator',
             style: TextStyle(
               fontSize: 20,
@@ -137,7 +139,7 @@ class _MarginCalculatorScreenState
               color: Colors.white,
             ),
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Text(
             'Estimate the margin requirements for your trades with precision using this handy tool.',
             style: TextStyle(
@@ -277,7 +279,7 @@ class _MarginCalculatorScreenState
                   child: StatefulBuilder(
                     builder: (context, setBottomSheetState) {
                       return SingleChildScrollView(
-                        physics: ClampingScrollPhysics(),
+                        physics: const ClampingScrollPhysics(),
                         controller: scrollController,
                         padding: const EdgeInsets.symmetric(horizontal: 20),
                         child: Column(
@@ -954,7 +956,7 @@ class _MarginCalculatorScreenState
     return Container(
       // margin: EdgeInsets.all(16),
       // padding: EdgeInsets.all(20),
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
         color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
         // borderRadius: BorderRadius.circular(16),
@@ -1309,7 +1311,7 @@ class _MarginCalculatorScreenState
         child: Center(
           child: Column(
             children: [
-              SvgPicture.asset(assets.noDatafound, color: Color(0xff777777)),
+              SvgPicture.asset(assets.noDatafound, color: const Color(0xff777777)),
               const SizedBox(height: 2),
               TextWidget.subText(
                   text: 'No Contract',
@@ -1434,7 +1436,7 @@ class _MarginCalculatorScreenState
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         TextWidget.subText(
-                          text: '${item.totalMargin.toStringAsFixed(0)}',
+                          text: item.totalMargin.toStringAsFixed(0),
                           theme: theme.isDarkMode,
                           color: theme.isDarkMode
                               ? colors.textPrimaryDark

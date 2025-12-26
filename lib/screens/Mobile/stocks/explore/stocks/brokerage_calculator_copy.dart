@@ -9,6 +9,8 @@ import '../../../../../sharedWidget/custom_back_btn.dart';
 import '../../../../../sharedWidget/custom_drag_handler.dart';
 
 class BrokerageCalculatorScreen extends ConsumerStatefulWidget {
+  const BrokerageCalculatorScreen({super.key});
+
   @override
   ConsumerState<BrokerageCalculatorScreen> createState() =>
       _BrokerageCalculatorScreenState();
@@ -428,7 +430,7 @@ class _BrokerageCalculatorScreenState
           leadingWidth: 48,
           titleSpacing: 0,
           centerTitle: false,
-          leading: CustomBackBtn(),
+          leading: const CustomBackBtn(),
           elevation: 0.2,
           title: TextWidget.titleText(
               text: "Brokerage Calculator",
@@ -441,7 +443,7 @@ class _BrokerageCalculatorScreenState
         ),
         body: SafeArea(
           child: SingleChildScrollView(
-            physics: ClampingScrollPhysics(),
+            physics: const ClampingScrollPhysics(),
             child: Column(
               children: [
                 _buildInputSection(),
@@ -536,7 +538,7 @@ class _BrokerageCalculatorScreenState
                   Expanded(
                     child: _buildValueDisplay(
                       'Buy Price',
-                      '${_buyPriceController.text}',
+                      _buyPriceController.text,
                       Icons.trending_up,
                     ),
                   ),
@@ -544,7 +546,7 @@ class _BrokerageCalculatorScreenState
               Expanded(
                 child: _buildValueDisplay(
                   'Sell Price',
-                  '${_sellPriceController.text}',
+                  _sellPriceController.text,
                   Icons.trending_down,
                 ),
               ),
@@ -619,7 +621,7 @@ class _BrokerageCalculatorScreenState
             ),
           ],
         ),
-        SizedBox(height: 8),
+        const SizedBox(height: 8),
         Row(
           children: [
             Expanded(
@@ -630,7 +632,7 @@ class _BrokerageCalculatorScreenState
                       ? colors.darkGrey
                       : const Color(0xffF1F3F8),
                   textCtrl: _brokerageController,
-                  keyboardType: TextInputType.numberWithOptions(decimal: true),
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   inputFormate: [
                     FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
                   ],
@@ -662,7 +664,7 @@ class _BrokerageCalculatorScreenState
                 ),
               ),
             ),
-            SizedBox(width: 16),
+            const SizedBox(width: 16),
             Expanded(
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -740,7 +742,7 @@ class _BrokerageCalculatorScreenState
   Widget _buildSegmentSelector() {
     final theme = ref.watch(themeProvider);
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 0, vertical: 10),
+      margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 10),
       child: Column(
         children: [
           // Main segment selector
@@ -865,10 +867,10 @@ class _BrokerageCalculatorScreenState
 
   Widget _buildResultsSection() {
     final theme = ref.watch(themeProvider);
-    if (_results.isEmpty) return SizedBox.shrink();
+    if (_results.isEmpty) return const SizedBox.shrink();
 
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16),
+      margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(5),
@@ -889,7 +891,7 @@ class _BrokerageCalculatorScreenState
                 const SizedBox(height: 8),
 
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   decoration: BoxDecoration(
                     color: theme.isDarkMode
                                       ? colors.darkGrey
@@ -911,7 +913,7 @@ class _BrokerageCalculatorScreenState
 
 
                  Container(
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   decoration: BoxDecoration(
                     color: theme.isDarkMode
                                       ? colors.darkGrey
@@ -947,7 +949,7 @@ class _BrokerageCalculatorScreenState
           ),
 
           Container(
-            padding: EdgeInsets.symmetric(horizontal: 0, vertical: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 16),
             decoration: BoxDecoration(
               color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
 
@@ -969,7 +971,7 @@ class _BrokerageCalculatorScreenState
                   fw: 1,
                 ),
                 TextWidget.titleText(
-                  text: '${_formatNumber(_results['netProfit'])}',
+                  text: _formatNumber(_results['netProfit']),
                   theme: theme.isDarkMode,
                   color: _results['netProfit'] >= 0
                       ? theme.isDarkMode ? colors.profitDark : colors.profitLight
@@ -1024,8 +1026,8 @@ class _BrokerageCalculatorScreenState
   Widget _buildInfoSection() {
     final theme = ref.watch(themeProvider);
     return Container(
-      margin: EdgeInsets.all(16),
-      padding: EdgeInsets.all(16),
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: colors.primary.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
@@ -1038,7 +1040,7 @@ class _BrokerageCalculatorScreenState
             children: [
               Icon(Icons.info_outline,
                   color: colors.textPrimaryLight, size: 18),
-              SizedBox(width: 8),
+              const SizedBox(width: 8),
               TextWidget.subText(
                 text: 'Important Notes',
                 theme: theme.isDarkMode,
@@ -1049,7 +1051,7 @@ class _BrokerageCalculatorScreenState
               ),
             ],
           ),
-          SizedBox(height: 12),
+          const SizedBox(height: 12),
           Text(
             '• STT will be higher in case of option exercised\n'
             '• Option Brokerage per lot, single side is ₹50\n'

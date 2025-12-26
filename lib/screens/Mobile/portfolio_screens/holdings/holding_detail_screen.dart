@@ -4,7 +4,6 @@ import 'package:flutter/foundation.dart';
 import '../../../../utils/custom_navigator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/provider/ledger_provider.dart';
 import '../../../../models/marketwatch_model/get_quotes.dart';
 import '../../../../models/order_book_model/order_book_model.dart';
@@ -18,11 +17,8 @@ import '../../../../res/res.dart';
 import '../../../../routes/route_names.dart';
 import '../../../../sharedWidget/alert_dialogue.dart';
 import '../../../../utils/responsive_navigation.dart';
-import '../../../../sharedWidget/custom_back_btn.dart';
 import '../../../../sharedWidget/custom_drag_handler.dart';
-import '../../../../sharedWidget/custom_exch_badge.dart';
 import '../../../../sharedWidget/scrip_info_btns.dart';
-import '../../authentication/password/forgot_pass_unblock_user.dart';
 import '../../market_watch/futures/future_screen.dart';
 import '../../market_watch/scrip_depth_info.dart';
 
@@ -33,11 +29,11 @@ class ScripDepthInfoWithHoldingConfig extends StatelessWidget {
   final bool isFromHolding;
 
   const ScripDepthInfoWithHoldingConfig({
-    Key? key,
+    super.key,
     required this.wlValue,
     required this.isBasket,
     this.isFromHolding = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -56,12 +52,12 @@ class ScripInfoButtonsWithLock extends StatefulWidget {
   final String tsym;
 
   const ScripInfoButtonsWithLock({
-    Key? key,
+    super.key,
     required this.exch,
     required this.token,
     required this.insName,
     required this.tsym,
-  }) : super(key: key);
+  });
 
   @override
   State<ScripInfoButtonsWithLock> createState() =>
@@ -109,8 +105,7 @@ class HoldingDetailScreen extends ConsumerStatefulWidget {
   final HoldingsModel holdingData;
 
   const HoldingDetailScreen(
-      {Key? key, required this.exchTsym, required this.holdingData})
-      : super(key: key);
+      {super.key, required this.exchTsym, required this.holdingData});
 
   @override
   ConsumerState<HoldingDetailScreen> createState() =>
@@ -542,7 +537,7 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                         return true;
                       },
                       child: ListView(
-                        physics: ClampingScrollPhysics(),
+                        physics: const ClampingScrollPhysics(),
                         controller: scrollController,
                         children: [
                           // Header section (previously fixed, now part of scrollable content)
@@ -892,7 +887,7 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                                                             : colors
                                                                 .profitLight,
                                                     fw: 0),
-                                                SizedBox(height: 4),
+                                                const SizedBox(height: 4),
                                                 TextWidget.subText(
                                                     text:
                                                         " (${_exchTsym.pNlChng}%)",

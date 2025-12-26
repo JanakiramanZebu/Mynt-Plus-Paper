@@ -10,7 +10,6 @@ import '../locator/locator.dart';
 import 'package:intl/intl.dart';
 import '../locator/preference.dart';
 import '../models/explore_model/ca_events_model.dart';
-import '../models/explore_model/portfolioanalisys_models.dart';
 import '../models/explore_model/stocks_model/corporate_action_model.dart';
 import '../models/explore_model/stocks_model/get_ad_indices.dart';
 import '../models/explore_model/stocks_model/sctor_thematic_model.dart';
@@ -26,7 +25,6 @@ import '../models/marketwatch_model/get_quotes.dart';
 // duplicate imports removed
 import '../models/strategy_model.dart';
 import '../routes/route_names.dart';
-import 'auth_provider.dart';
 import 'bonds_provider.dart';
 import 'core/default_change_notifier.dart';
 import 'iop_provider.dart';
@@ -1159,7 +1157,7 @@ Future<SpanCalcResponse?> calculateSpanForSelection({
   }
 
   // Margin Calculator Portfolio State
-  List<MarginCalculatorPortfolioItem> _marginCalculatorPortfolio = [];
+  final List<MarginCalculatorPortfolioItem> _marginCalculatorPortfolio = [];
   MarginCalculatorData _marginCalculatorCombinedMargin = MarginCalculatorData();
   double _marginCalculatorBenefits = 0.0;
   double _marginCalculatorBenefitPercentage = 0.0;
@@ -1216,8 +1214,8 @@ Future<SpanCalcResponse?> calculateSpanForSelection({
   }
 
   String _strategyType = 'Intraday';
-  TimeOfDay _entryTime = TimeOfDay(hour: 9, minute: 35);
-  TimeOfDay _exitTime = TimeOfDay(hour: 15, minute: 15);
+  TimeOfDay _entryTime = const TimeOfDay(hour: 9, minute: 35);
+  TimeOfDay _exitTime = const TimeOfDay(hour: 15, minute: 15);
   
   // Instrument Settings
   String _selectedIndex = 'BANKNIFTY';
@@ -1225,7 +1223,7 @@ Future<SpanCalcResponse?> calculateSpanForSelection({
   String _selectedSquareOff = 'Partial';
   
   // Leg Builder
-  List<StrategyLeg> _legs = [];
+  final List<StrategyLeg> _legs = [];
   bool _isLegBuilderCollapsed = false;
   String _selectedSegment = 'Options';
   String _totalQty = '1';
@@ -1271,6 +1269,7 @@ Future<SpanCalcResponse?> calculateSpanForSelection({
   String get targetPoints => _targetPoints;
   String get stopLossPoints => _stopLossPoints;
   bool get isLoading => _isLoading;
+  @override
   String? get errorMessage => _errorMessage;
   String? get successMessage => _successMessage;
   bool get overallTarget => _overallTarget;

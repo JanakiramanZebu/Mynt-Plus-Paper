@@ -42,7 +42,7 @@ class LedgerModelData {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     data['closing_balance'] = closingBalance;
     if (cr != null) {
       data['cr'] = cr!.map((v) => v.toJson()).toList();
@@ -119,7 +119,7 @@ class Cr {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     data['ACCOUNTCODE'] = aCCOUNTCODE;
     data['ACCOUNTNAME'] = aCCOUNTNAME;
     data['BILLNO'] = bILLNO;
@@ -200,7 +200,7 @@ class Dr {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     data['ACCOUNTCODE'] = aCCOUNTCODE;
     data['ACCOUNTNAME'] = aCCOUNTNAME;
     data['BILLNO'] = bILLNO;
@@ -287,7 +287,7 @@ class FullStat {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     data['ACCOUNTCODE'] = aCCOUNTCODE;
     data['ACCOUNTNAME'] = aCCOUNTNAME;
     data['BILLNO'] = bILLNO;

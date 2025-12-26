@@ -52,9 +52,9 @@ class _CloseOrdersTableState extends ConsumerState<CloseOrdersTable> {
     return Builder(
       builder: (context) {
         final screenHeight = MediaQuery.of(context).size.height;
-        final padding = 16.0 * 2;
-        final headerHeight = 100.0;
-        final spacing = 16.0;
+        const padding = 16.0 * 2;
+        const headerHeight = 100.0;
+        const spacing = 16.0;
         final tableHeight = screenHeight - padding - headerHeight - spacing;
         final maxHeight = screenHeight * 0.75;
         final calculatedHeight =
@@ -77,23 +77,23 @@ class _CloseOrdersTableState extends ConsumerState<CloseOrdersTable> {
             child: Theme(
               data: Theme.of(context).copyWith(
                 scrollbarTheme: ScrollbarThemeData(
-                  thumbVisibility: MaterialStateProperty.all(true),
-                  trackVisibility: MaterialStateProperty.all(true),
-                  thickness: MaterialStateProperty.all(6.0),
+                  thumbVisibility: WidgetStateProperty.all(true),
+                  trackVisibility: WidgetStateProperty.all(true),
+                  thickness: WidgetStateProperty.all(6.0),
                   crossAxisMargin: 0.0,
                   mainAxisMargin: 0.0,
                   radius: const Radius.circular(3),
-                  thumbColor: MaterialStateProperty.resolveWith((states) {
+                  thumbColor: WidgetStateProperty.resolveWith((states) {
                     return theme.isDarkMode
                         ? WebDarkColors.textSecondary.withOpacity(0.3)
                         : WebColors.textSecondary.withOpacity(0.3);
                   }),
-                  trackColor: MaterialStateProperty.resolveWith((states) {
+                  trackColor: WidgetStateProperty.resolveWith((states) {
                     return theme.isDarkMode
                         ? WebDarkColors.divider.withOpacity(0.1)
                         : WebColors.divider.withOpacity(0.1);
                   }),
-                  trackBorderColor: MaterialStateProperty.all(Colors.transparent),
+                  trackBorderColor: WidgetStateProperty.all(Colors.transparent),
                   minThumbLength: 48.0,
                 ),
               ),
@@ -112,7 +112,7 @@ class _CloseOrdersTableState extends ConsumerState<CloseOrdersTable> {
                 scrollController: _verticalScrollController,
                 showCheckboxColumn: false,
                 dataRowHeight: 56.0,
-                headingRowColor: MaterialStateProperty.all(
+                headingRowColor: WidgetStateProperty.all(
                   theme.isDarkMode
                       ? WebDarkColors.primary
                       : WebColors.primary.withOpacity(0.05),
@@ -514,8 +514,8 @@ class _CloseOrdersTableState extends ConsumerState<CloseOrdersTable> {
     }
     
     return order.type == "BSE"
-        ? "${getFormatter(noDecimal: true, v4d: false, value: double.parse(order.bidDetail![0].rate ?? "0") * double.parse(order.bidDetail![0].quantity ?? "0"))}"
-        : "${getFormatter(noDecimal: true, v4d: false, value: double.parse(order.bidDetail![0].amount?.toString() ?? "0"))}";
+        ? getFormatter(noDecimal: true, v4d: false, value: double.parse(order.bidDetail![0].rate ?? "0") * double.parse(order.bidDetail![0].quantity ?? "0"))
+        : getFormatter(noDecimal: true, v4d: false, value: double.parse(order.bidDetail![0].amount?.toString() ?? "0"));
   }
 }
 

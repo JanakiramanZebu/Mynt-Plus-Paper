@@ -2,13 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/models/bonds_model/bonds_order_book_model.dart';
-import '../../../../../provider/iop_provider.dart';
 import '../../../../../provider/thems.dart';
 import '../../../../../res/res.dart';
-import '../../../../../routes/route_names.dart';
 import '../../../../../sharedWidget/custom_drag_handler.dart';
 import '../../../../../sharedWidget/functions.dart';
 import '../../../../../res/global_state_text.dart';
@@ -115,7 +111,7 @@ class BondsCloseOrderDetails extends ConsumerWidget {
                                   theme: theme),
                               Expanded(
                                 child: SingleChildScrollView(
-                                  physics: ClampingScrollPhysics(),
+                                  physics: const ClampingScrollPhysics(),
                                   controller: scrollController,
                                   child: Column(
                                     crossAxisAlignment:
@@ -712,7 +708,7 @@ class _BidDetailsTable extends StatelessWidget {
                   text:
                       // (bondsCloseDetails.bidDetail!.investmentValue! / bondsCloseDetails.bidDetail!.price!).toStringAsFixed(0),
 
-                      "${(double.parse(bondsCloseDetails.totalAmountPayable!) / bondsCloseDetails.bidDetail!.price!).toStringAsFixed(0)}",
+                      (double.parse(bondsCloseDetails.totalAmountPayable!) / bondsCloseDetails.bidDetail!.price!).toStringAsFixed(0),
                   theme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? colors.textSecondaryDark

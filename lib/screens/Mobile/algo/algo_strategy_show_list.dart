@@ -146,7 +146,7 @@ class _AlgoStrategyShowListState extends ConsumerState<AlgoStrategyShowList> {
         children: [
 
           SvgPicture.asset(assets.noDatafound,
-          color:   Color(0xff777777)
+          color:   const Color(0xff777777)
           ),
           const SizedBox(height: 2),
           TextWidget.subText(

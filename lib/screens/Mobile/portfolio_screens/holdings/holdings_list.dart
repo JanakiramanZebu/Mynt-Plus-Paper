@@ -7,7 +7,6 @@ import '../../../../provider/thems.dart';
 import '../../../../provider/websocket_provider.dart';
 import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
-import '../../../../sharedWidget/custom_exch_badge.dart';
 import '../../../../sharedWidget/functions.dart';
 
 // A wrapper widget that only rebuilds when necessary
@@ -267,12 +266,11 @@ class _StaticQuantityInfo extends StatelessWidget {
   static final Map<String, TextStyle> _styles = {};
 
   const _StaticQuantityInfo({
-    Key? key,
     required this.holdingData,
     required this.exchTsym,
     required this.labelColor,
     required this.contentColor,
-  }) : super(key: key);
+  });
 
   // Get or create a text style
   static TextStyle _getStyle(
@@ -319,12 +317,11 @@ class _StaticPriceInfo extends StatelessWidget {
   static final Map<String, TextStyle> _styles = {};
 
   const _StaticPriceInfo({
-    Key? key,
     required this.holdingData,
     required this.exchTsym,
     required this.labelColor,
     required this.contentColor,
-  }) : super(key: key);
+  });
 
   // Get or create a text style
   static TextStyle _getStyle(
@@ -363,12 +360,11 @@ class _StaticInvestmentInfo extends StatelessWidget {
   static final Map<String, TextStyle> _styles = {};
 
   const _StaticInvestmentInfo({
-    Key? key,
     required this.holdingData,
     required this.exchTsym,
     required this.labelColor,
     required this.contentColor,
-  }) : super(key: key);
+  });
 
   // Get or create a text style
   static TextStyle _getStyle(
@@ -397,7 +393,7 @@ class _StaticInvestmentInfo extends StatelessWidget {
                   _getStyle(labelColor, 12, 0, 'inv-label', theme.isDarkMode),
             ),
             Text(
-              "${getFormatter(value: investedValue, v4d: false, noDecimal: false)}",
+              getFormatter(value: investedValue, v4d: false, noDecimal: false),
               style:
                   _getStyle(contentColor, 12, 0, 'inv-value', theme.isDarkMode),
             ),
@@ -415,11 +411,10 @@ class _DynamicLtpInfo extends ConsumerStatefulWidget {
   final Color contentColor;
 
   const _DynamicLtpInfo({
-    Key? key,
     required this.ltp,
     required this.labelColor,
     required this.contentColor,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<_DynamicLtpInfo> createState() => _DynamicLtpInfoState();
@@ -507,7 +502,7 @@ class _DynamicLtpInfoState extends ConsumerState<_DynamicLtpInfo> {
         Text("LTP ",
             style: _getStyle(
                 widget.labelColor, 12, 0, 'ltp-label', theme.isDarkMode)),
-        Text("${_ltp}",
+        Text(_ltp,
             style: _getStyle(
                 widget.contentColor, 12, 0, 'ltp-value', theme.isDarkMode))
       ]),
@@ -520,9 +515,8 @@ class _DynamicPercentChange extends ConsumerStatefulWidget {
   final String perChange;
 
   const _DynamicPercentChange({
-    Key? key,
     required this.perChange,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<_DynamicPercentChange> createState() =>
@@ -579,7 +573,7 @@ class _DynamicPercentChangeState extends ConsumerState<_DynamicPercentChange> {
             : colors.ltpgreen;
 
     return RepaintBoundary(
-      child: Text(" (${_perChange}%)",
+      child: Text(" ($_perChange%)",
           style: _getStyle(textColor, 12, 0, theme.isDarkMode)),
     );
   }
@@ -591,12 +585,10 @@ class _DynamicPnlInfo extends ConsumerStatefulWidget {
   final String? pnlChange;
 
   const _DynamicPnlInfo({
-    Key? key,
     this.profitLoss,
     this.pnlChange,
   })  : assert(profitLoss != null || pnlChange != null,
-            'Either profitLoss or pnlChange must be provided.'),
-        super(key: key);
+            'Either profitLoss or pnlChange must be provided.');
 
   @override
   ConsumerState<_DynamicPnlInfo> createState() => _DynamicPnlInfoState();
@@ -691,11 +683,10 @@ class _DynamicCurrentValueInfo extends ConsumerStatefulWidget {
   final Color contentColor;
 
   const _DynamicCurrentValueInfo({
-    Key? key,
     required this.currentValue,
     required this.labelColor,
     required this.contentColor,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<_DynamicCurrentValueInfo> createState() =>
@@ -757,7 +748,7 @@ class _DynamicCurrentValueInfoState
             style: _getStyle(
                 widget.labelColor, 12, 3, 'cur-label', theme.isDarkMode)),
         Text(
-            "${getFormatter(value: double.parse(_currentValue), v4d: false, noDecimal: false)}",
+            getFormatter(value: double.parse(_currentValue), v4d: false, noDecimal: false),
             style: _getStyle(
                 widget.contentColor, 12, 3, 'cur-value', theme.isDarkMode))
       ]),

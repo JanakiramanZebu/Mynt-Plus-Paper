@@ -10,15 +10,10 @@ import '../../../provider/websocket_provider.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
-import '../../../sharedWidget/custom_back_btn.dart';
 import '../../../utils/responsive_navigation.dart';
 import '../../../sharedWidget/custom_drag_handler.dart';
-import '../../../sharedWidget/custom_exch_badge.dart';
 import '../../../sharedWidget/functions.dart';
-import '../../../sharedWidget/list_divider.dart';
-import '../../../sharedWidget/scrip_info_btns.dart';
 import '../../../sharedWidget/time_line.dart';
-import '../market_watch/scrip_depth_info.dart';
 
 class OrderBookDetail extends ConsumerStatefulWidget {
   final OrderBookModel orderBookData;
@@ -146,7 +141,7 @@ class _OrderBookDetailState extends ConsumerState<OrderBookDetail> {
                           children: <Widget>[
                             Expanded(
                               child: SingleChildScrollView(
-                                physics: ClampingScrollPhysics(),
+                                physics: const ClampingScrollPhysics(),
                                 controller: scrollController,
                                 child: Column(
                                   children: [
@@ -604,17 +599,17 @@ class _OrderDetailsSection extends ConsumerWidget {
       const SizedBox(height: 8),
       _buildInfoRow(
           "Qty",
-          "${((orderBookData.status != "COMPLETE" && (orderBookData.fillshares?.isNotEmpty ?? false) ? (int.tryParse(orderBookData.fillshares.toString()) ?? 0) : orderBookData.status == "COMPLETE" ? (int.tryParse(orderBookData.rqty.toString()) ?? 0) : (int.tryParse(orderBookData.dscqty.toString()) ?? 0)).toInt() / (orderBookData.exch == 'MCX' ? (int.tryParse(orderBookData.ls.toString()) ?? 1) : 1)).toInt()}/${((int.tryParse(orderBookData.qty.toString()) ?? 0) / (orderBookData.exch == 'MCX' ? (int.tryParse(orderBookData.ls.toString()) ?? 1) : 1)).toInt()}",
+          "${(orderBookData.status != "COMPLETE" && (orderBookData.fillshares?.isNotEmpty ?? false) ? (int.tryParse(orderBookData.fillshares.toString()) ?? 0) : orderBookData.status == "COMPLETE" ? (int.tryParse(orderBookData.rqty.toString()) ?? 0) : (int.tryParse(orderBookData.dscqty.toString()) ?? 0)).toInt() ~/ (orderBookData.exch == 'MCX' ? (int.tryParse(orderBookData.ls.toString()) ?? 1) : 1)}/${(int.tryParse(orderBookData.qty.toString()) ?? 0) ~/ (orderBookData.exch == 'MCX' ? (int.tryParse(orderBookData.ls.toString()) ?? 1) : 1)}",
           theme,
           context),
       const SizedBox(height: 8),
-      _buildInfoRow("Price", "${orderBookData.prc ?? "-"}", theme, context),
+      _buildInfoRow("Price", orderBookData.prc ?? "-", theme, context),
       const SizedBox(height: 8),
       _buildInfoRow(
-          "Avg Price", "${orderBookData.avgprc ?? "0.00"}", theme, context),
+          "Avg Price", orderBookData.avgprc ?? "0.00", theme, context),
       const SizedBox(height: 8),
       _buildInfoRow(
-          "Trigger Price", "${orderBookData.trgprc ?? "0.00"}", theme, context),
+          "Trigger Price", orderBookData.trgprc ?? "0.00", theme, context),
       const SizedBox(height: 8),
       _buildInfoRow(
           "Product / Type",
@@ -623,25 +618,25 @@ class _OrderDetailsSection extends ConsumerWidget {
           context),
       const SizedBox(height: 8),
       _buildInfoRow("Market Protection",
-          "${orderBookData.mktProtection ?? "-"}", theme, context),
+          orderBookData.mktProtection ?? "-", theme, context),
       const SizedBox(height: 8),
-      _buildInfoRow("AMO", "${orderBookData.amo ?? "-"}", theme, context),
-      const SizedBox(height: 8),
-      _buildInfoRow(
-          "Order Id", "${orderBookData.norenordno ?? "-"}", theme, context),
+      _buildInfoRow("AMO", orderBookData.amo ?? "-", theme, context),
       const SizedBox(height: 8),
       _buildInfoRow(
-          "Exchange", "${orderBookData.exchordid ?? "-"}", theme, context),
+          "Order Id", orderBookData.norenordno ?? "-", theme, context),
+      const SizedBox(height: 8),
+      _buildInfoRow(
+          "Exchange", orderBookData.exchordid ?? "-", theme, context),
       const SizedBox(height: 8),
       _buildInfoRow(
           "Date & Time",
-          "${formatDateTime(value: orderBookData.norentm ?? "-")}",
+          formatDateTime(value: orderBookData.norentm ?? "-"),
           theme,
           context),
       const SizedBox(height: 8),
       orderBookData.rejreason != null
           ? _buildInfoRow(
-              "Reason", "${orderBookData.rejreason ?? "-"}", theme, context)
+              "Reason", orderBookData.rejreason ?? "-", theme, context)
           : const SizedBox.shrink(),
       const SizedBox(height: 8),
     ]);

@@ -60,7 +60,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
   String? _processingOrderToken; // Track which order is being processed
 
   // Draggable dialog positions
-  Offset _modifyDialogPosition = const Offset(100, 100);
+  final Offset _modifyDialogPosition = const Offset(100, 100);
   Offset _placeOrderDialogPosition = const Offset(150, 150);
 
   // Sort state per table
@@ -709,10 +709,10 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
       builder: (context, constraints) {
         // Calculate available height: screen height minus all UI elements
         final screenHeight = MediaQuery.of(context).size.height;
-        final padding = 32.0; // Top and bottom padding (16 * 2)
-        final headerHeight = 50.0; // Header height (tabs + search bar)
-        final spacing = 16.0; // Spacing between header and content
-        final bottomMargin = 20.0; // Bottom margin to prevent overflow
+        const padding = 32.0; // Top and bottom padding (16 * 2)
+        const headerHeight = 50.0; // Header height (tabs + search bar)
+        const spacing = 16.0; // Spacing between header and content
+        const bottomMargin = 20.0; // Bottom margin to prevent overflow
         final tableHeight =
             screenHeight - padding - headerHeight - spacing - bottomMargin;
 
@@ -1403,7 +1403,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
         order.status == "OPEN" ||
         order.status == "TRIGGER_PENDING";
 
-    String symbol = '${order.tsym ?? ''}';
+    String symbol = order.tsym ?? '';
     String exchange = order.exch ?? '';
     String displayText = symbol.trim();
     if (exchange.isNotEmpty && exchange.trim().isNotEmpty) {
@@ -2753,7 +2753,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
   Widget _buildGttInstrumentWidget(GttOrderBookModel gttOrder,
       ThemesProvider theme, bool isHovered, bool isPending,
       {required bool needHorizontalScroll}) {
-    String symbol = '${gttOrder.tsym?.replaceAll("-EQ", "") ?? 'N/A'}';
+    String symbol = gttOrder.tsym?.replaceAll("-EQ", "") ?? 'N/A';
     String exchange = gttOrder.exch ?? '';
     String displayText = symbol.trim();
     if (exchange.isNotEmpty && exchange.trim().isNotEmpty) {
@@ -3937,7 +3937,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
         order.status == "OPEN" ||
         order.status == "TRIGGER_PENDING";
 
-    String symbol = '${order.tsym ?? ''}';
+    String symbol = order.tsym ?? '';
     String exchange = order.exch ?? '';
 
     String displayText = symbol.trim();
@@ -4568,7 +4568,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     final status = gttOrder.gttOrderCurrentStatus?.toUpperCase() ?? '';
     final isPending = status == 'PENDING' || status == 'TRIGGER_PENDING';
 
-    String symbol = '${gttOrder.tsym?.replaceAll("-EQ", "") ?? 'N/A'}';
+    String symbol = gttOrder.tsym?.replaceAll("-EQ", "") ?? 'N/A';
     String exchange = gttOrder.exch ?? '';
 
     String displayText = symbol.trim();

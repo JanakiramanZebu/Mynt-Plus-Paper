@@ -20,7 +20,6 @@ import '../../../../sharedWidget/list_divider.dart';
 import '../../../../utils/responsive_navigation.dart';
 import '../../../../sharedWidget/snack_bar.dart';
 import '../../../../utils/responsive_snackbar.dart';
-import 'package:flutter/foundation.dart';
 
 class OptChainCallList extends StatelessWidget {
   final List<OptionValues>? callData;
@@ -69,13 +68,13 @@ class _OptionChainCallRow extends StatefulWidget {
   final bool isBasketMode;
 
   const _OptionChainCallRow({
-    Key? key,
+    super.key,
     required this.option,
     this.swipe,
     required this.index,
     required this.showPriceView,
     required this.isBasketMode,
-  }) : super(key: key);
+  });
 
   @override
   _OptionChainCallRowState createState() => _OptionChainCallRowState();
@@ -418,7 +417,7 @@ class _OptionChainCallRowState extends State<_OptionChainCallRow> {
                           children: [
                             Expanded(
                               child: Text(
-                                "${_perChange}%",
+                                "$_perChange%",
                                 style: WebTextStyles.tableDataCompact(
                                   isDarkTheme: theme.isDarkMode,
                                   color: changeColor,
@@ -515,7 +514,7 @@ class _OptionChainCallRowState extends State<_OptionChainCallRow> {
     );
   }
 
-  Widget _buildDataCell(String value, ThemesProvider theme, {bool isPrimary = false, bool isSecondary = false, Color? color}) {
+  Widget _buildDataCell(String value, ThemesProvider theme, {bool isPrimary = false, Color? color}) {
     final displayValue = value == "0.00" || value == "0" ? "0.00" : value;
     final textColor = color ?? (isPrimary 
         ? (theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary)
@@ -774,7 +773,7 @@ Widget _buildPriceData(ThemesProvider theme) {
         const SizedBox(height: 3),
         
         Text(
-          "(${_perChange}%)",
+          "($_perChange%)",
           style: _getPercentageStyle(_perChange, theme),
         ),
         

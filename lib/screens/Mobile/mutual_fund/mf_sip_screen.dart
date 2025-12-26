@@ -1,17 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/sharedWidget/loader_ui.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
-import 'package:mynt_plus/sharedWidget/snack_bar.dart';
-import '../../../provider/fund_provider.dart';
 import '../../../provider/mf_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
-import '../../../routes/route_names.dart';
-import '../../../sharedWidget/custom_exch_badge.dart';
-import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/list_divider.dart';
 import 'mf_sip_details_screen.dart';
 import 'mf_sip_order_history.dart';
@@ -25,7 +19,7 @@ class MFSipdetScreen extends ConsumerWidget {
     final mfData = ref.watch(mfProvider);
 
     if (mfData.mfsiporderlist?.data?.isEmpty ?? true) {
-      return Center(child: NoDataFound(
+      return const Center(child: NoDataFound(
                 title: "No SIP Orders Found",
                 subtitle: "There's nothing here yet. Buy some SIP to see them here.",
                 // onSecondary: () {
@@ -62,7 +56,7 @@ class MFSipdetScreen extends ConsumerWidget {
       BuildContext context, dynamic mfData, dynamic theme) {
     return ListView.separated(
       // padding: EdgeInsets.only(bottom: 80),
-      physics: ClampingScrollPhysics(),
+      physics: const ClampingScrollPhysics(),
       shrinkWrap: true,
       separatorBuilder: (context, index) => const ListDivider(),
       padding: EdgeInsets.zero,

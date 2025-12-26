@@ -3,20 +3,17 @@ import 'dart:developer';
 import 'package:flutter/foundation.dart' show PlatformDispatcher, TargetPlatform, defaultTargetPlatform, kIsWeb;
 // ignore: uri_does_not_exist
 import 'utils/http_overrides_stub.dart' if (dart.library.io) 'utils/http_overrides.dart';
-// import 'package:flutter/services.dart';
-import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:mynt_plus/firebase_options.dart';
 import 'package:mynt_plus/locator/constant.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/sharedWidget/chart_overlay_widget.dart';
 import 'package:rxdart/rxdart.dart';
-// Remove unused alias
-// import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:mynt_plus/notification/notification_service.dart';
@@ -92,7 +89,6 @@ void handleNotificationMessage(RemoteMessage message) {
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
   if (!kIsWeb) {
-    // Debug logging handled via prints above when not web
     print("Handling a background message: ${message.messageId}");
     print('Message data: ${message.data}');
     print('Message notification: ${message.notification?.title}');
@@ -119,13 +115,15 @@ Future<void> initializeFirebaseAsync() async {
 
     final Preferences pref = locator<Preferences>();
 
-     FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+    // Only enable Crashlytics on mobile platforms (not web)
+    if (!kIsWeb) {
+      FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
       PlatformDispatcher.instance.onError = (error, stack) {
-      FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+        FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
         return true;
       };
       FirebaseCrashlytics.instance.setUserIdentifier("${pref.deviceName!} ${pref.imei}");
-
+    }
 
     // Configure messaging
     final messaging = FirebaseMessaging.instance;
@@ -198,8 +196,8 @@ Future<void> initializeFirebaseAsync() async {
 }
 
 void _clearBadgeOnStartup() async {
-    // await AwesomeNotifications().cancelAll();        // Clear all notifications
-    await AwesomeNotifications().resetGlobalBadge(); // Clear badge count
+    // await AwesomeNotifications().cancelAll();
+    await AwesomeNotifications().resetGlobalBadge();
   }
 
 // This method represents the project's entry level.
@@ -250,11 +248,10 @@ class MyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final themeProvide = ref.watch(themeProvider);
+    // ✅ Optimize: Only watch themeMode, use read() for methods
+    final themeMode = ref.watch(themeProvider.select((t) => t.themeMode));
+    final themeProvide = ref.read(themeProvider);
     themeProvide.getThemeData();
-    
-    // Initialize lightweight subscription manager
-    final subscriptionManager = ref.watch(subscriptionManagerProvider);
     
     // SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
     //     statusBarIconBrightness: themeProvide.isDarkMode
@@ -266,7 +263,7 @@ class MyApp extends ConsumerWidget {
     return MaterialApp(
         navigatorKey: rootNavigatorKey,
         scaffoldMessengerKey: rootScaffoldMessengerKey,
-        themeMode: themeProvide.themeMode,
+        themeMode: themeMode,
         theme: themeProvide.currentTheme,
         darkTheme: MyThemes.darkTheme,
         title: 'MYNT',

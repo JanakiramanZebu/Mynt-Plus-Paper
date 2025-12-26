@@ -166,35 +166,35 @@ class Fund {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-     data['AUM'] = this.aUM;
-    data['name'] = this.name;
-    data['1Year'] = this.s1Year;
-    data['3Year'] = this.s3Year;
-    data['5Year'] = this.s5Year;
-    data['ISIN'] = this.iSIN;
-    data['Type'] = this.type;
-    data['SubType'] = this.subType;
-    data['AMC_Code'] = this.aMCCode;
-    data['Scheme_Type'] = this.schemeType;
-    data['Scheme_Code'] = this.schemeCode;
-    data['Exit_Load_Flag'] = this.exitLoadFlag;
-    data['Scheme_Name'] = this.schemeName;
-    data['Purchase_Allowed'] = this.purchaseAllowed;
-    data['Minimum_Purchase_Amount'] = this.minimumPurchaseAmount;
-    data['Additional_Purchase_Amount'] = this.additionalPurchaseAmount;
-    data['Maximum_Purchase_Amount'] = this.maximumPurchaseAmount;
-    data['Redemption_Allowed'] = this.redemptionAllowed;
-    data['Minimum_Redemption_Qty'] = this.minimumRedemptionQty;
-    data['Redemption_Qty_Multiplier'] = this.redemptionQtyMultiplier;
-    data['Redemption_Amount_Minimum'] = this.redemptionAmountMinimum;
-    data['Dividend_Reinvestment_Flag'] = this.dividendReinvestmentFlag;
-    data['SIP_FLAG'] = this.sIPFLAG;
-    data['Exit_Load'] = this.exitLoad;
-    data['ReOpening_Date'] = this.reOpeningDate;
-    data['SETTLEMENT_TYPE'] = this.sETTLEMENTTYPE;
-    data['Start_Date'] = this.startDate;
-    data['End_Date'] = this.endDate;
+    final Map<String, dynamic> data = <String, dynamic>{};
+     data['AUM'] = aUM;
+    data['name'] = name;
+    data['1Year'] = s1Year;
+    data['3Year'] = s3Year;
+    data['5Year'] = s5Year;
+    data['ISIN'] = iSIN;
+    data['Type'] = type;
+    data['SubType'] = subType;
+    data['AMC_Code'] = aMCCode;
+    data['Scheme_Type'] = schemeType;
+    data['Scheme_Code'] = schemeCode;
+    data['Exit_Load_Flag'] = exitLoadFlag;
+    data['Scheme_Name'] = schemeName;
+    data['Purchase_Allowed'] = purchaseAllowed;
+    data['Minimum_Purchase_Amount'] = minimumPurchaseAmount;
+    data['Additional_Purchase_Amount'] = additionalPurchaseAmount;
+    data['Maximum_Purchase_Amount'] = maximumPurchaseAmount;
+    data['Redemption_Allowed'] = redemptionAllowed;
+    data['Minimum_Redemption_Qty'] = minimumRedemptionQty;
+    data['Redemption_Qty_Multiplier'] = redemptionQtyMultiplier;
+    data['Redemption_Amount_Minimum'] = redemptionAmountMinimum;
+    data['Dividend_Reinvestment_Flag'] = dividendReinvestmentFlag;
+    data['SIP_FLAG'] = sIPFLAG;
+    data['Exit_Load'] = exitLoad;
+    data['ReOpening_Date'] = reOpeningDate;
+    data['SETTLEMENT_TYPE'] = sETTLEMENTTYPE;
+    data['Start_Date'] = startDate;
+    data['End_Date'] = endDate;
     return data;
   }
 }

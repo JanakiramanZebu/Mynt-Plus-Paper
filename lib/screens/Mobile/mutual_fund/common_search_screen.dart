@@ -223,7 +223,7 @@ class _MfCommonSearchState extends ConsumerState<MfCommonSearch> {
                             // padding: const EdgeInsets.symmetric(horizontal: 8),
                             separatorBuilder: (context, index) =>
                                 const ListDivider(),
-                            physics: ClampingScrollPhysics(),
+                            physics: const ClampingScrollPhysics(),
                             itemCount: mfData.mutualFundsearchdata!.length,
                             itemBuilder: (BuildContext context, int index) {
                               final fund = mfData.mutualFundsearchdata![index];
@@ -478,8 +478,8 @@ class _MfCommonSearchState extends ConsumerState<MfCommonSearch> {
                             },
                           ),
                       )
-                      : Expanded(
-                        child: const Center(
+                      : const Expanded(
+                        child: Center(
                             child: NoDataFound(
                               title: "No Results Found",
                               subtitle: "Try searching with different keywords",
@@ -489,8 +489,8 @@ class _MfCommonSearchState extends ConsumerState<MfCommonSearch> {
                           ),
                       )
                 ] else ...[
-                  Expanded(
-                    child: const Center(
+                  const Expanded(
+                    child: Center(
                       child: NoDataFound(
                         title: "No Results Found",
                         subtitle: "Try searching with different keywords",

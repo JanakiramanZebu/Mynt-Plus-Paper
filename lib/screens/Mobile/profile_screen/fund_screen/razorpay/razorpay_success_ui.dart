@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/provider/transcation_provider.dart';
 import '../../../../../provider/thems.dart';
 //import '../../../../provider/transcation_provider.dart';
@@ -8,9 +7,7 @@ import '../../../../../res/global_state_text.dart';
 import '../../../../../res/res.dart';
 import '../../../../../sharedWidget/custom_drag_handler.dart';
 import '../../../../../sharedWidget/functions.dart';
-import '../../../../../sharedWidget/list_divider.dart';
 import '../../../../../sharedWidget/loader_ui.dart';
-import '../../../../../sharedWidget/splash_loader.dart';
 
 class RazorpaySuccessUi extends StatefulWidget {
   final String amount;
@@ -143,7 +140,7 @@ class _RazorpaySuccessUiState extends State<RazorpaySuccessUi> {
                           ],
                         ),
                       ),
-                      SizedBox(
+                      const SizedBox(
                         height: 16,
                       ),
                       data(

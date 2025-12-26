@@ -20,7 +20,7 @@ class LedgerBillModel {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     if (expenses != null) {
       data['Expenses'] = expenses!.map((v) => v.toJson()).toList();
     }
@@ -99,7 +99,7 @@ class Expenses {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     data['BAMT'] = bAMT;
     data['BILL_NO'] = bILLNO;
     data['BQTY'] = bQTY;
@@ -192,7 +192,7 @@ class Transactions {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     data['BAMT'] = bAMT;
     data['BILL_NO'] = bILLNO;
     data['BQTY'] = bQTY;

@@ -57,7 +57,7 @@ class OrderScreenHeaderWeb extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Text(
-              "${ltp} ",
+              "$ltp ",
               style: WebTextStyles.sub(
                 isDarkTheme: theme.isDarkMode,
                 color: percentageColor,
@@ -65,7 +65,7 @@ class OrderScreenHeaderWeb extends ConsumerWidget {
               ),
             ),
             Text(
-              " (${perChange}%)",
+              " ($perChange%)",
               style: WebTextStyles.sub(
                 isDarkTheme: theme.isDarkMode,
                 color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,

@@ -32,7 +32,6 @@ import '../models/marketwatch_model/market_watchlist_model.dart';
 import '../models/marketwatch_model/opt_chain_model.dart';
 import '../models/marketwatch_model/pre_define_wl_model.dart';
 import '../models/marketwatch_model/scrip_info.dart';
-import '../models/marketwatch_model/scrip_overview/eodchartdata_model.dart';
 import '../models/marketwatch_model/scrip_overview/stock_data.dart';
 import '../models/marketwatch_model/scrip_overview/technical_data.dart';
 import '../models/marketwatch_model/search_scrip_new_model.dart';
@@ -408,15 +407,15 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   List<OptionExp>? get optExp => _optExp;
   OptionChainModel? _optionChainModel;
   OptionChainModel? get optionChainModel => _optionChainModel;
-  List<OptionValues> _optChainPut = [];
-  List<OptionValues> _optChainCall = [];
+  final List<OptionValues> _optChainPut = [];
+  final List<OptionValues> _optChainCall = [];
   List<OptionValues> get optChainPut => _optChainPut;
   List<OptionValues> get optChainCall => _optChainCall;
 
-  List<OptionValues> _optChainPutUp = [];
-  List<OptionValues> _optChainCallUp = [];
-  List<OptionValues> _optChainPutDown = [];
-  List<OptionValues> _optChainCallDown = [];
+  final List<OptionValues> _optChainPutUp = [];
+  final List<OptionValues> _optChainCallUp = [];
+  final List<OptionValues> _optChainPutDown = [];
+  final List<OptionValues> _optChainCallDown = [];
   List<OptionValues> get optChainPutUp => _optChainPutUp;
   List<OptionValues> get optChainCallUP => _optChainCallUp;
   List<OptionValues> get optChainPutDown => _optChainPutDown;
@@ -432,7 +431,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   // Method to update current watchlist page index
   void setCurrentWatchlistPageIndex(int index) {
     _currentWatchlistPageIndex = index;
-    print("index change to ${index}");
+    print("index change to $index");
     // Store in SharedPreferences for persistence
     _saveCurrentPageIndex();
   }
@@ -767,11 +766,11 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   TechnicalData? _techData;
   TechnicalData? get techData => _techData;
 
-  List<PrcComparisionChartData> _prcComChrtData1 = [];
-  List<PrcComparisionChartData> _prcComChrtData2 = [];
-  List<PrcComparisionChartData> _prcComChrtData3 = [];
-  List<PrcComparisionChartData> _prcComChrtData4 = [];
-  List<PrcComparisionChartData> _prcComChrtData5 = [];
+  final List<PrcComparisionChartData> _prcComChrtData1 = [];
+  final List<PrcComparisionChartData> _prcComChrtData2 = [];
+  final List<PrcComparisionChartData> _prcComChrtData3 = [];
+  final List<PrcComparisionChartData> _prcComChrtData4 = [];
+  final List<PrcComparisionChartData> _prcComChrtData5 = [];
 
   List<PrcComparisionChartData> get prcComChrtData1 => _prcComChrtData1;
   List<PrcComparisionChartData> get prcComChrtData2 => _prcComChrtData2;
@@ -818,12 +817,139 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
   bool _isDepthVisible = false;
   bool get isDepthVisible => _isDepthVisible;
-  setIsDepthVisibleWeb(bool value) {
+  bool _depthDataLoaded = false; // Track if depth data has been loaded
+  String? _currentDepthSymbol; // Track current depth subscription (exch|token)
+  
+  /// Lazy load market depth data when user opens depth panel
+  setIsDepthVisibleWeb(bool value, {BuildContext? context, String? exch, String? token, String? tsym}) async {
     _isDepthVisible = value;
     notifyListeners();
+    
+    if (value && context != null) {
+      // Use provided exch/token/tsym if available, otherwise fall back to _activeTab
+      String? finalExch = exch ?? _activeTab?.exch;
+      String? finalToken = token ?? _activeTab?.token;
+      String? finalTsym = tsym ?? _activeTab?.tsym;
+      
+      if (finalExch != null && finalToken != null && finalTsym != null) {
+        final newDepthSymbol = "$finalExch|$finalToken";
+        
+        // Only subscribe if it's a different scrip or not already loaded
+        if (newDepthSymbol != _currentDepthSymbol || !_depthDataLoaded) {
+          await subscribeToDepthData(
+            exch: finalExch,
+            token: finalToken,
+            tsym: finalTsym,
+            context: context,
+          );
+        }
+      }
+    } else if (!value && _currentDepthSymbol != null) {
+      // Unsubscribe when depth panel is closed
+      await unsubscribeFromDepthData(context: context);
+    }
+  }
+  
+  /// Subscribe to market depth data for a specific scrip
+  /// This is called lazily only when the depth panel is opened
+  Future<void> subscribeToDepthData({
+    required String exch,
+    required String token,
+    required String tsym,
+    required BuildContext context,
+  }) async {
+    try {
+      final depthSymbol = "$exch|$token";
+      
+      // Unsubscribe from old depth socket if different scrip
+      if (_currentDepthSymbol != null && _currentDepthSymbol != depthSymbol) {
+        print('\n📊 [DEPTH] Unsubscribing from old depth: $_currentDepthSymbol');
+        await unsubscribeFromDepthData(context: context);
+      }
+      
+      // Skip if already subscribed to this symbol
+      if (_currentDepthSymbol == depthSymbol && _depthDataLoaded) {
+        print('📊 [DEPTH] Already subscribed to: $depthSymbol');
+        return;
+      }
+      
+      print('\n📊 [DEPTH] Subscribing to depth data for: $depthSymbol');
+      print('   Scrip: $tsym');
+      print('   Reason: User opened depth panel');
+      
+      await ref.read(websocketProvider).establishConnection(
+        channelInput: depthSymbol,
+        task: "d",
+        context: context,
+      );
+      
+      _currentDepthSymbol = depthSymbol;
+      _depthDataLoaded = true;
+      print('✅ [DEPTH] Depth subscription complete');
+    } catch (e) {
+      print('❌ [DEPTH] Error subscribing to depth: $e');
+      _depthDataLoaded = false;
+      _currentDepthSymbol = null;
+    }
+  }
+  
+  /// Unsubscribe from market depth data
+  Future<void> unsubscribeFromDepthData({BuildContext? context}) async {
+    if (_currentDepthSymbol == null) return;
+    
+    try {
+      final depthSymbol = _currentDepthSymbol!;
+      
+      // Clear tracking first to prevent race conditions
+      _currentDepthSymbol = null;
+      _depthDataLoaded = false;
+      
+      // Only send unsubscribe if context is available and valid
+      if (context != null && context.mounted) {
+        try {
+          await ref.read(websocketProvider).establishConnection(
+            channelInput: depthSymbol,
+            task: "ud", // Unsubscribe depth task
+            context: context,
+          );
+          print('✅ [DEPTH] Depth unsubscription complete: $depthSymbol');
+        } catch (e) {
+          // If unsubscribe fails, it's okay - we've already cleared tracking
+          print('⚠️ [DEPTH] Error sending unsubscribe (tracking cleared): $e');
+        }
+      } else {
+        // Context not available, but we've cleared tracking
+        print('✅ [DEPTH] Depth tracking cleared (no context for unsubscribe): $depthSymbol');
+      }
+    } catch (e) {
+      print('❌ [DEPTH] Error unsubscribing from depth: $e');
+      // Ensure tracking is cleared even on error
+      _currentDepthSymbol = null;
+      _depthDataLoaded = false;
+    }
+  }
+  
+  /// Reset depth loaded state when scrip changes
+  void resetDepthLoadedState() {
+    _depthDataLoaded = false;
+    _currentDepthSymbol = null;
   }
 
+  // Cache for storing scrip data - limit size to prevent memory issues
   Map<String, Map<String, dynamic>> storeQuotes = {};
+  static const int _maxCacheSize = 50; // Maximum number of scrips to cache
+  
+  /// Clear oldest cache entries when cache size exceeds limit
+  void _manageCacheSize() {
+    if (storeQuotes.length > _maxCacheSize) {
+      // Remove oldest 10 entries
+      final keysToRemove = storeQuotes.keys.take(10).toList();
+      for (final key in keysToRemove) {
+        storeQuotes.remove(key);
+      }
+      print('🗑️  [CACHE] Cleared ${keysToRemove.length} old cache entries. Current size: ${storeQuotes.length}');
+    }
+  }
 
   singlePageloader(bool value) {
     _scripDepthloader = value;
@@ -874,15 +1000,30 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       }
     }
 
+    // Depth data subscription is now handled lazily when user opens depth panel
+    // This reduces initial load time and memory usage
+    
+    // Check if we already have cached data for this scrip
+    final String token = flow ? raw['token'].toString() : raw.token.toString();
+    final String exch = flow ? raw['exch'].toString() : raw.exch.toString();
+    final bool hasQuoteCache = storeQuotes.containsKey(token) && storeQuotes[token]?['q'] != null;
+    final bool hasScripInfoCache = storeQuotes.containsKey(token) && storeQuotes[token]?['s'] != null;
+    
+    // Fetch scrip quote first if not cached (needed for UI display)
+    if (!hasQuoteCache) {
+      await fetchScripQuote(token, exch, context);
+    }
+    
     // Check if running on web platform
     if (kIsWeb) {
       // For web, open the scrip in the panel and switch to Chart view
       chngDephBtn("Chart");
-      await fetchScripInfo(
-          depthArgs.token,
-          depthArgs.exch,
-          context,
-          true);
+      
+      // Only fetch scrip info if not cached
+      if (!hasScripInfoCache) {
+        await fetchScripInfo(depthArgs.token, depthArgs.exch, context, true);
+      }
+      
       openScripInWebPanel(context, depthArgs, basket);
       setChartScript(depthArgs.exch, depthArgs.token, depthArgs.tsym);
     } else {
@@ -911,34 +1052,40 @@ class MarketWatchProvider extends DefaultChangeNotifier {
               )));
     }
 
-    await ref.read(websocketProvider).establishConnection(
-        channelInput:
-            "${flow ? raw['exch'] : raw.exch}|${flow ? raw['token'] : raw.token}",
-        task: "d",
-        context: context);
     singlePageloader(false);
-    await fetchScripQuote("${flow ? raw['token'] : raw.token}",
-        "${flow ? raw['exch'] : raw.exch}", context);
-    // if (getOptionawait(
-    //     flow ? raw['exch'] : raw.exch, flow ? raw['token'] : raw.token)) {
-      await fetchScripInfo("${flow ? raw['token'] : raw.token}",
-          "${flow ? raw['exch'] : raw.exch}", context);
-      await fetchLinkeScrip("${flow ? raw['token'] : raw.token}",
-          "${flow ? raw['exch'] : raw.exch}", context);
-    // }
+    
+    // Load remaining data in background (non-blocking)
+    Future.microtask(() async {
+      // Fetch scrip quote if not already fetched
+      if (hasQuoteCache) {
+        // If we used cache, still fetch quote to update with latest data
+        await fetchScripQuote(token, exch, context);
+      }
+      
+      // Fetch scrip info if not already fetched (avoid duplicate call)
+      if (hasScripInfoCache) {
+        // If we used cache, still fetch to update with latest data
+        await fetchScripInfo(token, exch, context);
+      }
+      
+      // Fetch linked scrips
+      await fetchLinkeScrip(token, exch, context);
 
-    if (((flow ? raw['exch'] : raw.exch) == "NSE" ||
-        (flow ? raw['exch'] : raw.exch) == "BSE")) {
-      fetchFundamentalData(
-          tradeSym:
-              "${flow ? raw['exch'] : raw.exch}:${(flow ? raw['tsym'] : raw.tsym)}");
+      // Only fetch fundamental and tech data for NSE/BSE scrips
+      if (exch == "NSE" || exch == "BSE") {
+        // Fetch fundamental data in background (non-blocking)
+        fetchFundamentalData(
+            tradeSym: "$exch:${flow ? raw['tsym'] : raw.tsym}",
+            token: token);
 
-      await fetchTechData(
-          context: context,
-          exch: "${(flow ? raw['exch'] : raw.exch)}",
-          tradeSym: "${(flow ? raw['tsym'] : raw.tsym)}",
-          lastPrc: "${_getQuotes.lp ?? _getQuotes.c ?? 0.00}");
-    }
+        // Fetch tech data
+        await fetchTechData(
+            context: context,
+            exch: exch,
+            tradeSym: "${flow ? raw['tsym'] : raw.tsym}",
+            lastPrc: "${_getQuotes.lp ?? _getQuotes.c ?? 0.00}");
+      }
+    });
   }
 
   showAlertPendingSearch(bool value) {
@@ -1349,6 +1496,11 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   }
 
    void setChartScript(String exch, String token, String tsym) async {
+    // Unsubscribe from old depth and reset depth loaded state when changing scrip
+    // Note: We don't pass context here as it might not be available, 
+    // unsubscribe will happen on next depth panel open if needed
+    resetDepthLoadedState();
+    
     if (kIsWeb) {
       // On Flutter Web, JS injection into a cross-origin iframe is blocked.
       // Reload the chart with the desired symbol via URL parameters instead.
@@ -1958,6 +2110,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           }
           storeQuotes[token]?['s'] = {};
           storeQuotes[token]?['s'] = _scripInfoModel;
+          // Manage cache size to prevent memory issues
+          _manageCacheSize();
         }
 
         if (_scripInfoModel!.emsg == "Session Expired :  Invalid Session Key" &&
@@ -2106,6 +2260,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
 // Scrip market depth calc
           scripQtyCal();
+          // Manage cache size to prevent memory issues
+          _manageCacheSize();
         }
         if (_getQuotes.emsg == "Session Expired :  Invalid Session Key" &&
             _getQuotes.stat == "Not_Ok") {
@@ -2449,6 +2605,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
             'optionExch': _optionExch,
             'selectedTradeSym': _selectedTradeSym,
           };
+          // Manage cache size to prevent memory issues
+          _manageCacheSize();
         } else {
           ref.read(authProvider).ifSessionExpired(context);
         }
@@ -2592,6 +2750,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           ConstantName.sessCheck = true;
           storeQuotes[token]?['t'] = {};
           storeQuotes[token]?['t'] = _techData;
+          // Manage cache size to prevent memory issues
+          _manageCacheSize();
         }
 
         if (_techData!.emsg == "Session Expired :  Invalid Session Key" &&
@@ -2635,6 +2795,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
             storeQuotes[cacheToken] = {};
           }
           storeQuotes[cacheToken]?['f'] = _fundamentalData;
+          // Manage cache size to prevent memory issues
+          _manageCacheSize();
         }
         _peersChartKeys = _fundamentalData!.peerComparisonChart!.keys.toList();
         DateFormat format = DateFormat("yyyy-MM-dd");
@@ -4019,7 +4181,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
   // Socket data update method to maintain sorting
   void updateSocketData(Map<String, dynamic> socketDatas) {
-    if (socketDatas == null || _scrips.isEmpty) return;
+    if (_scrips.isEmpty) return;
 
     // Debug: Log when socket data is being updated during option chain operations
     if (_optionChainModel != null) {
@@ -4187,10 +4349,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   Future<void> addScrip(
       Map<String, dynamic> scrip, String wlName, BuildContext context) async {
     // Add the scrip to the list
-    if (scrip != null) {
-      _scrips.add(scrip);
-    }
-
+    _scrips.add(scrip);
+  
     // Reset sorting when adding new scrips to show natural order
     await _resetSortPreference();
     notifyListeners();

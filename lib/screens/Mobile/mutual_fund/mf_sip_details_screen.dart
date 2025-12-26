@@ -2,19 +2,15 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/screens/Mobile/mutual_fund/mf_cancel_sip_alert.dart';
 import 'package:mynt_plus/screens/Mobile/mutual_fund/mf_timeline.dart';
-import 'package:mynt_plus/sharedWidget/functions.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 
 import '../../../provider/mf_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
-import '../../../sharedWidget/custom_back_btn.dart';
 import '../../../sharedWidget/custom_drag_handler.dart';
-import '../../../sharedWidget/custom_exch_badge.dart';
 import '../../../sharedWidget/loader_ui.dart';
 
 class mfSipdetScren extends StatefulWidget {
@@ -118,7 +114,7 @@ class _mfSipdetScren extends State<mfSipdetScren>
                               
                                       Expanded(
                                         child: SingleChildScrollView(
-                                          physics: ClampingScrollPhysics(),
+                                          physics: const ClampingScrollPhysics(),
                                         controller: scrollController,
                                         child: Column(
                                           children: [
@@ -341,7 +337,7 @@ class _mfSipdetScren extends State<mfSipdetScren>
                         color: colors.primaryLight,
                         width: 1,
                       ),
-                minimumSize: Size(double.infinity, 45), // height: 48
+                minimumSize: const Size(double.infinity, 45), // height: 48
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(5),
                 ),
@@ -398,7 +394,7 @@ class _mfSipdetScren extends State<mfSipdetScren>
                         color: colors.primaryLight,
                         width: 1,
                       ),
-                minimumSize: Size(double.infinity, 45), // height: 48
+                minimumSize: const Size(double.infinity, 45), // height: 48
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(5),
                 ),

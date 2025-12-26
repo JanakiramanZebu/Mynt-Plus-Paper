@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:data_table_2/data_table_2.dart';
 import 'package:intl/intl.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:mynt_plus/provider/transcation_provider.dart';
 
 import '../../../../models/ipo_model/ipo_mainstream_model.dart';
@@ -180,9 +181,9 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final screenHeight = MediaQuery.of(context).size.height;
-        final padding = 32.0;
-        final headerHeight = 100.0;
-        final spacing = 16.0;
+        const padding = 32.0;
+        const headerHeight = 100.0;
+        const spacing = 16.0;
         final tableHeight = screenHeight - padding - headerHeight - spacing;
         final maxHeight = screenHeight * 0.75;
         final calculatedHeight =
@@ -205,23 +206,23 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
             child: Theme(
               data: Theme.of(context).copyWith(
                 scrollbarTheme: ScrollbarThemeData(
-                  thumbVisibility: MaterialStateProperty.all(true),
-                  trackVisibility: MaterialStateProperty.all(true),
-                  thickness: MaterialStateProperty.all(6.0),
+                  thumbVisibility: WidgetStateProperty.all(true),
+                  trackVisibility: WidgetStateProperty.all(true),
+                  thickness: WidgetStateProperty.all(6.0),
                   crossAxisMargin: 0.0,
                   mainAxisMargin: 0.0,
                   radius: const Radius.circular(3),
-                  thumbColor: MaterialStateProperty.resolveWith((states) {
+                  thumbColor: WidgetStateProperty.resolveWith((states) {
                     return theme.isDarkMode
                         ? WebDarkColors.textSecondary.withOpacity(0.3)
                         : WebColors.textSecondary.withOpacity(0.3);
                   }),
-                  trackColor: MaterialStateProperty.resolveWith((states) {
+                  trackColor: WidgetStateProperty.resolveWith((states) {
                     return theme.isDarkMode
                         ? WebDarkColors.divider.withOpacity(0.1)
                         : WebColors.divider.withOpacity(0.1);
                   }),
-                  trackBorderColor: MaterialStateProperty.all(Colors.transparent),
+                  trackBorderColor: WidgetStateProperty.all(Colors.transparent),
                   minThumbLength: 48.0,
                 ),
               ),
@@ -240,7 +241,7 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
                 scrollController: _verticalScrollController,
                 showCheckboxColumn: false,
                 dataRowHeight: 56.0,
-                headingRowColor: MaterialStateProperty.all(
+                headingRowColor: WidgetStateProperty.all(
                   theme.isDarkMode
                       ? WebDarkColors.primary
                       : WebColors.primary.withOpacity(0.05),
@@ -424,8 +425,8 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
 
       return DataRow2(
         onTap: () => _onIPOTap(context, ipo, ipoProvider),
-        color: MaterialStateProperty.resolveWith<Color>((states) {
-          if (states.contains(MaterialState.hovered) ||
+        color: WidgetStateProperty.resolveWith<Color>((states) {
+          if (states.contains(WidgetState.hovered) ||
               _hoveredRowId == uniqueId) {
             return theme.isDarkMode
                 ? WebDarkColors.primary.withOpacity(0.06)
@@ -1006,23 +1007,14 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
                                               height: 50,
                                               child: Container(
                                                 padding: const EdgeInsets.all(8),
-                                                child: Image.network(
-                                                  imageLink,
-                                                  loadingBuilder: (context, child, loadingProgress) {
-                                                    if (loadingProgress == null) return child;
-                                                    return Center(
-                                                      child: CircularProgressIndicator(
-                                                        value: loadingProgress.expectedTotalBytes != null
-                                                            ? loadingProgress.cumulativeBytesLoaded /
-                                                                (loadingProgress.expectedTotalBytes ?? 1)
-                                                            : null,
-                                                        strokeWidth: 2,
-                                                      ),
-                                                    );
-                                                  },
-                                                  errorBuilder: (context, error, stackTrace) {
-                                                    return const SizedBox();
-                                                  },
+                                                child: CachedNetworkImage(
+                                                  imageUrl: imageLink,
+                                                  memCacheWidth: 100,
+                                                  memCacheHeight: 100,
+                                                  placeholder: (context, url) => const Center(
+                                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                                  ),
+                                                  errorWidget: (context, url, error) => const SizedBox(),
                                                 ),
                                               ),
                                             ),
@@ -1128,7 +1120,7 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
               pricerange:
                                     "${double.parse(ipo.minPrice ?? "0").toInt()} - ${double.parse(ipo.maxPrice ?? "0").toInt()}",
               mininv:
-                                    "${convertCurrencyINRStandard(mininv(double.parse(ipo.minPrice ?? "0").toDouble(), int.parse(ipo.minBidQuantity ?? "0").toInt()).toInt())}",
+                                    convertCurrencyINRStandard(mininv(double.parse(ipo.minPrice ?? "0").toDouble(), int.parse(ipo.minBidQuantity ?? "0").toInt()).toInt()),
                                 enddate: "${ipo.biddingEndDate ?? ""}",
                                 startdate: "${ipo.biddingStartDate ?? ""}",
                                 ipotype: "${ipo.key ?? ""}",

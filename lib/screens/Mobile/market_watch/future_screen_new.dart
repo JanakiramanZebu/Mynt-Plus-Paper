@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../models/marketwatch_model/get_quotes.dart';
-import '../../../models/marketwatch_model/market_watch_scrip_model.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/websocket_provider.dart';
@@ -90,7 +89,7 @@ class FutureScreenNew extends ConsumerWidget {
                   Row(
                     children: [
                       Text(
-                        "${wlvalue.symbol.toUpperCase()}",
+                        wlvalue.symbol.toUpperCase(),
                         style: TextWidget.textStyle(
                           fontSize: 13,
                           color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
@@ -105,7 +104,7 @@ class FutureScreenNew extends ConsumerWidget {
                         wlvalue.option,
                         style: TextWidget.textStyle(
                     fontSize: 13,
-                    color: Color(0xff666666),
+                    color: const Color(0xff666666),
                     theme: theme.isDarkMode,
                     fw: 0),
                       ),
@@ -113,7 +112,7 @@ class FutureScreenNew extends ConsumerWidget {
                      
               
                        TextWidget.subText(
-                text:  "${depthdata.lp != "null" ? depthdata.lp ?? depthdata.c ?? '0.00' : '0.00'}", fw: 0, theme: theme.isDarkMode),
+                text:  depthdata.lp != "null" ? depthdata.lp ?? depthdata.c ?? '0.00' : '0.00', fw: 0, theme: theme.isDarkMode),
                     ],
                   ),
                   const SizedBox(height: 4),

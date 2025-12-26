@@ -44,7 +44,7 @@ class GttBottomSheet extends ConsumerWidget {
                     ? colors.darkColorDivider
                     : colors.colorDivider),
             ListView.separated(
-              physics: ClampingScrollPhysics(),
+              physics: const ClampingScrollPhysics(),
               shrinkWrap: true,
               padding: EdgeInsets.zero,
               itemCount: data == "Alert"

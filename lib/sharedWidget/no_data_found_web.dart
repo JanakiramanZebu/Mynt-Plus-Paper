@@ -6,7 +6,6 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../provider/thems.dart';
 import '../../res/res.dart';
 import '../res/global_font_web.dart';
-import '../res/global_state_text.dart';
 import '../res/web_colors.dart';
 
 class NoDataFoundWeb extends ConsumerWidget {
@@ -20,7 +19,7 @@ class NoDataFoundWeb extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         SvgPicture.asset(assets.noDatafound,
-        color:   Color(0xff777777)
+        color:   const Color(0xff777777)
         ),
         const SizedBox(height: 2),
         Text(

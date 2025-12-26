@@ -1,19 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:mynt_plus/provider/portfolio_provider.dart';
 import 'package:mynt_plus/sharedWidget/loader_ui.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
-import '../../../provider/fund_provider.dart';
 import '../../../provider/mf_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
-import '../../../routes/route_names.dart';
-import '../../../sharedWidget/custom_exch_badge.dart';
 import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/list_divider.dart';
-import '../portfolio_screens/holdings/filter_scrip_bottom_sheet.dart';
 import 'mf_filter_bottom_sheet.dart';
 import 'mf_hold_singlepage.dart';
 
@@ -77,7 +72,7 @@ class MfHoldNewScreen extends ConsumerWidget {
                                       const SizedBox(height: 4),
                                       TextWidget.subText(
                                         text:
-                                            "${_formatValue(mfData.mfholdingnew?.summary?.invested)}",
+                                            _formatValue(mfData.mfholdingnew?.summary?.invested),
                                         color: theme.isDarkMode
                                             ? colors.textPrimaryDark
                                             : colors.textPrimaryLight,
@@ -139,7 +134,7 @@ class MfHoldNewScreen extends ConsumerWidget {
                                       const SizedBox(height: 4),
                                       TextWidget.subText(
                                         text:
-                                            "${mfData.mfholdingnew?.summary?.currentValue ?? "0.00"}",
+                                            mfData.mfholdingnew?.summary?.currentValue ?? "0.00",
                                         color: theme.isDarkMode
                                             ? colors.textPrimaryDark
                                             : colors.textPrimaryLight,

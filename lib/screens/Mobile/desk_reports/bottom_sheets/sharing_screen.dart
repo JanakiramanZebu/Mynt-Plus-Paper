@@ -1,14 +1,10 @@
-import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/provider/ledger_provider.dart';
-import 'package:mynt_plus/sharedWidget/functions.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../provider/thems.dart';
 import '../../../../res/global_state_text.dart';
-import '../../../../res/res.dart';
-import '../../../../sharedWidget/cust_text_formfield.dart';
 import '../../../../sharedWidget/snack_bar.dart';
 
 class SharingScreen extends StatefulWidget {
@@ -64,8 +60,8 @@ class _SharingScreen extends State<SharingScreen> {
             decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(30),
                 color: theme.isDarkMode
-                    ? Color.fromARGB(255, 0, 0, 0)
-                    : Color.fromARGB(255, 255, 255, 255)),
+                    ? const Color.fromARGB(255, 0, 0, 0)
+                    : const Color.fromARGB(255, 255, 255, 255)),
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Row(
@@ -75,9 +71,9 @@ class _SharingScreen extends State<SharingScreen> {
                     color: const Color.fromARGB(255, 219, 218, 218),
                     width: 40,
                     height: 4.0,
-                    padding: EdgeInsets.only(
+                    padding: const EdgeInsets.only(
                         top: 10, bottom: 25, left: 20, right: 20),
-                    margin: EdgeInsets.only(top: 16),
+                    margin: const EdgeInsets.only(top: 16),
                   ),
                 ],
               ),
@@ -166,7 +162,7 @@ class _SharingScreen extends State<SharingScreen> {
                                   Navigator.pop(context);
                                 } else {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
+                                    const SnackBar(
                                         content:
                                             Text('Could not launch Twitter')),
                                   );
@@ -180,7 +176,7 @@ class _SharingScreen extends State<SharingScreen> {
                   ],
                 ),
               ),
-              SizedBox(
+              const SizedBox(
                 height: 20.0,
               ),
             ]),

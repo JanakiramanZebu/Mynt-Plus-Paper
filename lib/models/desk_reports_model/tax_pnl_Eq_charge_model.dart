@@ -9,13 +9,13 @@ class TaxPnlEqCharges {
     if (json['eq'] != null) {
       eq = <Eq>[];
       json['eq'].forEach((v) {
-        eq!.add(new Eq.fromJson(v));
+        eq!.add(Eq.fromJson(v));
       });
     }
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     data['Total'] = total;
     if (eq != null) {
       data['eq'] = eq!.map((v) => v.toJson()).toList();
@@ -36,7 +36,7 @@ class Eq {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     data['NOT_PROFIT'] = nOTPROFIT;
     data['SCRIP_SYMBOL'] = sCRIPSYMBOL;
     return data;

@@ -19,7 +19,6 @@ import '../models/ipo_model/ipo_single_page_model.dart';
 import '../models/ipo_model/ipo_sme_model.dart';
 import '../models/mf_model/mf_bank_detail_model.dart';
 import '../res/res.dart';
-import '../routes/route_names.dart';
 import '../sharedWidget/snack_bar.dart';
 import 'core/default_change_notifier.dart';
 import 'package:intl/intl.dart';
@@ -146,7 +145,7 @@ class IPOProvider extends DefaultChangeNotifier {
   List<IpoScrip>? _performancesearch = [];
   List<IpoScrip>? get performancesearch => _performancesearch;
 
-  List<IpoScrip>? _filterperformance = [];
+  final List<IpoScrip> _filterperformance = [];
   List<IpoScrip>? get filterperformance => _filterperformance;
 
   IpoOrderResponcesModel? _ipoOrderResponcesModel;
@@ -175,10 +174,10 @@ class IPOProvider extends DefaultChangeNotifier {
   List<dynamic> _mainsme = [];
   List<dynamic> get mainsme => _mainsme;
 
-  List<MainIPO>? _main = [];
+  final List<MainIPO> _main = [];
   List<MainIPO>? get main => _main;
 
-  List<SMEIPO>? _sme = [];
+  final List<SMEIPO> _sme = [];
   List<SMEIPO>? get sme => _sme;
 
   String ipoCategoryvalue = "";
@@ -260,7 +259,7 @@ class IPOProvider extends DefaultChangeNotifier {
   bool _showSearch = false;
   bool get showSearch => _showSearch;
 
-  String? _numbers = "";
+  final String _numbers = "";
   String? get numbers => _numbers;
 
   String? _maxValue = "";
@@ -275,7 +274,7 @@ class IPOProvider extends DefaultChangeNotifier {
   ];
   List<Tab> get ipoScreenTabName => _ipoScreenTabName;
 
-  List<Tab> _orderBookTabName = [];
+  final List<Tab> _orderBookTabName = [];
   List<Tab> get orderBookTabName => _orderBookTabName;
 
   bool _displayload = true;
@@ -1030,7 +1029,6 @@ class IPOProvider extends DefaultChangeNotifier {
       ipoCategoryvalue = ipoCategory[0]["subCatCode"];
       _maxUPIAmt = double.parse(ipoCategory[0]["upiLimit"]);
       notifyListeners();
-    } catch (e) {
     } finally {
       toggleLoadingOn(false);
     }
@@ -1100,7 +1098,6 @@ class IPOProvider extends DefaultChangeNotifier {
       _maxUPIAmt = double.parse(ipoCategory[0]["upiLimit"]);
 
       notifyListeners();
-    } catch (e) {
     } finally {
       toggleLoadingOn(false);
     }
@@ -1357,7 +1354,7 @@ class IPOProvider extends DefaultChangeNotifier {
         }
       });
     } catch (e) {
-      print("ordersplit :: ${e}");
+      print("ordersplit :: $e");
     } finally {
       togglefundLoadingOn(false);
     }

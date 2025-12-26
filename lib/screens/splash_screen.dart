@@ -47,7 +47,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     return Scaffold(
         backgroundColor: theme.isDarkMode ? Colors.black : Colors.white,
         body: Stack(children: [
-          CircularLoaderImage(),
+         const CircularLoaderImage(),
           if (ref.read(networkStateProvider).connectionStatus ==
               ConnectivityResult.none)
             const NoInternetScreen()

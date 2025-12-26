@@ -455,7 +455,7 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                 children: [
                   Expanded(
                     child: SingleChildScrollView(
-                      physics: ClampingScrollPhysics(),
+                      physics: const ClampingScrollPhysics(),
                       child: Column(
                         children: [
                           const SizedBox(height: 20),
@@ -1380,7 +1380,7 @@ class _DraggableIpoOrderScreenDialogState
     final screenSize = MediaQuery.of(context).size;
 
     // Constrain position to screen bounds
-    final dialogWidth = 550.0;
+    const dialogWidth = 550.0;
     final dialogHeight = screenSize.height * 0.8;
     final constrainedPosition = Offset(
       _position.dx.clamp(0, screenSize.width - dialogWidth),

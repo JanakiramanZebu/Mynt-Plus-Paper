@@ -1,17 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
 import '../../../models/marketwatch_model/get_quotes.dart';
-import '../../../models/marketwatch_model/market_watch_scrip_model.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../res/res.dart';
 import '../../../res/global_state_text.dart';
 import '../../../sharedWidget/no_data_found.dart';
-import 'over_view/funtamental_data_widget.dart';
 import 'over_view/financial.dart';
 import 'over_view/price_comparision.dart';
-import 'over_view/stocks_holdings_widget.dart';
 import 'over_view/stock_events.dart';
 import 'over_view/mf_holding.dart';
 import 'over_view/chart.dart';
@@ -113,7 +109,7 @@ class _FundamentalDetailScreenState
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Container(
+                  SizedBox(
                     height: 42,
                     child: _buildFundamentalTabs(theme),
                   ),
@@ -270,7 +266,7 @@ class _FundamentalDetailScreenState
         const SizedBox(height: 16),
 
         // Date selection
-        Container(
+        SizedBox(
           height: 36,
           child: stockHold.isEmpty
               ? Center(
@@ -360,7 +356,7 @@ class _FundamentalDetailScreenState
             shareHoldings.selectedMfHoldindex < stockHold.length) ...[
           _buildHoldingItem(
               "Promoter Holding",
-              "${stockHold[shareHoldings.selectedMfHoldindex].promoters ?? 'N/A'}",
+              stockHold[shareHoldings.selectedMfHoldindex].promoters ?? 'N/A',
               const Color(0xff2e8564),
               theme),
           Divider(
@@ -371,7 +367,7 @@ class _FundamentalDetailScreenState
               height: 0),
           _buildHoldingItem(
               "Foreign Institution",
-              "${stockHold[shareHoldings.selectedMfHoldindex].fiiFpi ?? 'N/A'}",
+              stockHold[shareHoldings.selectedMfHoldindex].fiiFpi ?? 'N/A',
               const Color(0xff7cd36f),
               theme),
           Divider(
@@ -382,7 +378,7 @@ class _FundamentalDetailScreenState
               height: 0),
           _buildHoldingItem(
               "Other Domestic Institution",
-              "${stockHold[shareHoldings.selectedMfHoldindex].dii ?? 'N/A'}",
+              stockHold[shareHoldings.selectedMfHoldindex].dii ?? 'N/A',
               const Color(0xfff7cd6c),
               theme),
           Divider(
@@ -393,7 +389,7 @@ class _FundamentalDetailScreenState
               height: 0),
           _buildHoldingItem(
               "Retail and Others",
-              "${stockHold[shareHoldings.selectedMfHoldindex].retailAndOthers ?? 'N/A'}",
+              stockHold[shareHoldings.selectedMfHoldindex].retailAndOthers ?? 'N/A',
               const Color(0XFFfbebc4),
               theme),
           Divider(
@@ -412,7 +408,7 @@ class _FundamentalDetailScreenState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
+              SizedBox(
                 height: 36,
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton2<String>(

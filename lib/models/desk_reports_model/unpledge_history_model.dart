@@ -7,13 +7,13 @@ class UnpledgeHistoryModel {
     if (json['data'] != null) {
       data = <Data>[];
       json['data'].forEach((v) {
-        data!.add(new Data.fromJson(v));
+        data!.add(Data.fromJson(v));
       });
     }
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     if (this.data != null) {
       data['data'] = this.data!.map((v) => v.toJson()).toList();
     }
@@ -71,21 +71,21 @@ class Data {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['BOID'] = this.bOID;
-    data['COLQTY'] = this.cOLQTY;
-    data['ISIN'] = this.iSIN;
-    data['NET_QTY'] = this.nETQTY;
-    data['app_dat_time'] = this.appDatTime;
-    data['client_name'] = this.clientName;
-    data['clientid'] = this.clientid;
-    data['dates'] = this.dates;
-    data['id'] = this.id;
-    data['reason'] = this.reason;
-    data['req_dat_time'] = this.reqDatTime;
-    data['script'] = this.script;
-    data['status'] = this.status;
-    data['un_plege_qty'] = this.unPlegeQty;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['BOID'] = bOID;
+    data['COLQTY'] = cOLQTY;
+    data['ISIN'] = iSIN;
+    data['NET_QTY'] = nETQTY;
+    data['app_dat_time'] = appDatTime;
+    data['client_name'] = clientName;
+    data['clientid'] = clientid;
+    data['dates'] = dates;
+    data['id'] = id;
+    data['reason'] = reason;
+    data['req_dat_time'] = reqDatTime;
+    data['script'] = script;
+    data['status'] = status;
+    data['un_plege_qty'] = unPlegeQty;
     return data;
   }
 }

@@ -7,7 +7,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:mynt_plus/provider/order_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
-import 'package:mynt_plus/res/global_state_text.dart';
 
 import '../api/core/api_export.dart';
 import '../locator/constant.dart';
@@ -156,7 +155,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
   bool _exitAll = false;
   bool get exitAll => _exitAll;
-  List<Tab> _portTabName = [
+  final List<Tab> _portTabName = [
     const Tab(text: "Holdings"),
     const Tab(text: "Positions"),
     const Tab(text: "Orders"),
@@ -532,7 +531,7 @@ changeHoldingsTabIndex(int index) {
 // Fetching data from the api and stored in a variable
 
   Future<void> setPortfolioupdate(String mode) async {
-    var result;
+    Map<String, dynamic> result;
     if (mode == 'H') {
       result = await api.getHolding();
       if (result['stat'] == 'success') {
@@ -1643,7 +1642,7 @@ changeHoldingsTabIndex(int index) {
 
 // Holding search by Trade symbol
   holdingSearch(String value, BuildContext context) {
-    if (value.length > 0) {
+    if (value.isNotEmpty) {
       _holdingSearchItem = [];
       _holdingSearchItem = _holdingsModel!
           .where((element) => element.exchTsym![0].tsym!
@@ -1658,7 +1657,7 @@ changeHoldingsTabIndex(int index) {
 
 // MF Holding search by Trade symbol
   mfHoldingSearch(String value, BuildContext context) {
-    if (value.length > 0) {
+    if (value.isNotEmpty) {
       _mfHoldingSearchItem = [];
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       _mfHoldingSearchItem = _mfHoldingsModel!
@@ -1683,7 +1682,7 @@ changeHoldingsTabIndex(int index) {
 
 // Fetching data from the api and stored in a variable
   positionSearch(String value, BuildContext context) {
-    if (value.length > 0) {
+    if (value.isNotEmpty) {
       // _showSearchPosition = true;
       _positionSearchItem = [];
       _positionSearchItem = _allPostionList
@@ -1846,7 +1845,7 @@ changeHoldingsTabIndex(int index) {
   // Optimized for fast updates from websocket
   void updateHoldingValues(String token, Map<String, dynamic> socketData) {
     // Early return if no token or data
-    if (token == null || socketData == null || _holdingsModel == null) return;
+    if (_holdingsModel == null) return;
 
     // Use indexWhere with efficient stopping
     var index = -1;
@@ -2486,7 +2485,7 @@ changeHoldingsTabIndex(int index) {
   }
 
   // Add this near the other state variables
-  bool _isExitingAll = false;
+  final bool _isExitingAll = false;
   bool get isExitingAll => _isExitingAll;
 
   // Add this near the other state variables

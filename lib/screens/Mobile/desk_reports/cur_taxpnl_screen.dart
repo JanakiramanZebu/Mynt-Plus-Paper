@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/provider/ledger_provider.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/sharedWidget/functions.dart';
 import 'package:mynt_plus/sharedWidget/loader_ui.dart';
-import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 
 import '../../../provider/thems.dart';
 
@@ -23,6 +21,7 @@ class curTaxpnlScreen extends State<curTaxpnl> {
     super.initState();
   }
 
+  @override
   Widget build(BuildContext context) {
     final List<String> staticColumn = [
       'Row 1',
@@ -75,7 +74,7 @@ class curTaxpnlScreen extends State<curTaxpnl> {
               //       style: textStyle(colors.colorBlack, 14, FontWeight.w600),
               //     )),
 
-              Container(
+              SizedBox(
                 width: screenWidth,
                 child: Container(
                   decoration: BoxDecoration(
@@ -95,7 +94,7 @@ class curTaxpnlScreen extends State<curTaxpnl> {
                                 Text(
                                   "Futures",
                                   style: textStyle(
-                                      Color(0xFF696969), 14, FontWeight.w500),
+                                      const Color(0xFF696969), 14, FontWeight.w500),
                                 ),
                                 Padding(
                                   padding: const EdgeInsets.only(top: 8.0),
@@ -136,7 +135,7 @@ class curTaxpnlScreen extends State<curTaxpnl> {
                                   "Futures Turnover",
                                   textAlign: TextAlign.right,
                                   style: textStyle(
-                                      Color(0xFF696969), 14, FontWeight.w500),
+                                      const Color(0xFF696969), 14, FontWeight.w500),
                                 ),
                                 Padding(
                                   padding: const EdgeInsets.only(top: 8.0),
@@ -183,7 +182,7 @@ class curTaxpnlScreen extends State<curTaxpnl> {
                                 Text(
                                   "Options",
                                   style: textStyle(
-                                      Color(0xFF696969), 14, FontWeight.w500),
+                                      const Color(0xFF696969), 14, FontWeight.w500),
                                 ),
                                 Padding(
                                   padding: const EdgeInsets.only(top: 8.0),
@@ -225,7 +224,7 @@ class curTaxpnlScreen extends State<curTaxpnl> {
                                   "Options Turnover",
                                   textAlign: TextAlign.right,
                                   style: textStyle(
-                                      Color(0xFF696969), 14, FontWeight.w500),
+                                      const Color(0xFF696969), 14, FontWeight.w500),
                                 ),
                                 Padding(
                                   padding: const EdgeInsets.only(top: 8.0),
@@ -275,7 +274,7 @@ class curTaxpnlScreen extends State<curTaxpnl> {
                                 Text(
                                   "Total Charges",
                                   style: textStyle(
-                                      Color(0xFF696969), 14, FontWeight.w500),
+                                      const Color(0xFF696969), 14, FontWeight.w500),
                                 ),
                                 Padding(
                                   padding: const EdgeInsets.only(top: 8.0),
@@ -299,7 +298,7 @@ class curTaxpnlScreen extends State<curTaxpnl> {
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   IconButton(
-                    icon: Icon(Icons.arrow_left, color: Colors.black),
+                    icon: const Icon(Icons.arrow_left, color: Colors.black),
                     onPressed: () => {
                       ledgerprovider.fetchtaxpnleqdata(
                           context, ledgerprovider.yearforTaxpnl - 1)
@@ -331,7 +330,7 @@ class curTaxpnlScreen extends State<curTaxpnl> {
                   //   ),
                   // ),
                   IconButton(
-                    icon: Icon(Icons.arrow_right, color: Colors.black),
+                    icon: const Icon(Icons.arrow_right, color: Colors.black),
                     onPressed: () => {
                       ledgerprovider.fetchtaxpnleqdata(
                           context, ledgerprovider.yearforTaxpnl + 1)
@@ -650,7 +649,7 @@ class curTaxpnlScreen extends State<curTaxpnl> {
                     //         : colors.colorDivider),
                     // const SizedBox(height: 2),
                     IconButton(
-                      icon: Icon(Icons.download, color: Colors.black),
+                      icon: const Icon(Icons.download, color: Colors.black),
                       onPressed: () => {},
                     ),
                     Text("Here you can download your ",
@@ -659,7 +658,7 @@ class curTaxpnlScreen extends State<curTaxpnl> {
                     Padding(
                       padding: const EdgeInsets.only(top: 4.0),
                       child: Text("Tax p&l data",
-                          style: textStyle(Color.fromARGB(255, 119, 119, 119),
+                          style: textStyle(const Color.fromARGB(255, 119, 119, 119),
                               14, FontWeight.w500)),
                     )
                   ]),
@@ -725,7 +724,7 @@ class curTaxpnlScreen extends State<curTaxpnl> {
                   ledgerprovider.taxpnlcurselectedtab();
                 });
               },
-              child: Text("${text}",
+              child: Text(text,
                   textAlign: TextAlign.center,
                   style: textStyle(
                       !theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
@@ -733,7 +732,7 @@ class curTaxpnlScreen extends State<curTaxpnl> {
                       FontWeight.w500))));
     } else {
       print("${ledgerprovider.taxpnleq!.data!.aSSETS}");
-      return SizedBox();
+      return const SizedBox();
     }
   }
 
@@ -744,11 +743,11 @@ class curTaxpnlScreen extends State<curTaxpnl> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            "${heading}",
-            style: textStyle(Color(0xFF696969), 14, FontWeight.w400),
+            heading,
+            style: textStyle(const Color(0xFF696969), 14, FontWeight.w400),
           ),
           Text(
-            "${value}",
+            value,
             style: textStyle(colors.colorBlack, 13, FontWeight.w500),
           )
         ],

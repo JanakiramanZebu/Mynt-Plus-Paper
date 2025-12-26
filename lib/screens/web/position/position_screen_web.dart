@@ -31,8 +31,9 @@ class PositionScreenWeb extends ConsumerStatefulWidget {
 
 class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
   int _selectedTabIndex = 0; // 0 for Positions, 1 for All Positions
-  String _searchQuery = '';
-  String _selectedFilter = 'All';
+  // ✅ Use ValueNotifier for search query to avoid rebuilding entire widget
+  final ValueNotifier<String> _searchQuery = ValueNotifier<String>('');
+  final String _selectedFilter = 'All';
   int? _sortColumnIndex;
   bool _sortAscending = true;
   // ✅ Use ValueNotifier instead of setState to avoid rebuilding entire widget
@@ -57,6 +58,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
     _tabScrollController.dispose();
     _hoveredRowToken.dispose();
     _hoveredColumnIndex.dispose();
+    _searchQuery.dispose(); // ✅ Dispose search query ValueNotifier
 
     super.dispose();
   }
@@ -319,7 +321,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                 ),
               ),
               child: TextField(
-                onChanged: (value) => setState(() => _searchQuery = value),
+                onChanged: (value) => _searchQuery.value = value, // ✅ Use ValueNotifier instead of setState
                 style: WebTextStyles.formInput(
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
@@ -618,7 +620,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                 ),
               ),
               child: TextField(
-                onChanged: (value) => setState(() => _searchQuery = value),
+                onChanged: (value) => _searchQuery.value = value, // ✅ Use ValueNotifier instead of setState
                 style: WebTextStyles.formInput(
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
@@ -806,21 +808,122 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
 
   Widget _buildPositionsTable(
       ThemesProvider theme, PortfolioProvider positionBook) {
-    final filteredPositions = _getFilteredPositions(positionBook);
+    // ✅ CRITICAL: Watch position list to rebuild when positions are added/removed
+    // Use select() to only rebuild when the list reference changes, not on every provider update
+    final currentPositions = ref.watch(portfolioProvider.select((p) => p.allPostionList));
+    
+    // ✅ Use ValueListenableBuilder to only rebuild table when search query changes
+    return ValueListenableBuilder<String>(
+      valueListenable: _searchQuery,
+      builder: (context, searchQuery, child) {
+        // ✅ Use current positions from provider instead of widget.listofPosition
+        // This ensures table updates when positions are added/removed
+        final positionsToUse = currentPositions.isNotEmpty ? currentPositions : widget.listofPosition;
+        final filteredPositions = _getFilteredPositionsFromList(positionsToUse);
 
-    if (filteredPositions.isEmpty) {
-      return const Center(child: NoDataFound());
+        if (filteredPositions.isEmpty) {
+          return const Center(child: NoDataFound());
+        }
+        
+        return _buildTableContent(theme, positionBook, filteredPositions);
+      },
+    );
+  }
+  
+  // ✅ Helper method that works with a list instead of provider
+  List<PositionBookModel> _getFilteredPositionsFromList(List<PositionBookModel> positions) {
+    List<PositionBookModel> filtered = positions.toList();
+
+    // Apply search filter - use ValueNotifier value
+    final searchQuery = _searchQuery.value;
+    if (searchQuery.isNotEmpty) {
+      filtered = filtered.where((position) {
+        final symbol = position.symbol?.toLowerCase() ?? '';
+        final exch = position.exch?.toLowerCase() ?? '';
+        final searchLower = searchQuery.toLowerCase();
+        return symbol.contains(searchLower) || exch.contains(searchLower);
+      }).toList();
     }
+
+    // Apply product filter
+    if (_selectedFilter != 'All') {
+      filtered = filtered.where((position) {
+        return position.sPrdtAli == _selectedFilter;
+      }).toList();
+    }
+
+    // Apply sorting
+    if (_sortColumnIndex != null) {
+      filtered.sort((a, b) {
+        int comparison = 0;
+        switch (_sortColumnIndex) {
+          case 1: // Instrument
+            comparison = '${a.symbol ?? ''} ${a.exch ?? ''}'
+                .compareTo('${b.symbol ?? ''} ${b.exch ?? ''}');
+            break;
+          case 2: // Product
+            comparison = (a.sPrdtAli ?? '').compareTo(b.sPrdtAli ?? '');
+            break;
+          case 3: // Qty
+            comparison = (int.tryParse(a.qty ?? '0') ?? 0)
+                .compareTo(int.tryParse(b.qty ?? '0') ?? 0);
+            break;
+          case 4: // Act Avg Price
+            comparison = (double.tryParse(a.avgPrc ?? '0') ?? 0)
+                .compareTo(double.tryParse(b.avgPrc ?? '0') ?? 0);
+            break;
+          case 5: // LTP
+            comparison = (double.tryParse(a.lp ?? '0') ?? 0)
+                .compareTo(double.tryParse(b.lp ?? '0') ?? 0);
+            break;
+          case 6: // P&L
+            comparison = (double.tryParse(a.profitNloss ?? '0') ?? 0)
+                .compareTo(double.tryParse(b.profitNloss ?? '0') ?? 0);
+            break;
+          case 7: // MTM
+            comparison = (double.tryParse(a.mTm ?? '0') ?? 0)
+                .compareTo(double.tryParse(b.mTm ?? '0') ?? 0);
+            break;
+          case 8: // Avg Price
+            comparison = (double.tryParse(a.avgPrc ?? '0') ?? 0)
+                .compareTo(double.tryParse(b.avgPrc ?? '0') ?? 0);
+            break;
+          case 9: // Buy Qty
+            comparison = (int.tryParse(a.daybuyqty ?? '0') ?? 0)
+                .compareTo(int.tryParse(b.daybuyqty ?? '0') ?? 0);
+            break;
+          case 10: // Sell Qty
+            comparison = (int.tryParse(a.daysellqty ?? '0') ?? 0)
+                .compareTo(int.tryParse(b.daysellqty ?? '0') ?? 0);
+            break;
+          case 11: // Buy Avg
+            comparison = (double.tryParse(a.daybuyavgprc ?? '0') ?? 0)
+                .compareTo(double.tryParse(b.daybuyavgprc ?? '0') ?? 0);
+            break;
+          case 12: // Sell Avg
+            comparison = (double.tryParse(a.daysellavgprc ?? '0') ?? 0)
+                .compareTo(double.tryParse(b.daysellavgprc ?? '0') ?? 0);
+            break;
+        }
+        return _sortAscending ? comparison : -comparison;
+      });
+    }
+
+    return filtered;
+  }
+
+  Widget _buildTableContent(
+      ThemesProvider theme, PortfolioProvider positionBook, List<PositionBookModel> filteredPositions) {
 
     return LayoutBuilder(
       builder: (context, constraints) {
         // Calculate available height: screen height minus all UI elements
         final screenHeight = MediaQuery.of(context).size.height;
-        final padding = 32.0; // Top and bottom padding (16 * 2)
-        final headerHeight = 120.0; // Summary cards height
-        final tabsAndSearchHeight = 100.0; // Tabs and search bar
-        final spacing = 24.0 + 16.0; // Spacing between sections
-        final bottomMargin = 20.0; // Bottom margin
+        const padding = 32.0; // Top and bottom padding (16 * 2)
+        const headerHeight = 120.0; // Summary cards height
+        const tabsAndSearchHeight = 100.0; // Tabs and search bar
+        const spacing = 24.0 + 16.0; // Spacing between sections
+        const bottomMargin = 20.0; // Bottom margin
         final tableHeight =
             screenHeight - padding - headerHeight - tabsAndSearchHeight - spacing - bottomMargin;
 
@@ -858,11 +961,11 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
               data: Theme.of(context).copyWith(
                 scrollbarTheme: ScrollbarThemeData(
                   // Make both scrollbars always visible
-                  thumbVisibility: MaterialStateProperty.all(true),
-                  trackVisibility: MaterialStateProperty.all(true),
+                  thumbVisibility: WidgetStateProperty.all(true),
+                  trackVisibility: WidgetStateProperty.all(true),
                   
                   // Consistent thickness for both horizontal and vertical
-                  thickness: MaterialStateProperty.all(6.0),
+                  thickness: WidgetStateProperty.all(6.0),
                   crossAxisMargin: 0.0, // Remove margin to align scrollbars properly
                   mainAxisMargin: 0.0,
                   
@@ -870,78 +973,80 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                   radius: const Radius.circular(3),
                   
                   // Consistent colors for both scrollbars
-                  thumbColor: MaterialStateProperty.resolveWith((states) {
+                  thumbColor: WidgetStateProperty.resolveWith((states) {
                     return theme.isDarkMode 
                         ? WebDarkColors.textSecondary.withOpacity(0.3)
                         : WebColors.textSecondary.withOpacity(0.3);
                   }),
-                  trackColor: MaterialStateProperty.resolveWith((states) {
+                  trackColor: WidgetStateProperty.resolveWith((states) {
                     return theme.isDarkMode 
                         ? WebDarkColors.divider.withOpacity(0.1)
                         : WebColors.divider.withOpacity(0.1);
                   }),
                   
                   // Ensure consistent behavior for both directions
-                  trackBorderColor: MaterialStateProperty.all(Colors.transparent),
+                  trackBorderColor: WidgetStateProperty.all(Colors.transparent),
                   minThumbLength: 48.0, // Minimum thumb length for both scrollbars
                 ),
               ),
-              child: DataTable2(
-                columnSpacing: 12,
-                horizontalMargin: 12,
-                minWidth: 1800, // Increased to accommodate wider columns
-                sortColumnIndex: null, // Disable DataTable2's built-in sorting
-                sortAscending: _sortAscending,
-                fixedLeftColumns: 2, // Fix the first two columns (Select and Instrument)
-                fixedColumnsColor: theme.isDarkMode 
-                    ? WebDarkColors.backgroundSecondary.withOpacity(0.8)
-                    : WebColors.backgroundSecondary.withOpacity(0.8),
-                showBottomBorder: true,
-                horizontalScrollController: _horizontalScrollController,
-                scrollController: _verticalScrollController,
-                showCheckboxColumn: false,
-                headingRowColor: MaterialStateProperty.all(
-                  theme.isDarkMode
-                      ? WebDarkColors.primary
-                      : WebColors.primary.withOpacity(0.05),
-                ),
-                headingTextStyle: WebTextStyles.tableHeader(
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
-                ),
-                dataTextStyle: WebTextStyles.custom(
-                  fontSize: 13,
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
-                  fontWeight: WebFonts.medium,
-                ),
-                border: TableBorder(
-                  top: BorderSide(
-                    color: theme.isDarkMode
-                        ? WebDarkColors.divider
-                        : WebColors.divider,
-                    width: 1,
+              child: RepaintBoundary(
+                child: DataTable2(
+                  columnSpacing: 12,
+                  horizontalMargin: 12,
+                  minWidth: 1800, // Increased to accommodate wider columns
+                  sortColumnIndex: null, // Disable DataTable2's built-in sorting
+                  sortAscending: _sortAscending,
+                  fixedLeftColumns: 2, // Fix the first two columns (Select and Instrument)
+                  fixedColumnsColor: theme.isDarkMode 
+                      ? WebDarkColors.backgroundSecondary.withOpacity(0.8)
+                      : WebColors.backgroundSecondary.withOpacity(0.8),
+                  showBottomBorder: true,
+                  horizontalScrollController: _horizontalScrollController,
+                  scrollController: _verticalScrollController,
+                  showCheckboxColumn: false,
+                  headingRowColor: WidgetStateProperty.all(
+                    theme.isDarkMode
+                        ? WebDarkColors.primary
+                        : WebColors.primary.withOpacity(0.05),
                   ),
-                  bottom: BorderSide(
+                  headingTextStyle: WebTextStyles.tableHeader(
+                    isDarkTheme: theme.isDarkMode,
                     color: theme.isDarkMode
-                        ? WebDarkColors.divider
-                        : WebColors.divider,
-                    width: 1,
+                        ? WebDarkColors.textPrimary
+                        : WebColors.textPrimary,
                   ),
-                  horizontalInside: BorderSide(
+                  dataTextStyle: WebTextStyles.custom(
+                    fontSize: 13,
+                    isDarkTheme: theme.isDarkMode,
                     color: theme.isDarkMode
-                        ? WebDarkColors.divider
-                        : WebColors.divider,
-                    width: 1,
+                        ? WebDarkColors.textPrimary
+                        : WebColors.textPrimary,
+                    fontWeight: WebFonts.medium,
                   ),
-                  // Remove vertical lines by not setting left, right, and verticalInside
+                  border: TableBorder(
+                    top: BorderSide(
+                      color: theme.isDarkMode
+                          ? WebDarkColors.divider
+                          : WebColors.divider,
+                      width: 1,
+                    ),
+                    bottom: BorderSide(
+                      color: theme.isDarkMode
+                          ? WebDarkColors.divider
+                          : WebColors.divider,
+                      width: 1,
+                    ),
+                    horizontalInside: BorderSide(
+                      color: theme.isDarkMode
+                          ? WebDarkColors.divider
+                          : WebColors.divider,
+                      width: 1,
+                    ),
+                    // Remove vertical lines by not setting left, right, and verticalInside
+                  ),
+                  columns: _buildDataTable2Columns(headers, columnMinWidth, theme, positionBook, filteredPositions),
+                  rows: _buildDataTable2Rows(filteredPositions, headers, theme, positionBook),
                 ),
-                columns: _buildDataTable2Columns(headers, columnMinWidth, theme, positionBook, filteredPositions),
-                rows: _buildDataTable2Rows(filteredPositions, headers, theme, positionBook),
               ),
             ),
           ),
@@ -1082,9 +1187,14 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
       final uniqueId =
           '${position.token ?? ''}_${position.exch ?? ''}_${position.prd ?? ''}_${position.tsym ?? ''}';
 
+      // ✅ CRITICAL FIX: Wrap row in ValueListenableBuilder to prevent all rows from rebuilding on hover
+      // Only the hovered row rebuilds, not the entire table
       return DataRow2(
-        color: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.hovered) || _hoveredRowToken.value == uniqueId) {
+        key: ValueKey(uniqueId), // Add key for better widget identity
+        color: WidgetStateProperty.resolveWith((states) {
+          // ✅ Use states.contains(WidgetState.hovered) for built-in hover detection
+          // Remove direct _hoveredRowToken.value access to prevent rebuilds
+          if (states.contains(WidgetState.hovered)) {
             return theme.isDarkMode
                 ? WebDarkColors.primary.withOpacity(0.06)
                 : WebColors.primary.withOpacity(0.10);
@@ -1400,46 +1510,50 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
   ) {
     // Special case for Select column (checkbox)
     if (label == 'Select') {
-      return InkWell(
-        onTap: filteredPositions.isNotEmpty
-            ? () {
-                positionBook.selectExitAllPosition(!positionBook.isExitAllPosition);
-                setState(() {});
-              }
-            : null,
-        child: Align(
-          alignment: Alignment.centerLeft,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 6.0),
-            child: Theme(
-              data: Theme.of(context).copyWith(
-                checkboxTheme: CheckboxThemeData(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(4),
+      // ✅ Watch provider state instead of using setState
+      return Consumer(
+        builder: (context, ref, child) {
+          final isExitAllPosition = ref.watch(portfolioProvider.select((p) => p.isExitAllPosition));
+          return InkWell(
+            onTap: filteredPositions.isNotEmpty
+                ? () {
+                    positionBook.selectExitAllPosition(!isExitAllPosition);
+                  }
+                : null,
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 6.0),
+                child: Theme(
+                  data: Theme.of(context).copyWith(
+                    checkboxTheme: CheckboxThemeData(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      side: BorderSide(
+                        color: theme.isDarkMode
+                            ? WebDarkColors.textPrimary.withOpacity(0.5)
+                            : WebColors.textPrimary.withOpacity(0.5),
+                        width: 1.5,
+                      ),
+                    ),
                   ),
-                  side: BorderSide(
-                    color: theme.isDarkMode
-                        ? WebDarkColors.textPrimary.withOpacity(0.5)
-                        : WebColors.textPrimary.withOpacity(0.5),
-                    width: 1.5,
+                  child: Checkbox(
+                    value: isExitAllPosition,
+                    onChanged: filteredPositions.isNotEmpty
+                        ? (bool? value) {
+                            positionBook.selectExitAllPosition(value ?? false);
+                          }
+                        : null,
+                    activeColor: theme.isDarkMode
+                        ? WebDarkColors.primary
+                        : WebColors.primary,
                   ),
                 ),
               ),
-              child: Checkbox(
-                value: positionBook.isExitAllPosition,
-                onChanged: filteredPositions.isNotEmpty
-                    ? (bool? value) {
-                        positionBook.selectExitAllPosition(value ?? false);
-                        setState(() {});
-                      }
-                    : null,
-                activeColor: theme.isDarkMode
-                    ? WebDarkColors.primary
-                    : WebColors.primary,
-              ),
             ),
-          ),
-        ),
+          );
+        },
       );
     }
 
@@ -1494,44 +1608,51 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
     bool isClosed,
     PortfolioProvider positionBook,
   ) {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 6.0),
-        child: Theme(
-          data: Theme.of(context).copyWith(
-            checkboxTheme: CheckboxThemeData(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(4),
+    // ✅ Use Consumer to watch only the specific position's selection state
+    return Consumer(
+      builder: (context, ref, child) {
+        // Find the position index and watch its selection state
+        final openPositions = ref.watch(portfolioProvider.select((p) => p.openPosition ?? []));
+        final positionIndex = openPositions.indexWhere((p) => p.token == position.token);
+        final isSelected = positionIndex >= 0 
+            ? (openPositions[positionIndex].isExitSelection ?? false)
+            : (position.isExitSelection ?? false);
+        
+        return Align(
+          alignment: Alignment.centerLeft,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 6.0),
+            child: Theme(
+              data: Theme.of(context).copyWith(
+                checkboxTheme: CheckboxThemeData(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  side: BorderSide(
+                    color: theme.isDarkMode
+                        ? WebDarkColors.textPrimary.withOpacity(0.5)
+                        : WebColors.textPrimary.withOpacity(0.5),
+                    width: 1.5,
+                  ),
+                ),
               ),
-              side: BorderSide(
-                color: theme.isDarkMode
-                    ? WebDarkColors.textPrimary.withOpacity(0.5)
-                    : WebColors.textPrimary.withOpacity(0.5),
-                width: 1.5,
+              child: Checkbox(
+                value: isSelected,
+                onChanged: isClosed
+                    ? null
+                    : (bool? value) {
+                        if (positionIndex >= 0) {
+                          positionBook.selectExitPosition(positionIndex);
+                        }
+                      },
+                activeColor: theme.isDarkMode
+                    ? WebDarkColors.primary
+                    : WebColors.primary,
               ),
             ),
           ),
-          child: Checkbox(
-            value: position.isExitSelection ?? false,
-            onChanged: isClosed
-                ? null
-                : (bool? value) {
-                    final openPositions = positionBook.openPosition ?? [];
-                    for (int i = 0; i < openPositions.length; i++) {
-                      if (openPositions[i].token == position.token) {
-                        positionBook.selectExitPosition(i);
-                        setState(() {});
-                        break;
-                      }
-                    }
-                  },
-            activeColor: theme.isDarkMode
-                ? WebDarkColors.primary
-                : WebColors.primary,
-          ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -1621,87 +1742,8 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
     return count;
   }
 
-  List<PositionBookModel> _getFilteredPositions(
-      PortfolioProvider positionBook) {
-    // Show all positions (both open and closed)
-    List<PositionBookModel> positions = widget.listofPosition.toList();
-
-    // Apply search filter
-    if (_searchQuery.isNotEmpty) {
-      positions = positions.where((position) {
-        final symbol = position.symbol?.toLowerCase() ?? '';
-        final exch = position.exch?.toLowerCase() ?? '';
-        final searchLower = _searchQuery.toLowerCase();
-        return symbol.contains(searchLower) || exch.contains(searchLower);
-      }).toList();
-    }
-
-    // Apply product filter
-    if (_selectedFilter != 'All') {
-      positions = positions.where((position) {
-        return position.sPrdtAli == _selectedFilter;
-      }).toList();
-    }
-
-    // Apply sorting
-    if (_sortColumnIndex != null) {
-      positions.sort((a, b) {
-        int comparison = 0;
-        switch (_sortColumnIndex) {
-          case 1: // Instrument (new order: Instrument is now column 1)
-            comparison = '${a.symbol ?? ''} ${a.exch ?? ''}'
-                .compareTo('${b.symbol ?? ''} ${b.exch ?? ''}');
-            break;
-          case 2: // Product (new order: Product is now column 2)
-            comparison = (a.sPrdtAli ?? '').compareTo(b.sPrdtAli ?? '');
-            break;
-          case 3: // Qty
-            comparison = (int.tryParse(a.qty ?? '0') ?? 0)
-                .compareTo(int.tryParse(b.qty ?? '0') ?? 0);
-            break;
-          case 4: // Act Avg Price
-            comparison = (double.tryParse(a.avgPrc ?? '0') ?? 0)
-                .compareTo(double.tryParse(b.avgPrc ?? '0') ?? 0);
-            break;
-          case 5: // LTP
-            comparison = (double.tryParse(a.lp ?? '0') ?? 0)
-                .compareTo(double.tryParse(b.lp ?? '0') ?? 0);
-            break;
-          case 6: // P&L
-            comparison = (double.tryParse(a.profitNloss ?? '0') ?? 0)
-                .compareTo(double.tryParse(b.profitNloss ?? '0') ?? 0);
-            break;
-          case 7: // MTM (new order: MTM is now column 7)
-            comparison = (double.tryParse(a.mTm ?? '0') ?? 0)
-                .compareTo(double.tryParse(b.mTm ?? '0') ?? 0);
-            break;
-          case 8: // Avg Price (new order: Avg Price is now column 8)
-            comparison = (double.tryParse(a.avgPrc ?? '0') ?? 0)
-                .compareTo(double.tryParse(b.avgPrc ?? '0') ?? 0);
-            break;
-          case 9: // Buy Qty
-            comparison = (int.tryParse(a.daybuyqty ?? '0') ?? 0)
-                .compareTo(int.tryParse(b.daybuyqty ?? '0') ?? 0);
-            break;
-          case 10: // Sell Qty
-            comparison = (int.tryParse(a.daysellqty ?? '0') ?? 0)
-                .compareTo(int.tryParse(b.daysellqty ?? '0') ?? 0);
-            break;
-          case 11: // Buy Avg
-            comparison = (double.tryParse(a.daybuyavgprc ?? '0') ?? 0)
-                .compareTo(double.tryParse(b.daybuyavgprc ?? '0') ?? 0);
-            break;
-          case 12: // Sell Avg
-            comparison = (double.tryParse(a.daysellavgprc ?? '0') ?? 0)
-                .compareTo(double.tryParse(b.daysellavgprc ?? '0') ?? 0);
-            break;
-        }
-        return _sortAscending ? comparison : -comparison;
-      });
-    }
-
-    return positions;
-  }
+  // ✅ REMOVED: Old _getFilteredPositions method - replaced with _getFilteredPositionsFromList
+  // This ensures we use the watched position list from provider for real-time updates
 
   Color _getValueColor(String value, ThemesProvider theme) {
     final numValue = double.tryParse(value) ?? 0.0;

@@ -24,13 +24,13 @@ class mf_sip_cancel_message {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['XSIPRegId'] = this.xSIPRegId;
-    data['BSERemarks'] = this.bSERemarks;
-    data['SuccessFlag'] = this.successFlag;
-    data['IntRefNo'] = this.intRefNo;
-    data['stat'] = this.stat;
-    data['status'] = this.status;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['XSIPRegId'] = xSIPRegId;
+    data['BSERemarks'] = bSERemarks;
+    data['SuccessFlag'] = successFlag;
+    data['IntRefNo'] = intRefNo;
+    data['stat'] = stat;
+    data['status'] = status;
     return data;
   }
 }

@@ -7,16 +7,16 @@ class CPActionModule {
     if (json['corporateAction'] != null) {
       corporateAction = <CorporateAction>[];
       json['corporateAction'].forEach((v) {
-        corporateAction!.add(new CorporateAction.fromJson(v));
+        corporateAction!.add(CorporateAction.fromJson(v));
       });
     }
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    if (this.corporateAction != null) {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    if (corporateAction != null) {
       data['corporateAction'] =
-          this.corporateAction!.map((v) => v.toJson()).toList();
+          corporateAction!.map((v) => v.toJson()).toList();
     }
     return data;
   }
@@ -165,52 +165,52 @@ class CorporateAction {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['asbanonasba'] = this.asbanonasba;
-    data['eligibleornot'] = this.eligibleornot;
-    data['bidqty'] = this.bidqty;
-    data['approvedqty'] = this.approvedqty;
-    data['appno'] = this.appno;
-    data['orderprice'] = this.orderprice;
-    data['havingqty'] = this.havingqty;
-    data['edisqty'] = this.edisqty;
-    data['orderstatus'] = this.orderstatus;
-    data['baseprice'] = this.baseprice;
-    data['biddingEndDate'] = this.biddingEndDate;
-    data['biddingStartDate'] = this.biddingStartDate;
-    data['cutOffPrice'] = this.cutOffPrice;
-    data['dailyEndTime'] = this.dailyEndTime;
-    data['dailyStartTime'] = this.dailyStartTime;
-    data['discounttype'] = this.discounttype;
-    data['discountvalue'] = this.discountvalue;
-    data['errorcode'] = this.errorcode;
-    data['exchange'] = this.exchange;
-    data['faceValue'] = this.faceValue;
-    data['id'] = this.id;
-    data['index'] = this.index;
-    data['isin'] = this.isin;
-    data['issueSize'] = this.issueSize;
-    data['issueType'] = this.issueType;
-    data['issueValueSize'] = this.issueValueSize;
-    data['lotSize'] = this.lotSize;
-    data['maxPrice'] = this.maxPrice;
-    data['maxbidqty'] = this.maxbidqty;
-    data['maximumpercentageday'] = this.maximumpercentageday;
-    data['maxvalue'] = this.maxvalue;
-    data['message'] = this.message;
-    data['minBidQuantity'] = this.minBidQuantity;
-    data['minPrice'] = this.minPrice;
-    data['minimumpercentageday'] = this.minimumpercentageday;
-    data['minvalue'] = this.minvalue;
-    data['mktclosetime'] = this.mktclosetime;
-    data['mktopentime'] = this.mktopentime;
-    data['name'] = this.name;
-    data['openondate'] = this.openondate;
-    data['registrar'] = this.registrar;
-    data['seriesDetails'] = this.seriesDetails;
-    data['symbol'] = this.symbol;
-    data['tickSize'] = this.tickSize;
-    data['token'] = this.token;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['asbanonasba'] = asbanonasba;
+    data['eligibleornot'] = eligibleornot;
+    data['bidqty'] = bidqty;
+    data['approvedqty'] = approvedqty;
+    data['appno'] = appno;
+    data['orderprice'] = orderprice;
+    data['havingqty'] = havingqty;
+    data['edisqty'] = edisqty;
+    data['orderstatus'] = orderstatus;
+    data['baseprice'] = baseprice;
+    data['biddingEndDate'] = biddingEndDate;
+    data['biddingStartDate'] = biddingStartDate;
+    data['cutOffPrice'] = cutOffPrice;
+    data['dailyEndTime'] = dailyEndTime;
+    data['dailyStartTime'] = dailyStartTime;
+    data['discounttype'] = discounttype;
+    data['discountvalue'] = discountvalue;
+    data['errorcode'] = errorcode;
+    data['exchange'] = exchange;
+    data['faceValue'] = faceValue;
+    data['id'] = id;
+    data['index'] = index;
+    data['isin'] = isin;
+    data['issueSize'] = issueSize;
+    data['issueType'] = issueType;
+    data['issueValueSize'] = issueValueSize;
+    data['lotSize'] = lotSize;
+    data['maxPrice'] = maxPrice;
+    data['maxbidqty'] = maxbidqty;
+    data['maximumpercentageday'] = maximumpercentageday;
+    data['maxvalue'] = maxvalue;
+    data['message'] = message;
+    data['minBidQuantity'] = minBidQuantity;
+    data['minPrice'] = minPrice;
+    data['minimumpercentageday'] = minimumpercentageday;
+    data['minvalue'] = minvalue;
+    data['mktclosetime'] = mktclosetime;
+    data['mktopentime'] = mktopentime;
+    data['name'] = name;
+    data['openondate'] = openondate;
+    data['registrar'] = registrar;
+    data['seriesDetails'] = seriesDetails;
+    data['symbol'] = symbol;
+    data['tickSize'] = tickSize;
+    data['token'] = token;
     return data;
   }
 }

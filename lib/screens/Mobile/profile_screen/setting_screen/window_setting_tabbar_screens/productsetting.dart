@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/res/global_state_text.dart';
 
 import '../../../../../sharedWidget/nofitication_coustom_switch.dart';

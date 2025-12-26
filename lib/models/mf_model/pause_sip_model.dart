@@ -24,13 +24,13 @@ class pause_spi_res {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['RegistrationNumber'] = this.registrationNumber;
-    data['BseRemarks'] = this.bseRemarks;
-    data['StatusFlag'] = this.statusFlag;
-    data['filler'] = this.filler;
-    data['stat'] = this.stat;
-    data['status'] = this.status;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['RegistrationNumber'] = registrationNumber;
+    data['BseRemarks'] = bseRemarks;
+    data['StatusFlag'] = statusFlag;
+    data['filler'] = filler;
+    data['stat'] = stat;
+    data['status'] = status;
     return data;
   }
 }

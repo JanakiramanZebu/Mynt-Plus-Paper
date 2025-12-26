@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../../../provider/iop_provider.dart';
 import '../../../../../provider/thems.dart';
 import '../../../../../res/global_state_text.dart';
 import '../../../../../res/res.dart';
-import '../../../../../routes/route_names.dart';
 import '../../../../../sharedWidget/functions.dart';
 import '../ipo_orderbook_details/close_order_details.dart';
 
@@ -169,12 +166,12 @@ class _CloseOrderItem extends StatelessWidget {
 
   String _getInvestedAmount() {
     return order.type == "BSE"
-        ? "${getFormatter(noDecimal: true, v4d: false, value: double.parse(order.bidDetail![0].rate!) * double.parse(order.bidDetail![0].quantity!)).toString()}"
-        : "${getFormatter(
+        ? getFormatter(noDecimal: true, v4d: false, value: double.parse(order.bidDetail![0].rate!) * double.parse(order.bidDetail![0].quantity!)).toString()
+        : getFormatter(
             noDecimal: true,
             v4d: false,
             value:
                 double.parse(order.bidDetail![0].amount.toString()).toDouble(),
-          )}";
+          );
   }
 }

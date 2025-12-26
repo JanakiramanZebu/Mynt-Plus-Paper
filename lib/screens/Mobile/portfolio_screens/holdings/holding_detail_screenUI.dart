@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/models/marketwatch_model/market_watch_scrip_model.dart';
 import 'package:mynt_plus/provider/chart_provider.dart';
 import '../../../../models/marketwatch_model/get_quotes.dart';
@@ -16,9 +15,7 @@ import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
 import '../../../../routes/route_names.dart';
 import '../../../../sharedWidget/alert_dialogue.dart';
-import '../../../../sharedWidget/custom_back_btn.dart';
 import '../../../../sharedWidget/custom_drag_handler.dart';
-import '../../../../sharedWidget/custom_exch_badge.dart';
 import '../../../../sharedWidget/scrip_info_btns.dart';
 import '../../../../utils/responsive_navigation.dart';
 import '../../market_watch/futures/future_screen.dart';
@@ -31,12 +28,12 @@ class ScripInfoButtonsWithLock extends StatefulWidget {
   final String tsym;
 
   const ScripInfoButtonsWithLock({
-    Key? key,
+    super.key,
     required this.exch,
     required this.token,
     required this.insName,
     required this.tsym,
-  }) : super(key: key);
+  });
 
   @override
   State<ScripInfoButtonsWithLock> createState() =>
@@ -84,8 +81,7 @@ class HoldingDetailScreen extends ConsumerStatefulWidget {
   final HoldingsModel holdingData;
 
   const HoldingDetailScreen(
-      {Key? key, required this.exchTsym, required this.holdingData})
-      : super(key: key);
+      {super.key, required this.exchTsym, required this.holdingData});
 
   @override
   ConsumerState<HoldingDetailScreen> createState() =>
@@ -547,7 +543,7 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                                       assets.bellIcon,
                                       width: 18,
                                       height: 18,
-                                      color: Color(0xFF0037B7),
+                                      color: const Color(0xFF0037B7),
                                     ),
                                   ),
                                 ),
@@ -629,8 +625,8 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                                 border: Border.all(
                                   color: _isProcessingSell ||
                                           _holdingData.saleableQty == 0
-                                      ? Color(0xff0037B7).withOpacity(.8)
-                                      : Color(0xff0037B7),
+                                      ? const Color(0xff0037B7).withOpacity(.8)
+                                      : const Color(0xff0037B7),
                                   width: 1,
                                 ),
                                 color: const Color(0xffF1F3F8),
@@ -727,7 +723,7 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                     return true;
                   },
                   child: ListView(
-                    physics: ClampingScrollPhysics(),
+                    physics: const ClampingScrollPhysics(),
                     controller: scrollController,
                     children: [
               Container(

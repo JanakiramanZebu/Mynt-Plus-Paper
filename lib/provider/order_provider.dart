@@ -7,10 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:mynt_plus/provider/thems.dart';
-import 'package:mynt_plus/res/web_colors.dart';
 import 'package:mynt_plus/screens/web/order/order_confirmation_screen_web.dart';
-import 'package:mynt_plus/utils/custom_navigator.dart';
 import 'package:public_ip_address/public_ip_address.dart';
 import '../api/core/api_export.dart';
 import '../locator/constant.dart';
@@ -181,7 +178,7 @@ class OrderProvider extends DefaultChangeNotifier {
   bool get showOrderHistory => _showOrderHistory;
 
   // Track currently subscribed symbols to avoid duplicate subscriptions
-  Set<String> _subscribedSymbols = {};
+  final Set<String> _subscribedSymbols = {};
 
   // Add this property to track the last sort method used
   String _lastOrderSortMethod = "TIMEDSC"; // Default sorting
@@ -283,7 +280,7 @@ class OrderProvider extends DefaultChangeNotifier {
 
 // Change tab orderbook tab index
   Future<void> setPortfolioupdate(String mode) async {
-    var result;
+    Map<String, dynamic> result;
     if (mode == 'ob') {
       result = await api.getOrderBook();
       // result = await api.mockOrderBookResponse();
@@ -1029,7 +1026,7 @@ class OrderProvider extends DefaultChangeNotifier {
     }
   }
 
-  List<PlaceOrderModel> _sliceOrderResults = [];
+  final List<PlaceOrderModel> _sliceOrderResults = [];
   List<PlaceOrderModel> get sliceOrderResults => _sliceOrderResults;
 
   Future slicePlaceOrder(
@@ -3563,7 +3560,7 @@ class OrderProvider extends DefaultChangeNotifier {
           element['orderDetails'] = itemOrderDetails;
         }
         
-        print("Updated item ${element['tsym']}: status=${element['orderStatus']}, details=${itemOrderDetails}");
+        print("Updated item ${element['tsym']}: status=${element['orderStatus']}, details=$itemOrderDetails");
       } else {
         // No order IDs means the item was never placed, reset any existing status
         element['orderStatus'] = null;

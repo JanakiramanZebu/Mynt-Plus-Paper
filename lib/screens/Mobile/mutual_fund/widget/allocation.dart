@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:percent_indicator/percent_indicator.dart';
-import 'package:syncfusion_flutter_charts/charts.dart';
 
 import '../../../../models/mf_model/mutual_fundmodel.dart';
 import '../../../../provider/mf_provider.dart';
 import '../../../../provider/thems.dart';
 import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
-import '../../../../sharedWidget/functions.dart';
 
 class MFAllocation extends ConsumerWidget {
   final MutualFundList mfStockData;

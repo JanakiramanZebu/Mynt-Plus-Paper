@@ -100,9 +100,9 @@ class IpoOrderBookModel {
         try {
           final parsedList = jsonDecode(json['bid_detail'] as String);
           if (parsedList is List) {
-            parsedList.forEach((v) {
+            for (var v in parsedList) {
               bidDetail!.add(BidDetail.fromJson(v));
-            });
+            }
           }
         } catch (e) {
           print("Error parsing bid_detail string: $e");
@@ -148,9 +148,9 @@ class IpoOrderBookModel {
         try {
           final parsedList = jsonDecode(json['resp_bid'] as String);
           if (parsedList is List) {
-            parsedList.forEach((v) {
+            for (var v in parsedList) {
               respBid!.add(RespBid.fromJson(v));
-            });
+            }
           }
         } catch (e) {
           print("Error parsing resp_bid string: $e");
@@ -171,9 +171,9 @@ class IpoOrderBookModel {
         try {
           final parsedList = jsonDecode(json['subcategorysettings'] as String);
           if (parsedList is List) {
-            parsedList.forEach((v) {
+            for (var v in parsedList) {
               subcategorysettings!.add(Subcategorysettings.fromJson(v));
-            });
+            }
           }
         } catch (e) {
           print("Error parsing subcategorysettings string: $e");

@@ -78,8 +78,8 @@ class _IpoCloseOrderDetailsState extends ConsumerState<IpoCloseOrderDetails> {
               horizontalMargin: 16,
               headingRowHeight: 40,
               dataRowHeight: 48,
-              headingRowColor: MaterialStateProperty.all(Colors.transparent),
-              dataRowColor: MaterialStateProperty.resolveWith((states) {
+              headingRowColor: WidgetStateProperty.all(Colors.transparent),
+              dataRowColor: WidgetStateProperty.resolveWith((states) {
                 return Colors.transparent;
               }),
               dividerThickness: 1,

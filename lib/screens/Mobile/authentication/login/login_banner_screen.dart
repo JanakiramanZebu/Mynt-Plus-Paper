@@ -4,7 +4,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../provider/auth_provider.dart';
-import '../../../../provider/version_provider.dart';
 import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
 import '../../../../routes/route_names.dart';
@@ -39,7 +38,7 @@ class _LoginBannerScreenState extends ConsumerState<LoginBannerScreen> {
       _isAnyProcessing = true;
       _activeButton = 'openAccount';
     });
-    await Future.delayed(Duration(milliseconds: 10));
+    await Future.delayed(const Duration(milliseconds: 10));
     if (_conflictTap) {
       // Reset everything
       setState(() {
@@ -83,7 +82,7 @@ class _LoginBannerScreenState extends ConsumerState<LoginBannerScreen> {
       _activeButton = 'loginMynt';
       ref.read(authProvider).switchbackbutton(true);
     });
-    await Future.delayed(Duration(milliseconds: 10));
+    await Future.delayed(const Duration(milliseconds: 10));
     if (_conflictTap) {
       // Reset everything
       setState(() {
@@ -264,7 +263,7 @@ class _LoginBannerScreenState extends ConsumerState<LoginBannerScreen> {
                   BoxShadow(
                     color: Colors.black.withOpacity(0.1), // shadow color
                     blurRadius: 4, // how soft the shadow is
-                    offset: Offset(0, 4), // shadow position
+                    offset: const Offset(0, 4), // shadow position
                   ),
                 ],
               ),
@@ -290,7 +289,7 @@ class _LoginBannerScreenState extends ConsumerState<LoginBannerScreen> {
                             width: 140,
                             fit: BoxFit.contain,
                           ),
-                          SizedBox(
+                          const SizedBox(
                             height: 20,
                           ),
                           FittedBox(
@@ -308,7 +307,7 @@ class _LoginBannerScreenState extends ConsumerState<LoginBannerScreen> {
                             ),
                           ),
 
-                          SizedBox(
+                          const SizedBox(
                             height: 8,
                           ),
 
@@ -325,7 +324,7 @@ class _LoginBannerScreenState extends ConsumerState<LoginBannerScreen> {
                               textAlign: TextAlign.center,
                             ),
                           ),
-                          SizedBox(
+                          const SizedBox(
                             height: 44,
                           ),
 

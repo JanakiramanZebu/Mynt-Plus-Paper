@@ -1,7 +1,6 @@
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/provider/fund_provider.dart';
 import '../../../screens/Mobile/mutual_fund/mf_hold_new_screen.dart';
 import '../../../provider/ledger_provider.dart';
@@ -12,7 +11,6 @@ import '../../../provider/thems.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../profile_screen/fund_screen/secure_fund.dart';
-import 'allholdings/allholdings_screen.dart';
 import 'holdings/holding_screen.dart';
 import 'positions/position_screen.dart';
 import '../order_book/order_book_screen.dart';
@@ -293,13 +291,13 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildTabBar(context, ref),
-                  Expanded(child: const HoldingScreen()),
+                  const Expanded(child: HoldingScreen()),
                 ],
               ) : Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                  _buildTabBar(context, ref),
-                  Expanded(child: const MfHoldNewScreen()),
+                  const Expanded(child: MfHoldNewScreen()),
                 ],
               ),
               PositionScreen(listofPosition: portfolio.allPostionList),

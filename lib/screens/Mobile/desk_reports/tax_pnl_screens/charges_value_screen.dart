@@ -1,15 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/provider/ledger_provider.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/sharedWidget/functions.dart';
-import 'package:mynt_plus/sharedWidget/loader_ui.dart';
-import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 
 import '../../../../provider/thems.dart';
 import '../../../../res/global_state_text.dart';
-import 'chart_for_tax_scree.dart';
 
 class TaxCharges extends StatefulWidget {
   const TaxCharges({super.key});
@@ -25,6 +21,7 @@ class _TaxCharges extends State<TaxCharges> {
     super.initState();
   }
 
+  @override
   Widget build(BuildContext context) {
     final List<String> staticColumn = [
       'Row 1',
@@ -62,8 +59,8 @@ class _TaxCharges extends State<TaxCharges> {
       final eqtypestring = ref.watch(ledgerProvider).eqtypestring;
       final dertypestring = ref.watch(ledgerProvider).dertypestring;
       final ledgerprovider = ref.watch(ledgerProvider);
-      Future<void> _refresh() async {
-        await Future.delayed(Duration(seconds: 0)); // simulate refresh delay
+      Future<void> refresh() async {
+        await Future.delayed(const Duration(seconds: 0)); // simulate refresh delay
         print("refresh ");
         await ledgerprovider.getYearlistTaxpnl();
         ledgerprovider.getCurrentDate('');
@@ -75,7 +72,7 @@ class _TaxCharges extends State<TaxCharges> {
       }
 
       return RefreshIndicator(
-        onRefresh: _refresh,
+        onRefresh: refresh,
         child: Scaffold(
           body: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
@@ -92,7 +89,7 @@ class _TaxCharges extends State<TaxCharges> {
                 // SizedBox(height: 36.0),
                 // BarChartWidget(),
 
-                SizedBox(height: 8.0),
+                const SizedBox(height: 8.0),
                 // Container(
                 //     width: screenWidth,
                 //     child: Container(
@@ -167,7 +164,7 @@ class _TaxCharges extends State<TaxCharges> {
                 //   color: const Color.fromARGB(
                 //       255, 117, 117, 117),
                 // ),
-                SizedBox(height: 8.0),
+                const SizedBox(height: 8.0),
                 Column(
                   children: [
                     Padding(
@@ -187,10 +184,10 @@ class _TaxCharges extends State<TaxCharges> {
                                   theme: theme.isDarkMode,
                                   fw: 3),
                               ledgerprovider.reportsloadingforcharges == true
-                                  ? CircularProgressIndicator()
+                                  ? const CircularProgressIndicator()
                                   : TextWidget.subText(
                                       text:
-                                          "${ledgerprovider.taxpnleqCharge?.total != 'null' ? ledgerprovider.taxpnleqCharge!.total! : '0.00'}",
+                                          ledgerprovider.taxpnleqCharge?.total != 'null' ? ledgerprovider.taxpnleqCharge!.total! : '0.00',
                                       color: Colors.red,
                                       textOverflow: TextOverflow.ellipsis,
                                       theme: theme.isDarkMode,
@@ -883,7 +880,7 @@ class _TaxCharges extends State<TaxCharges> {
                   ledgerprovider.taxpnlcomselectedtab();
                 });
               },
-              child: Text("${text}",
+              child: Text(text,
                   textAlign: TextAlign.center,
                   style: textStyle(
                       !theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
@@ -891,7 +888,7 @@ class _TaxCharges extends State<TaxCharges> {
                       FontWeight.w500))));
     } else {
       print("${ledgerprovider.taxpnleq!.data!.aSSETS}");
-      return SizedBox();
+      return const SizedBox();
     }
   }
 
@@ -904,7 +901,7 @@ class _TaxCharges extends State<TaxCharges> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               TextWidget.paraText(
-                  text: "${heading}",
+                  text: heading,
                   color:
                       theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                   textOverflow: TextOverflow.ellipsis,

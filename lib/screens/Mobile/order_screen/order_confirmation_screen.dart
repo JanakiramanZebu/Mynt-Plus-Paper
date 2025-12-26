@@ -145,7 +145,7 @@ class _OrderConfirmationScreenState extends ConsumerState<OrderConfirmationScree
         ),
         body: SafeArea(
           child: SingleChildScrollView(
-            physics: ClampingScrollPhysics(),
+            physics: const ClampingScrollPhysics(),
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -495,7 +495,7 @@ class _OrderConfirmationScreenState extends ConsumerState<OrderConfirmationScree
               color: Colors.orange.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(
+            child: const Icon(
             Icons.schedule,
             color: Colors.orange,
             size: 40,

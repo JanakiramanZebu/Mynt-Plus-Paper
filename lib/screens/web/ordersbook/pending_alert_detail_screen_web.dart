@@ -221,9 +221,9 @@ class _PendingAlertDetailScreenWebState
   Widget _buildSymbolSection(ThemesProvider theme) {
     return Material(
       color: Colors.transparent,
-      shape: RoundedRectangleBorder(),
+      shape: const RoundedRectangleBorder(),
       child: InkWell(
-        customBorder: RoundedRectangleBorder(),
+        customBorder: const RoundedRectangleBorder(),
         borderRadius: BorderRadius.circular(0),
         splashColor: theme.isDarkMode ? colors.primaryDark.withOpacity(0.1) : colors.primaryLight.withOpacity(0.1),
         highlightColor: theme.isDarkMode ? colors.primaryDark.withOpacity(0.2) : colors.primaryLight.withOpacity(0.2),
@@ -237,7 +237,7 @@ class _PendingAlertDetailScreenWebState
             Row(
               children: [
                 Text(
-                  "${widget.alert.tsym?.replaceAll("-EQ", "") ?? ''}",
+                  widget.alert.tsym?.replaceAll("-EQ", "") ?? '',
                   style: WebTextStyles.dialogTitle(
                     isDarkTheme: theme.isDarkMode,
                     color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,

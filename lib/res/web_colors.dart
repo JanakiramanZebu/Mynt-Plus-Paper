@@ -69,7 +69,7 @@ class WebColors {
   
   // === DATA COLORS ===
   static const Color profit = Color(0xFF43A833);
-  static const Color loss = Color(0xFFFF23645);
+  static const Color loss = Color(0xffff23645);
   static const Color neutral = Color(0xFF4A4A4A);
   
   // === ICON COLORS ===

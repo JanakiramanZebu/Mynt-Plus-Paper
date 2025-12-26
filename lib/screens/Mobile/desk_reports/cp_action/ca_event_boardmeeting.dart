@@ -1,17 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/provider/ledger_provider.dart';
 import 'package:mynt_plus/res/res.dart';
-import 'package:mynt_plus/sharedWidget/custom_back_btn.dart';
-import 'package:mynt_plus/sharedWidget/custom_exch_badge.dart';
 import 'package:mynt_plus/sharedWidget/functions.dart';
 import 'package:mynt_plus/sharedWidget/loader_ui.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 
 import '../../../../provider/thems.dart';
 import '../../../../res/global_state_text.dart';
-import '../bottom_sheets/ledger_filter.dart';
 
 class CAEventBoardMeeting extends StatelessWidget {
   const CAEventBoardMeeting({super.key});
@@ -54,7 +50,7 @@ class CAEventBoardMeeting extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               ledgerprovider.caeventalldata?.boardmeeting?.isEmpty ?? true
-                  ? Center(
+                  ? const Center(
                       child: Padding(
                       padding: EdgeInsets.only(top: 60),
                       child: NoDataFound(),
@@ -62,7 +58,7 @@ class CAEventBoardMeeting extends StatelessWidget {
                   : Expanded(
                       child: SingleChildScrollView(
                         child: ListView.separated(
-                          physics: ScrollPhysics(),
+                          physics: const ScrollPhysics(),
                           itemCount: ledgerprovider
                                   .caeventalldata?.boardmeeting?.length ??
                               0,
@@ -104,11 +100,11 @@ class CAEventBoardMeeting extends StatelessWidget {
                                     ],
                                   ),
                                 ),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
+                                const Padding(
+                                  padding: EdgeInsets.symmetric(
                                       horizontal: 16.0),
                                   child: Divider(
-                                    color: const Color.fromARGB(
+                                    color: Color.fromARGB(
                                         255, 212, 212, 212),
                                     thickness: 0.5,
                                   ),
@@ -133,7 +129,7 @@ class CAEventBoardMeeting extends StatelessWidget {
                                           textAlign: TextAlign
                                               .start, // Ensures left alignment
                                           style: textStyle(
-                                            Color(0xFF696969),
+                                            const Color(0xFF696969),
                                             12,
                                             FontWeight.w500,
                                           ),

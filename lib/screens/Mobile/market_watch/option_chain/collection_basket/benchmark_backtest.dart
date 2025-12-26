@@ -185,13 +185,13 @@ class _BenchMarkBacktestScreenState
                               horizontalInterval: 1,
                             ),
                             titlesData: FlTitlesData(
-                              leftTitles: AxisTitles(
+                              leftTitles: const AxisTitles(
                                   sideTitles:
                                       SideTitles(showTitles: false)),
-                              rightTitles: AxisTitles(
+                              rightTitles: const AxisTitles(
                                   sideTitles:
                                       SideTitles(showTitles: false)),
-                              topTitles: AxisTitles(
+                              topTitles: const AxisTitles(
                                   sideTitles:
                                       SideTitles(showTitles: false)),
                               bottomTitles: AxisTitles(
@@ -252,7 +252,7 @@ class _BenchMarkBacktestScreenState
                               data.benchmark.chartData
                             ]),
                             // Add consistent padding for all charts
-                            clipData: FlClipData.all(),
+                            clipData: const FlClipData.all(),
                             lineTouchData: LineTouchData(
                               enabled: true,
                               touchTooltipData: LineTouchTooltipData(
@@ -368,7 +368,7 @@ class _BenchMarkBacktestScreenState
                                 isCurved: true,
                                 color: const Color(0xFF3B82F6),
                                 barWidth: 2,
-                                dotData: FlDotData(show: false),
+                                dotData: const FlDotData(show: false),
                               ),
                               // Your Strategy (green)
                               LineChartBarData(
@@ -381,7 +381,7 @@ class _BenchMarkBacktestScreenState
                                 isCurved: true,
                                 color: const Color(0xFF10B981),
                                 barWidth: 2,
-                                dotData: FlDotData(show: false),
+                                dotData: const FlDotData(show: false),
                               ),
                             ],
                           ),
@@ -810,15 +810,15 @@ class _BenchMarkBacktestScreenState
           // Current row
           _buildThreeColumnDataRow(
             'Current',
-            '${_formatNumber(data.total.currentValue)}',
-            '${_formatNumber(data.benchmark.currentValue)}',
+            _formatNumber(data.total.currentValue),
+            _formatNumber(data.benchmark.currentValue),
             theme,
           ),
           // Gain row
           _buildThreeColumnDataRow(
             'Gain',
-            '${_formatNumber(data.total.gain)}',
-            '${_formatNumber(data.benchmark.gain)}',
+            _formatNumber(data.total.gain),
+            _formatNumber(data.benchmark.gain),
             theme,
             yourColor: data.total.gain >= 0
                 ? (theme.isDarkMode ? colors.profitDark : colors.profitLight)
@@ -890,15 +890,15 @@ class _BenchMarkBacktestScreenState
           // Final Value row
           _buildThreeColumnDataRow(
             'Final Value',
-            '${_formatNumber(data.total.currentValue)}',
-            '${_formatNumber(data.inflationAdjusted.finalValue)}',
+            _formatNumber(data.total.currentValue),
+            _formatNumber(data.inflationAdjusted.finalValue),
             theme,
           ),
           // Gain row
           _buildThreeColumnDataRow(
             'Gain',
-            '${_formatNumber(data.total.gain)}',
-            '${_formatNumber(data.inflationAdjusted.gain)}',
+            _formatNumber(data.total.gain),
+            _formatNumber(data.inflationAdjusted.gain),
             theme,
             yourColor: data.total.gain >= 0
                 ? (theme.isDarkMode ? colors.profitDark : colors.profitLight)
@@ -1094,7 +1094,7 @@ class _BenchMarkBacktestScreenState
                   children: [
                     _buildModernTaxComponent(
                         'Gain',
-                        '${totalGains}',
+                        '$totalGains',
                         theme.isDarkMode
                             ? colors.profitDark
                             : colors.profitLight,
@@ -1108,7 +1108,7 @@ class _BenchMarkBacktestScreenState
                     ),
                     _buildModernTaxComponent(
                         'Tax',
-                        '${totalTax}',
+                        '$totalTax',
                         theme.isDarkMode ? colors.lossDark : colors.lossLight,
                         theme),
                     Icon(
@@ -1120,7 +1120,7 @@ class _BenchMarkBacktestScreenState
                     ),
                     _buildModernTaxComponent(
                         'Post Tax',
-                        '${postTaxGains}',
+                        '$postTaxGains',
                         theme.isDarkMode
                             ? colors.textPrimaryDark
                             : colors.textPrimaryLight,
@@ -1466,7 +1466,7 @@ class _BenchMarkBacktestScreenState
     final day = now.day;
     final monthAbbr = _getMonthAbbreviation(now.month);
     final year = now.year;
-    return '${day}${_getOrdinalSuffix(day)} $monthAbbr $year';
+    return '$day${_getOrdinalSuffix(day)} $monthAbbr $year';
   }
 
   // Helper method to get ordinal suffix for day

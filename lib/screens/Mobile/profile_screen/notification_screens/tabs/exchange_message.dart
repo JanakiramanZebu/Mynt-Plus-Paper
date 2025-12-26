@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:readmore/readmore.dart';
 import '../../../../../provider/notification_provider.dart';
 import '../../../../../provider/thems.dart';
@@ -19,7 +18,7 @@ class ExchangeMessage extends ConsumerWidget {
     return noftification.loading
         ? const Center(child: CircularProgressIndicator())
         : SingleChildScrollView(
-          physics: ClampingScrollPhysics(),
+          physics: const ClampingScrollPhysics(),
             child: noftification.exchangemessage![0].exchMsg == null
                 ? const Padding(
                     padding: EdgeInsets.symmetric(vertical: 220),
@@ -30,7 +29,7 @@ class ExchangeMessage extends ConsumerWidget {
                 : ListView.separated(
                     padding: const EdgeInsets.symmetric(vertical: 20),
                     shrinkWrap: true,
-                    physics: ClampingScrollPhysics(),
+                    physics: const ClampingScrollPhysics(),
                     itemCount: noftification.exchangemessage!.length,
                     itemBuilder: (BuildContext context, int index) {
                       return Padding(

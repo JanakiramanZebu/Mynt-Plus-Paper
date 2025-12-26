@@ -38,29 +38,29 @@ class CalenderpnlModel {
       data2 = json['Data'];
     }
     if (json['summary'] != null) {
-      this.summary = json['summary'];
+      summary = json['summary'];
     }
 
     if (json['symbolarr'] != null) {
-      this.symbolarr = json['symbolarr'];
+      symbolarr = json['symbolarr'];
     }
     fullresponse = json;
     totalCharges = json['total_charges'];
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     if (this.data != null) {
       data['Data2'] = this.data!.map((v) => v.toJson()).toList();
     }
-    if (this.data2 != null) {
-      data['Data'] = this.data2;
+    if (data2 != null) {
+      data['Data'] = data2;
     }
-    if (this.summary != null) {
-      data['summary'] = this.summary;
+    if (summary != null) {
+      data['summary'] = summary;
     }
-    if (this.symbolarr != null) {
-      data['symbolarr'] = this.symbolarr;
+    if (symbolarr != null) {
+      data['symbolarr'] = symbolarr;
     }
 
     if (journal != null) {
@@ -68,7 +68,7 @@ class CalenderpnlModel {
     }
     data['fullresponse'] = fullresponse;
 
-    data['total_charges'] = this.totalCharges;
+    data['total_charges'] = totalCharges;
     return data;
   }
 }
@@ -177,7 +177,7 @@ class TradeData {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     data['ADJUSTED_NETRATE'] = aDJUSTEDNETRATE;
     data['BAMT'] = bAMT;
     data['BQTY'] = bQTY;
@@ -234,7 +234,7 @@ class Journal {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     data['TRADE_DATE'] = tRADEDATE;
     data['realisedpnl'] = realisedpnl;
     data['total_bill_net'] = totalBillNet;

@@ -21,7 +21,7 @@ class BannerImageCache {
   // Check if cache is expired (7 days = 7 * 24 * 60 * 60 * 1000 ms)
   bool get isExpired {
     final now = DateTime.now().millisecondsSinceEpoch;
-    final sevenDaysInMs = 7 * 24 * 60 * 60 * 1000;
+    const sevenDaysInMs = 7 * 24 * 60 * 60 * 1000;
     return (now - cachedAt) > sevenDaysInMs;
   }
 

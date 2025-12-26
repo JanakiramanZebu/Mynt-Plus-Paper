@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../../models/marketwatch_model/opt_chain_model.dart';
 import '../../../../provider/thems.dart';
 import '../../../../res/global_state_text.dart';

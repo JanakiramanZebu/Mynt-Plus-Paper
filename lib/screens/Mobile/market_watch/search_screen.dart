@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/provider/webview_chart_provider.dart';
 // import 'package:remove_emoji_input_formatter/remove_emoji_input_formatter.dart';
 import '../../../../provider/market_watch_provider.dart';
@@ -13,7 +12,6 @@ import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../routes/app_routes.dart';
 import '../../../sharedWidget/custom_text_form_field.dart';
-import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/no_internet_widget.dart';
 import '../../../utils/no_emoji_inputformatter.dart';
 import 'search_scrip_list.dart';
@@ -147,7 +145,7 @@ class _AddScripState extends ConsumerState<SearchScreen>
         if (ref.read(chartProvider).isVisible) {
             if(ref.read(chartUpdateProvider).orientation != 'portrait'){
             ref.read(chartUpdateProvider).changeOrientation('portrait');
-            await Future.delayed(Duration(milliseconds: 700));
+            await Future.delayed(const Duration(milliseconds: 700));
             }
             ref.read(chartProvider.notifier).hideChart();
             final mktwth = ref.read(marketWatchProvider);
@@ -365,7 +363,7 @@ class _AddScripState extends ConsumerState<SearchScreen>
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               // Tabs content
-                              Container(
+                              SizedBox(
                                 height: 32,
                                 child: Row(
                                   children: [
@@ -426,7 +424,7 @@ class _AddScripState extends ConsumerState<SearchScreen>
     return ListView.builder(
       controller: _tabScrollController,
       scrollDirection: Axis.horizontal,
-      physics: ClampingScrollPhysics(),
+      physics: const ClampingScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 0),
       itemCount: searchTabList.length,
       itemBuilder: (context, index) {

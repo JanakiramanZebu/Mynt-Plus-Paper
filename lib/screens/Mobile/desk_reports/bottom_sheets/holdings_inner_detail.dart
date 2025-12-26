@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/provider/ledger_provider.dart';
-import 'package:mynt_plus/screens/Mobile/authentication/password/forgot_pass_unblock_user.dart'
-    as auth;
 import 'package:mynt_plus/sharedWidget/functions.dart';
 
-import '../../../../models/desk_reports_model/holdings_model.dart';
 import '../../../../provider/thems.dart';
 import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
@@ -39,8 +36,8 @@ class _HoldingInnerDetails extends State<HoldingInnerDetails> {
             decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(30),
                 color: theme.isDarkMode
-                    ? Color.fromARGB(255, 0, 0, 0)
-                    : Color.fromARGB(255, 255, 255, 255)),
+                    ? const Color.fromARGB(255, 0, 0, 0)
+                    : const Color.fromARGB(255, 255, 255, 255)),
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Row(
@@ -50,9 +47,9 @@ class _HoldingInnerDetails extends State<HoldingInnerDetails> {
                     color: const Color.fromARGB(255, 219, 218, 218),
                     width: 40,
                     height: 4.0,
-                    padding: EdgeInsets.only(
+                    padding: const EdgeInsets.only(
                         top: 10, bottom: 25, left: 20, right: 20),
-                    margin: EdgeInsets.only(top: 16),
+                    margin: const EdgeInsets.only(top: 16),
                   ),
                 ],
               ),
@@ -78,7 +75,7 @@ class _HoldingInnerDetails extends State<HoldingInnerDetails> {
                 ),
               ),
               widget.data['avg_res'].length == 0
-                  ? Center(
+                  ? const Center(
                       child: Padding(
                       padding: EdgeInsets.only(top: 60),
                       child: NoDataFound(),
@@ -89,7 +86,7 @@ class _HoldingInnerDetails extends State<HoldingInnerDetails> {
                         child: Column(
                           children: [
                             ListView.separated(
-                              physics: ScrollPhysics(),
+                              physics: const ScrollPhysics(),
                               itemCount: widget.data['avg_res'].length,
                               shrinkWrap: true,
                               itemBuilder: (context, index) {
@@ -111,11 +108,11 @@ class _HoldingInnerDetails extends State<HoldingInnerDetails> {
                                           theme: theme.isDarkMode,
                                           fw: 1),
                                     ),
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
+                                    const Padding(
+                                      padding: EdgeInsets.symmetric(
                                           horizontal: 16.0),
                                       child: Divider(
-                                        color: const Color.fromARGB(
+                                        color: Color.fromARGB(
                                             255, 212, 212, 212),
                                         thickness: 0.5,
                                       ),
@@ -134,7 +131,7 @@ class _HoldingInnerDetails extends State<HoldingInnerDetails> {
                                                   textOverflow:
                                                       TextOverflow.ellipsis,
                                                   theme: theme.isDarkMode,
-                                                  color: Color(0xFF696969),
+                                                  color: const Color(0xFF696969),
                                                   fw: 0),
                                               TextWidget.subText(
                                                   text:
@@ -173,7 +170,7 @@ class _HoldingInnerDetails extends State<HoldingInnerDetails> {
                                                   textOverflow:
                                                       TextOverflow.ellipsis,
                                                   theme: theme.isDarkMode,
-                                                  color: Color(0xFF696969),
+                                                  color: const Color(0xFF696969),
                                                   fw: 0),
                                               TextWidget.subText(
                                                   text:
@@ -209,7 +206,7 @@ class _HoldingInnerDetails extends State<HoldingInnerDetails> {
                                               overflow: TextOverflow
                                                   .visible, // Ensures visibility
                                               style: textStyle(
-                                                Color(0xFF696969),
+                                                const Color(0xFF696969),
                                                 12,
                                                 FontWeight.w500,
                                               ),

@@ -3,30 +3,20 @@ import 'dart:convert';
 
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_swipe_action_cell/flutter_swipe_action_cell.dart';
-import 'package:mynt_plus/res/colors.dart';
 import '../../../sharedWidget/no_data_found.dart';
 import '../../../utils/responsive_modal.dart';
-import '../../../models/marketwatch_model/get_quotes.dart';
-import '../../../models/order_book_model/order_book_model.dart';
 import '../../../provider/market_watch_provider.dart';
 
 import '../../../provider/thems.dart';
-import '../../../provider/user_profile_provider.dart';
 import '../../../provider/websocket_provider.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
-import '../../../sharedWidget/custom_exch_badge.dart';
 import '../../../sharedWidget/custom_text_btn.dart';
-import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/list_divider.dart';
-import '../../../sharedWidget/snack_bar.dart';
-import 'index/index_screen.dart';
 import 'my_stocks/stocks_screen.dart';
 import 'scrip_filter_bottom_sheet.dart';
 import 'watchlist_card.dart';
@@ -270,8 +260,9 @@ class _WatchListScreenState extends State<WatchListScreen>
     final marketWatch = ref.read(marketWatchProvider);
     final watchList = marketWatch.marketWatchlist;
 
-    if (watchList?.values == null || pageIndex >= watchList!.values!.length)
+    if (watchList?.values == null || pageIndex >= watchList!.values!.length) {
       return;
+    }
 
     final newWatchlistName = watchList.values![pageIndex];
 
@@ -658,7 +649,7 @@ class _WatchListScreenState extends State<WatchListScreen>
         key: const PageStorageKey<String>('watchlistTabs'),
         controller: _tabScrollController,
         scrollDirection: Axis.horizontal,
-        physics: ClampingScrollPhysics(),
+        physics: const ClampingScrollPhysics(),
         itemCount: watchList.values.length,
         itemBuilder: (_, i) {
           final name = watchList.values[i];
@@ -771,7 +762,7 @@ class _WatchListScreenState extends State<WatchListScreen>
   Widget _buildWatchlistView(List scrips, String sortBy) {
     return ListView.separated(
       key: ValueKey('${scrips.length}_$sortBy'),
-      physics: ClampingScrollPhysics(),
+      physics: const ClampingScrollPhysics(),
       itemCount: scrips.length,
       cacheExtent: 500,
       separatorBuilder: (_, __) => const ListDivider(),

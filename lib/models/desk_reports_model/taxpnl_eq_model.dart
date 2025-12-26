@@ -5,11 +5,11 @@ class TaxPnlEqModel {
 
   TaxPnlEqModel.fromJson(Map<String, dynamic> json) {
     data =
-        json['data'] != null ? new Data.fromJson(json['data']['data']) : null;
+        json['data'] != null ? Data.fromJson(json['data']['data']) : null;
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     if (this.data != null) {
       data['data'] = this.data!.toJson();
     }
@@ -54,25 +54,25 @@ class Data {
     if (json['ASSETS'] != null) {
       aSSETS = <ASSETS>[];
       json['ASSETS'].forEach((v) {
-        aSSETS!.add(new ASSETS.fromJson(v));
+        aSSETS!.add(ASSETS.fromJson(v));
       });
     }
     if (json['LIABILITIES'] != null) {
       lIABILITIES = <LIABILITIES>[];
       json['LIABILITIES'].forEach((v) {
-        lIABILITIES!.add(new LIABILITIES.fromJson(v));
+        lIABILITIES!.add(LIABILITIES.fromJson(v));
       });
     }
     if (json['SHORTTERM'] != null) {
       sHORTTERM = <SHORTTERM>[];
       json['SHORTTERM'].forEach((v) {
-        sHORTTERM!.add(new SHORTTERM.fromJson(v));
+        sHORTTERM!.add(SHORTTERM.fromJson(v));
       });
     }
     if (json['TRADING'] != null) {
       tRADING = <TRADING>[];
       json['TRADING'].forEach((v) {
-        tRADING!.add(new TRADING.fromJson(v));
+        tRADING!.add(TRADING.fromJson(v));
       });
     }
   }
@@ -80,7 +80,7 @@ class Data {
   Map<String, dynamic> toJson() {
 
     
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     data['Assets_Total'] = assetsTotal ;
     data['longterm_Total'] = longtermTotal ;
     data['shorterm_Total'] = shortermTotal ;
@@ -219,7 +219,7 @@ class ASSETS {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     data['TR_TYPE1'] = tRTYPE1;
     data['TR_NO'] = tRNO;
     data['TR_TYPE'] = tRTYPE;
@@ -376,7 +376,7 @@ class LIABILITIES {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     data['TR_TYPE1'] = tRTYPE1;
     data['TR_NO'] = tRNO;
     data['TR_TYPE'] = tRTYPE;
@@ -533,7 +533,7 @@ class SHORTTERM {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     data['TR_TYPE1'] = tRTYPE1;
     data['TR_NO'] = tRNO;
     data['TR_TYPE'] = tRTYPE;
@@ -690,7 +690,7 @@ class TRADING {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     data['TR_TYPE1'] = tRTYPE1;
     data['TR_NO'] = tRNO;
     data['TR_TYPE'] = tRTYPE;

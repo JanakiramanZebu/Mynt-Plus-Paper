@@ -6,7 +6,6 @@ import '../../../../res/res.dart';
 import '../../../provider/order_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../res/global_state_text.dart';
-import '../../../sharedWidget/functions.dart';
 
 class SipCancelAlert extends ConsumerWidget {
   final SipDetails sipdetails;

@@ -102,7 +102,7 @@ class _ApiKeyScreenNewState extends ConsumerState<ApiKeyScreenNew> {
     // Show message before closing bottom sheet using project's successMessage
     successMessage(context, "Copied to clipboard");
     // Close bottom sheet after a short delay
-    Future.delayed(Duration(milliseconds: 100), () {
+    Future.delayed(const Duration(milliseconds: 100), () {
       Navigator.pop(context);
     });
   }
@@ -320,7 +320,7 @@ class _ApiKeyScreenNewState extends ConsumerState<ApiKeyScreenNew> {
                                   children: [
                                     Flexible(
                                       child: TextWidget.titleText(
-                                        text: "${apiData.appKey}",
+                                        text: apiData.appKey,
                                         theme: false,
                                         color: theme.isDarkMode
                                             ? colors.textPrimaryDark
@@ -336,7 +336,7 @@ class _ApiKeyScreenNewState extends ConsumerState<ApiKeyScreenNew> {
                                       child: InkWell(
                                         customBorder: const CircleBorder(),
                                         onTap: () => _copyToClipboard(apiData.appKey),
-                                        child: Container(
+                                        child: SizedBox(
                                           height: 28,
                                           width: 28,
                                           child: Center(
@@ -673,7 +673,7 @@ class _ApiKeyScreenNewState extends ConsumerState<ApiKeyScreenNew> {
                                               (apiData.stat == "Ok"
                                                   ? apiData.secretCode
                                                   : "")),
-                                        child: Container(
+                                        child: SizedBox(
                                           height: 32,
                                           width: 32,
                                           child: Center(

@@ -13,7 +13,6 @@ import '../../../../../provider/transcation_provider.dart';
 import '../../../../../res/global_state_text.dart';
 import '../../../../../res/res.dart';
 import '../../../../../sharedWidget/functions.dart';
-import '../../../../../sharedWidget/ipo_error_widget.dart';
 import '../../../../../sharedWidget/snack_bar.dart';
 
 class ModifyIpoOrderScreen extends ConsumerStatefulWidget {

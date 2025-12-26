@@ -5,7 +5,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/provider/ledger_provider.dart';
 // ignore: unused_import
 import 'package:mynt_plus/provider/mf_provider.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../../locator/locator.dart';
 import '../../../locator/preference.dart';
 import '../../../provider/fund_provider.dart';

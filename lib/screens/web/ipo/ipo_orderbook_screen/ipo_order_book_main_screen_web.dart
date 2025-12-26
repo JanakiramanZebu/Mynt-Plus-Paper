@@ -19,19 +19,22 @@ class IpoOrderbookMainScreen extends ConsumerStatefulWidget {
 class _IpoOrderbookMainScreenState extends ConsumerState<IpoOrderbookMainScreen>
     with TickerProviderStateMixin {
   late TabController _tabController;
+  VoidCallback? _tabControllerListener; // Store listener reference for proper cleanup
   int _selectedTabIndex = 0;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this, initialIndex: 0);
-    _tabController.addListener(() {
+    // Store listener reference for proper cleanup
+    _tabControllerListener = () {
       if (_tabController.indexIsChanging || _tabController.index != _selectedTabIndex) {
         setState(() {
           _selectedTabIndex = _tabController.index;
         });
       }
-    });
+    };
+    _tabController.addListener(_tabControllerListener!);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(ipoProvide).getipoorderbookmodel(context, true);
     });
@@ -39,6 +42,11 @@ class _IpoOrderbookMainScreenState extends ConsumerState<IpoOrderbookMainScreen>
 
   @override
   void dispose() {
+    // Remove listener before disposing to prevent memory leaks
+    if (_tabControllerListener != null) {
+      _tabController.removeListener(_tabControllerListener!);
+      _tabControllerListener = null;
+    }
     _tabController.dispose();
     super.dispose();
   }
@@ -91,7 +99,7 @@ class _IpoOrderbookMainScreenState extends ConsumerState<IpoOrderbookMainScreen>
   Widget _buildTabs(ThemesProvider theme) {
     final tabs = ['Open orders', 'Close orders'];
     
-    return Container(
+    return SizedBox(
       height: 40,     
       child: Row(
         mainAxisSize: MainAxisSize.min,

@@ -4,11 +4,11 @@ class BestmfNewlist {
   BestmfNewlist({this.data});
 
   BestmfNewlist.fromJson(Map<String, dynamic> json) {
-    data = json['data'] != null ? new Data.fromJson(json['data']) : null;
+    data = json['data'] != null ? Data.fromJson(json['data']) : null;
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     if (this.data != null) {
       data['data'] = this.data!.toJson();
     }
@@ -26,21 +26,21 @@ class Data {
     if (json['baskets_length'] != null) {
       basketsLength = <BasketsLength>[];
       json['baskets_length'].forEach((v) {
-        basketsLength!.add(new BasketsLength.fromJson(v));
+        basketsLength!.add(BasketsLength.fromJson(v));
       });
     }
     baskets =
-        json['baskets'] != null ? new Baskets.fromJson(json['baskets']) : null;
+        json['baskets'] != null ? Baskets.fromJson(json['baskets']) : null;
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    if (this.basketsLength != null) {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    if (basketsLength != null) {
       data['baskets_length'] =
-          this.basketsLength!.map((v) => v.toJson()).toList();
+          basketsLength!.map((v) => v.toJson()).toList();
     }
-    if (this.baskets != null) {
-      data['baskets'] = this.baskets!.toJson();
+    if (baskets != null) {
+      data['baskets'] = baskets!.toJson();
     }
     return data;
   }
@@ -58,9 +58,9 @@ class BasketsLength {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['title'] = this.title;
-    data['count'] = this.count;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['title'] = title;
+    data['count'] = count;
     return data;
   }
 }
@@ -85,64 +85,64 @@ class Baskets {
     if (json['Tax Saving'] != null) {
       taxSaving = <TaxSaving>[];
       json['Tax Saving'].forEach((v) {
-        taxSaving!.add(new TaxSaving.fromJson(v));
+        taxSaving!.add(TaxSaving.fromJson(v));
       });
     }
     if (json['High Growth Equity'] != null) {
       highGrowthEquity = <HighGrowthEquity>[];
       json['High Growth Equity'].forEach((v) {
-        highGrowthEquity!.add(new HighGrowthEquity.fromJson(v));
+        highGrowthEquity!.add(HighGrowthEquity.fromJson(v));
       });
     }
     if (json['Stable Debt'] != null) {
       stableDebt = <StableDebt>[];
       json['Stable Debt'].forEach((v) {
-        stableDebt!.add(new StableDebt.fromJson(v));
+        stableDebt!.add(StableDebt.fromJson(v));
       });
     }
     if (json['Sectoral Thematic'] != null) {
       sectoralThematic = <SectoralThematic>[];
       json['Sectoral Thematic'].forEach((v) {
-        sectoralThematic!.add(new SectoralThematic.fromJson(v));
+        sectoralThematic!.add(SectoralThematic.fromJson(v));
       });
     }
     if (json['International Exposure'] != null) {
       internationalExposure = <InternationalExposure>[];
       json['International Exposure'].forEach((v) {
-        internationalExposure!.add(new InternationalExposure.fromJson(v));
+        internationalExposure!.add(InternationalExposure.fromJson(v));
       });
     }
     if (json['Balanced Hybrid'] != null) {
       balancedHybrid = <BalancedHybrid>[];
       json['Balanced Hybrid'].forEach((v) {
-        balancedHybrid!.add(new BalancedHybrid.fromJson(v));
+        balancedHybrid!.add(BalancedHybrid.fromJson(v));
       });
     }
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    if (this.taxSaving != null) {
-      data['Tax Saving'] = this.taxSaving!.map((v) => v.toJson()).toList();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    if (taxSaving != null) {
+      data['Tax Saving'] = taxSaving!.map((v) => v.toJson()).toList();
     }
-    if (this.highGrowthEquity != null) {
+    if (highGrowthEquity != null) {
       data['High Growth Equity'] =
-          this.highGrowthEquity!.map((v) => v.toJson()).toList();
+          highGrowthEquity!.map((v) => v.toJson()).toList();
     }
-    if (this.stableDebt != null) {
-      data['Stable Debt'] = this.stableDebt!.map((v) => v.toJson()).toList();
+    if (stableDebt != null) {
+      data['Stable Debt'] = stableDebt!.map((v) => v.toJson()).toList();
     }
-    if (this.sectoralThematic != null) {
+    if (sectoralThematic != null) {
       data['Sectoral Thematic'] =
-          this.sectoralThematic!.map((v) => v.toJson()).toList();
+          sectoralThematic!.map((v) => v.toJson()).toList();
     }
-    if (this.internationalExposure != null) {
+    if (internationalExposure != null) {
       data['International Exposure'] =
-          this.internationalExposure!.map((v) => v.toJson()).toList();
+          internationalExposure!.map((v) => v.toJson()).toList();
     }
-    if (this.balancedHybrid != null) {
+    if (balancedHybrid != null) {
       data['Balanced Hybrid'] =
-          this.balancedHybrid!.map((v) => v.toJson()).toList();
+          balancedHybrid!.map((v) => v.toJson()).toList();
     }
     return data;
   }
@@ -240,35 +240,35 @@ class TaxSaving {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['AUM'] = this.aUM;
-    data['name'] = this.name;
-    data['1Year'] = this.s1Year;
-    data['3Year'] = this.s3Year;
-    data['5Year'] = this.s5Year;
-    data['ISIN'] = this.iSIN;
-    data['Type'] = this.type;
-    data['SubType'] = this.subType;
-    data['AMC_Code'] = this.aMCCode;
-    data['Scheme_Type'] = this.schemeType;
-    data['Scheme_Code'] = this.schemeCode;
-    data['Exit_Load_Flag'] = this.exitLoadFlag;
-    data['Scheme_Name'] = this.schemeName;
-    data['Purchase_Allowed'] = this.purchaseAllowed;
-    data['Minimum_Purchase_Amount'] = this.minimumPurchaseAmount;
-    data['Additional_Purchase_Amount'] = this.additionalPurchaseAmount;
-    data['Maximum_Purchase_Amount'] = this.maximumPurchaseAmount;
-    data['Redemption_Allowed'] = this.redemptionAllowed;
-    data['Minimum_Redemption_Qty'] = this.minimumRedemptionQty;
-    data['Redemption_Qty_Multiplier'] = this.redemptionQtyMultiplier;
-    data['Redemption_Amount_Minimum'] = this.redemptionAmountMinimum;
-    data['Dividend_Reinvestment_Flag'] = this.dividendReinvestmentFlag;
-    data['SIP_FLAG'] = this.sIPFLAG;
-    data['Exit_Load'] = this.exitLoad;
-    data['ReOpening_Date'] = this.reOpeningDate;
-    data['SETTLEMENT_TYPE'] = this.sETTLEMENTTYPE;
-    data['Start_Date'] = this.startDate;
-    data['End_Date'] = this.endDate;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['AUM'] = aUM;
+    data['name'] = name;
+    data['1Year'] = s1Year;
+    data['3Year'] = s3Year;
+    data['5Year'] = s5Year;
+    data['ISIN'] = iSIN;
+    data['Type'] = type;
+    data['SubType'] = subType;
+    data['AMC_Code'] = aMCCode;
+    data['Scheme_Type'] = schemeType;
+    data['Scheme_Code'] = schemeCode;
+    data['Exit_Load_Flag'] = exitLoadFlag;
+    data['Scheme_Name'] = schemeName;
+    data['Purchase_Allowed'] = purchaseAllowed;
+    data['Minimum_Purchase_Amount'] = minimumPurchaseAmount;
+    data['Additional_Purchase_Amount'] = additionalPurchaseAmount;
+    data['Maximum_Purchase_Amount'] = maximumPurchaseAmount;
+    data['Redemption_Allowed'] = redemptionAllowed;
+    data['Minimum_Redemption_Qty'] = minimumRedemptionQty;
+    data['Redemption_Qty_Multiplier'] = redemptionQtyMultiplier;
+    data['Redemption_Amount_Minimum'] = redemptionAmountMinimum;
+    data['Dividend_Reinvestment_Flag'] = dividendReinvestmentFlag;
+    data['SIP_FLAG'] = sIPFLAG;
+    data['Exit_Load'] = exitLoad;
+    data['ReOpening_Date'] = reOpeningDate;
+    data['SETTLEMENT_TYPE'] = sETTLEMENTTYPE;
+    data['Start_Date'] = startDate;
+    data['End_Date'] = endDate;
     return data;
   }
 }
@@ -365,35 +365,35 @@ class HighGrowthEquity {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['AUM'] = this.aUM;
-    data['name'] = this.name;
-    data['1Year'] = this.s1Year;
-    data['3Year'] = this.s3Year;
-    data['5Year'] = this.s5Year;
-    data['ISIN'] = this.iSIN;
-    data['Type'] = this.type;
-    data['SubType'] = this.subType;
-    data['AMC_Code'] = this.aMCCode;
-    data['Scheme_Type'] = this.schemeType;
-    data['Scheme_Code'] = this.schemeCode;
-    data['Exit_Load_Flag'] = this.exitLoadFlag;
-    data['Scheme_Name'] = this.schemeName;
-    data['Purchase_Allowed'] = this.purchaseAllowed;
-    data['Minimum_Purchase_Amount'] = this.minimumPurchaseAmount;
-    data['Additional_Purchase_Amount'] = this.additionalPurchaseAmount;
-    data['Maximum_Purchase_Amount'] = this.maximumPurchaseAmount;
-    data['Redemption_Allowed'] = this.redemptionAllowed;
-    data['Minimum_Redemption_Qty'] = this.minimumRedemptionQty;
-    data['Redemption_Qty_Multiplier'] = this.redemptionQtyMultiplier;
-    data['Redemption_Amount_Minimum'] = this.redemptionAmountMinimum;
-    data['Dividend_Reinvestment_Flag'] = this.dividendReinvestmentFlag;
-    data['SIP_FLAG'] = this.sIPFLAG;
-    data['Exit_Load'] = this.exitLoad;
-    data['ReOpening_Date'] = this.reOpeningDate;
-    data['SETTLEMENT_TYPE'] = this.sETTLEMENTTYPE;
-    data['Start_Date'] = this.startDate;
-    data['End_Date'] = this.endDate;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['AUM'] = aUM;
+    data['name'] = name;
+    data['1Year'] = s1Year;
+    data['3Year'] = s3Year;
+    data['5Year'] = s5Year;
+    data['ISIN'] = iSIN;
+    data['Type'] = type;
+    data['SubType'] = subType;
+    data['AMC_Code'] = aMCCode;
+    data['Scheme_Type'] = schemeType;
+    data['Scheme_Code'] = schemeCode;
+    data['Exit_Load_Flag'] = exitLoadFlag;
+    data['Scheme_Name'] = schemeName;
+    data['Purchase_Allowed'] = purchaseAllowed;
+    data['Minimum_Purchase_Amount'] = minimumPurchaseAmount;
+    data['Additional_Purchase_Amount'] = additionalPurchaseAmount;
+    data['Maximum_Purchase_Amount'] = maximumPurchaseAmount;
+    data['Redemption_Allowed'] = redemptionAllowed;
+    data['Minimum_Redemption_Qty'] = minimumRedemptionQty;
+    data['Redemption_Qty_Multiplier'] = redemptionQtyMultiplier;
+    data['Redemption_Amount_Minimum'] = redemptionAmountMinimum;
+    data['Dividend_Reinvestment_Flag'] = dividendReinvestmentFlag;
+    data['SIP_FLAG'] = sIPFLAG;
+    data['Exit_Load'] = exitLoad;
+    data['ReOpening_Date'] = reOpeningDate;
+    data['SETTLEMENT_TYPE'] = sETTLEMENTTYPE;
+    data['Start_Date'] = startDate;
+    data['End_Date'] = endDate;
     return data;
   }
 }
@@ -490,35 +490,35 @@ class StableDebt {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['AUM'] = this.aUM;
-    data['name'] = this.name;
-    data['1Year'] = this.s1Year;
-    data['3Year'] = this.s3Year;
-    data['5Year'] = this.s5Year;
-    data['ISIN'] = this.iSIN;
-    data['Type'] = this.type;
-    data['SubType'] = this.subType;
-    data['AMC_Code'] = this.aMCCode;
-    data['Scheme_Type'] = this.schemeType;
-    data['Scheme_Code'] = this.schemeCode;
-    data['Exit_Load_Flag'] = this.exitLoadFlag;
-    data['Scheme_Name'] = this.schemeName;
-    data['Purchase_Allowed'] = this.purchaseAllowed;
-    data['Minimum_Purchase_Amount'] = this.minimumPurchaseAmount;
-    data['Additional_Purchase_Amount'] = this.additionalPurchaseAmount;
-    data['Maximum_Purchase_Amount'] = this.maximumPurchaseAmount;
-    data['Redemption_Allowed'] = this.redemptionAllowed;
-    data['Minimum_Redemption_Qty'] = this.minimumRedemptionQty;
-    data['Redemption_Qty_Multiplier'] = this.redemptionQtyMultiplier;
-    data['Redemption_Amount_Minimum'] = this.redemptionAmountMinimum;
-    data['Dividend_Reinvestment_Flag'] = this.dividendReinvestmentFlag;
-    data['SIP_FLAG'] = this.sIPFLAG;
-    data['Exit_Load'] = this.exitLoad;
-    data['ReOpening_Date'] = this.reOpeningDate;
-    data['SETTLEMENT_TYPE'] = this.sETTLEMENTTYPE;
-    data['Start_Date'] = this.startDate;
-    data['End_Date'] = this.endDate;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['AUM'] = aUM;
+    data['name'] = name;
+    data['1Year'] = s1Year;
+    data['3Year'] = s3Year;
+    data['5Year'] = s5Year;
+    data['ISIN'] = iSIN;
+    data['Type'] = type;
+    data['SubType'] = subType;
+    data['AMC_Code'] = aMCCode;
+    data['Scheme_Type'] = schemeType;
+    data['Scheme_Code'] = schemeCode;
+    data['Exit_Load_Flag'] = exitLoadFlag;
+    data['Scheme_Name'] = schemeName;
+    data['Purchase_Allowed'] = purchaseAllowed;
+    data['Minimum_Purchase_Amount'] = minimumPurchaseAmount;
+    data['Additional_Purchase_Amount'] = additionalPurchaseAmount;
+    data['Maximum_Purchase_Amount'] = maximumPurchaseAmount;
+    data['Redemption_Allowed'] = redemptionAllowed;
+    data['Minimum_Redemption_Qty'] = minimumRedemptionQty;
+    data['Redemption_Qty_Multiplier'] = redemptionQtyMultiplier;
+    data['Redemption_Amount_Minimum'] = redemptionAmountMinimum;
+    data['Dividend_Reinvestment_Flag'] = dividendReinvestmentFlag;
+    data['SIP_FLAG'] = sIPFLAG;
+    data['Exit_Load'] = exitLoad;
+    data['ReOpening_Date'] = reOpeningDate;
+    data['SETTLEMENT_TYPE'] = sETTLEMENTTYPE;
+    data['Start_Date'] = startDate;
+    data['End_Date'] = endDate;
     return data;
   }
 }
@@ -615,35 +615,35 @@ class SectoralThematic {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['AUM'] = this.aUM;
-    data['name'] = this.name;
-    data['1Year'] = this.s1Year;
-    data['3Year'] = this.s3Year;
-    data['5Year'] = this.s5Year;
-    data['ISIN'] = this.iSIN;
-    data['Type'] = this.type;
-    data['SubType'] = this.subType;
-    data['AMC_Code'] = this.aMCCode;
-    data['Scheme_Type'] = this.schemeType;
-    data['Scheme_Code'] = this.schemeCode;
-    data['Exit_Load_Flag'] = this.exitLoadFlag;
-    data['Scheme_Name'] = this.schemeName;
-    data['Purchase_Allowed'] = this.purchaseAllowed;
-    data['Minimum_Purchase_Amount'] = this.minimumPurchaseAmount;
-    data['Additional_Purchase_Amount'] = this.additionalPurchaseAmount;
-    data['Maximum_Purchase_Amount'] = this.maximumPurchaseAmount;
-    data['Redemption_Allowed'] = this.redemptionAllowed;
-    data['Minimum_Redemption_Qty'] = this.minimumRedemptionQty;
-    data['Redemption_Qty_Multiplier'] = this.redemptionQtyMultiplier;
-    data['Redemption_Amount_Minimum'] = this.redemptionAmountMinimum;
-    data['Dividend_Reinvestment_Flag'] = this.dividendReinvestmentFlag;
-    data['SIP_FLAG'] = this.sIPFLAG;
-    data['Exit_Load'] = this.exitLoad;
-    data['ReOpening_Date'] = this.reOpeningDate;
-    data['SETTLEMENT_TYPE'] = this.sETTLEMENTTYPE;
-    data['Start_Date'] = this.startDate;
-    data['End_Date'] = this.endDate;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['AUM'] = aUM;
+    data['name'] = name;
+    data['1Year'] = s1Year;
+    data['3Year'] = s3Year;
+    data['5Year'] = s5Year;
+    data['ISIN'] = iSIN;
+    data['Type'] = type;
+    data['SubType'] = subType;
+    data['AMC_Code'] = aMCCode;
+    data['Scheme_Type'] = schemeType;
+    data['Scheme_Code'] = schemeCode;
+    data['Exit_Load_Flag'] = exitLoadFlag;
+    data['Scheme_Name'] = schemeName;
+    data['Purchase_Allowed'] = purchaseAllowed;
+    data['Minimum_Purchase_Amount'] = minimumPurchaseAmount;
+    data['Additional_Purchase_Amount'] = additionalPurchaseAmount;
+    data['Maximum_Purchase_Amount'] = maximumPurchaseAmount;
+    data['Redemption_Allowed'] = redemptionAllowed;
+    data['Minimum_Redemption_Qty'] = minimumRedemptionQty;
+    data['Redemption_Qty_Multiplier'] = redemptionQtyMultiplier;
+    data['Redemption_Amount_Minimum'] = redemptionAmountMinimum;
+    data['Dividend_Reinvestment_Flag'] = dividendReinvestmentFlag;
+    data['SIP_FLAG'] = sIPFLAG;
+    data['Exit_Load'] = exitLoad;
+    data['ReOpening_Date'] = reOpeningDate;
+    data['SETTLEMENT_TYPE'] = sETTLEMENTTYPE;
+    data['Start_Date'] = startDate;
+    data['End_Date'] = endDate;
     return data;
   }
 }
@@ -741,35 +741,35 @@ class InternationalExposure {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['AUM'] = this.aUM;
-    data['name'] = this.name;
-    data['1Year'] = this.s1Year;
-    data['3Year'] = this.s3Year;
-    data['5Year'] = this.s5Year;
-    data['ISIN'] = this.iSIN;
-    data['Type'] = this.type;
-    data['SubType'] = this.subType;
-    data['AMC_Code'] = this.aMCCode;
-    data['Scheme_Type'] = this.schemeType;
-    data['Scheme_Code'] = this.schemeCode;
-    data['Exit_Load_Flag'] = this.exitLoadFlag;
-    data['Scheme_Name'] = this.schemeName;
-    data['Purchase_Allowed'] = this.purchaseAllowed;
-    data['Minimum_Purchase_Amount'] = this.minimumPurchaseAmount;
-    data['Additional_Purchase_Amount'] = this.additionalPurchaseAmount;
-    data['Maximum_Purchase_Amount'] = this.maximumPurchaseAmount;
-    data['Redemption_Allowed'] = this.redemptionAllowed;
-    data['Minimum_Redemption_Qty'] = this.minimumRedemptionQty;
-    data['Redemption_Qty_Multiplier'] = this.redemptionQtyMultiplier;
-    data['Redemption_Amount_Minimum'] = this.redemptionAmountMinimum;
-    data['Dividend_Reinvestment_Flag'] = this.dividendReinvestmentFlag;
-    data['SIP_FLAG'] = this.sIPFLAG;
-    data['Exit_Load'] = this.exitLoad;
-    data['ReOpening_Date'] = this.reOpeningDate;
-    data['SETTLEMENT_TYPE'] = this.sETTLEMENTTYPE;
-    data['Start_Date'] = this.startDate;
-    data['End_Date'] = this.endDate;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['AUM'] = aUM;
+    data['name'] = name;
+    data['1Year'] = s1Year;
+    data['3Year'] = s3Year;
+    data['5Year'] = s5Year;
+    data['ISIN'] = iSIN;
+    data['Type'] = type;
+    data['SubType'] = subType;
+    data['AMC_Code'] = aMCCode;
+    data['Scheme_Type'] = schemeType;
+    data['Scheme_Code'] = schemeCode;
+    data['Exit_Load_Flag'] = exitLoadFlag;
+    data['Scheme_Name'] = schemeName;
+    data['Purchase_Allowed'] = purchaseAllowed;
+    data['Minimum_Purchase_Amount'] = minimumPurchaseAmount;
+    data['Additional_Purchase_Amount'] = additionalPurchaseAmount;
+    data['Maximum_Purchase_Amount'] = maximumPurchaseAmount;
+    data['Redemption_Allowed'] = redemptionAllowed;
+    data['Minimum_Redemption_Qty'] = minimumRedemptionQty;
+    data['Redemption_Qty_Multiplier'] = redemptionQtyMultiplier;
+    data['Redemption_Amount_Minimum'] = redemptionAmountMinimum;
+    data['Dividend_Reinvestment_Flag'] = dividendReinvestmentFlag;
+    data['SIP_FLAG'] = sIPFLAG;
+    data['Exit_Load'] = exitLoad;
+    data['ReOpening_Date'] = reOpeningDate;
+    data['SETTLEMENT_TYPE'] = sETTLEMENTTYPE;
+    data['Start_Date'] = startDate;
+    data['End_Date'] = endDate;
     return data;
   }
 } 
@@ -866,35 +866,35 @@ class BalancedHybrid {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['AUM'] = this.aUM;
-    data['name'] = this.name;
-    data['1Year'] = this.s1Year;
-    data['3Year'] = this.s3Year;
-    data['5Year'] = this.s5Year;
-    data['ISIN'] = this.iSIN;
-    data['Type'] = this.type;
-    data['SubType'] = this.subType;
-    data['AMC_Code'] = this.aMCCode;
-    data['Scheme_Type'] = this.schemeType;
-    data['Scheme_Code'] = this.schemeCode;
-    data['Exit_Load_Flag'] = this.exitLoadFlag;
-    data['Scheme_Name'] = this.schemeName;
-    data['Purchase_Allowed'] = this.purchaseAllowed;
-    data['Minimum_Purchase_Amount'] = this.minimumPurchaseAmount;
-    data['Additional_Purchase_Amount'] = this.additionalPurchaseAmount;
-    data['Maximum_Purchase_Amount'] = this.maximumPurchaseAmount;
-    data['Redemption_Allowed'] = this.redemptionAllowed;
-    data['Minimum_Redemption_Qty'] = this.minimumRedemptionQty;
-    data['Redemption_Qty_Multiplier'] = this.redemptionQtyMultiplier;
-    data['Redemption_Amount_Minimum'] = this.redemptionAmountMinimum;
-    data['Dividend_Reinvestment_Flag'] = this.dividendReinvestmentFlag;
-    data['SIP_FLAG'] = this.sIPFLAG;
-    data['Exit_Load'] = this.exitLoad;
-    data['ReOpening_Date'] = this.reOpeningDate;
-    data['SETTLEMENT_TYPE'] = this.sETTLEMENTTYPE;
-    data['Start_Date'] = this.startDate;
-    data['End_Date'] = this.endDate;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['AUM'] = aUM;
+    data['name'] = name;
+    data['1Year'] = s1Year;
+    data['3Year'] = s3Year;
+    data['5Year'] = s5Year;
+    data['ISIN'] = iSIN;
+    data['Type'] = type;
+    data['SubType'] = subType;
+    data['AMC_Code'] = aMCCode;
+    data['Scheme_Type'] = schemeType;
+    data['Scheme_Code'] = schemeCode;
+    data['Exit_Load_Flag'] = exitLoadFlag;
+    data['Scheme_Name'] = schemeName;
+    data['Purchase_Allowed'] = purchaseAllowed;
+    data['Minimum_Purchase_Amount'] = minimumPurchaseAmount;
+    data['Additional_Purchase_Amount'] = additionalPurchaseAmount;
+    data['Maximum_Purchase_Amount'] = maximumPurchaseAmount;
+    data['Redemption_Allowed'] = redemptionAllowed;
+    data['Minimum_Redemption_Qty'] = minimumRedemptionQty;
+    data['Redemption_Qty_Multiplier'] = redemptionQtyMultiplier;
+    data['Redemption_Amount_Minimum'] = redemptionAmountMinimum;
+    data['Dividend_Reinvestment_Flag'] = dividendReinvestmentFlag;
+    data['SIP_FLAG'] = sIPFLAG;
+    data['Exit_Load'] = exitLoad;
+    data['ReOpening_Date'] = reOpeningDate;
+    data['SETTLEMENT_TYPE'] = sETTLEMENTTYPE;
+    data['Start_Date'] = startDate;
+    data['End_Date'] = endDate;
     return data;
   }
 }

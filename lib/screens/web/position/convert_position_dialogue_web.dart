@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../models/portfolio_model/position_book_model.dart';
@@ -37,11 +36,11 @@ class _ConvertPositionDialogueWebState extends ConsumerState<ConvertPositionDial
       int lotSize = int.parse("${widget.convertPosition.ls ?? 0}");
 
       if (widget.convertPosition.exch == "MCX") {
-        maxQty.text = (int.parse(maxQty.text) / lotSize).toInt().toString();
+        maxQty.text = (int.parse(maxQty.text) ~/ lotSize).toString();
       }
 
       if (widget.convertPosition.exch == "MCX") {
-        qty.text = (int.parse(qty.text) / lotSize).toInt().toString();
+        qty.text = (int.parse(qty.text) ~/ lotSize).toString();
       }
     });
   }
@@ -62,7 +61,7 @@ class _ConvertPositionDialogueWebState extends ConsumerState<ConvertPositionDial
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(5),
       ),
-      child: Container(
+      child: SizedBox(
         width: 350,
        
         child: Column(

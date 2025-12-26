@@ -1,21 +1,14 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/res/global_state_text.dart';
 import 'package:mynt_plus/screens/Mobile/ipo/ipo_explore_screens.dart';
-import 'package:mynt_plus/screens/Mobile/ipo/main_sme_list/single_page.dart';
 import '../../../../res/res.dart';
 import '../../../provider/iop_provider.dart';
-import '../../../provider/market_watch_provider.dart';
 import '../../../provider/thems.dart';
-import '../../../routes/route_names.dart';
 import '../../../sharedWidget/custom_text_form_field.dart';
-import '../../../sharedWidget/functions.dart';
 import '../../../utils/no_emoji_inputformatter.dart';
-import '../../../sharedWidget/no_data_found.dart';
 
 class IPOScreen extends StatefulWidget {
   final int? initialTabIndex;

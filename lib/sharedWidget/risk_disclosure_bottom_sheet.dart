@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/locator/preference.dart';
 import '../../provider/thems.dart';
 import '../../res/res.dart';
@@ -279,7 +277,7 @@ class RiskDisclousreBottomSheet extends ConsumerWidget {
                   const SizedBox(height: 12),
                   Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
                     Padding(
-                        padding: EdgeInsets.only(top: 2),
+                        padding: const EdgeInsets.only(top: 2),
                         child: Icon(Icons.circle,
                             size: 9.5, color: colors.primaryLight)),
                     const SizedBox(width: 8),
@@ -297,7 +295,7 @@ class RiskDisclousreBottomSheet extends ConsumerWidget {
                   const SizedBox(height: 12),
                   Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
                     Padding(
-                        padding: EdgeInsets.only(top: 2),
+                        padding: const EdgeInsets.only(top: 2),
                         child: Icon(Icons.circle,
                             size: 9.5, color: colors.primaryLight)),
                     const SizedBox(width: 8),

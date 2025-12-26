@@ -60,7 +60,7 @@ class _IPOScreenState extends ConsumerState<IPOScreen> with TickerProviderStateM
               //   ),
               // ),
               leading: Container(
-                padding: EdgeInsets.only(left: 10),
+                padding: const EdgeInsets.only(left: 10),
                 child: Padding(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 4, vertical: 10),
@@ -75,7 +75,7 @@ class _IPOScreenState extends ConsumerState<IPOScreen> with TickerProviderStateM
               backgroundColor:
                   theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
               shadowColor: const Color(0xffECEFF3),
-              title: Container(
+              title: SizedBox(
                   height: 50,
                   child: SearchBar(
                     hintText: "Search",

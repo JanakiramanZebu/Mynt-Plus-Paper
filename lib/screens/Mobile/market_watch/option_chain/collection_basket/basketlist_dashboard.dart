@@ -180,7 +180,7 @@ class _StrategyDashboardScreenState
           //   ),
           // ),
           // const SizedBox(height: 16),
-          SvgPicture.asset(assets.noDatafound, color: Color(0xff777777)),
+          SvgPicture.asset(assets.noDatafound, color: const Color(0xff777777)),
           const SizedBox(height: 2),
           TextWidget.subText(
               text: "No Strategies Yet — Let’s Create One That Works for You",
@@ -425,7 +425,7 @@ class _StrategyDashboardScreenState
             width: 50,
             height: 50,
             alignment: Alignment.center,
-            child: Icon(
+            child: const Icon(
               Icons.add,
               color: Colors.white,
               size: 24,

@@ -83,7 +83,7 @@ class _TradeActionState extends ConsumerState<TradeAction>
 
     final viewW = _tabScrollController.position.viewportDimension;
     final max = _tabScrollController.position.maxScrollExtent;
-    final tabWidth = 120.0; // Approximate tab width
+    const tabWidth = 120.0; // Approximate tab width
 
     final target = (index * tabWidth) - (viewW / 2) + (tabWidth / 2);
     final offset = target.clamp(0.0, max);
@@ -200,7 +200,7 @@ class _TradeActionState extends ConsumerState<TradeAction>
       child: ListView.builder(
         controller: _tabScrollController,
         scrollDirection: Axis.horizontal,
-        physics: ClampingScrollPhysics(),
+        physics: const ClampingScrollPhysics(),
         itemCount: tradeAction.length,
         itemBuilder: (context, index) {
           final action = tradeAction[index];
@@ -280,7 +280,7 @@ class _TradeActionState extends ConsumerState<TradeAction>
         }
 
         if (topStocks.isEmpty) {
-          return Center(child: NoDataFound(
+          return const Center(child: NoDataFound(
             secondaryEnabled: false,
           ));
         }

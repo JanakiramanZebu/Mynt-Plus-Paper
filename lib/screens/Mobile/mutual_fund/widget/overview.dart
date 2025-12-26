@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:readmore/readmore.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import '../../../../models/mf_model/mf_nav_graph_model.dart';
 import '../../../../models/mf_model/mutual_fundmodel.dart';
@@ -8,7 +7,6 @@ import '../../../../provider/mf_provider.dart';
 import '../../../../provider/thems.dart';
 import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
-import '../../../../sharedWidget/functions.dart';
 
 class MFOverview extends ConsumerWidget {
   final MutualFundList mfStockData;

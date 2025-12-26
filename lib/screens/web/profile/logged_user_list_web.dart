@@ -377,7 +377,7 @@ class LoggedUserListWeb extends ConsumerWidget {
                               ),
                             ),
                           );
-                        }).toList(),
+                        }),
                     ],
                   ),
                 ),
@@ -477,7 +477,7 @@ class LoggedUserListWeb extends ConsumerWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(5),
           ),
-          child: Container(
+          child: SizedBox(
             width: 400,
             child: Column(
               mainAxisSize: MainAxisSize.min,

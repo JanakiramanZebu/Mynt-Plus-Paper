@@ -147,7 +147,7 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(5),
           ),
-          child: Container(
+          child: SizedBox(
             width: 400,
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -296,7 +296,7 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
                                       child: Container(
                                         alignment: Alignment.center,
                                         child: fundState.fundLoading
-                                            ? SizedBox(
+                                            ? const SizedBox(
                                                 width: 18,
                                                 height: 18,
                                                 child: CircularProgressIndicator(
@@ -517,7 +517,7 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
                       const SizedBox(height: 16),
                       // Status Text
                       Text(
-                        "${fund.hdfcpaymentstatus?.upiId?.status ?? ''}",
+                        fund.hdfcpaymentstatus?.upiId?.status ?? '',
                         style: WebTextStyles.title(
                           isDarkTheme: theme.isDarkMode,
                           color: theme.isDarkMode
@@ -937,7 +937,7 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
             // Razorpay error can be a Map or JsObject
             Map<String, dynamic> errorMap;
             if (error is Map) {
-              errorMap = Map<String, dynamic>.from(error as Map);
+              errorMap = Map<String, dynamic>.from(error);
             } else {
               // Try to convert JsObject to Map
               final jsError = error as js.JsObject;
@@ -1798,7 +1798,7 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
                   fund.focusNode.unfocus();
                   showBottomSheetbank(fund, theme);
                 },
-                child: Container(
+                child: SizedBox(
                   height: 32,
                   width: 32,
                   child: Center(

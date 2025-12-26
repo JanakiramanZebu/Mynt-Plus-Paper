@@ -407,7 +407,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                                                           ref
                                                               .read(ipoProvide)
                                                               .setIpoSearchQuery("");
-                                                          ;
                                                         } else if (_mainTabController.index ==
                                                             3) {
                                                           ref
@@ -451,7 +450,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                                                           ref
                                                               .read(ipoProvide)
                                                               .setIpoSearchQuery("");
-                                                          ;
                                                         } else if (_mainTabController.index ==
                                                             3) {
                                                           ref

@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/provider/fund_provider.dart';
 import 'package:mynt_plus/res/global_state_text.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../provider/thems.dart';
 import '../../../../res/res.dart';
@@ -216,7 +214,7 @@ class _FundCollateralState extends ConsumerState<FundCollateral> {
   }
 
   Widget _buildDataRow(String title, String value,
-      {bool isFirst = false, bool isLast = false}) {
+      {bool isLast = false}) {
     final theme = ref.read(themeProvider);
 
     return Container(

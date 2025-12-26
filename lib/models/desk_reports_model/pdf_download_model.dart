@@ -13,7 +13,7 @@ class PdfDownloadModel {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     if (this.data != null) {
       data['data'] = this.data!.map((v) => v.toJson()).toList();
     }
@@ -44,12 +44,12 @@ class Data {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = Map<String, dynamic>();
-    data['DocDate'] = this.docDate;
-    data['DocFileName'] = this.docFileName;
-    data['DocType'] = this.docType;
-    data['GenerateDate'] = this.generateDate;
-    data['recno'] = this.recno;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['DocDate'] = docDate;
+    data['DocFileName'] = docFileName;
+    data['DocType'] = docType;
+    data['GenerateDate'] = generateDate;
+    data['recno'] = recno;
     return data;
   }
 }

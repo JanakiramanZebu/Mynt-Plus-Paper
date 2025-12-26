@@ -7,7 +7,6 @@ import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import '../../../../provider/thems.dart';
 import '../../../../res/res.dart';
 import '../../../../sharedWidget/custom_drag_handler.dart';
-import '../../../../sharedWidget/functions.dart';
 import '../../market_watch/over_view/funtamental_data_widget.dart';
 
 class PerformanceInfoScreen extends StatefulWidget {

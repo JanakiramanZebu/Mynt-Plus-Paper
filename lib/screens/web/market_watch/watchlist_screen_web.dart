@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
@@ -58,7 +57,37 @@ class _SliverTabsDelegate extends SliverPersistentHeaderDelegate {
   });
 
   @override
-  Widget build(BuildContext ctx, double shrink, bool overlaps) => child;
+  Widget build(BuildContext ctx, double shrink, bool overlaps) {
+    // When maxExtent == minExtent, shrink should always be 0 when visible
+    // But handle edge cases during initial layout
+    final visibleHeight = (height - shrink).clamp(0.0, height);
+    
+    // If no visible height, return empty widget to prevent layout errors
+    if (visibleHeight <= 0) {
+      return const SizedBox.shrink();
+    }
+    
+    // Use LayoutBuilder to check actual constraints and handle edge cases
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // If constraints are invalid or zero, return empty widget
+        if (constraints.maxHeight <= 0 || constraints.maxWidth <= 0) {
+          return const SizedBox.shrink();
+        }
+        
+        // Use ConstrainedBox to respect both sliver constraints and child needs
+        return ConstrainedBox(
+          constraints: BoxConstraints(
+            minHeight: visibleHeight.clamp(0.0, constraints.maxHeight),
+            maxHeight: visibleHeight.clamp(0.0, constraints.maxHeight),
+            minWidth: constraints.maxWidth,
+            maxWidth: constraints.maxWidth,
+          ),
+          child: child,
+        );
+      },
+    );
+  }
 
   @override
   double get maxExtent => height;
@@ -96,7 +125,37 @@ class _SliverIndexSlotsDelegate extends SliverPersistentHeaderDelegate {
   });
 
   @override
-  Widget build(BuildContext ctx, double shrink, bool overlaps) => child;
+  Widget build(BuildContext ctx, double shrink, bool overlaps) {
+    // When maxExtent == minExtent, shrink should always be 0 when visible
+    // But handle edge cases during initial layout
+    final visibleHeight = (height - shrink).clamp(0.0, height);
+    
+    // If no visible height, return empty widget to prevent layout errors
+    if (visibleHeight <= 0) {
+      return const SizedBox.shrink();
+    }
+    
+    // Use LayoutBuilder to check actual constraints and handle edge cases
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // If constraints are invalid or zero, return empty widget
+        if (constraints.maxHeight <= 0 || constraints.maxWidth <= 0) {
+          return const SizedBox.shrink();
+        }
+        
+        // Use ConstrainedBox to respect both sliver constraints and child needs
+        return ConstrainedBox(
+          constraints: BoxConstraints(
+            minHeight: visibleHeight.clamp(0.0, constraints.maxHeight),
+            maxHeight: visibleHeight.clamp(0.0, constraints.maxHeight),
+            minWidth: constraints.maxWidth,
+            maxWidth: constraints.maxWidth,
+          ),
+          child: child,
+        );
+      },
+    );
+  }
 
   @override
   double get maxExtent => height;
@@ -322,8 +381,9 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
     final marketWatch = ref.read(marketWatchProvider);
     final watchList = marketWatch.marketWatchlist;
 
-    if (watchList?.values == null || pageIndex >= watchList!.values!.length)
+    if (watchList?.values == null || pageIndex >= watchList!.values!.length) {
       return;
+    }
 
     final newWatchlistName = watchList.values![pageIndex];
 
@@ -536,7 +596,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                   child: Container(
                     width: 32,
                     height: 32,
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       shape: BoxShape.circle,
                     ),
                     child: Center(
@@ -658,7 +718,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
   ) {
     final tabContent = Container(
       padding: const EdgeInsets.symmetric(horizontal: 10),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: Colors.white,
         // border: Border(
         //   bottom: BorderSide(
@@ -1168,7 +1228,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
       position: position,
       color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
       elevation: 8,
-      shape: RoundedRectangleBorder(
+      shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.zero,
       ),
       items: [
@@ -1307,7 +1367,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(5),
           ),
-          child: Container(
+          child: SizedBox(
             width: 500,
             height: 500,
             child: Column(
@@ -1612,7 +1672,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(5),
           ),
-          child: Container(
+          child: SizedBox(
             width: 400,
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -1782,7 +1842,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(5),
           ),
-          child: Container(
+          child: SizedBox(
             width: 400,
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -1931,7 +1991,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(5),
           ),
-          child: Container(
+          child: SizedBox(
             width: 400,
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -2143,13 +2203,12 @@ class _WatchlistIndexSlotWeb extends ConsumerStatefulWidget {
   final dynamic indexProvider;
 
   const _WatchlistIndexSlotWeb({
-    Key? key,
     required this.indexItem,
     required this.indexPosition,
     required this.theme,
     required this.marketWatch,
     required this.indexProvider,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<_WatchlistIndexSlotWeb> createState() =>
@@ -2356,13 +2415,13 @@ class _WatchlistLivePriceWidget extends ConsumerStatefulWidget {
   final bool isDarkMode;
 
   const _WatchlistLivePriceWidget({
-    Key? key,
+    super.key,
     required this.token,
     required this.initialLtp,
     required this.initialChange,
     required this.initialPerChange,
     required this.isDarkMode,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<_WatchlistLivePriceWidget> createState() =>
@@ -2436,10 +2495,14 @@ class _WatchlistLivePriceWidgetState
         final socketData = data[widget.token];
         if (socketData != null) {
           final hasChanged = _updateFromSocketData(socketData);
+          // ✅ Data is stored in local state, individual widgets can read from it
+          // Only rebuild if absolutely necessary (e.g., for UI state changes)
           if (hasChanged && mounted && !_isUpdatePending) {
             _isUpdatePending = true;
             _debouncer.run(() {
               if (mounted) {
+                // ✅ Keep setState for now as this widget manages its own display state
+                // Consider using ValueNotifier if this becomes a performance issue
                 setState(() {});
                 _isUpdatePending = false;
               }

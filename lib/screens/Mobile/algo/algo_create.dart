@@ -74,12 +74,12 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
               fw: 1),
         ),
         body: SingleChildScrollView(
-          physics: ClampingScrollPhysics(),
-          padding: EdgeInsets.all(16.0),
+          physics: const ClampingScrollPhysics(),
+          padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
               _buildEntrySettings(),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               // _buildExitSettings(),
               // SizedBox(height: 16),
               _buildInstrumentSettings(),
@@ -87,9 +87,9 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
               _buildSquareOffSettings(),
               // SizedBox(height: 16),
               _buildLegBuilder(),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               _buildAddedLegsDisplay(),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               // ADD THIS: Create Strategy Button
               _buildCreateStrategyButton(),
             ],
@@ -107,7 +107,7 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
         // Only show button if there are legs added
         if (strategy.legs.isEmpty) return Container();
 
-        return Container(
+        return SizedBox(
           width: double.infinity,
           height: 45,
           // padding: EdgeInsets.symmetric(horizontal: 20),
@@ -166,7 +166,7 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
                 : colors.textPrimaryLight,
             fw: 0,
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
 
           // Strategy Type Row
           Row(
@@ -179,12 +179,12 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
                     : colors.textPrimaryLight,
                 fw: 3,
               ),
-              Spacer(),
+              const Spacer(),
               _buildStrategyTypeButtons(),
             ],
           ),
 
-          SizedBox(height: 24),
+          const SizedBox(height: 24),
 
           // Time Settings Row
           Row(
@@ -229,7 +229,7 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
             ],
           ),
 
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Row(
             children: [
               Expanded(
@@ -255,7 +255,7 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
                                   : colors.textSecondaryLight,
                               fw: 3,
                             ),
-                            SizedBox(width: 10),
+                            const SizedBox(width: 10),
                             AnimatedContainer(
                               duration: const Duration(milliseconds: 250),
                               curve: Curves.easeOut,
@@ -303,7 +303,7 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
                   ],
                 ),
               ),
-              SizedBox(width: 16),
+              const SizedBox(width: 16),
               Expanded(
                 child: Row(
                   children: [
@@ -326,7 +326,7 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
                                   : colors.textSecondaryLight,
                               fw: 3,
                             ),
-                            SizedBox(width: 10),
+                            const SizedBox(width: 10),
                             AnimatedContainer(
                               duration: const Duration(milliseconds: 250),
                               curve: Curves.easeOut,
@@ -376,7 +376,7 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
               ),
             ],
           ),
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -434,7 +434,7 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
                         ),
                       ),
                     )
-                  : SizedBox(),
+                  : const SizedBox(),
               SizedBox(
                   width: strategy.overallTarget && strategy.overallStoploss
                       ? 16
@@ -493,7 +493,7 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
                         ),
                       ),
                     )
-                  : SizedBox(),
+                  : const SizedBox(),
             ],
           ),
         ],
@@ -506,7 +506,7 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
     final theme = ref.watch(themeProvider);
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(20),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
@@ -515,7 +515,7 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
             color: Colors.grey.withOpacity(0.1),
             spreadRadius: 1,
             blurRadius: 4,
-            offset: Offset(0, 2),
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -539,7 +539,7 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
           //   ],
           // ),
 
-          SizedBox(height: 24),
+          const SizedBox(height: 24),
 
           // Time Settings Row
         ],
@@ -586,7 +586,7 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
               : colors.textSecondaryLight,
           fw: 3,
         ),
-        SizedBox(height: 6),
+        const SizedBox(height: 6),
         GestureDetector(
           onTap: () async {
             final TimeOfDay? picked = await showTimePicker(
@@ -598,7 +598,7 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
             }
           },
           child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
             decoration: BoxDecoration(
               border: Border.all(
                   color: theme.isDarkMode
@@ -617,7 +617,7 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
                       : colors.textSecondaryLight,
                   fw: 3,
                 ),
-                Spacer(),
+                const Spacer(),
                 Icon(Icons.access_time, size: 16, color: colors.iconColor),
               ],
             ),
@@ -647,7 +647,7 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
                 : colors.textPrimaryLight,
             fw: 0,
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
 
           // Index Dropdown Row
           Row(
@@ -660,13 +660,13 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
                     : colors.textSecondaryLight,
                 fw: 3,
               ),
-              Spacer(),
+              const Spacer(),
               Consumer(
                 builder: (context, ref, child) {
                   final strategy = ref.watch(stocksProvide);
                   return Container(
                     height: 35,
-                    padding: EdgeInsets.symmetric(horizontal: 12),
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
                     decoration: BoxDecoration(
                       border: Border.all(
                           color: theme.isDarkMode
@@ -700,7 +700,7 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
             ],
           ),
 
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
 
           // Underlying From Row
           Row(
@@ -715,11 +715,11 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
                         : colors.textSecondaryLight,
                     fw: 3,
                   ),
-                  SizedBox(width: 4),
+                  const SizedBox(width: 4),
                   Icon(Icons.info_outline, size: 16, color: colors.iconColor),
                 ],
               ),
-              Spacer(),
+              const Spacer(),
               Consumer(
                 builder: (context, ref, child) {
                   final strategy = ref.watch(stocksProvide);
@@ -729,7 +729,7 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
                           'Cash', strategy.selectedUnderlying == 'Cash', () {
                         strategy.setSelectedUnderlying('Cash');
                       }),
-                      SizedBox(width: 4),
+                      const SizedBox(width: 4),
                       _buildToggleButton(
                           'Futures', strategy.selectedUnderlying == 'Futures',
                           () {
@@ -750,7 +750,7 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
     final theme = ref.watch(themeProvider);
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.symmetric(horizontal: 0, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 10),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
@@ -767,11 +767,11 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
                     : colors.textSecondaryLight,
                 fw: 3,
               ),
-              SizedBox(width: 8),
-              Icon(Icons.info_outline, size: 16, color: Colors.grey),
+              const SizedBox(width: 8),
+              const Icon(Icons.info_outline, size: 16, color: Colors.grey),
             ],
           ),
-          Spacer(),
+          const Spacer(),
           Consumer(
             builder: (context, ref, child) {
               final strategy = ref.watch(stocksProvide);
@@ -781,7 +781,7 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
                       'Partial', strategy.selectedSquareOff == 'Partial', () {
                     strategy.setSelectedSquareOff('Partial');
                   }),
-                  SizedBox(width: 4),
+                  const SizedBox(width: 4),
                   _buildToggleButton(
                       'Complete', strategy.selectedSquareOff == 'Complete', () {
                     strategy.setSelectedSquareOff('Complete');
@@ -810,7 +810,7 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
             children: [
               // Header
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: 0, vertical: 10),
+                padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 10),
                 child: Row(
                   children: [
                     Row(
@@ -823,12 +823,12 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
                               : colors.textSecondaryLight,
                           fw: 3,
                         ),
-                        SizedBox(width: 6),
+                        const SizedBox(width: 6),
                         Icon(Icons.info_outline,
                             size: 16, color: colors.iconColor),
                       ],
                     ),
-                    Spacer(),
+                    const Spacer(),
                     Material(
                       color: Colors.transparent,
                       shape: const RoundedRectangleBorder(),
@@ -867,7 +867,7 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
                         ? colors.dividerDark
                         : colors.dividerLight),
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 0, vertical: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 10),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -876,17 +876,17 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
                           Expanded(
                               child: _buildLegBuilderField(
                                   'Select segments', _buildSegmentButtons())),
-                          SizedBox(width: 16),
+                          const SizedBox(width: 16),
                           Expanded(
                               child: _buildLegBuilderField(
                                   'Position', _buildPositionButtons())),
                         ],
                       ),
 
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       _buildLegBuilderField('Total Qty',
                           SizedBox(width: 100, child: _buildTotalLotField())),
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
 
                       // Second Row
                       Row(
@@ -894,14 +894,14 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
                           Expanded(
                               child: _buildLegBuilderField(
                                   'Option Type', _buildOptionTypeButtons())),
-                          SizedBox(width: 16),
+                          const SizedBox(width: 16),
                           Expanded(
                               child: _buildLegBuilderField(
                                   'Expiry', _buildExpiryDropdown())),
                         ],
                       ),
 
-                      SizedBox(height: 20),
+                      const SizedBox(height: 20),
 
                       // Third Row
                       Row(
@@ -911,7 +911,7 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
                                 'Select Strike Criteria',
                                 _buildStrikeCriteriaDropdown()),
                           ),
-                          SizedBox(width: 16),
+                          const SizedBox(width: 16),
                           Expanded(
                               child: _buildLegBuilderField(
                                   strategy.selectedStrikeCriteria ==
@@ -923,7 +923,7 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
                         ],
                       ),
 
-                      SizedBox(height: 30),
+                      const SizedBox(height: 30),
 
                       // Add Leg Button
                       SizedBox(
@@ -974,7 +974,7 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
               : colors.textSecondaryLight,
           fw: 0,
         ),
-        SizedBox(height: 10),
+        const SizedBox(height: 10),
         child,
       ],
     );
@@ -992,7 +992,7 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
                 strategy.setSelectedSegment('Futures');
               }),
             ),
-            SizedBox(width: 4),
+            const SizedBox(width: 4),
             Expanded(
               child: _buildToggleButton(
                   'Options', strategy.selectedSegment == 'Options', () {
@@ -1075,7 +1075,7 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
                 strategy.setSelectedPosition('Buy');
               }),
             ),
-            SizedBox(width: 4),
+            const SizedBox(width: 4),
             Expanded(
               child: _buildToggleButton(
                   'Sell', strategy.selectedPosition == 'Sell', () {
@@ -1100,7 +1100,7 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
                 strategy.setSelectedOptionType('Call');
               }),
             ),
-            SizedBox(width: 4),
+            const SizedBox(width: 4),
             Expanded(
               child: _buildToggleButton(
                   'Put', strategy.selectedOptionType == 'Put', () {
@@ -1120,7 +1120,7 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
         final strategy = ref.watch(stocksProvide);
         return Container(
           height: 40,
-          padding: EdgeInsets.symmetric(horizontal: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 12),
           decoration: BoxDecoration(
             border: Border.all(
                 color: theme.isDarkMode
@@ -1160,7 +1160,7 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
         final theme = ref.watch(themeProvider);
         return Container(
           height: 40,
-          padding: EdgeInsets.symmetric(horizontal: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 12),
           decoration: BoxDecoration(
             border: Border.all(
                 color: theme.isDarkMode
@@ -1201,7 +1201,7 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
         final strategy = ref.watch(stocksProvide);
         return strategy.selectedStrikeCriteria != 'Premium Based'
             ? Container(
-                padding: EdgeInsets.symmetric(horizontal: 5),
+                padding: const EdgeInsets.symmetric(horizontal: 5),
                 height: 40,
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.grey[300]!),
@@ -1310,13 +1310,13 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
                     : colors.textPrimaryLight,
                 fw: 0,
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               ...strategy.legs.asMap().entries.map((entry) {
                 int index = entry.key;
                 StrategyLeg leg = entry.value;
                 return Container(
-                  margin: EdgeInsets.only(bottom: 8),
-                  padding: EdgeInsets.all(12),
+                  margin: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: theme.isDarkMode
                         ? colors.searchBgDark
@@ -1364,7 +1364,7 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
                     ],
                   ),
                 );
-              }).toList(),
+              }),
             ],
           ),
         );
@@ -1402,7 +1402,7 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
           highlightColor:
               theme.isDarkMode ? colors.highlightDark : colors.highlightLight,
           child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 5, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 8),
             child: TextWidget.subText(
               text: text,
               theme: theme.isDarkMode,

@@ -27,20 +27,29 @@ class ChartWithDepthWeb extends ConsumerStatefulWidget {
 class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with TickerProviderStateMixin {
   String? _loadedToken;
   TabController? _tabController;
+  VoidCallback? _tabControllerListener; // Store listener reference for proper cleanup
   int _selectedTabIndex = 0; // 0 for Chart, 1 for Options
   bool _isBasketMode = false; // Track basket mode from OptionChainSSWeb
   VoidCallback? _toggleBasketModeCallback; // Callback to toggle basket mode
+  BuildContext? _storedContext; // Store context for cleanup in dispose
+  ProviderContainer? _storedContainer; // Store container for cleanup in dispose
   // bool _isDepthVisible = false; // Controlled by wlValue.showDepthInitially
 
   @override
   void initState() {
     super.initState();
-    // Ensure depth + chart data is loaded for the selected scrip
-    // The provider's calldepthApis now has guards to prevent duplicate loading
-    Future.microtask(() async {
-      await _ensureDataLoaded();
+    // Store context and container for later use in dispose
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _storedContext = context;
+        try {
+          _storedContainer = ProviderScope.containerOf(context, listen: false);
+        } catch (e) {
+          // Container might not be available yet
+        }
+        ref.read(marketWatchProvider).setIsDepthVisibleWeb(ref.read(marketWatchProvider).isDepthVisible);
+      }
     });
-    ref.read(marketWatchProvider).setIsDepthVisibleWeb(ref.read(marketWatchProvider).isDepthVisible);
   }
 
   @override
@@ -49,10 +58,13 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
     if (oldWidget.wlValue.token != widget.wlValue.token ||
         oldWidget.wlValue.exch != widget.wlValue.exch) {
       // Reset depth visibility based on incoming args when scrip changes
-     ref.read(marketWatchProvider).setIsDepthVisibleWeb(ref.read(marketWatchProvider).isDepthVisible);
+      // Delay provider modification until after build phase completes
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(marketWatchProvider).setIsDepthVisibleWeb(ref.read(marketWatchProvider).isDepthVisible);
+      });
       
       Future.microtask(() async {
-        await _ensureDataLoaded(force: true);
+        // await _ensureDataLoaded(force: true);
 
         // If Options tab is active when scrip changes, prepare options for new scrip
         final mw = ref.read(marketWatchProvider);
@@ -66,7 +78,30 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
 
   @override
   void dispose() {
+    // Remove listener before disposing to prevent memory leaks
+    if (_tabController != null && _tabControllerListener != null) {
+      _tabController!.removeListener(_tabControllerListener!);
+      _tabControllerListener = null;
+    }
     _tabController?.dispose();
+    _tabController = null;
+    
+    // Unsubscribe from depth data using stored container (ref is not available in dispose)
+    if (_storedContainer != null) {
+      try {
+        final mw = _storedContainer!.read(marketWatchProvider);
+        if (_storedContext != null && _storedContext!.mounted) {
+          mw.unsubscribeFromDepthData(context: _storedContext);
+        } else {
+          // Context not mounted, but still try to unsubscribe without context
+          mw.unsubscribeFromDepthData(context: _storedContext);
+        }
+      } catch (e) {
+        // Depth will be cleaned up when scrip changes anyway
+        print('⚠️ [ChartWithDepthWeb] Error unsubscribing from depth in dispose: $e');
+      }
+    }
+    
     super.dispose();
   }
 
@@ -87,14 +122,25 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
 
   void _setupTabControllerIfNeeded({required bool hasOptions}) {
     if (!hasOptions) {
+      // Remove listener before disposing to prevent memory leaks
+      if (_tabController != null && _tabControllerListener != null) {
+        _tabController!.removeListener(_tabControllerListener!);
+        _tabControllerListener = null;
+      }
       _tabController?.dispose();
       _tabController = null;
       return;
     }
     if (_tabController == null || _tabController!.length != 2) {
+      // Remove old listener before disposing to prevent memory leaks
+      if (_tabController != null && _tabControllerListener != null) {
+        _tabController!.removeListener(_tabControllerListener!);
+        _tabControllerListener = null;
+      }
       _tabController?.dispose();
       _tabController = TabController(length: 2, vsync: this);
-      _tabController!.addListener(() {
+      // Store listener reference for proper cleanup
+      _tabControllerListener = () {
         // Update UI when tab changes (for search icon visibility)
         if (mounted) {
           setState(() {
@@ -106,7 +152,8 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
           final mw = ref.read(marketWatchProvider);
           mw.setOptionScript(context, widget.wlValue.exch, widget.wlValue.token, widget.wlValue.tsym);
         }
-      });
+      };
+      _tabController!.addListener(_tabControllerListener!);
     }
   }
 
@@ -174,9 +221,9 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
                                       ch = "${s['chng'] ?? ch}";
                                       pc = "${s['pc'] ?? pc}";
                                     }
-                                    final ltpStr = (double.tryParse("$ltp") ?? 0).toStringAsFixed(2);
-                                    final chVal = double.tryParse("$ch") ?? 0;
-                                    final pcVal = double.tryParse("$pc") ?? 0;
+                                    final ltpStr = (double.tryParse(ltp) ?? 0).toStringAsFixed(2);
+                                    final chVal = double.tryParse(ch) ?? 0;
+                                    final pcVal = double.tryParse(pc) ?? 0;
                                     final chStr = chVal.toStringAsFixed(2);
                                     final pcStr = pcVal.toStringAsFixed(2);
                                     final isUp = pcVal >= 0;
@@ -193,7 +240,7 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
                                         ),
                                         const SizedBox(width: 8),
                                         Text(
-                                          "$chStr (${pcStr}%)",
+                                          "$chStr ($pcStr%)",
                                           style: WebTextStyles.sub(
                                             isDarkTheme: theme.isDarkMode,
                                             color: isUp
@@ -401,7 +448,10 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
                                   ? Colors.white.withOpacity(0.08)
                                   : Colors.black.withOpacity(0.08),
                               onTap: () {
-                                ref.read(marketWatchProvider).setIsDepthVisibleWeb(!mw.isDepthVisible);
+                                ref.read(marketWatchProvider).setIsDepthVisibleWeb(
+                                  !mw.isDepthVisible,
+                                  context: context,
+                                );
                               },
                               child: Padding(
                                 padding: const EdgeInsets.all(8.0),
@@ -582,7 +632,7 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
       position: position,
       color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
       elevation: 8,
-      shape: RoundedRectangleBorder(
+      shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.zero,
       ),
       items: mw.sortDate.map((String date) {

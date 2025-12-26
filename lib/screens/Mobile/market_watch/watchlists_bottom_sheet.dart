@@ -33,7 +33,7 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
       return SafeArea(
         child: Container(
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.only(
+              borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(16),
                 topRight: Radius.circular(16),
               ),
@@ -147,7 +147,7 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                             0.6, // Max 60% of screen height
                       ),
                       child: ListView.separated(
-                        physics: ClampingScrollPhysics(),
+                        physics: const ClampingScrollPhysics(),
                           shrinkWrap: true,
                           padding: EdgeInsets.zero,
                           itemCount: () {
@@ -281,7 +281,7 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                                       : Colors.black
                                                           .withOpacity(0.08),
                                                   child: Padding(
-                                                    padding: EdgeInsets.all(8),
+                                                    padding: const EdgeInsets.all(8),
                                                     child: Icon(
                                                       Icons.edit_outlined,
                                                       color: theme.isDarkMode

@@ -12,10 +12,10 @@ class CmrDownloadModel {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['msg'] = this.msg;
-    data['path'] = this.path;
-    data['stat'] = this.stat;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['msg'] = msg;
+    data['path'] = path;
+    data['stat'] = stat;
     return data;
   }
 }

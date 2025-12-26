@@ -6,8 +6,6 @@ import '../../../../../../../res/res.dart';
 import '../../../../../../provider/stocks_provider.dart';
 import '../../../../../../provider/thems.dart';
 import '../../../../../../res/global_state_text.dart';
-import '../../../../../../routes/route_names.dart';
-import '../../../../../../sharedWidget/list_divider.dart';
 import '../../../../../../sharedWidget/no_data_found.dart';
 
 class NewsScreen extends ConsumerStatefulWidget {

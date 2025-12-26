@@ -5,10 +5,8 @@ import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/screens/Mobile/desk_reports/bottom_sheets/holdings_inner_detail.dart';
 import 'package:mynt_plus/sharedWidget/custom_back_btn.dart';
 import 'package:mynt_plus/sharedWidget/custom_exch_badge.dart';
-import 'package:mynt_plus/sharedWidget/functions.dart';
 import 'package:mynt_plus/sharedWidget/loader_ui.dart';
 
-import '../../../models/desk_reports_model/holdings_model.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/websocket_provider.dart';
 import '../../../res/global_state_text.dart';
@@ -30,7 +28,7 @@ class HoldingScreen extends StatelessWidget {
       // Pre-calculate summary values outside of build components
       final summaryData = _calculateSummaryData(ledgerData, socketDatas);
 
-      Future<void> _refresh() async {
+      Future<void> refresh() async {
         await ledgerData.getCurrentDate('else');
         ledgerData.fetchholdingsData(ledgerData.today, context);
       }
@@ -54,7 +52,7 @@ class HoldingScreen extends StatelessWidget {
               fw: 1),
         ),
         body: RefreshIndicator(
-          onRefresh: _refresh,
+          onRefresh: refresh,
           child: TransparentLoaderScreen(
             isLoading: ledgerData.holdingsloading,
             child: Column(
@@ -62,7 +60,7 @@ class HoldingScreen extends StatelessWidget {
               children: [
                 _buildSummaryHeader(screenWidth, theme, summaryData),
                 ledgerData.holdingsAllData?.holdings == null
-                    ? Center(
+                    ? const Center(
                         child: Padding(
                         padding: EdgeInsets.only(top: 60),
                         child: NoDataFound(),
@@ -206,7 +204,7 @@ class HoldingScreen extends StatelessWidget {
                   children: [
                     TextWidget.subText(
                         text: "Total Investment",
-                        color: Color(0xFF696969),
+                        color: const Color(0xFF696969),
                         textOverflow: TextOverflow.ellipsis,
                         theme: theme.isDarkMode,
                         fw: 0),
@@ -230,7 +228,7 @@ class HoldingScreen extends StatelessWidget {
                     children: [
                       TextWidget.subText(
                           text: "Current Value    ",
-                          color: Color(0xFF696969),
+                          color: const Color(0xFF696969),
                           theme: theme.isDarkMode,
                           fw: 0),
                       Padding(
@@ -258,7 +256,7 @@ class HoldingScreen extends StatelessWidget {
                   TextWidget.subText(
                       align: TextAlign.right,
                       text: "Total P&L    ",
-                      color: Color(0xFF696969),
+                      color: const Color(0xFF696969),
                       theme: theme.isDarkMode,
                       fw: 0),
                   Column(
@@ -370,7 +368,7 @@ class HoldingScreen extends StatelessWidget {
                           TextWidget.subText(
                               color: theme.isDarkMode
                                   ? colors.colorWhite
-                                  : Color(0xFF696969),
+                                  : const Color(0xFF696969),
                               text: "LTP : ",
                               textOverflow: TextOverflow.ellipsis,
                               theme: theme.isDarkMode,
@@ -397,8 +395,8 @@ class HoldingScreen extends StatelessWidget {
               ),
             ),
           ),
-          Divider(
-            color: const Color.fromARGB(255, 212, 212, 212),
+          const Divider(
+            color: Color.fromARGB(255, 212, 212, 212),
             thickness: 0.5,
           ),
           Padding(
@@ -412,7 +410,7 @@ class HoldingScreen extends StatelessWidget {
                     TextWidget.subText(
                         color: theme.isDarkMode
                             ? colors.colorWhite
-                            : Color(0xFF696969),
+                            : const Color(0xFF696969),
                         text: "Qty : ",
                         textOverflow: TextOverflow.ellipsis,
                         theme: theme.isDarkMode,
@@ -454,7 +452,7 @@ class HoldingScreen extends StatelessWidget {
                     TextWidget.subText(
                         color: theme.isDarkMode
                             ? colors.colorWhite
-                            : Color(0xFF696969),
+                            : const Color(0xFF696969),
                         text: "Inv : ",
                         textOverflow: TextOverflow.ellipsis,
                         theme: theme.isDarkMode,
@@ -471,7 +469,7 @@ class HoldingScreen extends StatelessWidget {
                     TextWidget.subText(
                         color: theme.isDarkMode
                             ? colors.colorWhite
-                            : Color(0xFF696969),
+                            : const Color(0xFF696969),
                         text: "Cur : ",
                         textOverflow: TextOverflow.ellipsis,
                         theme: theme.isDarkMode,

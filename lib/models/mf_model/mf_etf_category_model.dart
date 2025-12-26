@@ -18,62 +18,62 @@ class MfEtfCategoryModel {
     if (json['Indices'] != null) {
       indices = <Indices>[];
       json['Indices'].forEach((v) {
-        indices!.add(new Indices.fromJson(v));
+        indices!.add(Indices.fromJson(v));
       });
     }
     if (json['Sector & Theme'] != null) {
       sectorTheme = <SectorTheme>[];
       json['Sector & Theme'].forEach((v) {
-        sectorTheme!.add(new SectorTheme.fromJson(v));
+        sectorTheme!.add(SectorTheme.fromJson(v));
       });
     }
     if (json['Strategy Based'] != null) {
       strategyBased = <StrategyBased>[];
       json['Strategy Based'].forEach((v) {
-        strategyBased!.add(new StrategyBased.fromJson(v));
+        strategyBased!.add(StrategyBased.fromJson(v));
       });
     }
     if (json['Global'] != null) {
       global = <Global>[];
       json['Global'].forEach((v) {
-        global!.add(new Global.fromJson(v));
+        global!.add(Global.fromJson(v));
       });
     }
     if (json['Debt'] != null) {
       debt = <Debt>[];
       json['Debt'].forEach((v) {
-        debt!.add(new Debt.fromJson(v));
+        debt!.add(Debt.fromJson(v));
       });
     }
     if (json['Gold & Silver'] != null) {
       goldSilver = <GoldSilver>[];
       json['Gold & Silver'].forEach((v) {
-        goldSilver!.add(new GoldSilver.fromJson(v));
+        goldSilver!.add(GoldSilver.fromJson(v));
       });
     }
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    if (this.indices != null) {
-      data['Indices'] = this.indices!.map((v) => v.toJson()).toList();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    if (indices != null) {
+      data['Indices'] = indices!.map((v) => v.toJson()).toList();
     }
-    if (this.sectorTheme != null) {
+    if (sectorTheme != null) {
       data['Sector & Theme'] =
-          this.sectorTheme!.map((v) => v.toJson()).toList();
+          sectorTheme!.map((v) => v.toJson()).toList();
     }
-    if (this.strategyBased != null) {
+    if (strategyBased != null) {
       data['Strategy Based'] =
-          this.strategyBased!.map((v) => v.toJson()).toList();
+          strategyBased!.map((v) => v.toJson()).toList();
     }
-    if (this.global != null) {
-      data['Global'] = this.global!.map((v) => v.toJson()).toList();
+    if (global != null) {
+      data['Global'] = global!.map((v) => v.toJson()).toList();
     }
-    if (this.debt != null) {
-      data['Debt'] = this.debt!.map((v) => v.toJson()).toList();
+    if (debt != null) {
+      data['Debt'] = debt!.map((v) => v.toJson()).toList();
     }
-    if (this.goldSilver != null) {
-      data['Gold & Silver'] = this.goldSilver!.map((v) => v.toJson()).toList();
+    if (goldSilver != null) {
+      data['Gold & Silver'] = goldSilver!.map((v) => v.toJson()).toList();
     }
     return data;
   }
@@ -147,27 +147,27 @@ class Indices {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['SYMBOL'] = this.sYMBOL;
-    data['UNDERLYING ASSET'] = this.uNDERLYINGASSET;
-    data['exch'] = this.exch;
-    data['company_name'] = this.companyName;
-    data['sector'] = this.sector;
-    data['industry'] = this.industry;
-    data['house'] = this.house;
-    data['market_cap'] = this.marketCap;
-    data['bse_code'] = this.bseCode;
-    data['bse_group'] = this.bseGroup;
-    data['bse_scrip name'] = this.bseScripName;
-    data['trading_status'] = this.tradingStatus;
-    data['nse_symbol'] = this.nseSymbol;
-    data['nse_series'] = this.nseSeries;
-    data['bse_scrip_id'] = this.bseScripId;
-    data['listing_status'] = this.listingStatus;
-    data['isin_no'] = this.isinNo;
-    data['incorporation_year'] = this.incorporationYear;
-    data['zebuToken'] = this.zebuToken;
-    data['NSE_symbol'] = this.nSESymbol;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['SYMBOL'] = sYMBOL;
+    data['UNDERLYING ASSET'] = uNDERLYINGASSET;
+    data['exch'] = exch;
+    data['company_name'] = companyName;
+    data['sector'] = sector;
+    data['industry'] = industry;
+    data['house'] = house;
+    data['market_cap'] = marketCap;
+    data['bse_code'] = bseCode;
+    data['bse_group'] = bseGroup;
+    data['bse_scrip name'] = bseScripName;
+    data['trading_status'] = tradingStatus;
+    data['nse_symbol'] = nseSymbol;
+    data['nse_series'] = nseSeries;
+    data['bse_scrip_id'] = bseScripId;
+    data['listing_status'] = listingStatus;
+    data['isin_no'] = isinNo;
+    data['incorporation_year'] = incorporationYear;
+    data['zebuToken'] = zebuToken;
+    data['NSE_symbol'] = nSESymbol;
     return data;
   }
 }
@@ -240,27 +240,27 @@ class SectorTheme {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['SYMBOL'] = this.sYMBOL;
-    data['UNDERLYING ASSET'] = this.uNDERLYINGASSET;
-    data['exch'] = this.exch;
-    data['company_name'] = this.companyName;
-    data['sector'] = this.sector;
-    data['industry'] = this.industry;
-    data['house'] = this.house;
-    data['market_cap'] = this.marketCap;
-    data['bse_code'] = this.bseCode;
-    data['bse_group'] = this.bseGroup;
-    data['bse_scrip name'] = this.bseScripName;
-    data['trading_status'] = this.tradingStatus;
-    data['nse_symbol'] = this.nseSymbol;
-    data['nse_series'] = this.nseSeries;
-    data['bse_scrip_id'] = this.bseScripId;
-    data['listing_status'] = this.listingStatus;
-    data['isin_no'] = this.isinNo;
-    data['incorporation_year'] = this.incorporationYear;
-    data['zebuToken'] = this.zebuToken;
-    data['NSE_symbol'] = this.nSESymbol;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['SYMBOL'] = sYMBOL;
+    data['UNDERLYING ASSET'] = uNDERLYINGASSET;
+    data['exch'] = exch;
+    data['company_name'] = companyName;
+    data['sector'] = sector;
+    data['industry'] = industry;
+    data['house'] = house;
+    data['market_cap'] = marketCap;
+    data['bse_code'] = bseCode;
+    data['bse_group'] = bseGroup;
+    data['bse_scrip name'] = bseScripName;
+    data['trading_status'] = tradingStatus;
+    data['nse_symbol'] = nseSymbol;
+    data['nse_series'] = nseSeries;
+    data['bse_scrip_id'] = bseScripId;
+    data['listing_status'] = listingStatus;
+    data['isin_no'] = isinNo;
+    data['incorporation_year'] = incorporationYear;
+    data['zebuToken'] = zebuToken;
+    data['NSE_symbol'] = nSESymbol;
     return data;
   }
 }
@@ -333,27 +333,27 @@ class StrategyBased {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['SYMBOL'] = this.sYMBOL;
-    data['UNDERLYING ASSET'] = this.uNDERLYINGASSET;
-    data['exch'] = this.exch;
-    data['company_name'] = this.companyName;
-    data['sector'] = this.sector;
-    data['industry'] = this.industry;
-    data['house'] = this.house;
-    data['market_cap'] = this.marketCap;
-    data['bse_code'] = this.bseCode;
-    data['bse_group'] = this.bseGroup;
-    data['bse_scrip name'] = this.bseScripName;
-    data['trading_status'] = this.tradingStatus;
-    data['nse_symbol'] = this.nseSymbol;
-    data['nse_series'] = this.nseSeries;
-    data['bse_scrip_id'] = this.bseScripId;
-    data['listing_status'] = this.listingStatus;
-    data['isin_no'] = this.isinNo;
-    data['incorporation_year'] = this.incorporationYear;
-    data['zebuToken'] = this.zebuToken;
-    data['NSE_symbol'] = this.nSESymbol;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['SYMBOL'] = sYMBOL;
+    data['UNDERLYING ASSET'] = uNDERLYINGASSET;
+    data['exch'] = exch;
+    data['company_name'] = companyName;
+    data['sector'] = sector;
+    data['industry'] = industry;
+    data['house'] = house;
+    data['market_cap'] = marketCap;
+    data['bse_code'] = bseCode;
+    data['bse_group'] = bseGroup;
+    data['bse_scrip name'] = bseScripName;
+    data['trading_status'] = tradingStatus;
+    data['nse_symbol'] = nseSymbol;
+    data['nse_series'] = nseSeries;
+    data['bse_scrip_id'] = bseScripId;
+    data['listing_status'] = listingStatus;
+    data['isin_no'] = isinNo;
+    data['incorporation_year'] = incorporationYear;
+    data['zebuToken'] = zebuToken;
+    data['NSE_symbol'] = nSESymbol;
     return data;
   }
 }
@@ -426,27 +426,27 @@ class Global {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['SYMBOL'] = this.sYMBOL;
-    data['UNDERLYING ASSET'] = this.uNDERLYINGASSET;
-    data['exch'] = this.exch;
-    data['company_name'] = this.companyName;
-    data['sector'] = this.sector;
-    data['industry'] = this.industry;
-    data['house'] = this.house;
-    data['market_cap'] = this.marketCap;
-    data['bse_code'] = this.bseCode;
-    data['bse_group'] = this.bseGroup;
-    data['bse_scrip name'] = this.bseScripName;
-    data['trading_status'] = this.tradingStatus;
-    data['nse_symbol'] = this.nseSymbol;
-    data['nse_series'] = this.nseSeries;
-    data['bse_scrip_id'] = this.bseScripId;
-    data['listing_status'] = this.listingStatus;
-    data['isin_no'] = this.isinNo;
-    data['incorporation_year'] = this.incorporationYear;
-    data['zebuToken'] = this.zebuToken;
-    data['NSE_symbol'] = this.nSESymbol;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['SYMBOL'] = sYMBOL;
+    data['UNDERLYING ASSET'] = uNDERLYINGASSET;
+    data['exch'] = exch;
+    data['company_name'] = companyName;
+    data['sector'] = sector;
+    data['industry'] = industry;
+    data['house'] = house;
+    data['market_cap'] = marketCap;
+    data['bse_code'] = bseCode;
+    data['bse_group'] = bseGroup;
+    data['bse_scrip name'] = bseScripName;
+    data['trading_status'] = tradingStatus;
+    data['nse_symbol'] = nseSymbol;
+    data['nse_series'] = nseSeries;
+    data['bse_scrip_id'] = bseScripId;
+    data['listing_status'] = listingStatus;
+    data['isin_no'] = isinNo;
+    data['incorporation_year'] = incorporationYear;
+    data['zebuToken'] = zebuToken;
+    data['NSE_symbol'] = nSESymbol;
     return data;
   }
 }
@@ -519,27 +519,27 @@ class Debt {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['SYMBOL'] = this.sYMBOL;
-    data['UNDERLYING ASSET'] = this.uNDERLYINGASSET;
-    data['exch'] = this.exch;
-    data['company_name'] = this.companyName;
-    data['sector'] = this.sector;
-    data['industry'] = this.industry;
-    data['house'] = this.house;
-    data['market_cap'] = this.marketCap;
-    data['bse_code'] = this.bseCode;
-    data['bse_group'] = this.bseGroup;
-    data['bse_scrip name'] = this.bseScripName;
-    data['trading_status'] = this.tradingStatus;
-    data['nse_symbol'] = this.nseSymbol;
-    data['nse_series'] = this.nseSeries;
-    data['bse_scrip_id'] = this.bseScripId;
-    data['listing_status'] = this.listingStatus;
-    data['isin_no'] = this.isinNo;
-    data['incorporation_year'] = this.incorporationYear;
-    data['zebuToken'] = this.zebuToken;
-    data['NSE_symbol'] = this.nSESymbol;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['SYMBOL'] = sYMBOL;
+    data['UNDERLYING ASSET'] = uNDERLYINGASSET;
+    data['exch'] = exch;
+    data['company_name'] = companyName;
+    data['sector'] = sector;
+    data['industry'] = industry;
+    data['house'] = house;
+    data['market_cap'] = marketCap;
+    data['bse_code'] = bseCode;
+    data['bse_group'] = bseGroup;
+    data['bse_scrip name'] = bseScripName;
+    data['trading_status'] = tradingStatus;
+    data['nse_symbol'] = nseSymbol;
+    data['nse_series'] = nseSeries;
+    data['bse_scrip_id'] = bseScripId;
+    data['listing_status'] = listingStatus;
+    data['isin_no'] = isinNo;
+    data['incorporation_year'] = incorporationYear;
+    data['zebuToken'] = zebuToken;
+    data['NSE_symbol'] = nSESymbol;
     return data;
   }
 }
@@ -612,27 +612,27 @@ class GoldSilver {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['SYMBOL'] = this.sYMBOL;
-    data['UNDERLYING ASSET'] = this.uNDERLYINGASSET;
-    data['exch'] = this.exch;
-    data['company_name'] = this.companyName;
-    data['sector'] = this.sector;
-    data['industry'] = this.industry;
-    data['house'] = this.house;
-    data['market_cap'] = this.marketCap;
-    data['bse_code'] = this.bseCode;
-    data['bse_group'] = this.bseGroup;
-    data['bse_scrip name'] = this.bseScripName;
-    data['trading_status'] = this.tradingStatus;
-    data['nse_symbol'] = this.nseSymbol;
-    data['nse_series'] = this.nseSeries;
-    data['bse_scrip_id'] = this.bseScripId;
-    data['listing_status'] = this.listingStatus;
-    data['isin_no'] = this.isinNo;
-    data['incorporation_year'] = this.incorporationYear;
-    data['zebuToken'] = this.zebuToken;
-    data['NSE_symbol'] = this.nSESymbol;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['SYMBOL'] = sYMBOL;
+    data['UNDERLYING ASSET'] = uNDERLYINGASSET;
+    data['exch'] = exch;
+    data['company_name'] = companyName;
+    data['sector'] = sector;
+    data['industry'] = industry;
+    data['house'] = house;
+    data['market_cap'] = marketCap;
+    data['bse_code'] = bseCode;
+    data['bse_group'] = bseGroup;
+    data['bse_scrip name'] = bseScripName;
+    data['trading_status'] = tradingStatus;
+    data['nse_symbol'] = nseSymbol;
+    data['nse_series'] = nseSeries;
+    data['bse_scrip_id'] = bseScripId;
+    data['listing_status'] = listingStatus;
+    data['isin_no'] = isinNo;
+    data['incorporation_year'] = incorporationYear;
+    data['zebuToken'] = zebuToken;
+    data['NSE_symbol'] = nSESymbol;
     return data;
   }
 }

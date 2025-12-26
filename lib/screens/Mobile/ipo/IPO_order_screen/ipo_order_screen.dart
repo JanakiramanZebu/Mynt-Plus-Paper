@@ -13,7 +13,6 @@ import '../../../../provider/transcation_provider.dart';
 import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
 import '../../../../sharedWidget/functions.dart';
-import '../../../../sharedWidget/ipo_error_widget.dart';
 import '../../../../sharedWidget/snack_bar.dart';
 
 class UnifiedIpoOrderScreen extends ConsumerStatefulWidget {
@@ -330,7 +329,7 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                 children: [
                   Expanded(
                     child: SingleChildScrollView(
-                      physics: ClampingScrollPhysics(),
+                      physics: const ClampingScrollPhysics(),
                       child: Column(
                         children: [
                           const SizedBox(height: 20),

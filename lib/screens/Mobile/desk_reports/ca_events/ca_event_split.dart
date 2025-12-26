@@ -1,18 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/provider/ledger_provider.dart';
 import 'package:mynt_plus/res/res.dart';
-import 'package:mynt_plus/screens/Mobile/desk_reports/bottom_sheets/ledger_bill.dart';
-import 'package:mynt_plus/sharedWidget/custom_back_btn.dart';
-import 'package:mynt_plus/sharedWidget/custom_exch_badge.dart';
-import 'package:mynt_plus/sharedWidget/functions.dart';
 import 'package:mynt_plus/sharedWidget/loader_ui.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 
 import '../../../../provider/thems.dart';
 import '../../../../res/global_state_text.dart';
-import '../bottom_sheets/ledger_filter.dart';
 
 class CAEventSplit extends StatelessWidget {
   const CAEventSplit({super.key});
@@ -155,7 +149,7 @@ class CAEventSplit extends StatelessWidget {
               // ),
 
               ledgerprovider.caeventalldata?.split?.isEmpty ?? true
-                  ? Center(
+                  ? const Center(
                       child: Padding(
                       padding: EdgeInsets.only(top: 60),
                       child: NoDataFound(),
@@ -163,7 +157,7 @@ class CAEventSplit extends StatelessWidget {
                   : Expanded(
                       child: SingleChildScrollView(
                         child: ListView.separated(
-                          physics: ScrollPhysics(),
+                          physics: const ScrollPhysics(),
                           itemCount:
                               ledgerprovider.caeventalldata?.split?.length ?? 0,
                           shrinkWrap: true,
@@ -237,11 +231,11 @@ class CAEventSplit extends StatelessWidget {
                                   ),
                                 ),
 
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
+                                const Padding(
+                                  padding: EdgeInsets.symmetric(
                                       horizontal: 16.0),
                                   child: Divider(
-                                    color: const Color.fromARGB(
+                                    color: Color.fromARGB(
                                         255, 212, 212, 212),
                                     thickness: 0.5,
                                   ),
@@ -263,7 +257,7 @@ class CAEventSplit extends StatelessWidget {
                                               TextWidget.subText(
                                                   align: TextAlign.right,
                                                   text: "Old FV :",
-                                                  color: Color(0xFF696969),
+                                                  color: const Color(0xFF696969),
                                                   textOverflow:
                                                       TextOverflow.ellipsis,
                                                   theme: theme.isDarkMode,
@@ -286,7 +280,7 @@ class CAEventSplit extends StatelessWidget {
                                               TextWidget.subText(
                                                   align: TextAlign.right,
                                                   text: "Split Date : ",
-                                                  color: Color(0xFF696969),
+                                                  color: const Color(0xFF696969),
                                                   textOverflow:
                                                       TextOverflow.ellipsis,
                                                   theme: theme.isDarkMode,
@@ -314,7 +308,7 @@ class CAEventSplit extends StatelessWidget {
                                             TextWidget.subText(
                                                 align: TextAlign.right,
                                                 text: "New FV :",
-                                                color: Color(0xFF696969),
+                                                color: const Color(0xFF696969),
                                                 textOverflow:
                                                     TextOverflow.ellipsis,
                                                 theme: theme.isDarkMode,

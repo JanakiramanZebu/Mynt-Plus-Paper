@@ -307,7 +307,7 @@ class _AlgoStrategyListState extends ConsumerState<AlgoStrategyList> {
                 ),
                 const SizedBox(width: 6),
                 TextWidget.paraText(
-                  text: '${data.executionon?.join(', ') ?? ''}',
+                  text: data.executionon?.join(', ') ?? '',
                   theme: isDark,
                   color: isDark ? colors.textSecondaryDark : colors.textSecondaryLight,
                   fw: 3,
