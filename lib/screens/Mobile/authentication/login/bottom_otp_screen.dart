@@ -30,43 +30,51 @@ class _BottomSheetContentState extends State<BottomSheetContent>
   String resendTime = "01.29";
   String? _receivedCode = '';
   final autoFill = SmsAutoFill();
-  String _appSignature = "Fetching...";
 
   @override
   void initState() {
+    super.initState();
     startTimer();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _focusNode.requestFocus();
+      if (mounted) {
+        _focusNode.requestFocus();
+      }
     });
     _startListeningForOtp();
-    _getAppSignature();
-    super.initState();
-  }
-
-  Future<void> _getAppSignature() async {
-    try {
-      final autoFill = SmsAutoFill();
-      final signature = await autoFill.getAppSignature;
-      setState(() {
-        _appSignature = signature;
-      });
-    } catch (e) {
-      setState(() {
-        _appSignature = "Error: $e";
-      });
-    }
   }
 
   Future<void> _startListeningForOtp() async {
-    setState(() {
-      otpController.text = '';
-    });
-    await SmsAutoFill().listenForCode(); // Listen via SMS Retriever API
-    listenForCode(); // Needed to trigger CodeAutoFill callback
+    if (!mounted) return;
+    
+    // Unregister previous listener first
+    try {
+      await SmsAutoFill().unregisterListener();
+    } catch (e) {
+      // Ignore if not registered
+    }
+    
+    if (mounted) {
+      setState(() {
+        otpController.text = '';
+      });
+    }
+    
+    if (mounted) {
+      try {
+        await SmsAutoFill().listenForCode(); // Listen via SMS Retriever API
+        if (mounted) {
+          listenForCode(); // Needed to trigger CodeAutoFill callback
+        }
+      } catch (e) {
+        debugPrint('Error starting OTP listener: $e');
+      }
+    }
   }
 
   @override
   void codeUpdated() {
+    if (!mounted) return;
+    
     setState(() {
       _receivedCode = code; // `code` is provided by the mixin
       otpController.text = _receivedCode ?? '';
@@ -76,19 +84,32 @@ class _BottomSheetContentState extends State<BottomSheetContent>
 
   Preferences pref = Preferences();
   void startTimer() {
+    // Cancel existing timer if any
+    _timer?.cancel();
+    
     const oneSec = Duration(seconds: 1);
     _timer = Timer.periodic(
       oneSec,
       (Timer timer) {
+        if (!mounted) {
+          timer.cancel();
+          return;
+        }
+        
         if (_start == 0) {
-          setState(() {
-            timer.cancel();
-          });
+          timer.cancel();
+          if (mounted) {
+            setState(() {
+              _timer = null;
+            });
+          }
         } else {
-          setState(() {
-            _start--;
-            resendTime = formattedTime(timeInSecond: _start);
-          });
+          if (mounted) {
+            setState(() {
+              _start--;
+              resendTime = formattedTime(timeInSecond: _start);
+            });
+          }
         }
       },
     );
@@ -104,10 +125,24 @@ class _BottomSheetContentState extends State<BottomSheetContent>
 
   @override
   void dispose() {
-    _timer!.cancel();
+    // Cancel timer safely
+    _timer?.cancel();
+    _timer = null;
+    
+    // Dispose focus node
     _focusNode.dispose();
+    
+    // Dispose controller
     otpController.dispose();
-    SmsAutoFill().unregisterListener();
+    
+    // Unregister SMS autofill listener
+    try {
+      SmsAutoFill().unregisterListener();
+    } catch (e) {
+      // Ignore errors during dispose
+      debugPrint('Error unregistering SMS listener: $e');
+    }
+    
     super.dispose();
   }
 
@@ -524,15 +559,27 @@ class _BottomSheetContentState extends State<BottomSheetContent>
                                                     : Colors.black
                                                         .withOpacity(0.08),
                                                 onTap: () async {
+                                                  if (!mounted) return;
+                                                  
                                                   await Future.delayed(const Duration(
                                                       milliseconds: 100));
-                                                  SmsAutoFill()
-                                                      .unregisterListener();
-                                                  otpController.text = '';
-                                                  _startListeningForOtp();
-                                                  auth.submitResendOtp(context);
-                                                  _start = 89;
-                                                  startTimer();
+                                                  
+                                                  if (!mounted) return;
+                                                  
+                                                  try {
+                                                    await SmsAutoFill()
+                                                        .unregisterListener();
+                                                  } catch (e) {
+                                                    // Ignore errors
+                                                  }
+                                                  
+                                                  if (mounted) {
+                                                    otpController.text = '';
+                                                    _start = 89;
+                                                    startTimer();
+                                                    _startListeningForOtp();
+                                                    auth.submitResendOtp(context);
+                                                  }
                                                 },
                                                 child: Padding(
                                                   padding: const EdgeInsets

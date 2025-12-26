@@ -36,21 +36,32 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   void initState() {
-    ref.read(versionProvider).checkVersion(context);
-    ref.read(authProvider).setChangetotp(true);
     super.initState();
     focusNode = FocusNode();
-    focusNode.addListener(() {
-      setState(() {}); // Rebuild when focus changes
-    });
+    focusNode.addListener(_onFocusChange);
     focusNode1 = FocusNode();
-    focusNode.addListener(() {
-      setState(() {}); // Rebuild when focus changes
+    focusNode1.addListener(_onFocusChange);
+    
+    // Defer context-dependent operations to avoid holding context reference
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        ref.read(versionProvider).checkVersion(context);
+        ref.read(authProvider).setChangetotp(true);
+      }
     });
+  }
+
+  void _onFocusChange() {
+    if (mounted) {
+      setState(() {}); // Rebuild when focus changes
+    }
   }
 
   @override
   void dispose() {
+    // Remove listeners before disposing
+    focusNode.removeListener(_onFocusChange);
+    focusNode1.removeListener(_onFocusChange);
     focusNode.dispose();
     focusNode1.dispose();
     super.dispose();
@@ -85,6 +96,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _handleBackNavigation(BuildContext context, Preferences pref,
       AuthProvider auth, UserProfileProvider userProfile, WidgetRef ref) async {
+    if (!mounted) return;
+    
     final theme = ref.watch(themeProvider);
     if (pref.islogOut! ||
         auth.switchback == true &&
@@ -93,9 +106,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 pref.clientMob!.isEmpty ||
                 pref.clientMob!.isNotEmpty)) {
       // This path is for logged out users with saved credentials
-      theme.removeUsermatrial(context);
-      Navigator.pushNamedAndRemoveUntil(
-          context, Routes.loginScreenBanner, (route) => false);
+      if (mounted) {
+        theme.removeUsermatrial(context);
+        Navigator.pushNamedAndRemoveUntil(
+            context, Routes.loginScreenBanner, (route) => false);
+      }
     } else {
       // This path is for when we need to switch between accounts
       // Note: Previous issue was caused by inconsistent navigation stack between app bar back button
@@ -139,13 +154,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         await Future.delayed(const Duration(milliseconds: 200));
 
         // Remove loading indicator after everything is done
-        if (context.mounted) {
+        if (mounted && context.mounted) {
           userProfile.profilePageloader(false);
         }
       } catch (e) {
         // Handle any errors during the process
         print("Error restoring user data: $e");
-        if (context.mounted) {
+        if (mounted && context.mounted) {
           userProfile.profilePageloader(false);
         }
       }
@@ -161,9 +176,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       final auth = ref.watch(authProvider);
       final forpass = ref.watch(changePasswordProvider);
       final theme = ref.watch(themeProvider);
-      final ledgerprovider = ref.read(ledgerProvider);
-      final portfolio = ref.watch(portfolioProvider);
-      final orders = ref.watch(orderProvider);
       final userProfile = ref.watch(userProfileProvider);
 
       return GestureDetector(

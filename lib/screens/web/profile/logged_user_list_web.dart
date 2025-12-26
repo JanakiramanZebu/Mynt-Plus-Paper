@@ -185,6 +185,8 @@ class LoggedUserListWeb extends ConsumerWidget {
                                 color: Colors.transparent,
                                 child: InkWell(
                                   onTap: () async {
+                                    if (!context.mounted) return;
+                                    
                                     // Add delay for visual feedback
                                     await Future.delayed(
                                         const Duration(milliseconds: 150));
@@ -233,10 +235,15 @@ class LoggedUserListWeb extends ConsumerWidget {
                             padding: const EdgeInsets.only(bottom: 8),
                             child: InkWell(
                               onTap: () async {
+                                if (!context.mounted) return;
+                                
                                 // Close all open order/modify/GTT dialogs when switching accounts
                                 OverlayManager.closeAll();
 
+                                if (!context.mounted) return;
                                 Navigator.pop(context);
+                                
+                                if (!context.mounted) return;
                                 userProfile.profileloaderfun(true);
                                 ref.read(ledgerProvider).clearCalendarPnLData();
                                 ref.read(fundProvider).clearFunds();
@@ -253,16 +260,20 @@ class LoggedUserListWeb extends ConsumerWidget {
                                 pref.setImei(acc.imei);
                                 pref.setMobileLogin(true);
 
-                                await ref.read(authProvider).fetchMobileLogin(
-                                      context,
-                                      "",
-                                      acc.clientId,
-                                      "switchAc",
-                                      acc.imei,
-                                      true,
-                                    );
+                                if (context.mounted) {
+                                  await ref.read(authProvider).fetchMobileLogin(
+                                        context,
+                                        "",
+                                        acc.clientId,
+                                        "switchAc",
+                                        acc.imei,
+                                        true,
+                                      );
+                                }
 
-                                websocket.changeconnectioncount();
+                                if (context.mounted) {
+                                  websocket.changeconnectioncount();
+                                }
                               },
                               child: Container(
                                 padding: const EdgeInsets.symmetric(
@@ -339,15 +350,19 @@ class LoggedUserListWeb extends ConsumerWidget {
                                       color: Colors.transparent,
                                       child: InkWell(
                                         onTap: () async {
+                                          if (!context.mounted) return;
+                                          
                                           final originalIndex = loggedUser
                                               .loggedMobile
                                               .indexWhere((element) =>
                                                   element.clientId ==
                                                   acc.clientId);
-                                          if (originalIndex != -1) {
+                                          if (originalIndex != -1 && context.mounted) {
                                             loggedUser.removeUsers(
                                                 acc, originalIndex, context);
-                                            Navigator.pop(context);
+                                            if (context.mounted) {
+                                              Navigator.pop(context);
+                                            }
                                           }
                                         },
                                         borderRadius: BorderRadius.circular(5),
@@ -400,6 +415,8 @@ class LoggedUserListWeb extends ConsumerWidget {
                 width: double.infinity,
                 child: OutlinedButton(
                   onPressed: () {
+                    if (!context.mounted) return;
+                    
                     ref.read(orderProvider).clearAllorders();
                     ref.read(ledgerProvider).setterfornullallSwitch = null;
                     pref.setMobileLogin(true);
@@ -411,28 +428,31 @@ class LoggedUserListWeb extends ConsumerWidget {
                     loggedUser.loginMethCtrl.clear();
                     ref.read(authProvider).switchbackbutton(false);
 
+                    if (!context.mounted) return;
                     Navigator.pop(context);
 
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => PopScope(
-                          canPop: true,
-                          onPopInvokedWithResult: (didPop, result) async {
-                            if (didPop) {
-                              ref
-                                  .read(websocketProvider)
-                                  .changeconnectioncount();
-                              if (context.mounted) {
+                    if (context.mounted) {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => PopScope(
+                            canPop: true,
+                            onPopInvokedWithResult: (didPop, result) async {
+                              if (didPop && context.mounted) {
                                 ref
-                                    .read(indexListProvider)
-                                    .bottomMenu(4, context);
+                                    .read(websocketProvider)
+                                    .changeconnectioncount();
+                                if (context.mounted) {
+                                  ref
+                                      .read(indexListProvider)
+                                      .bottomMenu(4, context);
+                                }
                               }
-                            }
-                          },
-                          child: const LoginScreen(),
+                            },
+                            child: const LoginScreen(),
+                          ),
                         ),
-                      ),
-                    );
+                      );
+                    }
                   },
                   style: OutlinedButton.styleFrom(
                     side: BorderSide(

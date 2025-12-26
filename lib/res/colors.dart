@@ -96,8 +96,8 @@ class AppColors {
   final darkred = const Color(0xfff44336);
   final darkiconcolor = const Color(0xffBDBDBD);
   final ltpgrey = const Color(0xff999999);
-  final ltpgreen = const Color(0xff43A833);
-  final ltpred = const Color(0xffFF1717);
+  final ltpgreen = const Color(0xFF00B14F); // Match new profit color
+  final ltpred = const Color(0xFFFF1717); // Same as loss
 
   final fundbuttonBg = const Color(0xffF1F3F8);
 
@@ -115,18 +115,18 @@ class AppColors {
   final kColorBackground = const Color(0xffE5E5E5);
   final kColorLightGrey = const Color(0xffFAFAFA);
   final kColorDarkBlueText = const Color(0xff1E3565);
-  final kColorBlue = const Color(0xff0065BE);
-  final kColorBlueText = const Color(0xff0075E1);
-  final kColorBlueButton = const Color(0xff4184F5);
+  final kColorBlue = const Color(0xFF0037B7); // Match new primary
+  final kColorBlueText = const Color(0xFF0052CC); // Match new secondary
+  final kColorBlueButton = const Color(0xFF0037B7); // Match new primary
   final kColorLighBlue = const Color(0xffE7F1FD);
-  final kColorRedText = const Color(0xffDF2525);
-  final kColorRedButton = const Color(0xffDF514D);
+  final kColorRedText = const Color(0xFFFF1717); // Match new error/loss
+  final kColorRedButton = const Color(0xFFFF1717); // Match new error/loss
   final kColorLightRed = const Color(0xffFFF4F0);
-  final kColorGreenText = const Color(0xff00A400);
-  final kColorGreenButton = const Color(0xff4CB050);
+  final kColorGreenText = const Color(0xFF00B14F); // Match new success/profit
+  final kColorGreenButton = const Color(0xFF00B14F); // Match new success/profit
   final kColorLightGreen = const Color(0xffEFFFEF);
 
-  final kColorBlueMain = const Color(0xff1A90FD);
+  final kColorBlueMain = const Color(0xFF0037B7); // Match new primary
   final kColorOrange = const Color(0xffF25652);
 
   final kColorLogoLightTheme = const Color(0xff1f3565);
@@ -138,13 +138,13 @@ class AppColors {
   final kColorCardGreyDarkTheme = const Color(0xff424242);
   final kColorAccentWhite = const Color(0xff888c91);
 
-  final kColorRedDarkTheme = const Color(0xffdf514c);
+  final kColorRedDarkTheme = const Color(0xFFFF6B6B); // Match dark theme loss
   final kColorLightRedDarkTheme = const Color(0xff2d1e1e);
-  final kColorBlueDarkTheme = const Color(0xff4987ee);
+  final kColorBlueDarkTheme = const Color(0xFF2E65F6); // Match dark theme primary
   final kColorLightBlueDarkTheme = const Color(0xff1d242f);
   final kColorGreyDarkTheme = const Color(0xffbbbbbb);
   final kColorLightGreyDarkTheme = const Color(0xff292929);
-  final kColorGreenDarkTheme = const Color(0xff5b9a5d);
+  final kColorGreenDarkTheme = const Color(0xFF68D391); // Match dark theme profit
   final kColorLightGreenDarkTheme = const Color(0xff1e281e);
   final kColorVioletDarkTheme = const Color(0xffff8002);
   // final kColorLightVioletDarkTheme = const Color(0xff483c2f);

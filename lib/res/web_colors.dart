@@ -68,8 +68,8 @@ class WebColors {
   static const Color navDivider = Color(0xFFDDE2E7);
   
   // === DATA COLORS ===
-  static const Color profit = Color(0xFF43A833);
-  static const Color loss = Color(0xffff23645);
+  static const Color profit = Color(0xFF00B14F); // Match main colors.profit
+  static const Color loss = Color(0xFFFF1717); // Match main colors.loss (fixed invalid color)
   static const Color neutral = Color(0xFF4A4A4A);
   
   // === ICON COLORS ===
