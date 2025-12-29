@@ -1312,7 +1312,9 @@ class _DailyCalendarState extends State<_DailyCalendar> {
 
   void _goToPreviousMonth() {
     if (_month.year == widget.startDate.year &&
-        _month.month == widget.startDate.month) return;
+        _month.month == widget.startDate.month) {
+      return;
+    }
     final prevMonth = DateTime(_month.year, _month.month - 1, 1);
     setState(() {
       _month =
@@ -1323,7 +1325,9 @@ class _DailyCalendarState extends State<_DailyCalendar> {
 
   void _goToNextMonth() {
     if (_month.year == widget.endDate.year &&
-        _month.month == widget.endDate.month) return;
+        _month.month == widget.endDate.month) {
+      return;
+    }
     final nextMonth = DateTime(_month.year, _month.month + 1, 1);
     setState(() {
       _month = nextMonth.isAfter(widget.endDate) ? widget.endDate : nextMonth;

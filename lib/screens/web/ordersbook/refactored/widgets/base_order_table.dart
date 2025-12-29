@@ -32,10 +32,10 @@ class BaseOrderTable extends StatelessWidget {
       builder: (context, constraints) {
         // Calculate available height
         final screenHeight = MediaQuery.of(context).size.height;
-        final padding = 32.0;
-        final headerHeight = 50.0;
-        final spacing = 16.0;
-        final bottomMargin = 20.0;
+        const padding = 32.0;
+        const headerHeight = 50.0;
+        const spacing = 16.0;
+        const bottomMargin = 20.0;
         final tableHeight = screenHeight - padding - headerHeight - spacing - bottomMargin;
 
         final maxHeight = screenHeight * 0.75;
@@ -62,23 +62,23 @@ class BaseOrderTable extends StatelessWidget {
             child: Theme(
               data: Theme.of(context).copyWith(
                 scrollbarTheme: ScrollbarThemeData(
-                  thumbVisibility: MaterialStateProperty.all(true),
-                  trackVisibility: MaterialStateProperty.all(true),
-                  thickness: MaterialStateProperty.all(6.0),
+                  thumbVisibility: WidgetStateProperty.all(true),
+                  trackVisibility: WidgetStateProperty.all(true),
+                  thickness: WidgetStateProperty.all(6.0),
                   crossAxisMargin: 0.0,
                   mainAxisMargin: 0.0,
                   radius: const Radius.circular(3),
-                  thumbColor: MaterialStateProperty.resolveWith((states) {
+                  thumbColor: WidgetStateProperty.resolveWith((states) {
                     return theme.isDarkMode
                         ? WebDarkColors.textSecondary.withOpacity(0.3)
                         : WebColors.textSecondary.withOpacity(0.3);
                   }),
-                  trackColor: MaterialStateProperty.resolveWith((states) {
+                  trackColor: WidgetStateProperty.resolveWith((states) {
                     return theme.isDarkMode
                         ? WebDarkColors.divider.withOpacity(0.1)
                         : WebColors.divider.withOpacity(0.1);
                   }),
-                  trackBorderColor: MaterialStateProperty.all(Colors.transparent),
+                  trackBorderColor: WidgetStateProperty.all(Colors.transparent),
                   minThumbLength: 48.0,
                 ),
               ),
@@ -96,7 +96,7 @@ class BaseOrderTable extends StatelessWidget {
                 horizontalScrollController: horizontalScrollController,
                 scrollController: verticalScrollController,
                 showCheckboxColumn: false,
-                headingRowColor: MaterialStateProperty.all(
+                headingRowColor: WidgetStateProperty.all(
                   theme.isDarkMode
                       ? WebDarkColors.primary
                       : WebColors.primary.withOpacity(0.05),

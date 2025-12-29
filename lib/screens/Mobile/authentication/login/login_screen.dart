@@ -8,8 +8,6 @@ import '../../../../provider/auth_provider.dart';
 import '../../../../provider/change_password_provider.dart';
 import '../../../../provider/index_list_provider.dart';
 import '../../../../provider/ledger_provider.dart';
-import '../../../../provider/order_provider.dart';
-import '../../../../provider/portfolio_provider.dart';
 import '../../../../provider/thems.dart';
 import '../../../../provider/user_profile_provider.dart';
 import '../../../../provider/version_provider.dart';
@@ -75,7 +73,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     if (_isProcessing ||
         auth.loginMethCtrl.text.isEmpty ||
-        auth.passCtrl.text.isEmpty) return;
+        auth.passCtrl.text.isEmpty) {
+      return;
+    }
     if (auth.loginMethError != "" || auth.passError != "") return;
 
     setState(() => _isProcessing = true);

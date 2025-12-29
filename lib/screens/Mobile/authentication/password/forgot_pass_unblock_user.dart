@@ -43,7 +43,9 @@ class _ForgotPassUnblockUserState extends State<ForgotPassUnblockUser> {
       ChangePasswordProvider authForgetpassword) async {
     if (_isProcessing ||
         authForgetpassword.forGetloginMethCtrl.text.isEmpty ||
-        authForgetpassword.loading) return;
+        authForgetpassword.loading) {
+      return;
+    }
 
     setState(() => _isProcessing = true);
 

@@ -516,8 +516,8 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
 
       return DataRow2(
         onTap: () => _showHoldingDetail(holding),
-        color: MaterialStateProperty.resolveWith<Color>((states) {
-          if (states.contains(MaterialState.hovered) || _hoveredRowToken.value == uniqueId) {
+        color: WidgetStateProperty.resolveWith<Color>((states) {
+          if (states.contains(WidgetState.hovered) || _hoveredRowToken.value == uniqueId) {
             return theme.isDarkMode
                 ? WebDarkColors.primary.withOpacity(0.06)
                 : WebColors.primary.withOpacity(0.10);

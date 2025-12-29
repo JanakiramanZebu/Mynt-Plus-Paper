@@ -1480,16 +1480,16 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                               child: Theme(
                                 data: Theme.of(context).copyWith(
                                   scrollbarTheme: ScrollbarThemeData(
-                                    thickness: MaterialStateProperty.all(4.0),
+                                    thickness: WidgetStateProperty.all(4.0),
                                     radius: const Radius.circular(2),
                                     crossAxisMargin: 0.0,
                                     mainAxisMargin: 0.0,
-                                    thumbColor: MaterialStateProperty.resolveWith((states) {
+                                    thumbColor: WidgetStateProperty.resolveWith((states) {
                                       return theme.isDarkMode
                                           ? WebDarkColors.textSecondary.withOpacity(0.4)
                                           : WebColors.textSecondary.withOpacity(0.4);
                                     }),
-                                    trackColor: MaterialStateProperty.resolveWith((states) {
+                                    trackColor: WidgetStateProperty.resolveWith((states) {
                                       return Colors.transparent;
                                     }),
                                     minThumbLength: 40.0,

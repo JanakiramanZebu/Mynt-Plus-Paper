@@ -1021,7 +1021,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                                     child:
                                                         DropdownButtonFormField<
                                                             String>(
-                                                      value: profileprovider
+                                                      initialValue: profileprovider
                                                           .selectedBankProofTypeValue,
                                                       hint: TextWidget.subText(
                                                           text:
