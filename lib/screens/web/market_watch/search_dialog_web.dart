@@ -128,85 +128,27 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
     //   );
     // }
 
-    return Material(
-        color: Colors.transparent,
-        child: Stack(
-          children: [
-            // Backdrop
-            Positioned.fill(
-              child: GestureDetector(
-                onTap: () {
-                  ref.read(marketWatchProvider).searchClear();
-                  Navigator.of(context).pop();
-                },
-                child: Container(
-                  color: Colors.black.withOpacity(0.3),
-                ),
-              ),
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      child: Container(
+        width: 560,
+        constraints: const BoxConstraints(maxHeight: 600),
+        decoration: BoxDecoration(
+          color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
             ),
-
-            // Draggable Dialog - COMMENTED OUT
-            // Positioned(
-            //   left: _position!.dx,
-            //   top: _position!.dy,
-            //   child: GestureDetector(
-            //     onPanStart: (details) {
-            //       setState(() {
-            //         _isDragging = true;
-            //       });
-            //     },
-            //     onPanUpdate: (details) {
-            //       setState(() {
-            //         final newX = _position!.dx + details.delta.dx;
-            //         final newY = _position!.dy + details.delta.dy;
-            //
-            //         // Get screen size
-            //         final screenSize = MediaQuery.of(context).size;
-            //         const dialogWidth = 800.0;
-            //         const dialogHeight = 600.0;
-            //
-            //         // Constrain position to stay within screen bounds
-            //         _position = Offset(
-            //           newX.clamp(0.0, screenSize.width - dialogWidth),
-            //           newY.clamp(0.0, screenSize.height - dialogHeight),
-            //         );
-            //       });
-            //     },
-            //     onPanEnd: (details) {
-            //       setState(() {
-            //         _isDragging = false;
-            //       });
-            //     },
-            //     child: Container(
-            //       width: 500,
-            //       height: 600,
-            //       decoration: BoxDecoration(
-            //         color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
-            //         borderRadius: BorderRadius.circular(5),
-            //         border: _isDragging ? Border.all(
-            //           color: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
-            //           width: 2,
-            //         ) : null,
-            //       ),
-            //       child: Container(
-            //         child: Column(
-            //           mainAxisSize: MainAxisSize.min,
-            //           crossAxisAlignment: CrossAxisAlignment.start,
-            //           children: [
-            // Fixed Centered Dialog
-            Center(
-              child: Container(
-                width: 560,
-                height: 600,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(5),
-                ),
-                child: Container(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
                       // Container(
                       //   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                       //   decoration: BoxDecoration(
@@ -451,12 +393,12 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
                           horizontal: 10,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
                           border: Border(
                             bottom: BorderSide(
                               color: theme.isDarkMode
-                                  ? WebDarkColors.inputBorder
-                                  : WebColors.inputBorder,
+                                  ? WebDarkColors.divider
+                                  : WebColors.divider,
                               width: 1,
                             ),
                           ),
@@ -471,10 +413,12 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
                     ],
                   ),
                 ),
-              ),
-            ),
-          ],
-        ));
+              );
+            
+          
+        
+      
+    
   }
 
   Widget _buildSearchTabs(WidgetRef ref, ThemesProvider theme) {
@@ -547,7 +491,7 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
                 ? (theme.isDarkMode
                     ? WebDarkColors.backgroundTertiary
                     : WebColors.backgroundTertiary)
-                : Colors.white,
+                : (theme.isDarkMode ? WebDarkColors.surface : WebColors.surface),
             border: Border.all(
               color: isSelected
                   ? (theme.isDarkMode
@@ -584,9 +528,9 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
       MarketWatchProvider searchScrip, ThemesProvider theme) {
     if (searchScrip.allSearchScrip?.isEmpty ?? true) {
       return Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
+        decoration: BoxDecoration(
+          color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
+          borderRadius: const BorderRadius.only(
             bottomLeft: Radius.circular(12),
             bottomRight: Radius.circular(12),
           ),
@@ -599,9 +543,9 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
 
     return Container(
       padding: const EdgeInsets.only(bottom: 10),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
+      decoration: BoxDecoration(
+        color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
+        borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(12),
           bottomRight: Radius.circular(12),
         ),

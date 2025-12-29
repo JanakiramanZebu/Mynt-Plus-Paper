@@ -16,6 +16,7 @@ import 'package:mynt_plus/sharedWidget/chart_overlay_widget.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import 'package:mynt_plus/notification/notification_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'locator/locator.dart';
@@ -260,7 +261,33 @@ class MyApp extends ConsumerWidget {
     //     statusBarBrightness:
     //         themeProvide.isDarkMode ? Brightness.light : Brightness.dark,
     //     statusBarColor: themeProvide.isDarkMode ? Colors.black :Colors.white));
-    return MaterialApp(
+    
+    // Use ShadcnApp for web, MaterialApp for mobile
+    if (kIsWeb) {
+      return shadcn.ShadcnApp(
+        navigatorKey: rootNavigatorKey,
+        title: 'MYNT',
+        debugShowCheckedModeBanner: false,
+        theme: shadcn.ThemeData(
+          colorScheme: themeProvide.isDarkMode 
+              ? shadcn.ColorSchemes.darkZinc() 
+              : shadcn.ColorSchemes.lightZinc(),
+          radius: 0.5,
+        ),
+        initialRoute: Routes.splash,
+        onGenerateRoute: AppRoutes.router,
+        navigatorObservers: [routeObserver],
+        builder: (context, child) {
+          return Stack(
+            children: [
+              child!,
+              const ChartOverlayWidget(),
+            ],
+          );
+        },
+      );
+    } else {
+      return MaterialApp(
         navigatorKey: rootNavigatorKey,
         scaffoldMessengerKey: rootScaffoldMessengerKey,
         themeMode: themeMode,
@@ -271,15 +298,16 @@ class MyApp extends ConsumerWidget {
         initialRoute: Routes.splash,
         onGenerateRoute: AppRoutes.router,
         navigatorObservers: [routeObserver],
-      builder: (context, child) {
-        return Stack(
-          children: [
-            child!,
-            const ChartOverlayWidget(),
-          ],
-        );
-      },
-    );
+        builder: (context, child) {
+          return Stack(
+            children: [
+              child!,
+              const ChartOverlayWidget(),
+            ],
+          );
+        },
+      );
+    }
   }
 }
 

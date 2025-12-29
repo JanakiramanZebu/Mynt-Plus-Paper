@@ -157,6 +157,9 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb>
   }
 
   void _processSocketUpdates(Map socketDatas) {
+    // Check if widget is still mounted before accessing providers
+    if (!mounted) return;
+    
     bool hasUpdates = false;
     final manage = ref.read(marketWatchProvider);
     final pendingAlerts = manage.alertPendingModel ?? [];
@@ -785,8 +788,8 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb>
 
     return Row(
       children: [
+        // ✅ Instrument name - always visible, never compressed
         Expanded(
-          flex: isHovered ? 1 : 2,
           child: Align(
             alignment: Alignment.centerLeft,
             child: Tooltip(
@@ -808,41 +811,47 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb>
             ),
           ),
         ),
-        // Action buttons fade in on hover
-        IgnorePointer(
-          ignoring: !isHovered,
-          child: AnimatedOpacity(
-            opacity: isHovered ? 1 : 0,
-            duration: const Duration(milliseconds: 140),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (isPending) ...[
-                  _buildAlertHoverButton(
-                    label: 'Modify',
-                    color: Colors.white,
-                    backgroundColor: theme.isDarkMode
-                        ? WebDarkColors.primary
-                        : WebColors.primary,
-                    onPressed: isProcessing && _isProcessingModify
-                        ? null
-                        : () => _handleModifyAlert(alert),
-                    theme: theme,
-                  ),
-                  const SizedBox(width: 6),
-                  _buildAlertHoverButton(
-                    label: 'Cancel',
-                    color: Colors.white,
-                    backgroundColor: theme.isDarkMode
-                        ? WebDarkColors.error
-                        : WebColors.error,
-                    onPressed: isProcessing && _isProcessingCancel
-                        ? null
-                        : () => _handleCancelAlert(alert),
-                    theme: theme,
-                  ),
+        // ✅ Action buttons - appear on hover, stay within bounds
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 140),
+          width: isHovered ? null : 0,
+          curve: Curves.easeInOut,
+          child: IgnorePointer(
+            ignoring: !isHovered,
+            child: AnimatedOpacity(
+              opacity: isHovered ? 1 : 0,
+              duration: const Duration(milliseconds: 140),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(width: 8),
+                  if (isPending) ...[
+                    _buildAlertHoverButton(
+                      label: 'Modify',
+                      color: Colors.white,
+                      backgroundColor: theme.isDarkMode
+                          ? WebDarkColors.primary
+                          : WebColors.primary,
+                      onPressed: isProcessing && _isProcessingModify
+                          ? null
+                          : () => _handleModifyAlert(alert),
+                      theme: theme,
+                    ),
+                    const SizedBox(width: 6),
+                    _buildAlertHoverButton(
+                      label: 'Cancel',
+                      color: Colors.white,
+                      backgroundColor: theme.isDarkMode
+                          ? WebDarkColors.error
+                          : WebColors.error,
+                      onPressed: isProcessing && _isProcessingCancel
+                          ? null
+                          : () => _handleCancelAlert(alert),
+                      theme: theme,
+                    ),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
         ),

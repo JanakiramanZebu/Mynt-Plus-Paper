@@ -430,8 +430,8 @@ class _MFSipdetScreenWebState extends ConsumerState<MFSipdetScreenWeb>
 
     return Row(
       children: [
+        // ✅ Scheme name - always visible, never compressed
         Expanded(
-          flex: isHovered ? 1 : 2,
           child: Align(
             alignment: Alignment.centerLeft,
             child: Tooltip(
@@ -453,21 +453,27 @@ class _MFSipdetScreenWebState extends ConsumerState<MFSipdetScreenWeb>
             ),
           ),
         ),
-        // Action buttons fade in on hover
-        IgnorePointer(
-          ignoring: !isHovered,
-          child: AnimatedOpacity(
-            opacity: isHovered ? 1 : 0,
-            duration: const Duration(milliseconds: 140),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (_shouldShowSipActions(sipDetail)) ...[
-                  _buildPauseButton(sipDetail, theme),
-                  const SizedBox(width: 6),
+        // ✅ Action buttons - appear on hover, stay within bounds
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 140),
+          width: isHovered ? null : 0,
+          curve: Curves.easeInOut,
+          child: IgnorePointer(
+            ignoring: !isHovered,
+            child: AnimatedOpacity(
+              opacity: isHovered ? 1 : 0,
+              duration: const Duration(milliseconds: 140),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(width: 8),
+                  if (_shouldShowSipActions(sipDetail)) ...[
+                    _buildPauseButton(sipDetail, theme),
+                    const SizedBox(width: 6),
+                  ],
+                  _buildCancelSipButton(sipDetail, theme),
                 ],
-                _buildCancelSipButton(sipDetail, theme),
-              ],
+              ),
             ),
           ),
         ),

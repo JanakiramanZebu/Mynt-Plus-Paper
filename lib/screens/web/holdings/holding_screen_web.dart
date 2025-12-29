@@ -1524,90 +1524,95 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
 
         return Row(
           children: [
+            // ✅ Instrument name - always visible, takes available space
             Expanded(
-              flex: rowIsHovered ? 1 : 2,
-          child: Tooltip(
-            message: displayText,
-            child: Text(
-              displayText,
-              style: WebTextStyles.custom(
-                fontSize: 13,
-                isDarkTheme: theme.isDarkMode,
-                color: theme.isDarkMode
-                    ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary,
-                fontWeight: WebFonts.medium,
+              child: Tooltip(
+                message: displayText,
+                child: Text(
+                  displayText,
+                  style: WebTextStyles.custom(
+                    fontSize: 13,
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode
+                        ? WebDarkColors.textPrimary
+                        : WebColors.textPrimary,
+                    fontWeight: WebFonts.medium,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-              overflow: TextOverflow.ellipsis,
             ),
-          ),
-        ),
-        // Action buttons fade in on hover
-        IgnorePointer(
-          ignoring: !rowIsHovered,
-          child: AnimatedOpacity(
-            opacity: rowIsHovered ? 1 : 0,
-            duration: const Duration(milliseconds: 140),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if ((holding.currentQty ?? 0) > 0) ...[
-                  _buildHoverButton(
-                    label: 'Add',
-                    color: Colors.white,
-                    backgroundColor: theme.isDarkMode
-                        ? WebDarkColors.primary
-                        : WebColors.primary,
-                    onPressed: () async {
-                      await _handleAddHolding(context, holding, exchTsym);
-                    },
-                    theme: theme,
+
+            // ✅ Action buttons - appear on hover, stay within bounds
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 140),
+              width: rowIsHovered ? null : 0,
+              curve: Curves.easeInOut,
+              child: IgnorePointer(
+                ignoring: !rowIsHovered,
+                child: AnimatedOpacity(
+                  opacity: rowIsHovered ? 1 : 0,
+                  duration: const Duration(milliseconds: 140),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const SizedBox(width: 8),
+                      if ((holding.currentQty ?? 0) > 0) ...[
+                        _buildHoverButton(
+                          label: 'Add',
+                          color: Colors.white,
+                          backgroundColor: theme.isDarkMode
+                              ? WebDarkColors.primary
+                              : WebColors.primary,
+                          onPressed: () async {
+                            await _handleAddHolding(context, holding, exchTsym);
+                          },
+                          theme: theme,
+                        ),
+                        const SizedBox(width: 6),
+                      ],
+                      if ((holding.currentQty ?? 0) > 0) ...[
+                        _buildHoverButton(
+                          label: 'Exit',
+                          color: Colors.white,
+                          backgroundColor: theme.isDarkMode
+                              ? WebDarkColors.tertiary
+                              : WebColors.tertiary,
+                          onPressed: () async {
+                            await _handleExitHolding(context, holding, exchTsym);
+                          },
+                          theme: theme,
+                        ),
+                        const SizedBox(width: 6),
+                      ],
+                      _buildHoverButton(
+                        icon: Icons.bar_chart,
+                        color: Colors.black,
+                        backgroundColor: Colors.white,
+                        borderRadius: 5.0,
+                        onPressed: () async {
+                          await _handleChartTap(context, holding, exchTsym);
+                        },
+                        theme: theme,
+                      ),
+                      const SizedBox(width: 6),
+                      _buildHoverButton(
+                        label: 'Pledge',
+                        color: Colors.black,
+                        backgroundColor: Colors.white,
+                        borderRadius: 5.0,
+                        onPressed: () {
+                          _handlePledgeUnpledge(context);
+                        },
+                        theme: theme,
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 6),
-                ],
-                // Show Exit button for all holdings with positive quantity
-                // The exit handler will validate saleableQty when clicked
-                if ((holding.currentQty ?? 0) > 0) ...[
-                  _buildHoverButton(
-                    label: 'Exit',
-                    color: Colors.white,
-                    backgroundColor: theme.isDarkMode
-                        ? WebDarkColors.tertiary
-                        : WebColors.tertiary,
-                    onPressed: () async {
-                      await _handleExitHolding(context, holding, exchTsym);
-                    },
-                    theme: theme,
-                  ),
-                  const SizedBox(width: 6),
-                ],
-                _buildHoverButton(
-                  icon: Icons.bar_chart,
-                  color: Colors.black,
-                  backgroundColor: Colors.white,
-                  borderRadius: 5.0,
-                  onPressed: () async {
-                    await _handleChartTap(context, holding, exchTsym);
-                  },
-                  theme: theme,
                 ),
-                const SizedBox(width: 6),
-                _buildHoverButton(
-                  label: 'Pledge',
-                  color: Colors.black,
-                  backgroundColor: Colors.white,
-                  borderRadius: 5.0,
-                  onPressed: () {
-                    _handlePledgeUnpledge(context);
-                  },
-                  theme: theme,
-                ),
-              ],
+              ),
             ),
-          ),
-        ),
-      ],
-    );
+          ],
+        );
       },
     );
   }

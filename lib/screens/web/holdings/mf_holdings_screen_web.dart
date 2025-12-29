@@ -32,8 +32,10 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
   bool _sortAscending = true;
   final ScrollController _horizontalScrollController = ScrollController();
   final ScrollController _verticalScrollController = ScrollController();
-  String? _hoveredRowToken; // Track which row is being hovered
-  int? _hoveredColumnIndex; // Track which column is being hovered
+
+  // ✅ Use ValueNotifier instead of setState to avoid rebuilding entire widget
+  final ValueNotifier<String?> _hoveredRowToken = ValueNotifier<String?>(null);
+  final ValueNotifier<int?> _hoveredColumnIndex = ValueNotifier<int?>(null);
 
   @override
   void initState() {
@@ -50,6 +52,8 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
   void dispose() {
     _horizontalScrollController.dispose();
     _verticalScrollController.dispose();
+    _hoveredRowToken.dispose();
+    _hoveredColumnIndex.dispose();
     super.dispose();
   }
 
@@ -462,26 +466,31 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
         label: SizedBox.expand(
           child: MouseRegion(
             cursor: SystemMouseCursors.click,
-            onEnter: (_) => setState(() => _hoveredColumnIndex = columnIndex),
-            onExit: (_) => setState(() => _hoveredColumnIndex = null),
+            onEnter: (_) => _hoveredColumnIndex.value = columnIndex,
+            onExit: (_) => _hoveredColumnIndex.value = null,
             child: Tooltip(
               message: 'Sort by $header',
               child: GestureDetector(
                 onTap: () => _onManualSort(columnIndex),
                 behavior: HitTestBehavior.opaque,
-                child: Container(
-                  width: double.infinity,
-                  height: double.infinity,
-                  decoration: BoxDecoration(
-                    color: _hoveredColumnIndex == columnIndex
-                        ? (theme.isDarkMode
-                            ? WebDarkColors.primary.withOpacity(0.1)
-                            : WebColors.primary.withOpacity(0.05))
-                        : Colors.transparent,
-                  ),
-                  alignment: isNumeric ? Alignment.centerRight : Alignment.centerLeft,
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
-                  child: _buildSortableHeaderContent(header, isNumeric, theme, columnIndex),
+                child: ValueListenableBuilder<int?>(
+                  valueListenable: _hoveredColumnIndex,
+                  builder: (context, hoveredIndex, child) {
+                    return Container(
+                      width: double.infinity,
+                      height: double.infinity,
+                      decoration: BoxDecoration(
+                        color: hoveredIndex == columnIndex
+                            ? (theme.isDarkMode
+                                ? WebDarkColors.primary.withOpacity(0.1)
+                                : WebColors.primary.withOpacity(0.05))
+                            : Colors.transparent,
+                      ),
+                      alignment: isNumeric ? Alignment.centerRight : Alignment.centerLeft,
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
+                      child: _buildSortableHeaderContent(header, isNumeric, theme, columnIndex),
+                    );
+                  },
                 ),
               ),
             ),
@@ -499,37 +508,38 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
     List<String> headers,
     ThemesProvider theme,
   ) {
-    return holdings.map((holding) {
+    return holdings.asMap().entries.map((entry) {
+      final index = entry.key;
+      final holding = entry.value;
       final holdingId = holding.name ?? '';
-      final uniqueId = '$holdingId${holdings.indexOf(holding)}';
-      final isHovered = _hoveredRowToken == uniqueId;
+      final uniqueId = '$holdingId$index';
 
       return DataRow2(
-        color: WidgetStateProperty.resolveWith((states) {
-          if (isHovered) {
+        onTap: () => _showHoldingDetail(holding),
+        color: MaterialStateProperty.resolveWith<Color>((states) {
+          if (states.contains(MaterialState.hovered) || _hoveredRowToken.value == uniqueId) {
             return theme.isDarkMode
                 ? WebDarkColors.primary.withOpacity(0.06)
                 : WebColors.primary.withOpacity(0.10);
           }
-          return null;
+          return Colors.transparent;
         }),
         cells: headers.map((header) {
           final isNumeric = _isNumericColumn(header);
           return DataCell(
             MouseRegion(
-              onEnter: (_) => setState(() => _hoveredRowToken = uniqueId),
-              onExit: (_) => setState(() => _hoveredRowToken = null),
+              onEnter: (_) => _hoveredRowToken.value = uniqueId,
+              onExit: (_) => _hoveredRowToken.value = null,
               child: SizedBox.expand(
                 child: Container(
                   alignment: isNumeric ? Alignment.centerRight : Alignment.centerLeft,
                   padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
-                  child: _buildDataTable2CellContent(header, holding, theme, isHovered),
+                  child: _buildDataTable2CellContent(header, holding, theme, uniqueId),
                 ),
               ),
             ),
           );
         }).toList(),
-        onTap: () => _showHoldingDetail(holding),
       );
     }).toList();
   }
@@ -538,14 +548,14 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
     String column,
     dynamic holding,
     ThemesProvider theme,
-    bool isHovered,
+    String uniqueId,
   ) {
     switch (column) {
       case 'Fund Name':
         return _buildFundNameCellContent(
           holding,
           theme,
-          isHovered,
+          uniqueId,
         );
       case 'Units':
         return Text(
@@ -644,65 +654,77 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
   Widget _buildFundNameCellContent(
     dynamic holding,
     ThemesProvider theme,
-    bool isHovered,
+    String uniqueId,
   ) {
     final holdingName = holding.name ?? 'N/A';
     final avgQty = double.tryParse(holding.avgQty ?? '0') ?? 0.0;
 
-    return Row(
-      children: [
-        Expanded(
-          flex: isHovered ? 1 : 2,
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: Tooltip(
-              message: holdingName,
-              waitDuration: const Duration(milliseconds: 500),
-              child: Text(
-                holdingName,
-                style: WebTextStyles.custom(
-                  fontSize: 13,
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
-                  fontWeight: WebFonts.medium,
+    // ✅ Use ValueListenableBuilder to avoid rebuilding entire table on hover
+    return ValueListenableBuilder<String?>(
+      valueListenable: _hoveredRowToken,
+      builder: (context, hoveredToken, child) {
+        final rowIsHovered = hoveredToken == uniqueId;
+
+        return Row(
+          children: [
+            // ✅ Fund name - always visible, takes available space
+            Expanded(
+              child: Tooltip(
+                message: holdingName,
+                waitDuration: const Duration(milliseconds: 500),
+                child: Text(
+                  holdingName,
+                  style: WebTextStyles.custom(
+                    fontSize: 13,
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode
+                        ? WebDarkColors.textPrimary
+                        : WebColors.textPrimary,
+                    fontWeight: WebFonts.medium,
+                  ),
+                  maxLines: 1,
+                  softWrap: false,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                maxLines: 1,
-                softWrap: false,
-                overflow: TextOverflow.ellipsis,
               ),
             ),
-          ),
-        ),
-        // Action buttons fade in on hover
-        IgnorePointer(
-          ignoring: !isHovered,
-          child: AnimatedOpacity(
-            opacity: isHovered ? 1 : 0,
-            duration: const Duration(milliseconds: 140),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Redeem button - only show if holding has units
-                if (avgQty > 0) ...[
-                  _buildHoverButton(
-                    label: 'Redeem',
-                    color: Colors.white,
-                    backgroundColor: theme.isDarkMode
-                        ? WebDarkColors.error
-                        : WebColors.error,
-                    onPressed: () async {
-                      await _handleRedeem(context, holding);
-                    },
-                    theme: theme,
+
+            // ✅ Action buttons - appear on hover, stay within bounds
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 140),
+              width: rowIsHovered ? null : 0,
+              curve: Curves.easeInOut,
+              child: IgnorePointer(
+                ignoring: !rowIsHovered,
+                child: AnimatedOpacity(
+                  opacity: rowIsHovered ? 1 : 0,
+                  duration: const Duration(milliseconds: 140),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const SizedBox(width: 8),
+                      // Redeem button - only show if holding has units
+                      if (avgQty > 0) ...[
+                        _buildHoverButton(
+                          label: 'Redeem',
+                          color: Colors.white,
+                          backgroundColor: theme.isDarkMode
+                              ? WebDarkColors.error
+                              : WebColors.error,
+                          onPressed: () async {
+                            await _handleRedeem(context, holding);
+                          },
+                          theme: theme,
+                        ),
+                      ],
+                    ],
                   ),
-                ],
-              ],
+                ),
+              ),
             ),
-          ),
-        ),
-      ],
+          ],
+        );
+      },
     );
   }
 

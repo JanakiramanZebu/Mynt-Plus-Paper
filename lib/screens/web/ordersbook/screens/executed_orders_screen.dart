@@ -309,8 +309,8 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
 
         return Row(
           children: [
+            // ✅ Instrument name - always visible, never compressed
             Expanded(
-              flex: rowIsHovered ? 1 : 2,
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Tooltip(
@@ -332,76 +332,21 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                 ),
               ),
             ),
-            IgnorePointer(
-              ignoring: !rowIsHovered,
-              child: AnimatedOpacity(
-                opacity: rowIsHovered ? 1 : 0,
-                duration: const Duration(milliseconds: 140),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (isPending) ...[
-                      ActionButton(
-                        label: 'Cancel',
-                        color: Colors.white,
-                        backgroundColor: theme.isDarkMode
-                            ? WebDarkColors.error
-                            : WebColors.error,
-                        onPressed: isProcessing && _isProcessingCancel
-                            ? null
-                            : () async {
-                                _processingOrderToken = uniqueId;
-                                await actionHandler.cancelOrder(
-                                  order,
-                                  onProcessingStateChanged: (processing) {
-                                    setState(() {
-                                      _isProcessingCancel = processing;
-                                      if (!processing) _processingOrderToken = null;
-                                    });
-                                  },
-                                );
-                              },
-                        theme: theme,
-                      ),
-                      const SizedBox(width: 6),
-                      ActionButton(
-                        label: 'Modify',
-                        color: Colors.white,
-                        backgroundColor: theme.isDarkMode
-                            ? WebDarkColors.primary
-                            : WebColors.primary,
-                        onPressed: isProcessing && _isProcessingModify
-                            ? null
-                            : () async {
-                                _processingOrderToken = uniqueId;
-                                await actionHandler.modifyOrder(
-                                  order,
-                                  onProcessingStateChanged: (processing) {
-                                    setState(() {
-                                      _isProcessingModify = processing;
-                                      if (!processing) _processingOrderToken = null;
-                                    });
-                                  },
-                                  modifyDialogPosition: _modifyDialogPosition,
-                                  onPositionChanged: (pos) {
-                                    _modifyDialogPosition = pos;
-                                  },
-                                );
-                              },
-                        theme: theme,
-                      ),
-                    ] else ...[
-                      ActionButton(
-                        label: 'Repeat',
-                        color: Colors.white,
-                        backgroundColor: theme.isDarkMode
-                            ? WebDarkColors.primary
-                            : WebColors.primary,
-                        onPressed: () => actionHandler.repeatOrder(order),
-                        theme: theme,
-                      ),
-                      if (order.status == "OPEN") ...[
-                        const SizedBox(width: 6),
+            // ✅ Action buttons - appear on hover, stay within bounds
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 140),
+              width: rowIsHovered ? null : 0,
+              curve: Curves.easeInOut,
+              child: IgnorePointer(
+                ignoring: !rowIsHovered,
+                child: AnimatedOpacity(
+                  opacity: rowIsHovered ? 1 : 0,
+                  duration: const Duration(milliseconds: 140),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const SizedBox(width: 8),
+                      if (isPending) ...[
                         ActionButton(
                           label: 'Cancel',
                           color: Colors.white,
@@ -424,9 +369,71 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                                 },
                           theme: theme,
                         ),
+                        const SizedBox(width: 6),
+                        ActionButton(
+                          label: 'Modify',
+                          color: Colors.white,
+                          backgroundColor: theme.isDarkMode
+                              ? WebDarkColors.primary
+                              : WebColors.primary,
+                          onPressed: isProcessing && _isProcessingModify
+                              ? null
+                              : () async {
+                                  _processingOrderToken = uniqueId;
+                                  await actionHandler.modifyOrder(
+                                    order,
+                                    onProcessingStateChanged: (processing) {
+                                      setState(() {
+                                        _isProcessingModify = processing;
+                                        if (!processing) _processingOrderToken = null;
+                                      });
+                                    },
+                                    modifyDialogPosition: _modifyDialogPosition,
+                                    onPositionChanged: (pos) {
+                                      _modifyDialogPosition = pos;
+                                    },
+                                  );
+                                },
+                          theme: theme,
+                        ),
+                      ] else ...[
+                        ActionButton(
+                          label: 'Repeat',
+                          color: Colors.white,
+                          backgroundColor: theme.isDarkMode
+                              ? WebDarkColors.primary
+                              : WebColors.primary,
+                          onPressed: () => actionHandler.repeatOrder(order),
+                          theme: theme,
+                        ),
+                        if (order.status == "OPEN") ...[
+                          const SizedBox(width: 6),
+                          ActionButton(
+                            label: 'Cancel',
+                            color: Colors.white,
+                            backgroundColor: theme.isDarkMode
+                                ? WebDarkColors.error
+                                : WebColors.error,
+                            onPressed: isProcessing && _isProcessingCancel
+                                ? null
+                                : () async {
+                                    _processingOrderToken = uniqueId;
+                                    await actionHandler.cancelOrder(
+                                      order,
+                                      onProcessingStateChanged: (processing) {
+                                        setState(() {
+                                          _isProcessingCancel = processing;
+                                          if (!processing) _processingOrderToken = null;
+                                        });
+                                      },
+                                    );
+                                  },
+                            theme: theme,
+                          ),
+                        ],
                       ],
                     ],
-                  ],
+                  ),
                 ),
               ),
             ),

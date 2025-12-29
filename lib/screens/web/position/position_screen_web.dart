@@ -1405,93 +1405,96 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
         final rowIsHovered = hoveredToken == uniqueId;
 
         return Row(
-          mainAxisSize: MainAxisSize.min,
           children: [
+            // ✅ Instrument name - always visible, takes available space
             Expanded(
-              flex: rowIsHovered ? 1 : 2,
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Tooltip(
-                  message: displayText,
-                  child: Text(
-                    displayText,
-                    style: WebTextStyles.custom(
-                      fontSize: 13,
-                      isDarkTheme: theme.isDarkMode,
-                      color: _getPositionTextColor(position, theme),
-                      fontWeight: WebFonts.medium,
-                    ),
-                    maxLines: 1,
-                    softWrap: false,
-                    overflow: TextOverflow.visible,
+              child: Tooltip(
+                message: displayText,
+                child: Text(
+                  displayText,
+                  style: WebTextStyles.custom(
+                    fontSize: 13,
+                    isDarkTheme: theme.isDarkMode,
+                    color: _getPositionTextColor(position, theme),
+                    fontWeight: WebFonts.medium,
                   ),
+                  maxLines: 1,
+                  softWrap: false,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ),
-            // Action buttons fade in on hover
-            IgnorePointer(
-              ignoring: !rowIsHovered,
-              child: AnimatedOpacity(
-                opacity: rowIsHovered ? 1 : 0,
-                duration: const Duration(milliseconds: 140),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (!isClosed &&
-                        position.qty != "0" &&
-                        position.sPrdtAli != "BO" &&
-                        position.sPrdtAli != "CO" &&
-                        !positionBook.isDay) ...[
+
+            // ✅ Action buttons - appear on hover, stay within bounds
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 140),
+              width: rowIsHovered ? null : 0,
+              curve: Curves.easeInOut,
+              child: IgnorePointer(
+                ignoring: !rowIsHovered,
+                child: AnimatedOpacity(
+                  opacity: rowIsHovered ? 1 : 0,
+                  duration: const Duration(milliseconds: 140),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const SizedBox(width: 8),
+                      if (!isClosed &&
+                          position.qty != "0" &&
+                          position.sPrdtAli != "BO" &&
+                          position.sPrdtAli != "CO" &&
+                          !positionBook.isDay) ...[
+                        _buildHoverButton(
+                          label: 'Add',
+                          color: Colors.white,
+                          backgroundColor: theme.isDarkMode
+                              ? WebDarkColors.primary
+                              : WebColors.primary,
+                          onPressed: () async {
+                            await _handleAddPosition(context, position);
+                          },
+                          theme: theme,
+                        ),
+                        const SizedBox(width: 6),
+                        _buildHoverButton(
+                          label: 'Exit',
+                          color: Colors.white,
+                          backgroundColor: theme.isDarkMode
+                              ? WebDarkColors.tertiary
+                              : WebColors.tertiary,
+                          onPressed: () async {
+                            await _handleExitPosition(context, position);
+                          },
+                          theme: theme,
+                        ),
+                        const SizedBox(width: 6),
+                      ],
                       _buildHoverButton(
-                        label: 'Add',
-                        color: Colors.white,
-                        backgroundColor: theme.isDarkMode
-                            ? WebDarkColors.primary
-                            : WebColors.primary,
-                        onPressed: () async {
-                          await _handleAddPosition(context, position);
-                        },
-                        theme: theme,
-                      ),
-                      const SizedBox(width: 6),
-                      _buildHoverButton(
-                        label: 'Exit',
-                        color: Colors.white,
-                        backgroundColor: theme.isDarkMode
-                            ? WebDarkColors.tertiary
-                            : WebColors.tertiary,
-                        onPressed: () async {
-                          await _handleExitPosition(context, position);
-                        },
-                        theme: theme,
-                      ),
-                      const SizedBox(width: 6),
-                    ],
-                    _buildHoverButton(
-                      icon: Icons.bar_chart,
-                      color: Colors.black,
-                      backgroundColor: Colors.white,
-                      borderRadius: 5.0,
-                      onPressed: () async {
-                        await _handleChartTap(context, position);
-                      },
-                      theme: theme,
-                    ),
-                    if (!isClosed && position.qty != "0") ...[
-                      const SizedBox(width: 6),
-                      _buildHoverButton(
-                        icon: Icons.swap_horiz,
+                        icon: Icons.bar_chart,
                         color: Colors.black,
                         backgroundColor: Colors.white,
                         borderRadius: 5.0,
-                        iconWeight: 700,
-                        onPressed: () {
-                          _handleConvertPosition(context, position);
+                        onPressed: () async {
+                          await _handleChartTap(context, position);
                         },
                         theme: theme,
                       ),
+                      if (!isClosed && position.qty != "0") ...[
+                        const SizedBox(width: 6),
+                        _buildHoverButton(
+                          icon: Icons.swap_horiz,
+                          color: Colors.black,
+                          backgroundColor: Colors.white,
+                          borderRadius: 5.0,
+                          iconWeight: 700,
+                          onPressed: () {
+                            _handleConvertPosition(context, position);
+                          },
+                          theme: theme,
+                        ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ),
             ),
