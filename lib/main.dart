@@ -12,7 +12,6 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:mynt_plus/firebase_options.dart';
 import 'package:mynt_plus/locator/constant.dart';
 import 'package:mynt_plus/res/res.dart';
-import 'package:mynt_plus/res/shadcn_theme.dart';
 import 'package:mynt_plus/sharedWidget/chart_overlay_widget.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -269,18 +268,21 @@ class MyApp extends ConsumerWidget {
         navigatorKey: rootNavigatorKey,
         title: 'MYNT',
         debugShowCheckedModeBanner: false,
-        theme: ShadcnTheme.getTheme(isDarkMode: themeProvide.isDarkMode),
+        theme: shadcn.ThemeData(
+          colorScheme: themeProvide.isDarkMode 
+              ? shadcn.ColorSchemes.darkDefaultColor 
+              : shadcn.ColorSchemes.lightDefaultColor,
+          radius: 0.5,
+        ),
         initialRoute: Routes.splash,
         onGenerateRoute: AppRoutes.router,
         navigatorObservers: [routeObserver],
         builder: (context, child) {
-          return shadcn.DrawerOverlay(
-            child: Stack(
-              children: [
-                child!,
-                const ChartOverlayWidget(),
-              ],
-            ),
+          return Stack(
+            children: [
+              child!,
+              const ChartOverlayWidget(),
+            ],
           );
         },
       );

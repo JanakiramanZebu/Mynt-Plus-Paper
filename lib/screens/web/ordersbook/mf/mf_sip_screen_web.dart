@@ -160,14 +160,14 @@ class _MFSipdetScreenWebState extends ConsumerState<MFSipdetScreenWeb>
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textSecondary,
+                      : WebColors.textPrimary,
                 ),
                 dataTextStyle: WebTextStyles.custom(
                   fontSize: 13,
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textSecondary,
+                      : WebColors.textPrimary,
                   fontWeight: WebFonts.medium,
                 ),
                 border: TableBorder(
@@ -281,7 +281,7 @@ class _MFSipdetScreenWebState extends ConsumerState<MFSipdetScreenWeb>
                                 isDarkTheme: theme.isDarkMode,
                                 color: theme.isDarkMode
                                     ? WebDarkColors.textPrimary
-                                    : WebColors.textSecondary,
+                                    : WebColors.textPrimary,
                               ),
                               textAlign: isNumeric ? TextAlign.right : TextAlign.left,
                               overflow: TextOverflow.ellipsis,
@@ -443,7 +443,7 @@ class _MFSipdetScreenWebState extends ConsumerState<MFSipdetScreenWeb>
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textSecondary,
+                      : WebColors.textPrimary,
                   fontWeight: WebFonts.medium,
                 ),
                 maxLines: 1,
@@ -523,7 +523,7 @@ class _MFSipdetScreenWebState extends ConsumerState<MFSipdetScreenWeb>
             color: color ??
                 (theme.isDarkMode
                     ? WebDarkColors.textPrimary
-                    : WebColors.textSecondary),
+                    : WebColors.textPrimary),
             fontWeight: WebFonts.medium,
           ),
           maxLines: 1, 

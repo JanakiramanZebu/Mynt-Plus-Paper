@@ -322,7 +322,7 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
                       isDarkTheme: theme.isDarkMode,
                       color: theme.isDarkMode
                           ? WebDarkColors.textPrimary
-                          : WebColors.textSecondary,
+                          : WebColors.textPrimary,
                       fontWeight: WebFonts.medium,
                     ),
                     maxLines: 1,
@@ -461,7 +461,7 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
             color: color ??
                 (theme.isDarkMode
                     ? WebDarkColors.textPrimary
-                    : WebColors.textSecondary),
+                    : WebColors.textPrimary),
             fontWeight: WebFonts.medium,
           ),
           maxLines: 1,

@@ -240,7 +240,7 @@ class _PendingAlertDetailScreenWebState
                   widget.alert.tsym?.replaceAll("-EQ", "") ?? '',
                   style: WebTextStyles.dialogTitle(
                     isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
+                    color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
                   ),
                 ),
                 const SizedBox(width: 4),
@@ -538,7 +538,7 @@ class _PendingAlertDetailScreenWebState
                       : "Below",
           style: WebTextStyles.dialogContent(
             isDarkTheme: theme.isDarkMode,
-            color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
+            color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
           ),
         ),
         const SizedBox(width: 4),
@@ -576,7 +576,7 @@ class _PendingAlertDetailScreenWebState
             title,
             style: WebTextStyles.dialogContent(
               isDarkTheme: theme.isDarkMode,
-              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
+              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
             ),
           ),
           value is Widget
@@ -585,7 +585,7 @@ class _PendingAlertDetailScreenWebState
                   value.toString(),
                   style: WebTextStyles.dialogContent(
                     isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
+                    color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
                   ),
                 ),
         ],
@@ -603,7 +603,7 @@ class _PendingAlertDetailScreenWebState
             isDarkTheme: theme.isDarkMode,
             color: theme.isDarkMode
                 ? WebDarkColors.textPrimary
-                : WebColors.textSecondary,
+                : WebColors.textPrimary,
           ),
         ),
         const SizedBox(height: 10),
@@ -622,7 +622,7 @@ class _PendingAlertDetailScreenWebState
               isDarkTheme: theme.isDarkMode,
               color: theme.isDarkMode
                   ? WebDarkColors.textPrimary
-                  : WebColors.textSecondary,
+                  : WebColors.textPrimary,
             ),
             keyboardType: TextInputType.number,
             hintText: "0",

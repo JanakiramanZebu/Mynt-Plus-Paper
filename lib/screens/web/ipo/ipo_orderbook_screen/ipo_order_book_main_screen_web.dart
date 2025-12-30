@@ -153,7 +153,7 @@ class _IpoOrderbookMainScreenState extends ConsumerState<IpoOrderbookMainScreen>
               color: isSelected
                   ? (theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textSecondary)
+                      : WebColors.textPrimary)
                   : (theme.isDarkMode
                       ? WebDarkColors.navItem
                       : WebColors.navItem),

@@ -195,7 +195,7 @@ class _ScripTabsManagerState extends ConsumerState<ScripTabsManager>
                       : WebColors.primary,
                   labelColor: theme.isDarkMode 
                       ? WebDarkColors.textPrimary 
-                      : WebColors.textSecondary,
+                      : WebColors.textPrimary,
                   unselectedLabelColor: theme.isDarkMode 
                       ? WebDarkColors.textSecondary 
                       : WebColors.textSecondary,
@@ -213,7 +213,7 @@ class _ScripTabsManagerState extends ConsumerState<ScripTabsManager>
                               isDarkTheme: theme.isDarkMode,
                               color: theme.isDarkMode 
                                   ? WebDarkColors.textPrimary 
-                                  : WebColors.textSecondary,
+                                  : WebColors.textPrimary,
                               fontWeight: WebFonts.medium,
                               letterSpacing: 0.0,
                             ),

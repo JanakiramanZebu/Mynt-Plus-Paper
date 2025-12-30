@@ -351,7 +351,7 @@ class _NewAppBarTitle extends ConsumerWidget {
         //         isDarkTheme: theme.isDarkMode,
         //         color: theme.isDarkMode
         //             ? WebDarkColors.textPrimary
-        //             : WebColors.textSecondary,
+        //             : WebColors.textPrimary,
         //         fontWeight: FontWeight.w700,
         //       ),
         //     ),
@@ -375,7 +375,7 @@ class _NewAppBarTitle extends ConsumerWidget {
         //           icon: Icon(
         //             Icons.arrow_drop_down,
         //             color:
-        //                 theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
+        //                 theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
         //             size: 20,
         //           ),
         //           style: WebTextStyles.custom(
@@ -383,7 +383,7 @@ class _NewAppBarTitle extends ConsumerWidget {
         //             isDarkTheme: theme.isDarkMode,
         //             color: theme.isDarkMode
         //                 ? WebDarkColors.textPrimary
-        //                 : WebColors.textSecondary,
+        //                 : WebColors.textPrimary,
         //             fontWeight: FontWeight.w700,
         //           ),
         //           items: scripInfo.sortDate.map((String date) {
@@ -396,7 +396,7 @@ class _NewAppBarTitle extends ConsumerWidget {
         //                   isDarkTheme: theme.isDarkMode,
         //                   color: theme.isDarkMode
         //                       ? WebDarkColors.textPrimary
-        //                       : WebColors.textSecondary,
+        //                       : WebColors.textPrimary,
         //                       fontWeight: FontWeight.w700,
         //                 ),
         //               ),
@@ -580,7 +580,7 @@ void _showStrikeCountSelector(
                             "Select Number of Strike",
                             style: WebTextStyles.title(
                               isDarkTheme: theme.isDarkMode,
-                              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
+                              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
                               fontWeight: WebFonts.semiBold,
                             )),
                              Material(
@@ -736,7 +736,7 @@ void _showStrikesDropdown(
                         : WebColors.primary)
                     : (theme.isDarkMode
                         ? WebDarkColors.textPrimary
-                        : WebColors.textSecondary),
+                        : WebColors.textPrimary),
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -802,7 +802,7 @@ class _ColumnHeaders extends ConsumerWidget {
                           isDarkTheme: theme.isDarkMode,
                           color: theme.isDarkMode
                               ? WebDarkColors.textPrimary
-                              : WebColors.textSecondary,
+                              : WebColors.textPrimary,
                           fontWeight: WebFonts.medium,
                         ),
                       ),
@@ -829,7 +829,7 @@ class _ColumnHeaders extends ConsumerWidget {
                                   isDarkTheme: theme.isDarkMode,
                                   color: theme.isDarkMode
                                       ? WebDarkColors.textPrimary
-                                      : WebColors.textSecondary,
+                                      : WebColors.textPrimary,
                                   fontWeight: WebFonts.medium,
                                 ),
                               ),
@@ -860,7 +860,7 @@ class _ColumnHeaders extends ConsumerWidget {
                           isDarkTheme: theme.isDarkMode,
                           color: theme.isDarkMode
                               ? WebDarkColors.textPrimary
-                              : WebColors.textSecondary,
+                              : WebColors.textPrimary,
                           fontWeight: WebFonts.medium,
                         ),
                       ),
@@ -1495,7 +1495,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                     isDarkTheme: theme.isDarkMode,
                     color: theme.isDarkMode
                         ? WebDarkColors.textPrimary
-                        : WebColors.textSecondary,
+                        : WebColors.textPrimary,
                     fontWeight: WebFonts.semiBold,
                   ),
                 ),
@@ -1639,7 +1639,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textSecondary,
+                      : WebColors.textPrimary,
                 ),
               ),
             ],
@@ -1666,7 +1666,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textSecondary,
+                      : WebColors.textPrimary,
                 ),
               ),
             ],

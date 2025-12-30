@@ -513,7 +513,7 @@ class _CustomizableSplitHomeScreenState
           return Scaffold(
             appBar: AppBar(
               elevation: 0,
-              backgroundColor: WebColors.background,
+              backgroundColor: Colors.white,
             ),
             body: NoInternetScreen(
               onReconnectionSuccess: _handleReconnectionSuccess,
@@ -541,7 +541,6 @@ class _CustomizableSplitHomeScreenState
               _buildCustomizableBody(theme),
             ],
           ),
-         
         );
       },
     );
@@ -555,16 +554,16 @@ class _CustomizableSplitHomeScreenState
         child: Container(
           decoration: BoxDecoration(
             // Clean minimal - white background
-            color: WebColors.background,
+            color: isDarkMode ? WebDarkColors.surface : Colors.white,
             // Subtle border at bottom
-            // border: Border(
-            //   bottom: BorderSide(
-            //     color: isDarkMode
-            //         ? WebDarkColors.divider.withOpacity(0.3)
-            //         : WebColors.divider.withOpacity(0.2),
-            //     width: 1,
-            //   ),
-            // ),
+            border: Border(
+              bottom: BorderSide(
+                color: isDarkMode
+                    ? WebDarkColors.divider.withOpacity(0.3)
+                    : WebColors.divider.withOpacity(0.2),
+                width: 1,
+              ),
+            ),
             // Soft shadow for depth
             boxShadow: [
               BoxShadow(
@@ -576,7 +575,6 @@ class _CustomizableSplitHomeScreenState
             ],
           ),
           child: Container(
-            color: WebColors.background,
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1277,34 +1275,36 @@ class _CustomizableSplitHomeScreenState
               height: 45,
               decoration: BoxDecoration(
                 // Window top bar - slight grey to indicate it's a window top bar
-                color:  WebColors.textSecondary, // Subtle grey for window top bar
+                color: theme.isDarkMode
+                    ? WebDarkColors.surface
+                    : WebColors.surface, // Subtle grey for window top bar
                 // Window borders - all sides to make it look like a distinct window
-                // border: Border(
-                //   top: BorderSide(
-                //     color: theme.isDarkMode
-                //         ? WebDarkColors.divider.withOpacity(0.5)
-                //         : WebColors.divider,
-                //     width: 1,
-                //   ),
-                //   bottom: BorderSide(
-                //     color: theme.isDarkMode
-                //         ? WebDarkColors.divider.withOpacity(0.5)
-                //         : WebColors.divider,
-                //     width: 1,
-                //   ),
-                //   left: BorderSide(
-                //     color: theme.isDarkMode
-                //         ? WebDarkColors.divider.withOpacity(0.5)
-                //         : WebColors.divider,
-                //     width: 1,
-                //   ),
-                //   right: BorderSide(
-                //     color: theme.isDarkMode
-                //         ? WebDarkColors.divider.withOpacity(0.5)
-                //         : WebColors.divider,
-                //     width: 1,
-                //   ),
-                // ),
+                border: Border(
+                  top: BorderSide(
+                    color: theme.isDarkMode
+                        ? WebDarkColors.divider.withOpacity(0.5)
+                        : WebColors.divider,
+                    width: 1,
+                  ),
+                  bottom: BorderSide(
+                    color: theme.isDarkMode
+                        ? WebDarkColors.divider.withOpacity(0.5)
+                        : WebColors.divider,
+                    width: 1,
+                  ),
+                  left: BorderSide(
+                    color: theme.isDarkMode
+                        ? WebDarkColors.divider.withOpacity(0.5)
+                        : WebColors.divider,
+                    width: 1,
+                  ),
+                  right: BorderSide(
+                    color: theme.isDarkMode
+                        ? WebDarkColors.divider.withOpacity(0.5)
+                        : WebColors.divider,
+                    width: 1,
+                  ),
+                ),
                 // Shadow to make it look elevated like a window
                 // boxShadow: [
                 //   BoxShadow(
@@ -1409,8 +1409,9 @@ class _CustomizableSplitHomeScreenState
                             _getScreenTitleNullable(activeScreen),
                             style: WebTextStyles.title(
                               isDarkTheme: true,
-                              color:  WebDarkColors.textPrimary
-                                  ,
+                              color: theme.isDarkMode
+                                  ? WebDarkColors.textPrimary
+                                  : WebColors.textPrimary,
                               fontWeight: WebFonts.bold,
                             ),
                             overflow: TextOverflow.ellipsis,
@@ -1422,7 +1423,7 @@ class _CustomizableSplitHomeScreenState
                   // Add screen button (only show if there are screens available to add)
                   // if (activeScreen != ScreenType.watchlist && _hasAvailableScreensToAdd(panel))
                   //   IconButton(
-                  //     icon: Icon(Icons.add, color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary, size: 18),
+                  //     icon: Icon(Icons.add, color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary, size: 18),
                   //     tooltip: 'Add Screen Tab',
                   //     onPressed: () {
                   //       _showAddScreenToPanelDialog(panel);
@@ -1430,7 +1431,7 @@ class _CustomizableSplitHomeScreenState
                   //   ),
                   // Screen selector
                   // PopupMenuButton<ScreenType>(
-                  //   icon: Icon(Icons.swap_horiz, color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary, size: 18),
+                  //   icon: Icon(Icons.swap_horiz, color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary, size: 18),
                   //   tooltip: 'Replace Screen',
                   //   onSelected: (ScreenType newType) {
                   //     setState(() {
@@ -1485,7 +1486,7 @@ class _CustomizableSplitHomeScreenState
                   //         Icons.close,
                   //         color: theme.isDarkMode
                   //             ? WebDarkColors.textPrimary
-                  //             : WebColors.textSecondary,
+                  //             : WebColors.textPrimary,
                   //         size: 18,
                   //       ),
                   //     ),
@@ -1565,7 +1566,7 @@ class _CustomizableSplitHomeScreenState
             .withOpacity(0.1),
         child: Icon(
           Icons.swap_horiz,
-          color: isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
+          color: isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
           size: 22,
         ),
       ),
@@ -1613,7 +1614,7 @@ class _CustomizableSplitHomeScreenState
                 width: double.infinity,
                 height: double.infinity,
                 color:
-                    theme.isDarkMode ? WebDarkColors.background : WebColors.background,
+                    theme.isDarkMode ? WebDarkColors.background : Colors.white,
                 child: const CircularLoaderImage(),
               );
             }
@@ -1636,7 +1637,7 @@ class _CustomizableSplitHomeScreenState
                 width: double.infinity,
                 height: double.infinity,
                 color:
-                    theme.isDarkMode ? WebDarkColors.background : WebColors.background,
+                    theme.isDarkMode ? WebDarkColors.background : Colors.white,
                 child: const CircularLoaderImage(),
               );
             }
@@ -1948,7 +1949,7 @@ class _CustomizableSplitHomeScreenState
                           isDarkTheme: theme.isDarkMode,
                           color: theme.isDarkMode
                               ? WebDarkColors.textPrimary
-                              : WebColors.textSecondary,
+                              : WebColors.textPrimary,
                           fontWeight: WebFonts.bold,
                         ),
                       ),
@@ -3630,7 +3631,7 @@ class _CustomizableSplitHomeScreenState
                                 isDarkTheme: theme.isDarkMode,
                                 color: theme.isDarkMode
                                     ? WebDarkColors.textSecondary
-                                    : WebColors.textSecondary,
+                                    : WebColors.textPrimary,
                                 fontWeight: WebFonts.regular,
                               ),
                             ),
@@ -3754,7 +3755,7 @@ class _ProfileDropdownState extends State<_ProfileDropdown> {
                 isDarkTheme: widget.isDarkMode,
                 color: widget.isDarkMode
                     ? WebDarkColors.textPrimary
-                    : WebColors.textSecondary,
+                    : WebColors.textPrimary,
                 fontWeight: WebFonts.semiBold,
               ),
             ),
@@ -3766,7 +3767,7 @@ class _ProfileDropdownState extends State<_ProfileDropdown> {
               size: 20,
               color: widget.isDarkMode
                   ? WebDarkColors.textPrimary
-                  : WebColors.textSecondary,
+                  : WebColors.textPrimary,
             ),
           ],
         ),
@@ -4071,7 +4072,9 @@ class _HoverableNavItemState extends State<_HoverableNavItem> {
                   : (_isHovered
                       ? (theme ? WebDarkColors.primary : WebColors.primary)
                           .withOpacity(0.8)
-                      : (Color(0xFFA1A1AA))),
+                      : (theme
+                          ? WebDarkColors.textPrimary
+                          : WebColors.textPrimary)),
               fontWeight: widget.isActive ? WebFonts.bold : WebFonts.semiBold,
             ),
           ),
@@ -4085,7 +4088,7 @@ class _HoverableNavItemState extends State<_HoverableNavItem> {
     return Container(
       width: double.infinity,
       height: double.infinity,
-      color: isDarkMode ? WebDarkColors.background : WebColors.background,
+      color: isDarkMode ? WebDarkColors.background : Colors.white,
       child: Center(
         child: CircularProgressIndicator(
           valueColor: AlwaysStoppedAnimation<Color>(
@@ -4139,7 +4142,7 @@ class _LazyOrderBookScreenState extends ConsumerState<_LazyOrderBookScreen> {
     return Container(
       width: double.infinity,
       height: double.infinity,
-      color: isDarkMode ? WebDarkColors.background : WebColors.background,
+      color: isDarkMode ? WebDarkColors.background : Colors.white,
       child: const CircularLoaderImage(),
     );
   }
@@ -4185,7 +4188,7 @@ class _LazyFundScreenState extends ConsumerState<_LazyFundScreen> {
     return Container(
       width: double.infinity,
       height: double.infinity,
-      color: isDarkMode ? WebDarkColors.background : WebColors.background,
+      color: isDarkMode ? WebDarkColors.background : Colors.white,
       child: const CircularLoaderImage(),
     );
   }

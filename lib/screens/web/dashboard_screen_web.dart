@@ -304,11 +304,8 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
   }) {
     return Container(
       padding: const EdgeInsets.all(20),
-      
       decoration: BoxDecoration(
-        color: WebDarkColors.background,
-      border: Border.all(color: WebDarkColors.textSecondary, width: 1),
-
+        color: theme.isDarkMode ? WebDarkColors.surface : Colors.white,
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
@@ -336,7 +333,7 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
                       isDarkTheme: theme.isDarkMode,
                       color: theme.isDarkMode
                           ? WebDarkColors.textPrimary
-                          : WebColors.textSecondary,
+                          : WebColors.textPrimary,
                       fontWeight: WebFonts.bold,
                     ),
                   ),
@@ -414,7 +411,7 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
                                     isDarkTheme: theme.isDarkMode,
                                     color: theme.isDarkMode
                                         ? WebDarkColors.textPrimary
-                                        : WebColors.textSecondary,
+                                        : WebColors.textPrimary,
                                     fontWeight: WebFonts.semiBold,
                                   ),
                                   overflow: TextOverflow.ellipsis,
@@ -554,7 +551,7 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
                     isDarkTheme: theme.isDarkMode,
                     color: theme.isDarkMode
                         ? WebDarkColors.textPrimary
-                        : WebColors.textSecondary,
+                        : WebColors.textPrimary,
                     fontWeight: WebFonts.bold,
                   ),
                 ),
@@ -595,7 +592,7 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
                             size: 14,
                             color: theme.isDarkMode
                                 ? WebDarkColors.textPrimary
-                                : WebColors.textSecondary,
+                                : WebColors.textPrimary,
                           ),
                         ),
                       ),
@@ -634,7 +631,7 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
                             size: 14,
                             color: theme.isDarkMode
                                 ? WebDarkColors.textPrimary
-                                : WebColors.textSecondary,
+                                : WebColors.textPrimary,
                           ),
                         ),
                       ),
@@ -747,7 +744,7 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
             isDarkTheme: theme.isDarkMode,
             color: theme.isDarkMode
                 ? WebDarkColors.textPrimary
-                : WebColors.textSecondary,
+                : WebColors.textPrimary,
             fontWeight: WebFonts.bold,
           ),
         ),
@@ -886,7 +883,7 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
                                   size: 14,
                                   color: theme.isDarkMode
                                       ? WebDarkColors.textPrimary
-                                      : WebColors.textSecondary,
+                                      : WebColors.textPrimary,
                                 ),
                               ),
                             ),
@@ -950,7 +947,7 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
                                   size: 14,
                                   color: theme.isDarkMode
                                       ? WebDarkColors.textPrimary
-                                      : WebColors.textSecondary,
+                                      : WebColors.textPrimary,
                                 ),
                               ),
                             ),
@@ -985,7 +982,9 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
       width: width,
       height: 400,
       decoration: BoxDecoration(
-        color: WebDarkColors.background,
+        color: theme.isDarkMode
+            ? WebDarkColors.surface
+            : WebColors.surface,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
           color: theme.isDarkMode
@@ -1012,7 +1011,7 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
                         isDarkTheme: theme.isDarkMode,
                         color: theme.isDarkMode
                             ? WebDarkColors.textPrimary
-                            : WebColors.textSecondary,
+                            : WebColors.textPrimary,
                         fontWeight: WebFonts.bold,
                       ),
                     ),
@@ -1351,7 +1350,9 @@ class _DashboardIndexCardState extends ConsumerState<_DashboardIndexCard> {
                ? (widget.isDarkMode
                    ? WebDarkColors.surfaceVariant.withOpacity(0.5)
                    : WebColors.surfaceVariant.withOpacity(0.5))
-               : (WebDarkColors.background),
+               : (widget.isDarkMode
+                   ? WebDarkColors.surface
+                   : WebColors.surface),
            borderRadius: BorderRadius.circular(8),
            border: Border.all(
              color: (widget.isDarkMode
@@ -1374,7 +1375,7 @@ class _DashboardIndexCardState extends ConsumerState<_DashboardIndexCard> {
                     isDarkTheme: widget.isDarkMode,
                     color: widget.isDarkMode
                          ? WebDarkColors.textPrimary
-                        : WebColors.textSecondary,
+                        : WebColors.textPrimary,
                     fontWeight: WebFonts.bold,
                   ),
                 ),
@@ -1384,7 +1385,7 @@ class _DashboardIndexCardState extends ConsumerState<_DashboardIndexCard> {
                   width: 30,
                   color: widget.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textSecondary,
+                      : WebColors.textPrimary,
                 ),
               ],
             ),
@@ -1411,7 +1412,7 @@ class _DashboardIndexCardState extends ConsumerState<_DashboardIndexCard> {
                         isDarkTheme: widget.isDarkMode,
                         color: widget.isDarkMode
                             ? WebDarkColors.textPrimary
-                            : WebColors.textSecondary,
+                            : WebColors.textPrimary,
                         fontWeight: WebFonts.semiBold,
                       ),
                     ),
@@ -1421,7 +1422,7 @@ class _DashboardIndexCardState extends ConsumerState<_DashboardIndexCard> {
                         isDarkTheme: widget.isDarkMode,
                         color: widget.isDarkMode
                             ? WebDarkColors.textPrimary
-                            : WebColors.textSecondary,
+                            : WebColors.textPrimary,
                         fontWeight: WebFonts.semiBold,
                       ),
                     ),
@@ -1624,7 +1625,7 @@ class _DashboardStockCardState extends ConsumerState<_DashboardStockCard> {
                       isDarkTheme: widget.isDarkMode,
                       color: widget.isDarkMode
                           ? WebDarkColors.textPrimary
-                          : WebColors.textSecondary,
+                          : WebColors.textPrimary,
                       fontWeight: WebFonts.bold,
                     ),
                   ),
@@ -1663,7 +1664,7 @@ class _DashboardStockCardState extends ConsumerState<_DashboardStockCard> {
                           isDarkTheme: widget.isDarkMode,
                           color: widget.isDarkMode
                               ? WebDarkColors.textPrimary
-                              : WebColors.textSecondary,
+                              : WebColors.textPrimary,
                           fontWeight: WebFonts.semiBold,
                         ),
                       ),
@@ -1673,7 +1674,7 @@ class _DashboardStockCardState extends ConsumerState<_DashboardStockCard> {
                           isDarkTheme: widget.isDarkMode,
                           color: widget.isDarkMode
                               ? WebDarkColors.textPrimary
-                              : WebColors.textSecondary,
+                              : WebColors.textPrimary,
                           fontWeight: WebFonts.semiBold,
                         ),
                       ),
@@ -1871,7 +1872,7 @@ class _TradeActionStockItemState extends ConsumerState<_TradeActionStockItem> {
                         isDarkTheme: widget.isDarkMode,
                         color: widget.isDarkMode
                             ? WebDarkColors.textPrimary
-                            : WebColors.textSecondary,
+                            : WebColors.textPrimary,
                         
                       ),
                     ),
@@ -1914,14 +1915,14 @@ class _TradeActionStockItemState extends ConsumerState<_TradeActionStockItem> {
                           _change.startsWith("-") ? _change : "+$_change",
                           style: WebTextStyles.pricePercent(
                             isDarkTheme: widget.isDarkMode,
-                            color: widget.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
+                            color: widget.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
                           ),
                         ),
                         Text(
                           " ($_perChange%)",  
                           style: WebTextStyles.pricePercent(
                             isDarkTheme: widget.isDarkMode,
-                            color: widget.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
+                            color: widget.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
                           ),
                         ),
                       ],

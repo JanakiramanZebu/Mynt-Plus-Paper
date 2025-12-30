@@ -60,7 +60,7 @@ class _IpoCloseOrderDetailsState extends ConsumerState<IpoCloseOrderDetails> {
               isDarkTheme: theme.isDarkMode,
               color: theme.isDarkMode
                   ? WebDarkColors.textPrimary
-                  : WebColors.textSecondary,
+                  : WebColors.textPrimary,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -169,7 +169,7 @@ class _IpoCloseOrderDetailsState extends ConsumerState<IpoCloseOrderDetails> {
                             isDarkTheme: theme.isDarkMode,
                             color: theme.isDarkMode
                                 ? WebDarkColors.textPrimary
-                                : WebColors.textSecondary,
+                                : WebColors.textPrimary,
                           ),
                         ),
                       ),
@@ -180,7 +180,7 @@ class _IpoCloseOrderDetailsState extends ConsumerState<IpoCloseOrderDetails> {
                             isDarkTheme: theme.isDarkMode,
                             color: theme.isDarkMode
                                 ? WebDarkColors.textPrimary
-                                : WebColors.textSecondary,
+                                : WebColors.textPrimary,
                           ),
                         ),
                       ),
@@ -193,7 +193,7 @@ class _IpoCloseOrderDetailsState extends ConsumerState<IpoCloseOrderDetails> {
                             isDarkTheme: theme.isDarkMode,
                             color: theme.isDarkMode
                                 ? WebDarkColors.textPrimary
-                                : WebColors.textSecondary,
+                                : WebColors.textPrimary,
                           ),
                         ),
                       ),
@@ -206,7 +206,7 @@ class _IpoCloseOrderDetailsState extends ConsumerState<IpoCloseOrderDetails> {
                             isDarkTheme: theme.isDarkMode,
                             color: theme.isDarkMode
                                 ? WebDarkColors.textPrimary
-                                : WebColors.textSecondary,
+                                : WebColors.textPrimary,
                           ),
                         ),
                       ),
@@ -329,14 +329,14 @@ class _IpoCloseOrderDetailsState extends ConsumerState<IpoCloseOrderDetails> {
             title,
             style: WebTextStyles.dialogContent(
               isDarkTheme: theme.isDarkMode,
-              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
+              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
             ),
           ),
           Text(
             value,
             style: WebTextStyles.dialogContent(
               isDarkTheme: theme.isDarkMode,
-              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
+              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
             ),
           ),
         ],
@@ -354,7 +354,7 @@ class _IpoCloseOrderDetailsState extends ConsumerState<IpoCloseOrderDetails> {
             title,
             style: WebTextStyles.dialogContent(
               isDarkTheme: theme.isDarkMode,
-              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
+              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
             ),
           ),
           Text(
@@ -391,7 +391,7 @@ class _IpoCloseOrderDetailsState extends ConsumerState<IpoCloseOrderDetails> {
               : ipodateres(widget.ipoclose.responseDatetime.toString()),
           style: WebTextStyles.dialogContent(
             isDarkTheme: theme.isDarkMode,
-            color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
+            color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
           ),
         ),
       ],
@@ -420,7 +420,7 @@ class _IpoCloseOrderDetailsState extends ConsumerState<IpoCloseOrderDetails> {
               : widget.ipoclose.failReason.toString(),
           style: WebTextStyles.dialogContent(
             isDarkTheme: theme.isDarkMode,
-            color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
+            color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
           ),
         ),
       ],

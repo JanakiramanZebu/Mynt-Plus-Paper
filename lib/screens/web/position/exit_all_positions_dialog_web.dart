@@ -81,7 +81,7 @@ class _ExitAllPositionsDialogWebState extends ConsumerState<ExitAllPositionsDial
             widget.selectedPositions.length > 1 ? 'Exit All Positions' : 'Exit Position',
             style: WebTextStyles.dialogTitle(
               isDarkTheme: theme.isDarkMode,
-              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
+              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
             ),
           ),
           Material(
@@ -150,7 +150,7 @@ class _ExitAllPositionsDialogWebState extends ConsumerState<ExitAllPositionsDial
                 isDarkTheme: theme.isDarkMode,
                 color: theme.isDarkMode
                     ? WebDarkColors.textPrimary
-                    : WebColors.textSecondary,
+                    : WebColors.textPrimary,
               ),
             ),
           ),
@@ -161,7 +161,7 @@ class _ExitAllPositionsDialogWebState extends ConsumerState<ExitAllPositionsDial
                 isDarkTheme: theme.isDarkMode,
                 color: theme.isDarkMode
                     ? WebDarkColors.textPrimary
-                    : WebColors.textSecondary,
+                    : WebColors.textPrimary,
               ),
             ),
           ),
@@ -174,7 +174,7 @@ class _ExitAllPositionsDialogWebState extends ConsumerState<ExitAllPositionsDial
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textSecondary,
+                      : WebColors.textPrimary,
                 ),
               ),
             ),
@@ -188,7 +188,7 @@ class _ExitAllPositionsDialogWebState extends ConsumerState<ExitAllPositionsDial
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textSecondary,
+                      : WebColors.textPrimary,
                 ),
               ),
             ),
@@ -202,7 +202,7 @@ class _ExitAllPositionsDialogWebState extends ConsumerState<ExitAllPositionsDial
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textSecondary,
+                      : WebColors.textPrimary,
                 ),
               ),
             ),
@@ -463,7 +463,7 @@ class _ExitAllPositionsDialogWebState extends ConsumerState<ExitAllPositionsDial
     }
     return theme.isDarkMode
         ? WebDarkColors.textPrimary
-        : WebColors.textSecondary;
+        : WebColors.textPrimary;
   }
 
   String _formatQty(String qty) {

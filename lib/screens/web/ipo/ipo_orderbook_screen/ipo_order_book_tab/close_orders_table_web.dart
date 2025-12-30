@@ -121,14 +121,14 @@ class _CloseOrdersTableState extends ConsumerState<CloseOrdersTable> {
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textSecondary,
+                      : WebColors.textPrimary,
                 ),
                 dataTextStyle: WebTextStyles.custom(
                   fontSize: 13,
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textSecondary,
+                      : WebColors.textPrimary,
                   fontWeight: WebFonts.medium,
                 ),
                 border: TableBorder(
@@ -233,7 +233,7 @@ class _CloseOrdersTableState extends ConsumerState<CloseOrdersTable> {
                 isDarkTheme: theme.isDarkMode,
                 color: theme.isDarkMode
                     ? WebDarkColors.textPrimary
-                    : WebColors.textSecondary,
+                    : WebColors.textPrimary,
               ),
             ),
             const SizedBox(width: 4),
@@ -254,7 +254,7 @@ class _CloseOrdersTableState extends ConsumerState<CloseOrdersTable> {
                 isDarkTheme: theme.isDarkMode,
                 color: theme.isDarkMode
                     ? WebDarkColors.textPrimary
-                    : WebColors.textSecondary,
+                    : WebColors.textPrimary,
               ),
             ),
             const SizedBox(width: 4),
@@ -274,7 +274,7 @@ class _CloseOrdersTableState extends ConsumerState<CloseOrdersTable> {
                 isDarkTheme: theme.isDarkMode,
                 color: theme.isDarkMode
                     ? WebDarkColors.textPrimary
-                    : WebColors.textSecondary,
+                    : WebColors.textPrimary,
               ),
             ),
             const SizedBox(width: 4),
@@ -294,7 +294,7 @@ class _CloseOrdersTableState extends ConsumerState<CloseOrdersTable> {
                 isDarkTheme: theme.isDarkMode,
                 color: theme.isDarkMode
                     ? WebDarkColors.textPrimary
-                    : WebColors.textSecondary,
+                    : WebColors.textPrimary,
               ),
             ),
             const SizedBox(width: 4),
@@ -368,7 +368,7 @@ class _CloseOrdersTableState extends ConsumerState<CloseOrdersTable> {
                                   isDarkTheme: currentTheme.isDarkMode,
                                   color: currentTheme.isDarkMode
                                       ? WebDarkColors.textPrimary
-                                      : WebColors.textSecondary,
+                                      : WebColors.textPrimary,
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
@@ -435,7 +435,7 @@ class _CloseOrdersTableState extends ConsumerState<CloseOrdersTable> {
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textSecondary,
+                      : WebColors.textPrimary,
                   fontWeight: WebFonts.medium,
                 ),
                 overflow: TextOverflow.ellipsis,
@@ -457,7 +457,7 @@ class _CloseOrdersTableState extends ConsumerState<CloseOrdersTable> {
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textSecondary,
+                      : WebColors.textPrimary,
                   fontWeight: WebFonts.regular,
                 ),
               ),
@@ -497,7 +497,7 @@ class _CloseOrdersTableState extends ConsumerState<CloseOrdersTable> {
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textSecondary,
+                      : WebColors.textPrimary,
                   fontWeight: WebFonts.regular,
                 ),
               ),

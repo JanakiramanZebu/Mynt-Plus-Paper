@@ -101,7 +101,7 @@ class _SecureFundWebState extends ConsumerState<SecureFundWeb> {
           },
           icon: Icon(
             Icons.refresh,
-            color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
+            color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
           ),
           tooltip: 'Refresh',
         ),
@@ -137,7 +137,7 @@ class _SecureFundWebState extends ConsumerState<SecureFundWeb> {
               isDarkTheme: theme.isDarkMode,
               color: theme.isDarkMode
                   ? WebDarkColors.textPrimary
-                  : WebColors.textSecondary,
+                  : WebColors.textPrimary,
               fontWeight: WebFonts.semiBold,
             ),
           ),
@@ -286,7 +286,7 @@ class _SecureFundWebState extends ConsumerState<SecureFundWeb> {
                             isDarkTheme: theme.isDarkMode,
                             color: theme.isDarkMode
                                 ? WebDarkColors.textPrimary
-                                : WebColors.textSecondary,
+                                : WebColors.textPrimary,
                             fontWeight: WebFonts.semiBold,
                           ),
                         ),
@@ -350,7 +350,7 @@ class _SecureFundWebState extends ConsumerState<SecureFundWeb> {
                             isDarkTheme: theme.isDarkMode,
                             color: theme.isDarkMode
                                 ? WebDarkColors.textPrimary
-                                : WebColors.textSecondary,
+                                : WebColors.textPrimary,
                             fontWeight: WebFonts.semiBold,
                           ),
                         ),
@@ -584,7 +584,7 @@ class _SecureFundWebState extends ConsumerState<SecureFundWeb> {
               isDarkTheme: theme.isDarkMode,
               color: theme.isDarkMode
                   ? WebDarkColors.textPrimary
-                  : WebColors.textSecondary,
+                  : WebColors.textPrimary,
             ),
           ),
           Text(
@@ -593,7 +593,7 @@ class _SecureFundWebState extends ConsumerState<SecureFundWeb> {
               isDarkTheme: theme.isDarkMode,
               color: theme.isDarkMode
                   ? WebDarkColors.textPrimary
-                  : WebColors.textSecondary,
+                  : WebColors.textPrimary,
             ),
           ),
         ],

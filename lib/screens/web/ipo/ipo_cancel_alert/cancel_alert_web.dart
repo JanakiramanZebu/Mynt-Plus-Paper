@@ -60,7 +60,7 @@ class _IpoCancelAlertState extends ConsumerState<IpoCancelAlert> {
                       isDarkTheme: theme.isDarkMode,
                       color: theme.isDarkMode
                           ? WebDarkColors.textPrimary
-                          : WebColors.textSecondary,
+                          : WebColors.textPrimary,
                     ),
                   ),
                   Material(
@@ -107,7 +107,7 @@ class _IpoCancelAlertState extends ConsumerState<IpoCancelAlert> {
                             isDarkTheme: theme.isDarkMode,
                             color: theme.isDarkMode
                                 ? WebDarkColors.textPrimary
-                                : WebColors.textSecondary,
+                                : WebColors.textPrimary,
                           ),
                         ),
                       ),

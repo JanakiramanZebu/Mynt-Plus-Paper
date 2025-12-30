@@ -222,7 +222,7 @@ class _OrderConfirmationScreenWebState extends ConsumerState<OrderConfirmationSc
                       isDarkTheme: theme.isDarkMode,
                       color: theme.isDarkMode
                           ? WebDarkColors.textPrimary
-                          : WebColors.textSecondary,
+                          : WebColors.textPrimary,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -283,7 +283,7 @@ class _OrderConfirmationScreenWebState extends ConsumerState<OrderConfirmationSc
                               isDarkTheme: theme.isDarkMode,
                               color: theme.isDarkMode
                                   ? WebDarkColors.textPrimary
-                                  : WebColors.textSecondary,
+                                  : WebColors.textPrimary,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
@@ -311,7 +311,7 @@ class _OrderConfirmationScreenWebState extends ConsumerState<OrderConfirmationSc
                         isDarkTheme: theme.isDarkMode,
                         color: theme.isDarkMode
                             ? WebDarkColors.textPrimary
-                            : WebColors.textSecondary,
+                            : WebColors.textPrimary,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -388,7 +388,7 @@ class _OrderConfirmationScreenWebState extends ConsumerState<OrderConfirmationSc
                                               isDarkTheme: theme.isDarkMode,
                                               color: theme.isDarkMode
                                                   ? WebDarkColors.textPrimary
-                                                  : WebColors.textSecondary,
+                                                  : WebColors.textPrimary,
                                               fontWeight: FontWeight.w700,
                                             ),
                                           ),
@@ -554,7 +554,7 @@ class _OrderConfirmationScreenWebState extends ConsumerState<OrderConfirmationSc
               isDarkTheme: theme.isDarkMode,
               color: theme.isDarkMode
                   ? WebDarkColors.textPrimary
-                  : WebColors.textSecondary,
+                  : WebColors.textPrimary,
               fontWeight: FontWeight.w700,
             ),
           ),

@@ -632,7 +632,7 @@ class _StaticIndexNameWeb extends StatelessWidget {
     if (!_styleCache.containsKey(key)) {
       _styleCache[key] = WebTextStyles.symbolList(
         isDarkTheme: true,
-        color: isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
+        color: isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
       );
     }
     return _styleCache[key]!;

@@ -21,7 +21,6 @@ import '../../../../models/marketwatch_model/get_quotes.dart';
 import '../../../../models/order_book_model/order_book_model.dart';
 import '../../../../sharedWidget/snack_bar.dart';
 import '../../../../routes/route_names.dart';
-import '../../../../sharedWidget/shadcn/drawers/shad_drawer.dart';
 
 class HoldingScreenWeb extends ConsumerWidget {
   final List<dynamic> listofHolding;
@@ -102,7 +101,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
       child: Container(
         width: double.infinity,
         height: double.infinity,
-        color: theme.isDarkMode ? WebDarkColors.background : WebColors.background,
+        color: theme.isDarkMode ? WebDarkColors.background : Colors.white,
         child: GestureDetector(
           onTap: () => FocusScope.of(context).unfocus(),
           child: RefreshIndicator(
@@ -152,10 +151,12 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
       height: 120,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: WebDarkColors.background,  
+        color: theme.isDarkMode
+            ? WebDarkColors.backgroundSecondary
+            : WebColors.backgroundSecondary.withOpacity(0.3),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: WebDarkColors.textSecondary ,
+          color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
           width: 1,
         ),
         // boxShadow: [
@@ -459,7 +460,9 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
       ThemesProvider theme, PortfolioProvider portfolioData) {
     return Container(
       decoration: BoxDecoration(
-        color: WebColors.background,
+        color: theme.isDarkMode
+            ? WebColors.textPrimary
+            : WebDarkColors.textPrimary,
         // borderRadius: BorderRadius.circular(8),
         // border: Border.all(
         //   color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
@@ -535,7 +538,9 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
                   width: searchWidth,
                   child: Container(
                 decoration: BoxDecoration(
-                  color: WebDarkColors.background ,
+                  color: theme.isDarkMode
+                      ? WebDarkColors.inputBackground
+                      : WebColors.inputBackground,
                   borderRadius: BorderRadius.circular(5),
                   border: Border.all(
                     color: theme.isDarkMode
@@ -550,7 +555,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
                     isDarkTheme: theme.isDarkMode,
                     color: theme.isDarkMode
                         ? WebDarkColors.textPrimary
-                        : WebColors.textSecondary,
+                        : WebColors.textPrimary,
                   ),
                   decoration: InputDecoration(
                     hintText: 'Search holdings',
@@ -618,7 +623,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
                     isDarkTheme: theme.isDarkMode,
                     color: theme.isDarkMode
                         ? WebDarkColors.textPrimary
-                        : WebColors.textSecondary,
+                        : WebColors.textPrimary,
                   ),
                   decoration: InputDecoration(
                     hintText: 'Search mutual funds',
@@ -776,7 +781,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
               color: isSelected
                   ? (theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textSecondary)
+                      : WebColors.textPrimary)
                   : (theme.isDarkMode
                       ? WebDarkColors.navItem
                       : WebColors.navItem),
@@ -1022,7 +1027,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
               borderRadius: BorderRadius.circular(4),
               color: theme.isDarkMode
                   ? WebDarkColors.background
-                  : WebColors.background,
+                  : Colors.white,
             ),
             child: Theme(
               data: Theme.of(context).copyWith(
@@ -1056,152 +1061,63 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
                   minThumbLength: 48.0, // Minimum thumb length for both scrollbars
                 ),
               ),
-              // COMMENTED OUT: DataTable2 - replacing with shadcn DataTable
-              // child: DataTable2(
-              // columnSpacing: 12,
-              // horizontalMargin: 12,
-              // minWidth: 1200, // Increased to accommodate wider columns
-              // sortColumnIndex: null, // Disable DataTable2's sort indicators
-              // sortAscending: true,
-              // fixedLeftColumns: 1, // Fix the first column (Instrument)
-              // fixedColumnsColor: theme.isDarkMode
-              //     ? WebDarkColors.backgroundSecondary.withOpacity(0.8)
-              //     : WebColors.backgroundSecondary.withOpacity(0.8),
-              // showBottomBorder: true,
-              // horizontalScrollController: _horizontalScrollController,
-              // scrollController: _verticalScrollController,
-              // // Make scrollbars always visible
-              // showCheckboxColumn: false,
-              // headingRowColor: WidgetStateProperty.all(
-              //   theme.isDarkMode
-              //       ? WebDarkColors.primary
-              //       : WebColors.primary.withOpacity(0.05),
-              // ),
-              // headingTextStyle: WebTextStyles.tableHeader(
-              //   isDarkTheme: theme.isDarkMode,
-              //   color: theme.isDarkMode
-              //       ? WebDarkColors.textPrimary
-              //       : WebColors.textSecondary,
-              // ),
-              // dataTextStyle: WebTextStyles.custom(
-              //   fontSize: 13,
-              //   isDarkTheme: theme.isDarkMode,
-              //   color: theme.isDarkMode
-              //       ? WebDarkColors.textPrimary
-              //       : WebColors.textSecondary,
-              //   fontWeight: WebFonts.medium,
-              // ),
-              //     border: TableBorder(
-              //       top: BorderSide(
-              //         color: theme.isDarkMode
-              //             ? WebDarkColors.divider
-              //             : WebColors.divider,
-              //         width: 1,
-              //       ),
-              //       bottom: BorderSide(
-              //         color: theme.isDarkMode
-              //             ? WebDarkColors.divider
-              //             : WebColors.divider,
-              //         width: 1,
-              //       ),
-              //       horizontalInside: BorderSide(
-              //         color: theme.isDarkMode
-              //             ? WebDarkColors.divider
-              //             : WebColors.divider,
-              //         width: 1,
-              //       ),
-              //       // Remove vertical lines by not setting left, right, and verticalInside
-              //     ),
-              // columns: _buildDataTable2Columns(headers, columnMinWidth, theme, screenWidth),
-              // rows: _buildDataTable2Rows(filteredHoldings, headers, theme),
-              // ),
-
-              // NEW: Shadcn DataTable implementation
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  // Table should take full available width, with minimum of 1200
-                  final tableWidth = constraints.maxWidth > 1200 ? constraints.maxWidth : 1200.0;
-
-                  return Scrollbar(
-                    controller: _horizontalScrollController,
-                    thumbVisibility: true,
-                    trackVisibility: true,
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      controller: _horizontalScrollController,
-                      child: SizedBox(
-                        width: tableWidth,
-                        child: Scrollbar(
-                          controller: _verticalScrollController,
-                          thumbVisibility: true,
-                          trackVisibility: true,
-                          child: SingleChildScrollView(
-                            controller: _verticalScrollController,
-                            child: DataTable(
-                sortColumnIndex: _sortColumnIndex,
-                sortAscending: _sortAscending,
-                columnSpacing: 12,
-                horizontalMargin: 12,
-                showCheckboxColumn: false,
-                headingRowHeight: 48,
-                dataRowMinHeight: 52,
-                dataRowMaxHeight: 52,
-                headingRowColor: WidgetStateProperty.all(
-                  theme.isDarkMode
-                      ? WebDarkColors.primary
-                      : WebColors.primary.withOpacity(0.05),
-                ),
-                dataRowColor: WidgetStateProperty.resolveWith<Color>((states) {
-                  if (states.contains(WidgetState.hovered)) {
-                    return theme.isDarkMode
-                        ? WebDarkColors.primary.withOpacity(0.06)
-                        : WebColors.primary.withOpacity(0.10);
-                  }
-                  return Colors.transparent;
-                }),
-                headingTextStyle: WebTextStyles.tableHeader(
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textSecondary,
-                ),
-                dataTextStyle: WebTextStyles.custom(
-                  fontSize: 13,
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textSecondary,
-                  fontWeight: WebFonts.medium,
-                ),
-                border: TableBorder(
-                  top: BorderSide(
-                    color: theme.isDarkMode
-                        ? WebDarkColors.divider
-                        : WebColors.divider,
-                    width: 1,
-                  ),
-                  bottom: BorderSide(
-                    color: theme.isDarkMode
-                        ? WebDarkColors.divider
-                        : WebColors.divider,
-                    width: 1,
-                  ),
-                  horizontalInside: BorderSide(
-                    color: theme.isDarkMode
-                        ? WebDarkColors.divider
-                        : WebColors.divider,
-                    width: 1,
-                  ),
-                ),
-                columns: _buildShadcnTableColumns(headers, theme, screenWidth),
-                rows: _buildShadcnTableRows(filteredHoldings, headers, theme),
-                            ),
-                          ),
-                        ),
-                      ),
+              child: DataTable2(
+              columnSpacing: 12,
+              horizontalMargin: 12,
+              minWidth: 1200, // Increased to accommodate wider columns
+              sortColumnIndex: null, // Disable DataTable2's sort indicators
+              sortAscending: true,
+              fixedLeftColumns: 1, // Fix the first column (Instrument)
+              fixedColumnsColor: theme.isDarkMode 
+                  ? WebDarkColors.backgroundSecondary.withOpacity(0.8)
+                  : WebColors.backgroundSecondary.withOpacity(0.8),
+              showBottomBorder: true,
+              horizontalScrollController: _horizontalScrollController,
+              scrollController: _verticalScrollController,
+              // Make scrollbars always visible
+              showCheckboxColumn: false,
+              headingRowColor: WidgetStateProperty.all(
+                theme.isDarkMode
+                    ? WebDarkColors.primary
+                    : WebColors.primary.withOpacity(0.05),
+              ),
+              headingTextStyle: WebTextStyles.tableHeader(
+                isDarkTheme: theme.isDarkMode,
+                color: theme.isDarkMode
+                    ? WebDarkColors.textPrimary
+                    : WebColors.textPrimary,
+              ),
+              dataTextStyle: WebTextStyles.custom(
+                fontSize: 13,
+                isDarkTheme: theme.isDarkMode,
+                color: theme.isDarkMode
+                    ? WebDarkColors.textPrimary
+                    : WebColors.textPrimary,
+                fontWeight: WebFonts.medium,
+              ),
+                  border: TableBorder(
+                    top: BorderSide(
+                      color: theme.isDarkMode
+                          ? WebDarkColors.divider
+                          : WebColors.divider,
+                      width: 1,
                     ),
-                  );
-                },
+                    bottom: BorderSide(
+                      color: theme.isDarkMode
+                          ? WebDarkColors.divider
+                          : WebColors.divider,
+                      width: 1,
+                    ),
+                    horizontalInside: BorderSide(
+                      color: theme.isDarkMode
+                          ? WebDarkColors.divider
+                          : WebColors.divider,
+                      width: 1,
+                    ),
+                    // Remove vertical lines by not setting left, right, and verticalInside
+                  ),
+              columns: _buildDataTable2Columns(headers, columnMinWidth, theme, screenWidth),
+              rows: _buildDataTable2Rows(filteredHoldings, headers, theme),
               ),
             ),
           ),
@@ -1260,7 +1176,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
                     isDarkTheme: theme.isDarkMode,
                     color: theme.isDarkMode
                         ? WebDarkColors.textPrimary
-                        : WebColors.textSecondary,
+                        : WebColors.textPrimary,
                   ),
                   textAlign: isNumeric ? TextAlign.right : TextAlign.left,
                   maxLines: 2,
@@ -1284,100 +1200,6 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
       ],
       );
   }
-
-  // ========== SHADCN DATATABLE METHODS ==========
-
-  List<DataColumn> _buildShadcnTableColumns(
-    List<String> headers,
-    ThemesProvider theme,
-    double screenWidth,
-  ) {
-    return headers.map((header) {
-      final columnIndex = _getColumnIndexForHeader(header);
-      final isNumeric = _isNumericColumn(header);
-
-      return DataColumn(
-        label: Expanded(
-          child: MouseRegion(
-            cursor: SystemMouseCursors.click,
-            onEnter: (_) => _hoveredColumnIndex.value = columnIndex,
-            onExit: (_) => _hoveredColumnIndex.value = null,
-            child: Tooltip(
-              message: 'Sort by $header',
-              child: GestureDetector(
-                onTap: () => _onManualSort(columnIndex),
-                behavior: HitTestBehavior.opaque,
-                child: ValueListenableBuilder<int?>(
-                  valueListenable: _hoveredColumnIndex,
-                  builder: (context, hoveredIndex, child) {
-                    return Container(
-                      width: double.infinity,
-                      height: double.infinity,
-                      decoration: BoxDecoration(
-                        color: hoveredIndex == columnIndex
-                            ? (theme.isDarkMode
-                                ? WebDarkColors.primary.withOpacity(0.1)
-                                : WebColors.primary.withOpacity(0.05))
-                            : Colors.transparent,
-                      ),
-                      alignment: isNumeric ? Alignment.centerRight : Alignment.centerLeft,
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
-                      child: _buildSortableHeaderContent(header, isNumeric, theme, columnIndex),
-                    );
-                  },
-                ),
-              ),
-            ),
-          ),
-        ),
-        onSort: (columnIndex, ascending) => _onManualSort(columnIndex),
-      );
-    }).toList();
-  }
-
-  List<DataRow> _buildShadcnTableRows(
-    List<dynamic> holdings,
-    List<String> headers,
-    ThemesProvider theme,
-  ) {
-    return holdings.asMap().entries.map((entry) {
-      final index = entry.key;
-      final holding = entry.value;
-      final exchTsym = holding.exchTsym != null && holding.exchTsym!.isNotEmpty
-          ? holding.exchTsym![0]
-          : null;
-      final token = exchTsym?.token ?? '';
-      final uniqueId = '$token$index';
-
-      return DataRow(
-        onSelectChanged: (_) => _showHoldingDetail(holding),
-        color: WidgetStateProperty.resolveWith<Color>((states) {
-          if (states.contains(WidgetState.hovered) || _hoveredRowToken.value == uniqueId) {
-            return theme.isDarkMode
-                ? WebDarkColors.primary.withOpacity(0.06)
-                : WebColors.primary.withOpacity(0.10);
-          }
-          return Colors.transparent;
-        }),
-        cells: headers.map((header) {
-          final isNumeric = _isNumericColumn(header);
-          return DataCell(
-            MouseRegion(
-              onEnter: (_) => _hoveredRowToken.value = uniqueId,
-              onExit: (_) => _hoveredRowToken.value = null,
-              child: Container(
-                alignment: isNumeric ? Alignment.centerRight : Alignment.centerLeft,
-                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
-                child: _buildStreamCellContent(header, holding, theme, exchTsym, uniqueId, token),
-              ),
-            ),
-          );
-        }).toList(),
-      );
-    }).toList();
-  }
-
-  // ========== DATATABLE2 METHODS (COMMENTED OUT) ==========
 
   List<DataColumn2> _buildDataTable2Columns(
     List<String> headers,
@@ -1713,7 +1535,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
                     isDarkTheme: theme.isDarkMode,
                     color: theme.isDarkMode
                         ? WebDarkColors.textPrimary
-                        : WebColors.textSecondary,
+                        : WebColors.textPrimary,
                     fontWeight: WebFonts.medium,
                   ),
                   overflow: TextOverflow.ellipsis,
@@ -1721,15 +1543,19 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
               ),
             ),
 
-            // ✅ Action buttons - appear on hover with opacity only (no layout shift)
-            IgnorePointer(
-              ignoring: !rowIsHovered,
-              child: AnimatedOpacity(
-                opacity: rowIsHovered ? 1 : 0,
-                duration: const Duration(milliseconds: 140),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
+            // ✅ Action buttons - appear on hover, stay within bounds
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 140),
+              width: rowIsHovered ? null : 0,
+              curve: Curves.easeInOut,
+              child: IgnorePointer(
+                ignoring: !rowIsHovered,
+                child: AnimatedOpacity(
+                  opacity: rowIsHovered ? 1 : 0,
+                  duration: const Duration(milliseconds: 140),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
                       const SizedBox(width: 8),
                       if ((holding.currentQty ?? 0) > 0) ...[
                         _buildHoverButton(
@@ -1784,6 +1610,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
                   ),
                 ),
               ),
+            ),
           ],
         );
       },
@@ -1817,7 +1644,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textSecondary,
+                      : WebColors.textPrimary,
                   fontWeight: WebFonts.medium,
                 ),
                 overflow: TextOverflow.ellipsis,
@@ -1911,7 +1738,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
             isDarkTheme: theme.isDarkMode,
             color: theme.isDarkMode
                 ? WebDarkColors.textPrimary
-                : WebColors.textSecondary,
+                : WebColors.textPrimary,
           ),
         ),
       );
@@ -1947,7 +1774,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
                             isDarkTheme: theme.isDarkMode,
                             color: theme.isDarkMode
                                 ? WebDarkColors.textPrimary
-                                : WebColors.textSecondary,
+                                : WebColors.textPrimary,
                           ),
                           overflow: TextOverflow.ellipsis,
                           maxLines: 1,
@@ -2062,7 +1889,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
             isDarkTheme: theme.isDarkMode,
             color: theme.isDarkMode
                 ? WebDarkColors.textPrimary
-                : WebColors.textSecondary,
+                : WebColors.textPrimary,
           ),
         ),
       );
@@ -2075,7 +1902,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
           isDarkTheme: theme.isDarkMode,
           color: theme.isDarkMode
               ? WebDarkColors.textPrimary
-              : WebColors.textSecondary,
+              : WebColors.textPrimary,
         ),
         overflow: TextOverflow.ellipsis,
       ),
@@ -2109,7 +1936,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
           isDarkTheme: theme.isDarkMode,
           color: theme.isDarkMode
               ? WebDarkColors.textPrimary
-              : WebColors.textSecondary,
+              : WebColors.textPrimary,
         ).copyWith(fontWeight: FontWeight.w600),
       ),
     );
@@ -2127,7 +1954,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
           isDarkTheme: theme.isDarkMode,
           color: theme.isDarkMode
               ? WebDarkColors.textPrimary
-              : WebColors.textSecondary,
+              : WebColors.textPrimary,
         ).copyWith(fontWeight: FontWeight.w600),
       ),
     );
@@ -2141,7 +1968,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
           isDarkTheme: theme.isDarkMode,
           color: theme.isDarkMode
               ? WebDarkColors.textPrimary
-              : WebColors.textSecondary,
+              : WebColors.textPrimary,
         ).copyWith(fontWeight: FontWeight.w600),
       ),
     );
@@ -2155,7 +1982,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
           isDarkTheme: theme.isDarkMode,
           color: theme.isDarkMode
               ? WebDarkColors.textPrimary
-              : WebColors.textSecondary,
+              : WebColors.textPrimary,
         ).copyWith(fontWeight: FontWeight.w600),
       ),
     );
@@ -2543,34 +2370,20 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
     return qty > 0;
   }
 
-  Future<void> _showHoldingDetail(dynamic holding) async {
+  void _showHoldingDetail(dynamic holding) {
     final exchTsym = holding.exchTsym != null && holding.exchTsym!.isNotEmpty
         ? holding.exchTsym![0]
         : null;
 
-    if (exchTsym == null) {
-      print('DEBUG: exchTsym is null, cannot show drawer');
-      return;
-    }
+    if (exchTsym == null) return;
 
-    print('DEBUG: Opening drawer for ${exchTsym.tsym}');
-
-    try {
-      await showShadDrawerRight(
-        context: context,
-        width: 500,
-        draggable: true,  // Enable drag to dismiss
-        barrierDismissible: true,  // Enable tap outside to dismiss
-        child: HoldingDetailScreenWeb(
-          holding: holding,
-          exchTsym: exchTsym,
-        ),
-      );
-      print('DEBUG: Drawer closed');
-    } catch (e, stackTrace) {
-      print('DEBUG: Error opening drawer: $e');
-      print('DEBUG: Stack trace: $stackTrace');
-    }
+    showDialog(
+      context: context,
+      builder: (context) => HoldingDetailScreenWeb(
+        holding: holding,
+        exchTsym: exchTsym,
+      ),
+    );
   }
 
   void _onManualSort(int columnIndex) {

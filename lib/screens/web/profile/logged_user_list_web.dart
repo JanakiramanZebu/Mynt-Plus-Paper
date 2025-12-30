@@ -74,7 +74,7 @@ class LoggedUserListWeb extends ConsumerWidget {
                       isDarkTheme: theme.isDarkMode,
                       color: theme.isDarkMode
                           ? WebDarkColors.textPrimary
-                          : WebColors.textSecondary,
+                          : WebColors.textPrimary,
                     ),
                   ),
                   Material(
@@ -161,7 +161,7 @@ class LoggedUserListWeb extends ConsumerWidget {
                                           isDarkTheme: theme.isDarkMode,
                                           color: theme.isDarkMode
                                               ? WebDarkColors.textPrimary
-                                              : WebColors.textSecondary,
+                                              : WebColors.textPrimary,
                                           fontWeight: WebFonts.medium,
                                         ),
                                       ),
@@ -309,7 +309,7 @@ class LoggedUserListWeb extends ConsumerWidget {
                                                 isDarkTheme: theme.isDarkMode,
                                                 color: theme.isDarkMode
                                                     ? WebDarkColors.textPrimary
-                                                    : WebColors.textSecondary,
+                                                    : WebColors.textPrimary,
                                                 fontWeight: WebFonts.semiBold,
                                               ),
                                             ),
@@ -325,7 +325,7 @@ class LoggedUserListWeb extends ConsumerWidget {
                                                   isDarkTheme: theme.isDarkMode,
                                                   color: theme.isDarkMode
                                                       ? WebDarkColors.textPrimary
-                                                      : WebColors.textSecondary,
+                                                      : WebColors.textPrimary,
                                                   fontWeight: WebFonts.medium,
                                                 ),
                                               ),
@@ -525,7 +525,7 @@ class LoggedUserListWeb extends ConsumerWidget {
                           isDarkTheme: theme.isDarkMode,
                           color: theme.isDarkMode
                               ? WebDarkColors.textPrimary
-                              : WebColors.textSecondary,
+                              : WebColors.textPrimary,
                         ),
                       ),
                       Material(
@@ -570,7 +570,7 @@ class LoggedUserListWeb extends ConsumerWidget {
                               isDarkTheme: theme.isDarkMode,
                               color: theme.isDarkMode
                                   ? WebDarkColors.textPrimary
-                                  : WebColors.textSecondary,
+                                  : WebColors.textPrimary,
                             ),
                             textAlign: TextAlign.center,
                           ),

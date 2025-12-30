@@ -372,7 +372,7 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
                                   isDarkTheme: theme.isDarkMode,
                                   color: theme.isDarkMode
                                       ? WebDarkColors.textPrimary
-                                      : WebColors.textSecondary,
+                                      : WebColors.textPrimary,
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
@@ -426,7 +426,7 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
                               isDarkTheme: theme.isDarkMode,
                               color: theme.isDarkMode
                                   ? WebDarkColors.textPrimary
-                                  : WebColors.textSecondary,
+                                  : WebColors.textPrimary,
                             ),
                           ),
                           const SizedBox(height: 16),

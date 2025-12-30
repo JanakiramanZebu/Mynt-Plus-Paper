@@ -294,7 +294,7 @@ class _TradeBookDetailScreenWebState extends ConsumerState<TradeBookDetailScreen
                   "${displayData.symbol?.replaceAll("-EQ", "") ?? ''} ${displayData.expDate ?? ''} ${displayData.option ?? ''} ",
                   style: WebTextStyles.dialogTitle(
                     isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
+                    color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
                   ),
                 ),
                 const SizedBox(width: 4),
@@ -519,14 +519,14 @@ class _TradeBookDetailScreenWebState extends ConsumerState<TradeBookDetailScreen
             title,
             style: WebTextStyles.dialogContent(
               isDarkTheme: theme.isDarkMode,
-              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
+              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
             ),
           ),
           Text(
             value,
             style: WebTextStyles.dialogContent(
               isDarkTheme: theme.isDarkMode,
-              color: valueColor ?? (theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary),
+              color: valueColor ?? (theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary),
             ),
           ),
         ],

@@ -313,7 +313,7 @@ class _TradeActionScreenWebState extends ConsumerState<TradeActionScreenWeb>
                   //     isDarkTheme: theme.isDarkMode,
                   //     color: theme.isDarkMode
                   //         ? WebDarkColors.textPrimary
-                  //         : WebColors.textSecondary,
+                  //         : WebColors.textPrimary,
                   //     fontWeight: WebFonts.bold,
                   //   ),
                   // ),
@@ -401,7 +401,7 @@ class _TradeActionScreenWebState extends ConsumerState<TradeActionScreenWeb>
               color: isSelected
                   ? (theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textSecondary)
+                      : WebColors.textPrimary)
                   : (theme.isDarkMode
                       ? WebDarkColors.navItem
                       : WebColors.navItem),
@@ -501,14 +501,14 @@ class _TradeActionScreenWebState extends ConsumerState<TradeActionScreenWeb>
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textSecondary,
+                      : WebColors.textPrimary,
                 ),
                 dataTextStyle: WebTextStyles.custom(
                   fontSize: 13,
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textSecondary,
+                      : WebColors.textPrimary,
                   fontWeight: WebFonts.medium,
                 ),
                 border: TableBorder(
@@ -620,7 +620,7 @@ class _TradeActionScreenWebState extends ConsumerState<TradeActionScreenWeb>
             isDarkTheme: theme.isDarkMode,
             color: theme.isDarkMode
                 ? WebDarkColors.textPrimary
-                : WebColors.textSecondary,
+                : WebColors.textPrimary,
           ),
         ),
         const SizedBox(width: 4),
@@ -722,7 +722,7 @@ class _TradeActionScreenWebState extends ConsumerState<TradeActionScreenWeb>
                 color: color ??
                     (theme.isDarkMode
                         ? WebDarkColors.textPrimary
-                        : WebColors.textSecondary),
+                        : WebColors.textPrimary),
                 fontWeight: WebFonts.medium,
               ),
               maxLines: 1,

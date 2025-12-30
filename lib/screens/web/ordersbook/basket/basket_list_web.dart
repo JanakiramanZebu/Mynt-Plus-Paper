@@ -173,7 +173,7 @@ class _BasketListState extends ConsumerState<BasketList> {
                                 isDarkTheme: theme.isDarkMode,
                                 color: theme.isDarkMode
                                     ? WebDarkColors.textPrimary
-                                    : WebColors.textSecondary,
+                                    : WebColors.textPrimary,
                               ),
                               textAlign: isNumeric ? TextAlign.right : TextAlign.left,
                               overflow: TextOverflow.ellipsis,
@@ -332,7 +332,7 @@ class _BasketListState extends ConsumerState<BasketList> {
                             isDarkTheme: theme.isDarkMode,
                             color: theme.isDarkMode
                                 ? WebDarkColors.textPrimary
-                                : WebColors.textSecondary,
+                                : WebColors.textPrimary,
                             fontWeight: WebFonts.medium,
                           ),
                           maxLines: 1,
@@ -409,7 +409,7 @@ class _BasketListState extends ConsumerState<BasketList> {
             isDarkTheme: theme.isDarkMode,
             color: theme.isDarkMode
                 ? WebDarkColors.textPrimary
-                : WebColors.textSecondary,
+                : WebColors.textPrimary,
             fontWeight: WebFonts.medium,
           ),
           maxLines: 1, 
@@ -529,14 +529,14 @@ class _BasketListState extends ConsumerState<BasketList> {
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textSecondary,
+                      : WebColors.textPrimary,
                 ),
                 dataTextStyle: WebTextStyles.custom(
                   fontSize: 13,
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textSecondary,
+                      : WebColors.textPrimary,
                   fontWeight: WebFonts.medium,
                 ),
                 border: TableBorder(
@@ -671,7 +671,7 @@ class _BasketListState extends ConsumerState<BasketList> {
                           isDarkTheme: theme.isDarkMode,
                           color: theme.isDarkMode
                               ? WebDarkColors.textPrimary
-                              : WebColors.textSecondary,
+                              : WebColors.textPrimary,
                         ),
                       ),
                       Material(
@@ -718,7 +718,7 @@ class _BasketListState extends ConsumerState<BasketList> {
                                 isDarkTheme: theme.isDarkMode,
                                 color: theme.isDarkMode
                                     ? WebDarkColors.textPrimary
-                                    : WebColors.textSecondary,
+                                    : WebColors.textPrimary,
                               ),
                             ),
                           ),
@@ -1160,7 +1160,7 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
             isDarkTheme: theme.isDarkMode,
             color: theme.isDarkMode
                 ? WebDarkColors.textPrimary
-                : WebColors.textSecondary,
+                : WebColors.textPrimary,
           ),
         ),
         const SizedBox(width: 4),
@@ -1287,7 +1287,7 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
               color: isSelected
                   ? (theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textSecondary)
+                      : WebColors.textPrimary)
                   : (theme.isDarkMode
                       ? WebDarkColors.navItem
                       : WebColors.navItem),
@@ -1375,7 +1375,7 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
                                         isDarkTheme: theme.isDarkMode,
                                         color: theme.isDarkMode
                                             ? WebDarkColors.textPrimary
-                                            : WebColors.textSecondary,
+                                            : WebColors.textPrimary,
                                       ),
                                     ),
                                     if (scrip.option != null &&
@@ -1388,7 +1388,7 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
                                             isDarkTheme: theme.isDarkMode,
                                             color: theme.isDarkMode
                                                 ? WebDarkColors.textPrimary
-                                                : WebColors.textSecondary,
+                                                : WebColors.textPrimary,
                                           ),
                                         ),
                                       ),
@@ -1402,7 +1402,7 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
                                             isDarkTheme: theme.isDarkMode,
                                             color: theme.isDarkMode
                                                 ? WebDarkColors.textPrimary
-                                                : WebColors.textSecondary,
+                                                : WebColors.textPrimary,
                                           ),
                                         ),
                                       ),
@@ -1823,7 +1823,7 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
                             isDarkTheme: theme.isDarkMode,
                             color: theme.isDarkMode
                                 ? WebDarkColors.textPrimary
-                                : WebColors.textSecondary,
+                                : WebColors.textPrimary,
                           ),
                           textCapitalization: TextCapitalization.characters,
                           inputFormatters: [
@@ -2527,7 +2527,7 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
                             isDarkTheme: theme.isDarkMode,
                             color: theme.isDarkMode
                                 ? WebDarkColors.textPrimary
-                                : WebColors.textSecondary,
+                                : WebColors.textPrimary,
                           ),
                           textAlign: isNumeric ? TextAlign.right : TextAlign.left,
                           overflow: TextOverflow.ellipsis,
@@ -2876,7 +2876,7 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
                     isDarkTheme: theme.isDarkMode,
                     color: theme.isDarkMode
                         ? WebDarkColors.textPrimary
-                        : WebColors.textSecondary,
+                        : WebColors.textPrimary,
                     fontWeight: WebFonts.medium,
                   ),
                   maxLines: 1,
@@ -2933,7 +2933,7 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
             color: color ??
                 (theme.isDarkMode
                     ? WebDarkColors.textPrimary
-                    : WebColors.textSecondary),
+                    : WebColors.textPrimary),
             fontWeight: WebFonts.medium,
           ),
           maxLines: 1,
@@ -3016,7 +3016,7 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
                             isDarkTheme: theme.isDarkMode,
                             color: theme.isDarkMode
                                 ? WebDarkColors.textPrimary
-                                : WebColors.textSecondary,
+                                : WebColors.textPrimary,
                           ),
                           overflow: TextOverflow.ellipsis,
                           maxLines: 1,
@@ -3105,7 +3105,7 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
           isDarkTheme: theme.isDarkMode,
           color: theme.isDarkMode
               ? WebDarkColors.textPrimary
-              : WebColors.textSecondary,
+              : WebColors.textPrimary,
         ),
       ),
     );
@@ -3125,7 +3125,7 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
           isDarkTheme: theme.isDarkMode,
           color: theme.isDarkMode
               ? WebDarkColors.textPrimary
-              : WebColors.textSecondary,
+              : WebColors.textPrimary,
         ),
       ),
     );
@@ -3144,7 +3144,7 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
             isDarkTheme: theme.isDarkMode,
             color: theme.isDarkMode
                 ? WebDarkColors.textPrimary
-                : WebColors.textSecondary,
+                : WebColors.textPrimary,
           ),
         ),
       );
@@ -3291,7 +3291,7 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
                           isDarkTheme: theme.isDarkMode,
                           color: theme.isDarkMode
                               ? WebDarkColors.textPrimary
-                              : WebColors.textSecondary,
+                              : WebColors.textPrimary,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -3335,7 +3335,7 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
                           isDarkTheme: theme.isDarkMode,
                           color: theme.isDarkMode
                               ? WebDarkColors.textPrimary
-                              : WebColors.textSecondary,
+                              : WebColors.textPrimary,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -3442,7 +3442,7 @@ class _BasketLTPCellState extends ConsumerState<_BasketLTPCell> {
         isDarkTheme: widget.theme.isDarkMode,
         color: widget.theme.isDarkMode
             ? WebDarkColors.textPrimary
-            : WebColors.textSecondary,
+            : WebColors.textPrimary,
       ),
     );
   }

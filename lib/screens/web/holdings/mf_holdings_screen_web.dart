@@ -392,14 +392,14 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textSecondary,
+                      : WebColors.textPrimary,
                 ),
                 dataTextStyle: WebTextStyles.custom(
                   fontSize: 13,
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textSecondary,
+                      : WebColors.textPrimary,
                   fontWeight: WebFonts.medium,
                 ),
                 border: TableBorder(
@@ -565,7 +565,7 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
             isDarkTheme: theme.isDarkMode,
             color: theme.isDarkMode
                 ? WebDarkColors.textPrimary
-                : WebColors.textSecondary,
+                : WebColors.textPrimary,
             fontWeight: WebFonts.medium,
           ),
           textAlign: TextAlign.right,
@@ -578,7 +578,7 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
             isDarkTheme: theme.isDarkMode,
             color: theme.isDarkMode
                 ? WebDarkColors.textPrimary
-                : WebColors.textSecondary,
+                : WebColors.textPrimary,
             fontWeight: WebFonts.medium,
           ),
           textAlign: TextAlign.right,
@@ -591,7 +591,7 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
             isDarkTheme: theme.isDarkMode,
             color: theme.isDarkMode
                 ? WebDarkColors.textPrimary
-                : WebColors.textSecondary,
+                : WebColors.textPrimary,
             fontWeight: WebFonts.medium,
           ),
           textAlign: TextAlign.right,
@@ -604,7 +604,7 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
             isDarkTheme: theme.isDarkMode,
             color: theme.isDarkMode
                 ? WebDarkColors.textPrimary
-                : WebColors.textSecondary,
+                : WebColors.textPrimary,
             fontWeight: WebFonts.medium,
           ),
           textAlign: TextAlign.right,
@@ -617,7 +617,7 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
             isDarkTheme: theme.isDarkMode,
             color: theme.isDarkMode
                 ? WebDarkColors.textPrimary
-                : WebColors.textSecondary,
+                : WebColors.textPrimary,
             fontWeight: WebFonts.medium,
           ),
           textAlign: TextAlign.right,
@@ -679,7 +679,7 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
                     isDarkTheme: theme.isDarkMode,
                     color: theme.isDarkMode
                         ? WebDarkColors.textPrimary
-                        : WebColors.textSecondary,
+                        : WebColors.textPrimary,
                     fontWeight: WebFonts.medium,
                   ),
                   maxLines: 1,
@@ -755,7 +755,7 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
                     isDarkTheme: theme.isDarkMode,
                     color: theme.isDarkMode
                         ? WebDarkColors.textPrimary
-                        : WebColors.textSecondary,
+                        : WebColors.textPrimary,
                   ),
                   textAlign: isNumeric ? TextAlign.right : TextAlign.left,
                   maxLines: 2,
@@ -870,7 +870,7 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
     } else if (numValue < 0) {
       return theme.isDarkMode ? WebDarkColors.error : WebColors.error; // Red
     } else {
-      return theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary; // Grey
+      return theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary; // Grey
     }
   }
 

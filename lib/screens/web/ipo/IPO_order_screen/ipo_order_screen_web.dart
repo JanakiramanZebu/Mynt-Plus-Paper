@@ -430,7 +430,7 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                                         color: isSelected
                                             ? (theme.isDarkMode
                                                 ? WebDarkColors.textPrimary
-                                                : WebColors.textSecondary)
+                                                : WebColors.textPrimary)
                                             : (theme.isDarkMode
                                                 ? WebDarkColors.navItem
                                                 : WebColors.navItem),

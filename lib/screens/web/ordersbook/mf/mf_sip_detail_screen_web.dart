@@ -111,7 +111,7 @@ class MFSipDetailScreenWeb extends ConsumerWidget {
       sipData.name ?? "",
       style: WebTextStyles.dialogTitle(
         isDarkTheme: theme.isDarkMode,
-        color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
+        color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
       ),
       overflow: TextOverflow.ellipsis,
     );
@@ -225,7 +225,7 @@ class MFSipDetailScreenWeb extends ConsumerWidget {
             title,
             style: WebTextStyles.dialogContent(
               isDarkTheme: theme.isDarkMode,
-              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
+              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
             ),
           ),
           value is Widget
@@ -234,7 +234,7 @@ class MFSipDetailScreenWeb extends ConsumerWidget {
                   value.toString(),
                   style: WebTextStyles.dialogContent(
                     isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
+                    color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
                   ),
                 ),
         ],

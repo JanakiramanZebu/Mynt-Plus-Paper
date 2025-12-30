@@ -26,8 +26,6 @@ import '../../../sharedWidget/fund_function.dart';
 import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/cust_text_formfield.dart';
 import '../../../utils/no_emoji_inputformatter.dart';
-import '../../../sharedWidget/shadcn/shadcn_components.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 
 class FundScreenWeb extends ConsumerStatefulWidget {
@@ -155,82 +153,188 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
       context: context,
       builder: (context) {
         return Dialog(
-          backgroundColor: Colors.transparent,
-          child: Container(
+          backgroundColor:
+              theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(5),
+          ),
+          child: SizedBox(
             width: 400,
-            decoration: BoxDecoration(
-              color: shadcn.Theme.of(context).colorScheme.card,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Header with close button
-                  Row(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header with close button
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  margin: const EdgeInsets.only(bottom: 8),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
+                        color: theme.isDarkMode
+                            ? WebDarkColors.divider
+                            : WebColors.divider,
+                      ),
+                    ),
+                  ),
+                  child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      shadcn.Text(
+                      Text(
                         'UPI ID',
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
+                        style: WebTextStyles.dialogTitle(
+                          isDarkTheme: theme.isDarkMode,
+                          color: theme.isDarkMode
+                              ? WebDarkColors.textPrimary
+                              : WebColors.textPrimary,
                         ),
                       ),
-                      ShadIconButton(
-                        icon: Icons.close,
-                        onPressed: () => Navigator.of(context).pop(),
-                        variant: ShadButtonVariant.ghost,
+                      Material(
+                        color: Colors.transparent,
+                        shape: const CircleBorder(),
+                        child: InkWell(
+                          customBorder: const CircleBorder(),
+                          splashColor: theme.isDarkMode
+                              ? Colors.white.withOpacity(.15)
+                              : Colors.black.withOpacity(.15),
+                          highlightColor: theme.isDarkMode
+                              ? Colors.white.withOpacity(.08)
+                              : Colors.black.withOpacity(.08),
+                          onTap: () => Navigator.of(context).pop(),
+                          child: Padding(
+                            padding: const EdgeInsets.all(6.0),
+                            child: Icon(
+                              Icons.close,
+                              size: 20,
+                              color: theme.isDarkMode
+                                  ? WebDarkColors.iconSecondary
+                                  : WebColors.iconSecondary,
+                            ),
+                          ),
+                        ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
-
-                  // UPI Input
-                  ShadInput(
-                    placeholder: "Enter UPI ID",
-                    controller: fund.upiid,
-                    autofocus: true,
-                    keyboardType: TextInputType.text,
-                    errorText: fund.upiiderror,
-                    onChanged: (value) {
-                      fund.upiidOnchange(value);
-                      fund.validateUPI(value);
-                    },
-                    inputFormatters: [
-                      NoEmojiInputFormatter(),
-                      FilteringTextInputFormatter.deny(RegExp('[π£•₹€℅™∆√¶/,]')),
-                      FilteringTextInputFormatter.deny(RegExp(r'\s')),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Submit Button
-                  Consumer(
-                    builder: (context, ref, child) {
-                      final fundState = ref.watch(transcationProvider);
-                      return ShadButton(
-                        text: "Pay Via UPI ID",
-                        onPressed: fundState.fundLoading
-                            ? null
-                            : () async {
-                                fund.upiidOnchange(fund.upiid.text);
-                                fund.validateUPI(fund.upiid.text);
-                                if (fund.upiiderror == null || fund.upiiderror!.isEmpty) {
-                                  fund.togglefundLoading(true);
-                                  await _handleUpiIdPayment(context, fund);
-                                }
+                ),
+                Flexible(
+                  child: SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.only(
+                          left: 16, right: 16, bottom: 16, top: 16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SizedBox(
+                            height: 40,
+                            child: CustomTextFormField(
+                              fillColor: theme.isDarkMode
+                                  ? WebDarkColors.backgroundTertiary
+                                  : WebColors.backgroundTertiary,
+                              onChanged: (value) {
+                                fund.upiidOnchange(value);
+                                fund.validateUPI(value);
                               },
-                        variant: ShadButtonVariant.primary,
-                        expanded: true,
-                        isLoading: fundState.fundLoading,
-                      );
-                    },
+                              hintText: "Enter UPI ID",
+                              hintStyle: WebTextStyles.formInput(
+                                isDarkTheme: theme.isDarkMode,
+                                color: theme.isDarkMode
+                                    ? WebDarkColors.textSecondary
+                                    : WebColors.textSecondary,
+                              ),
+                              keyboardType: TextInputType.text,
+                              style: WebTextStyles.formInput(
+                                isDarkTheme: theme.isDarkMode,
+                                color: theme.isDarkMode
+                                    ? WebDarkColors.textPrimary
+                                    : WebColors.textPrimary,
+                              ),
+                              textCtrl: fund.upiid,
+                              textAlign: TextAlign.start,
+                              autofocus: true,
+                              inputFormate: [
+                                NoEmojiInputFormatter(),
+                                FilteringTextInputFormatter.deny(RegExp('[π£•₹€℅™∆√¶/,]')),
+                                FilteringTextInputFormatter.deny(RegExp(r'\s')),
+                              ],
+                            ),
+                          ),
+                          if (fund.upiiderror != null && fund.upiiderror!.isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 8),
+                              child: Text(
+                                "${fund.upiiderror}",
+                                style: WebTextStyles.helperText(
+                                  isDarkTheme: theme.isDarkMode,
+                                  color: theme.isDarkMode
+                                      ? WebDarkColors.error
+                                      : WebColors.error,
+                                ),
+                              ),
+                            ),
+                          const SizedBox(height: 24),
+                          SizedBox(
+                            width: double.infinity,
+                            child: Consumer(
+                              builder: (context, ref, child) {
+                                final fundState = ref.watch(transcationProvider);
+                                return Container(
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    color: theme.isDarkMode
+                                        ? WebDarkColors.primary
+                                        : WebColors.primary,
+                                    borderRadius: BorderRadius.circular(5),
+                                  ),
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(5),
+                                    ),
+                                    child: InkWell(
+                                      borderRadius: BorderRadius.circular(5),
+                                      splashColor: Colors.white.withOpacity(0.2),
+                                      highlightColor: Colors.white.withOpacity(0.1),
+                                      onTap: fundState.fundLoading ? null : () async {
+                                        fund.upiidOnchange(fund.upiid.text);
+                                        fund.validateUPI(fund.upiid.text);
+                                        if (fund.upiiderror == null || fund.upiiderror!.isEmpty) {
+                                          // Set loading immediately
+                                          fund.togglefundLoading(true);
+                                          await _handleUpiIdPayment(context, fund);
+                                        }
+                                      },
+                                      child: Container(
+                                        alignment: Alignment.center,
+                                        child: fundState.fundLoading
+                                            ? const SizedBox(
+                                                width: 18,
+                                                height: 18,
+                                                child: CircularProgressIndicator(
+                                                  strokeWidth: 2,
+                                                  color: Colors.white,
+                                                ),
+                                              )
+                                            : Text(
+                                                "Pay Via UPI ID",
+                                                style: WebTextStyles.buttonMd(
+                                                  isDarkTheme: theme.isDarkMode,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         );
@@ -369,7 +473,7 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
                       isDarkTheme: theme.isDarkMode,
                       color: theme.isDarkMode
                           ? WebDarkColors.textPrimary
-                          : WebColors.textSecondary,
+                          : WebColors.textPrimary,
                     ),
                   ),
                   Material(
@@ -429,7 +533,7 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
                           isDarkTheme: theme.isDarkMode,
                           color: theme.isDarkMode
                               ? WebDarkColors.textPrimary
-                              : WebColors.textSecondary,
+                              : WebColors.textPrimary,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -452,7 +556,7 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
                           isDarkTheme: theme.isDarkMode,
                           color: theme.isDarkMode
                               ? WebDarkColors.textPrimary
-                              : WebColors.textSecondary,
+                              : WebColors.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 10),
@@ -576,7 +680,7 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textSecondary,
+                      : WebColors.textPrimary,
                 ),
                 textAlign: TextAlign.right,
               ),
@@ -1091,7 +1195,7 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
                       isDarkTheme: theme.isDarkMode,
                       color: theme.isDarkMode
                           ? WebDarkColors.textPrimary
-                          : WebColors.textSecondary,
+                          : WebColors.textPrimary,
                     ),
                   ),
                   Material(
@@ -1147,7 +1251,7 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
                           isDarkTheme: theme.isDarkMode,
                           color: theme.isDarkMode
                               ? WebDarkColors.textPrimary
-                              : WebColors.textSecondary,
+                              : WebColors.textPrimary,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -1168,7 +1272,7 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
                           isDarkTheme: theme.isDarkMode,
                           color: theme.isDarkMode
                               ? WebDarkColors.textPrimary
-                              : WebColors.textSecondary,
+                              : WebColors.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -1275,7 +1379,7 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
                       isDarkTheme: theme.isDarkMode,
                       color: theme.isDarkMode
                           ? WebDarkColors.textPrimary
-                          : WebColors.textSecondary,
+                          : WebColors.textPrimary,
                     ),
                   ),
                   Material(
@@ -1333,7 +1437,7 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
                           isDarkTheme: theme.isDarkMode,
                           color: theme.isDarkMode
                               ? WebDarkColors.textPrimary
-                              : WebColors.textSecondary,
+                              : WebColors.textPrimary,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -1354,7 +1458,7 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
                           isDarkTheme: theme.isDarkMode,
                           color: theme.isDarkMode
                               ? WebDarkColors.textPrimary
-                              : WebColors.textSecondary,
+                              : WebColors.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -1511,7 +1615,7 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
               isDarkTheme: theme.isDarkMode,
               color: theme.isDarkMode
                   ? WebDarkColors.textPrimary
-                  : WebColors.textSecondary,
+                  : WebColors.textPrimary,
             ),
           ),
           Material(
@@ -1567,7 +1671,7 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
                 "₹ ${formatIndianCurrency(funds.fundDetailModel?.cash ?? "0.00")}",
                 style: WebTextStyles.title(
                   isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
+                  color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
                   fontWeight: WebFonts.semiBold,
                 ),
               ),
@@ -1586,7 +1690,7 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
       style: WebTextStyles.custom(
         fontSize: 20,
         isDarkTheme: theme.isDarkMode,
-        color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
+        color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
       ),
       controller: fund.amount,
       onChanged: (value) {
@@ -1674,7 +1778,7 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
                 fund.bankname,
                 style: WebTextStyles.sub(
                   isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
+                  color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
                   fontWeight: WebFonts.semiBold,
                 ),
               ),
@@ -1736,7 +1840,7 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
           "Payment method",
           style: WebTextStyles.sub(
             isDarkTheme: theme.isDarkMode,
-            color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
+            color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
             fontWeight: WebFonts.bold,
           ),
         ),
@@ -1810,7 +1914,7 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
                                     isDarkTheme: theme.isDarkMode,
                                     color: theme.isDarkMode
                                         ? WebDarkColors.textPrimary
-                                        : WebColors.textSecondary,
+                                        : WebColors.textPrimary,
                                   ),
                                 ),
                                 SvgPicture.asset(
@@ -1889,7 +1993,7 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
                           isDarkTheme: theme.isDarkMode,
                           color: theme.isDarkMode
                               ? WebDarkColors.textPrimary
-                              : WebColors.textSecondary,
+                              : WebColors.textPrimary,
                         ),
                       ),
                       Material(
@@ -1966,7 +2070,7 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
                                         isDarkTheme: theme.isDarkMode,
                                         color: theme.isDarkMode
                                             ? WebDarkColors.textPrimary
-                                            : WebColors.textSecondary,
+                                            : WebColors.textPrimary,
                                             fontWeight: FontWeight.w600,
                                       ),
                                     ),
@@ -2103,7 +2207,7 @@ class _WebUpiConfirmationDialogContentState
                     isDarkTheme: widget.theme.isDarkMode,
                     color: widget.theme.isDarkMode
                         ? WebDarkColors.textPrimary
-                        : WebColors.textSecondary,
+                        : WebColors.textPrimary,
                   ),
                 ),
                 Material(

@@ -129,14 +129,14 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
                       isDarkTheme: theme.isDarkMode,
                       color: theme.isDarkMode
                           ? WebDarkColors.textPrimary
-                          : WebColors.textSecondary,
+                          : WebColors.textPrimary,
                     ),
                     dataTextStyle: WebTextStyles.custom(
                       fontSize: 13,
                       isDarkTheme: theme.isDarkMode,
                       color: theme.isDarkMode
                           ? WebDarkColors.textPrimary
-                          : WebColors.textSecondary,
+                          : WebColors.textPrimary,
                       fontWeight: WebFonts.medium,
                     ),
                     border: TableBorder(
@@ -167,7 +167,7 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
                             isDarkTheme: theme.isDarkMode,
                             color: theme.isDarkMode
                                 ? WebDarkColors.textPrimary
-                                : WebColors.textSecondary,
+                                : WebColors.textPrimary,
                           ),
                         ),
                         size: ColumnSize.L,
@@ -180,7 +180,7 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
                             isDarkTheme: theme.isDarkMode,
                             color: theme.isDarkMode
                                 ? WebDarkColors.textPrimary
-                                : WebColors.textSecondary,
+                                : WebColors.textPrimary,
                           ),
                         ),
                         size: ColumnSize.S,
@@ -192,7 +192,7 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
                             isDarkTheme: theme.isDarkMode,
                             color: theme.isDarkMode
                                 ? WebDarkColors.textPrimary
-                                : WebColors.textSecondary,
+                                : WebColors.textPrimary,
                           ),
                         ),
                         size: ColumnSize.S,
@@ -365,7 +365,7 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
                 isDarkTheme: theme.isDarkMode,
                 color: theme.isDarkMode
                     ? WebDarkColors.textPrimary
-                    : WebColors.textSecondary,
+                    : WebColors.textPrimary,
                 fontWeight: WebFonts.medium,
               ),
               overflow: TextOverflow.ellipsis,
@@ -589,7 +589,7 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
         perChange == "0.00") {
       return theme.isDarkMode
           ? WebDarkColors.textPrimary
-          : WebColors.textSecondary;
+          : WebColors.textPrimary;
     } else {
       return theme.isDarkMode ? WebDarkColors.profit : WebColors.profit;
     }

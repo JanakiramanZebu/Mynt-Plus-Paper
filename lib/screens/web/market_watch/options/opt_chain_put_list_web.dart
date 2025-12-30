@@ -371,7 +371,7 @@ class _OptionChainPutRowState extends State<_OptionChainPutRow> {
                               _lp,
                               style: WebTextStyles.tableDataCompact(
                                 isDarkTheme: theme.isDarkMode,
-                                color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
+                                color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
                               ),
                               textAlign: TextAlign.end,
                             ),
@@ -404,7 +404,7 @@ class _OptionChainPutRowState extends State<_OptionChainPutRow> {
                           _oiLack,
                           style: WebTextStyles.tableDataCompact(
                             isDarkTheme: theme.isDarkMode,
-                            color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
+                            color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
                            
                           ),
                           textAlign: TextAlign.end,
@@ -507,7 +507,7 @@ class _OptionChainPutRowState extends State<_OptionChainPutRow> {
   Widget _buildDataCell(String value, ThemesProvider theme, {bool isPrimary = false, Color? color, bool alignEnd = false}) {
     final displayValue = value == "0.00" || value == "0" ? "0.00" : value;
     final textColor = color ?? (isPrimary 
-        ? (theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary)
+        ? (theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary)
         : (theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary));
 
     return Text(

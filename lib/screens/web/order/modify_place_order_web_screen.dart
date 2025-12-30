@@ -353,7 +353,7 @@ class _ModifyPlaceOrderScreenState
                                         isDarkTheme: theme.isDarkMode,
                                         color: theme.isDarkMode
                                             ? WebDarkColors.textPrimary
-                                            : WebColors.textSecondary,
+                                            : WebColors.textPrimary,
                                         fontWeight: WebFonts.medium,
                                       ),
                                       maxLines: 1,
@@ -366,7 +366,7 @@ class _ModifyPlaceOrderScreenState
                                           isDarkTheme: theme.isDarkMode,
                                           color: theme.isDarkMode
                                               ? WebDarkColors.textPrimary
-                                              : WebColors.textSecondary,
+                                              : WebColors.textPrimary,
                                         ),
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
@@ -378,7 +378,7 @@ class _ModifyPlaceOrderScreenState
                                           isDarkTheme: theme.isDarkMode,
                                           color: theme.isDarkMode
                                               ? WebDarkColors.textPrimary
-                                              : WebColors.textSecondary,
+                                              : WebColors.textPrimary,
                                           fontWeight: WebFonts.medium,
                                         ),
                                         maxLines: 1,
@@ -696,7 +696,7 @@ class _ModifyPlaceOrderScreenState
                                                   color: theme.isDarkMode
                                                       ? WebDarkColors
                                                           .textPrimary
-                                                      : WebColors.textSecondary,
+                                                      : WebColors.textPrimary,
                                                 ),
                                                 // prefixIcon: InkWell(
                                                 //   onTap: () {
@@ -1009,7 +1009,7 @@ class _ModifyPlaceOrderScreenState
                                                     color: theme.isDarkMode
                                                         ? WebDarkColors
                                                             .textPrimary
-                                                        : WebColors.textSecondary,
+                                                        : WebColors.textPrimary,
                                                   ),
                                                   isReadable: prcType ==
                                                               "MKT" ||
@@ -1120,7 +1120,7 @@ class _ModifyPlaceOrderScreenState
                                                           .isDarkMode
                                                       ? WebDarkColors
                                                           .textPrimary
-                                                      : WebColors.textSecondary,
+                                                      : WebColors.textPrimary,
                                                 ),
                                                 child: Container(
                                                   padding: const EdgeInsets
@@ -1190,7 +1190,7 @@ class _ModifyPlaceOrderScreenState
                                                             .isDarkMode
                                                         ? WebDarkColors
                                                             .textPrimary
-                                                        : WebColors.textSecondary,
+                                                        : WebColors.textPrimary,
                                                   ),
                                                   child: Container(
                                                     padding: const EdgeInsets
@@ -1265,7 +1265,7 @@ class _ModifyPlaceOrderScreenState
                                                 unselectedWidgetColor: theme
                                                         .isDarkMode
                                                     ? WebDarkColors.textPrimary
-                                                    : WebColors.textSecondary,
+                                                    : WebColors.textPrimary,
                                               ),
                                               child: Container(
                                                 padding:
@@ -2322,7 +2322,7 @@ class _ModifyPlaceOrderScreenState
         isDarkTheme: theme.isDarkMode,
         color: theme.isDarkMode
             ? WebDarkColors.textPrimary
-            : WebColors.textSecondary,
+            : WebColors.textPrimary,
       ),
     );
   }
@@ -2381,7 +2381,7 @@ class _ModifyPlaceOrderScreenState
                     isDarkTheme: theme.isDarkMode,
                     color: theme.isDarkMode
                         ? WebDarkColors.textPrimary
-                        : WebColors.textSecondary,
+                        : WebColors.textPrimary,
                   ),
                   // prefixIcon: Container(
                   //     margin: const EdgeInsets.all(12),
@@ -2447,7 +2447,7 @@ class _ModifyPlaceOrderScreenState
                       isDarkTheme: theme.isDarkMode,
                       color: theme.isDarkMode
                           ? WebDarkColors.textPrimary
-                          : WebColors.textSecondary,
+                          : WebColors.textPrimary,
                     ),
                     // prefixIcon: Container(
                     //   margin: const EdgeInsets.all(12),
@@ -2503,7 +2503,7 @@ class _ModifyPlaceOrderScreenState
                       isDarkTheme: theme.isDarkMode,
                       color: theme.isDarkMode
                           ? WebDarkColors.textPrimary
-                          : WebColors.textSecondary,
+                          : WebColors.textPrimary,
                     ),
                     // prefixIcon: Container(
                     //   margin: const EdgeInsets.all(12),
@@ -2643,7 +2643,7 @@ class _ModifyPlaceOrderScreenState
                                 isDarkTheme: theme.isDarkMode,
                                 color: theme.isDarkMode
                                     ? WebDarkColors.textPrimary
-                                    : WebColors.textSecondary,
+                                    : WebColors.textPrimary,
                               ),
                               textCtrl: mktProtCtrl,
                               prefixIcon: Container(
@@ -2984,7 +2984,7 @@ class _ModifyPlaceOrderScreenState
                         isDarkTheme: theme.isDarkMode,
                         color: theme.isDarkMode
                             ? WebDarkColors.textPrimary
-                            : WebColors.textSecondary,
+                            : WebColors.textPrimary,
                       ),
                       textCtrl: discQtyCtrl,
                       textAlign: TextAlign.start),

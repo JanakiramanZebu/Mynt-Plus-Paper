@@ -398,7 +398,7 @@ class _OptionChainCallRowState extends State<_OptionChainCallRow> {
                                 _oiLack,
                                 style: WebTextStyles.tableDataCompact(
                                   isDarkTheme: theme.isDarkMode,
-                                  color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
+                                  color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
                                 ),
                               ),
                             ),
@@ -429,7 +429,7 @@ class _OptionChainCallRowState extends State<_OptionChainCallRow> {
                                 _lp,
                                 style: WebTextStyles.tableDataCompact(
                                   isDarkTheme: theme.isDarkMode,
-                                  color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
+                                  color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
                                 ),
                               ),
                             ),
@@ -517,7 +517,7 @@ class _OptionChainCallRowState extends State<_OptionChainCallRow> {
   Widget _buildDataCell(String value, ThemesProvider theme, {bool isPrimary = false, Color? color}) {
     final displayValue = value == "0.00" || value == "0" ? "0.00" : value;
     final textColor = color ?? (isPrimary 
-        ? (theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary)
+        ? (theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary)
         : (theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary));
 
     return Text(
@@ -721,7 +721,7 @@ Widget _buildOIData(ThemesProvider theme) {
         Text(
           _oiLack,
           style: _getTextStyle(
-              theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary, _oiPerChng, theme),
+              theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary, _oiPerChng, theme),
         ),
         const SizedBox(height: 3),
         Text(
@@ -768,7 +768,7 @@ Widget _buildPriceData(ThemesProvider theme) {
         Text(
           _lp,
           style: _getTextStyle(
-              theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary, _perChange, theme),
+              theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary, _perChange, theme),
         ),
         const SizedBox(height: 3),
         

@@ -69,7 +69,7 @@ class ExitDialog {
                           isDarkTheme: isDarkMode,
                           color: isDarkMode
                               ? WebDarkColors.textSecondary
-                              : WebColors.textSecondary,
+                              : WebColors.textPrimary,
                           fontWeight: WebFonts.regular,
                         ),
                       ),

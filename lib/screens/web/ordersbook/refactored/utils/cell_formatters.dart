@@ -84,7 +84,7 @@ class CellFormatters {
       case 'AMO':
         return const Color(0xffdf7c1a); // Orange/Yellow warning color
       default:
-        return theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary;
+        return theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary;
     }
   }
 
@@ -120,7 +120,7 @@ class CellFormatters {
       case 'TRIGGER_PENDING':
         return const Color(0xffdf7c1a); // Orange/Yellow warning color
       default:
-        return theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary;
+        return theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary;
     }
   }
 

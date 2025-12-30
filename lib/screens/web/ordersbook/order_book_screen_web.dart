@@ -128,7 +128,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     return Container(
       width: double.infinity,
       height: double.infinity,
-      color: theme.isDarkMode ? WebDarkColors.background : WebColors.background,
+      color: theme.isDarkMode ? WebDarkColors.background : Colors.white,
       child: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
         child: _isInitialized
@@ -230,7 +230,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                       isDarkTheme: theme.isDarkMode,
                       color: theme.isDarkMode
                           ? WebDarkColors.textPrimary
-                          : WebColors.textSecondary,
+                          : WebColors.textPrimary,
                     ),
                     decoration: InputDecoration(
                       hintText: 'Search orders',
@@ -372,7 +372,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                   color: isSelected
                       ? (theme.isDarkMode
                           ? WebDarkColors.textPrimary
-                          : WebColors.textSecondary)
+                          : WebColors.textPrimary)
                       : (theme.isDarkMode
                           ? WebDarkColors.navItem
                           : WebColors.navItem),
@@ -388,7 +388,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                     color: isSelected
                         ? (theme.isDarkMode
                             ? WebDarkColors.textPrimary
-                            : WebColors.textSecondary)
+                            : WebColors.textPrimary)
                         : (theme.isDarkMode
                             ? WebDarkColors.navItem
                             : WebColors.navItem),
@@ -553,7 +553,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
               color: isSelected
                   ? (theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textSecondary)
+                      : WebColors.textPrimary)
                   : (theme.isDarkMode
                       ? WebDarkColors.navItem
                       : WebColors.navItem),

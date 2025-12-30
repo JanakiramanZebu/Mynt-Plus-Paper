@@ -66,7 +66,7 @@ class SortableColumnHeader extends StatelessWidget {
                                 isDarkTheme: theme.isDarkMode,
                                 color: theme.isDarkMode
                                     ? WebDarkColors.textPrimary
-                                    : WebColors.textSecondary,
+                                    : WebColors.textPrimary,
                               ),
                               textAlign: isNumeric ? TextAlign.right : TextAlign.left,
                               overflow: TextOverflow.ellipsis,

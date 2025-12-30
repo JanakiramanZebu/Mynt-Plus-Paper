@@ -143,7 +143,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                     ? WebDarkColors.primary
                     : WebColors.primary)
                     .withOpacity(0.15)
-                : (WebColors.background),
+                : (theme.isDarkMode ? Colors.black : Colors.white),
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -166,7 +166,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                               isDarkTheme: theme.isDarkMode,
                               color: theme.isDarkMode
                                   ? WebDarkColors.textPrimary
-                                  : WebColors.textSecondary,
+                                  : WebColors.textPrimary,
                             ),
                           ),
                           if (widget.watchListData["option"].toString().isNotEmpty)
@@ -178,7 +178,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                                   isDarkTheme: theme.isDarkMode,
                                   color: theme.isDarkMode
                                       ? WebDarkColors.textPrimary
-                                      : WebColors.textSecondary,
+                                      : WebColors.textPrimary,
                                 ),
                               ),
                             ),
@@ -215,7 +215,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                               isDarkTheme: theme.isDarkMode,
                               color: theme.isDarkMode
                                   ? WebDarkColors.textPrimary
-                                  : WebColors.textSecondary,
+                                  : WebColors.textPrimary,
                             ),
                           ),
                         if (widget.watchListData['holdingQty'] != null &&
@@ -298,7 +298,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                                 _buildHoverButton(
                                   iconAsset: assets.depthIcon,
                                   color: Colors.black,
-                                  backgroundColor: WebColors.background,
+                                  backgroundColor: Colors.white,
                                   borderColor: theme.isDarkMode
                                       ? WebDarkColors.border
                                       : WebColors.border,
@@ -364,7 +364,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                                   _buildHoverButton(
                                     iconAsset: assets.trash,
                                     color: Colors.black,
-                                    backgroundColor: WebColors.background,
+                                    backgroundColor: Colors.white,
                                     borderColor: theme.isDarkMode
                                         ? WebDarkColors.border
                                         : WebColors.border,
@@ -1120,7 +1120,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
               isDarkTheme: theme.isDarkMode,
               color: theme.isDarkMode
                   ? WebDarkColors.textPrimary
-                  : WebColors.textSecondary,
+                  : WebColors.textPrimary,
               fontWeight: WebFonts.regular,
               letterSpacing: 0.0,
             ),
@@ -1276,7 +1276,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                             isDarkTheme: theme.isDarkMode,
                             color: theme.isDarkMode
                                 ? WebDarkColors.textPrimary
-                                : WebColors.textSecondary,
+                                : WebColors.textPrimary,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
@@ -1290,7 +1290,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                       'Fundamentals',
                       style: WebTextStyles.bodySmall(
                         isDarkTheme: false,
-                        color: WebColors.textSecondary,
+                        color: WebColors.textPrimary,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -1302,7 +1302,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                       'Options Chain',
                       style: WebTextStyles.bodySmall(
                         isDarkTheme: false,
-                        color: WebColors.textSecondary,
+                        color: WebColors.textPrimary,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -1315,7 +1315,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                       isDarkTheme: theme.isDarkMode,
                       color: theme.isDarkMode
                           ? WebDarkColors.textPrimary
-                          : WebColors.textSecondary,
+                          : WebColors.textPrimary,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -1328,7 +1328,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                       isDarkTheme: theme.isDarkMode,
                       color: theme.isDarkMode
                           ? WebDarkColors.textPrimary
-                          : WebColors.textSecondary,
+                          : WebColors.textPrimary,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -1436,7 +1436,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                                 isDarkTheme: theme.isDarkMode,
                                 color: theme.isDarkMode
                                     ? WebDarkColors.textPrimary
-                                    : WebColors.textSecondary,
+                                    : WebColors.textPrimary,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
@@ -1573,7 +1573,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                                     isDarkTheme: theme.isDarkMode,
                                     color: theme.isDarkMode
                                         ? WebDarkColors.textPrimary
-                                        : WebColors.textSecondary,
+                                        : WebColors.textPrimary,
                                     fontWeight: FontWeight.w700,
                                   ),
                                 ),
@@ -2130,7 +2130,7 @@ class _PriceDataWidgetWebState extends ConsumerState<_PriceDataWidgetWeb> {
               isDarkTheme: theme.isDarkMode,
               color: theme.isDarkMode
                   ? WebDarkColors.textPrimary
-                  : WebColors.textSecondary,
+                  : WebColors.textPrimary,
             ),
           ),
           const SizedBox(height: 8), // Adjusted spacing to match Vue project
@@ -2354,7 +2354,7 @@ class _PriceChangeWidgetWebState extends ConsumerState<_PriceChangeWidgetWeb> {
         isDarkTheme: theme.isDarkMode,
         color: theme.isDarkMode
             ? WebDarkColors.textPrimary
-            : WebColors.textSecondary,
+            : WebColors.textPrimary,
       ),
     );
   }

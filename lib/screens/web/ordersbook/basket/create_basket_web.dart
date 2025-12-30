@@ -129,7 +129,7 @@ class _CreateBasketState extends ConsumerState<CreateBasket> {
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textSecondary,
+                      : WebColors.textPrimary,
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
@@ -175,7 +175,7 @@ class _CreateBasketState extends ConsumerState<CreateBasket> {
                       isDarkTheme: theme.isDarkMode,
                       color: theme.isDarkMode
                           ? WebDarkColors.textPrimary
-                          : WebColors.textSecondary,
+                          : WebColors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -207,7 +207,7 @@ class _CreateBasketState extends ConsumerState<CreateBasket> {
                         isDarkTheme: theme.isDarkMode,
                         color: theme.isDarkMode
                             ? WebDarkColors.textPrimary
-                            : WebColors.textSecondary,
+                            : WebColors.textPrimary,
                       ),
                       textCtrl: textCtrl,
                       textAlign: TextAlign.start,

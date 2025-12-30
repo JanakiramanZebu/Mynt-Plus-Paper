@@ -169,7 +169,7 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
                       //           isDarkTheme: theme.isDarkMode,
                       //           color: theme.isDarkMode
                       //               ? WebDarkColors.textPrimary
-                      //               : WebColors.textSecondary,
+                      //               : WebColors.textPrimary,
                       //           fontWeight: FontWeight.w700,
                       //         ),
                       //       ),
@@ -242,7 +242,7 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
                                           isDarkTheme: theme.isDarkMode,
                                           color: theme.isDarkMode
                                               ? WebDarkColors.textPrimary
-                                              : WebColors.textSecondary,
+                                              : WebColors.textPrimary,
                                         ),
                                         textCapitalization:
                                             TextCapitalization.characters,
@@ -512,7 +512,7 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
               color: isSelected
                   ? (theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textSecondary)
+                      : WebColors.textPrimary)
                   : (theme.isDarkMode
                       ? WebDarkColors.navItem
                       : WebColors.navItem),
@@ -651,7 +651,7 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
                                       isDarkTheme: theme.isDarkMode,
                                       color: theme.isDarkMode
                                           ? WebDarkColors.textPrimary
-                                          : WebColors.textSecondary,
+                                          : WebColors.textPrimary,
                                     ),
                                   ),
                                   if (scrip.option != null &&
@@ -664,7 +664,7 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
                                           isDarkTheme: theme.isDarkMode,
                                           color: theme.isDarkMode
                                               ? WebDarkColors.textPrimary
-                                              : WebColors.textSecondary,
+                                              : WebColors.textPrimary,
                                         ),
                                       ),
                                     ),
@@ -678,7 +678,7 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
                                           isDarkTheme: theme.isDarkMode,
                                           color: theme.isDarkMode
                                               ? WebDarkColors.textPrimary
-                                              : WebColors.textSecondary,
+                                              : WebColors.textPrimary,
                                         ),
                                       ),
                                     ),
