@@ -67,7 +67,7 @@ class ThemesProvider extends DefaultChangeNotifier {
       pref.setTheme(themeMode == ThemeMode.dark);
       log('themeMode   ::: $themeMode');
       pref.setAppTheme("Dark");
-      SystemChrome.setSystemUIOverlayStyle( const SystemUiOverlayStyle(
+      SystemChrome.setSystemUIOverlayStyle( SystemUiOverlayStyle(
           statusBarIconBrightness: Brightness.light, // For Android (dark icons)
           statusBarBrightness: Brightness.dark,
           statusBarColor: Colors.black,
@@ -109,7 +109,7 @@ class ThemesProvider extends DefaultChangeNotifier {
         brightness == Brightness.dark ? ThemeMode.dark : ThemeMode.light;
 
     if (pref.userAppTheme == "Dark") {
-      SystemChrome.setSystemUIOverlayStyle( const SystemUiOverlayStyle(
+      SystemChrome.setSystemUIOverlayStyle( SystemUiOverlayStyle(
           statusBarIconBrightness: Brightness.light, // For Android (dark icons)
           statusBarBrightness: Brightness.dark,
           statusBarColor: Colors.black,

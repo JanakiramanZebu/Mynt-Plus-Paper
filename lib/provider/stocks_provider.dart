@@ -1421,7 +1421,7 @@ Future<SpanCalcResponse?> calculateSpanForSelection({
         statlegs: _legs,
         target: Target(type: 'POINTS', value: _targetPoints),
         stoploss: StopLoss(
-          type: 'POINTS',
+          type: _stopLossPoints != null ? 'POINTS' : null,
           value: _stopLossPoints,
         ),
         starttime: '${_entryTime.hour.toString().padLeft(2, '0')}:${_entryTime.minute.toString().padLeft(2, '0')}:00',

@@ -2568,7 +2568,7 @@ class _CustomizableSplitHomeScreenState
   static const Duration _subscriptionUpdateDebounceDelay = Duration(milliseconds: 200);
   
   // Track last update to prevent duplicate calls
-  final Map<int, ScreenType?> _lastSubscriptionUpdate = {};
+  Map<int, ScreenType?> _lastSubscriptionUpdate = {};
   
   // Update subscription manager based on current active panels (with debouncing)
   void _updateSubscriptionManagerForPanels() {

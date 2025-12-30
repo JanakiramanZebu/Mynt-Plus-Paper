@@ -153,8 +153,8 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
           '';
 
       return DataRow2(
-        color: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.hovered) ||
+        color: MaterialStateProperty.resolveWith((states) {
+          if (states.contains(MaterialState.hovered) ||
               _hoveredRowToken.value == uniqueId) {
             return theme.isDarkMode
                 ? WebDarkColors.primary.withOpacity(0.06)

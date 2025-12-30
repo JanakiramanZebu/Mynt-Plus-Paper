@@ -23,6 +23,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'locator/locator.dart';
 import 'locator/preference.dart';
 import 'provider/thems.dart';
+import 'provider/subscription_manager.dart';
 import 'routes/app_routes.dart';
 import 'routes/route_names.dart';
 import 'themes/theme.dart';
@@ -270,8 +271,8 @@ class MyApp extends ConsumerWidget {
         debugShowCheckedModeBanner: false,
         theme: shadcn.ThemeData(
           colorScheme: themeProvide.isDarkMode 
-              ? shadcn.ColorSchemes.darkDefaultColor 
-              : shadcn.ColorSchemes.lightDefaultColor,
+              ? shadcn.ColorSchemes.darkZinc() 
+              : shadcn.ColorSchemes.lightZinc(),
           radius: 0.5,
         ),
         initialRoute: Routes.splash,

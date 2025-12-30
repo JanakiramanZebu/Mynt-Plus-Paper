@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/screens/web/ordersbook/basket/basket_list_web.dart';
+import 'package:mynt_plus/sharedWidget/functions.dart';
 
 import '../../../provider/order_provider.dart';
 import '../../../provider/thems.dart';
@@ -407,10 +408,10 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     return LayoutBuilder(
       builder: (context, constraints) {
         final screenHeight = MediaQuery.of(context).size.height;
-        const padding = 32.0;
-        const headerHeight = 50.0;
-        const spacing = 16.0;
-        const bottomMargin = 20.0;
+        final padding = 32.0;
+        final headerHeight = 50.0;
+        final spacing = 16.0;
+        final bottomMargin = 20.0;
         final tableHeight =
             screenHeight - padding - headerHeight - spacing - bottomMargin;
 

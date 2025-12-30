@@ -8,6 +8,7 @@ import '../locator/preference.dart';
 import '../provider/auth_provider.dart';
 import '../provider/network_state_provider.dart';
 import '../provider/thems.dart';
+import '../res/res.dart';
 import '../res/web_resources.dart';
 import '../routes/route_names.dart';
 import '../sharedWidget/internet_widget.dart';
