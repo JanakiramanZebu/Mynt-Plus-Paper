@@ -52,8 +52,15 @@ class _NoInternetScreenState extends ConsumerState<NoInternetScreen> {
     }
     
     // Check current connection state
-    Connectivity().checkConnectivity().then((result) {
+    Connectivity().checkConnectivity().then((results) {
       if (_disposed) return;
+      
+      // connectivity_plus 7.0.0 returns List<ConnectivityResult>
+      final result = results.isNotEmpty 
+          ? (results.contains(ConnectivityResult.none) 
+              ? ConnectivityResult.none 
+              : results.first)
+          : ConnectivityResult.none;
       
       if (result != ConnectivityResult.none) {
         // If network is available but websocket is not connected, try reconnecting
@@ -89,7 +96,13 @@ class _NoInternetScreenState extends ConsumerState<NoInternetScreen> {
     
     try {
       // Check current connection state first
-      final connectivityResult = await Connectivity().checkConnectivity();
+      final results = await Connectivity().checkConnectivity();
+      // connectivity_plus 7.0.0 returns List<ConnectivityResult>
+      final connectivityResult = results.isNotEmpty 
+          ? (results.contains(ConnectivityResult.none) 
+              ? ConnectivityResult.none 
+              : results.first)
+          : ConnectivityResult.none;
       
       if (connectivityResult == ConnectivityResult.none) {
         if (mounted) {

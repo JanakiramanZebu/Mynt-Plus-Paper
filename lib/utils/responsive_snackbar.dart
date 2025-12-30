@@ -61,7 +61,6 @@ class ResponsiveSnackBar {
     
     overlayEntry = OverlayEntry(
       builder: (context) => ProviderScope(
-        parent: ProviderScope.containerOf(context, listen: false),
         child: _DesktopToastWidget(
           message: message,
           type: type,
@@ -127,26 +126,25 @@ class ResponsiveSnackBar {
     switch (type) {
       case SnackBarType.success:
         return _ColorScheme(
-          surface: colors.successLight.withOpacity(0.9),
+          surface: colors.successLight.withValues(alpha: 0.9),
           onSurface: Colors.white,
           primary: colors.successLight,
         );
       case SnackBarType.error:
         return _ColorScheme(
-          surface: colors.lossLight.withOpacity(0.9),
+          surface: colors.lossLight.withValues(alpha: 0.9),
           onSurface: Colors.white,
           primary: colors.lossLight,
         );
       case SnackBarType.warning:
         return _ColorScheme(
-          surface: Colors.orange.withOpacity(0.9),
+          surface: Colors.orange.withValues(alpha: 0.9),
           onSurface: Colors.white,
           primary: Colors.orange,
         );
       case SnackBarType.info:
-      default:
         return _ColorScheme(
-          surface: colors.colorBlue.withOpacity(0.9),
+          surface: colors.colorBlue.withValues(alpha: 0.9),
           onSurface: Colors.white,
           primary: colors.colorBlue,
         );
@@ -263,7 +261,7 @@ class _DesktopToastWidgetState extends ConsumerState<_DesktopToastWidget>
               opacity: _fadeAnimation,
               child: Material(
                 elevation: 4,
-                shadowColor: Colors.black.withOpacity(0.2),
+                shadowColor: Colors.black.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(8),
                 color: Colors.transparent,
                 child: Container(
@@ -277,7 +275,7 @@ class _DesktopToastWidgetState extends ConsumerState<_DesktopToastWidget>
                       end: Alignment.bottomRight,
                       colors: [
                         toastColors.backgroundColor,
-                        toastColors.backgroundColor.withOpacity(0.9),
+                        toastColors.backgroundColor.withValues(alpha: 0.9),
                       ],
                     ),
                     borderRadius: BorderRadius.circular(8),
@@ -332,7 +330,7 @@ class _DesktopToastWidgetState extends ConsumerState<_DesktopToastWidget>
                               child: Icon(
                                 Icons.close,
                                 size: 18,
-                                color: toastColors.textColor.withOpacity(0.7),
+                                color: toastColors.textColor.withValues(alpha: 0.7),
                               ),
                             ),
                           ),
@@ -358,7 +356,6 @@ class _DesktopToastWidgetState extends ConsumerState<_DesktopToastWidget>
       case SnackBarType.warning:
         return 'WARNING';
       case SnackBarType.info:
-      default:
         return 'INFO';
     }
   }
@@ -377,7 +374,6 @@ class _DesktopToastWidgetState extends ConsumerState<_DesktopToastWidget>
         icon = Icons.warning;
         break;
       case SnackBarType.info:
-      default:
         icon = Icons.info;
         break;
     }
@@ -424,7 +420,6 @@ class _DesktopToastWidgetState extends ConsumerState<_DesktopToastWidget>
           textColor: Color(0xFFBF360C), // Dark orange text color
         );
       case SnackBarType.info:
-      default:
         return const _ToastColors(
           backgroundColor: Color(0xFFE3F2FD), // Light blue background
           borderColor: Color(0xFF2196F3), // Blue border

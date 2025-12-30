@@ -210,7 +210,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
         final tradeSym = "${widget.wlValue.exch}:${widget.wlValue.tsym}";
         
         // Load both data sources in parallel
-        Future.wait([
+        Future.wait<void>([
           ref.read(marketWatchProvider).fetchFundamentalData(
             tradeSym: tradeSym,
             token: widget.wlValue.token,
