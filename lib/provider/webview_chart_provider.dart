@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 import 'package:mynt_plus/provider/core/default_change_notifier.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

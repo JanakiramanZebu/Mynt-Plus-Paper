@@ -2,7 +2,6 @@
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 import 'package:mynt_plus/models/ipo_model/ipo_details_model.dart';
 import 'package:mynt_plus/models/ipo_model/ipo_pre_close_model.dart';
 import 'package:mynt_plus/models/ipo_model/ipo_upcoming_model.dart';

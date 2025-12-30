@@ -12,7 +12,6 @@ class Routes {
   static const String fontSize = 'fontSize';
   static const String nointernet = 'nointernet';
   static const String mainControlerScreenForWeb = 'MainControlerScreenForWeb';
-  static const String dockScreen = 'dockScreen';
 
   static const String optionChain = 'OptionChain';
   static const String optionChainWeb = 'OptionChainWeb';

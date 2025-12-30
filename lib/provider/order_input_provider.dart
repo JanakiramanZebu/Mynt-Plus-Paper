@@ -2,7 +2,6 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 import '../models/order_book_model/gtt_order_book.dart';
 import '../models/order_book_model/order_book_model.dart';
 import '../sharedWidget/enums.dart';

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 
 import '../../../../models/mf_model/mutual_fundmodel.dart';
