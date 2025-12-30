@@ -4,6 +4,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 
 import '../locator/constant.dart';
 import 'index_list_provider.dart';
@@ -31,7 +32,7 @@ class NetworkStateProvider extends ChangeNotifier {
   ConnectivityResult get connectionStatus => _connectionStatus;
   ConnectivityResult get previousConnectionStatus => _previousConnectionStatus;
   final Connectivity _connectivity = Connectivity();
-  late StreamSubscription<ConnectivityResult> connectivitySubscription;
+  late StreamSubscription<List<ConnectivityResult>> connectivitySubscription;
   
   // Network type change detection
   bool _isNetworkTypeChange = false;
@@ -115,7 +116,16 @@ class NetworkStateProvider extends ChangeNotifier {
   networkStream() {
     initConnectivity();
     connectivitySubscription =
-        _connectivity.onConnectivityChanged.listen(updateConnectionStatus);
+        _connectivity.onConnectivityChanged.listen((results) {
+      // connectivity_plus 7.0.0 returns List<ConnectivityResult>
+      // Take the first result or check if any connection is available
+      final result = results.isNotEmpty 
+          ? (results.contains(ConnectivityResult.none) 
+              ? ConnectivityResult.none 
+              : results.first)
+          : ConnectivityResult.none;
+      updateConnectionStatus(result);
+    });
   }
 
 // Initially check internet connection
@@ -123,7 +133,13 @@ class NetworkStateProvider extends ChangeNotifier {
     late ConnectivityResult result;
     // Platform messages may fail, so we use a try/catch PlatformException.
     try {
-      result = await _connectivity.checkConnectivity();
+      final results = await _connectivity.checkConnectivity();
+      // connectivity_plus 7.0.0 returns List<ConnectivityResult>
+      result = results.isNotEmpty 
+          ? (results.contains(ConnectivityResult.none) 
+              ? ConnectivityResult.none 
+              : results.first)
+          : ConnectivityResult.none;
     } on PlatformException catch (e) {
       ref.read(indexListProvider)
           .logError
@@ -214,7 +230,13 @@ class NetworkStateProvider extends ChangeNotifier {
     
     try {
       // Force check connectivity
-      final result = await Connectivity().checkConnectivity();
+      final results = await Connectivity().checkConnectivity();
+      // connectivity_plus 7.0.0 returns List<ConnectivityResult>
+      final result = results.isNotEmpty 
+          ? (results.contains(ConnectivityResult.none) 
+              ? ConnectivityResult.none 
+              : results.first)
+          : ConnectivityResult.none;
       await updateConnectionStatus(result);
       
       // If we have connection, force websocket reconnection

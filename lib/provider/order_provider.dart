@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'package:flutter_riverpod/legacy.dart';
+
 import '../utils/url_utils.dart';
 
 import 'package:flutter/foundation.dart';

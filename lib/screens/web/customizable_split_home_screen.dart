@@ -57,6 +57,7 @@ import '../../../routes/route_names.dart';
 import '../../models/marketwatch_model/get_quotes.dart';
 import 'market_watch/chart_with_depth_web.dart';
 // import 'market_watch/scrip_tabs_manager.dart';
+import 'window_based_home_screen.dart';
 
 class CustomizableSplitHomeScreen extends ConsumerStatefulWidget {
   const CustomizableSplitHomeScreen({super.key});
@@ -646,9 +647,10 @@ class _CustomizableSplitHomeScreenState
   }
 
   Widget _buildSplitView(ThemesProvider theme) {
-    return _buildGridContent(theme);
+    // Use window-based system
+    return const WindowBasedHomeScreen();
   }
-
+  
   /// Calculate responsive split ratio for watchlist based on screen width
   /// Uses Bootstrap-inspired breakpoints for optimal layout at different screen sizes
   ///

@@ -3,6 +3,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:mynt_plus/models/desk_reports_model/pdf_download_model.dart';
 import 'package:mynt_plus/models/desk_reports_model/pnl_seg_charges_model.dart';
 import 'package:mynt_plus/provider/thems.dart';
