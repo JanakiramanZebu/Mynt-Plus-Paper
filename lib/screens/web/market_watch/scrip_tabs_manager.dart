@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:mynt_plus/models/marketwatch_model/get_quotes.dart';
 // import 'scrip_depth_info_web.dart';
 import 'chart_with_depth_web.dart';

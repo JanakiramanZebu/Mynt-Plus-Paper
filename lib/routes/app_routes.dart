@@ -18,6 +18,7 @@ import 'package:mynt_plus/screens/Mobile/profile_screen/app_webview/ipo_webview.
 import 'package:mynt_plus/screens/web/order/place_order_screen_web.dart';
 import 'package:mynt_plus/screens/web/ordersbook/pending_alert_detail_screen_web.dart';
 import 'package:mynt_plus/screens/web/trade_action_screen_web.dart';
+import 'package:mynt_plus/screens/web/window_based_home_screen.dart';
 // import 'package:mynt_plus/screens/web/grid_dashboard_web.dart';
 import '../main.dart'; // Import for FirebaseHelper
 import '../screens/Mobile/algo/algo_strategy_show_list.dart';
@@ -210,7 +211,7 @@ class AppRoutes {
       // case Routes.homeScreen:
       //   return MaterialPageRoute(builder: (_) => const HomeScreenDashBoard());
       case Routes.mainControlerScreenForWeb:
-        return MaterialPageRoute(builder: (_) => const CustomizableSplitHomeScreen());
+        return MaterialPageRoute(builder: (_) => const WindowBasedHomeScreen());
       case Routes.loginScreen:
         return _createRoute(
           pageBuilder: (_, __, ___) => const LoginScreen(),

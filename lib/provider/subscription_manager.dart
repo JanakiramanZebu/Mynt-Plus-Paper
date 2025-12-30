@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'websocket_provider.dart';
 import 'network_state_provider.dart';
@@ -28,7 +29,7 @@ class SubscriptionManager extends ChangeNotifier with WidgetsBindingObserver {
   bool _wasDisconnectedInBackground = false;
   
   // Network tracking
-  late StreamSubscription<ConnectivityResult> _connectivitySubscription;
+  late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
   ConnectivityResult _lastNetworkStatus = ConnectivityResult.mobile;
   
   // Context management - avoid stale context issues
@@ -48,7 +49,14 @@ class SubscriptionManager extends ChangeNotifier with WidgetsBindingObserver {
   
   void _init() {
     // Listen to network changes
-    _connectivitySubscription = Connectivity().onConnectivityChanged.listen((result) {
+    _connectivitySubscription = Connectivity().onConnectivityChanged.listen((results) {
+      // connectivity_plus 7.0.0 returns List<ConnectivityResult>
+      // Take the first result or check if any connection is available
+      final result = results.isNotEmpty 
+          ? (results.contains(ConnectivityResult.none) 
+              ? ConnectivityResult.none 
+              : results.first)
+          : ConnectivityResult.none;
       _handleNetworkChange(result);
     });
   }

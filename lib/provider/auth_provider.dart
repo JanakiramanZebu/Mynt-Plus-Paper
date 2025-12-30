@@ -8,9 +8,10 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:intl/intl.dart';
 import 'package:local_auth/local_auth.dart';
-import 'package:local_auth/error_codes.dart' as auth_error;
+// import 'package:local_auth/error_codes.dart' as auth_error;
 import 'package:mynt_plus/provider/banner_provider.dart';
 import 'package:mynt_plus/provider/mf_provider.dart';
 import 'package:mynt_plus/provider/profile_all_details_provider.dart';
@@ -1254,46 +1255,81 @@ class AuthProvider extends DefaultChangeNotifier {
   //   notifyListeners();
   // }
 
-  Future<void> deviceAuth(BuildContext context, String s) async {
-    if (kIsWeb) {
-      // Web: skip biometrics and continue
+ Future<void> deviceAuth(BuildContext context, String s) async {
+  if (kIsWeb) {
+    ref.read(themeProvider).navigateToNewPage(context);
+    initialLoadMethods(context, s);
+    notifyListeners();
+    return;
+  }
+
+  final localAuth = LocalAuthentication();
+
+  try {
+    final bool authenticated = await localAuth.authenticate(
+      localizedReason: 'Authenticate to access the app',
+      biometricOnly: false,                // allow PIN / pattern
+      sensitiveTransaction: true,          // stronger security
+      persistAcrossBackgrounding: true,    // keeps auth alive
+    );
+
+    if (authenticated) {
       ref.read(themeProvider).navigateToNewPage(context);
       initialLoadMethods(context, s);
-      notifyListeners();
-      return;
+    } else {
+      _showAuthenticationFailedDialog(
+        context,
+        s,
+        ref.read(themeProvider),
+      );
     }
-    final localAuth = LocalAuthentication();
-    try {
-      bool authenticated = await localAuth.authenticate(
-          localizedReason: 'Authenticate to access the app',
-          options: const AuthenticationOptions(
-              useErrorDialogs: false, stickyAuth: true, biometricOnly: false));
+  } on PlatformException catch (e) {
+    debugPrint('LocalAuth error: ${e.code} | ${e.message}');
 
-      if (authenticated) {
-        ref.read(themeProvider).navigateToNewPage(context);
-        initialLoadMethods(context, s);
-      } else {
-        _showAuthenticationFailedDialog(context, s, ref.read(themeProvider));
-      }
-    } on PlatformException catch (e) {
-      print("cvbghnjmk $e");
-      if (e.code == auth_error.notAvailable) {
+    switch (e.code) {
+      case 'NotAvailable':
         if (defaultTargetPlatform == TargetPlatform.iOS) {
           _showAuthenticationRequiredDialog(
-              context, s, ref.read(themeProvider));
+            context,
+            s,
+            ref.read(themeProvider),
+          );
         } else {
           initialLoadMethods(context, s);
         }
-      } else if (e.code == auth_error.notEnrolled) {
-        _showBiometricNotSetupDialog(context, s, ref.read(themeProvider));
-      } else {
-        _showAuthenticationErrorDialog(
-            context, s, e.message ?? 'Unknown error', ref.read(themeProvider));
-      }
-    }
+        break;
 
-    notifyListeners();
+      case 'NotEnrolled':
+        _showBiometricNotSetupDialog(
+          context,
+          s,
+          ref.read(themeProvider),
+        );
+        break;
+
+      case 'LockedOut':
+      case 'PermanentlyLockedOut':
+        _showAuthenticationErrorDialog(
+          context,
+          s,
+          'Biometric authentication is locked. Try again later.',
+          ref.read(themeProvider),
+        );
+        break;
+
+      default:
+        _showAuthenticationErrorDialog(
+          context,
+          s,
+          e.message ?? 'Authentication failed',
+          ref.read(themeProvider),
+        );
+    }
   }
+
+  notifyListeners();
+}
+
 
   void _showAuthenticationFailedDialog(BuildContext context, String s, theme) {
     showDialog(
