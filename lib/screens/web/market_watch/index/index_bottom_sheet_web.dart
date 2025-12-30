@@ -106,7 +106,7 @@ class _IndexBottomSheetWebState extends ConsumerState<IndexBottomSheetWeb> {
               color: isSelected
                   ? (theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary)
+                      : WebColors.textSecondary)
                   : (theme.isDarkMode
                       ? WebDarkColors.navItem
                       : WebColors.navItem),
@@ -155,7 +155,7 @@ class _IndexBottomSheetWebState extends ConsumerState<IndexBottomSheetWeb> {
                           isDarkTheme: theme.isDarkMode,
                           color: theme.isDarkMode
                               ? WebDarkColors.textPrimary
-                              : WebColors.textPrimary,
+                              : WebColors.textSecondary,
                         ),
                   ),
                  Material(
@@ -700,7 +700,7 @@ class _StaticIndexContentWeb extends StatelessWidget {
                 isDarkTheme: isDarkMode,
                 color: isDarkMode
                     ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary,
+                    : WebColors.textSecondary,
               ),
             ),
           ],
@@ -783,7 +783,7 @@ class _DynamicPriceContentWeb extends StatelessWidget {
               isDarkTheme: isDarkMode,
               color: isDarkMode
                   ? WebDarkColors.textPrimary
-                  : WebColors.textPrimary,
+                  : WebColors.textSecondary,
             ),
           ),
           const SizedBox(height: 8), // Adjusted spacing to match watchlist

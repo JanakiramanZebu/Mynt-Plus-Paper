@@ -309,7 +309,7 @@ class OrderActionHandler {
                           isDarkTheme: theme.isDarkMode,
                           color: theme.isDarkMode
                               ? WebDarkColors.textPrimary
-                              : WebColors.textPrimary,
+                              : WebColors.textSecondary,
                         ),
                       ),
                       Material(
@@ -358,7 +358,7 @@ class OrderActionHandler {
                                 isDarkTheme: theme.isDarkMode,
                                 color: theme.isDarkMode
                                     ? WebDarkColors.textPrimary
-                                    : WebColors.textPrimary,
+                                    : WebColors.textSecondary,
                               ),
                             ),
                           ),
@@ -467,7 +467,7 @@ class OrderActionHandler {
                           isDarkTheme: theme.isDarkMode,
                           color: theme.isDarkMode
                               ? WebDarkColors.textPrimary
-                              : WebColors.textPrimary,
+                              : WebColors.textSecondary,
                         ),
                       ),
                       Material(
@@ -516,7 +516,7 @@ class OrderActionHandler {
                                 isDarkTheme: theme.isDarkMode,
                                 color: theme.isDarkMode
                                     ? WebDarkColors.textPrimary
-                                    : WebColors.textPrimary,
+                                    : WebColors.textSecondary,
                               ),
                             ),
                           ),

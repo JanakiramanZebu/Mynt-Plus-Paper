@@ -27,7 +27,7 @@ class WebColors {
   static const Color pending = Color(0xFFFFB038);
   
   // === BACKGROUND COLORS ===
-  static const Color background = Color(0xFFFFFFFF);
+  static const Color background = Color(0xFF09090B); // zinc-950 - same as dark theme background
   static const Color backgroundSecondary = Color(0xFFF9F9F9);
   static const Color backgroundTertiary = Color(0xFFF1F3F8);
   static const Color cardBackground = Color(0xFFFFFFFF);
@@ -97,76 +97,79 @@ class WebDarkColors {
   static const Color tertiary = Color(0xFFFF6B6B);
   
   // === TEXT COLORS ===
-  static const Color textPrimary = Color(0xFFFFFFFF);
-  static const Color textSecondary = Color(0xFF8A8A8A);
-  static const Color textTertiary = Color(0xFFBBBBBB);
-  static const Color textDisabled = Color(0xFF404040);
-  static const Color textHint = Color(0xFF666666);
-  
+  // Using shadcn zinc palette for text
+  static const Color textPrimary = Color(0xFFFAFAFA); // zinc-50 - primary text
+  static const Color textSecondary = Color(0xFFA1A1AA); // zinc-400 - secondary text
+  static const Color textTertiary = Color(0xFF71717A); // zinc-500 - tertiary text
+  static const Color textDisabled = Color(0xFF52525B); // zinc-600 - disabled text
+  static const Color textHint = Color(0xFF71717A); // zinc-500 - hint text
+
   // === STATUS COLORS ===
   static const Color success = Color(0xFF68D391);
   static const Color error = Color(0xFFFF6B6B);
   static const Color warning = Color(0xFFFFD93D);
   static const Color info = Color(0xFF63B3ED);
   static const Color pending = Color(0xFFFFD93D);
-  
+
   // === BACKGROUND COLORS ===
-  static const Color background = Color(0xFF181818);
-  static const Color backgroundSecondary = Color(0xFF1E1E1E);
-  static const Color backgroundTertiary = Color(0xFF2A2A2A);
-  static const Color cardBackground = Color(0xFF1E1E1E);
+  // Using shadcn zinc palette - matching official shadcn_flutter docs
+  static const Color background = Color(0xFF09090B); // zinc-950 - main background (shadcn default)
+  static const Color backgroundSecondary = Color(0xFF18181B); // zinc-900 - secondary surfaces
+  static const Color backgroundTertiary = Color(0xFF27272A); // zinc-800 - tertiary surfaces
+  static const Color cardBackground = Color(0xFF18181B); // zinc-900 - card surfaces
   static const Color overlay = Color(0x80000000);
-  
+
   // === SURFACE COLORS ===
-  static const Color surface = Color(0xFF1E1E1E);
-  static const Color surfaceVariant = Color(0xFF2A2A2A);
-  static const Color surfaceContainer = Color(0xFF242424);
+  static const Color surface = Color(0xFF18181B); // zinc-900
+  static const Color surfaceVariant = Color(0xFF27272A); // zinc-800
+  static const Color surfaceContainer = Color(0xFF3F3F46); // zinc-700
   
   // === BORDER COLORS ===
-  static const Color border = Color(0xFF404040);
-  static const Color borderLight = Color(0xFF333333);
+  // Using shadcn zinc palette for borders
+  static const Color border = Color(0xFF27272A); // zinc-800 - default borders
+  static const Color borderLight = Color(0xFF3F3F46); // zinc-700 - lighter borders
   static const Color borderFocus = Color(0xFF2E65F6);
   static const Color borderError = Color(0xFFFF6B6B);
   static const Color borderSuccess = Color(0xFF68D391);
-  static const Color divider = Color(0xFF404040);
+  static const Color divider = Color(0xFF27272A); // zinc-800 - dividers
   
   // === INTERACTIVE COLORS ===
   static const Color buttonPrimary = Color(0xFF2E65F6);
-  static const Color buttonSecondary = Color(0xFF2A2A2A);
-  static const Color buttonDisabled = Color(0xFF404040);
+  static const Color buttonSecondary = Color(0xFF27272A); // zinc-800
+  static const Color buttonDisabled = Color(0xFF3F3F46); // zinc-700
   static const Color buttonHover = Color(0xFF5A8AFF);
   static const Color buttonActive = Color(0xFF0037B7);
-  
+
   // === INPUT COLORS ===
-  static const Color inputBackground = Color(0xFF1E1E1E);
-  static const Color inputBorder = Color(0xFF555555);
+  static const Color inputBackground = Color(0xFF09090B); // zinc-950 - matches main bg
+  static const Color inputBorder = Color(0xFF3F3F46); // zinc-700
   static const Color inputBorderFocus = Color(0xFF2E65F6);
   static const Color inputBorderError = Color(0xFFFF6B6B);
-  static const Color inputPlaceholder = Color(0xFF666666);
-  
+  static const Color inputPlaceholder = Color(0xFF71717A); // zinc-500
+
   // === NAVIGATION COLORS ===
-  static const Color navBackground = Color(0xFF1E1E1E);
-  static const Color navItem = Color(0xFF8A8A8A);
+  static const Color navBackground = Color(0xFF09090B); // zinc-950 - matches main bg
+  static const Color navItem = Color(0xFFA1A1AA); // zinc-400
   static const Color navItemHover = Color(0xFF2E65F6);
   static const Color navItemActive = Color(0xFF2E65F6);
-  static const Color navDivider = Color(0xFF404040);
+  static const Color navDivider = Color(0xFF27272A); // zinc-800
   
   // === DATA COLORS ===
   static const Color profit = Color(0xFF68D391);
   static const Color loss = Color(0xFFFF6B6B);
-  static const Color neutral = Color(0xFF8A8A8A);
-  
+  static const Color neutral = Color(0xFFA1A1AA); // zinc-400
+
   // === ELEVATION/SHADOW ===
   static const Color shadow = Color(0x33000000);
   static const Color shadowLight = Color(0x1A000000);
   static const Color shadowMedium = Color(0x33000000);
   static const Color shadowHeavy = Color(0x4D000000);
-  
+
   // === ICON COLORS ===
-  static const Color icon = Color(0xFF8A8A8A);
+  static const Color icon = Color(0xFFA1A1AA); // zinc-400
   static const Color iconPrimary = Color(0xFF2E65F6);
-  static const Color iconSecondary = Color(0xFF8A8A8A);
-  static const Color iconDisabled = Color(0xFF404040);
+  static const Color iconSecondary = Color(0xFF71717A); // zinc-500
+  static const Color iconDisabled = Color(0xFF52525B); // zinc-600
   
   // === FEEDBACK COLORS ===
   static const Color toastSuccess = Color(0xFF68D391);

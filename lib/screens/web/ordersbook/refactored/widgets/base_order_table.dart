@@ -105,14 +105,14 @@ class BaseOrderTable extends StatelessWidget {
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
+                      : WebColors.textSecondary,
                 ),
                 dataTextStyle: WebTextStyles.custom(
                   fontSize: 13,
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
+                      : WebColors.textSecondary,
                   fontWeight: WebFonts.medium,
                 ),
                 border: TableBorder(

@@ -42,7 +42,7 @@ class StrikePriceListCard extends ConsumerWidget {
           isDarkTheme: theme.isDarkMode,
           color: theme.isDarkMode
               ? WebDarkColors.textPrimary
-              : WebColors.textPrimary,
+              : WebColors.textSecondary,
           fontWeight: FontWeight.w500,
         ),
           ),

@@ -322,7 +322,7 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                       isDarkTheme: theme.isDarkMode,
                       color: theme.isDarkMode
                           ? WebDarkColors.textPrimary
-                          : WebColors.textPrimary,
+                          : WebColors.textSecondary,
                       fontWeight: WebFonts.medium,
                     ),
                     maxLines: 1,
@@ -461,7 +461,7 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
             color: color ??
                 (theme.isDarkMode
                     ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary),
+                    : WebColors.textSecondary),
             fontWeight: WebFonts.medium,
           ),
           maxLines: 1,

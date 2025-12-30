@@ -218,21 +218,14 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
         expDate: scripInfo.getQuotes?.expDate ?? '',
         option: scripInfo.getQuotes?.option ?? '');
 
-    return Dialog(
-      backgroundColor: Colors.transparent,
-      child: Container(
-        width: 700,
-        decoration: BoxDecoration(
-          color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-          borderRadius: BorderRadius.circular(5),
-        ),
+    return Material(
+      color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+      child: SafeArea(
         child: Column(
-          mainAxisSize: MainAxisSize.min,
           children: [
             // Header with close button
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              margin: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               decoration: BoxDecoration(
                 border: Border(
                   bottom: BorderSide(
@@ -245,24 +238,32 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _buildSymbolSection(theme, scripInfo, depthArgs),
+                  Expanded(child: _buildSymbolSection(theme, scripInfo, depthArgs)),
                   Material(
                     color: Colors.transparent,
                     shape: const CircleBorder(),
                     child: InkWell(
                       customBorder: const CircleBorder(),
                       splashColor: theme.isDarkMode
-                          ? Colors.white.withOpacity(.15)
-                          : Colors.black.withOpacity(.15),
+                          ? Colors.white.withValues(alpha: 0.15)
+                          : Colors.black.withValues(alpha: 0.15),
                       highlightColor: theme.isDarkMode
-                          ? Colors.white.withOpacity(.08)
-                          : Colors.black.withOpacity(.08),
-                      onTap: () => Navigator.of(context).pop(),
+                          ? Colors.white.withValues(alpha: 0.08)
+                          : Colors.black.withValues(alpha: 0.08),
+                      onTap: () {
+                        // Close drawer - try root navigator first, then regular
+                        final navigator = Navigator.of(context, rootNavigator: true);
+                        if (navigator.canPop()) {
+                          navigator.pop();
+                        } else {
+                          Navigator.of(context).pop();
+                        }
+                      },
                       child: Padding(
                         padding: const EdgeInsets.all(6),
                         child: Icon(
                           Icons.close,
-                          size: 20,
+                          size: 24,
                           color: theme.isDarkMode
                               ? WebDarkColors.iconSecondary
                               : WebColors.iconSecondary,
@@ -273,12 +274,11 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
                 ],
               ),
             ),
-            
+
             // Content
-            Flexible(
-              fit: FlexFit.loose,
+            Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.only(top: 0, bottom: 20, left: 20, right: 20),
+                padding: const EdgeInsets.all(20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -287,7 +287,7 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       child: _buildPnLSection(theme),
                     ),
-                    
+
                     // Details Section
                     _buildDetailsSection(theme),
                   ],
@@ -307,8 +307,8 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
       child: InkWell(
         customBorder: const RoundedRectangleBorder(),
         borderRadius: BorderRadius.circular(0),
-        splashColor: theme.isDarkMode ? colors.primaryDark.withOpacity(0.1) : colors.primaryLight.withOpacity(0.1),
-        highlightColor: theme.isDarkMode ? colors.primaryDark.withOpacity(0.2) : colors.primaryLight.withOpacity(0.2),
+        splashColor: theme.isDarkMode ? colors.primaryDark.withValues(alpha: 0.1) : colors.primaryLight.withValues(alpha: 0.1),
+        highlightColor: theme.isDarkMode ? colors.primaryDark.withValues(alpha: 0.2) : colors.primaryLight.withValues(alpha: 0.2),
         onTap: () async {
           Navigator.pop(context);
           await scripInfo.scripdepthsize(false);
@@ -324,7 +324,7 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
                   "${_exchTsym.tsym?.replaceAll("-EQ", "") ?? ''} ${_exchTsym.expDate ?? ''} ${_exchTsym.option ?? ''} ",
                   style: WebTextStyles.dialogTitle(
                     isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                    color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
                   ),
                 ),
                 const SizedBox(width: 4),
@@ -428,7 +428,7 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
           backgroundColor: isPrimary
               ? colors.primaryLight
               : (theme.isDarkMode
-                  ? colors.textSecondaryDark.withOpacity(0.6)
+                  ? colors.textSecondaryDark.withValues(alpha: 0.6)
                   : colors.btnBg),
           foregroundColor: isPrimary
               ? colors.colorWhite
@@ -641,14 +641,14 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
             title,
             style: WebTextStyles.dialogContent(
               isDarkTheme: theme.isDarkMode,
-              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
             ),
           ),
           Text(
             value,
             style: WebTextStyles.dialogContent(
               isDarkTheme: theme.isDarkMode,
-              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
             ),
           ),
         ],

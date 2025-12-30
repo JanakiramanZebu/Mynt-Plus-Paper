@@ -727,7 +727,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                   child: Container(
                     color: !theme.isDarkMode
                         ? WebDarkColors.textPrimary
-                        : WebColors.textPrimary,
+                        : WebColors.textSecondary,
                     width: double.infinity,
                     child:
 
@@ -838,7 +838,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                     color: theme.isDarkMode
                                                         ? WebDarkColors
                                                             .textPrimary
-                                                        : WebColors.textPrimary,
+                                                        : WebColors.textSecondary,
                                                     fontWeight: WebFonts.medium,
                                                   ),
                                                   maxLines: 1,
@@ -923,7 +923,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                     color: theme.isDarkMode
                                                         ? WebDarkColors
                                                             .textPrimary
-                                                        : WebColors.textPrimary,
+                                                        : WebColors.textSecondary,
                                                     fontWeight: WebFonts.medium,
                                                   ),
                                                   overflow:
@@ -1277,7 +1277,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                     ? (theme.isDarkMode
                                                         ? WebDarkColors
                                                             .textPrimary
-                                                        : WebColors.textPrimary)
+                                                        : WebColors.textSecondary)
                                                     : (theme.isDarkMode
                                                         ? WebDarkColors.navItem
                                                         : WebColors.navItem),
@@ -1679,7 +1679,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                 isDarkTheme: theme.isDarkMode,
                                                 color: theme.isDarkMode
                                                     ? WebDarkColors.textPrimary
-                                                    : WebColors.textPrimary,
+                                                    : WebColors.textSecondary,
                                                 fontWeight: WebFonts.semiBold,
                                               ))
                                         ]))
@@ -6567,7 +6567,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                     isDarkTheme: theme.isDarkMode,
                     color: theme.isDarkMode
                         ? WebDarkColors.textPrimary
-                        : WebColors.textPrimary,
+                        : WebColors.textSecondary,
                   ),
                   // prefixIcon: InkWell(
                   //   onTap: () {
@@ -6709,7 +6709,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                           isDarkTheme: theme.isDarkMode,
                           color: theme.isDarkMode
                               ? WebDarkColors.textPrimary
-                              : WebColors.textPrimary,
+                              : WebColors.textSecondary,
                         ),
                         // prefixIcon: Container(
                         //     margin: const EdgeInsets.all(12),
@@ -6784,7 +6784,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                       isDarkTheme: theme.isDarkMode,
                       color: theme.isDarkMode
                           ? WebDarkColors.textPrimary
-                          : WebColors.textPrimary,
+                          : WebColors.textSecondary,
                     ),
                     // prefixIcon: Container(
                     //   margin: const EdgeInsets.all(12),
@@ -6857,7 +6857,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                       isDarkTheme: theme.isDarkMode,
                       color: theme.isDarkMode
                           ? WebDarkColors.textPrimary
-                          : WebColors.textPrimary,
+                          : WebColors.textSecondary,
                     ),
                     // prefixIcon: Container(
                     //   margin: const EdgeInsets.all(12),
@@ -6934,7 +6934,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                       isDarkTheme: theme.isDarkMode,
                       color: theme.isDarkMode
                           ? WebDarkColors.textPrimary
-                          : WebColors.textPrimary,
+                          : WebColors.textSecondary,
                     ),
                     textCtrl: trailingTicksCtrl,
                     textAlign: TextAlign.start),
@@ -7032,7 +7032,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                         isDarkTheme: theme.isDarkMode,
                                         color: theme.isDarkMode
                                             ? WebDarkColors.textPrimary
-                                            : WebColors.textPrimary,
+                                            : WebColors.textSecondary,
                                       )),
                                   const SizedBox(height: 10),
                                   Semantics(
@@ -7080,7 +7080,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                         isDarkTheme: theme.isDarkMode,
                                         color: theme.isDarkMode
                                             ? WebDarkColors.textPrimary
-                                            : WebColors.textPrimary,
+                                            : WebColors.textSecondary,
                                       ),
                                       textCtrl: mktProtDialogCtrl,
                                       prefixIcon: Container(
@@ -7421,7 +7421,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
         isDarkTheme: theme.isDarkMode,
         color: theme.isDarkMode
             ? WebDarkColors.textPrimary
-            : WebColors.textPrimary,
+            : WebColors.textSecondary,
       ),
     );
   }
@@ -7582,7 +7582,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                       isDarkTheme: currentTheme.isDarkMode,
                                       color: currentTheme.isDarkMode
                                           ? WebDarkColors.textPrimary
-                                          : WebColors.textPrimary,
+                                          : WebColors.textSecondary,
                                     ),
                                   ),
                                 ],
@@ -7635,7 +7635,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                   isDarkTheme: currentTheme.isDarkMode,
                                   color: currentTheme.isDarkMode
                                       ? WebDarkColors.textPrimary
-                                      : WebColors.textPrimary,
+                                      : WebColors.textSecondary,
                                 ),
                               ),
                               const SizedBox(height: 16),

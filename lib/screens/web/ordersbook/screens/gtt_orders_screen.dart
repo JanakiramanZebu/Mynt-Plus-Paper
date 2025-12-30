@@ -299,7 +299,7 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
                       isDarkTheme: theme.isDarkMode,
                       color: theme.isDarkMode
                           ? WebDarkColors.textPrimary
-                          : WebColors.textPrimary,
+                          : WebColors.textSecondary,
                       fontWeight: WebFonts.medium,
                     ),
                     maxLines: 1,
@@ -399,7 +399,7 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
             color: color ??
                 (theme.isDarkMode
                     ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary),
+                    : WebColors.textSecondary),
             fontWeight: WebFonts.medium,
           ),
           maxLines: 1,

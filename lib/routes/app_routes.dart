@@ -927,6 +927,7 @@ class AppRoutes {
             pageBuilder: (_, __, ___) =>  const ReferAndEarnScreen(),
             beginOffset: const Offset(-1.0, 0.0),
           );
+
       case Routes.mfcagrcalss:
         return _createRoute(
           pageBuilder: (_, __, ___) => const MFCAGRCAL(),

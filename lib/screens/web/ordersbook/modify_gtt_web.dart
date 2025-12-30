@@ -324,7 +324,7 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                       "$symbol $expDate $option ",
                       style: WebTextStyles.sub(
                         isDarkTheme: theme.isDarkMode,
-                        color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                        color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
                         fontWeight: WebFonts.medium,
                       ),
                     ),
@@ -419,7 +419,7 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                 currentLtp ?? widget.gttOrderBook.ltp ?? widget.gttOrderBook.prc ?? '0.00',
                 style: WebTextStyles.title(
                   isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                  color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
                   fontWeight: WebFonts.bold,
                 ),
               ),
@@ -440,7 +440,7 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                 "$lotSize",
                 style: WebTextStyles.title(
                   isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                  color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
                   fontWeight: WebFonts.bold,
                 ),
               ),
@@ -461,7 +461,7 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
           isOco ? "Target Trigger Price" : "Trigger Price",
           style: WebTextStyles.formLabel(
             isDarkTheme: theme.isDarkMode,
-            color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+            color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
           ),
         ),
         const SizedBox(height: 10),
@@ -503,7 +503,7 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                                 isDarkTheme: theme.isDarkMode,
                                 color: theme.isDarkMode
                                     ? WebDarkColors.textPrimary
-                                    : WebColors.textPrimary,
+                                    : WebColors.textSecondary,
                               ),
             textCtrl: orderInput.val1Ctrl,
             textAlign: TextAlign.start,
@@ -526,7 +526,7 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                 "Qty",
                 style: WebTextStyles.formLabel(
                   isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                  color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
                 ),
               ),
               const SizedBox(height: 10),
@@ -546,7 +546,7 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                                 isDarkTheme: theme.isDarkMode,
                                 color: theme.isDarkMode
                                     ? WebDarkColors.textPrimary
-                                    : WebColors.textPrimary,
+                                    : WebColors.textSecondary,
                               ),
                   textCtrl: orderInput.qtyCtrl,
                   textAlign: TextAlign.start,
@@ -582,7 +582,7 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                     "Price",
                     style: WebTextStyles.formLabel(
                       isDarkTheme: theme.isDarkMode,
-                      color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                      color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
                     ),
                   ),
                   const SizedBox(width: 4),
@@ -590,7 +590,7 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                     orderInput.actPrcType,
                     style: WebTextStyles.formLabel(
                       isDarkTheme: theme.isDarkMode,
-                      color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                      color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
                     ),
                   ),
                 ],
@@ -620,7 +620,7 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                                 isDarkTheme: theme.isDarkMode,
                                 color: theme.isDarkMode
                                     ? WebDarkColors.textPrimary
-                                    : WebColors.textPrimary,
+                                    : WebColors.textSecondary,
                               ),
                   isReadable: orderInput.actPrcType == "Limit" ||
                       orderInput.actPrcType == "SL Limit"
@@ -667,7 +667,7 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
           isOco ? "Stoploss Trigger Price" : "Trigger Price",
           style: WebTextStyles.formLabel(
             isDarkTheme: theme.isDarkMode,
-            color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+            color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
           ),
         ),
         const SizedBox(height: 10),
@@ -709,7 +709,7 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                                 isDarkTheme: theme.isDarkMode,
                                 color: theme.isDarkMode
                                     ? WebDarkColors.textPrimary
-                                    : WebColors.textPrimary,
+                                    : WebColors.textSecondary,
                               ),
             textCtrl: orderInput.val2Ctrl,
             textAlign: TextAlign.start,
@@ -732,7 +732,7 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                 "Qty",
                 style: WebTextStyles.formLabel(
                   isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                  color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
                 ),
               ),
               const SizedBox(height: 10),
@@ -752,7 +752,7 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                                 isDarkTheme: theme.isDarkMode,
                                 color: theme.isDarkMode
                                     ? WebDarkColors.textPrimary
-                                    : WebColors.textPrimary,
+                                    : WebColors.textSecondary,
                               ),
                   textCtrl: orderInput.ocoQtyCtrl,
                   textAlign: TextAlign.start,
@@ -788,7 +788,7 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                     "Price",
                     style: WebTextStyles.formLabel(
                       isDarkTheme: theme.isDarkMode,
-                      color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                      color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
                     ),
                   ),
                   const SizedBox(width: 4),
@@ -818,7 +818,7 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                                 isDarkTheme: theme.isDarkMode,
                                 color: theme.isDarkMode
                                     ? WebDarkColors.textPrimary
-                                    : WebColors.textPrimary,
+                                    : WebColors.textSecondary,
                               ),
                   isReadable: orderInput.actOcoPrcType == "Limit" ||
                       orderInput.actOcoPrcType == "SL Limit"

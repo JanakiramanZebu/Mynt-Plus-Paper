@@ -85,7 +85,7 @@ class _ProfileDropdownState extends State<ProfileDropdown> {
                 isDarkTheme: widget.isDarkMode,
                 color: widget.isDarkMode
                     ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary,
+                    : WebColors.textSecondary,
                 fontWeight: WebFonts.semiBold,
               ),
             ),
@@ -97,7 +97,7 @@ class _ProfileDropdownState extends State<ProfileDropdown> {
               size: 20,
               color: widget.isDarkMode
                   ? WebDarkColors.textPrimary
-                  : WebColors.textPrimary,
+                  : WebColors.textSecondary,
             ),
           ],
         ),

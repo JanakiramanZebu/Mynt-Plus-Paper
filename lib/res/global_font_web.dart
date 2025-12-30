@@ -1,53 +1,10 @@
 import 'package:flutter/material.dart';
- 
-import 'package:google_fonts/google_fonts.dart';
 
 import 'res.dart';
 
-/// Web-specific font constants and text styles
-/// This file handles all typography for web platform using Inter font
-/// 
-/// TYPOGRAPHY SYSTEM OVERVIEW:
-/// ===========================
-/// 
-/// HEADERS (Use for titles, section headers, page titles):
-/// - Hero (20px): Main page titles, major section headers
-/// - Head (18px): Section titles, card headers, dialog titles
-/// - Title (16px): Subsection titles, card titles, list item titles
-/// - Title Medium (15px): Medium titles, slightly smaller card titles
-/// 
-/// BODY TEXT (Use for content, descriptions, data):
-/// - Sub (14px): Primary body text, table data, form inputs, descriptions
-/// - Body Small (13px): Secondary table data, compact text, smaller body content
-/// - Para (12px): Secondary body text, helper text, fine print
-/// 
-/// SMALL TEXT (Use for metadata, labels, captions):
-/// - Caption (10px): Timestamps, version info, small labels
-/// - Overline (8px): Tiny labels, status indicators (rarely used)
-/// 
-/// USAGE EXAMPLES:
-/// ===============
-/// 
-/// // Page/Screen Title
-/// Text('Orders Book', style: WebTextStyles.head(isDarkTheme: theme.isDarkMode))
-/// 
-/// // Section Header
-/// Text('Pending Orders', style: WebTextStyles.title(isDarkTheme: theme.isDarkMode))
-/// 
-/// // Table Header
-/// Text('Instrument', style: WebTextStyles.tableHeader(isDarkTheme: theme.isDarkMode))
-/// 
-/// // Table Data / Body Text
-/// Text('RELIANCE', style: WebTextStyles.sub(isDarkTheme: theme.isDarkMode))
-/// 
-/// // Button Text
-/// Text('Submit', style: WebTextStyles.button(isDarkTheme: theme.isDarkMode))
-/// 
-/// // Helper Text / Caption
-/// Text('Last updated 5 min ago', style: WebTextStyles.caption(isDarkTheme: theme.isDarkMode))
 class WebFonts {
   // Font Family
-  static const String fontFamily = 'inter';
+  static const String fontFamily = 'Geist';
   
   // ===== FONT SIZES - DO NOT CHANGE THESE =====
   // These are the ONLY allowed font sizes in the web project
@@ -80,13 +37,6 @@ class WebFonts {
   static const double wideLetterSpacing = 1.0;
 }
 
-/// Web-specific text styles using Inter font
-/// 
-/// This class provides semantic text styles for consistent typography across the web app.
-/// Always use these methods instead of hardcoding font sizes.
-/// 
-/// IMPORTANT: Use semantic methods (tableHeader, tableData, button, etc.) when available.
-/// Only use custom() when absolutely necessary, and always use WebFonts constants for sizes.
 class WebTextStyles {
   /// Base text style with common properties
   static TextStyle _baseStyle({
@@ -98,7 +48,8 @@ class WebTextStyles {
     double? height,
     TextDecoration? decoration,
   }) {
-    final base = TextStyle(
+    return TextStyle(
+      fontFamily: WebFonts.fontFamily,
       fontSize: fontSize,
       color: color ?? (isDarkTheme ? colors.colorWhite : colors.colorBlack),
       fontWeight: fontWeight ?? WebFonts.regular,
@@ -106,7 +57,6 @@ class WebTextStyles {
       height: height,
       decoration: decoration,
     );
-    return GoogleFonts.inter(textStyle: base);
   }
 
   /// Hero text style (20px)

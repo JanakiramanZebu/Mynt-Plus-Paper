@@ -576,7 +576,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
   ) {
     return SliverToBoxAdapter(
       child: Container(
-        color: colors.colorWhite,
+        color: theme.isDarkMode ? WebDarkColors.background : WebColors.background,
         padding: const EdgeInsets.only(left: 10, right: 10, top: 10, bottom: 0),
         child: Row(
           children: [
@@ -719,8 +719,8 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
   ) {
     final tabContent = Container(
       padding: const EdgeInsets.symmetric(horizontal: 10),
-      decoration: const BoxDecoration(
-        color: Colors.white,
+      decoration: BoxDecoration(
+        color: theme.isDarkMode ? WebDarkColors.background : WebColors.background,
         // border: Border(
         //   bottom: BorderSide(
         //     color: theme.isDarkMode
@@ -994,7 +994,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                 ? (theme.isDarkMode
                     ? WebDarkColors.backgroundTertiary
                     : WebColors.backgroundTertiary)
-                : Colors.white,
+                : WebColors.background,
             border: Border.all(
               color: isActive
                   ? (theme.isDarkMode
@@ -1015,7 +1015,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
               color: isActive
                   ? (theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary)
+                      : WebColors.textSecondary)
                   : (theme.isDarkMode
                       ? WebDarkColors.navItem
                       : WebColors.navItem),
@@ -1151,7 +1151,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
+                      : WebColors.textSecondary,
                 ),
               ),
               const SizedBox(height: 12),
@@ -1300,7 +1300,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                             : WebColors.primary)
                         : (theme.isDarkMode
                             ? WebDarkColors.textPrimary
-                            : WebColors.textPrimary),
+                            : WebColors.textSecondary),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -1426,7 +1426,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                           isDarkTheme: theme.isDarkMode,
                           color: theme.isDarkMode
                               ? WebDarkColors.textPrimary
-                              : WebColors.textPrimary,
+                              : WebColors.textSecondary,
                         ),
                       ),
                       IconButton(
@@ -1541,7 +1541,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                                             isDarkTheme: theme.isDarkMode,
                                             color: theme.isDarkMode
                                                 ? WebDarkColors.textPrimary
-                                                : WebColors.textPrimary,
+                                                : WebColors.textSecondary,
                                             fontWeight: FontWeight.w500,
                                           ),
                                         ),
@@ -1723,7 +1723,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                           isDarkTheme: theme.isDarkMode,
                           color: theme.isDarkMode
                               ? WebDarkColors.textPrimary
-                              : WebColors.textPrimary,
+                              : WebColors.textSecondary,
                         ),
                       ),
                       IconButton(
@@ -1767,7 +1767,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                               isDarkTheme: theme.isDarkMode,
                               color: theme.isDarkMode
                                   ? WebDarkColors.textPrimary
-                                  : WebColors.textPrimary,
+                                  : WebColors.textSecondary,
                             ),
                             textCtrl: controller,
                             textAlign: TextAlign.start,
@@ -1901,7 +1901,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                           isDarkTheme: theme.isDarkMode,
                           color: theme.isDarkMode
                               ? WebDarkColors.textPrimary
-                              : WebColors.textPrimary,
+                              : WebColors.textSecondary,
                         ),
                       ),
                       IconButton(
@@ -1931,7 +1931,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                             isDarkTheme: theme.isDarkMode,
                             color: theme.isDarkMode
                                 ? WebDarkColors.textPrimary
-                                : WebColors.textPrimary,
+                                : WebColors.textSecondary,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -2058,7 +2058,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                           isDarkTheme: theme.isDarkMode,
                           color: theme.isDarkMode
                               ? WebDarkColors.textPrimary
-                              : WebColors.textPrimary,
+                              : WebColors.textSecondary,
                         ),
                       ),
                       IconButton(
@@ -2102,7 +2102,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                               isDarkTheme: theme.isDarkMode,
                               color: theme.isDarkMode
                                   ? WebDarkColors.textPrimary
-                                  : WebColors.textPrimary,
+                                  : WebColors.textSecondary,
                             ),
                             textCtrl: controller,
                             textAlign: TextAlign.start,
@@ -2353,12 +2353,12 @@ class _WatchlistIndexSlotWebState
               : WebColors.primary.withOpacity(0.05),
           onTap: () => _handleIndexClick(context),
             child: Container(
-            height: 52, // Compact height
+            height: 62, // Compact height
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
               color: widget.theme.isDarkMode
-                    ? WebDarkColors.backgroundTertiary
-                    : WebColors.backgroundTertiary,
+                    ? WebDarkColors.backgroundSecondary
+                    : WebColors.textSecondary,
               // border: Border.all(
               //   color: widget.theme.isDarkMode                    
               //         ? WebDarkColors.primary
@@ -2380,9 +2380,7 @@ class _WatchlistIndexSlotWebState
                       widget.indexItem.idxname ?? "",
                       style: WebTextStyles.symbolList(
                         isDarkTheme: widget.theme.isDarkMode,
-                        color: widget.theme.isDarkMode
-                            ? WebDarkColors.textPrimary 
-                            : WebColors.textPrimary,                      
+                        color: WebDarkColors.textPrimary ,                      
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -2620,7 +2618,7 @@ class _WatchlistLivePriceWidgetState
           Text(
             "$_change ",
             style: _getTextStyle(
-              WebColors.textPrimary, // Match default_index_list_web.dart
+              WebDarkColors.textPrimary,
               13, // Match font size
               1,
             ),
@@ -2629,7 +2627,7 @@ class _WatchlistLivePriceWidgetState
           Text(
             "($_perChange%)",
             style: _getTextStyle(
-              WebColors.textPrimary, // Match default_index_list_web.dart
+              widget.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
               13, // Match font size
               1,
             ),

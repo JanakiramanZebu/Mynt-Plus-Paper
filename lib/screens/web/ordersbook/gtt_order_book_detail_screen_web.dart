@@ -277,7 +277,7 @@ class _GttOrderBookDetailScreenWebState extends ConsumerState<GttOrderBookDetail
                   "${displayData.symbol?.replaceAll("-EQ", "").toUpperCase() ?? ''} ${displayData.expDate ?? ''} ${displayData.option ?? ''} ",
                  style: WebTextStyles.dialogTitle(
                     isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                    color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
                   ),
                 ),
 
@@ -659,14 +659,14 @@ class _GttOrderBookDetailScreenWebState extends ConsumerState<GttOrderBookDetail
             title,
             style: WebTextStyles.dialogContent(
               isDarkTheme: theme.isDarkMode,
-              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
             ),
           ),
           Text(
             value,
             style: WebTextStyles.dialogContent(
               isDarkTheme: theme.isDarkMode,
-              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
             ),
           ),
         ],

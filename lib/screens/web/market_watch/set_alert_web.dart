@@ -156,7 +156,7 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                             isDarkTheme: theme.isDarkMode,
                             color: theme.isDarkMode
                                 ? WebDarkColors.textPrimary
-                                : WebColors.textPrimary,
+                                : WebColors.textSecondary,
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -169,7 +169,7 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                                 isDarkTheme: theme.isDarkMode,
                                 color: theme.isDarkMode
                                     ? WebDarkColors.textPrimary
-                                    : WebColors.textPrimary,
+                                    : WebColors.textSecondary,
                                 fontWeight: WebFonts.semiBold,
                               ),
                             ),
@@ -242,7 +242,7 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                       isDarkTheme: theme.isDarkMode,
                       color: theme.isDarkMode
                           ? WebDarkColors.textPrimary
-                          : WebColors.textPrimary,
+                          : WebColors.textSecondary,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -284,7 +284,7 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                           isDarkTheme: theme.isDarkMode,
                           color: theme.isDarkMode
                               ? WebDarkColors.textPrimary
-                              : WebColors.textPrimary,
+                              : WebColors.textSecondary,
                         ),
                         hint: Text(
                           alertTypeVal,
@@ -309,7 +309,7 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                                         isDarkTheme: theme.isDarkMode,
                                         color: theme.isDarkMode
                                             ? WebDarkColors.textPrimary
-                                            : WebColors.textPrimary,
+                                            : WebColors.textSecondary,
                                       ),
                                       overflow: TextOverflow.ellipsis,
                                     ),
@@ -340,7 +340,7 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                       isDarkTheme: theme.isDarkMode,
                       color: theme.isDarkMode
                           ? WebDarkColors.textPrimary
-                          : WebColors.textPrimary,
+                          : WebColors.textSecondary,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -378,7 +378,7 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                                     isDarkTheme: theme.isDarkMode,
                                     color: theme.isDarkMode
                                         ? WebDarkColors.textPrimary
-                                        : WebColors.textPrimary,
+                                        : WebColors.textSecondary,
                                   ),
                                 ),
                               ),
@@ -412,7 +412,7 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
+                      : WebColors.textSecondary,
                 ),
               ),
               const SizedBox(height: 8),
@@ -443,7 +443,7 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                     isDarkTheme: theme.isDarkMode,
                     color: theme.isDarkMode
                         ? WebDarkColors.textPrimary
-                        : WebColors.textPrimary,
+                        : WebColors.textSecondary,
                   ),
                   textCtrl: valueCtrl,
                   textAlign: TextAlign.start,
@@ -472,7 +472,7 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
+                      : WebColors.textSecondary,
                 ),
               ),
               const SizedBox(height: 8),
@@ -493,7 +493,7 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                     isDarkTheme: theme.isDarkMode,
                     color: theme.isDarkMode
                         ? WebDarkColors.textPrimary
-                        : WebColors.textPrimary,
+                        : WebColors.textSecondary,
                   ),
                   textCtrl: remark,
                   textAlign: TextAlign.start,

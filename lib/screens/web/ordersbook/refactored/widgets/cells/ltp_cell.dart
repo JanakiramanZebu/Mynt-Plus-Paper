@@ -63,7 +63,7 @@ class _OrderBookLTPCellState extends ConsumerState<OrderBookLTPCell> {
         isDarkTheme: widget.theme.isDarkMode,
         color: widget.theme.isDarkMode
             ? WebDarkColors.textPrimary
-            : WebColors.textPrimary,
+            : WebColors.textSecondary,
         fontWeight: WebFonts.medium,
       ),
     );
@@ -125,7 +125,7 @@ class _GttLTPCellState extends ConsumerState<GttLTPCell> {
         isDarkTheme: widget.theme.isDarkMode,
         color: widget.theme.isDarkMode
             ? WebDarkColors.textPrimary
-            : WebColors.textPrimary,
+            : WebColors.textSecondary,
         fontWeight: WebFonts.medium,
       ),
     );

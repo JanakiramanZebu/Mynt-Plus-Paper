@@ -270,7 +270,7 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
             isDarkTheme: theme.isDarkMode,
             color: theme.isDarkMode
                 ? WebDarkColors.textPrimary
-                : WebColors.textPrimary,
+                : WebColors.textSecondary,
             fontWeight: WebFonts.medium,
           ),
           maxLines: 1,
@@ -299,7 +299,7 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
             color: color ??
                 (theme.isDarkMode
                     ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary),
+                    : WebColors.textSecondary),
             fontWeight: WebFonts.medium,
           ),
           maxLines: 1,

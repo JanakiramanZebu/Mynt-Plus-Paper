@@ -24,7 +24,7 @@ class SwapButton extends StatelessWidget {
             .withOpacity(0.1),
         child: Icon(
           Icons.swap_horiz,
-          color: isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          color: isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
           size: 22,
         ),
       ),

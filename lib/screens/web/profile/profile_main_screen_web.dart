@@ -2,6 +2,7 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:mynt_plus/res/web_colors.dart';
 import '../../../utils/custom_navigator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -831,7 +832,7 @@ class SettingsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: theme.isDarkMode ? Colors.black : Colors.white,
+        backgroundColor:  WebDarkColors.background,
         elevation: 0,
         centerTitle: false,
         leadingWidth: 48,
@@ -1899,7 +1900,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
     return Scaffold(
       appBar: AppBar(
         // title: TextWidget.subText(text: "My Accounts", theme: theme.isDarkMode, fw: 1),
-        backgroundColor: theme.isDarkMode ? Colors.black : Colors.white,
+        backgroundColor: theme.isDarkMode ? Colors.black : WebColors.background,
         elevation: 0,
         centerTitle: false,
         leadingWidth: 48,

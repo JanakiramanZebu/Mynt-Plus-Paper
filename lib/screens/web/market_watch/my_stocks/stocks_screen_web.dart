@@ -58,7 +58,7 @@ class _StocksScreenWebState extends ConsumerState<StocksScreenWeb> {
                     isDarkTheme: theme.isDarkMode,
                     color: theme.isDarkMode
                         ? WebDarkColors.textPrimary
-                        : WebColors.textPrimary,
+                        : WebColors.textSecondary,
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -243,7 +243,7 @@ class _HoldingsCardWebState extends ConsumerState<_HoldingsCardWeb> {
                                   isDarkTheme: widget.theme.isDarkMode,
                                   color: widget.theme.isDarkMode
                                       ? WebDarkColors.textPrimary
-                                      : WebColors.textPrimary,
+                                      : WebColors.textSecondary,
                                 ),
                               ),
                               if (_option.isNotEmpty)
@@ -255,7 +255,7 @@ class _HoldingsCardWebState extends ConsumerState<_HoldingsCardWeb> {
                                       isDarkTheme: widget.theme.isDarkMode,
                                       color: widget.theme.isDarkMode
                                           ? WebDarkColors.textPrimary
-                                          : WebColors.textPrimary,
+                                          : WebColors.textSecondary,
                                     ),
                                   ),
                                 ),
@@ -296,7 +296,7 @@ class _HoldingsCardWebState extends ConsumerState<_HoldingsCardWeb> {
                                   isDarkTheme: widget.theme.isDarkMode,
                                   color: widget.theme.isDarkMode
                                       ? WebDarkColors.textPrimary
-                                      : WebColors.textPrimary,
+                                      : WebColors.textSecondary,
                                 ),
                               ),
                             if (_currentQty != "0" && _currentQty.isNotEmpty) ...[
@@ -899,7 +899,7 @@ class _PriceChangeWidgetWebState extends ConsumerState<_PriceChangeWidgetWeb> {
         isDarkTheme: theme.isDarkMode,
         color: theme.isDarkMode
             ? WebDarkColors.textPrimary
-            : WebColors.textPrimary,
+            : WebColors.textSecondary,
       ),
     );
   }

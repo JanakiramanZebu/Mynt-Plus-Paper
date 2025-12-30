@@ -58,7 +58,7 @@ class _MarginDetailsSheetWebState extends State<MarginDetailsSheetWeb> {
                         isDarkTheme: theme.isDarkMode,
                         color: theme.isDarkMode
                             ? WebDarkColors.textPrimary
-                            : WebColors.textPrimary,
+                            : WebColors.textSecondary,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -158,7 +158,7 @@ class _MarginDetailsSheetWebState extends State<MarginDetailsSheetWeb> {
                               isDarkTheme: theme.isDarkMode,
                               color: theme.isDarkMode
                                   ? WebDarkColors.textPrimary
-                                  : WebColors.textPrimary,
+                                  : WebColors.textSecondary,
                               fontWeight: WebFonts.semiBold,
                             )),
                         Text(
@@ -168,7 +168,7 @@ class _MarginDetailsSheetWebState extends State<MarginDetailsSheetWeb> {
                               isDarkTheme: theme.isDarkMode,
                               color: theme.isDarkMode
                                   ? WebDarkColors.textPrimary
-                                  : WebColors.textPrimary,
+                                  : WebColors.textSecondary,
                               fontWeight: WebFonts.bold,
                             )),
                       ],
@@ -185,7 +185,7 @@ class _MarginDetailsSheetWebState extends State<MarginDetailsSheetWeb> {
                               isDarkTheme: theme.isDarkMode,
                               color: theme.isDarkMode
                                   ? WebDarkColors.textPrimary
-                                  : WebColors.textPrimary,
+                                  : WebColors.textSecondary,
                               fontWeight: WebFonts.bold,
                             )),
                         Text(
@@ -195,7 +195,7 @@ class _MarginDetailsSheetWebState extends State<MarginDetailsSheetWeb> {
                               isDarkTheme: theme.isDarkMode,
                               color: theme.isDarkMode
                                   ? WebDarkColors.textPrimary
-                                  : WebColors.textPrimary,
+                                  : WebColors.textSecondary,
                               fontWeight: WebFonts.semiBold,
                             )),
                       ],
@@ -218,7 +218,7 @@ class _MarginDetailsSheetWebState extends State<MarginDetailsSheetWeb> {
                                   isDarkTheme: theme.isDarkMode,
                                   color: theme.isDarkMode
                                       ? WebDarkColors.textPrimary
-                                      : WebColors.textPrimary,
+                                      : WebColors.textSecondary,
                                   fontWeight: WebFonts.semiBold,
                                 )),
                             Text(
@@ -254,7 +254,7 @@ class _MarginDetailsSheetWebState extends State<MarginDetailsSheetWeb> {
                           isDarkTheme: theme.isDarkMode,
                           color: theme.isDarkMode
                               ? WebDarkColors.textPrimary
-                              : WebColors.textPrimary,
+                              : WebColors.textSecondary,
                           fontWeight: WebFonts.regular,
                         ),
                       ),
@@ -301,7 +301,7 @@ class _MarginDetailsSheetWebState extends State<MarginDetailsSheetWeb> {
                           isDarkTheme: theme.isDarkMode,
                           color: theme.isDarkMode
                               ? WebDarkColors.textPrimary
-                              : WebColors.textPrimary,
+                              : WebColors.textSecondary,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -321,7 +321,7 @@ class _MarginDetailsSheetWebState extends State<MarginDetailsSheetWeb> {
                                           isDarkTheme: theme.isDarkMode,
                                           color: theme.isDarkMode
                                               ? WebDarkColors.textPrimary
-                                              : WebColors.textPrimary,
+                                              : WebColors.textSecondary,
                                           fontWeight: WebFonts.semiBold,
                                         )),
                                     Text(
@@ -331,7 +331,7 @@ class _MarginDetailsSheetWebState extends State<MarginDetailsSheetWeb> {
                                           isDarkTheme: theme.isDarkMode,
                                           color: theme.isDarkMode
                                               ? WebDarkColors.textPrimary
-                                              : WebColors.textPrimary,
+                                              : WebColors.textSecondary,
                                           fontWeight: WebFonts.bold,
                                         )),
                                   ],
@@ -348,7 +348,7 @@ class _MarginDetailsSheetWebState extends State<MarginDetailsSheetWeb> {
                                           isDarkTheme: theme.isDarkMode,
                                           color: theme.isDarkMode
                                               ? WebDarkColors.textPrimary
-                                              : WebColors.textPrimary,
+                                              : WebColors.textSecondary,
                                           fontWeight: WebFonts.semiBold,
                                         )),
                                     Text(
@@ -358,7 +358,7 @@ class _MarginDetailsSheetWebState extends State<MarginDetailsSheetWeb> {
                                           isDarkTheme: theme.isDarkMode,
                                           color: theme.isDarkMode
                                               ? WebDarkColors.textPrimary
-                                              : WebColors.textPrimary,
+                                              : WebColors.textSecondary,
                                           fontWeight: WebFonts.bold,
                                         )),
                                   ],
@@ -375,7 +375,7 @@ class _MarginDetailsSheetWebState extends State<MarginDetailsSheetWeb> {
                                           isDarkTheme: theme.isDarkMode,
                                           color: theme.isDarkMode
                                               ? WebDarkColors.textPrimary
-                                              : WebColors.textPrimary,
+                                              : WebColors.textSecondary,
                                           fontWeight: WebFonts.semiBold,
                                         )),
                                     Text(
@@ -385,7 +385,7 @@ class _MarginDetailsSheetWebState extends State<MarginDetailsSheetWeb> {
                                           isDarkTheme: theme.isDarkMode,
                                           color: theme.isDarkMode
                                               ? WebDarkColors.textPrimary
-                                              : WebColors.textPrimary,
+                                              : WebColors.textSecondary,
                                           fontWeight: WebFonts.bold,
                                         )),
                                   ],
@@ -402,7 +402,7 @@ class _MarginDetailsSheetWebState extends State<MarginDetailsSheetWeb> {
                                           isDarkTheme: theme.isDarkMode,
                                           color: theme.isDarkMode
                                               ? WebDarkColors.textPrimary
-                                              : WebColors.textPrimary,
+                                              : WebColors.textSecondary,
                                           fontWeight: WebFonts.semiBold,
                                         )),
                                     Text(
@@ -412,7 +412,7 @@ class _MarginDetailsSheetWebState extends State<MarginDetailsSheetWeb> {
                                           isDarkTheme: theme.isDarkMode,
                                           color: theme.isDarkMode
                                               ? WebDarkColors.textPrimary
-                                              : WebColors.textPrimary,
+                                              : WebColors.textSecondary,
                                           fontWeight: WebFonts.bold,
                                         )),
                                   ],
@@ -429,7 +429,7 @@ class _MarginDetailsSheetWebState extends State<MarginDetailsSheetWeb> {
                                             isDarkTheme: theme.isDarkMode,
                                             color: theme.isDarkMode
                                                 ? WebDarkColors.textPrimary
-                                                : WebColors.textPrimary,
+                                                : WebColors.textSecondary,
                                             fontWeight: WebFonts.semiBold,
                                           )),
                                       Text(
@@ -439,7 +439,7 @@ class _MarginDetailsSheetWebState extends State<MarginDetailsSheetWeb> {
                                             isDarkTheme: theme.isDarkMode,
                                             color: theme.isDarkMode
                                                 ? WebDarkColors.textPrimary
-                                                : WebColors.textPrimary,
+                                                : WebColors.textSecondary,
                                             fontWeight: WebFonts.bold,
                                           )),
                                     ]),
@@ -455,7 +455,7 @@ class _MarginDetailsSheetWebState extends State<MarginDetailsSheetWeb> {
                                             isDarkTheme: theme.isDarkMode,
                                             color: theme.isDarkMode
                                                 ? WebDarkColors.textPrimary
-                                                : WebColors.textPrimary,
+                                                : WebColors.textSecondary,
                                             fontWeight: WebFonts.semiBold,
                                           )),
                                       Text(
@@ -465,7 +465,7 @@ class _MarginDetailsSheetWebState extends State<MarginDetailsSheetWeb> {
                                             isDarkTheme: theme.isDarkMode,
                                             color: theme.isDarkMode
                                                 ? WebDarkColors.textPrimary
-                                                : WebColors.textPrimary,
+                                                : WebColors.textSecondary,
                                             fontWeight: WebFonts.bold,
                                           )),
                                     ]),
@@ -481,7 +481,7 @@ class _MarginDetailsSheetWebState extends State<MarginDetailsSheetWeb> {
                                             isDarkTheme: theme.isDarkMode,
                                             color: theme.isDarkMode
                                                 ? WebDarkColors.textPrimary
-                                                : WebColors.textPrimary,
+                                                : WebColors.textSecondary,
                                             fontWeight: WebFonts.semiBold,
                                           )),
                                       Text(
@@ -491,7 +491,7 @@ class _MarginDetailsSheetWebState extends State<MarginDetailsSheetWeb> {
                                             isDarkTheme: theme.isDarkMode,
                                             color: theme.isDarkMode
                                                 ? WebDarkColors.textPrimary
-                                                : WebColors.textPrimary,
+                                                : WebColors.textSecondary,
                                             fontWeight: WebFonts.bold,
                                           )),
                                     ]),
@@ -505,7 +505,7 @@ class _MarginDetailsSheetWebState extends State<MarginDetailsSheetWeb> {
                                         isDarkTheme: theme.isDarkMode,
                                         color: theme.isDarkMode
                                             ? WebDarkColors.textPrimary
-                                            : WebColors.textPrimary,
+                                            : WebColors.textSecondary,
                                             fontWeight: WebFonts.semiBold,
                                       ),
                                     ),
@@ -571,7 +571,7 @@ class _ChargesDetailsBottomsheetState extends State<ChargesDetailsBottomsheet> {
                               isDarkTheme: theme.isDarkMode,
                               color: theme.isDarkMode
                                   ? WebDarkColors.textPrimary
-                                  : WebColors.textPrimary,
+                                  : WebColors.textSecondary,
                               fontWeight: WebFonts.medium,
                             )),
                         const SizedBox(
@@ -634,7 +634,7 @@ class _ChargesDetailsBottomsheetState extends State<ChargesDetailsBottomsheet> {
                                     isDarkTheme: theme.isDarkMode,
                                     color: theme.isDarkMode
                                         ? WebDarkColors.textPrimary
-                                        : WebColors.textPrimary,
+                                        : WebColors.textSecondary,
                                     fontWeight: WebFonts.bold,
                                   ))
                             ])),
@@ -653,7 +653,7 @@ class _ChargesDetailsBottomsheetState extends State<ChargesDetailsBottomsheet> {
                                     isDarkTheme: theme.isDarkMode,
                                     color: theme.isDarkMode
                                         ? WebDarkColors.textPrimary
-                                        : WebColors.textPrimary,
+                                        : WebColors.textSecondary,
                                     fontWeight: WebFonts.medium,
                                   )),
                               Text("${orderBrokerage?.brkageAmt}",
@@ -661,7 +661,7 @@ class _ChargesDetailsBottomsheetState extends State<ChargesDetailsBottomsheet> {
                                     isDarkTheme: theme.isDarkMode,
                                     color: theme.isDarkMode
                                         ? WebDarkColors.textPrimary
-                                        : WebColors.textPrimary,
+                                        : WebColors.textSecondary,
                                     fontWeight: WebFonts.medium,
                                   ))
                             ],
@@ -679,7 +679,7 @@ class _ChargesDetailsBottomsheetState extends State<ChargesDetailsBottomsheet> {
                                     isDarkTheme: theme.isDarkMode,
                                     color: theme.isDarkMode
                                         ? WebDarkColors.textPrimary
-                                        : WebColors.textPrimary,
+                                        : WebColors.textSecondary,
                                     fontWeight: WebFonts.medium,
                                   )),
                               Text("${orderBrokerage?.sttAmt}",
@@ -687,7 +687,7 @@ class _ChargesDetailsBottomsheetState extends State<ChargesDetailsBottomsheet> {
                                     isDarkTheme: theme.isDarkMode,
                                     color: theme.isDarkMode
                                         ? WebDarkColors.textPrimary
-                                        : WebColors.textPrimary,
+                                        : WebColors.textSecondary,
                                     fontWeight: WebFonts.medium,
                                   ))
                             ],
@@ -705,7 +705,7 @@ class _ChargesDetailsBottomsheetState extends State<ChargesDetailsBottomsheet> {
                                     isDarkTheme: theme.isDarkMode,
                                     color: theme.isDarkMode
                                         ? WebDarkColors.textPrimary
-                                        : WebColors.textPrimary,
+                                        : WebColors.textSecondary,
                                     fontWeight: WebFonts.medium,
                                   )),
                               Text("${orderBrokerage?.exchChrg}",
@@ -713,7 +713,7 @@ class _ChargesDetailsBottomsheetState extends State<ChargesDetailsBottomsheet> {
                                     isDarkTheme: theme.isDarkMode,
                                     color: theme.isDarkMode
                                         ? WebDarkColors.textPrimary
-                                        : WebColors.textPrimary,
+                                        : WebColors.textSecondary,
                                     fontWeight: WebFonts.medium,
                                   ))
                             ],
@@ -731,7 +731,7 @@ class _ChargesDetailsBottomsheetState extends State<ChargesDetailsBottomsheet> {
                                     isDarkTheme: theme.isDarkMode,
                                     color: theme.isDarkMode
                                         ? WebDarkColors.textPrimary
-                                        : WebColors.textPrimary,
+                                        : WebColors.textSecondary,
                                     fontWeight: WebFonts.medium,
                                   )),
                               Text("${orderBrokerage?.sebiChrg}",
@@ -739,7 +739,7 @@ class _ChargesDetailsBottomsheetState extends State<ChargesDetailsBottomsheet> {
                                     isDarkTheme: theme.isDarkMode,
                                     color: theme.isDarkMode
                                         ? WebDarkColors.textPrimary
-                                        : WebColors.textPrimary,
+                                        : WebColors.textSecondary,
                                     fontWeight: WebFonts.medium,
                                   ))
                             ],
@@ -757,7 +757,7 @@ class _ChargesDetailsBottomsheetState extends State<ChargesDetailsBottomsheet> {
                                       isDarkTheme: theme.isDarkMode,
                                       color: theme.isDarkMode
                                           ? WebDarkColors.textPrimary
-                                          : WebColors.textPrimary,
+                                          : WebColors.textSecondary,
                                       fontWeight: WebFonts.medium,
                                     )),
                                 Text("${orderBrokerage?.stampDuty}",
@@ -765,7 +765,7 @@ class _ChargesDetailsBottomsheetState extends State<ChargesDetailsBottomsheet> {
                                       isDarkTheme: theme.isDarkMode,
                                       color: theme.isDarkMode
                                           ? WebDarkColors.textPrimary
-                                          : WebColors.textPrimary,
+                                          : WebColors.textSecondary,
                                       fontWeight: WebFonts.medium,
                                     ))
                               ]),
@@ -782,7 +782,7 @@ class _ChargesDetailsBottomsheetState extends State<ChargesDetailsBottomsheet> {
                                       isDarkTheme: theme.isDarkMode,
                                       color: theme.isDarkMode
                                           ? WebDarkColors.textPrimary
-                                          : WebColors.textPrimary,
+                                          : WebColors.textSecondary,
                                       fontWeight: WebFonts.medium,
                                     )),
                                 Text("${orderBrokerage?.clrChrg}",
@@ -790,7 +790,7 @@ class _ChargesDetailsBottomsheetState extends State<ChargesDetailsBottomsheet> {
                                       isDarkTheme: theme.isDarkMode,
                                       color: theme.isDarkMode
                                           ? WebDarkColors.textPrimary
-                                          : WebColors.textPrimary,
+                                          : WebColors.textSecondary,
                                       fontWeight: WebFonts.medium,
                                     ))
                               ]),
@@ -807,7 +807,7 @@ class _ChargesDetailsBottomsheetState extends State<ChargesDetailsBottomsheet> {
                                       isDarkTheme: theme.isDarkMode,
                                       color: theme.isDarkMode
                                           ? WebDarkColors.textPrimary
-                                          : WebColors.textPrimary,
+                                          : WebColors.textSecondary,
                                       fontWeight: WebFonts.medium,
                                     )),
                                 Text("${orderBrokerage?.gst}",
@@ -815,7 +815,7 @@ class _ChargesDetailsBottomsheetState extends State<ChargesDetailsBottomsheet> {
                                       isDarkTheme: theme.isDarkMode,
                                       color: theme.isDarkMode
                                           ? WebDarkColors.textPrimary
-                                          : WebColors.textPrimary,
+                                          : WebColors.textSecondary,
                                       fontWeight: WebFonts.medium,
                                     ))
                               ]),

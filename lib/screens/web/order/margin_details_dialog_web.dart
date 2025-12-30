@@ -51,7 +51,7 @@ class MarginDetailsDialogWeb extends ConsumerWidget {
                         isDarkTheme: theme.isDarkMode,
                         color: theme.isDarkMode
                             ? WebDarkColors.textPrimary
-                            : WebColors.textPrimary,
+                            : WebColors.textSecondary,
                       ).copyWith(fontWeight: WebFonts.bold),
                     ),
                     Material(
@@ -246,7 +246,7 @@ class MarginDetailsDialogWeb extends ConsumerWidget {
               isDarkTheme: theme.isDarkMode,
               color: theme.isDarkMode
                   ? WebDarkColors.textPrimary
-                  : WebColors.textPrimary,
+                  : WebColors.textSecondary,
               fontWeight: WebFonts.bold,
             ),
           ),
@@ -278,7 +278,7 @@ class MarginDetailsDialogWeb extends ConsumerWidget {
             isDarkTheme: theme.isDarkMode,
             color: theme.isDarkMode
                 ? WebDarkColors.textPrimary
-                : WebColors.textPrimary,
+                : WebColors.textSecondary,
             fontWeight: WebFonts.medium,
           ),
         ),

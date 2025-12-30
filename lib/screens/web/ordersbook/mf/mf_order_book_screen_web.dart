@@ -176,14 +176,14 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb>
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
+                      : WebColors.textSecondary,
                 ),
                 dataTextStyle: WebTextStyles.custom(
                   fontSize: 13,
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
+                      : WebColors.textSecondary,
                   fontWeight: WebFonts.medium,
                 ),
                 border: TableBorder(
@@ -295,7 +295,7 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb>
                                 isDarkTheme: theme.isDarkMode,
                                 color: theme.isDarkMode
                                     ? WebDarkColors.textPrimary
-                                    : WebColors.textPrimary,
+                                    : WebColors.textSecondary,
                               ),
                               textAlign: isNumeric ? TextAlign.right : TextAlign.left,
                               overflow: TextOverflow.ellipsis,
@@ -502,7 +502,7 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb>
             color: color ??
                 (theme.isDarkMode
                     ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary),
+                    : WebColors.textSecondary),
             fontWeight: WebFonts.medium,
           ),
           maxLines: 1, 

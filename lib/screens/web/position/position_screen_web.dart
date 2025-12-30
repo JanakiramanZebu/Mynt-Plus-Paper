@@ -81,7 +81,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
       child: Container(
         width: double.infinity,
         height: double.infinity,
-        color: theme.isDarkMode ? WebDarkColors.background : Colors.white,
+        color: theme.isDarkMode ? WebDarkColors.background : WebColors.background,
         child: GestureDetector(
           onTap: () => FocusScope.of(context).unfocus(),
           child: Padding(
@@ -111,9 +111,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
       height: 120,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: theme.isDarkMode
-            ? WebDarkColors.backgroundSecondary
-            : WebColors.backgroundSecondary.withOpacity(0.3),
+        color:WebDarkColors.background,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
           color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
@@ -261,9 +259,8 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
       ThemesProvider theme, PortfolioProvider positionBook) {
     return Container(
       decoration: BoxDecoration(
-        color: theme.isDarkMode
-            ? WebColors.textPrimary
-            : WebDarkColors.textPrimary,
+        color: 
+            WebColors.background,
         // borderRadius: BorderRadius.circular(8),
         // border: Border.all(
         //   color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
@@ -309,14 +306,10 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
             child: Container(
               height: 40,
               decoration: BoxDecoration(
-                color: theme.isDarkMode
-                    ? WebDarkColors.inputBackground
-                    : WebColors.inputBackground,
+                color: WebDarkColors.background,
                 borderRadius: BorderRadius.circular(5),
                 border: Border.all(
-                  color: theme.isDarkMode
-                      ? WebDarkColors.inputBorder
-                      : WebColors.inputBorder,
+                  color:WebDarkColors.textSecondary,
                   width: 1,
                 ),
               ),
@@ -324,9 +317,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                 onChanged: (value) => _searchQuery.value = value, // ✅ Use ValueNotifier instead of setState
                 style: WebTextStyles.formInput(
                   isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
+                  color: WebColors.background,
                 ),
                 decoration: InputDecoration(
                   hintText: 'Search positions',
@@ -545,7 +536,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
               color: isSelected
                   ? (theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary)
+                      : WebColors.textSecondary)
                   : (theme.isDarkMode
                       ? WebDarkColors.navItem
                       : WebColors.navItem),
@@ -588,7 +579,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                 ? WebDarkColors.textPrimary
                 : (theme.isDarkMode
                     ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary),
+                    : WebColors.textSecondary),
             fontWeight: isSelected ? WebFonts.semiBold : WebFonts.medium,
             letterSpacing: 0.0,
           ),
@@ -625,7 +616,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
+                      : WebColors.textSecondary,
                 ).copyWith(fontWeight: WebFonts.bold),
                 decoration: InputDecoration(
                   hintText: '',
@@ -1013,14 +1004,14 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                     isDarkTheme: theme.isDarkMode,
                     color: theme.isDarkMode
                         ? WebDarkColors.textPrimary
-                        : WebColors.textPrimary,
+                        : WebColors.textSecondary,
                   ),
                   dataTextStyle: WebTextStyles.custom(
                     fontSize: 13,
                     isDarkTheme: theme.isDarkMode,
                     color: theme.isDarkMode
                         ? WebDarkColors.textPrimary
-                        : WebColors.textPrimary,
+                        : WebColors.textSecondary,
                     fontWeight: WebFonts.medium,
                   ),
                   border: TableBorder(
@@ -1146,7 +1137,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                                     isDarkTheme: theme.isDarkMode,
                                     color: theme.isDarkMode
                                         ? WebDarkColors.textPrimary
-                                        : WebColors.textPrimary,
+                                        : WebColors.textSecondary,
                                   ),
                                   textAlign: isNumeric ? TextAlign.right : TextAlign.left,
                                   overflow: TextOverflow.ellipsis,
@@ -1536,7 +1527,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                       side: BorderSide(
                         color: theme.isDarkMode
                             ? WebDarkColors.textPrimary.withOpacity(0.5)
-                            : WebColors.textPrimary.withOpacity(0.5),
+                            : WebColors.textSecondary.withOpacity(0.5),
                         width: 1.5,
                       ),
                     ),
@@ -1570,7 +1561,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
             isDarkTheme: theme.isDarkMode,
             color: theme.isDarkMode
                 ? WebDarkColors.textPrimary
-                : WebColors.textPrimary,
+                : WebColors.textSecondary,
           ),
         ),
         const SizedBox(width: 4),
@@ -1634,7 +1625,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                   side: BorderSide(
                     color: theme.isDarkMode
                         ? WebDarkColors.textPrimary.withOpacity(0.5)
-                        : WebColors.textPrimary.withOpacity(0.5),
+                        : WebColors.textSecondary.withOpacity(0.5),
                     width: 1.5,
                   ),
                 ),
@@ -1677,7 +1668,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
             color: color ??
                 (theme.isDarkMode
                     ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary),
+                    : WebColors.textSecondary),
             fontWeight: WebFonts.medium,
           ),
           maxLines: 1,
@@ -1793,7 +1784,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
           ? WebDarkColors.textSecondary.withOpacity(0.6)
           : WebColors.textSecondary.withOpacity(0.6);
     }
-    return theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary;
+    return theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary;
   }
 
   void _exitAllPositions() {
@@ -1853,7 +1844,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
       barrierDismissible: true,
       builder: (BuildContext context) {
         return Dialog(
-          backgroundColor: Colors.white,
+          backgroundColor:  WebDarkColors.background ,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(5),
           ),

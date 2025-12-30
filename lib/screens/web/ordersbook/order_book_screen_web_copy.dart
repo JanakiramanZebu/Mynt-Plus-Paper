@@ -404,7 +404,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     return Container(
       width: double.infinity,
       height: double.infinity,
-      color: theme.isDarkMode ? WebDarkColors.background : Colors.white,
+      color: theme.isDarkMode ? WebDarkColors.background : WebColors.background,
       child: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
         child: _isInitialized
@@ -511,7 +511,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                       isDarkTheme: theme.isDarkMode,
                       color: theme.isDarkMode
                           ? WebDarkColors.textPrimary
-                          : WebColors.textPrimary,
+                          : WebColors.textSecondary,
                     ),
                     decoration: InputDecoration(
                       hintText: 'Search orders',
@@ -671,7 +671,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                   color: isSelected
                       ? (theme.isDarkMode
                           ? WebDarkColors.textPrimary
-                          : WebColors.textPrimary)
+                          : WebColors.textSecondary)
                       : (theme.isDarkMode
                           ? WebDarkColors.navItem
                           : WebColors.navItem),
@@ -687,7 +687,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                     color: isSelected
                         ? (theme.isDarkMode
                             ? WebDarkColors.textPrimary
-                            : WebColors.textPrimary)
+                            : WebColors.textSecondary)
                         : (theme.isDarkMode
                             ? WebDarkColors.navItem
                             : WebColors.navItem),
@@ -891,7 +891,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
               color: isSelected
                   ? (theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary)
+                      : WebColors.textSecondary)
                   : (theme.isDarkMode
                       ? WebDarkColors.navItem
                       : WebColors.navItem),
@@ -1125,7 +1125,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
+                      : WebColors.textSecondary,
                 ),
                 overflow: TextOverflow.visible,
               ),
@@ -1427,7 +1427,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                     isDarkTheme: theme.isDarkMode,
                     color: theme.isDarkMode
                         ? WebDarkColors.textPrimary
-                        : WebColors.textPrimary,
+                        : WebColors.textSecondary,
                     fontWeight: WebFonts.medium,
                   ),
                   maxLines: 1,
@@ -1524,7 +1524,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
             color: color ??
                 (theme.isDarkMode
                     ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary),
+                    : WebColors.textSecondary),
             fontWeight: WebFonts.medium,
           ),
           maxLines: 1,
@@ -1754,7 +1754,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
+                      : WebColors.textSecondary,
                 ),
                 overflow: TextOverflow.visible,
               ),
@@ -2011,7 +2011,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
             color: color ??
                 (theme.isDarkMode
                     ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary),
+                    : WebColors.textSecondary),
             fontWeight: WebFonts.medium,
           ),
           maxLines: 1,
@@ -2429,7 +2429,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                                         isDarkTheme: theme.isDarkMode,
                                         color: theme.isDarkMode
                                             ? WebDarkColors.textPrimary
-                                            : WebColors.textPrimary,
+                                            : WebColors.textSecondary,
                                       ),
                                       overflow: TextOverflow.visible,
                                     ),
@@ -2495,7 +2495,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                                         isDarkTheme: theme.isDarkMode,
                                         color: theme.isDarkMode
                                             ? WebDarkColors.textPrimary
-                                            : WebColors.textPrimary,
+                                            : WebColors.textSecondary,
                                       ),
                                       overflow: TextOverflow.visible,
                                     ),
@@ -2777,7 +2777,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
+                      : WebColors.textSecondary,
                   fontWeight: WebFonts.medium,
                 ),
                 maxLines: 1,
@@ -2848,7 +2848,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
             color: color ??
                 (theme.isDarkMode
                     ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary),
+                    : WebColors.textSecondary),
             fontWeight: WebFonts.medium,
           ),
           maxLines: 1,
@@ -2896,7 +2896,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
             isDarkTheme: theme.isDarkMode,
             color: theme.isDarkMode
                 ? WebDarkColors.textPrimary
-                : WebColors.textPrimary,
+                : WebColors.textSecondary,
           ),
         ),
         const SizedBox(width: 4),
@@ -3082,7 +3082,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
             isDarkTheme: theme.isDarkMode,
             color: theme.isDarkMode
                 ? WebDarkColors.textPrimary
-                : WebColors.textPrimary,
+                : WebColors.textSecondary,
           ),
         ),
         const SizedBox(width: 4),
@@ -3210,7 +3210,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
             isDarkTheme: theme.isDarkMode,
             color: theme.isDarkMode
                 ? WebDarkColors.textPrimary
-                : WebColors.textPrimary,
+                : WebColors.textSecondary,
           ),
         ),
         const SizedBox(width: 4),
@@ -3295,7 +3295,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                             isDarkTheme: theme.isDarkMode,
                             color: theme.isDarkMode
                                 ? WebDarkColors.textPrimary
-                                : WebColors.textPrimary,
+                                : WebColors.textSecondary,
                           ),
                         ),
                         Material(
@@ -3344,7 +3344,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                                   isDarkTheme: theme.isDarkMode,
                                   color: theme.isDarkMode
                                       ? WebDarkColors.textPrimary
-                                      : WebColors.textPrimary,
+                                      : WebColors.textSecondary,
                                 ),
                               ),
                             ),
@@ -3677,7 +3677,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                             isDarkTheme: theme.isDarkMode,
                             color: theme.isDarkMode
                                 ? WebDarkColors.textPrimary
-                                : WebColors.textPrimary,
+                                : WebColors.textSecondary,
                           ),
                         ),
                         Material(
@@ -3726,7 +3726,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                                   isDarkTheme: theme.isDarkMode,
                                   color: theme.isDarkMode
                                       ? WebDarkColors.textPrimary
-                                      : WebColors.textPrimary,
+                                      : WebColors.textSecondary,
                                 ),
                               ),
                             ),
@@ -3880,7 +3880,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
           isDarkTheme: theme.isDarkMode,
           color: theme.isDarkMode
               ? WebDarkColors.textPrimary
-              : WebColors.textPrimary,
+              : WebColors.textSecondary,
         ),
       ),
     );
@@ -3919,7 +3919,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
           isDarkTheme: theme.isDarkMode,
           color: theme.isDarkMode
               ? WebDarkColors.textPrimary
-              : WebColors.textPrimary,
+              : WebColors.textSecondary,
         ),
         overflow: TextOverflow.ellipsis,
       ),
@@ -3967,7 +3967,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                         isDarkTheme: theme.isDarkMode,
                         color: theme.isDarkMode
                             ? WebDarkColors.textPrimary
-                            : WebColors.textPrimary,
+                            : WebColors.textSecondary,
                       ),
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
@@ -4106,7 +4106,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
           isDarkTheme: theme.isDarkMode,
           color: theme.isDarkMode
               ? WebDarkColors.textPrimary
-              : WebColors.textPrimary,
+              : WebColors.textSecondary,
         ),
       ),
     );
@@ -4122,7 +4122,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
           isDarkTheme: theme.isDarkMode,
           color: theme.isDarkMode
               ? WebDarkColors.textPrimary
-              : WebColors.textPrimary,
+              : WebColors.textSecondary,
         ),
       ),
     );
@@ -4138,7 +4138,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
           isDarkTheme: theme.isDarkMode,
           color: theme.isDarkMode
               ? WebDarkColors.textPrimary
-              : WebColors.textPrimary,
+              : WebColors.textSecondary,
         ),
       ),
     );
@@ -4162,7 +4162,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
           isDarkTheme: theme.isDarkMode,
           color: theme.isDarkMode
               ? WebDarkColors.textPrimary
-              : WebColors.textPrimary,
+              : WebColors.textSecondary,
         ),
       ),
     );
@@ -4178,7 +4178,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
           isDarkTheme: theme.isDarkMode,
           color: theme.isDarkMode
               ? WebDarkColors.textPrimary
-              : WebColors.textPrimary,
+              : WebColors.textSecondary,
         ),
       ),
     );
@@ -4194,7 +4194,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
           isDarkTheme: theme.isDarkMode,
           color: theme.isDarkMode
               ? WebDarkColors.textPrimary
-              : WebColors.textPrimary,
+              : WebColors.textSecondary,
         ),
       ),
     );
@@ -4229,7 +4229,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
           isDarkTheme: theme.isDarkMode,
           color: theme.isDarkMode
               ? WebDarkColors.textPrimary
-              : WebColors.textPrimary,
+              : WebColors.textSecondary,
         ),
       ),
     );
@@ -4293,7 +4293,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
           isDarkTheme: theme.isDarkMode,
           color: theme.isDarkMode
               ? WebDarkColors.textPrimary
-              : WebColors.textPrimary,
+              : WebColors.textSecondary,
           fontWeight: WebFonts.medium,
         ),
         overflow: TextOverflow.ellipsis,
@@ -4333,7 +4333,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
           isDarkTheme: theme.isDarkMode,
           color: theme.isDarkMode
               ? WebDarkColors.textPrimary
-              : WebColors.textPrimary,
+              : WebColors.textSecondary,
           fontWeight: WebFonts.medium,
         ),
       ),
@@ -4352,7 +4352,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
           isDarkTheme: theme.isDarkMode,
           color: theme.isDarkMode
               ? WebDarkColors.textPrimary
-              : WebColors.textPrimary,
+              : WebColors.textSecondary,
           fontWeight: WebFonts.medium,
         ),
       ),
@@ -4370,7 +4370,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
           isDarkTheme: theme.isDarkMode,
           color: theme.isDarkMode
               ? WebDarkColors.textPrimary
-              : WebColors.textPrimary,
+              : WebColors.textSecondary,
           fontWeight: WebFonts.medium,
         ),
       ),
@@ -4388,7 +4388,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
           isDarkTheme: theme.isDarkMode,
           color: theme.isDarkMode
               ? WebDarkColors.textPrimary
-              : WebColors.textPrimary,
+              : WebColors.textSecondary,
           fontWeight: WebFonts.medium,
         ),
       ),
@@ -4416,7 +4416,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
           isDarkTheme: theme.isDarkMode,
           color: theme.isDarkMode
               ? WebDarkColors.textPrimary
-              : WebColors.textPrimary,
+              : WebColors.textSecondary,
           fontWeight: WebFonts.medium,
         ),
       ),
@@ -4435,7 +4435,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
           isDarkTheme: theme.isDarkMode,
           color: theme.isDarkMode
               ? WebDarkColors.textPrimary
-              : WebColors.textPrimary,
+              : WebColors.textSecondary,
           fontWeight: WebFonts.medium,
         ),
       ),
@@ -4516,7 +4516,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
           isDarkTheme: theme.isDarkMode,
           color: theme.isDarkMode
               ? WebDarkColors.textPrimary
-              : WebColors.textPrimary,
+              : WebColors.textSecondary,
           fontWeight: WebFonts.medium,
         ),
       ),
@@ -4550,7 +4550,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
           isDarkTheme: theme.isDarkMode,
           color: theme.isDarkMode
               ? WebDarkColors.textPrimary
-              : WebColors.textPrimary,
+              : WebColors.textSecondary,
           fontWeight: WebFonts.medium,
         ),
       ),
@@ -4599,7 +4599,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                         isDarkTheme: theme.isDarkMode,
                         color: theme.isDarkMode
                             ? WebDarkColors.textPrimary
-                            : WebColors.textPrimary,
+                            : WebColors.textSecondary,
                         fontWeight: WebFonts.medium,
                       ),
                       overflow: TextOverflow.visible,
@@ -4664,7 +4664,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
           isDarkTheme: theme.isDarkMode,
           color: theme.isDarkMode
               ? WebDarkColors.textPrimary
-              : WebColors.textPrimary,
+              : WebColors.textSecondary,
           fontWeight: WebFonts.medium,
         ),
       ),
@@ -4680,7 +4680,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
           isDarkTheme: theme.isDarkMode,
           color: theme.isDarkMode
               ? WebDarkColors.textPrimary
-              : WebColors.textPrimary,
+              : WebColors.textSecondary,
           fontWeight: WebFonts.medium,
         ),
       ),
@@ -4696,7 +4696,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
           isDarkTheme: theme.isDarkMode,
           color: theme.isDarkMode
               ? WebDarkColors.textPrimary
-              : WebColors.textPrimary,
+              : WebColors.textSecondary,
           fontWeight: WebFonts.medium,
         ),
       ),
@@ -4713,7 +4713,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
           isDarkTheme: theme.isDarkMode,
           color: theme.isDarkMode
               ? WebDarkColors.textPrimary
-              : WebColors.textPrimary,
+              : WebColors.textSecondary,
           fontWeight: WebFonts.medium,
         ),
       ),
@@ -4977,7 +4977,7 @@ class _DraggablePlaceOrderDialogState
                                 isDarkTheme: theme.isDarkMode,
                                 color: theme.isDarkMode
                                     ? WebDarkColors.textPrimary
-                                    : WebColors.textPrimary,
+                                    : WebColors.textSecondary,
                               ),
                             ),
                           ),

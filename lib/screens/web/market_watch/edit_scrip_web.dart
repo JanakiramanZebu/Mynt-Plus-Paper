@@ -155,7 +155,7 @@ class _EditScripWebState extends ConsumerState<EditScripWeb> {
                                       isDarkTheme: theme.isDarkMode,
                                       color: theme.isDarkMode
                                           ? WebDarkColors.textPrimary
-                                          : WebColors.textPrimary,
+                                          : WebColors.textSecondary,
                                       fontWeight: FontWeight.w700,
                                     ),
                                   ),
@@ -171,7 +171,7 @@ class _EditScripWebState extends ConsumerState<EditScripWeb> {
                                           isDarkTheme: theme.isDarkMode,
                                           color: theme.isDarkMode
                                               ? WebDarkColors.textPrimary
-                                              : WebColors.textPrimary,
+                                              : WebColors.textSecondary,
                                           fontWeight: FontWeight.w700,
                                         ),
                                       ),

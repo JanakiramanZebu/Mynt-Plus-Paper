@@ -103,7 +103,7 @@ class ShareholdersDonutChartPainter extends CustomPainter {
               isDarkTheme: theme.isDarkMode,
               color: theme.isDarkMode
                   ? WebDarkColors.textPrimary
-                  : WebColors.textPrimary,
+                  : WebColors.textSecondary,
             ),
           ),
           textDirection: TextDirection.ltr,
@@ -659,7 +659,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                   child: Icon(
                     Icons.arrow_back_ios_outlined,
                     size: 18,
-                    color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                    color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
                   ),
                 ),
               ),
@@ -670,7 +670,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                 isDarkTheme: theme.isDarkMode,
                 color: theme.isDarkMode
                     ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary,
+                    : WebColors.textSecondary,
                 fontWeight: WebFonts.bold,
               ),
             ),
@@ -705,7 +705,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                   child: Icon(
                     Icons.arrow_back_ios_outlined,
                     size: 18,
-                    color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                    color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
                   ),
                 ),
               ),
@@ -716,7 +716,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                 isDarkTheme: theme.isDarkMode,
                 color: theme.isDarkMode
                     ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary,
+                    : WebColors.textSecondary,
                 fontWeight: WebFonts.bold,
               ),
             ),
@@ -857,7 +857,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                       isDarkTheme: theme.isDarkMode,
                       color: theme.isDarkMode
                           ? WebDarkColors.textPrimary
-                          : WebColors.textPrimary,
+                          : WebColors.textSecondary,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -874,7 +874,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                       isDarkTheme: theme.isDarkMode,
                       color: theme.isDarkMode
                           ? WebDarkColors.textPrimary
-                          : WebColors.textPrimary,
+                          : WebColors.textSecondary,
                     ),
                   ),
                 ],
@@ -1079,7 +1079,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
             isDarkTheme: theme.isDarkMode,
             color: theme.isDarkMode
                 ? WebDarkColors.textPrimary
-                : WebColors.textPrimary,
+                : WebColors.textSecondary,
           ),
         ),
         if (title == "Value" || title == "Growth" || title == "Quality") ...[
@@ -1403,7 +1403,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
               fontWeight: WebFonts.bold,
               color: theme.isDarkMode
                   ? WebDarkColors.textPrimary
-                  : WebColors.textPrimary,
+                  : WebColors.textSecondary,
             ),
           ),
           const SizedBox(height: 16),
@@ -1460,7 +1460,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                   fontWeight: WebFonts.bold,
                   color: theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
+                      : WebColors.textSecondary,
                 ),
               ),
               const SizedBox(height: 24),
@@ -1596,7 +1596,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                 fontWeight: WebFonts.bold,
                 color: theme.isDarkMode
                     ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary,
+                    : WebColors.textSecondary,
               ),
             ),
           ],
@@ -1620,7 +1620,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
             fontWeight: WebFonts.bold,
             color: theme.isDarkMode
                 ? WebDarkColors.textPrimary
-                : WebColors.textPrimary,
+                : WebColors.textSecondary,
           ),
         ),
         const SizedBox(height: 6),
@@ -1663,7 +1663,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                   fontWeight: WebFonts.bold,
                   color: theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
+                      : WebColors.textSecondary,
                 ),
               ),
               const SizedBox(height: 4),
@@ -1838,7 +1838,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                                 isDarkTheme: theme.isDarkMode,
                                 color: theme.isDarkMode
                                     ? WebDarkColors.textPrimary
-                                    : WebColors.textPrimary,
+                                    : WebColors.textSecondary,
                                 fontWeight: isSelected ? WebFonts.bold : WebFonts.regular,
                               ),
                             ),

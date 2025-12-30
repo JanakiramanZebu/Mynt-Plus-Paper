@@ -300,7 +300,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
             Text(value1,
                 style: _getValueStyle(theme.isDarkMode
                     ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary)),
+                    : WebColors.textSecondary)),
             const SizedBox(height: 4),
             Divider(
                 color: theme.isDarkMode
@@ -319,7 +319,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
             Text(value2,
                 style: _getValueStyle(theme.isDarkMode
                     ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary)),
+                    : WebColors.textSecondary)),
             const SizedBox(height: 4),
             Divider(
                 color: theme.isDarkMode
@@ -360,7 +360,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
             Text(value,
                 style: _getValueStyle(theme.isDarkMode
                     ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary)),
+                    : WebColors.textSecondary)),
             const SizedBox(height: 4),
             Divider(
                 color: theme.isDarkMode
@@ -438,7 +438,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
               style: _getTextStyle(
                   theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
+                      : WebColors.textSecondary,
                   13,
                   0),
             ),
@@ -447,7 +447,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
               style: _getTextStyle(
                   theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
+                      : WebColors.textSecondary,
                   13,
                   0),
             ),
@@ -2305,7 +2305,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                           isDarkTheme: theme.isDarkMode,
                           color: theme.isDarkMode
                               ? WebDarkColors.textPrimary
-                              : WebColors.textPrimary,
+                              : WebColors.textSecondary,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -2409,7 +2409,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
           isDarkTheme: theme.isDarkMode,
           color: theme.isDarkMode
               ? WebDarkColors.textPrimary
-              : WebColors.textPrimary,
+              : WebColors.textSecondary,
           fontWeight: WebFonts.regular,
           letterSpacing: 0.0,
         ),
@@ -2462,7 +2462,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
           isDarkTheme: theme.isDarkMode,
           color: theme.isDarkMode
               ? WebDarkColors.textPrimary
-              : WebColors.textPrimary,
+              : WebColors.textSecondary,
           fontWeight: WebFonts.regular,
           letterSpacing: 0.0,
         ),
@@ -2590,7 +2590,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                           isDarkTheme: theme.isDarkMode,
                           color: theme.isDarkMode
                               ? WebDarkColors.textPrimary
-                              : WebColors.textPrimary,
+                              : WebColors.textSecondary,
                           fontWeight: WebFonts.regular,
                           letterSpacing: 0.0,
                         ),
@@ -2718,7 +2718,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                           isDarkTheme: theme.isDarkMode,
                           color: theme.isDarkMode
                               ? WebDarkColors.textPrimary
-                              : WebColors.textPrimary,
+                              : WebColors.textSecondary,
                           fontWeight: WebFonts.regular,
                           letterSpacing: 0.0,
                         ),
@@ -2770,7 +2770,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
+                      : WebColors.textSecondary,
                   fontWeight: WebFonts.regular,
                   letterSpacing: 0.0,
                 ),

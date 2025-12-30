@@ -202,7 +202,7 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
                                   overflow: TextOverflow.ellipsis,
                                   style: WebTextStyles.sub(
                                     isDarkTheme: theme.isDarkMode,
-                                    color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                                    color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
                                     fontWeight: WebFonts.medium,
                                   ),
                                 ),
@@ -234,7 +234,7 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
                                           ltpStr,
                                           style: WebTextStyles.sub(
                                             isDarkTheme: theme.isDarkMode,
-                                            color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                                            color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
                                             fontWeight: WebFonts.medium,
                                           ),
                                         ),
@@ -308,7 +308,7 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
                                 //     isDarkTheme: theme.isDarkMode,
                                 //     color: theme.isDarkMode
                                 //         ? WebDarkColors.textPrimary
-                                //         : WebColors.textPrimary,
+                                //         : WebColors.textSecondary,
                                 //     fontWeight: WebFonts.medium,
                                 //   ),
                                 // ),
@@ -339,7 +339,7 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
                                                 isDarkTheme: theme.isDarkMode,
                                                 color: theme.isDarkMode
                                                     ? WebDarkColors.textPrimary
-                                                    : WebColors.textPrimary,
+                                                    : WebColors.textSecondary,
                                                 fontWeight: WebFonts.medium,
                                               ),
                                             ),
@@ -601,7 +601,7 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
               color: isSelected
                   ? (theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary)
+                      : WebColors.textSecondary)
                   : (theme.isDarkMode
                       ? WebDarkColors.navItem
                       : WebColors.navItem),
@@ -654,7 +654,7 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
                           : WebColors.primary)
                       : (theme.isDarkMode
                           ? WebDarkColors.textPrimary
-                          : WebColors.textPrimary),
+                          : WebColors.textSecondary),
                   fontWeight: FontWeight.w500,
                 ),
               ),

@@ -155,7 +155,7 @@ class _ExploreScreensState extends ConsumerState<IpoExploreScreens>
                     isDarkTheme: theme.isDarkMode,
                     color: theme.isDarkMode
                         ? WebDarkColors.textPrimary
-                        : WebColors.textPrimary,
+                        : WebColors.textSecondary,
                   ),
                   textCapitalization: TextCapitalization.characters,
                   inputFormatters: [
@@ -301,7 +301,7 @@ class _ExploreScreensState extends ConsumerState<IpoExploreScreens>
               color: isSelected
                   ? (theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary)
+                      : WebColors.textSecondary)
                   : (theme.isDarkMode
                       ? WebDarkColors.navItem
                       : WebColors.navItem),

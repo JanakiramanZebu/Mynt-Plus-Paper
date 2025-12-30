@@ -128,14 +128,14 @@ class _UpcomingIpoState extends ConsumerState<UpcomingIpo> {
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
+                      : WebColors.textSecondary,
                 ),
                 dataTextStyle: WebTextStyles.custom(
                   fontSize: 13,
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
+                      : WebColors.textSecondary,
                   fontWeight: WebFonts.medium,
                 ),
                 border: TableBorder(
@@ -263,7 +263,7 @@ class _UpcomingIpoState extends ConsumerState<UpcomingIpo> {
                 isDarkTheme: theme.isDarkMode,
                 color: theme.isDarkMode
                     ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary,
+                    : WebColors.textSecondary,
               ),
             ),
             const SizedBox(width: 4),
@@ -284,7 +284,7 @@ class _UpcomingIpoState extends ConsumerState<UpcomingIpo> {
                 isDarkTheme: theme.isDarkMode,
                 color: theme.isDarkMode
                     ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary,
+                    : WebColors.textSecondary,
               ),
             ),
             const SizedBox(width: 4),
@@ -304,7 +304,7 @@ class _UpcomingIpoState extends ConsumerState<UpcomingIpo> {
                 isDarkTheme: theme.isDarkMode,
                 color: theme.isDarkMode
                     ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary,
+                    : WebColors.textSecondary,
               ),
             ),
             const SizedBox(width: 4),
@@ -324,7 +324,7 @@ class _UpcomingIpoState extends ConsumerState<UpcomingIpo> {
                 isDarkTheme: theme.isDarkMode,
                 color: theme.isDarkMode
                     ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary,
+                    : WebColors.textSecondary,
               ),
             ),
             const SizedBox(width: 4),
@@ -344,7 +344,7 @@ class _UpcomingIpoState extends ConsumerState<UpcomingIpo> {
                 isDarkTheme: theme.isDarkMode,
                 color: theme.isDarkMode
                     ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary,
+                    : WebColors.textSecondary,
               ),
             ),
             const SizedBox(width: 4),
@@ -361,7 +361,7 @@ class _UpcomingIpoState extends ConsumerState<UpcomingIpo> {
             isDarkTheme: theme.isDarkMode,
             color: theme.isDarkMode
                 ? WebDarkColors.textPrimary
-                : WebColors.textPrimary,
+                : WebColors.textSecondary,
           ),
         ),
         size: ColumnSize.S,
@@ -385,7 +385,7 @@ class _UpcomingIpoState extends ConsumerState<UpcomingIpo> {
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
+                      : WebColors.textSecondary,
                   fontWeight: WebFonts.medium,
                 ),
                 overflow: TextOverflow.ellipsis,
@@ -403,7 +403,7 @@ class _UpcomingIpoState extends ConsumerState<UpcomingIpo> {
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
+                      : WebColors.textSecondary,
                   fontWeight: WebFonts.regular,
                 ),
               ),
@@ -420,7 +420,7 @@ class _UpcomingIpoState extends ConsumerState<UpcomingIpo> {
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
+                      : WebColors.textSecondary,
                   fontWeight: WebFonts.regular,
                 ),
               ),
@@ -437,7 +437,7 @@ class _UpcomingIpoState extends ConsumerState<UpcomingIpo> {
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
+                      : WebColors.textSecondary,
                   fontWeight: WebFonts.regular,
                 ),
               ),
@@ -454,7 +454,7 @@ class _UpcomingIpoState extends ConsumerState<UpcomingIpo> {
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
+                      : WebColors.textSecondary,
                   fontWeight: WebFonts.regular,
                 ),
               ),

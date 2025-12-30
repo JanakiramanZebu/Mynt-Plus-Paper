@@ -49,7 +49,7 @@ class _HoverableNavItemState extends State<HoverableNavItem> {
                           .withOpacity(0.8)
                       : (theme
                           ? WebDarkColors.textPrimary
-                          : WebColors.textPrimary)),
+                          : WebColors.textSecondary)),
               fontWeight: widget.isActive ? WebFonts.bold : WebFonts.semiBold,
             ),
           ),

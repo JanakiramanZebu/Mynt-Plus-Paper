@@ -86,7 +86,7 @@ class _ConvertPositionDialogueWebState extends ConsumerState<ConvertPositionDial
                     "${widget.convertPosition.symbol} ${widget.convertPosition.option} ${widget.convertPosition.exch}",
                     style: WebTextStyles.dialogTitle(
                       isDarkTheme: theme.isDarkMode,
-                      color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                      color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -129,7 +129,7 @@ class _ConvertPositionDialogueWebState extends ConsumerState<ConvertPositionDial
                     isDarkTheme: theme.isDarkMode,
                     color: theme.isDarkMode
                           ? WebDarkColors.textPrimary
-                          : WebColors.textPrimary,
+                          : WebColors.textSecondary,
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -147,7 +147,7 @@ class _ConvertPositionDialogueWebState extends ConsumerState<ConvertPositionDial
                         "${widget.convertPosition.sPrdtAli}",
                         style: WebTextStyles.bodySmall(
                           isDarkTheme: theme.isDarkMode,
-                          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
                           fontWeight: WebFonts.semiBold,
                         ),
                       ),
@@ -194,7 +194,7 @@ class _ConvertPositionDialogueWebState extends ConsumerState<ConvertPositionDial
                   "Quantity (${widget.convertPosition.ls})",
                   style: WebTextStyles.formLabel(
                     isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                    color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
                   ),
                 ),
                const SizedBox(height: 10),
@@ -216,7 +216,7 @@ class _ConvertPositionDialogueWebState extends ConsumerState<ConvertPositionDial
                      isDarkTheme: theme.isDarkMode,
                      color: theme.isDarkMode
                          ? WebDarkColors.textPrimary
-                         : WebColors.textPrimary,
+                         : WebColors.textSecondary,
                    ),
                    textCtrl: qty,
                    textAlign: TextAlign.center,

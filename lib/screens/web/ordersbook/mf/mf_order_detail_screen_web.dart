@@ -132,7 +132,7 @@ class _MFOrderDetailScreenWebState
       widget.mfOrderData.name ?? "Unknown Scheme",
       style: WebTextStyles.dialogTitle(
         isDarkTheme: theme.isDarkMode,
-        color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+        color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
       ),
       overflow: TextOverflow.ellipsis,
     );
@@ -430,7 +430,7 @@ class _MFOrderDetailScreenWebState
             title,
             style: WebTextStyles.dialogContent(
               isDarkTheme: theme.isDarkMode,
-              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
             ),
           ),
           value is Widget
@@ -439,7 +439,7 @@ class _MFOrderDetailScreenWebState
                   value.toString(),
                   style: WebTextStyles.dialogContent(
                     isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                    color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
                   ),
                 ),
         ],

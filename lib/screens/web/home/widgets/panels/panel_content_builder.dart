@@ -5,6 +5,7 @@ import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/res/web_colors.dart';
 import 'package:mynt_plus/screens/web/dashboard_screen_web.dart';
 import 'package:mynt_plus/screens/web/holdings/holding_screen_web.dart';
+import 'package:mynt_plus/screens/web/holdings/holding_screen_web_syncfusion.dart' show HoldingScreenWebSyncfusion;
 import 'package:mynt_plus/screens/web/home/models/screen_type.dart';
 import 'package:mynt_plus/screens/web/home/widgets/lazy_loaders/lazy_fund_screen.dart';
 import 'package:mynt_plus/screens/web/ipo/ipo_main_screen_web.dart';
@@ -57,11 +58,11 @@ class PanelContentBuilder {
                 width: double.infinity,
                 height: double.infinity,
                 color:
-                    theme.isDarkMode ? WebDarkColors.background : Colors.white,
+                    theme.isDarkMode ? WebDarkColors.background : WebColors.background,
                 child: const CircularLoaderImage(),
               );
             }
-            return HoldingScreenWeb(
+            return HoldingScreenWebSyncfusion(
                 listofHolding: portfolio.holdingsModel ?? []);
           },
         );
@@ -78,7 +79,7 @@ class PanelContentBuilder {
                 width: double.infinity,
                 height: double.infinity,
                 color:
-                    theme.isDarkMode ? WebDarkColors.background : Colors.white,
+                    theme.isDarkMode ? WebDarkColors.background : WebColors.background,
                 child: const CircularLoaderImage(),
               );
             }

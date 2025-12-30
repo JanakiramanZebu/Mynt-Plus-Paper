@@ -123,14 +123,14 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
+                      : WebColors.textSecondary,
                 ),
                 dataTextStyle: WebTextStyles.custom(
                   fontSize: 13,
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
+                      : WebColors.textSecondary,
                   fontWeight: WebFonts.medium,
                 ),
                 border: TableBorder(
@@ -235,7 +235,7 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
                 isDarkTheme: theme.isDarkMode,
                 color: theme.isDarkMode
                     ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary,
+                    : WebColors.textSecondary,
               ),
             ),
             const SizedBox(width: 4),
@@ -256,7 +256,7 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
                 isDarkTheme: theme.isDarkMode,
                 color: theme.isDarkMode
                     ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary,
+                    : WebColors.textSecondary,
               ),
             ),
             const SizedBox(width: 4),
@@ -276,7 +276,7 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
                 isDarkTheme: theme.isDarkMode,
                 color: theme.isDarkMode
                     ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary,
+                    : WebColors.textSecondary,
               ),
             ),
             const SizedBox(width: 4),
@@ -296,7 +296,7 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
                 isDarkTheme: theme.isDarkMode,
                 color: theme.isDarkMode
                     ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary,
+                    : WebColors.textSecondary,
               ),
             ),
             const SizedBox(width: 4),
@@ -370,7 +370,7 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
                                   isDarkTheme: currentTheme.isDarkMode,
                                   color: currentTheme.isDarkMode
                                       ? WebDarkColors.textPrimary
-                                      : WebColors.textPrimary,
+                                      : WebColors.textSecondary,
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
@@ -546,7 +546,7 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
                               isDarkTheme: theme.isDarkMode,
                               color: theme.isDarkMode
                                   ? WebDarkColors.textPrimary
-                                  : WebColors.textPrimary,
+                                  : WebColors.textSecondary,
                               fontWeight: WebFonts.medium,
                             ),
                             overflow: TextOverflow.ellipsis,
@@ -603,7 +603,7 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
                       isDarkTheme: theme.isDarkMode,
                       color: theme.isDarkMode
                           ? WebDarkColors.textPrimary
-                          : WebColors.textPrimary,
+                          : WebColors.textSecondary,
                       fontWeight: WebFonts.regular,
                     ),
                   ),
@@ -655,7 +655,7 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
                       isDarkTheme: theme.isDarkMode,
                       color: theme.isDarkMode
                           ? WebDarkColors.textPrimary
-                          : WebColors.textPrimary,
+                          : WebColors.textSecondary,
                       fontWeight: WebFonts.regular,
                     ),
                   ),

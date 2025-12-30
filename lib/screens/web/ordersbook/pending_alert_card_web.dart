@@ -486,14 +486,14 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb>
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
+                      : WebColors.textSecondary,
                 ),
                 dataTextStyle: WebTextStyles.custom(
                   fontSize: 13,
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
+                      : WebColors.textSecondary,
                   fontWeight: WebFonts.medium,
                 ),
                 border: TableBorder(
@@ -590,7 +590,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb>
                                 isDarkTheme: theme.isDarkMode,
                                 color: theme.isDarkMode
                                     ? WebDarkColors.textPrimary
-                                    : WebColors.textPrimary,
+                                    : WebColors.textSecondary,
                               ),
                               textAlign: isNumeric ? TextAlign.right : TextAlign.left,
                               overflow: TextOverflow.ellipsis,
@@ -801,7 +801,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb>
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
+                      : WebColors.textSecondary,
                   fontWeight: WebFonts.medium,
                 ),
                 maxLines: 1,
@@ -900,7 +900,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb>
             color: color ??
                 (theme.isDarkMode
                     ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary),
+                    : WebColors.textSecondary),
             fontWeight: WebFonts.medium,
           ),
           maxLines: 1, 
@@ -998,7 +998,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb>
       default:
         return theme.isDarkMode
             ? WebDarkColors.textPrimary
-            : WebColors.textPrimary;
+            : WebColors.textSecondary;
     }
   }
 
@@ -1077,7 +1077,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb>
         exchange,
         style: WebTextStyles.tableDataCompact(
           isDarkTheme: theme.isDarkMode,
-          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
         ),
       ),
     );
@@ -1146,7 +1146,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb>
         target,
         style: WebTextStyles.tableDataCompact(
           isDarkTheme: theme.isDarkMode,
-          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
         ),
       ),
     );
@@ -1175,7 +1175,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb>
             ltp,
             style: WebTextStyles.tableDataCompact(
               isDarkTheme: theme.isDarkMode,
-              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
             ),
           ),
           if (change.isNotEmpty)

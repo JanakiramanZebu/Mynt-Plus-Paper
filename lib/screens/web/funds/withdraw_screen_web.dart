@@ -142,7 +142,7 @@ class _WithdrawScreenWebState extends ConsumerState<WithdrawScreenWeb> {
               isDarkTheme: theme.isDarkMode,
               color: theme.isDarkMode
                   ? WebDarkColors.textPrimary
-                  : WebColors.textPrimary,
+                  : WebColors.textSecondary,
             ),
           ),
           Material(
@@ -198,7 +198,7 @@ class _WithdrawScreenWebState extends ConsumerState<WithdrawScreenWeb> {
                 "₹ ${widget.withdarw.payoutdetails!.withdrawAmount}",
                 style: WebTextStyles.title(
                   isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                  color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
                   fontWeight: WebFonts.semiBold,
                 ),
               ),
@@ -223,7 +223,7 @@ class _WithdrawScreenWebState extends ConsumerState<WithdrawScreenWeb> {
       style: WebTextStyles.custom(
         fontSize: 20,
         isDarkTheme: theme.isDarkMode,
-        color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+        color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
       ),
       controller: widget.withdarw.withdrawamount,
       onChanged: (value) {
@@ -362,7 +362,7 @@ class _WithdrawScreenWebState extends ConsumerState<WithdrawScreenWeb> {
                 height: 20,
                 child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary),
+                    color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary),
               )
             : Text(
                 'Withdraw',
@@ -504,14 +504,14 @@ class _WithdrawScreenWebState extends ConsumerState<WithdrawScreenWeb> {
             title,
             style: WebTextStyles.dialogContent(
               isDarkTheme: theme.isDarkMode,
-              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
             ),
           ),
           Text(
             value,
             style: WebTextStyles.dialogContent(
               isDarkTheme: theme.isDarkMode,
-              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
             ),
           ),
         ],
@@ -529,7 +529,7 @@ class _WithdrawScreenWebState extends ConsumerState<WithdrawScreenWeb> {
             isDarkTheme: theme.isDarkMode,
             color: theme.isDarkMode
                 ? WebDarkColors.textPrimary
-                : WebColors.textPrimary,
+                : WebColors.textSecondary,
           ),
         ),
         const SizedBox(height: 12),
@@ -550,7 +550,7 @@ class _WithdrawScreenWebState extends ConsumerState<WithdrawScreenWeb> {
               "₹ ${widget.withdarw.withdrawstatus?[0].dUEAMT}",
               style: WebTextStyles.title(
                 isDarkTheme: theme.isDarkMode,
-                color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textSecondary,
                 fontWeight: WebFonts.semiBold,
               ),
             ),
