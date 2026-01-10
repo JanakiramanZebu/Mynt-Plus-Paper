@@ -9,6 +9,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:mynt_plus/screens/web/market_watch/future_screen_web.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import 'package:mynt_plus/screens/web/market_watch/stock_report.dart';
 import 'package:mynt_plus/sharedWidget/list_divider.dart';
@@ -29,7 +30,6 @@ import '../../../routes/route_names.dart';
 import '../../../utils/responsive_navigation.dart';
 import '../../web/order/quick_order_screen_web.dart';
 import '../../../sharedWidget/no_data_found.dart';
-import 'futures/future_screen_web.dart';
 import '../../Mobile/market_watch/over_view/funtamental_data_widget.dart';
 import 'set_alert_web.dart';
 

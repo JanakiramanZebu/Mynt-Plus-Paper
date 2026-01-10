@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter/foundation.dart';
+import 'package:mynt_plus/screens/web/market_watch/future_screen_web.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import '../../../routes/route_names.dart';
@@ -22,7 +23,6 @@ import '../../../utils/responsive_snackbar.dart';
 // import '../../Mobile/market_watch/edit_scrip.dart';
 // import 'edit_scrip_web.dart';
 import '../../Mobile/market_watch/new_fundamental_screen.dart';
-import 'futures/future_screen_web.dart';
 import 'set_alert_web.dart';
 import 'watchlist_screen_web.dart' show deleteModeProvider;
 
