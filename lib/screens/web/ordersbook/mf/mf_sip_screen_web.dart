@@ -1,13 +1,12 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' show InkWell, Icons, Icon, TextPainter, TextSpan, TextStyle, TextDirection, GestureDetector, HitTestBehavior, Row, SizedBox, Widget, BuildContext, Color, Colors, EdgeInsets, Alignment, MainAxisAlignment, TextOverflow, Axis, FontWeight, Container, MouseRegion, Expanded, Align, Text, ScrollController, SingleChildScrollView, Scrollbar, Column, LayoutBuilder, ValueKey, Padding, BoxDecoration, BorderRadius, Border, showDialog;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:data_table_2/data_table_2.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
+
 import '../../../../provider/mf_provider.dart';
 import '../../../../provider/thems.dart';
 import '../../../../provider/order_provider.dart';
 import '../../../../sharedWidget/no_data_found.dart';
-import '../../../../res/res.dart';
 import '../../../../res/web_colors.dart';
-import '../../../../res/global_font_web.dart';
 import 'mf_sip_detail_screen_web.dart';
 import 'sip_pause_dialogue_web.dart';
 import 'sip_cancel_dialogue_web.dart';
@@ -20,37 +19,231 @@ class MFSipdetScreenWeb extends ConsumerStatefulWidget {
   ConsumerState<MFSipdetScreenWeb> createState() => _MFSipdetScreenWebState();
 }
 
-class _MFSipdetScreenWebState extends ConsumerState<MFSipdetScreenWeb> 
-    with AutomaticKeepAliveClientMixin {
-  int? _sipSortColumnIndex;
-  bool _sipSortAscending = true;
-  final ScrollController _horizontalScrollController = ScrollController();
-  final ScrollController _verticalScrollController = ScrollController();
-  String? _hoveredRowSipRegNo; // Track which row is being hovered
-  int? _hoveredColumnIndex; // Track which column is being hovered
+class _MFSipdetScreenWebState extends ConsumerState<MFSipdetScreenWeb> {
+  int? _sortColumnIndex;
+  bool _sortAscending = true;
+  int? _hoveredRowIndex;
+  bool _hasInitialized = false;
+
+  // Scroll controllers - must be in state to persist across rebuilds
+  late ScrollController _verticalScrollController;
+  late ScrollController _horizontalScrollController;
 
   @override
-  bool get wantKeepAlive => true;
+  void initState() {
+    super.initState();
+    _verticalScrollController = ScrollController();
+    _horizontalScrollController = ScrollController();
 
-  @override
-  void dispose() {
-    _horizontalScrollController.dispose();
-    _verticalScrollController.dispose();
-    super.dispose();
+    // Only fetch data once when widget is first created
+    if (!_hasInitialized) {
+      Future.microtask(() {
+        if (mounted && !_hasInitialized) {
+          _hasInitialized = true;
+          ref.read(mfProvider).fetchmfsiplist();
+        }
+      });
+    }
   }
 
   @override
-  Widget build(BuildContext context) {
-    super.build(context); // Required for AutomaticKeepAliveClientMixin
-    final theme = ref.watch(themeProvider);
+  void dispose() {
+    _verticalScrollController.dispose();
+    _horizontalScrollController.dispose();
+    super.dispose();
+  }
+
+  // Helper method to ensure Geist font is always applied
+  TextStyle _geistTextStyle({Color? color, double? fontSize, FontWeight? fontWeight}) {
+    return TextStyle(
+      fontFamily: 'Geist',
+      color: color,
+      fontSize: fontSize,
+      fontWeight: fontWeight,
+    );
+  }
+
+  // Builds a cell with hover detection (matches holdings pattern)
+  shadcn.TableCell buildCellWithHover({
+    required Widget child,
+    required int rowIndex,
+    required int columnIndex,
+    bool alignRight = false,
+  }) {
+    final isFirstColumn = columnIndex == 0;
+    final isLastColumn = columnIndex == 5;
+    final horizontalPadding = isFirstColumn || isLastColumn ? 16.0 : 8.0;
+
+    return shadcn.TableCell(
+      theme: const shadcn.TableCellTheme(
+        border: shadcn.WidgetStatePropertyAll(
+          shadcn.Border(
+            top: shadcn.BorderSide.none,
+            bottom: shadcn.BorderSide.none,
+            left: shadcn.BorderSide.none,
+            right: shadcn.BorderSide.none,
+          ),
+        ),
+      ),
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _hoveredRowIndex = rowIndex),
+        onExit: (_) => setState(() => _hoveredRowIndex = null),
+        child: GestureDetector(
+          onTap: () => _openSipDetail(_sortedSipDetails(_getSipDetails())[rowIndex]),
+          behavior: HitTestBehavior.opaque,
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 8),
+            alignment: alignRight ? Alignment.topRight : null,
+            child: child,
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Builds a sortable header cell
+  shadcn.TableCell buildHeaderCell(String label, int columnIndex, [bool alignRight = false]) {
+    final isFirstColumn = columnIndex == 0;
+    final isLastColumn = columnIndex == 5;
+    final horizontalPadding = isFirstColumn || isLastColumn ? 16.0 : 6.0;
+
+    return shadcn.TableCell(
+      theme: const shadcn.TableCellTheme(
+        border: shadcn.WidgetStatePropertyAll(
+          shadcn.Border(
+            top: shadcn.BorderSide.none,
+            bottom: shadcn.BorderSide.none,
+            left: shadcn.BorderSide.none,
+            right: shadcn.BorderSide.none,
+          ),
+        ),
+      ),
+      child: InkWell(
+        onTap: () => _onSort(columnIndex),
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 6),
+          alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
+          child: Row(
+            mainAxisAlignment: alignRight ? MainAxisAlignment.end : MainAxisAlignment.start,
+            children: [
+              if (alignRight && _sortColumnIndex == columnIndex)
+                Icon(
+                  _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
+                  size: 16,
+                  color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+                ),
+              if (alignRight && _sortColumnIndex == columnIndex) const SizedBox(width: 4),
+              Text(
+                label,
+                style: _geistTextStyle(
+                  color: shadcn.Theme.of(context).colorScheme.foreground,
+                ),
+              ),
+              if (!alignRight && _sortColumnIndex == columnIndex) const SizedBox(width: 4),
+              if (!alignRight && _sortColumnIndex == columnIndex)
+                Icon(
+                  _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
+                  size: 16,
+                  color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _onSort(int columnIndex) {
+    setState(() {
+      if (_sortColumnIndex == columnIndex) {
+        _sortAscending = !_sortAscending;
+      } else {
+        _sortColumnIndex = columnIndex;
+        _sortAscending = true;
+      }
+    });
+  }
+
+  // Helper method to measure text width dynamically
+  double _measureTextWidth(String text, TextStyle style) {
+    final textPainter = TextPainter(
+      text: TextSpan(text: text, style: style),
+      textDirection: TextDirection.ltr,
+      maxLines: 1,
+    );
+    textPainter.layout();
+    return textPainter.width;
+  }
+
+  // Get SIP details list
+  List<dynamic> _getSipDetails() {
     final mf = ref.watch(mfProvider);
     final orderBook = ref.watch(orderProvider);
-    
-    // Use filtered results from provider (same pattern as other tabs)
     final isSearching = orderBook.orderSearchCtrl.text.isNotEmpty;
-    final sipDetails = isSearching
+    return isSearching
         ? (mf.mfSipSearch ?? [])
         : (mf.mfsiporderlist?.data ?? []);
+  }
+
+  // Calculate minimum column widths dynamically based on header and data
+  Map<int, double> _calculateMinWidths(List<dynamic> sipDetails, BuildContext context) {
+      final textStyle = const TextStyle(fontSize: 14);
+      const padding = 24.0; // Padding for cell content
+      const sortIconWidth = 24.0; // Extra space for sort indicator icon
+
+      final headers = ['Scheme', 'SIP Reg No', 'Amount', 'Frequency', 'Next Installment', 'Status'];
+      final minWidths = <int, double>{};
+
+      // Calculate width for each column
+      for (int col = 0; col < headers.length; col++) {
+        double maxWidth = 0.0;
+
+        // Measure header width and add space for sort icon
+        final headerWidth = _measureTextWidth(headers[col], textStyle);
+        maxWidth = headerWidth + sortIconWidth;
+
+        // Measure widest value in this column (sample first 5 rows for performance)
+        for (final sipDetail in sipDetails.take(5)) {
+          String cellText = '';
+          switch (col) {
+            case 0: // Scheme
+              cellText = sipDetail.name ?? 'N/A';
+              break;
+            case 1: // SIP Reg No
+              cellText = sipDetail.sIPRegnNo ?? '';
+              break;
+            case 2: // Amount
+              final amount = sipDetail.installmentAmount?.toString() ?? '0';
+              cellText = double.tryParse(amount)?.toStringAsFixed(2) ?? amount;
+              break;
+            case 3: // Frequency
+              cellText = sipDetail.frequencyType ?? '';
+              break;
+            case 4: // Next Installment
+              cellText = sipDetail.NextSIPDate ?? '';
+              break;
+            case 5: // Status
+              cellText = (sipDetail.status ?? '').toUpperCase();
+              break;
+          }
+
+          final cellWidth = _measureTextWidth(cellText, textStyle);
+          if (cellWidth > maxWidth) {
+            maxWidth = cellWidth;
+          }
+        }
+
+        // Set minimum width (max of header/data + padding)
+        minWidths[col] = maxWidth + padding;
+      }
+
+      return minWidths;
+    }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = ref.watch(themeProvider);
+    final sipDetails = _getSipDetails();
 
     if (sipDetails.isEmpty) {
       return const SizedBox(
@@ -65,494 +258,262 @@ class _MFSipdetScreenWebState extends ConsumerState<MFSipdetScreenWeb>
       );
     }
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        // Calculate available height
-        final screenHeight = MediaQuery.of(context).size.height;
-        const padding = 32.0; // Top and bottom padding (16 * 2)
-        const headerHeight = 50.0; // Header height (tabs + search bar)
-        const spacing = 16.0; // Spacing between header and content
-        const bottomMargin = 20.0; // Bottom margin
-        final tableHeight =
-            screenHeight - padding - headerHeight - spacing - bottomMargin;
+    final sortedSipDetails = _sortedSipDetails(sipDetails);
 
-        // Ensure we don't exceed 75% of screen height
-        final maxHeight = screenHeight * 0.75;
-        final calculatedHeight = tableHeight > maxHeight
-            ? maxHeight
-            : (tableHeight > 400 ? tableHeight : 400.0);
+    // Build data rows
+    final dataRows = <shadcn.TableRow>[];
+    for (var i = 0; i < sortedSipDetails.length; i++) {
+      final sipDetail = sortedSipDetails[i];
+      final colorScheme = shadcn.Theme.of(context).colorScheme;
+      final isHovered = _hoveredRowIndex == i;
 
-        // Get screen width for responsive design
-        final screenWidth = MediaQuery.of(context).size.width;
-        
-        // Get responsive column configuration
-        final responsiveConfig = _getResponsiveSipColumns(screenWidth);
-        final headers = List<String>.from(responsiveConfig['headers'] as List);
-        final columnMinWidth = Map<String, double>.from(responsiveConfig['columnMinWidth'] as Map);
-        
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 20.0),
-          child: Container(
-            height: calculatedHeight.toDouble(),
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: theme.isDarkMode
-                    ? WebDarkColors.divider
-                    : WebColors.divider,
-                width: 1,
-              ),
-              borderRadius: BorderRadius.circular(4),
-              color: theme.isDarkMode
-                  ? WebDarkColors.background
-                  : Colors.white,
-            ),
-            child: Theme(
-              data: Theme.of(context).copyWith(
-                scrollbarTheme: ScrollbarThemeData(
-                  // Make both scrollbars always visible
-                  thumbVisibility: WidgetStateProperty.all(true),
-                  trackVisibility: WidgetStateProperty.all(true),
-                  
-                  // Consistent thickness for both horizontal and vertical
-                  thickness: WidgetStateProperty.all(6.0),
-                  crossAxisMargin: 0.0,
-                  mainAxisMargin: 0.0,
-                  
-                  // Consistent radius
-                  radius: const Radius.circular(3),
-                  
-                  // Consistent colors for both scrollbars
-                  thumbColor: WidgetStateProperty.resolveWith((states) {
-                    return theme.isDarkMode 
-                        ? WebDarkColors.textSecondary.withOpacity(0.3)
-                        : WebColors.textSecondary.withOpacity(0.3);
-                  }),
-                  trackColor: WidgetStateProperty.resolveWith((states) {
-                    return theme.isDarkMode 
-                        ? WebDarkColors.divider.withOpacity(0.1)
-                        : WebColors.divider.withOpacity(0.1);
-                  }),
-                  
-                  trackBorderColor: WidgetStateProperty.all(Colors.transparent),
-                  minThumbLength: 48.0,
-                ),
-              ),
-              child: DataTable2(
-                columnSpacing: 12,
-                horizontalMargin: 12,
-                minWidth: 1200,
-                sortColumnIndex: null, // Disable DataTable2's built-in sorting
-                sortAscending: _sipSortAscending,
-                fixedLeftColumns: 1, // Fix the first column (Scheme)
-                fixedColumnsColor: theme.isDarkMode 
-                    ? WebDarkColors.backgroundSecondary.withOpacity(0.8)
-                    : WebColors.backgroundSecondary.withOpacity(0.8),
-                showBottomBorder: true,
-                horizontalScrollController: _horizontalScrollController,
-                scrollController: _verticalScrollController,
-                showCheckboxColumn: false,
-                headingRowColor: WidgetStateProperty.all(
-                  theme.isDarkMode
-                      ? WebDarkColors.primary
-                      : WebColors.primary.withOpacity(0.05),
-                ),
-                headingTextStyle: WebTextStyles.tableHeader(
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
-                ),
-                dataTextStyle: WebTextStyles.custom(
-                  fontSize: 13,
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
-                  fontWeight: WebFonts.medium,
-                ),
-                border: TableBorder(
-                  top: BorderSide(
-                    color: theme.isDarkMode
-                        ? WebDarkColors.divider
-                        : WebColors.divider,
-                    width: 1,
-                  ),
-                  bottom: BorderSide(
-                    color: theme.isDarkMode
-                        ? WebDarkColors.divider
-                        : WebColors.divider,
-                    width: 1,
-                  ),
-                  horizontalInside: BorderSide(
-                    color: theme.isDarkMode
-                        ? WebDarkColors.divider
-                        : WebColors.divider,
-                    width: 1,
-                  ),
-                  // Remove vertical lines
-                ),
-                columns: _buildSipDataTable2Columns(headers, columnMinWidth, theme),
-                rows: _buildSipDataTable2Rows(sipDetails, headers, theme),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  // Helper method to get responsive column configuration for SIP
-  // Always show all columns - horizontal scroll handles overflow on small screens
-  Map<String, dynamic> _getResponsiveSipColumns(double screenWidth) {
-    return {
-      'headers': ['Scheme', 'SIP Reg No', 'Amount', 'Frequency', 'Next Installment', 'Status'],
-      'columnMinWidth': {
-        'Scheme': 300,
-        'SIP Reg No': 150,
-        'Amount': 120,
-        'Frequency': 130,
-        'Next Installment': 220,
-        'Status': 110,
-      },
-    };
-  }
-
-  bool _isNumericColumnSip(String header) {
-    return header == 'Amount' || header == 'SIP Reg No' || header == 'Next Installment'; // Amount, SIP Reg No, and Next Installment are numeric/right-aligned
-  }
-
-  int _getSipColumnIndexForHeader(String header) {
-    switch (header) {
-      case 'Scheme': return 0;
-      case 'SIP Reg No': return 1;
-      case 'Amount': return 2;
-      case 'Frequency': return 3;
-      case 'Next Installment': return 4;
-      case 'Status': return 5;
-      default: return -1;
-    }
-  }
-
-  List<DataColumn2> _buildSipDataTable2Columns(
-    List<String> headers,
-    Map<String, double> columnMinWidth,
-    ThemesProvider theme,
-  ) {
-    return headers.map((header) {
-      final columnIndex = _getSipColumnIndexForHeader(header);
-      final isNumeric = _isNumericColumnSip(header);
-      final isScheme = header == 'Scheme';
-      final isNextInstallment = header == 'Next Installment';
-      
-      return DataColumn2(
-        label: SizedBox.expand(
-          child: MouseRegion(
-            cursor: SystemMouseCursors.click,
-            onEnter: (_) => setState(() => _hoveredColumnIndex = columnIndex),
-            onExit: (_) => setState(() => _hoveredColumnIndex = null),
-            child: Tooltip(
-              message: 'Sort by $header',
-              child: GestureDetector(
-                onTap: () => _onSortSipTable(columnIndex),
-                behavior: HitTestBehavior.opaque,
-                child: Container(
-                  width: double.infinity,
-                  height: double.infinity,
-                  decoration: BoxDecoration(
-                    color: _hoveredColumnIndex == columnIndex
-                        ? (theme.isDarkMode
-                            ? WebDarkColors.primary.withOpacity(0.1)
-                            : WebColors.primary.withOpacity(0.05))
-                        : Colors.transparent,
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.max,
-                    mainAxisAlignment: isNumeric ? MainAxisAlignment.end : MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Flexible(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              header,
-                              style: WebTextStyles.tableHeader(
-                                isDarkTheme: theme.isDarkMode,
-                                color: theme.isDarkMode
-                                    ? WebDarkColors.textPrimary
-                                    : WebColors.textPrimary,
-                              ),
-                              textAlign: isNumeric ? TextAlign.right : TextAlign.left,
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                            ),
-                            const SizedBox(width: 4),
-                            SizedBox(
-                              width: 16, // Fixed width for the icon
-                              child: _buildSipSortIcon(columnIndex, theme),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-        size: isScheme ? ColumnSize.L : ColumnSize.S,
-        fixedWidth: isScheme ? 300.0 : (isNextInstallment ? 220.0 : null),
-        onSort: null, // Disable DataTable2's default sort
-      );
-    }).toList();
-  }
-
-  List<DataRow2> _buildSipDataTable2Rows(
-    List<dynamic> sipDetails,
-    List<String> headers,
-    ThemesProvider theme,
-  ) {
-    final sorted = _sortedSipDetails(sipDetails);
-    return sorted.map((sipDetail) {
-      final sipRegNo = sipDetail.sIPRegnNo ?? 
-          '${sipDetail.name ?? ''}_${sorted.indexOf(sipDetail)}';
-      final isHovered = _hoveredRowSipRegNo == sipRegNo;
-
-      return DataRow2(
-        color: WidgetStateProperty.resolveWith((states) {
-          if (isHovered) {
-            return theme.isDarkMode
-                ? WebDarkColors.primary.withOpacity(0.06)
-                : WebColors.primary.withOpacity(0.10);
-          }
-          return null;
-        }),
-        cells: headers.map((header) {
-          return _buildSipDataTable2Cell(
-            header,
-            sipDetail,
-            theme,
-            isHovered,
-            sipRegNo,
-          );
-        }).toList(),
-        onTap: () => _openSipDetail(sipDetail),
-      );
-    }).toList();
-  }
-
-  DataCell _buildSipDataTable2Cell(
-    String column,
-    dynamic sipDetail,
-    ThemesProvider theme,
-    bool isHovered,
-    String sipRegNo,
-  ) {
-    Widget cellContent;
-    
-    switch (column) {
-      case 'Scheme':
-        cellContent = _buildSipSchemeCellContent(
-          sipDetail,
-          theme,
-          isHovered,
-          sipRegNo,
-        );
-        break;
-      case 'SIP Reg No':
-        final reg = sipDetail.sIPRegnNo ?? '';
-        cellContent = _buildSipTextCell(
-          reg,
-          theme,
-          Alignment.centerRight,
-        );
-        break;
-      case 'Amount':
-        final amount = sipDetail.installmentAmount?.toString() ?? '0';
-        final amountText = double.tryParse(amount)?.toStringAsFixed(2) ?? amount;
-        cellContent = _buildSipTextCell(
-          amountText,
-          theme,
-          Alignment.centerRight,
-        );
-        break;
-      case 'Frequency':
-        final freq = sipDetail.frequencyType ?? '';
-        cellContent = _buildSipTextCell(
-          freq,
-          theme,
-          Alignment.centerLeft,
-        );
-        break;
-      case 'Next Installment':
-        final nextInst = sipDetail.NextSIPDate ?? '';
-        cellContent = _buildSipTextCell(
-          nextInst,
-          theme,
-          Alignment.centerRight,
-        );
-        break;
-      case 'Status':
-        final status = (sipDetail.status ?? '').toUpperCase();
-        final statusColor = _statusColor(status, theme);
-        cellContent = _buildSipTextCell(
-          status,
-          theme,
-          Alignment.centerLeft,
-          color: statusColor,
-        );
-        break;
-      default:
-        cellContent = const SizedBox.shrink();
-    }
-
-    // Wrap with MouseRegion to detect hover anywhere on the cell
-    return DataCell(
-      MouseRegion(
-        onEnter: (_) => setState(() => _hoveredRowSipRegNo = sipRegNo),
-        onExit: (_) => setState(() => _hoveredRowSipRegNo = null),
-        child: SizedBox.expand(
-          child: cellContent,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSipSchemeCellContent(
-    dynamic sipDetail,
-    ThemesProvider theme,
-    bool isHovered,
-    String sipRegNo,
-  ) {
-    final scheme = sipDetail.name ?? 'N/A';
-
-    return Row(
-      children: [
-        // ✅ Scheme name - always visible, never compressed
-        Expanded(
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: Tooltip(
-              message: scheme,
-              child: Text(
-                scheme,
-                style: WebTextStyles.custom(
-                  fontSize: 13,
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
-                  fontWeight: WebFonts.medium,
-                ),
-                maxLines: 1,
-                softWrap: false,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ),
-        ),
-        // ✅ Action buttons - appear on hover, stay within bounds
-        AnimatedContainer(
-          duration: const Duration(milliseconds: 140),
-          width: isHovered ? null : 0,
-          curve: Curves.easeInOut,
-          child: IgnorePointer(
-            ignoring: !isHovered,
-            child: AnimatedOpacity(
-              opacity: isHovered ? 1 : 0,
-              duration: const Duration(milliseconds: 140),
+      dataRows.add(
+        shadcn.TableRow(
+          cells: [
+            // Scheme - Make clickable for row tap
+            buildCellWithHover(
+              rowIndex: i,
+              columnIndex: 0,
               child: Row(
-                mainAxisSize: MainAxisSize.min,
                 children: [
-                  const SizedBox(width: 8),
-                  if (_shouldShowSipActions(sipDetail)) ...[
+                  Expanded(
+                    child: Text(
+                      sipDetail.name ?? 'N/A',
+                      style: _geistTextStyle(
+                        color: colorScheme.foreground,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  // Action buttons on hover
+                  if (isHovered && _shouldShowSipActions(sipDetail)) ...[
+                    const SizedBox(width: 8),
                     _buildPauseButton(sipDetail, theme),
                     const SizedBox(width: 6),
+                    _buildCancelSipButton(sipDetail, theme),
                   ],
-                  _buildCancelSipButton(sipDetail, theme),
                 ],
               ),
             ),
-          ),
+            // SIP Reg No - Make clickable for row tap
+            buildCellWithHover(
+              rowIndex: i,
+              columnIndex: 1,
+              alignRight: true,
+              child: Text(
+                sipDetail.sIPRegnNo ?? '',
+                style: _geistTextStyle(
+                  color: colorScheme.foreground,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            // Amount - Make clickable for row tap
+            buildCellWithHover(
+              rowIndex: i,
+              columnIndex: 2,
+              alignRight: true,
+              child: Text(
+                double.tryParse((sipDetail.installmentAmount?.toString() ?? '0'))?.toStringAsFixed(2) ?? (sipDetail.installmentAmount?.toString() ?? '0'),
+                style: _geistTextStyle(
+                  color: colorScheme.foreground,
+                ),
+              ),
+            ),
+            // Frequency - Make clickable for row tap
+            buildCellWithHover(
+              rowIndex: i,
+              columnIndex: 3,
+              child: Text(
+                sipDetail.frequencyType ?? '',
+                style: _geistTextStyle(
+                  color: colorScheme.foreground,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            // Next Installment - Make clickable for row tap
+            buildCellWithHover(
+              rowIndex: i,
+              columnIndex: 4,
+              alignRight: true,
+              child: Text(
+                sipDetail.NextSIPDate ?? '',
+                style: _geistTextStyle(
+                  color: colorScheme.foreground,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            // Status - Make clickable for row tap
+            buildCellWithHover(
+              rowIndex: i,
+              columnIndex: 5,
+              child: Text(
+                (sipDetail.status ?? '').toUpperCase(),
+                style: _geistTextStyle(
+                  color: _getStatusColor(sipDetail.status ?? ''),
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
         ),
-      ],
-    );
-  }
-
-  Widget _buildSipSortIcon(int columnIndex, ThemesProvider theme) {
-    IconData icon;
-    Color color;
-
-    if (_sipSortColumnIndex == columnIndex) {
-      // Column is currently sorted
-      icon = _sipSortAscending ? Icons.arrow_upward : Icons.arrow_downward;
-      color = theme.isDarkMode ? WebDarkColors.primary : WebColors.primary;
-    } else {
-      // Column is not sorted
-      icon = Icons.unfold_more;
-      color = theme.isDarkMode
-          ? WebDarkColors.iconSecondary.withOpacity(0.6)
-          : WebColors.iconSecondary.withOpacity(0.6);
+      );
     }
 
-    return Icon(
-      icon,
-      size: 16,
-      color: color,
-    );
-  }
+    // Return shadcn Table with proper structure
+    return shadcn.OutlinedContainer(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          // Calculate minimum widths dynamically based on actual content
+          final minWidths = _calculateMinWidths(sortedSipDetails, context);
 
+          // Available width
+          final availableWidth = constraints.maxWidth;
 
-  Widget _buildSipTextCell(
-    String text,
-    ThemesProvider theme,
-    Alignment alignment, {
-    Color? color,
-  }) {
-    return Align(
-      alignment: alignment,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 6.0),
-        child: Text(
-          text,
-          style: WebTextStyles.custom(
-            fontSize: 13,
-            isDarkTheme: theme.isDarkMode,
-            color: color ??
-                (theme.isDarkMode
-                    ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary),
-            fontWeight: WebFonts.medium,
-          ),
-          maxLines: 1, 
-          softWrap: false,
-          overflow: TextOverflow.visible,
-        ),
+          // Step 1: Start with minimum widths (content-based, no wasted space)
+          final columnWidths = <int, double>{};
+          for (int i = 0; i < 6; i++) {
+            columnWidths[i] = minWidths[i] ?? 100.0;
+          }
+
+          // Step 2: Calculate total minimum width needed
+          final totalMinWidth = columnWidths.values.fold<double>(0.0, (sum, width) => sum + width);
+
+          // Step 3: If there's extra space, distribute it proportionally
+          if (totalMinWidth < availableWidth) {
+            final extraSpace = availableWidth - totalMinWidth;
+
+            // Define which columns can grow and their growth priorities
+            const schemeGrowthFactor = 2.5; // Scheme gets more growth
+            const textGrowthFactor = 1.2; // Text columns get medium growth
+            const numericGrowthFactor = 1.0; // Numeric columns get less growth
+
+            // Calculate growth factors for each column
+            final growthFactors = <int, double>{};
+            double totalGrowthFactor = 0.0;
+
+            for (int i = 0; i < 6; i++) {
+              if (i == 0) {
+                // Column 0: Scheme
+                growthFactors[i] = schemeGrowthFactor;
+                totalGrowthFactor += schemeGrowthFactor;
+              } else if (i == 3 || i == 5) {
+                // Columns 3, 5: Text columns (Frequency, Status)
+                growthFactors[i] = textGrowthFactor;
+                totalGrowthFactor += textGrowthFactor;
+              } else {
+                // Columns 1, 2, 4: Numeric columns (SIP Reg No, Amount, Next Installment)
+                growthFactors[i] = numericGrowthFactor;
+                totalGrowthFactor += numericGrowthFactor;
+              }
+            }
+
+            // Distribute extra space proportionally
+            if (totalGrowthFactor > 0) {
+              for (int i = 0; i < 6; i++) {
+                if (growthFactors[i]! > 0) {
+                  final extraForThisColumn = (extraSpace * growthFactors[i]!) / totalGrowthFactor;
+                  columnWidths[i] = columnWidths[i]! + extraForThisColumn;
+                }
+              }
+            }
+          }
+
+          // Calculate total required width
+          final totalRequiredWidth = columnWidths.values.fold<double>(0.0, (sum, width) => sum + width);
+
+          // If total width exceeds available width, enable horizontal scrolling
+          final needsHorizontalScroll = totalRequiredWidth > availableWidth;
+
+          // Build table content
+          Widget buildTableContent() {
+            return Column(
+              children: [
+                // Fixed Header (synced with horizontal scroll)
+                shadcn.Table(
+                  columnWidths: {
+                    0: shadcn.FixedTableSize(columnWidths[0]!),
+                    1: shadcn.FixedTableSize(columnWidths[1]!),
+                    2: shadcn.FixedTableSize(columnWidths[2]!),
+                    3: shadcn.FixedTableSize(columnWidths[3]!),
+                    4: shadcn.FixedTableSize(columnWidths[4]!),
+                    5: shadcn.FixedTableSize(columnWidths[5]!),
+                  },
+                  defaultRowHeight: const shadcn.FixedTableSize(40),
+                  rows: [
+                    shadcn.TableHeader(
+                      cells: [
+                        buildHeaderCell('Scheme', 0),
+                        buildHeaderCell('SIP Reg No', 1, true),
+                        buildHeaderCell('Amount', 2, true),
+                        buildHeaderCell('Frequency', 3),
+                        buildHeaderCell('Next Installment', 4, true),
+                        buildHeaderCell('Status', 5),
+                      ],
+                    ),
+                  ],
+                ),
+                // Scrollable Body (vertical scroll)
+                Expanded(
+                  child: Scrollbar(
+                    controller: _verticalScrollController,
+                    thumbVisibility: true,
+                    trackVisibility: true,
+                    interactive: true,
+                    child: SingleChildScrollView(
+                      controller: _verticalScrollController,
+                      scrollDirection: Axis.vertical,
+                      child: shadcn.Table(
+                        key: ValueKey('table_${_sortColumnIndex}_$_sortAscending'),
+                        columnWidths: {
+                          0: shadcn.FixedTableSize(columnWidths[0]!),
+                          1: shadcn.FixedTableSize(columnWidths[1]!),
+                          2: shadcn.FixedTableSize(columnWidths[2]!),
+                          3: shadcn.FixedTableSize(columnWidths[3]!),
+                          4: shadcn.FixedTableSize(columnWidths[4]!),
+                          5: shadcn.FixedTableSize(columnWidths[5]!),
+                        },
+                        defaultRowHeight: const shadcn.FixedTableSize(40),
+                        rows: dataRows,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          }
+
+          // Horizontal scroll wrapper (if needed)
+          if (needsHorizontalScroll) {
+            return Scrollbar(
+              controller: _horizontalScrollController,
+              thumbVisibility: true,
+              trackVisibility: true,
+              interactive: true,
+              child: SingleChildScrollView(
+                controller: _horizontalScrollController,
+                scrollDirection: Axis.horizontal,
+                child: SizedBox(
+                  width: totalRequiredWidth,
+                  child: buildTableContent(),
+                ),
+              ),
+            );
+          }
+
+          return buildTableContent();
+        },
       ),
     );
   }
 
-
-  void _onSortSipTable(int columnIndex) {
-    setState(() {
-      if (_sipSortColumnIndex == columnIndex) {
-        // If the same column is tapped, toggle the sort order
-        _sipSortAscending = !_sipSortAscending;
-      } else {
-        // If a new column is tapped, sort it ascending by default
-        _sipSortColumnIndex = columnIndex;
-        _sipSortAscending = true;
-      }
-    });
-  }
-
   List<dynamic> _sortedSipDetails(List<dynamic> sipDetails) {
-    if (_sipSortColumnIndex == null) return sipDetails;
-    final sorted = [...sipDetails];
-    int c = _sipSortColumnIndex!;
-    bool asc = _sipSortAscending;
+    if (_sortColumnIndex == null) return sipDetails;
+    final sorted = List<dynamic>.from(sipDetails);
+    int c = _sortColumnIndex!;
+    bool asc = _sortAscending;
 
     int cmp<T extends Comparable>(T? a, T? b) {
       if (a == null && b == null) return 0;
@@ -591,26 +552,27 @@ class _MFSipdetScreenWebState extends ConsumerState<MFSipdetScreenWeb>
     return sorted;
   }
 
-  Color _statusColor(String status, ThemesProvider theme) {
-    switch (status.toLowerCase()) {
-      case 'active':
-      case 'running':
-        return theme.isDarkMode ? colors.profitDark : colors.profitLight;
-      case 'stopped':
-      case 'cancelled':
-      case 'rejected':
-        return theme.isDarkMode ? colors.lossDark : colors.lossLight;
-      default:
-        return colors.pending;
+  Color _getStatusColor(String status) {
+    final colorScheme = shadcn.Theme.of(context).colorScheme;
+    final statusLower = status.toLowerCase();
+    
+    if (statusLower == 'active' || statusLower == 'running' || statusLower == 'live') {
+      return colorScheme.chart2;
+    } else if (statusLower == 'stopped' || statusLower == 'cancelled' || statusLower == 'rejected') {
+      return colorScheme.destructive;
+    } else {
+      return colorScheme.chart1;
     }
   }
 
   void _openSipDetail(Xsip sipDetail) {
-    showDialog(
+    // Open detail sheet (matching pattern from other order detail screens)
+    shadcn.openSheet(
       context: context,
-      builder: (BuildContext context) {
-        return MFSipDetailScreenWeb(sipData: sipDetail);
-      },
+      builder: (sheetContext) => MFSipDetailScreenWeb(
+        sipData: sipDetail,
+      ),
+      position: shadcn.OverlayPosition.end,
     );
   }
 
@@ -620,17 +582,25 @@ class _MFSipdetScreenWebState extends ConsumerState<MFSipdetScreenWeb>
   }
 
   Widget _buildPauseButton(dynamic sipDetail, ThemesProvider theme) {
-    return SizedBox(
+    final backgroundColor = theme.isDarkMode
+        ? WebDarkColors.textSecondary.withOpacity(0.6)
+        : WebColors.buttonSecondary;
+    final textColor = theme.isDarkMode ? Colors.white : WebColors.primaryLight;
+    final borderColor = theme.isDarkMode ? WebDarkColors.primaryLight : WebColors.primaryLight;
+    
+    return Container(
       height: 28,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-          backgroundColor: theme.isDarkMode
-              ? WebDarkColors.tertiary
-              : WebColors.tertiary,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-          elevation: 0,
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        border: Border.all(
+          color: borderColor,
+          width: 1,
         ),
+        borderRadius: BorderRadius.circular(5),
+      ),
+      child: shadcn.TextButton(
+        size: shadcn.ButtonSize.small,
+        density: shadcn.ButtonDensity.dense,
         onPressed: () {
           showDialog(
             context: context,
@@ -639,12 +609,14 @@ class _MFSipdetScreenWebState extends ConsumerState<MFSipdetScreenWeb>
             },
           );
         },
+        shape: shadcn.ButtonShape.rectangle,
         child: Text(
           'Pause',
-          style: WebTextStyles.custom(
+          style: TextStyle(
+            fontFamily: 'Geist',
             fontSize: 12,
-            isDarkTheme: theme.isDarkMode,
-            color: Colors.white,
+            color: textColor,
+            fontWeight: FontWeight.bold,
           ),
         ),
       ),
@@ -652,17 +624,25 @@ class _MFSipdetScreenWebState extends ConsumerState<MFSipdetScreenWeb>
   }
 
   Widget _buildCancelSipButton(dynamic sipDetail, ThemesProvider theme) {
-    return SizedBox(
+    final backgroundColor = theme.isDarkMode
+        ? WebDarkColors.textSecondary.withOpacity(0.6)
+        : WebColors.buttonSecondary;
+    final textColor = theme.isDarkMode ? Colors.white : WebColors.primaryLight;
+    final borderColor = theme.isDarkMode ? WebDarkColors.primaryLight : WebColors.primaryLight;
+    
+    return Container(
       height: 28,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-          backgroundColor: theme.isDarkMode
-              ? WebDarkColors.error
-              : WebColors.error,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-          elevation: 0,
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        border: Border.all(
+          color: borderColor,
+          width: 1,
         ),
+        borderRadius: BorderRadius.circular(5),
+      ),
+      child: shadcn.TextButton(
+        size: shadcn.ButtonSize.small,
+        density: shadcn.ButtonDensity.dense,
         onPressed: () {
           showDialog(
             context: context,
@@ -671,16 +651,17 @@ class _MFSipdetScreenWebState extends ConsumerState<MFSipdetScreenWeb>
             },
           );
         },
+        shape: shadcn.ButtonShape.rectangle,
         child: Text(
           'Cancel SIP',
-          style: WebTextStyles.custom(
+          style: TextStyle(
+            fontFamily: 'Geist',
             fontSize: 12,
-            isDarkTheme: theme.isDarkMode,
-            color: Colors.white,
+            color: textColor,
+            fontWeight: FontWeight.bold,
           ),
         ),
       ),
     );
   }
 }
-

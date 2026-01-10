@@ -1,8 +1,10 @@
 import 'dart:developer';
 // Conditional import for HttpOverrides only on non-web platforms
-import 'package:flutter/foundation.dart' show PlatformDispatcher, TargetPlatform, defaultTargetPlatform, kIsWeb;
+import 'package:flutter/foundation.dart'
+    show PlatformDispatcher, TargetPlatform, defaultTargetPlatform, kIsWeb;
 // ignore: uri_does_not_exist
-import 'utils/http_overrides_stub.dart' if (dart.library.io) 'utils/http_overrides.dart';
+import 'utils/http_overrides_stub.dart'
+    if (dart.library.io) 'utils/http_overrides.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:awesome_notifications/awesome_notifications.dart';
@@ -23,19 +25,18 @@ import 'package:url_launcher/url_launcher.dart';
 import 'locator/locator.dart';
 import 'locator/preference.dart';
 import 'provider/thems.dart';
-import 'provider/subscription_manager.dart';
 import 'routes/app_routes.dart';
 import 'routes/route_names.dart';
 import 'themes/theme.dart';
 
 // Global route observer to allow screens to react to navigation events
-final RouteObserver<ModalRoute<void>> routeObserver = RouteObserver<ModalRoute<void>>();
+final RouteObserver<ModalRoute<void>> routeObserver =
+    RouteObserver<ModalRoute<void>>();
 
 final GlobalKey<ScaffoldMessengerState> rootScaffoldMessengerKey =
     GlobalKey<ScaffoldMessengerState>();
 
-final GlobalKey<NavigatorState> rootNavigatorKey = 
-    GlobalKey<NavigatorState>();
+final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 
 // Global provider to track Firebase initialization status
 final firebaseInitializedProvider = StateProvider<bool>((ref) => false);
@@ -106,9 +107,11 @@ Future<void> initializeFirebaseAsync() async {
   try {
     // Initialize Firebase with appropriate platform options
     if (TargetPlatform.android == defaultTargetPlatform) {
-      await Firebase.initializeApp(name: "dev project", options: DefaultFirebaseOptions.currentPlatform);
+      await Firebase.initializeApp(
+          name: "dev project", options: DefaultFirebaseOptions.currentPlatform);
     } else {
-      await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+      await Firebase.initializeApp(
+          options: DefaultFirebaseOptions.currentPlatform);
     }
 
     final coreInitTime = DateTime.now();
@@ -119,12 +122,14 @@ Future<void> initializeFirebaseAsync() async {
 
     // Only enable Crashlytics on mobile platforms (not web)
     if (!kIsWeb) {
-      FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+      FlutterError.onError =
+          FirebaseCrashlytics.instance.recordFlutterFatalError;
       PlatformDispatcher.instance.onError = (error, stack) {
         FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
         return true;
       };
-      FirebaseCrashlytics.instance.setUserIdentifier("${pref.deviceName!} ${pref.imei}");
+      FirebaseCrashlytics.instance
+          .setUserIdentifier("${pref.deviceName!} ${pref.imei}");
     }
 
     // Configure messaging
@@ -145,7 +150,8 @@ Future<void> initializeFirebaseAsync() async {
 
     // Configure background messaging handler (not supported on web)
     if (!kIsWeb) {
-      FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+      FirebaseMessaging.onBackgroundMessage(
+          _firebaseMessagingBackgroundHandler);
     }
 
     // Handle notification click when app was terminated
@@ -190,7 +196,8 @@ Future<void> initializeFirebaseAsync() async {
 
     final firebaseEndTime = DateTime.now();
     final totalFirebaseDuration = firebaseEndTime.difference(firebaseStartTime);
-    print("Firebase fully initialized in: ${totalFirebaseDuration.inMilliseconds}ms");
+    print(
+        "Firebase fully initialized in: ${totalFirebaseDuration.inMilliseconds}ms");
   } catch (e) {
     print("Firebase initialization error: $e");
     // Don't update the provider state if initialization fails
@@ -198,9 +205,9 @@ Future<void> initializeFirebaseAsync() async {
 }
 
 void _clearBadgeOnStartup() async {
-    // await AwesomeNotifications().cancelAll();
-    await AwesomeNotifications().resetGlobalBadge();
-  }
+  // await AwesomeNotifications().cancelAll();
+  await AwesomeNotifications().resetGlobalBadge();
+}
 
 // This method represents the project's entry level.
 void main() async {
@@ -221,10 +228,9 @@ void main() async {
 
   final Preferences pref = locator<Preferences>();
   await pref.init();
-  try{
+  try {
     _clearBadgeOnStartup();
-  }
-  catch(e){
+  } catch (e) {
     print("Error in notification clearing $e");
   }
   // Run the app first without waiting for Firebase
@@ -254,7 +260,7 @@ class MyApp extends ConsumerWidget {
     final themeMode = ref.watch(themeProvider.select((t) => t.themeMode));
     final themeProvide = ref.read(themeProvider);
     themeProvide.getThemeData();
-    
+
     // SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
     //     statusBarIconBrightness: themeProvide.isDarkMode
     //         ? Brightness.light
@@ -262,7 +268,7 @@ class MyApp extends ConsumerWidget {
     //     statusBarBrightness:
     //         themeProvide.isDarkMode ? Brightness.light : Brightness.dark,
     //     statusBarColor: themeProvide.isDarkMode ? Colors.black :Colors.white));
-    
+
     // Use ShadcnApp for web, MaterialApp for mobile
     if (kIsWeb) {
       return shadcn.ShadcnApp(
@@ -270,20 +276,35 @@ class MyApp extends ConsumerWidget {
         title: 'MYNT',
         debugShowCheckedModeBanner: false,
         theme: shadcn.ThemeData(
-          colorScheme: themeProvide.isDarkMode 
-              ? shadcn.ColorSchemes.darkZinc() 
-              : shadcn.ColorSchemes.lightZinc(),
-          radius: 0.5,
+          colorScheme: themeMode == ThemeMode.dark
+              ? shadcn.ColorSchemes.darkDefaultColor
+              : shadcn.ColorSchemes.lightDefaultColor,
+          radius: 0,
+          // Note: shadcn components inherit from DefaultTextStyle below
+          // If shadcn.ThemeData supports textTheme, you can set it here
         ),
         initialRoute: Routes.splash,
         onGenerateRoute: AppRoutes.router,
         navigatorObservers: [routeObserver],
         builder: (context, child) {
-          return Stack(
-            children: [
-              child!,
-              const ChartOverlayWidget(),
-            ],
+          return shadcn.DrawerOverlay(
+            child: Stack(
+              children: [
+                MediaQuery(
+                  data: MediaQuery.of(context).copyWith(
+                    textScaler: TextScaler.linear(1.0),
+                  ),
+                  child: DefaultTextStyle(
+                    style: const TextStyle(
+                      fontFamily: 'Geist',
+                      fontFeatures: [FontFeature.proportionalFigures()],
+                    ),
+                    child: child!,
+                  ),
+                ),
+                const ChartOverlayWidget(),
+              ],
+            ),
           );
         },
       );

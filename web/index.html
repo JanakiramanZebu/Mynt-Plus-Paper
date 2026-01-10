@@ -24,7 +24,7 @@
   <!-- Performance: Resource hints for faster external resource loading -->
   <link rel="preconnect" href="https://use.typekit.net" crossorigin>
   <link rel="dns-prefetch" href="https://use.typekit.net">
-
+  
   <!-- iOS meta tags & icons -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
@@ -49,11 +49,15 @@
     }
     
     * {
-      font-family: 'tenon', sans-serif !important;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
       text-rendering: optimizeLegibility;
       font-synthesis: weight;
+    }
+    
+    /* Ensure Flutter canvas elements can use Geist font */
+    canvas, iframe {
+      font-family: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     }
     /* Splash screen styles */
     .splash-container {

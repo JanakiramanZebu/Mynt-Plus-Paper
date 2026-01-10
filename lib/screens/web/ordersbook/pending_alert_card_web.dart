@@ -1,7 +1,7 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' show RefreshIndicator, SizedBox, Align, Padding, LayoutBuilder, MediaQuery, Column, Expanded, Scrollbar, SingleChildScrollView, ScrollController, Axis, ValueKey, Row, MainAxisSize, MainAxisAlignment, CrossAxisAlignment, Text, TextStyle, TextDirection, TextPainter, TextSpan, FontWeight, Color, EdgeInsets, Alignment, TextOverflow, Curves, AnimatedContainer, IgnorePointer, AnimatedOpacity, GestureDetector, HitTestBehavior, MouseRegion, InkWell, Icons, VoidCallback, Icon, Container, BoxDecoration, BorderRadius, Border, BorderSide, CircularProgressIndicator, Center, Widget, BuildContext, IconData, Colors, WidgetsBinding, Material, BoxConstraints, IntrinsicWidth;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:data_table_2/data_table_2.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
 
 import '../../../models/notification_model/broker_message_model.dart';
 import '../../../models/marketwatch_model/alert_model/alert_pending_model.dart';
@@ -10,7 +10,6 @@ import '../../../provider/notification_provider.dart';
 import '../../../provider/order_provider.dart';
 import '../../../provider/websocket_provider.dart';
 import '../../../provider/thems.dart';
-import '../../../res/res.dart';
 import '../../../res/web_colors.dart';
 import '../../../res/global_font_web.dart';
 import '../../../sharedWidget/no_data_found.dart';
@@ -24,10 +23,8 @@ class PendingAlertWeb extends ConsumerStatefulWidget {
   ConsumerState<PendingAlertWeb> createState() => _PendingAlertWebState();
 }
 
-class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> 
-    with AutomaticKeepAliveClientMixin {
+class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
   List<BrokerMessage>? triggeredAlerts;
-  final Set<int> _selectedAlerts = <int>{};
   
   // Sorting variables
   int? _alertSortColumnIndex;
@@ -42,7 +39,6 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb>
   
   // Hover state
   String? _hoveredRowToken;
-  int? _hoveredColumnIndex; // Track which column is being hovered
   
   // Processing state for actions
   bool _isProcessingCancel = false;
@@ -55,9 +51,6 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb>
   
   // Track if data has been initialized
   bool _hasInitialized = false;
-
-  @override
-  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -214,7 +207,6 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb>
 
   @override
   Widget build(BuildContext context) {
-    super.build(context); // Required for AutomaticKeepAliveClientMixin
     final manage = ref.watch(marketWatchProvider);
     final notification = ref.watch(notificationprovider);
     final order = ref.watch(orderProvider);
@@ -361,26 +353,10 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb>
     });
   }
 
-  // Helper method to get responsive column configuration for Alerts
-  // Always show all columns - horizontal scroll handles overflow on small screens
-  Map<String, dynamic> _getResponsiveAlertColumns(double screenWidth) {
-    return {
-      'headers': ['Instrument', 'Exchange', 'Alert Type', 'Target', 'LTP', 'Status'],
-      'columnMinWidth': {
-        'Instrument': 300,
-        'Exchange': 110,
-        'Alert Type': 160,
-        'Target': 120,
-        'LTP': 100,
-        'Status': 110,
-      },
-    };
-  }
 
   Widget _buildAlertTable(List<dynamic> alerts, ThemesProvider theme) {
     if (alerts.isEmpty) {
-      return const SizedBox(
-        height: 400,
+      return const SizedBox.expand(
         child: Align(
           alignment: Alignment.center,
           child: Padding(
@@ -391,386 +367,447 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb>
       );
     }
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        // Calculate available height
-        final screenHeight = MediaQuery.of(context).size.height;
-        const padding = 32.0; // Top and bottom padding (16 * 2)
-        const headerHeight = 50.0; // Header height (tabs + search bar)
-        const spacing = 16.0; // Spacing between header and content
-        const bottomMargin = 20.0; // Bottom margin
-        final tableHeight =
-            screenHeight - padding - headerHeight - spacing - bottomMargin;
+    // Sort alerts
+    final sortedAlerts = _getSortedAlerts(alerts);
 
-        // Ensure we don't exceed 75% of screen height
-        final maxHeight = screenHeight * 0.75;
-        final calculatedHeight = tableHeight > maxHeight
-            ? maxHeight
-            : (tableHeight > 400 ? tableHeight : 400.0);
+    return SizedBox.expand(
+      child: shadcn.OutlinedContainer(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            // Calculate minimum widths dynamically based on actual content
+            final minWidths = _calculateMinWidths(sortedAlerts, context);
 
-        // Get screen width for responsive design
-        final screenWidth = MediaQuery.of(context).size.width;
-        
-        // Get responsive column configuration
-        final responsiveConfig = _getResponsiveAlertColumns(screenWidth);
-        final headers = List<String>.from(responsiveConfig['headers'] as List);
-        final columnMinWidth = Map<String, double>.from(responsiveConfig['columnMinWidth'] as Map);
-        
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 20.0),
-          child: Container(
-            height: calculatedHeight.toDouble(),
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: theme.isDarkMode
-                    ? WebDarkColors.divider
-                    : WebColors.divider,
-                width: 1,
-              ),
-              borderRadius: BorderRadius.circular(4),
-              color: theme.isDarkMode
-                  ? WebDarkColors.background
-                  : Colors.white,
-            ),
-            child: Theme(
-              data: Theme.of(context).copyWith(
-                scrollbarTheme: ScrollbarThemeData(
-                  // Make both scrollbars always visible
-                  thumbVisibility: WidgetStateProperty.all(true),
-                  trackVisibility: WidgetStateProperty.all(true),
-                  
-                  // Consistent thickness for both horizontal and vertical
-                  thickness: WidgetStateProperty.all(6.0),
-                  crossAxisMargin: 0.0,
-                  mainAxisMargin: 0.0,
-                  
-                  // Consistent radius
-                  radius: const Radius.circular(3),
-                  
-                  // Consistent colors for both scrollbars
-                  thumbColor: WidgetStateProperty.resolveWith((states) {
-                    return theme.isDarkMode 
-                        ? WebDarkColors.textSecondary.withOpacity(0.3)
-                        : WebColors.textSecondary.withOpacity(0.3);
-                  }),
-                  trackColor: WidgetStateProperty.resolveWith((states) {
-                    return theme.isDarkMode 
-                        ? WebDarkColors.divider.withOpacity(0.1)
-                        : WebColors.divider.withOpacity(0.1);
-                  }),
-                  
-                  trackBorderColor: WidgetStateProperty.all(Colors.transparent),
-                  minThumbLength: 48.0,
-                ),
-              ),
-              child: DataTable2(
-                columnSpacing: 12,
-                horizontalMargin: 12,
-                minWidth: 1200,
-                sortColumnIndex: null, // Disable DataTable2's built-in sorting
-                sortAscending: _alertSortAscending,
-                fixedLeftColumns: 1, // Fix the first column (Instrument)
-                fixedColumnsColor: theme.isDarkMode 
-                    ? WebDarkColors.backgroundSecondary.withOpacity(0.8)
-                    : WebColors.backgroundSecondary.withOpacity(0.8),
-                showBottomBorder: true,
-                horizontalScrollController: _horizontalScrollController,
-                scrollController: _verticalScrollController,
-                showCheckboxColumn: false,
-                headingRowColor: WidgetStateProperty.all(
-                  theme.isDarkMode
-                      ? WebDarkColors.primary
-                      : WebColors.primary.withOpacity(0.05),
-                ),
-                headingTextStyle: WebTextStyles.tableHeader(
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
-                ),
-                dataTextStyle: WebTextStyles.custom(
-                  fontSize: 13,
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
-                  fontWeight: WebFonts.medium,
-                ),
-                border: TableBorder(
-                  top: BorderSide(
-                    color: theme.isDarkMode
-                        ? WebDarkColors.divider
-                        : WebColors.divider,
-                    width: 1,
-                  ),
-                  bottom: BorderSide(
-                    color: theme.isDarkMode
-                        ? WebDarkColors.divider
-                        : WebColors.divider,
-                    width: 1,
-                  ),
-                  horizontalInside: BorderSide(
-                    color: theme.isDarkMode
-                        ? WebDarkColors.divider
-                        : WebColors.divider,
-                    width: 1,
-                  ),
-                  // Remove vertical lines
-                ),
-                columns: _buildAlertDataTable2Columns(headers, columnMinWidth, theme),
-                rows: _buildAlertDataTable2Rows(alerts, headers, theme),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
+            // Available width
+            final availableWidth = constraints.maxWidth;
+            
+            // Step 1: Start with minimum widths (content-based, no wasted space)
+            final columnWidths = <int, double>{};
+            for (int i = 0; i < 6; i++) {
+              columnWidths[i] = minWidths[i] ?? 100.0;
+            }
 
-  bool _isNumericColumnAlert(String header) {
-    return header == 'Target' || header == 'LTP'; // Only Target and LTP are numeric
-  }
+            // Step 2: Calculate total minimum width needed
+            final totalMinWidth = columnWidths.values.fold<double>(0.0, (sum, width) => sum + width);
+            
+            // Step 3: If there's extra space, distribute it proportionally
+            if (totalMinWidth < availableWidth) {
+              final extraSpace = availableWidth - totalMinWidth;
+              
+              const instrumentGrowthFactor = 2.5;
+              const textGrowthFactor = 1.2;
+              const numericGrowthFactor = 1.0;
+              
+              final growthFactors = <int, double>{};
+              double totalGrowthFactor = 0.0;
+              
+              for (int i = 0; i < 6; i++) {
+                if (i == 0) {
+                  // Instrument
+                  growthFactors[i] = instrumentGrowthFactor;
+                  totalGrowthFactor += instrumentGrowthFactor;
+                } else if (i == 1 || i == 2 || i == 5) {
+                  // Exchange, Alert Type, Status
+                  growthFactors[i] = textGrowthFactor;
+                  totalGrowthFactor += textGrowthFactor;
+                } else {
+                  // Target, LTP
+                  growthFactors[i] = numericGrowthFactor;
+                  totalGrowthFactor += numericGrowthFactor;
+                }
+              }
+              
+              if (totalGrowthFactor > 0) {
+                for (int i = 0; i < 6; i++) {
+                  if (growthFactors[i]! > 0) {
+                    final extraForThisColumn = (extraSpace * growthFactors[i]!) / totalGrowthFactor;
+                    columnWidths[i] = columnWidths[i]! + extraForThisColumn;
+                  }
+                }
+              }
+            }
 
-  int _getAlertColumnIndexForHeader(String header) {
-    switch (header) {
-      case 'Instrument': return 0;
-      case 'Exchange': return 1;
-      case 'Alert Type': return 2;
-      case 'Target': return 3;
-      case 'LTP': return 4;
-      case 'Status': return 5;
-      default: return -1;
-    }
-  }
+            final totalRequiredWidth = columnWidths.values.fold<double>(0.0, (sum, width) => sum + width);
+            final needsHorizontalScroll = totalRequiredWidth > availableWidth;
 
-  List<DataColumn2> _buildAlertDataTable2Columns(
-    List<String> headers,
-    Map<String, double> columnMinWidth,
-    ThemesProvider theme,
-  ) {
-    return headers.map((header) {
-      final columnIndex = _getAlertColumnIndexForHeader(header);
-      final isNumeric = _isNumericColumnAlert(header);
-      final isInstrument = header == 'Instrument';
-      
-      return DataColumn2(
-        label: SizedBox.expand(
-          child: MouseRegion(
-            cursor: SystemMouseCursors.click,
-            onEnter: (_) => setState(() => _hoveredColumnIndex = columnIndex),
-            onExit: (_) => setState(() => _hoveredColumnIndex = null),
-            child: Tooltip(
-              message: 'Sort by $header',
-              child: GestureDetector(
-                onTap: () => _onSortAlertTable(columnIndex),
-                behavior: HitTestBehavior.opaque,
-                child: Container(
-                  width: double.infinity,
-                  height: double.infinity,
-                  decoration: BoxDecoration(
-                    color: _hoveredColumnIndex == columnIndex
-                        ? (theme.isDarkMode
-                            ? WebDarkColors.primary.withOpacity(0.1)
-                            : WebColors.primary.withOpacity(0.05))
-                        : Colors.transparent,
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.max,
-                    mainAxisAlignment: isNumeric ? MainAxisAlignment.end : MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Flexible(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              header,
-                              style: WebTextStyles.tableHeader(
-                                isDarkTheme: theme.isDarkMode,
-                                color: theme.isDarkMode
-                                    ? WebDarkColors.textPrimary
-                                    : WebColors.textPrimary,
-                              ),
-                              textAlign: isNumeric ? TextAlign.right : TextAlign.left,
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                            ),
-                            const SizedBox(width: 4),
-                            SizedBox(
-                              width: 16, // Fixed width for the icon
-                              child: _buildAlertSortIcon(columnIndex, theme),
-                            ),
-                          ],
-                        ),
+            Widget buildTableContent() {
+              return Column(
+                children: [
+                  // Fixed Header
+                  shadcn.Table(
+                    columnWidths: {
+                      0: shadcn.FixedTableSize(columnWidths[0]!),
+                      1: shadcn.FixedTableSize(columnWidths[1]!),
+                      2: shadcn.FixedTableSize(columnWidths[2]!),
+                      3: shadcn.FixedTableSize(columnWidths[3]!),
+                      4: shadcn.FixedTableSize(columnWidths[4]!),
+                      5: shadcn.FixedTableSize(columnWidths[5]!),
+                    },
+                    defaultRowHeight: const shadcn.FixedTableSize(40),
+                    rows: [
+                      shadcn.TableHeader(
+                        cells: [
+                          buildHeaderCell('Instrument', 0),
+                          buildHeaderCell('Exchange', 1),
+                          buildHeaderCell('Alert Type', 2),
+                          buildHeaderCell('Target', 3, true),
+                          buildHeaderCell('LTP', 4, true),
+                          buildHeaderCell('Status', 5),
+                        ],
                       ),
                     ],
                   ),
+                  // Scrollable Body
+                  Expanded(
+                    child: Scrollbar(
+                      controller: _verticalScrollController,
+                      thumbVisibility: true,
+                      trackVisibility: true,
+                      interactive: true,
+                      child: SingleChildScrollView(
+                        controller: _verticalScrollController,
+                        scrollDirection: Axis.vertical,
+                        child: shadcn.Table(
+                          key: ValueKey('table_${_alertSortColumnIndex}_$_alertSortAscending'),
+                          columnWidths: {
+                            0: shadcn.FixedTableSize(columnWidths[0]!),
+                            1: shadcn.FixedTableSize(columnWidths[1]!),
+                            2: shadcn.FixedTableSize(columnWidths[2]!),
+                            3: shadcn.FixedTableSize(columnWidths[3]!),
+                            4: shadcn.FixedTableSize(columnWidths[4]!),
+                            5: shadcn.FixedTableSize(columnWidths[5]!),
+                          },
+                          defaultRowHeight: const shadcn.FixedTableSize(40),
+                          rows: sortedAlerts.asMap().entries.map((entry) {
+                            final index = entry.key;
+                            final alert = entry.value;
+                            final uniqueId = alert is BrokerMessage
+                                ? 'triggered_${alert.norentm ?? index}'
+                                : '${alert.alId ?? alert.token ?? index}';
+                            final isRowHovered = _hoveredRowToken == uniqueId;
+
+                            return shadcn.TableRow(
+                              cells: [
+                                buildCellWithHover(
+                                  rowIndex: index,
+                                  columnIndex: 0,
+                                  onTap: () => _showAlertDetail(alert),
+                                  child: _buildInstrumentCell(alert, theme, isRowHovered, uniqueId),
+                                ),
+                                buildCellWithHover(
+                                  rowIndex: index,
+                                  columnIndex: 1,
+                                  onTap: () => _showAlertDetail(alert),
+                                  child: _buildExchangeCell(alert, theme),
+                                ),
+                                buildCellWithHover(
+                                  rowIndex: index,
+                                  columnIndex: 2,
+                                  onTap: () => _showAlertDetail(alert),
+                                  child: _buildAlertTypeCell(alert, theme),
+                                ),
+                                buildCellWithHover(
+                                  rowIndex: index,
+                                  columnIndex: 3,
+                                  alignRight: true,
+                                  onTap: () => _showAlertDetail(alert),
+                                  child: _buildTargetCell(alert, theme),
+                                ),
+                                buildCellWithHover(
+                                  rowIndex: index,
+                                  columnIndex: 4,
+                                  alignRight: true,
+                                  onTap: () => _showAlertDetail(alert),
+                                  child: _buildLTPCell(alert, theme),
+                                ),
+                                buildCellWithHover(
+                                  rowIndex: index,
+                                  columnIndex: 5,
+                                  onTap: () => _showAlertDetail(alert),
+                                  child: _buildStatusCell(alert, theme),
+                                ),
+                              ],
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            }
+
+            if (needsHorizontalScroll) {
+              return Scrollbar(
+                controller: _horizontalScrollController,
+                thumbVisibility: true,
+                trackVisibility: true,
+                interactive: true,
+                child: SingleChildScrollView(
+                  controller: _horizontalScrollController,
+                  scrollDirection: Axis.horizontal,
+                  child: SizedBox(
+                    width: totalRequiredWidth,
+                    child: buildTableContent(),
+                  ),
                 ),
-              ),
-            ),
-          ),
-        ),
-        size: isInstrument ? ColumnSize.L : ColumnSize.S,
-        fixedWidth: isInstrument ? 300.0 : null,
-        onSort: null, // Disable DataTable2's default sort
-      );
-    }).toList();
-  }
+              );
+            }
 
-  List<DataRow2> _buildAlertDataTable2Rows(
-    List<dynamic> alerts,
-    List<String> headers,
-    ThemesProvider theme,
-  ) {
-    final sorted = _getSortedAlerts(alerts);
-    return sorted.map((alert) {
-      // Create unique identifier for hover
-      String uniqueId;
-      if (alert is BrokerMessage) {
-        uniqueId = 'triggered_${alert.norentm ?? sorted.indexOf(alert)}';
-      } else {
-        uniqueId = '${alert.alId ?? alert.token ?? sorted.indexOf(alert)}';
-      }
-      final isHovered = _hoveredRowToken == uniqueId;
-
-      return DataRow2(
-        color: WidgetStateProperty.resolveWith((states) {
-          if (isHovered) {
-            return theme.isDarkMode
-                ? WebDarkColors.primary.withOpacity(0.06)
-                : WebColors.primary.withOpacity(0.10);
-          }
-          return null;
-        }),
-        cells: headers.map((header) {
-          return _buildAlertDataTable2Cell(
-            header,
-            alert,
-            theme,
-            isHovered,
-            uniqueId,
-          );
-        }).toList(),
-        onTap: () {
-          // Only show detail dialog for pending alerts, not triggered ones
-          if (alert is! BrokerMessage) {
-            showDialog(
-              context: context,
-              builder: (context) => PendingAlertDetailScreenWeb(alert: alert),
-            );
-          }
-        },
-      );
-    }).toList();
-  }
-
-  DataCell _buildAlertDataTable2Cell(
-    String column,
-    dynamic alert,
-    ThemesProvider theme,
-    bool isHovered,
-    String uniqueId,
-  ) {
-    Widget cellContent;
-    
-    switch (column) {
-      case 'Instrument':
-        cellContent = _buildAlertInstrumentCellContent(
-          alert,
-          theme,
-          isHovered,
-          uniqueId,
-        );
-        break;
-      case 'Exchange':
-        final exchange = alert is BrokerMessage ? 'N/A' : (alert.exch ?? 'N/A');
-        cellContent = _buildAlertTextCell(
-          exchange,
-          theme,
-          Alignment.centerLeft,
-        );
-        break;
-      case 'Alert Type':
-        String alertType = '';
-        if (alert is BrokerMessage) {
-          alertType = 'TRIGGERED';
-        } else {
-          switch (alert.aiT) {
-            case 'LTP_A': alertType = 'LTP Above'; break;
-            case 'LTP_B': alertType = 'LTP Below'; break;
-            case 'CH_PER_A': alertType = 'Perc.Change Above'; break;
-            case 'CH_PER_B': alertType = 'Perc.Change Below'; break;
-            default: alertType = 'Unknown';
-          }
-        }
-        cellContent = _buildAlertTextCell(
-          alertType,
-          theme,
-          Alignment.centerLeft,
-        );
-        break;
-      case 'Target':
-        String target = '';
-        if (alert is BrokerMessage) {
-          target = 'N/A';
-        } else {
-          if (alert.aiT == "CH_PER_A" || alert.aiT == "CH_PER_B") {
-            target = "%${alert.d ?? '0.00'}";
-          } else {
-            target = "${alert.d ?? '0.00'}";
-          }
-        }
-        cellContent = _buildAlertTextCell(
-          target,
-          theme,
-          Alignment.centerRight,
-        );
-        break;
-      case 'LTP':
-        final ltp = alert is BrokerMessage 
-            ? 'N/A' 
-            : "${alert.ltp ?? alert.close ?? '0.00'}";
-        cellContent = _buildAlertTextCell(
-          ltp,
-          theme,
-          Alignment.centerRight,
-        );
-        break;
-      case 'Status':
-        final status = alert is BrokerMessage ? 'TRIGGERED' : 'PENDING';
-        final statusColor = _getAlertStatusColor(status, theme);
-        cellContent = _buildAlertTextCell(
-          status,
-          theme,
-          Alignment.centerLeft,
-          color: statusColor,
-        );
-        break;
-      default:
-        cellContent = const SizedBox.shrink();
-    }
-
-    // Wrap with MouseRegion to detect hover anywhere on the cell
-    return DataCell(
-      MouseRegion(
-        onEnter: (_) => setState(() => _hoveredRowToken = uniqueId),
-        onExit: (_) => setState(() => _hoveredRowToken = null),
-        child: SizedBox.expand(
-          child: cellContent,
+            return buildTableContent();
+          },
         ),
       ),
     );
   }
 
-  Widget _buildAlertInstrumentCellContent(
+  // Helper method to ensure Geist font is always applied
+  TextStyle _geistTextStyle({Color? color, double? fontSize, FontWeight? fontWeight}) {
+    return TextStyle(
+      fontFamily: 'Geist',
+      color: color,
+      fontSize: fontSize,
+      fontWeight: fontWeight,
+    );
+  }
+
+  // Builds a cell with hover detection
+  shadcn.TableCell buildCellWithHover({
+    required Widget child,
+    required int rowIndex,
+    required int columnIndex,
+    bool alignRight = false,
+    VoidCallback? onTap,
+  }) {
+    final isFirstColumn = columnIndex == 0;
+    final isLastColumn = columnIndex == 5;
+    final horizontalPadding = isFirstColumn || isLastColumn ? 16.0 : 8.0;
+
+    return shadcn.TableCell(
+      theme: const shadcn.TableCellTheme(
+        border: shadcn.WidgetStatePropertyAll(
+          shadcn.Border(
+            top: shadcn.BorderSide.none,
+            bottom: shadcn.BorderSide.none,
+            left: shadcn.BorderSide.none,
+            right: shadcn.BorderSide.none,
+          ),
+        ),
+      ),
+      child: MouseRegion(
+        onEnter: (_) => setState(() {
+          final alert = _getSortedAlerts(_getAllAlerts())[rowIndex];
+          final uniqueId = alert is BrokerMessage
+              ? 'triggered_${alert.norentm ?? rowIndex}'
+              : '${alert.alId ?? alert.token ?? rowIndex}';
+          _hoveredRowToken = uniqueId;
+        }),
+        onExit: (_) => setState(() => _hoveredRowToken = null),
+        child: GestureDetector(
+          onTap: onTap,
+          behavior: HitTestBehavior.opaque,
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 8),
+            alignment: alignRight ? Alignment.topRight : null,
+            child: child,
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Builds a sortable header cell
+  shadcn.TableCell buildHeaderCell(String label, int columnIndex, [bool alignRight = false]) {
+    final isFirstColumn = columnIndex == 0;
+    final isLastColumn = columnIndex == 5;
+    final horizontalPadding = isFirstColumn || isLastColumn ? 16.0 : 6.0;
+
+    return shadcn.TableCell(
+      theme: const shadcn.TableCellTheme(
+        border: shadcn.WidgetStatePropertyAll(
+          shadcn.Border(
+            top: shadcn.BorderSide.none,
+            bottom: shadcn.BorderSide.none,
+            left: shadcn.BorderSide.none,
+            right: shadcn.BorderSide.none,
+          ),
+        ),
+      ),
+      child: InkWell(
+        onTap: () => _onSortAlertTable(columnIndex),
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 6),
+          alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
+          child: Row(
+            mainAxisAlignment: alignRight ? MainAxisAlignment.end : MainAxisAlignment.start,
+            children: [
+              if (alignRight && _alertSortColumnIndex == columnIndex)
+                Icon(
+                  _alertSortAscending ? Icons.arrow_upward : Icons.arrow_downward,
+                  size: 16,
+                  color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+                ),
+              if (alignRight && _alertSortColumnIndex == columnIndex) const SizedBox(width: 4),
+              Text(
+                label,
+                style: _geistTextStyle(
+                  color: shadcn.Theme.of(context).colorScheme.foreground,
+                ),
+              ),
+              if (!alignRight && _alertSortColumnIndex == columnIndex) const SizedBox(width: 4),
+              if (!alignRight && _alertSortColumnIndex == columnIndex)
+                Icon(
+                  _alertSortAscending ? Icons.arrow_upward : Icons.arrow_downward,
+                  size: 16,
+                  color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Calculate minimum column widths dynamically
+  Map<int, double> _calculateMinWidths(List<dynamic> alerts, BuildContext context) {
+    final textStyle = const TextStyle(fontSize: 14, fontFamily: 'Geist');
+    const padding = 24.0;
+    const sortIconWidth = 24.0;
+
+    final headers = [
+      'Instrument',
+      'Exchange',
+      'Alert Type',
+      'Target',
+      'LTP',
+      'Status',
+    ];
+    final minWidths = <int, double>{};
+
+    for (int col = 0; col < headers.length; col++) {
+      double maxWidth = 0.0;
+      final headerWidth = _measureTextWidth(headers[col], textStyle);
+      maxWidth = headerWidth + sortIconWidth;
+
+      for (final alert in alerts.take(5)) {
+        String cellText = '';
+        switch (col) {
+          case 0: // Instrument
+            if (alert is BrokerMessage) {
+              cellText = 'N/A';
+            } else {
+              final symbol = (alert.tsym ?? '').replaceAll("-EQ", "").trim();
+              final exchange = alert.exch ?? '';
+              cellText = exchange.isNotEmpty ? '$symbol $exchange' : symbol;
+            }
+            break;
+          case 1: // Exchange
+            cellText = alert is BrokerMessage ? 'N/A' : (alert.exch ?? 'N/A');
+            break;
+          case 2: // Alert Type
+            if (alert is BrokerMessage) {
+              cellText = 'TRIGGERED';
+            } else {
+              switch (alert.aiT) {
+                case 'LTP_A': cellText = 'LTP Above'; break;
+                case 'LTP_B': cellText = 'LTP Below'; break;
+                case 'CH_PER_A': cellText = 'Perc.Change Above'; break;
+                case 'CH_PER_B': cellText = 'Perc.Change Below'; break;
+                default: cellText = 'Unknown';
+              }
+            }
+            break;
+          case 3: // Target
+            if (alert is BrokerMessage) {
+              cellText = 'N/A';
+            } else {
+              if (alert.aiT == "CH_PER_A" || alert.aiT == "CH_PER_B") {
+                cellText = "%${alert.d ?? '0.00'}";
+              } else {
+                cellText = "${alert.d ?? '0.00'}";
+              }
+            }
+            break;
+          case 4: // LTP
+            cellText = alert is BrokerMessage 
+                ? 'N/A' 
+                : "${alert.ltp ?? alert.close ?? '0.00'}";
+            break;
+          case 5: // Status
+            cellText = alert is BrokerMessage ? 'TRIGGERED' : 'PENDING';
+            break;
+        }
+
+        final cellWidth = _measureTextWidth(cellText, textStyle);
+        if (cellWidth > maxWidth) {
+          maxWidth = cellWidth;
+        }
+      }
+
+      minWidths[col] = maxWidth + padding;
+    }
+
+    return minWidths;
+  }
+
+  double _measureTextWidth(String text, TextStyle style) {
+    final textPainter = TextPainter(
+      text: TextSpan(text: text, style: style),
+      textDirection: TextDirection.ltr,
+      maxLines: 1,
+    );
+    textPainter.layout();
+    return textPainter.width;
+  }
+
+  // Helper to get all alerts for hover detection
+  List<dynamic> _getAllAlerts() {
+    final manage = ref.read(marketWatchProvider);
+    final notification = ref.read(notificationprovider);
+    final order = ref.read(orderProvider);
+    
+    final isSearching = order.orderSearchCtrl.text.isNotEmpty;
+    final pendingAlerts = isSearching
+        ? manage.alertPendingSearch ?? []
+        : manage.alertPendingModel ?? [];
+    
+    List<BrokerMessage>? triggered;
+    if (isSearching) {
+      triggered = notification.triggeredAlertSearch ?? [];
+    } else {
+      triggered = notification.brokermsg
+          ?.where((msg) =>
+              msg.dmsg != null &&
+              msg.dmsg!.contains("Ltp") &&
+              (msg.dmsg!.contains("above") || msg.dmsg!.contains("below")))
+          .toList();
+    }
+    
+    return [
+      ...pendingAlerts,
+      ...(triggered ?? [])
+    ];
+  }
+
+  void _showAlertDetail(dynamic alert) {
+    // Only show detail sheet for pending alerts, not triggered ones
+    if (alert is! BrokerMessage) {
+      shadcn.openSheet(
+        context: context,
+        builder: (sheetContext) => PendingAlertDetailScreenWeb(alert: alert),
+        position: shadcn.OverlayPosition.end,
+      );
+    }
+  }
+
+  Widget _buildInstrumentCell(
     dynamic alert,
     ThemesProvider theme,
-    bool isHovered,
+    bool isRowHovered,
     String uniqueId,
   ) {
     final isProcessing = _processingAlertToken == uniqueId;
     final isPending = alert is! BrokerMessage;
+    final colorScheme = shadcn.Theme.of(context).colorScheme;
 
     String symbol = '';
     String exchange = '';
@@ -781,45 +818,44 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb>
       symbol = alert.tsym?.replaceAll("-EQ", "") ?? 'N/A';
       exchange = alert.exch ?? '';
     }
-    String displayText = symbol.trim();
-    if (exchange.isNotEmpty && exchange.trim().isNotEmpty) {
-      displayText += ' ${exchange.trim()}';
-    }
 
     return Row(
       children: [
-        // ✅ Instrument name - always visible, never compressed
+        // Instrument name - symbol (normal color) + exchange (grey)
         Expanded(
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: Tooltip(
-              message: displayText,
-              child: Text(
-                displayText,
-                style: WebTextStyles.custom(
-                  fontSize: 13,
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
-                  fontWeight: WebFonts.medium,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                symbol,
+                style: _geistTextStyle(
+                  color: colorScheme.foreground,
                 ),
                 maxLines: 1,
-                softWrap: false,
                 overflow: TextOverflow.ellipsis,
               ),
-            ),
+              if (exchange.isNotEmpty) ...[
+                const SizedBox(width: 4),
+                Text(
+                  exchange,
+                  style: _geistTextStyle(
+                    color: colorScheme.mutedForeground,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ],
           ),
         ),
-        // ✅ Action buttons - appear on hover, stay within bounds
+        // Action buttons - appear on hover
         AnimatedContainer(
           duration: const Duration(milliseconds: 140),
-          width: isHovered ? null : 0,
+          width: isRowHovered ? null : 0,
           curve: Curves.easeInOut,
           child: IgnorePointer(
-            ignoring: !isHovered,
+            ignoring: !isRowHovered,
             child: AnimatedOpacity(
-              opacity: isHovered ? 1 : 0,
+              opacity: isRowHovered ? 1 : 0,
               duration: const Duration(milliseconds: 140),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -859,55 +895,119 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb>
     );
   }
 
-  Widget _buildAlertSortIcon(int columnIndex, ThemesProvider theme) {
-    IconData icon;
-    Color color;
-
-    if (_alertSortColumnIndex == columnIndex) {
-      // Column is currently sorted
-      icon = _alertSortAscending ? Icons.arrow_upward : Icons.arrow_downward;
-      color = theme.isDarkMode ? WebDarkColors.primary : WebColors.primary;
-    } else {
-      // Column is not sorted
-      icon = Icons.unfold_more;
-      color = theme.isDarkMode
-          ? WebDarkColors.iconSecondary.withOpacity(0.6)
-          : WebColors.iconSecondary.withOpacity(0.6);
-    }
-
-    return Icon(
-      icon,
-      size: 16,
-      color: color,
+  Widget _buildExchangeCell(dynamic alert, ThemesProvider theme) {
+    final colorScheme = shadcn.Theme.of(context).colorScheme;
+    final exchange = alert is BrokerMessage ? 'N/A' : (alert.exch ?? 'N/A');
+    
+    return Text(
+      exchange,
+      style: _geistTextStyle(
+        color: colorScheme.foreground,
+      ),
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
     );
   }
 
-  Widget _buildAlertTextCell(
-    String text,
-    ThemesProvider theme,
-    Alignment alignment, {
-    Color? color,
-  }) {
-    return Align(
-      alignment: alignment,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 6.0),
-        child: Text(
-          text,
-          style: WebTextStyles.custom(
-            fontSize: 13,
-            isDarkTheme: theme.isDarkMode,
-            color: color ??
-                (theme.isDarkMode
-                    ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary),
-            fontWeight: WebFonts.medium,
-          ),
-          maxLines: 1, 
-          softWrap: false,
-          overflow: TextOverflow.visible,
-        ),
+  Widget _buildAlertTypeCell(dynamic alert, ThemesProvider theme) {
+    final colorScheme = shadcn.Theme.of(context).colorScheme;
+    String alertType = '';
+    Color alertColor = colorScheme.mutedForeground;
+    
+    if (alert is BrokerMessage) {
+      alertType = 'TRIGGERED';
+      alertColor = colorScheme.chart2; // Green for triggered
+    } else {
+      switch (alert.aiT) {
+        case 'LTP_A':
+          alertType = 'LTP Above';
+          alertColor = colorScheme.chart2; // Green
+          break;
+        case 'LTP_B':
+          alertType = 'LTP Below';
+          alertColor = colorScheme.destructive; // Red
+          break;
+        case 'CH_PER_A':
+          alertType = 'Perc.Change Above';
+          alertColor = colorScheme.chart2; // Green
+          break;
+        case 'CH_PER_B':
+          alertType = 'Perc.Change Below';
+          alertColor = colorScheme.destructive; // Red
+          break;
+        default:
+          alertType = 'Unknown';
+      }
+    }
+    
+    return Text(
+      alertType,
+      style: _geistTextStyle(
+        color: alertColor,
       ),
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+    );
+  }
+
+  Widget _buildTargetCell(dynamic alert, ThemesProvider theme) {
+    final colorScheme = shadcn.Theme.of(context).colorScheme;
+    String target = '';
+    
+    if (alert is BrokerMessage) {
+      target = 'N/A';
+    } else {
+      if (alert.aiT == "CH_PER_A" || alert.aiT == "CH_PER_B") {
+        target = "%${alert.d ?? '0.00'}";
+      } else {
+        target = "${alert.d ?? '0.00'}";
+      }
+    }
+    
+    return Align(
+      alignment: Alignment.centerRight,
+      child: Text(
+        target,
+        style: _geistTextStyle(
+          color: colorScheme.foreground,
+        ),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+    );
+  }
+
+  Widget _buildLTPCell(dynamic alert, ThemesProvider theme) {
+    final colorScheme = shadcn.Theme.of(context).colorScheme;
+    final ltp = alert is BrokerMessage 
+        ? 'N/A' 
+        : "${alert.ltp ?? alert.close ?? '0.00'}";
+    
+    return Align(
+      alignment: Alignment.centerRight,
+      child: Text(
+        ltp,
+        style: _geistTextStyle(
+          color: colorScheme.foreground,
+        ),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+    );
+  }
+
+  Widget _buildStatusCell(dynamic alert, ThemesProvider theme) {
+    final colorScheme = shadcn.Theme.of(context).colorScheme;
+    final status = alert is BrokerMessage ? 'TRIGGERED' : 'PENDING';
+    final statusColor = _getAlertStatusColor(status, theme);
+    
+    return Text(
+      status,
+      style: _geistTextStyle(
+        color: statusColor,
+      ),
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
     );
   }
 
@@ -990,15 +1090,14 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb>
   }
 
   Color _getAlertStatusColor(String status, ThemesProvider theme) {
+    final colorScheme = shadcn.Theme.of(context).colorScheme;
     switch (status.toUpperCase()) {
       case 'TRIGGERED':
-        return theme.isDarkMode ? colors.profitDark : colors.profitLight;
+        return colorScheme.chart2; // Green/success
       case 'PENDING':
-        return colors.pending;
+        return colorScheme.chart1; // Orange/warning
       default:
-        return theme.isDarkMode
-            ? WebDarkColors.textPrimary
-            : WebColors.textPrimary;
+        return colorScheme.mutedForeground;
     }
   }
 
@@ -1060,161 +1159,6 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb>
   }
 
 
-  DataCell _buildExchangeCell(dynamic alert, ThemesProvider theme) {
-    String exchange = '';
-    if (alert is BrokerMessage) {
-      final parsed = _parseBrokerMessage(alert);
-      exchange = parsed['exchange'] ?? '';
-      if (exchange.isEmpty) {
-        exchange = 'N/A';
-      }
-    } else {
-      exchange = alert.exch ?? '';
-    }
-    
-    return DataCell(
-      Text(
-        exchange,
-        style: WebTextStyles.tableDataCompact(
-          isDarkTheme: theme.isDarkMode,
-          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
-        ),
-      ),
-    );
-  }
-
-  DataCell _buildAlertTypeCell(dynamic alert, ThemesProvider theme) {
-    String alertType = '';
-    Color alertColor = colors.pending;
-    
-    if (alert is BrokerMessage) {
-      alertType = 'TRIGGERED';
-      alertColor = theme.isDarkMode ? colors.primaryDark : colors.primaryLight;
-    } else {
-      switch (alert.aiT) {
-        case 'LTP_A':
-          alertType = 'LTP Above';
-          alertColor = theme.isDarkMode ? colors.profitDark : colors.profitLight;
-          break;
-        case 'LTP_B':
-          alertType = 'LTP Below';
-          alertColor = theme.isDarkMode ? colors.lossDark : colors.lossLight;
-          break;
-        case 'CH_PER_A':
-          alertType = 'Perc.Change Above';
-          alertColor = theme.isDarkMode ? colors.profitDark : colors.profitLight;
-          break;
-        case 'CH_PER_B':
-          alertType = 'Perc.Change Below';
-          alertColor = theme.isDarkMode ? colors.lossDark : colors.lossLight;
-          break;
-        default:
-          alertType = 'Unknown';
-      }
-    }
-    
-    return DataCell(
-      Text(
-        alertType,
-        style: WebTextStyles.tableDataCompact(
-          isDarkTheme: theme.isDarkMode,
-          color: alertColor,
-        ),
-      ),
-    );
-  }
-
-  DataCell _buildTargetCell(dynamic alert, ThemesProvider theme) {
-    String target = '';
-    
-    if (alert is BrokerMessage) {
-      final parsed = _parseBrokerMessage(alert);
-      target = parsed['target'] ?? '';
-      if (target.isEmpty) {
-        target = 'N/A';
-      }
-    } else {
-      if (alert.aiT == "CH_PER_A" || alert.aiT == "CH_PER_B") {
-        target = "%${alert.d}";
-      } else {
-        target = "${alert.d}";
-      }
-    }
-    
-    return DataCell(
-      Text(
-        target,
-        style: WebTextStyles.tableDataCompact(
-          isDarkTheme: theme.isDarkMode,
-          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
-        ),
-      ),
-    );
-  }
-
-  DataCell _buildLTPCell(dynamic alert, ThemesProvider theme) {
-    String ltp = '';
-    String change = '';
-    
-    if (alert is BrokerMessage) {
-      final parsed = _parseBrokerMessage(alert);
-      ltp = parsed['ltp'] ?? '';
-      if (ltp.isEmpty) {
-        ltp = 'N/A';
-      }
-    } else {
-      ltp = "${alert.ltp ?? alert.close ?? 0.00}";
-      change = " (${alert.perChange ?? 0.00}%)";
-    }
-    
-    return DataCell(
-      Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            ltp,
-            style: WebTextStyles.tableDataCompact(
-              isDarkTheme: theme.isDarkMode,
-              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
-            ),
-          ),
-          if (change.isNotEmpty)
-            Text(
-              change,
-              style: WebTextStyles.tableDataCompact(
-                isDarkTheme: theme.isDarkMode,
-                color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  DataCell _buildStatusCell(dynamic alert, ThemesProvider theme) {
-    String status = '';
-    Color statusColor = colors.pending;
-    
-    if (alert is BrokerMessage) {
-      status = 'TRIGGERED';
-      statusColor = theme.isDarkMode ? colors.primaryDark : colors.primaryLight;
-    } else {
-      status = 'PENDING';
-      statusColor = colors.pending;
-    }
-    
-    return DataCell(
-      Text(
-        status,
-        style: WebTextStyles.tableDataCompact(
-          isDarkTheme: theme.isDarkMode,
-          color: statusColor,
-        ),
-      ),
-    );
-  }
-
-
   // Action handlers
   Future<void> _handleCancelAlert(AlertPendingModel alert) async {
     final uniqueId = alert.alId?.toString() ?? alert.token?.toString() ?? '';
@@ -1257,10 +1201,11 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb>
         _processingAlertToken = uniqueId;
       });
 
-      // Open modify alert dialog
-      showDialog(
+      // Open modify alert sheet
+      shadcn.openSheet(
         context: context,
-        builder: (context) => PendingAlertDetailScreenWeb(alert: alert),
+        builder: (sheetContext) => PendingAlertDetailScreenWeb(alert: alert),
+        position: shadcn.OverlayPosition.end,
       );
     } catch (e) {
       if (mounted) {

@@ -177,7 +177,7 @@ class NotificationService extends ChangeNotifier {
       actionButtons: actionButtons,
       schedule: scheduled
           ? NotificationInterval(
-              interval: interval != null ? Duration(seconds: interval) : null,
+              interval: interval,
               timeZone: await AwesomeNotifications().getLocalTimeZoneIdentifier(),
               preciseAlarm: true,
             )

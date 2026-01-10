@@ -2,16 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import '../../../../provider/market_watch_provider.dart';
 import '../../../../provider/order_provider.dart';
 import '../../../models/order_book_model/order_book_model.dart';
 import '../../../models/marketwatch_model/get_quotes.dart';
 import '../../../provider/thems.dart';
-import '../../../res/global_font_web.dart';
-import '../../../res/web_colors.dart';
 import '../../../res/res.dart';
 import '../../../locator/preference.dart';
-import '../../../sharedWidget/no_data_found_web.dart';
+import '../../../sharedWidget/no_data_found.dart';
 import '../../../sharedWidget/snack_bar.dart';
 import '../../../utils/responsive_navigation.dart';
 
@@ -73,6 +72,27 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
       }
     };
     _tabController.addListener(_tabControllerListener!);
+
+    // Add text controller listener to handle clear button and other text changes
+    _textController.addListener(() {
+      final currentText = _textController.text;
+      if (currentText != _searchValue) {
+        setState(() {
+          _searchValue = currentText;
+        });
+        
+        final searchScrip = ref.read(marketWatchProvider);
+        if (currentText.isEmpty) {
+          searchScrip.searchClear();
+        } else {
+          searchScrip.scripSearch(
+              currentText,
+              context,
+              _tabController.index,
+              widget.isBasket);
+        }
+      }
+    });
   }
 
   @override
@@ -128,27 +148,17 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
     //   );
     // }
 
-    return Dialog(
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      child: Container(
-        width: 560,
-        constraints: const BoxConstraints(maxHeight: 600),
-        decoration: BoxDecoration(
-          color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+    return Center(
+      child: shadcn.Card(
+        borderRadius: BorderRadius.circular(8),
+        // padding: EdgeInsets.zero,
+        child: Container(
+          width: 560,
+          constraints: const BoxConstraints(maxHeight: 600),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
                       // Container(
                       //   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                       //   decoration: BoxDecoration(
@@ -205,369 +215,187 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
                       // ),
 
                       // Search Bar Section
-                      Container(
-                        padding: const EdgeInsets.only(
-                            left: 10, right: 10, top: 10, bottom: 0),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Container(
-                                height: 40,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(5),
-                                  border: Border.all(
-                                    color: theme.isDarkMode
-                                        ? WebDarkColors.inputBorder
-                                        : WebColors.inputBorder,
-                                    width: 1,
+                      Row(
+                        children: [
+                          Expanded(
+                            child: SizedBox(
+                              height: 40,
+                              child: DefaultTextStyle(
+                                style: const TextStyle(fontFamily: 'Geist'),
+                                child: shadcn.TextField(
+                                  controller: _textController,
+                                  autofocus: true,
+                                  textCapitalization: TextCapitalization.characters,
+                                  inputFormatters: [
+                                    UpperCaseTextFormatter(),
+                                    FilteringTextInputFormatter.deny(
+                                        RegExp('[π£•₹€℅™∆√¶/.,]'))
+                                  ],
+                                  placeholder: const Text(
+                                    'Search stocks, indices, options',
+                                    style: TextStyle(fontFamily: 'Geist'),
                                   ),
-                                ),
-                                child: Row(
-                                  children: [
-                                    const SizedBox(width: 16),
-                                    SvgPicture.asset(
-                                      assets.searchIcon,
-                                      width: 16,
-                                      height: 16,
-                                      color: theme.isDarkMode
-                                          ? WebDarkColors.iconSecondary
-                                          : WebColors.iconSecondary,
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: TextFormField(
-                                        controller: _textController,
-                                        autofocus: true,
-                                        style: WebTextStyles.formInput(
-                                          isDarkTheme: theme.isDarkMode,
-                                          color: theme.isDarkMode
-                                              ? WebDarkColors.textPrimary
-                                              : WebColors.textPrimary,
-                                        ),
-                                        textCapitalization:
-                                            TextCapitalization.characters,
-                                        inputFormatters: [
-                                          UpperCaseTextFormatter(),
-                                          FilteringTextInputFormatter.deny(
-                                              RegExp('[π£•₹€℅™∆√¶/.,]'))
-                                        ],
-                                        keyboardType: TextInputType.text,
-                                        decoration: InputDecoration(
-                                          isCollapsed: true,
-                                          border: InputBorder.none,
-                                          enabledBorder: InputBorder.none,
-                                          focusedBorder: InputBorder.none,
-                                          hintText:
-                                              "Search stocks, indices, options",
-                                          hintStyle: WebTextStyles.formInput(
-                                            isDarkTheme: theme.isDarkMode,
-                                            color: theme.isDarkMode
-                                                ? WebDarkColors.textSecondary
-                                                : WebColors.textSecondary,
-                                          ),
-                                          contentPadding:
-                                              const EdgeInsets.symmetric(
-                                                  horizontal: 0, vertical: 12),
-                                        ),
-                                        onChanged: (value) async {
-                                          setState(() {
-                                            _searchValue = value;
-                                          });
-                                          if (value.isEmpty) {
-                                            searchScrip.searchClear();
+                                  features: [
+                                    // Leading search icon with hover animation - only visible when text is empty
+                                    shadcn.InputFeature.leading(
+                                      shadcn.StatedWidget.builder(
+                                        builder: (context, states) {
+                                          // Use full color icon on hover, muted when not hovered
+                                          if (states.hovered) {
+                                            return SvgPicture.asset(
+                                              assets.searchIcon,
+                                              color: shadcn.Theme.of(context).colorScheme.foreground,
+                                              fit: BoxFit.scaleDown,
+                                              width: 16,
+                                            );
                                           } else {
-                                            searchScrip.scripSearch(
-                                                value,
-                                                context,
-                                                _tabController.index,
-                                                widget.isBasket);
+                                            return SvgPicture.asset(
+                                              assets.searchIcon,
+                                              color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+                                              fit: BoxFit.scaleDown,
+                                              width: 16,
+                                            );
                                           }
                                         },
                                       ),
+                                      visibility: shadcn.InputFeatureVisibility.textEmpty,
                                     ),
-                                    // Clear search text icon (appears when text is not empty)
-                                    ValueListenableBuilder<TextEditingValue>(
-                                      valueListenable: _textController,
-                                      builder: (context, value, child) {
-                                        if (value.text.isNotEmpty)
-                                          // ignore: curly_braces_in_flow_control_structures
-                                          return Padding(
-                                            padding:
-                                                const EdgeInsets.only(right: 8),
-                                            child: Material(
-                                              color: Colors.transparent,
-                                              shape: const CircleBorder(),
-                                              child: InkWell(
-                                                customBorder:
-                                                    const CircleBorder(),
-                                                hoverColor: theme.isDarkMode
-                                                    ? Colors.white
-                                                        .withOpacity(0.1)
-                                                    : Colors.black
-                                                        .withOpacity(0.1),
-                                                splashColor: theme.isDarkMode
-                                                    ? Colors.white
-                                                        .withOpacity(0.2)
-                                                    : Colors.black
-                                                        .withOpacity(0.2),
-                                                onTap: () async {
-                                                  _textController.clear();
-                                                  await searchScrip
-                                                      .searchClear();
-                                                },
-                                                child: Container(
-                                                  padding:
-                                                      const EdgeInsets.all(2),
-                                                  decoration: BoxDecoration(
-                                                    // color: theme.isDarkMode
-                                                    //     ? WebDarkColors.surface
-                                                    //     : WebColors.surface,
-                                                    shape: BoxShape.circle,
-                                                    border: Border.all(
-                                                      color: theme.isDarkMode
-                                                          ? WebDarkColors
-                                                              .inputBorder
-                                                          : WebColors
-                                                              .inputBorder,
-                                                      width: 1,
-                                                    ),
-                                                  ),
-                                                  child: Icon(
-                                                    Icons.close,
-                                                    size: 14,
-                                                    color: theme.isDarkMode
-                                                        ? WebDarkColors
-                                                            .iconSecondary
-                                                        : WebColors
-                                                            .iconSecondary,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          );
-                                        return const SizedBox.shrink();
-                                      },
+                                    // Clear button with smart visibility - appears when text exists and field is focused, or when hovered
+                                    shadcn.InputFeature.clear(
+                                      visibility: (shadcn.InputFeatureVisibility.textNotEmpty &
+                                              shadcn.InputFeatureVisibility.focused) |
+                                          shadcn.InputFeatureVisibility.hovered,
                                     ),
                                   ],
+                                  onChanged: (value) async {
+                                    final searchScrip = ref.read(marketWatchProvider);
+                                    setState(() {
+                                      _searchValue = value;
+                                    });
+                                    if (value.isEmpty) {
+                                      await searchScrip.searchClear();
+                                    } else {
+                                      searchScrip.scripSearch(
+                                          value,
+                                          context,
+                                          _tabController.index,
+                                          widget.isBasket);
+                                    }
+                                  },
                                 ),
                               ),
                             ),
-                            // Close dialog icon (always visible, outside search bar)
-                            Padding(
-                              padding: const EdgeInsets.only(left: 8),
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  customBorder: const CircleBorder(),
-                                  hoverColor: theme.isDarkMode
-                                      ? Colors.white.withOpacity(0.1)
-                                      : Colors.black.withOpacity(0.1),
-                                  splashColor: theme.isDarkMode
-                                      ? Colors.white.withOpacity(0.2)
-                                      : Colors.black.withOpacity(0.2),
-                                  onTap: () {
-                                    ref.read(marketWatchProvider).searchClear();
-                                    Navigator.of(context).pop();
-                                  },
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Icon(
-                                      Icons.close,
-                                      size: 18,
-                                      color: theme.isDarkMode
-                                          ? WebDarkColors.iconSecondary
-                                          : WebColors.iconSecondary,
-                                    ),
+                          ),
+                          // Close dialog icon (always visible, outside search bar)
+                          Padding(
+                            padding: const EdgeInsets.only(left: 8),
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                customBorder: const CircleBorder(),
+                                hoverColor: shadcn.Theme.of(context).colorScheme.accent.withOpacity(0.1),
+                                splashColor: shadcn.Theme.of(context).colorScheme.accent.withOpacity(0.2),
+                                onTap: () {
+                                  ref.read(marketWatchProvider).searchClear();
+                                  Navigator.of(context).pop();
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Icon(
+                                    Icons.close,
+                                    size: 18,
+                                    color: shadcn.Theme.of(context).colorScheme.mutedForeground,
                                   ),
                                 ),
                               ),
                             ),
-                          ],
-                        ),
-                      ),
-
-                      // Always show tabs and content area
-                      Container(
-                        height: 60,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                        ),
-                        decoration: BoxDecoration(
-                          color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
-                          border: Border(
-                            bottom: BorderSide(
-                              color: theme.isDarkMode
-                                  ? WebDarkColors.divider
-                                  : WebColors.divider,
-                              width: 1,
-                            ),
                           ),
-                        ),
-                        child: _buildSearchTabs(ref, theme),
+                        ],
                       ),
+                      // Close dialog icon (always visible, outside search bar)
+                     
+                      const SizedBox(height: 10),
+                      // Always show tabs and content area
+                      _buildSearchTabs(ref, theme),
 
                       // Search Results or No Data
                       Expanded(
                         child: _buildSearchResults(searchScrip, theme),
                       ),
-                    ],
-                  ),
-                ),
-              );
-            
-          
-        
-      
-    
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildSearchTabs(WidgetRef ref, ThemesProvider theme) {
     final searchTabList =
         ref.read(marketWatchProvider).searchTabList.sublist(0, _tabCount);
 
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // Left arrow button
-        // _buildTabArrowButton(
-        //   icon: Icons.chevron_left,
-        //   onPressed: () => _scrollTabsLeft(),
-        //   theme: theme,
-        // ),
-        // const SizedBox(width: 5),
-        // Tabs scrollable area
-        Expanded(
-          child: SingleChildScrollView(
-            controller: _tabScrollController,
-            scrollDirection: Axis.horizontal,
-            physics: const ClampingScrollPhysics(),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                for (int index = 0; index < searchTabList.length; index++)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 6),
-                    child: _buildSearchTab(
-                      searchTabList[index].text ?? '',
-                      index,
-                      _tabController.index == index,
-                      theme,
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ),
-        // const SizedBox(width: 5),
-        // Right arrow button
-        // _buildTabArrowButton(
-        //   icon: Icons.chevron_right,
-        //   onPressed: () => _scrollTabsRight(),
-        //   theme: theme,
-        // ),
-      ],
-    );
-  }
-
-  Widget _buildSearchTab(
-    String title,
-    int index,
-    bool isSelected,
-    ThemesProvider theme,
-  ) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: InkWell(
-        onTap: () {
-          if (_tabController.index != index) {
-            _tabController.animateTo(index);
-            _scrollToSelectedTab(index);
-          }
-        },
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-          decoration: BoxDecoration(
-            color: isSelected
-                ? (theme.isDarkMode
-                    ? WebDarkColors.backgroundTertiary
-                    : WebColors.backgroundTertiary)
-                : (theme.isDarkMode ? WebDarkColors.surface : WebColors.surface),
-            border: Border.all(
-              color: isSelected
-                  ? (theme.isDarkMode
-                      ? WebDarkColors.primary
-                      : WebColors.primary)
-                  : (theme.isDarkMode
-                      ? WebDarkColors.textSecondary
-                      : WebColors.textSecondary),
-              width: isSelected ? 1.5 : 1,
-            ),
-            borderRadius: BorderRadius.circular(50),
-          ),
-          child: Text(
-            title,
-            overflow: TextOverflow.ellipsis,
-            style: WebTextStyles.tab(
-              isDarkTheme: theme.isDarkMode,
-              color: isSelected
-                  ? (theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary)
-                  : (theme.isDarkMode
-                      ? WebDarkColors.navItem
-                      : WebColors.navItem),
-              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-            ),
-          ),
+    return SingleChildScrollView(
+      controller: _tabScrollController,
+      scrollDirection: Axis.horizontal,
+      physics: const ClampingScrollPhysics(),
+      child: DefaultTextStyle(
+        style: const TextStyle(fontFamily: 'Geist'),
+        child: shadcn.TabList(
+          index: _tabController.index,
+          onChanged: (value) {
+            if (_tabController.index != value) {
+              _tabController.animateTo(value);
+              _scrollToSelectedTab(value);
+            }
+          },
+          children: [
+            for (int index = 0; index < searchTabList.length; index++)
+              shadcn.TabItem(
+                child: Text(
+                  searchTabList[index].text ?? '',
+                  style: const TextStyle(fontFamily: 'Geist'),
+                ),
+              ),
+          ],
         ),
       ),
     );
   }
+
 
   Widget _buildSearchResults(
       MarketWatchProvider searchScrip, ThemesProvider theme) {
     if (searchScrip.allSearchScrip?.isEmpty ?? true) {
-      return Container(
-        decoration: BoxDecoration(
-          color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
-          borderRadius: const BorderRadius.only(
-            bottomLeft: Radius.circular(12),
-            bottomRight: Radius.circular(12),
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: NoDataFound(
+            title: _searchValue.isNotEmpty 
+                ? "No Results Found" 
+                : "Start Searching",
+            subtitle: _searchValue.isNotEmpty
+                ? "No stocks match your search \"$_searchValue\"."
+                : "Type to search for stocks, indices, or options.",
           ),
-        ),
-        child: const Center(
-          child: NoDataFoundWeb(),
         ),
       );
     }
 
-    return Container(
-      padding: const EdgeInsets.only(bottom: 10),
-      decoration: BoxDecoration(
-        color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
-        borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(12),
-          bottomRight: Radius.circular(12),
-        ),
-      ),
-      child: ScrollConfiguration(
-        behavior: const MaterialScrollBehavior().copyWith(scrollbars: false),
-        child: RawScrollbar(
+    return ScrollConfiguration(
+      behavior: const MaterialScrollBehavior().copyWith(scrollbars: false),
+      child: RawScrollbar(
           controller: _scrollController,
-          thumbVisibility: true,
+          thumbVisibility: false,
           thickness: 6,
           radius: const Radius.circular(0),
-          thumbColor: theme.isDarkMode
-              ? WebDarkColors.textSecondary.withOpacity(0.5)
-              : WebColors.textSecondary.withOpacity(0.5),
+          thumbColor: shadcn.Theme.of(context).colorScheme.mutedForeground.withOpacity(0.5),
           child: ListView.separated(
             controller: _scrollController,
             physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.only(right: 4),
             itemCount: searchScrip.allSearchScrip!.length,
             separatorBuilder: (context, index) => Divider(
               height: 0,
-              color:
-                  theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
+              color: shadcn.Theme.of(context).colorScheme.border,
             ),
             itemBuilder: (BuildContext context, int index) {
               final scrip = searchScrip.allSearchScrip![index];
@@ -578,12 +406,8 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
                 child: Material(
                   color: Colors.transparent,
                   child: InkWell(
-                    splashColor: theme.isDarkMode
-                        ? Colors.white.withOpacity(0.05)
-                        : Colors.black.withOpacity(0.05),
-                    highlightColor: theme.isDarkMode
-                        ? Colors.white.withOpacity(0.02)
-                        : Colors.black.withOpacity(0.02),
+                    splashColor: shadcn.Theme.of(context).colorScheme.accent.withOpacity(0.1),
+                    highlightColor: shadcn.Theme.of(context).colorScheme.accent.withOpacity(0.05),
                     onTap: () async {
                     if (widget.isBasket == "Chart||Is") {
                       // Create DepthInputArgs from selected scrip to update header and scrip info
@@ -647,11 +471,11 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
                                     "${scrip.symbol?.isNotEmpty == true ? scrip.symbol : scrip.tsym}"
                                         .replaceAll("-EQ", "")
                                         .toUpperCase(),
-                                    style: WebTextStyles.symbolList(
-                                      isDarkTheme: theme.isDarkMode,
-                                      color: theme.isDarkMode
-                                          ? WebDarkColors.textPrimary
-                                          : WebColors.textPrimary,
+                                    style: TextStyle(
+                                      color: shadcn.Theme.of(context).colorScheme.foreground,
+                                      fontFamily: 'Geist',
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 14,
                                     ),
                                   ),
                                   if (scrip.option != null &&
@@ -660,11 +484,11 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
                                       padding: const EdgeInsets.only(left: 4),
                                       child: Text(
                                         "${scrip.option}",
-                                        style: WebTextStyles.symbolList(
-                                          isDarkTheme: theme.isDarkMode,
-                                          color: theme.isDarkMode
-                                              ? WebDarkColors.textPrimary
-                                              : WebColors.textPrimary,
+                                        style: TextStyle(
+                                          color: shadcn.Theme.of(context).colorScheme.foreground,
+                                          fontFamily: 'Geist',
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 14,
                                         ),
                                       ),
                                     ),
@@ -674,11 +498,11 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
                                       padding: const EdgeInsets.only(left: 4),
                                       child: Text(
                                         " ${scrip.expDate}",
-                                        style: WebTextStyles.symbolList(
-                                          isDarkTheme: theme.isDarkMode,
-                                          color: theme.isDarkMode
-                                              ? WebDarkColors.textPrimary
-                                              : WebColors.textPrimary,
+                                        style: TextStyle(
+                                          color: shadcn.Theme.of(context).colorScheme.foreground,
+                                          fontFamily: 'Geist',
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 14,
                                         ),
                                       ),
                                     ),
@@ -686,9 +510,12 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
                                     padding: const EdgeInsets.only(left: 4),
                                     child: Text(
                                       '${scrip.exch}',
-                                      style: WebTextStyles.exchText(
-                                          isDarkTheme: theme.isDarkMode,
-                                          color: WebColors.textSecondary),
+                                      style: TextStyle(
+                                        color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+                                        fontFamily: 'Geist',
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                      ),
                                     ),
                                   ),
                                   // Buy/Sell buttons for Basket mode - shown next to symbol
@@ -715,16 +542,17 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
                                                   width: 22,
                                                   height: 22,
                                                   decoration: BoxDecoration(
-                                                    color: WebColors.primary,
+                                                    color: shadcn.Theme.of(context).colorScheme.primary,
                                                     borderRadius: BorderRadius.circular(5),
                                                   ),
                                                   child: Center(
                                                     child: Text(
                                                       'B',
-                                                      style: WebTextStyles.buttonMd(
-                                                        isDarkTheme: theme.isDarkMode,
-                                                        color: Colors.white,
-                                                        fontWeight: WebFonts.medium,
+                                                      style: TextStyle(
+                                                        color: shadcn.Theme.of(context).colorScheme.primaryForeground,
+                                                        fontFamily: 'Geist',
+                                                        fontSize: 12,
+                                                        fontWeight: FontWeight.w600,
                                                       ),
                                                     ),
                                                   ),
@@ -745,16 +573,17 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
                                                   width: 22,
                                                   height: 22,
                                                   decoration: BoxDecoration(
-                                                    color: WebColors.tertiary,
+                                                    color: shadcn.Theme.of(context).colorScheme.destructive,
                                                     borderRadius: BorderRadius.circular(5),
                                                   ),
                                                   child: Center(
                                                     child: Text(
                                                       'S',
-                                                      style: WebTextStyles.buttonSm(
-                                                        isDarkTheme: theme.isDarkMode,
-                                                        color: Colors.white,
-                                                        fontWeight: WebFonts.medium,
+                                                      style: TextStyle(
+                                                        color: shadcn.Theme.of(context).colorScheme.destructiveForeground,
+                                                        fontFamily: 'Geist',
+                                                        fontSize: 12,
+                                                        fontWeight: FontWeight.w600,
                                                       ),
                                                     ),
                                                   ),
@@ -882,12 +711,9 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
                                         searchScrip.isAdded![index]
                                             ? assets.bookmarkIcon
                                             : assets.bookmarkedIcon,
-                                        color: theme.isDarkMode &&
-                                                searchScrip.isAdded![index]
-                                            ? WebDarkColors.primary
-                                            : searchScrip.isAdded![index]
-                                                ? WebColors.primary
-                                                : WebDarkColors.textSecondary,
+                                        color: searchScrip.isAdded![index]
+                                            ? shadcn.Theme.of(context).colorScheme.primary
+                                            : shadcn.Theme.of(context).colorScheme.mutedForeground,
                                         height: 18,
                                         width: 18,
                                       ),
@@ -903,8 +729,7 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
             },
           ),
         ),
-      ),
-    );
+      );
   }
 
   // Handle Buy/Sell click for basket mode

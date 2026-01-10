@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../../../models/order_book_model/order_book_model.dart';
 import '../../../models/marketwatch_model/get_quotes.dart';
@@ -8,58 +9,73 @@ import '../../../provider/market_watch_provider.dart';
 import '../../../provider/order_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/websocket_provider.dart';
-import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../res/web_colors.dart';
 import '../../../res/global_font_web.dart';
 import '../../../sharedWidget/functions.dart';
-import '../../../sharedWidget/time_line.dart';
 import '../../../utils/responsive_navigation.dart';
+import '../../../utils/responsive_snackbar.dart';
+import '../../../main.dart';
 import '../order/modify_place_order_web_screen.dart';
 
 class OrderBookDetailScreenWeb extends ConsumerStatefulWidget {
   final OrderBookModel orderBookData;
+  final BuildContext? parentContext;
 
   const OrderBookDetailScreenWeb({
     super.key,
     required this.orderBookData,
+    this.parentContext,
   });
 
   @override
   ConsumerState<OrderBookDetailScreenWeb> createState() => _OrderBookDetailScreenWebState();
 }
 
-class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreenWeb>
-    with SingleTickerProviderStateMixin {
+class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreenWeb> {
   late OrderBookModel _orderData;
-  late AnimationController _animationController;
+  StreamSubscription? _socketSubscription;
 
   // Track processing states
   bool _isProcessingCancel = false;
   bool _isProcessingModify = false;
-  bool _hasFetchedOrderHistory = false; // Track if we've already fetched order history
-  bool _showOrderHistory = false; // Track whether to show order history or details
+  bool _isProcessingRepeat = false;
+  bool _hasFetchedOrderHistory = false;
 
   @override
   void initState() {
     super.initState();
-    // Make a copy of the order data to avoid modifying the original
     _orderData = _copyOrderData(widget.orderBookData);
+  }
 
-    // Set up animation controller for smooth transitions
-    _animationController = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
-    );
+  bool _didInitDependencies = false;
 
-    // Order history will be fetched in build method when ref is available
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
 
-    // Socket subscription is now handled by StreamBuilder
+    if (!_didInitDependencies) {
+      _didInitDependencies = true;
+
+      Future.microtask(() {
+        if (mounted) {
+          _setupSocketSubscription();
+          _fetchOrderHistory();
+        }
+      });
+    }
   }
 
   @override
   void dispose() {
-    _animationController.dispose();
+    _socketSubscription?.cancel();
+    
+    try {
+      ProviderScope.containerOf(context).read(websocketProvider).closeSocket(false);
+    } catch (e) {
+      print('WebSocket close error during disposal: $e');
+    }
+    
     super.dispose();
   }
 
@@ -76,6 +92,7 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
     copy.perChange = original.perChange;
     copy.change = original.change;
     copy.close = original.close;
+    copy.c = original.c; 
     copy.status = original.status;
     copy.trantype = original.trantype;
     copy.qty = original.qty;
@@ -99,548 +116,468 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
     return copy;
   }
 
+  // Set up socket subscription for real-time updates
+  void _setupSocketSubscription() {
+    if (!mounted) return;
+
+    try {
+      final wsProvider = ref.read(websocketProvider);
+
+      _socketSubscription = wsProvider.socketDataStream.listen((socketData) {
+        if (!mounted) return;
+
+        final data = socketData[_orderData.token];
+        if (data != null) {
+          setState(() {
+            final lp = data['lp']?.toString();
+            final pc = data['pc']?.toString();
+            final chng = data['chng']?.toString();
+
+            if (_isValidValue(lp)) _orderData.ltp = lp;
+            if (_isValidValue(pc)) _orderData.perChange = pc;
+            if (_isValidValue(chng)) _orderData.change = chng;
+          });
+        }
+      });
+    } catch (e) {
+      print("Error setting up socket subscription: $e");
+    }
+  }
+
+  // Helper method to check if a value is valid
+  bool _isValidValue(String? value) {
+    return value != null &&
+        value != "null" &&
+        value != "0" &&
+        value != "0.0" &&
+        value != "0.00";
+  }
+
+  // Fetch order history
+  void _fetchOrderHistory() {
+    if (_hasFetchedOrderHistory) return;
+    
+    _hasFetchedOrderHistory = true;
+    final orderNumber = widget.orderBookData.norenordno?.toString() ?? '';
+    if (orderNumber.isNotEmpty && mounted) {
+      ref.read(orderProvider).fetchOrderHistory(orderNumber, context);
+      ref.read(orderProvider).showorderHistory(true);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(
-      builder: (context, ref, _) {
-        final theme = ref.watch(themeProvider);
-        final marketwatch = ref.watch(marketWatchProvider);
-        final orderHistory = ref.watch(orderProvider).orderHistoryModel;
-        // final order = ref.watch(orderProvider); // Not used anymore after commenting out action buttons
+    final theme = ref.read(themeProvider);
+    final scripInfo = ref.watch(marketWatchProvider);
+    final orderHistory = ref.watch(orderProvider).orderHistoryModel;
 
-        // Automatically fetch order history when dialog opens (only once)
-        if (!_hasFetchedOrderHistory) {
-          _hasFetchedOrderHistory = true;
-          final orderNumber = widget.orderBookData.norenordno?.toString() ?? '';
-          if (orderNumber.isNotEmpty) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted) {
-                ref.read(orderProvider).fetchOrderHistory(orderNumber, context);
-                ref.read(orderProvider).showorderHistory(true);
-              }
-            });
-          }
-        }
+    DepthInputArgs depthArgs = DepthInputArgs(
+      exch: _orderData.exch ?? "",
+      token: _orderData.token ?? "",
+      tsym: scripInfo.getQuotes?.tsym ?? '',
+      instname: scripInfo.getQuotes?.instname ?? "",
+      symbol: scripInfo.getQuotes?.symbol ?? '',
+      expDate: scripInfo.getQuotes?.expDate ?? '',
+      option: scripInfo.getQuotes?.option ?? '',
+    );
 
-        return StreamBuilder<Map>(
-          stream: ref.watch(websocketProvider).socketDataStream,
-          builder: (context, snapshot) {
-            final socketDatas = snapshot.data ?? {};
-
-            // Create a copy of order data for real-time updates
-            OrderBookModel updatedOrderData = _orderData;
-
-            // Update order data with real-time values if available
-            if (socketDatas.containsKey(_orderData.token)) {
-              final lp = socketDatas["${_orderData.token}"]['lp']?.toString();
-              final pc = socketDatas["${_orderData.token}"]['pc']?.toString();
-              final chng = socketDatas["${_orderData.token}"]['chng']?.toString();
-
-              if (lp != null && lp != "null" && lp != "0" && lp != "0.00") {
-                updatedOrderData.ltp = lp;
-              }
-
-              if (pc != null && pc != "null" && pc != "0" && pc != "0.00") {
-                updatedOrderData.perChange = pc;
-              }
-
-              if (chng != null && chng != "null") {
-                updatedOrderData.change = chng;
-              }
-            }
-
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          child: Container(
-            width: 700,
-            decoration: BoxDecoration(
-              color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-              borderRadius: BorderRadius.circular(5),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Header with close button
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  margin: const EdgeInsets.only(bottom: 8),
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(
-                        color: theme.isDarkMode
-                            ? WebDarkColors.divider
-                            : WebColors.divider,
-                      ),
+    return Container(
+      constraints: const BoxConstraints(maxWidth: 400),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
+            width: 1,
+          ),
+        ),
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header with close button (fixed)
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 10),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: _buildSymbolSection(theme, scripInfo, depthArgs),
                     ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _buildSymbolSection(theme, marketwatch, updatedOrderData),
-                      Material(
-                        color: Colors.transparent,
-                        shape: const CircleBorder(),
-                        child: InkWell(
-                          customBorder: const CircleBorder(),
-                          splashColor: theme.isDarkMode
-                              ? Colors.white.withOpacity(.15)
-                              : Colors.black.withOpacity(.15),
-                          highlightColor: theme.isDarkMode
-                              ? Colors.white.withOpacity(.08)
-                              : Colors.black.withOpacity(.08),
-                          onTap: () => Navigator.of(context).pop(),
-                          child: Padding(
-                            padding: const EdgeInsets.all(6),
-                            child: Icon(
-                              Icons.close,
-                              size: 20,
-                              color: theme.isDarkMode
-                                  ? WebDarkColors.iconSecondary
-                                  : WebColors.iconSecondary,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                    shadcn.TextButton(
+                      density: shadcn.ButtonDensity.icon,
+                      shape: shadcn.ButtonShape.circle,
+                      size: shadcn.ButtonSize.normal,
+                      child: const Icon(Icons.close),
+                      onPressed: () {
+                        shadcn.closeSheet(context);
+                      },
+                    ),
+                  ],
                 ),
-                
-                // Content
-                Flexible(
-                  fit: FlexFit.loose,
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.only(top: 0, bottom: 20, left: 20, right: 20),
+              ),
+              // Border divider
+              Container(
+                height: 1,
+                color: shadcn.Theme.of(context).colorScheme.border,
+              ),
+              // Scrollable Content
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (!_showOrderHistory) ...[
-                          // Order Details Section
-                          _buildOrderDetailsSection(theme, updatedOrderData),
-                          
-                          // Reason Section - Show if reason exists
-                          if (updatedOrderData.rejreason != null && updatedOrderData.rejreason!.isNotEmpty) ...[
-                            const SizedBox(height: 20),
-                            _buildReasonWidget(theme, updatedOrderData.rejreason!),
-                          ],
-                          
-                          // Order History Button - Show if history is available
-                          if (orderHistory != null &&
-                              orderHistory.isNotEmpty &&
-                              orderHistory[0].stat != "Not_Ok") ...[
-                            const SizedBox(height: 16),
-                            _buildOrderHistoryButton(theme),
-                          ],
-                        ] else ...[
-                          // Order History Timeline - Show when _showOrderHistory is true
-                          if (orderHistory != null &&
-                              orderHistory.isNotEmpty &&
-                              orderHistory[0].stat != "Not_Ok") ...[
-                            Row(
-                              children: [
-                                _buildBackButton(theme),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    'Order History',
-                                    style: WebTextStyles.sub(
-                                      isDarkTheme: theme.isDarkMode,
-                                      color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                                      fontWeight: WebFonts.semiBold,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                        // Action Buttons
+                        _buildActionButtons(theme),
+                        // Details Section
+                        _buildDetailsSection(theme),
+                        // Reason Section
+                        if (_orderData.rejreason != null && _orderData.rejreason!.isNotEmpty) ...[
+                          // const shadcn.Gap(16),
+                          _buildReasonWidget(theme, _orderData.rejreason!),
+                        ],
+                        // Order History Section
+                        if (orderHistory != null &&
+                            orderHistory.isNotEmpty &&
+                            orderHistory[0].stat != "Not_Ok") ...[
+                          // const shadcn.Gap(24),
+                          Text(
+                            'Order History',
+                            style: WebTextStyles.sub(
+                              isDarkTheme: theme.isDarkMode,
+                              color: shadcn.Theme.of(context).colorScheme.foreground,
+                              fontWeight: WebFonts.semiBold,
                             ),
-                            // const SizedBox(height: 8),
-                            _buildOrderHistorySection(theme, orderHistory),
-                          ],
+                          ),
+                          const shadcn.Gap(12),
+                          _buildOrderHistorySection(theme, orderHistory),
                         ],
                       ],
                     ),
                   ),
                 ),
-              ],
-            ),
-          ),
-        );
-          },
-        );
-      },
-    );
-  }
-
-  Widget _buildSymbolSection(ThemesProvider theme, MarketWatchProvider marketwatch, OrderBookModel displayData) {
-    DepthInputArgs depthArgs = DepthInputArgs(
-      exch: displayData.exch ?? "",
-      token: displayData.token ?? "",
-      tsym: marketwatch.getQuotes?.tsym ?? '',
-      instname: marketwatch.getQuotes?.instname ?? "",
-      symbol: marketwatch.getQuotes?.symbol ?? '',
-      expDate: marketwatch.getQuotes?.expDate ?? '',
-      option: marketwatch.getQuotes?.option ?? '',
-    );
-
-    return Material(
-      color: Colors.transparent,
-      shape: const RoundedRectangleBorder(),
-      child: InkWell(
-        customBorder: const RoundedRectangleBorder(),
-        borderRadius: BorderRadius.circular(0),
-        splashColor: theme.isDarkMode ? colors.primaryDark.withOpacity(0.1) : colors.primaryLight.withOpacity(0.1),
-        highlightColor: theme.isDarkMode ? colors.primaryDark.withOpacity(0.2) : colors.primaryLight.withOpacity(0.2),
-        onTap: () async {
-          Navigator.pop(context);
-          await marketwatch.scripdepthsize(false);
-          await marketwatch.calldepthApis(context, depthArgs, "");
+              ),
+            ],
+          );
         },
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Symbol and Exchange
-            Row(
-              children: [
-                Text(
-                  "${displayData.symbol?.replaceAll("-EQ", "") ?? ''} ${displayData.expDate ?? ''} ${displayData.option ?? ''} ",
-                  style: WebTextStyles.dialogTitle(
-                    isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                  ),
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  displayData.exch ?? '',
-                  style: WebTextStyles.dialogTitle(
-                    isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            
-            // Price and Change
-            Row(
-              children: [
-                Text(
-                  displayData.ltp ?? displayData.close ?? '0.00',
-                  style: WebTextStyles.title(
-                    isDarkTheme: theme.isDarkMode,
-                    color: (displayData.change == "null" || displayData.change == null) ||
-                            displayData.change == "0.00"
-                        ? theme.isDarkMode
-                            ? colors.textSecondaryDark
-                            : colors.textSecondaryLight
-                        : (displayData.change?.startsWith("-") == true || displayData.perChange?.startsWith("-") == true)
-                            ? theme.isDarkMode
-                                ? colors.lossDark
-                                : colors.lossLight
-                            : theme.isDarkMode
-                                ? colors.profitDark
-                                : colors.profitLight,
-                    fontWeight: WebFonts.medium,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  "${(double.tryParse(displayData.change ?? '0.00') ?? 0.00).toStringAsFixed(2)} (${displayData.perChange ?? '0.00'}%)",
-                  style: WebTextStyles.sub(
-                    isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                    fontWeight: WebFonts.medium,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
       ),
     );
   }
 
-  Widget _buildActionButtons(ThemesProvider theme, OrderProvider order, OrderBookModel displayData) {
-    final isPending = displayData.status == "PENDING" || 
-                     displayData.status == "OPEN" || 
-                     displayData.status == "TRIGGER_PENDING";
-
-    if (isPending) {
-      return _buildPendingActionButtons(theme, order, displayData);
-    } else {
-      return _buildCompletedActionButtons(theme, order, displayData);
-    }
-  }
-
-  Widget _buildPendingActionButtons(ThemesProvider theme, OrderProvider order, OrderBookModel displayData) {
-    return Row(
+  Widget _buildSymbolSection(ThemesProvider theme, MarketWatchProvider scripInfo, DepthInputArgs depthArgs) {
+    final colorScheme = shadcn.Theme.of(context).colorScheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Cancel Button
-        Expanded(
-          child: _buildActionButton(
-            "Cancel",
-            false,
-            theme,
-            _isProcessingCancel ? null : () => _handleCancelOrder(displayData),
-            _isProcessingCancel,
-          ),
-        ),
-        const SizedBox(width: 12),
-        // Modify Button
-        Expanded(
-          child: _buildActionButton(
-            "Modify",
-            true,
-            theme,
-            _isProcessingModify ? null : () => _handleModifyOrder(displayData),
-            _isProcessingModify,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildCompletedActionButtons(ThemesProvider theme, OrderProvider order, OrderBookModel displayData) {
-    return Row(
-      children: [
-        // Repeat Order Button
-        Expanded(
-          child: _buildActionButton(
-            "Repeat Order",
-            false,
-            theme,
-            () => _handleRepeatOrder(displayData),
-            false,
-          ),
-        ),
-        if (displayData.status == "OPEN") ...[
-          const SizedBox(width: 12),
-          // Cancel Button for OPEN orders
-          Expanded(
-            child: _buildActionButton(
-              "Cancel",
-              true,
-              theme,
-              _isProcessingCancel ? null : () => _handleCancelOrder(displayData),
-              _isProcessingCancel,
-            ),
-          ),
-        ],
-      ],
-    );
-  }
-
-  Widget _buildActionButton(String text, bool isPrimary, ThemesProvider theme, VoidCallback? onPressed, bool isLoading) {
-    return SizedBox(
-      height: 45,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: isPrimary
-              ? colors.primaryLight
-              : (theme.isDarkMode
-                  ? colors.textSecondaryDark.withOpacity(0.6)
-                  : colors.btnBg),
-          foregroundColor: isPrimary
-              ? colors.colorWhite
-              : (theme.isDarkMode ? colors.colorWhite : colors.primaryLight),
-          side: isPrimary
-              ? null
-              : BorderSide(
-                  color: colors.primaryLight,
-                  width: 1,
+        // Symbol and Exchange
+        Row(
+          children: [
+            Flexible(
+              child: Text(
+                "${_orderData.symbol?.replaceAll("-EQ", "") ?? ''} ${_orderData.expDate ?? ''} ${_orderData.option ?? ''} ",
+                style: WebTextStyles.dialogTitle(
+                  isDarkTheme: theme.isDarkMode,
+                  color: colorScheme.foreground,
                 ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            // const SizedBox(width: 4),
+            // Text(
+            //   "${_orderData.exch}",
+            //   style: WebTextStyles.dialogTitle(
+            //     isDarkTheme: theme.isDarkMode,
+            //     color: colorScheme.mutedForeground,
+            //   ),
+            // ),
+          ],
         ),
-        onPressed: onPressed,
+        const SizedBox(height: 8),
+        
+        // Price and Change
+        Row(
+          children: [
+            Text(
+              _orderData.ltp ?? _orderData.close ?? '0.00',
+              style: WebTextStyles.title(
+                isDarkTheme: theme.isDarkMode,
+                color: (_orderData.change == "null" || _orderData.change == null) ||
+                        _orderData.change == "0.00"
+                    ? colorScheme.mutedForeground
+                    : (_orderData.change?.startsWith("-") == true || _orderData.perChange?.startsWith("-") == true)
+                        ? colorScheme.destructive
+                        : colorScheme.chart2,
+                fontWeight: WebFonts.medium,
+              ),
+            ),
+            const SizedBox(width: 4),
+            Text(
+              "${(double.tryParse(_orderData.change ?? '0.00') ?? 0.00).toStringAsFixed(2)} (${_orderData.perChange ?? '0.00'}%)",
+              style: WebTextStyles.sub(
+                isDarkTheme: theme.isDarkMode,
+                color: colorScheme.mutedForeground,
+                fontWeight: WebFonts.medium,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+
+  Widget _buildActionButtons(ThemesProvider theme) {
+    final isPending = _orderData.status == "PENDING" || 
+                     _orderData.status == "OPEN" || 
+                     _orderData.status == "TRIGGER_PENDING";
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (isPending) ...[
+            // Cancel and Modify buttons in a row
+            Row(
+              children: [
+                
+                Expanded(
+                  child: _buildActionButton(
+                    "Modify",
+                    true,
+                    theme,
+                    _handleModifyOrder,
+                    isLoading: _isProcessingModify,
+                  ),
+                ),
+                const SizedBox(width: 12),
+
+                Expanded(
+                  child: _buildActionButton(
+                    "Cancel",
+                    false,
+                    theme,
+                    _handleCancelOrder,
+                    isLoading: _isProcessingCancel,
+                  ),
+                ),
+              ],
+            ),
+          ] else ...[
+            // Repeat Order button
+            Row(
+              children: [
+                Expanded(
+                  child: _buildActionButton(
+                    "Repeat Order",
+                    false,
+                    theme,
+                    _handleRepeatOrder,
+                    isLoading: _isProcessingRepeat,
+                  ),
+                ),
+              ],
+            ),
+            if (_orderData.status == "OPEN") ...[
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildActionButton(
+                      "Cancel",
+                      false,
+                      theme,
+                      _handleCancelOrder,
+                      isLoading: _isProcessingCancel,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionButton(
+    String text,
+    bool isPrimary,
+    ThemesProvider theme,
+    VoidCallback onPressed, {
+    bool isLoading = false,
+  }) {
+    final backgroundColor = isPrimary
+        ? (theme.isDarkMode ? WebDarkColors.primaryLight : WebColors.primaryLight)
+        : (theme.isDarkMode
+            ? WebDarkColors.textSecondary.withOpacity(0.6)
+            : WebColors.buttonSecondary);
+    final textColor = isPrimary
+        ? Colors.white
+        : (theme.isDarkMode ? Colors.white : WebColors.primaryLight);
+    final borderColor = theme.isDarkMode ? WebDarkColors.primaryLight : WebColors.primaryLight;
+    
+    return Container(
+      height: 40,
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        border: isPrimary
+            ? null
+            : Border.all(
+                color: borderColor,
+                width: 1,
+              ),
+        borderRadius: BorderRadius.circular(5),
+      ),
+      child: shadcn.TextButton(
+        size: shadcn.ButtonSize.large,
+        density: shadcn.ButtonDensity.dense,
+        onPressed: isLoading ? null : onPressed,
+        shape: shadcn.ButtonShape.rectangle,
         child: isLoading
             ? SizedBox(
-                width: 18,
-                height: 18,
+                width: 16,
+                height: 16,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
                   valueColor: AlwaysStoppedAnimation<Color>(
-                    isPrimary ? colors.colorWhite : (theme.isDarkMode ? colors.colorWhite : colors.primaryLight),
+                    isPrimary
+                        ? Colors.white
+                        : textColor,
                   ),
                 ),
               )
             : Text(
                 text,
-                style: TextWidget.textStyle(
-                  fontSize: 14,
-                  theme: false,
-                  color: isPrimary ? colors.colorWhite : (theme.isDarkMode ? colors.colorWhite : colors.primaryLight),
-                  fw: 2,
+                style: WebTextStyles.buttonMd(
+                  isDarkTheme: theme.isDarkMode,
+                  color: textColor,
+                  fontWeight: WebFonts.bold,
                 ),
               ),
       ),
     );
   }
 
-  Widget _buildOrderHistoryButton(ThemesProvider theme) {
-    return Center(
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {
-            setState(() {
-              _showOrderHistory = true;
-            });
-          },
-          borderRadius: BorderRadius.circular(8),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            // decoration: BoxDecoration(
-            //   border: Border.all(
-            //     color: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
-            //   ),
-            //   borderRadius: BorderRadius.circular(8),
-            // ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // SvgPicture.asset(
-                //   assets.orderhistoryicon,
-                //   width: 16,
-                //   height: 16,
-                //   color: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
-                // ),
-                // const SizedBox(width: 8),
-                Text(
-                  "Order History",
-                  style: WebTextStyles.buttonMd(
-                    isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
-                    fontWeight: WebFonts.semiBold,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBackButton(ThemesProvider theme) {
-    return Material(
-      color: Colors.transparent,
-      shape: const CircleBorder(),
-      child: InkWell(
-        customBorder: const CircleBorder(),
-        splashColor: theme.isDarkMode
-            ? Colors.white.withOpacity(.15)
-            : Colors.black.withOpacity(.15),
-        highlightColor: theme.isDarkMode
-            ? Colors.white.withOpacity(.08)
-            : Colors.black.withOpacity(.08),
-        onTap: () {
-          setState(() {
-            _showOrderHistory = false;
-          });
-        },
-        child: Container(
-          width: 30,
-          height: 30,
-          decoration: BoxDecoration(
-            color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-            shape: BoxShape.circle,
-          ),
-          alignment: Alignment.center,
-          child: Icon(
-            Icons.arrow_back_ios_outlined,
-            size: 14,
-            color: theme.isDarkMode
-                ? WebDarkColors.iconSecondary
-                : WebColors.iconSecondary,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildOrderDetailsSection(ThemesProvider theme, OrderBookModel displayData) {
-    final color = displayData.status == "COMPLETE"
-        ? theme.isDarkMode ? colors.profitDark : colors.profitLight
-        : displayData.status == "OPEN"
-            ? theme.isDarkMode ? colors.pending : colors.pending
-            : (displayData.status == "CANCELED" || displayData.status == "REJECTED")
-                ? theme.isDarkMode ? colors.lossDark : colors.lossLight
-                : theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight;
-
-    return IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+  Widget _buildDetailsSection(ThemesProvider theme) {
+    final colorScheme = shadcn.Theme.of(context).colorScheme;
+    final statusText = _getStatusText(_orderData.status);
+    final statusColor = _orderData.status == "COMPLETE"
+        ? colorScheme.chart2
+        : _orderData.status == "OPEN"
+            ? colorScheme.chart1
+            : (_orderData.status == "CANCELED" || _orderData.status == "REJECTED")
+                ? colorScheme.destructive
+                : colorScheme.mutedForeground;
+    
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Left column
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildInfoRow("Status", _getStatusText(displayData.status), theme, color),
-                _buildInfoRow("Type", displayData.trantype == "B" ? "Buy" : "Sell", theme),
-                _buildInfoRow("Qty", _getQuantityDisplay(displayData), theme),
-                _buildInfoRow("Price", displayData.prc ?? "-", theme),
-                _buildInfoRow("Avg Price", displayData.avgprc ?? "0.00", theme),
-                _buildInfoRow("Trigger Price", displayData.trgprc ?? "0.00", theme),
-                _buildInfoRow("Product / Type", "${displayData.sPrdtAli} / ${displayData.prctyp ?? "-"}", theme),
-              ],
-            ),
-          ),
-          // Vertical divider
-          Container(
-            width: 0.5,
-            margin: const EdgeInsets.symmetric(horizontal: 16),
-            color: theme.isDarkMode
-                ? WebDarkColors.divider
-                : WebColors.divider,
-          ),
-          // Right column
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildInfoRow("Market Protection", displayData.mktProtection ?? "-", theme),
-                _buildInfoRow("AMO", displayData.amo ?? "-", theme),
-                _buildInfoRow("Order Id", displayData.norenordno ?? "-", theme),
-                _buildInfoRow("Exchange", displayData.exchordid ?? "-", theme),
-                _buildInfoRow("Date & Time", formatDateTime(value: displayData.norentm ?? "-"), theme),
-              ],
-            ),
-          ),
+          _rowOfInfoDataWithColor("Status", statusText, theme, statusColor),
+          _rowOfInfoData("Type", _orderData.trantype == "B" ? "Buy" : "Sell", theme),
+          _rowOfInfoData("Qty", _getQuantityDisplay(_orderData), theme),
+          _rowOfInfoData("Price", _orderData.prc ?? "-", theme),
+          _rowOfInfoData("Avg Price", _orderData.avgprc ?? "0.00", theme),
+          _rowOfInfoData("Trigger Price", _orderData.trgprc ?? "0.00", theme),
+          _rowOfInfoData("Product / Type", "${_orderData.sPrdtAli} / ${_orderData.prctyp ?? "-"}", theme),
+          _rowOfInfoData("Market Protection", _orderData.mktProtection ?? "-", theme),
+          _rowOfInfoData("AMO", _orderData.amo ?? "-", theme),
+          _rowOfInfoData("Order Id", _orderData.norenordno ?? "-", theme),
+          _rowOfInfoData("Exchange", _orderData.exchordid ?? "-", theme),
+          _rowOfInfoData("Date & Time", formatDateTime(value: _orderData.norentm ?? "-"), theme),
         ],
       ),
     );
   }
 
-  Widget _buildReasonWidget(ThemesProvider theme, String reason) {
+  Widget _rowOfInfoData(String title1, String value1, ThemesProvider theme) {
+    final colorScheme = shadcn.Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Reason Title
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              title1,
+              style: WebTextStyles.sub(
+                isDarkTheme: theme.isDarkMode,
+                color: colorScheme.mutedForeground,
+                fontWeight: WebFonts.regular,
+              ),
+            ),
+            Text(
+              value1,
+              style: WebTextStyles.sub(
+                isDarkTheme: theme.isDarkMode,
+                color: colorScheme.mutedForeground,
+                fontWeight: WebFonts.medium,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
+
+  Widget _rowOfInfoDataWithColor(String title, String value, ThemesProvider theme, Color valueColor) {
+    final colorScheme = shadcn.Theme.of(context).colorScheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              title,
+              style: WebTextStyles.sub(
+                isDarkTheme: theme.isDarkMode,
+                color: colorScheme.mutedForeground,
+                fontWeight: WebFonts.regular,
+              ),
+            ),
+            Text(
+              value,
+              style: WebTextStyles.sub(
+                isDarkTheme: theme.isDarkMode,
+                color: valueColor,
+                fontWeight: WebFonts.medium,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
+
+  Widget _buildReasonWidget(ThemesProvider theme, String reason) {
+    final colorScheme = shadcn.Theme.of(context).colorScheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
         Text(
           "Reason:",
-          style: WebTextStyles.custom(
-            fontSize: 14,
+          style: WebTextStyles.sub(
             isDarkTheme: theme.isDarkMode,
-            color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-            fontWeight: WebFonts.medium,
+            color: colorScheme.mutedForeground,
+            fontWeight: WebFonts.regular,
           ),
         ),
         const SizedBox(height: 8),
-        // Divider
-        // Container(
-        //   height: 1,
-        //   color: theme.isDarkMode
-        //       ? WebDarkColors.divider
-        //       : WebColors.divider,
-        // ),
-        // const SizedBox(height: 12),
-        // Reason Text
         Text(
           reason,
-          style: WebTextStyles.dialogContent(
+          style: WebTextStyles.sub(
             isDarkTheme: theme.isDarkMode,
-            color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+           color: colorScheme.mutedForeground,
+            fontWeight: WebFonts.medium,
           ),
         ),
       ],
@@ -657,10 +594,11 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
           physics: const NeverScrollableScrollPhysics(),
           shrinkWrap: true,
           itemBuilder: (BuildContext context, int index) {
-            return TimeLineWidget(
-              isfFrist: orderHistory.length - 1 == index ? true : false,
-              isLast: index == 0 ? true : false,
-              orderHistoryData: orderHistory[index],
+            return _buildOrderHistoryTimelineItem(
+              theme,
+              orderHistory[index],
+              orderHistory.length - 1 == index,
+              index == 0,
             );
           },
         ),
@@ -668,25 +606,92 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
     );
   }
 
-  Widget _buildInfoRow(String title, String value, ThemesProvider theme, [Color? valueColor]) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
+  Widget _buildOrderHistoryTimelineItem(
+    ThemesProvider theme,
+    dynamic orderHistoryData,
+    bool isFirst,
+    bool isLast,
+  ) {
+    final colorScheme = shadcn.Theme.of(context).colorScheme;
+    final status = orderHistoryData.status ?? '';
+    final lineColor = status == "COMPLETE"
+        ? colorScheme.chart2
+        : (status == "CANCELED" || status == "REJECTED")
+            ? colorScheme.destructive
+            : colorScheme.chart1;
+    
+    final statusText = orderHistoryData.stIntrn != null
+        ? "${orderHistoryData.stIntrn![0].toUpperCase()}${orderHistoryData.stIntrn!.substring(1).toLowerCase().replaceAll("_", " ")}"
+        : 'Unknown';
+    final timeText = orderHistoryData.norentm != null
+        ? formatDateTime(value: orderHistoryData.norentm!)
+        : 'N/A';
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      height: 65,
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: WebTextStyles.dialogContent(
-              isDarkTheme: theme.isDarkMode,
-              color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-            ),
+          // Timeline indicator
+          Column(
+            children: [
+              // Spacer to align indicator with text
+              const SizedBox(height: 0),
+              Container(
+                width: 20,
+                height: 20,
+                decoration: BoxDecoration(
+                  color: lineColor,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  status == "COMPLETE"
+                      ? Icons.done
+                      : (status == "CANCELED" || status == "REJECTED")
+                          ? Icons.clear
+                          : Icons.more_horiz_outlined,
+                  size: 12,
+                  color: Colors.white,
+                ),
+              ),
+              if (!isLast)
+                Container(
+                  width: 2,
+                  height: 45,
+                  color: lineColor,
+                ),
+            ],
           ),
-          Text(
-            value,
-            textAlign: TextAlign.end,
-            style: WebTextStyles.dialogContent(
-              isDarkTheme: theme.isDarkMode,
-              color: valueColor ?? (theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight),
+          const SizedBox(width: 14),
+          // Content - aligned with indicator
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    statusText,
+                    style: WebTextStyles.sub(
+                      isDarkTheme: theme.isDarkMode,
+                      color: colorScheme.foreground,
+                      fontWeight: WebFonts.regular,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    timeText,
+                    style: WebTextStyles.para(
+                      isDarkTheme: theme.isDarkMode,
+                      color: colorScheme.mutedForeground,
+                      fontWeight: WebFonts.regular,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -701,7 +706,6 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
 
   String _getQuantityDisplay(OrderBookModel order) {
     try {
-      // Calculate filled quantity based on status
       int filledQty = 0;
       if (order.status != "COMPLETE" && (order.fillshares?.isNotEmpty ?? false)) {
         filledQty = int.tryParse(order.fillshares.toString()) ?? 0;
@@ -711,10 +715,7 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
         filledQty = int.tryParse(order.dscqty.toString()) ?? 0;
       }
 
-      // Calculate lot size for MCX
       int lotSize = order.exch == 'MCX' ? (int.tryParse(order.ls.toString()) ?? 1) : 1;
-      
-      // Calculate display quantities
       int displayFilledQty = filledQty ~/ lotSize;
       int displayTotalQty = (int.tryParse(order.qty.toString()) ?? 0) ~/ lotSize;
       
@@ -725,7 +726,7 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
   }
 
   // Action handlers
-  Future<void> _handleCancelOrder(OrderBookModel orderData) async {
+  Future<void> _handleCancelOrder() async {
     if (_isProcessingCancel) return;
 
     try {
@@ -733,13 +734,59 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
         _isProcessingCancel = true;
       });
 
+      final targetContext = widget.parentContext ?? rootNavigatorKey.currentContext;
+      if (targetContext == null) {
+        if (mounted) {
+          setState(() {
+            _isProcessingCancel = false;
+          });
+          ResponsiveSnackBar.showError(context, "Unable to access target context");
+        }
+        return;
+      }
+
+      // Get theme before closing sheet (widget might be disposed after)
+      final theme = ref.read(themeProvider);
+
+      // Close the sheet first
+      if (mounted) {
+        try {
+          shadcn.closeSheet(context);
+        } catch (e) {
+          // Ignore sheet close errors
+        }
+      }
+
+      // Wait for sheet to close, then show dialog
+      await Future.delayed(const Duration(milliseconds: 150));
+
+      // Show dialog after sheet closes
+      final shouldCancel = await _showCancelOrderDialog(theme, targetContext);
+
+      if (shouldCancel != true) {
+        if (mounted) {
+          setState(() {
+            _isProcessingCancel = false;
+          });
+        }
+        return;
+      }
+
       await ref.read(orderProvider).fetchOrderCancel(
-        "${orderData.norenordno}",
-        context,
-        true,
+        "${_orderData.norenordno}",
+        targetContext,
+        false,
       );
+      
+      if (targetContext.mounted) {
+        ResponsiveSnackBar.showSuccess(targetContext, 'Order Cancelled');
+        await ref.read(orderProvider).fetchOrderBook(targetContext, true);
+      }
     } catch (e) {
-      // Handle error
+      final rootCtx = rootNavigatorKey.currentContext;
+      if (rootCtx != null && rootCtx.mounted) {
+        ResponsiveSnackBar.showError(rootCtx, 'Failed to cancel order: ${e.toString()}');
+      }
     } finally {
       if (mounted) {
         setState(() {
@@ -749,7 +796,7 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
     }
   }
 
-  Future<void> _handleModifyOrder(OrderBookModel orderData) async {
+  Future<void> _handleModifyOrder() async {
     if (_isProcessingModify) return;
 
     try {
@@ -757,24 +804,118 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
         _isProcessingModify = true;
       });
 
+      print('🟢 [DETAILS SHEET MODIFY] Starting modify order from details sheet');
+      print('🟢 [DETAILS SHEET MODIFY] Order Data:');
+      print('  - token: ${_orderData.token}');
+      print('  - exch: ${_orderData.exch}');
+      print('  - tsym: ${_orderData.tsym}');
+      print('  - norenordno: ${_orderData.norenordno}');
+      print('  - qty: ${_orderData.qty}');
+      print('  - prc: ${_orderData.prc}');
+      print('  - trgprc: ${_orderData.trgprc}');
+      print('  - trantype: ${_orderData.trantype}');
+      print('  - prd: ${_orderData.prd}');
+      print('  - sPrdtAli: ${_orderData.sPrdtAli}');
+      print('  - status: ${_orderData.status}');
+      print('🟢 [DETAILS SHEET MODIFY] widget.parentContext: ${widget.parentContext}');
+      print('🟢 [DETAILS SHEET MODIFY] mounted: $mounted');
+
+      // Use same pattern as repeat order - fallback to rootNavigatorKey if parentContext is null
+      final targetContext = widget.parentContext ?? rootNavigatorKey.currentContext;
+      if (targetContext == null || !targetContext.mounted) {
+        print('🟢 [DETAILS SHEET MODIFY] ERROR: targetContext is null or not mounted');
+        if (mounted) {
+          setState(() {
+            _isProcessingModify = false;
+          });
+          ResponsiveSnackBar.showError(context, "Unable to access target context");
+        }
+        return;
+      }
+
+      print('🟢 [DETAILS SHEET MODIFY] targetContext is valid and mounted');
+
       await ref.read(marketWatchProvider).fetchScripInfo(
-        "${orderData.token}",
-        '${orderData.exch}',
-        context,
+        "${_orderData.token}",
+        '${_orderData.exch}',
+        targetContext,
+        true,
       );
 
-      if (!mounted) return;
+      if (!mounted) {
+        print('🟢 [DETAILS SHEET MODIFY] Widget not mounted after fetchScripInfo');
+        return;
+      }
 
-      // Navigate to modify order screen
-      Navigator.pop(context);
+      final scripInfo = ref.read(marketWatchProvider).scripInfoModel;
+      if (scripInfo == null) {
+        print('🟢 [DETAILS SHEET MODIFY] ERROR: scripInfo is null');
+        if (mounted) {
+          setState(() {
+            _isProcessingModify = false;
+          });
+          ResponsiveSnackBar.showError(targetContext, 'Unable to fetch scrip information');
+        }
+        return;
+      }
+
+      print('🟢 [DETAILS SHEET MODIFY] scripInfo fetched successfully');
+
+      // Create orderArgs before closing sheet (while we still have valid context)
+      final orderArgs = _createOrderArgs(_orderData);
+      print('🟢 [DETAILS SHEET MODIFY] OrderArgs created:');
+      print('  - exchange: ${orderArgs.exchange}');
+      print('  - tSym: ${orderArgs.tSym}');
+      print('  - token: ${orderArgs.token}');
+      print('  - ltp: ${orderArgs.ltp}');
+      print('  - prd: ${orderArgs.prd}');
+      print('  - lotSize: ${orderArgs.lotSize}');
+      print('  - transType: ${orderArgs.transType}');
+
+      // Close the sheet first (like repeat order does)
+      if (mounted) {
+        try {
+          shadcn.closeSheet(context);
+          print('🟢 [DETAILS SHEET MODIFY] Sheet closed');
+        } catch (e) {
+          print('🟢 [DETAILS SHEET MODIFY] Error closing sheet: $e');
+          // Ignore sheet close errors
+        }
+      }
+
+      // Wait for sheet to close - use same delay as repeat order
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      // Check targetContext is still valid after sheet close
+      // Use targetContext (parent context from table) - same as hover modify uses
+      // The hover modify uses 'context' which is the table context, same as targetContext here
+      if (!targetContext.mounted) {
+        print('🟢 [DETAILS SHEET MODIFY] ERROR: targetContext not mounted after sheet close');
+        if (mounted) {
+          setState(() {
+            _isProcessingModify = false;
+          });
+        }
+        return;
+      }
+
+      print('🟢 [DETAILS SHEET MODIFY] targetContext still mounted, calling showDraggable');
+
+      // Use targetContext for overlay - same as hover modify button uses 'context'
+      // This is the table context which has the overlay
       ModifyPlaceOrderScreenWeb.showDraggable(
-        context: context,
-        modifyOrderArgs: orderData,
-        orderArg: _createOrderArgs(orderData),
-        scripInfo: ref.read(marketWatchProvider).scripInfoModel!,
+        context: targetContext,
+        modifyOrderArgs: _orderData,
+        orderArg: orderArgs,
+        scripInfo: scripInfo,
       );
+      
+      print('🟢 [DETAILS SHEET MODIFY] showDraggable called successfully');
     } catch (e) {
-      // Handle error
+      final rootCtx = rootNavigatorKey.currentContext;
+      if (rootCtx != null && rootCtx.mounted) {
+        ResponsiveSnackBar.showError(rootCtx, 'Failed to open modify order: ${e.toString()}');
+      }
     } finally {
       if (mounted) {
         setState(() {
@@ -784,36 +925,186 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
     }
   }
 
-  Future<void> _handleRepeatOrder(OrderBookModel orderData) async {
+  Future<void> _handleRepeatOrder() async {
+    if (_isProcessingRepeat) return;
+
     try {
-      Navigator.pop(context);
+      setState(() {
+        _isProcessingRepeat = true;
+      });
+
+      final targetContext = widget.parentContext ?? rootNavigatorKey.currentContext;
+      if (targetContext == null) {
+        if (mounted) {
+          setState(() {
+            _isProcessingRepeat = false;
+          });
+          ResponsiveSnackBar.showError(context, "Unable to access target context");
+        }
+        return;
+      }
 
       await ref.read(marketWatchProvider).fetchScripInfo(
-        "${orderData.token}",
-        "${orderData.exch}",
-        context,
+        "${_orderData.token}",
+        "${_orderData.exch}",
+        targetContext,
         true,
       );
 
       if (!mounted) return;
 
-      ResponsiveNavigation.toPlaceOrderScreen(context: context, arguments: {
-        "orderArg": _createOrderArgs(orderData),
-        "scripInfo": ref.read(marketWatchProvider).scripInfoModel!,
-        "isBskt": '',
-      });
+      final scripInfo = ref.read(marketWatchProvider).scripInfoModel;
+      if (scripInfo == null) {
+        if (mounted) {
+          setState(() {
+            _isProcessingRepeat = false;
+          });
+          ResponsiveSnackBar.showError(targetContext, 'Unable to fetch scrip information');
+        }
+        return;
+      }
+
+      // Close the sheet first
+      if (mounted) {
+        shadcn.closeSheet(context);
+      }
+
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      // Navigate to place order screen
+      if (targetContext.mounted) {
+        ResponsiveNavigation.toPlaceOrderScreen(
+          context: targetContext,
+          arguments: {
+            "orderArg": _createOrderArgs(_orderData),
+            "scripInfo": scripInfo,
+            "isBskt": '',
+          },
+        );
+      }
     } catch (e) {
-      // Handle error
+      if (mounted) {
+        ResponsiveSnackBar.showError(context, 'Failed to open place order: ${e.toString()}');
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isProcessingRepeat = false;
+        });
+      }
     }
+  }
+
+  Future<bool?> _showCancelOrderDialog(ThemesProvider theme, BuildContext targetContext) async {
+    final symbol = _orderData.tsym?.replaceAll("-EQ", "") ?? 'N/A';
+    final exchange = _orderData.exch ?? '';
+    final displayText = '$symbol $exchange'.trim();
+
+    return showDialog<bool>(
+      context: targetContext,
+      builder: (BuildContext dialogContext) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Container(
+            width: 400,
+            decoration: BoxDecoration(
+              color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+              borderRadius: BorderRadius.circular(5),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  margin: const EdgeInsets.only(bottom: 8),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
+                        color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
+                      ),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Cancel Order',
+                        style: WebTextStyles.dialogTitle(
+                          isDarkTheme: theme.isDarkMode,
+                          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(
+                          Icons.close,
+                          size: 20,
+                          color: theme.isDarkMode ? WebDarkColors.iconSecondary : WebColors.iconSecondary,
+                        ),
+                        onPressed: () => Navigator.of(dialogContext).pop(false),
+                      ),
+                    ],
+                  ),
+                ),
+                // Content
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    children: [
+                      Text(
+                        'Are you sure you want to cancel this order?',
+                        textAlign: TextAlign.center,
+                        style: WebTextStyles.dialogContent(
+                          isDarkTheme: theme.isDarkMode,
+                          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        displayText,
+                        textAlign: TextAlign.center,
+                        style: WebTextStyles.dialogContent(
+                          isDarkTheme: theme.isDarkMode,
+                          color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 40,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: theme.isDarkMode ? WebDarkColors.error : WebColors.error,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+                          ),
+                          onPressed: () => Navigator.of(dialogContext).pop(true),
+                          child: Text(
+                            'Cancel Order',
+                            style: WebTextStyles.buttonMd(
+                              isDarkTheme: theme.isDarkMode,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   OrderScreenArgs _createOrderArgs(OrderBookModel orderData) {
     // Get LTP, fallback to close price if numeric, otherwise use 0.00
+    // Match exactly with order_action_handler.dart
     String ltpValue = "0.00";
     if (orderData.ltp != null && orderData.ltp.toString() != "null") {
       ltpValue = orderData.ltp.toString();
     } else if (orderData.c != null && orderData.c.toString() != "null") {
-      // Only use 'c' if it's a valid number, not "C"
       final closePrice = double.tryParse(orderData.c.toString());
       if (closePrice != null) {
         ltpValue = closePrice.toString();
@@ -821,12 +1112,13 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
     }
 
     return OrderScreenArgs(
-      exchange: orderData.exch.toString(),
-      tSym: orderData.tsym.toString(),
+      exchange: orderData.exch ?? '',
+      tSym: orderData.tsym ?? '',
       isExit: false,
-      token: orderData.token.toString(),
+      token: orderData.token ?? '',
       transType: orderData.trantype == 'B' ? true : false,
-      lotSize: orderData.ls,
+      prd: orderData.prd ?? orderData.sPrdtAli ?? 'CNC',
+      lotSize: orderData.ls ?? '1',
       ltp: ltpValue,
       perChange: orderData.change ?? "0.00",
       orderTpye: '',

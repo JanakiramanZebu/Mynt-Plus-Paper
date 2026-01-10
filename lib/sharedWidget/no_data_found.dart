@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/provider/index_list_provider.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
-import '../../provider/thems.dart';
 import '../../res/res.dart';
-import '../../res/global_state_text.dart';
 
 /// Reusable empty-state widget for Trading App.
 ///
@@ -45,15 +44,6 @@ class NoDataFound extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.read(themeProvider);
-    final isDark = theme.isDarkMode;
-
-    final accent = isDark ? colors.primaryDark : colors.primaryLight;
-    final textPrimary = isDark ? colors.textPrimaryDark : colors.textPrimaryLight;
-    final textSecondary = isDark ? colors.textSecondaryDark : colors.textSecondaryLight;
-    final bgCard = isDark ? colors.colorBlack : colors.colorWhite;
-    final borderColor = isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05);
-
     // Use a chart or document icon as default
     final iconAsset = assetIcon ?? assets.documentIcon;
 
@@ -61,18 +51,6 @@ class NoDataFound extends ConsumerWidget {
       child: Container(
         margin: const EdgeInsets.all(24),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        decoration: BoxDecoration(
-          color: bgCard,
-          borderRadius: BorderRadius.circular(16),
-          // border: Border.all(color: borderColor),
-          // boxShadow: [
-          //   BoxShadow(
-          //     color: Colors.black.withOpacity(0.03),
-          //     blurRadius: 10,
-          //     offset: const Offset(0, 4),
-          //   ),
-          // ],
-        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -80,35 +58,27 @@ class NoDataFound extends ConsumerWidget {
             Container(
               width: 80,
               height: 80,
-              decoration: const BoxDecoration(
-                // shape: BoxShape.circle,
-                // color: accent.withOpacity(0.1),
-                // boxShadow: [
-                //   BoxShadow(
-                //     color: accent.withOpacity(0.2),
-                //     blurRadius: 20,
-                //     spreadRadius: 5,
-                //   ),
-                // ],
-              ),
               padding: const EdgeInsets.all(0),
               child: SvgPicture.asset(
                 iconAsset,
                 width: 100,
                 height: 100,
-                // color: accent,
+                color: shadcn.Theme.of(context).colorScheme.mutedForeground,
               ),
             ),
 
             const SizedBox(height: 24),
 
             // Title
-            TextWidget.custmText(
-              text: title,
-              fs: 16,
-              theme: isDark,
-              color: textPrimary,
-              fw: 2,
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: shadcn.Theme.of(context).colorScheme.foreground,
+                fontFamily: 'Geist',
+              ),
+              textAlign: TextAlign.center,
             ),
 
             const SizedBox(height: 8),
@@ -119,12 +89,15 @@ class NoDataFound extends ConsumerWidget {
             else if (subtitle != null)
               SizedBox(
                 width: MediaQuery.sizeOf(context).width * 0.7,
-                child: TextWidget.subText(
-                  text: subtitle!,
-                  theme: isDark,
-                  color: textSecondary,
-                  align: TextAlign.center,
-                  lineHeight: 1.2,
+                child: Text(
+                  subtitle!,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+                    fontFamily: 'Geist',
+                    height: 1.4,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
               ),
 
@@ -135,28 +108,11 @@ class NoDataFound extends ConsumerWidget {
               Column(
                 children: [
                   if (primaryEnabled)
-                    SizedBox(
-                      // width: 110,
-                      child: ElevatedButton(
-                        onPressed: onPrimary,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: accent,
-                          foregroundColor: isDark ? colors.colorBlack : colors.colorWhite,
-                          elevation: 0,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                          child: TextWidget.subText(
-                            text: primaryLabel,
-                            theme: isDark,
-                            color: isDark ? colors.colorBlack : colors.colorWhite,
-                            fw: 2,
-                          ),
-                        ),
+                    shadcn.PrimaryButton(
+                      onPressed: onPrimary,
+                      child: Text(
+                        primaryLabel,
+                        style: const TextStyle(fontFamily: 'Geist'),
                       ),
                     ),
 
@@ -164,28 +120,13 @@ class NoDataFound extends ConsumerWidget {
                     const SizedBox(height: 12),
 
                   if (secondaryEnabled)
-                    SizedBox(
-                      // width: 150,
-                      child: OutlinedButton(
-                        onPressed: onSecondary ?? () {
-                          ref.read(indexListProvider).bottomMenu(1, context);
-                        },
-                        style: OutlinedButton.styleFrom(
-                          side: BorderSide(color: textSecondary.withOpacity(0.3)),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                          child: TextWidget.subText(
-                            text: secondaryLabel,
-                            theme: isDark,
-                            color: textPrimary,
-                            fw: 2,
-                          ),
-                        ),
+                    shadcn.SecondaryButton(
+                      onPressed: onSecondary ?? () {
+                        ref.read(indexListProvider).bottomMenu(1, context);
+                      },
+                      child: Text(
+                        secondaryLabel,
+                        style: const TextStyle(fontFamily: 'Geist'),
                       ),
                     ),
                 ],
@@ -198,10 +139,10 @@ class NoDataFound extends ConsumerWidget {
                 width: 110,
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: accent.withOpacity(0.05),
+                  color: shadcn.Theme.of(context).colorScheme.accent.withOpacity(0.05),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: accent.withOpacity(0.1),
+                    color: shadcn.Theme.of(context).colorScheme.border,
                     style: BorderStyle.solid,
                   ),
                 ),
@@ -210,15 +151,22 @@ class NoDataFound extends ConsumerWidget {
                   children: [
                     Padding(
                       padding: const EdgeInsets.only(top: 2),
-                      child: Icon(Icons.lightbulb_outline_rounded, size: 16, color: accent),
+                      child: Icon(
+                        Icons.lightbulb_outline_rounded, 
+                        size: 16, 
+                        color: shadcn.Theme.of(context).colorScheme.primary,
+                      ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: TextWidget.paraText(
-                        text: tipText,
-                        theme: isDark,
-                        color: textSecondary,
-                        height: 1.3,
+                      child: Text(
+                        tipText,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+                          fontFamily: 'Geist',
+                          height: 1.3,
+                        ),
                       ),
                     ),
                   ],

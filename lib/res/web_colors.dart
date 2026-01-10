@@ -52,6 +52,7 @@ class WebColors {
   static const Color buttonDisabled = Color(0xFFBDBDBD);
   static const Color buttonHover = Color(0xFF002A8F);
   static const Color buttonActive = Color(0xFF001F7A);
+  static const Color btnOutlinedBorder = Color(0xFF0037B7);
   
   // === INPUT COLORS ===
   static const Color inputBackground = Color(0xFFFFFFFF);
@@ -136,6 +137,7 @@ class WebDarkColors {
   static const Color buttonDisabled = Color(0xFF404040);
   static const Color buttonHover = Color(0xFF5A8AFF);
   static const Color buttonActive = Color(0xFF0037B7);
+  static const Color btnOutlinedBorder = Color(0xFF2E65F6);
   
   // === INPUT COLORS ===
   static const Color inputBackground = Color(0xFF1E1E1E);
@@ -176,6 +178,37 @@ class WebDarkColors {
 }
 
 
+
+/// Shadcn Flutter Dark Theme Colors - For Holdings Screen
+class ShadcnDarkColors {
+  // === BACKGROUND COLORS (From Shadcn Theme) ===
+  static const Color background = Color(0xFF090908);        // background: #090908 - App background (very dark)
+  static const Color card = Color(0xFF18181B);              // card: #18181B - Cards / panels
+  static const Color popover = Color(0xFF27272A);           // popover: #27272A - Menus / dropdowns / hover states
+  static const Color muted = Color(0xFF18181B);             // muted: #18181B - Subtle backgrounds
+
+  // === TEXT COLORS (From Shadcn Theme) ===
+  static const Color foreground = Color(0xFFFAFAFA);        // foreground: #FAFAFA - Primary text/icons
+  static const Color cardForeground = Color(0xFFFAFAFA);    // card-foreground: #FAFAFA - Text on cards
+  static const Color popoverForeground = Color(0xFFFAFAFA); // popover-foreground: #FAFAFA - Text on popovers
+  static const Color mutedForeground = Color(0xFFA1A1AA);   // muted-foreground: #A1A1AA - Muted text
+
+  // === BORDER / DIVIDER ===
+  static const Color border = Color(0xFF27272A);            // Subtle border color
+  static const Color divider = Color(0xFF27272A);           // Divider lines
+
+  // === STATUS COLORS (Keep existing) ===
+  static const Color success = Color(0xFF00B14F);
+  static const Color error = Color(0xFFFF1717);
+  static const Color profit = Color(0xFF00B14F);
+  static const Color loss = Color(0xFFFF1717);
+  static const Color neutral = Color(0xFF4A4A4A);
+
+  // === HOVER / INTERACTIVE STATES ===
+  static const Color headerBackground = Color(0xFF232323);  // Header row default background
+  static const Color headerHover = Color(0xFFA6A6A6);       // Header row hover
+  static const Color rowHover = Color(0xFF27272A);          // Body row hover (popover)
+}
 
 /// Complete color scheme for web
 class WebColorScheme {

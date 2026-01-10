@@ -1,471 +1,682 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:mynt_plus/models/marketwatch_model/get_quotes.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import '../../../models/marketwatch_model/get_quotes.dart';
 
 import '../../../models/portfolio_model/position_book_model.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/portfolio_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/websocket_provider.dart';
-import '../../../res/res.dart';
 import '../../../res/web_colors.dart';
 import '../../../res/global_font_web.dart';
- 
 import '../../../models/order_book_model/order_book_model.dart';
 import '../../../utils/responsive_navigation.dart';
+import '../../../sharedWidget/snack_bar.dart';
 import 'convert_position_dialogue_web.dart';
+import '../../../main.dart';
 
 class PositionDetailScreenWeb extends ConsumerStatefulWidget {
   final PositionBookModel positionList;
-  const PositionDetailScreenWeb({super.key, required this.positionList});
+  final BuildContext? parentContext;
+  
+  const PositionDetailScreenWeb({
+    super.key, 
+    required this.positionList,
+    this.parentContext,
+  });
 
   @override
   ConsumerState<PositionDetailScreenWeb> createState() => _PositionDetailScreenWebState();
 }
 
 class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWeb> {
+  StreamSubscription? _socketSubscription;
+  late PositionBookModel _positionData;
+
   @override
-  Widget build(BuildContext context) {
-    return Consumer(
-      builder: (context, ref, _) {
-        final positions = ref.watch(portfolioProvider);
-        final theme = ref.watch(themeProvider);
-        final marketwatch = ref.watch(marketWatchProvider);
-
-        return StreamBuilder<Map>(
-          stream: ref.watch(websocketProvider).socketDataStream,
-          builder: (context, snapshot) {
-            final socketDatas = snapshot.data ?? {};
-
-            DepthInputArgs depthArgs = DepthInputArgs(
-              exch: widget.positionList.exch ?? "",
-              token: widget.positionList.token ?? "",
-              tsym: widget.positionList.tsym ?? '',
-              instname: marketwatch.getQuotes?.instname ?? "",
-              symbol: widget.positionList.symbol ?? '',
-              expDate: widget.positionList.expDate ?? '',
-              option: widget.positionList.option ?? '',
-            );
-
-            // Create a copy of position data for real-time updates
-            PositionBookModel updatedPosition = widget.positionList;
-
-            // Update position data with real-time values if available
-            if (socketDatas.containsKey(widget.positionList.token)) {
-              final lp = socketDatas["${widget.positionList.token}"]['lp']?.toString();
-              final pc = socketDatas["${widget.positionList.token}"]['pc']?.toString();
-              final chng = socketDatas["${widget.positionList.token}"]['chng']?.toString();
-              final close = socketDatas["${widget.positionList.token}"]['c']?.toString();
-
-              if (lp != null && lp != "null") {
-                updatedPosition.lp = lp;
-              }
-
-              if (pc != null && pc != "null") {
-                updatedPosition.perChange = pc;
-              }
-
-              if (chng != null && chng != "null") {
-                updatedPosition.chng = chng;
-              }
-
-              // Calculate MTM/PNL values based on updated data
-              if (updatedPosition.lp != null && updatedPosition.netqty != null) {
-                final ltp = double.tryParse(updatedPosition.lp ?? "0.0") ?? 0.0;
-                final qty = int.tryParse(updatedPosition.netqty ?? "0") ?? 0;
-                final avgPrice = double.tryParse(updatedPosition.avgPrc ?? "0.0") ?? 0.0;
-
-                if (ltp > 0 && qty != 0 && avgPrice > 0) {
-                  final pnl = (ltp - avgPrice) * qty;
-                  updatedPosition.profitNloss = pnl.toStringAsFixed(2);
-                  updatedPosition.mTm = pnl.toStringAsFixed(2);
-                }
-
-                // Calculate change value if needed
-                if ((updatedPosition.chng == null ||
-                        updatedPosition.chng == "null" ||
-                        updatedPosition.chng == "0" ||
-                        updatedPosition.chng == "0.00") &&
-                    ltp > 0 &&
-                    close != null &&
-                    close != "null") {
-                  final closePrice = double.tryParse(close) ?? 0.0;
-                  if (closePrice > 0) {
-                    updatedPosition.chng = (ltp - closePrice).toStringAsFixed(2);
-                  }
-                }
-              }
-            }
-
-            return SizedBox(
-              width: 700,
-              // decoration: BoxDecoration(
-              //   color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-              //   borderRadius: BorderRadius.circular(16),
-              //   border: Border.all(
-              //     color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-              //   ),
-              // ),
-              child: Column(
-                 mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Header with close button
-
-
-                  Container(
-                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                margin: const EdgeInsets.only(bottom: 8),
-                decoration: BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(
-                      color: theme.isDarkMode
-                          ? WebDarkColors.divider
-                          : WebColors.divider,
-                    ),
-                  ),
-                ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                          _buildSymbolSection(theme, marketwatch, updatedPosition, depthArgs),
-                                        // const SizedBox(height: 24),
-                        
-                        Material(
-                      color: Colors.transparent,
-                      shape: const CircleBorder(),
-                      child: InkWell(
-                        customBorder: const CircleBorder(),
-                        splashColor: theme.isDarkMode
-                            ? Colors.white.withOpacity(.15)
-                            : Colors.black.withOpacity(.15),
-                        highlightColor: theme.isDarkMode
-                            ? Colors.white.withOpacity(.08)
-                            : Colors.black.withOpacity(.08),
-                        onTap: () => Navigator.of(context).pop(),
-                        child: Padding(
-                          padding: const EdgeInsets.all(6),
-                          child: Icon(
-                            Icons.close,
-                            size: 20,
-                            color: theme.isDarkMode
-                                ? WebDarkColors.iconSecondary
-                                : WebColors.iconSecondary,
-                          ),
-                        ),
-                      ),
-                    ),
-                      ],
-                    ),
-                  ),
-                
-                  
-                   // Content
-                   Flexible(
-                     fit: FlexFit.loose,
-                     child: SingleChildScrollView(
-                      padding: const EdgeInsets.only(top: 0, bottom: 20, left: 20, right: 20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Symbol and Price Section
-                        
-                          
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            child: _buildPnLSection(theme, positions, updatedPosition),
-                          ),
-                          // Action Buttons
-                          // _buildActionButtons(theme, marketwatch, ref, updatedPosition),
-                          
-                          // Convert Position Button
-                          // _buildConvertPositionButton(theme, updatedPosition),
-                          
-                          // P&L/MTM Section
-                          
-                          // Details Section
-                          _buildDetailsSection(theme, positions, updatedPosition),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
+  void initState() {
+    super.initState();
+    // Make a copy of the position data to avoid modifying the original
+    _positionData = _copyPosition(widget.positionList);
   }
 
+  @override
+  void dispose() {
+    _socketSubscription?.cancel();
+    super.dispose();
+  }
 
+  // Create a copy of the position to avoid modifying the original
+  PositionBookModel _copyPosition(PositionBookModel original) {
+    final copy = PositionBookModel();
+    copy.token = original.token;
+    copy.exch = original.exch;
+    copy.tsym = original.tsym;
+    copy.symbol = original.symbol;
+    copy.expDate = original.expDate;
+    copy.option = original.option;
+    copy.lp = original.lp;
+    copy.perChange = original.perChange;
+    copy.chng = original.chng;
+    copy.netqty = original.netqty;
+    copy.avgPrc = original.avgPrc;
+    copy.netupldprc = original.netupldprc;
+    copy.upldprc = original.upldprc;
+    copy.sPrdtAli = original.sPrdtAli;
+    copy.profitNloss = original.profitNloss;
+    copy.mTm = original.mTm;
+    copy.rpnl = original.rpnl;
+    copy.daybuyqty = original.daybuyqty;
+    copy.daysellqty = original.daysellqty;
+    copy.cfbuyqty = original.cfbuyqty;
+    copy.cfsellqty = original.cfsellqty;
+    copy.daybuyavgprc = original.daybuyavgprc;
+    copy.daysellavgprc = original.daysellavgprc;
+    copy.cfbuyavgprc = original.cfbuyavgprc;
+    copy.cfsellavgprc = original.cfsellavgprc;
+    copy.qty = original.qty;
+    copy.prd = original.prd;
+    copy.ls = original.ls;
+    return copy;
+  }
 
-  Widget _buildSymbolSection(ThemesProvider theme, MarketWatchProvider marketwatch, PositionBookModel position, DepthInputArgs depthArgs) {
-    return Material(
-      color: Colors.transparent,
-      shape: const RoundedRectangleBorder(),
-      child: InkWell(
-        customBorder: const RoundedRectangleBorder(),
-        borderRadius: BorderRadius.circular(0),
-        splashColor: theme.isDarkMode ? colors.primaryDark.withOpacity(0.1) : colors.primaryLight.withOpacity(0.1),
-        highlightColor: theme.isDarkMode ? colors.primaryDark.withOpacity(0.2) : colors.primaryLight.withOpacity(0.2),
-        onTap: () async {
-          Navigator.pop(context);
-          await marketwatch.scripdepthsize(false);
-          await marketwatch.calldepthApis(context, depthArgs, "");
-        },
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Symbol and Exchange
-            Row(
+  // Pre-load data to avoid flickering
+  Future<void> _preLoadData() async {
+    if (!mounted) return;
+
+    // Get the latest socket data for this token immediately
+    final wsProvider = ref.read(websocketProvider);
+    final socketData = wsProvider.socketDatas[_positionData.token];
+
+    if (socketData != null) {
+      // Update with initial socket data
+      final lp = socketData['lp']?.toString();
+      final pc = socketData['pc']?.toString();
+      final chng = socketData['chng']?.toString();
+
+      if (lp != null && lp != "null") {
+        _positionData.lp = lp;
+      }
+
+      if (pc != null && pc != "null") {
+        _positionData.perChange = pc;
+      }
+
+      if (chng != null && chng != "null") {
+        _positionData.chng = chng;
+      }
+
+      _updateProfitLossValues();
+    }
+
+    // Set up socket subscription only after initial data is set
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (mounted) {
+        _setupSocketSubscription();
+        setState(() {});
+      }
+    });
+  }
+
+  // Set up the socket subscription
+  void _setupSocketSubscription() {
+    if (!mounted) return;
+
+    try {
+      final wsProvider = ref.read(websocketProvider);
+
+      _socketSubscription = wsProvider.socketDataStream.listen((socketData) {
+        if (!mounted) return;
+
+        final data = socketData[_positionData.token];
+        if (data != null) {
+          // Update with incremental socket data
+          setState(() {
+            final lp = data['lp']?.toString();
+            final pc = data['pc']?.toString();
+            final chng = data['chng']?.toString();
+
+            if (_isValidValue(lp)) _positionData.lp = lp;
+            if (_isValidValue(pc)) _positionData.perChange = pc;
+            if (_isValidValue(chng)) _positionData.chng = chng;
+
+            _updateProfitLossValues();
+          });
+        }
+      });
+    } catch (e) {
+      print("Error setting up socket subscription: $e");
+    }
+  }
+
+  // Helper method to check if a value is valid
+  bool _isValidValue(String? value) {
+    return value != null &&
+        value != "null" &&
+        value != "0" &&
+        value != "0.0" &&
+        value != "0.00";
+  }
+
+  // Calculate profit and loss values
+  void _updateProfitLossValues() {
+    final ltp = double.tryParse(_positionData.lp ?? "0.0") ?? 0.0;
+    final qty = int.tryParse(_positionData.netqty ?? "0") ?? 0;
+    final avgPrice = double.tryParse(_positionData.avgPrc ?? "0.0") ?? 0.0;
+
+    if (ltp > 0 && qty != 0 && avgPrice > 0) {
+      final pnl = (ltp - avgPrice) * qty;
+      _positionData.profitNloss = pnl.toStringAsFixed(2);
+      _positionData.mTm = pnl.toStringAsFixed(2);
+    }
+  }
+
+  bool _didInitDependencies = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // Only run this once
+    if (!_didInitDependencies) {
+      _didInitDependencies = true;
+
+      // Use a microtask to ensure widget is fully mounted
+      Future.microtask(() {
+        if (mounted) {
+          _preLoadData();
+        }
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = ref.read(themeProvider);
+    final scripInfo = ref.watch(marketWatchProvider);
+    final positions = ref.read(portfolioProvider);
+
+    DepthInputArgs depthArgs = DepthInputArgs(
+      exch: _positionData.exch ?? "",
+      token: _positionData.token ?? "",
+      tsym: _positionData.tsym ?? '',
+      instname: scripInfo.getQuotes?.instname ?? "",
+      symbol: _positionData.symbol ?? '',
+      expDate: _positionData.expDate ?? '',
+      option: _positionData.option ?? '',
+    );
+
+    return Container(
+      constraints: const BoxConstraints(maxWidth: 400),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
+            width: 1,
+          ),
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header with close button
+          Container(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  "${position.symbol?.replaceAll("-EQ", "")} ${position.expDate} ${position.option} ",
-                  style: WebTextStyles.dialogTitle(
-                    isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                  ),
+                Expanded(
+                  child: _buildSymbolSection(theme, scripInfo, depthArgs),
                 ),
-                const SizedBox(width: 4),
-                 Text(
-                               "${position.exch}",
-                               style: WebTextStyles.dialogTitle(
-                                 isDarkTheme: theme.isDarkMode,
-                                 color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                               ),
-                             ),
+                shadcn.TextButton(
+                  density: shadcn.ButtonDensity.icon,
+                  child: const Icon(Icons.close),
+                  onPressed: () {
+                    shadcn.closeSheet(context);
+                  },
+                ),
               ],
             ),
-            const SizedBox(height: 8),
-           
-            
-              Row(
+          ),
+          // Border divider
+          Container(
+            height: 1,
+            color: shadcn.Theme.of(context).colorScheme.border,
+          ),
+          // Content
+          Container(
+            padding: const EdgeInsets.all(16),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                      "${position.lp}",
-                      style: WebTextStyles.title(
-                        isDarkTheme: theme.isDarkMode,
-                        color: (position.lp == "null" || position.lp == null) ||
-                                position.lp == "0.00"
-                            ? theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : colors.textSecondaryLight
-                            : position.chng?.startsWith("-") ?? false
-                                ? theme.isDarkMode
-                                    ? colors.lossDark
-                                    : colors.lossLight
-                                : theme.isDarkMode
-                                    ? colors.profitDark
-                                    : colors.profitLight,
-                        fontWeight: WebFonts.medium,
-                      ),
-                    ),
-                    const SizedBox(width: 8), 
-
-                     Text(
-                  "${double.parse("${position.chng ?? 0.00}").toStringAsFixed(2)} (${position.perChange ?? 0.00}%)",
-                  style: WebTextStyles.sub(
-                    isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                    fontWeight: WebFonts.medium,
-                  ),
-                ),
+                  // Action Buttons
+                  _buildActionButtons(theme, scripInfo, positions),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    child: _buildPnLSection(theme, positions),
+                  ),                
+                  // Details Section
+                  _buildDetailsSection(theme, positions),
                 ],
-              ),          
-          ],
-        ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildActionButtons(ThemesProvider theme, MarketWatchProvider marketwatch, WidgetRef ref, PositionBookModel position) {
-    if (position.sPrdtAli == "BO" || position.sPrdtAli == "CO") {
-      return const SizedBox.shrink();
-    }
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: Row(
-        children: [
-          if (position.qty != "0" && !ref.read(portfolioProvider).isDay) ...[
-            Expanded(
-              child: _buildActionButton(
-                "Exit",
-                false,
-                theme,
-                () async {
-                  await marketwatch.fetchScripInfo(
-                    "${position.token}",
-                    '${position.exch}',
-                    context,
-                    true,
-                  );
-                  Navigator.pop(context);
-                  OrderScreenArgs orderArgs = OrderScreenArgs(
-                    exchange: '${position.exch}',
-                    tSym: '${position.tsym}',
-                    isExit: true,
-                    token: "${position.token}",
-                    transType: int.parse(position.netqty!) < 0 ? true : false,
-                    prd: '${position.prd}',
-                    lotSize: position.netqty,
-                    ltp: position.lp,
-                    perChange: position.perChange ?? "0.00",
-                    orderTpye: '',
-                    holdQty: '${position.netqty}',
-                    isModify: false,
-                    raw: {},
-                  );
-      
-                  ResponsiveNavigation.toPlaceOrderScreen(
-                    context: context,
-                    arguments: {
-                      "orderArg": orderArgs,
-                      "scripInfo": ref.read(marketWatchProvider).scripInfoModel!,
-                      "isBskt": "",
-                    },
-                  );
-                },
+
+  Widget _buildSymbolSection(ThemesProvider theme, MarketWatchProvider scripInfo, DepthInputArgs depthArgs) {
+    final colorScheme = shadcn.Theme.of(context).colorScheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Symbol and Exchange
+        Row(
+          children: [
+            Flexible(
+              child: Text(
+                "${_positionData.symbol?.replaceAll("-EQ", "") ?? ''} ${_positionData.expDate ?? ''} ${_positionData.option ?? ''} ",
+                style: WebTextStyles.dialogTitle(
+                  isDarkTheme: theme.isDarkMode,
+                  color: colorScheme.foreground,
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildActionButton(
-                "Add",
-                true,
-                theme,
-                () async {
-                  await marketwatch.fetchScripInfo(
-                    "${position.token}",
-                    '${position.exch}',
-                    context,
-                    true,
-                  );
-                  int lotsize = int.parse(ref.read(marketWatchProvider).scripInfoModel!.ls.toString());
-                  Navigator.pop(context);
-                  OrderScreenArgs orderArgs = OrderScreenArgs(
-                    exchange: '${position.exch}',
-                    tSym: '${position.tsym}',
-                    isExit: false,
-                    token: "${position.token}",
-                    transType: int.parse(position.netqty!) < 0 ? false : true,
-                    prd: '${position.prd}',
-                    lotSize: lotsize.toString(),
-                    ltp: position.lp,
-                    perChange: position.perChange ?? "0.00",
-                    orderTpye: '',
-                    holdQty: '${position.netqty}',
-                    isModify: false,
-                    raw: {},
-                  );
-      
-                  ResponsiveNavigation.toPlaceOrderScreen(
-                    context: context,
-                    arguments: {
-                      "orderArg": orderArgs,
-                      "scripInfo": ref.read(marketWatchProvider).scripInfoModel!,
-                      "isBskt": "",
-                    },
-                  );
-                },
+            const SizedBox(width: 4),
+            Text(
+              "${_positionData.exch}",
+              style: WebTextStyles.dialogTitle(
+                isDarkTheme: theme.isDarkMode,
+                color: colorScheme.mutedForeground,
               ),
             ),
           ],
+        ),
+        const SizedBox(height: 8),
+        
+        // Price and Change
+        Row(
+          children: [
+            Text(
+              "${_positionData.lp != "null" ? _positionData.lp ?? '0.00' : '0.00'}",
+              style: WebTextStyles.title(
+                isDarkTheme: theme.isDarkMode,
+                color: (_positionData.chng == "null" || _positionData.chng == null) ||
+                        _positionData.chng == "0.00"
+                    ? colorScheme.mutedForeground
+                    : (_positionData.chng?.startsWith("-") == true || _positionData.perChange?.startsWith("-") == true)
+                        ? colorScheme.destructive
+                        : colorScheme.chart2,
+                fontWeight: WebFonts.medium,
+              ),
+            ),
+            const SizedBox(width: 4),
+            Text(
+              "${(double.tryParse(_positionData.chng ?? '0.00') ?? 0.00).toStringAsFixed(2)} (${(double.tryParse(_positionData.perChange ?? '0.00') ?? 0.00).toStringAsFixed(2)}%)",
+              style: WebTextStyles.sub(
+                isDarkTheme: theme.isDarkMode,
+                color: colorScheme.mutedForeground,
+                fontWeight: WebFonts.medium,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  // Old action buttons removed - not used in new UI design
+
+  Widget _buildActionButtons(ThemesProvider theme, MarketWatchProvider scripInfo, PortfolioProvider positions) {
+    final isClosed = _isPositionClosed();
+    final hasQty = _positionData.qty != "0" && _positionData.qty != null;
+    final isDay = positions.isDay;
+    final isBOorCO = _positionData.sPrdtAli == "BO" || _positionData.sPrdtAli == "CO";
+    
+    // Don't show buttons for BO/CO products
+    if (isBOorCO) {
+      return const SizedBox.shrink();
+    }
+    
+    // Don't show Add/Exit if it's day or position is closed
+    final showAddExit = hasQty && !isDay && !isClosed;
+    final showConvert = !isClosed && hasQty;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Add and Exit buttons in a row
+          if (showAddExit) ...[
+            Row(
+              children: [
+                Expanded(
+                  child: _buildActionButton(
+                    "Add",
+                    true,
+                    theme,
+                    _handleAdd,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildActionButton(
+                    "Exit",
+                    false,
+                    theme,
+                    _handleExit,
+                  ),
+                ),
+              ],
+            ),
+            if (showConvert) const SizedBox(height: 12),
+          ],
+          // Convert Position as text button
+          if (showConvert)
+            shadcn.TextButton(
+              onPressed: _handleConvert,
+              child: Text(
+                'Convert Position',
+                style: TextStyle(
+                  fontWeight: WebFonts.bold,
+                  fontFamily: 'Geist',
+                  color: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
+                ),
+              ),
+            ),
         ],
       ),
     );
   }
 
   Widget _buildActionButton(String text, bool isPrimary, ThemesProvider theme, VoidCallback onPressed) {
-    return SizedBox(
+    final backgroundColor = isPrimary
+        ? (theme.isDarkMode ? WebDarkColors.primaryLight : WebColors.primaryLight)
+        : (theme.isDarkMode
+            ? WebDarkColors.textSecondary.withOpacity(0.6)
+            : WebColors.buttonSecondary);
+    final textColor = isPrimary
+        ? Colors.white
+        : (theme.isDarkMode ? Colors.white : WebColors.primaryLight);
+    final borderColor = theme.isDarkMode ? WebDarkColors.primaryLight : WebColors.primaryLight;
+    
+    return Container(
       height: 40,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: isPrimary
-              ? colors.primaryLight
-              : (theme.isDarkMode
-                  ? colors.textSecondaryDark.withOpacity(0.6)
-                  : colors.btnBg),
-          foregroundColor: isPrimary
-              ? colors.colorWhite
-              : (theme.isDarkMode ? colors.colorWhite : colors.primaryLight),
-          side: isPrimary
-              ? null
-              : BorderSide(
-                  color: colors.primaryLight,
-                  width: 1,
-                ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(5),
-          ),
-        ),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        border: isPrimary
+            ? null
+            : Border.all(
+                color: borderColor,
+                width: 1,
+              ),
+        borderRadius: BorderRadius.circular(5),
+      ),
+      child: shadcn.TextButton(
+        size: shadcn.ButtonSize.large,
+        density: shadcn.ButtonDensity.dense,
         onPressed: onPressed,
+        shape: shadcn.ButtonShape.rectangle,
         child: Text(
           text,
-          style: WebTextStyles.buttonXs(
+          style: WebTextStyles.buttonMd(
             isDarkTheme: theme.isDarkMode,
-            color: isPrimary ? colors.colorWhite : (theme.isDarkMode ? colors.colorWhite : colors.primaryLight),
-            fontWeight: WebFonts.semiBold,
+            color: textColor,
+            fontWeight: WebFonts.bold,
           ),
         ),
       ),
     );
   }
 
-  Widget _buildConvertPositionButton(ThemesProvider theme, PositionBookModel position) {
-    if (position.qty == "0") {
-      return const SizedBox.shrink();
-    }
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          child: InkWell(
-            onTap: () {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return ConvertPositionDialogueWeb(convertPosition: position);
-                },
-              );
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                border: Border.all(color: colors.btnOutlinedBorder),
-                borderRadius: BorderRadius.circular(5),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SvgPicture.asset(
-                    assets.convertpositionicon,
-                    width: 16,
-                    height: 16,
-                    color: colors.btnOutlinedBorder,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    "Convert Position",
-                    style: WebTextStyles.buttonXs(
-                      isDarkTheme: theme.isDarkMode,
-                      color: colors.primaryLight,
-                      fontWeight: WebFonts.semiBold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
+  bool _isPositionClosed() {
+    return _positionData.qty == "0" || _positionData.qty == null;
   }
 
-  Widget _buildPnLSection(ThemesProvider theme, PortfolioProvider positions, PositionBookModel position) {
+  // Handle add position
+  Future<void> _handleAdd() async {
+    try {
+      // Get root navigator context
+      final rootContext = rootNavigatorKey.currentContext;
+      if (rootContext == null) {
+        if (mounted) {
+          showResponsiveWarningMessage(context, "Unable to access root context");
+        }
+        return;
+      }
+
+      final scripData = ref.read(marketWatchProvider);
+      await scripData.fetchScripInfo(
+        _positionData.token ?? "",
+        _positionData.exch ?? "",
+        rootContext,
+        true,
+      ).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          throw Exception("Request timed out");
+        },
+      );
+
+      if (scripData.scripInfoModel == null) {
+        if (!mounted) return;
+        showResponsiveWarningMessage(
+            rootContext, "Unable to fetch scrip information");
+        return;
+      }
+
+      final lotSize = scripData.scripInfoModel!.ls?.toString() ?? "1";
+      final netQty = int.tryParse(_positionData.netqty ?? "0") ?? 0;
+
+      OrderScreenArgs orderArgs = OrderScreenArgs(
+        exchange: _positionData.exch ?? "",
+        tSym: _positionData.tsym ?? "",
+        isExit: false,
+        token: _positionData.token ?? "",
+        transType: netQty < 0 ? false : true,
+        prd: _positionData.prd ?? "",
+        lotSize: lotSize,
+        ltp: _positionData.lp ?? "0.00",
+        perChange: _positionData.perChange ?? "0.00",
+        orderTpye: '',
+        holdQty: _positionData.netqty ?? '',
+        isModify: false,
+        raw: {},
+      );
+
+      // Use parent context (from position_table) if available, otherwise use root context
+      final targetContext = widget.parentContext ?? rootContext;
+      
+      if (targetContext.mounted) {
+        ResponsiveNavigation.toPlaceOrderScreen(
+          context: targetContext,
+          arguments: {
+            "orderArg": orderArgs,
+            "scripInfo": scripData.scripInfoModel!,
+            "isBskt": "",
+          },
+        );
+      } else {
+        if (mounted) {
+          showResponsiveWarningMessage(context, "Unable to access context");
+        }
+        return;
+      }
+
+      // Close the sheet AFTER opening the order screen
+      if (mounted) {
+        try {
+          shadcn.closeSheet(context);
+        } catch (e) {
+          // Ignore sheet close errors
+        }
+      }
+    } catch (e) {
+      if (!mounted) return;
+      
+      // Try to close sheet on error
+      if (mounted) {
+        try {
+          shadcn.closeSheet(context);
+        } catch (_) {
+          // Ignore sheet close errors
+        }
+      }
+      
+      final rootCtx = rootNavigatorKey.currentContext;
+      if (rootCtx != null) {
+        try {
+          showResponsiveWarningMessage(
+              rootCtx, "Error adding position: ${e.toString()}");
+        } catch (displayError) {
+          print("Failed to show error message: $displayError");
+        }
+      }
+    }
+  }
+
+  // Handle exit position
+  Future<void> _handleExit() async {
+    try {
+      // Get root navigator context
+      final rootContext = rootNavigatorKey.currentContext;
+      if (rootContext == null) {
+        if (mounted) {
+          showResponsiveWarningMessage(context, "Unable to access root context");
+        }
+        return;
+      }
+
+      final scripData = ref.read(marketWatchProvider);
+      await scripData.fetchScripInfo(
+        _positionData.token ?? "",
+        _positionData.exch ?? "",
+        rootContext,
+        true,
+      ).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          throw Exception("Request timed out");
+        },
+      );
+
+      if (scripData.scripInfoModel == null) {
+        if (!mounted) return;
+        showResponsiveWarningMessage(
+            rootContext, "Unable to fetch scrip information");
+        return;
+      }
+
+      final netQty = int.tryParse(_positionData.netqty ?? "0") ?? 0;
+      OrderScreenArgs orderArgs = OrderScreenArgs(
+        exchange: _positionData.exch ?? "",
+        tSym: _positionData.tsym ?? "",
+        isExit: true,
+        token: _positionData.token ?? "",
+        transType: netQty < 0 ? true : false,
+        prd: _positionData.prd ?? "",
+        lotSize: _positionData.netqty ?? "",
+        ltp: _positionData.lp ?? "0.00",
+        perChange: _positionData.perChange ?? "0.00",
+        orderTpye: '',
+        holdQty: _positionData.netqty ?? '',
+        isModify: false,
+        raw: {},
+      );
+
+      // Use parent context (from position_table) if available, otherwise use root context
+      final targetContext = widget.parentContext ?? rootContext;
+      
+      if (targetContext.mounted) {
+        ResponsiveNavigation.toPlaceOrderScreen(
+          context: targetContext,
+          arguments: {
+            "orderArg": orderArgs,
+            "scripInfo": scripData.scripInfoModel!,
+            "isBskt": "",
+          },
+        );
+      } else {
+        if (mounted) {
+          showResponsiveWarningMessage(context, "Unable to access context");
+        }
+        return;
+      }
+
+      // Close the sheet AFTER opening the order screen
+      if (mounted) {
+        try {
+          shadcn.closeSheet(context);
+        } catch (e) {
+          // Ignore sheet close errors
+        }
+      }
+    } catch (e) {
+      if (!mounted) return;
+      
+      // Try to close sheet on error
+      if (mounted) {
+        try {
+          shadcn.closeSheet(context);
+        } catch (_) {
+          // Ignore sheet close errors
+        }
+      }
+      
+      final rootCtx = rootNavigatorKey.currentContext;
+      if (rootCtx != null) {
+        try {
+          showResponsiveWarningMessage(
+              rootCtx, "Error exiting position: ${e.toString()}");
+        } catch (displayError) {
+          print("Failed to show error message: $displayError");
+        }
+      }
+    }
+  }
+
+
+  // Handle convert position
+  Future<void> _handleConvert() async {
+    try {
+      // Close the sheet first
+      if (!mounted) return;
+      await shadcn.closeSheet(context);
+      
+      // Show dialog after sheet closes using post-frame callback
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final rootContext = rootNavigatorKey.currentContext;
+        if (rootContext != null) {
+          showDialog(
+            context: rootContext,
+            builder: (BuildContext context) {
+              return ConvertPositionDialogueWeb(convertPosition: _positionData);
+            },
+          );
+        }
+      });
+    } catch (e) {
+      if (!mounted) return;
+      print("Error opening convert dialog: $e");
+    }
+  }
+
+  Widget _buildPnLSection(ThemesProvider theme, PortfolioProvider positions) {
+    final colorScheme = shadcn.Theme.of(context).colorScheme;
+    final displayValue = positions.isNetPnl
+        ? (_positionData.profitNloss ?? _positionData.rpnl ?? "0.00")
+        : (_positionData.mTm ?? "0.00");
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -475,141 +686,124 @@ class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWe
               positions.isNetPnl ? "P&L" : "MTM",
               style: WebTextStyles.title(
                 isDarkTheme: theme.isDarkMode,
-                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                color: colorScheme.mutedForeground,
                 fontWeight: WebFonts.medium,
               ),
             ),
             const SizedBox(height: 6),
-             Text(
-          positions.isNetPnl
-              ? "${position.profitNloss ?? position.rpnl}"
-              : "${position.mTm}",
-          style: WebTextStyles.head(
-            isDarkTheme: theme.isDarkMode,
-            color: _getPnLColor(positions, theme, position),
-            fontWeight: WebFonts.medium,
-          ),
-        ),
+            Text(
+              displayValue,
+              style: WebTextStyles.head(
+                isDarkTheme: theme.isDarkMode,
+                color: _getPnLColor(displayValue),
+                fontWeight: WebFonts.medium,
+              ),
+            ),
           ],
         ),
-       
       ],
     );
   }
 
-  Color _getPnLColor(PortfolioProvider positions, ThemesProvider theme, PositionBookModel position) {
-    String value = positions.isNetPnl
-        ? (position.profitNloss ?? position.rpnl ?? "0.00")
-        : (position.mTm ?? "0.00");
-
-    if (value.startsWith("-")) {
-      return theme.isDarkMode ? colors.lossDark : colors.lossLight;
-    } else if (value == "0.00") {
-      return theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight;
+  Color _getPnLColor(String value) {
+    final colorScheme = shadcn.Theme.of(context).colorScheme;
+    final numValue = double.tryParse(value) ?? 0.0;
+    
+    if (numValue > 0) {
+      return colorScheme.chart2;
+    } else if (numValue < 0) {
+      return colorScheme.destructive;
     } else {
-      return theme.isDarkMode ? colors.profitDark : colors.profitLight;
+      return colorScheme.mutedForeground;
     }
   }
 
-  Widget _buildDetailsSection(ThemesProvider theme, PortfolioProvider positions, PositionBookModel position) {
-    return IntrinsicHeight(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Left column - First 4 items
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildInfoRow(
-                    "Net Qty",
-                    "${(int.tryParse(position.netqty.toString()) ?? 0) ~/ (position.exch == 'MCX' ? (int.tryParse(position.ls.toString()) ?? 1) : 1)}",
-                    theme,
-                  ),
-                  _buildInfoRow(
-                    "Avg Price",
-                    "${position.netupldprc ?? 0.00}",
-                    theme,
-                  ),
-                  _buildInfoRow(
-                    "Product",
-                    position.sPrdtAli ?? "",
-                    theme,
-                  ),
-                  _buildInfoRow(
-                    "Buy Qty ( Day / CF )",
-                    "${(int.tryParse(position.daybuyqty.toString()) ?? 0) ~/ (position.exch == 'MCX' ? (int.tryParse(position.ls.toString()) ?? 1) : 1)} / ${position.cfbuyqty}",
-                    theme,
-                  ),
-                ],
-              ),
-            ),
-            // Vertical divider
-            Container(
-              width: 0.5,
-              margin: const EdgeInsets.symmetric(horizontal: 16),
-              color: theme.isDarkMode
-                  ? WebDarkColors.divider
-                  : WebColors.divider,
-            ),
-            // Right column - Last 4 items
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildInfoRow(
-                    "Sell Qty ( Day / CF )",
-                    "${(int.tryParse(position.daysellqty.toString()) ?? 0) ~/ (position.exch == 'MCX' ? (int.tryParse(position.ls.toString()) ?? 1) : 1)} / ${position.cfsellqty}",
-                    theme,
-                  ),
-                  _buildInfoRow(
-                    "Buy Avg prc ( Day / CF )",
-                    "${position.daybuyavgprc ?? 0.00} / ${position.cfbuyavgprc}",
-                    theme,
-                  ),
-                  _buildInfoRow(
-                    "Sell Avg prc ( Day / CF )",
-                    "${position.daysellavgprc ?? 0.00} / ${position.cfsellavgprc}",
-                    theme,
-                  ),
-                  _buildInfoRow(
-                    "Actual Avg Price",
-                    "${position.upldprc ?? 0.00}",
-                    theme,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+  Widget _buildDetailsSection(ThemesProvider theme, PortfolioProvider positions) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _rowOfInfoData(
+            "Net Qty",
+            "${(int.tryParse(_positionData.netqty?.toString() ?? '0') ?? 0) ~/ (_positionData.exch == 'MCX' ? (int.tryParse(_positionData.ls?.toString() ?? '1') ?? 1) : 1)}",
+            theme,
+          ),
+          const SizedBox(height: 8),
+          _rowOfInfoData(
+            "Avg Price",
+            "${_positionData.netupldprc ?? 0.00}",
+            theme,
+          ),
+          const SizedBox(height: 8),
+          _rowOfInfoData(
+            "Product",
+            _positionData.sPrdtAli != "null" ? "${_positionData.sPrdtAli}" : "--",
+            theme,
+          ),
+          const SizedBox(height: 8),
+          _rowOfInfoData(
+            "Buy Qty ( Day / CF )",
+            "${(int.tryParse(_positionData.daybuyqty?.toString() ?? '0') ?? 0) ~/ (_positionData.exch == 'MCX' ? (int.tryParse(_positionData.ls?.toString() ?? '1') ?? 1) : 1)} / ${_positionData.cfbuyqty ?? 0}",
+            theme,
+          ),
+          const SizedBox(height: 8),
+          _rowOfInfoData(
+            "Sell Qty ( Day / CF )",
+            "${(int.tryParse(_positionData.daysellqty?.toString() ?? '0') ?? 0) ~/ (_positionData.exch == 'MCX' ? (int.tryParse(_positionData.ls?.toString() ?? '1') ?? 1) : 1)} / ${_positionData.cfsellqty ?? 0}",
+            theme,
+          ),
+          const SizedBox(height: 8),
+          _rowOfInfoData(
+            "Buy Avg prc ( Day / CF )",
+            "${_positionData.daybuyavgprc ?? 0.00} / ${_positionData.cfbuyavgprc ?? 0.00}",
+            theme,
+          ),
+          const SizedBox(height: 8),
+          _rowOfInfoData(
+            "Sell Avg prc ( Day / CF )",
+            "${_positionData.daysellavgprc ?? 0.00} / ${_positionData.cfsellavgprc ?? 0.00}",
+            theme,
+          ),
+          const SizedBox(height: 8),
+          _rowOfInfoData(
+            "Actual Avg Price",
+            "${_positionData.upldprc ?? 0.00}",
+            theme,
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildInfoRow(String title, String value, ThemesProvider theme) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            title,
-            style: WebTextStyles.dialogContent(
-              isDarkTheme: theme.isDarkMode,
-             color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+  Widget _rowOfInfoData(String title1, String value1, ThemesProvider theme) {
+    final colorScheme = shadcn.Theme.of(context).colorScheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              title1,
+              style: WebTextStyles.sub(
+                isDarkTheme: theme.isDarkMode,
+                color: colorScheme.mutedForeground,
+                fontWeight: WebFonts.medium,
+              ),
             ),
-          ),
-          Text(
-            value,
-            style: WebTextStyles.dialogContent(
-              isDarkTheme: theme.isDarkMode,
-              color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+            Text(
+              value1,
+              style: WebTextStyles.sub(
+                isDarkTheme: theme.isDarkMode,
+                color: colorScheme.foreground,
+                fontWeight: WebFonts.medium,
+              ),
             ),
-          ),
-        ],
-      ),
+          ],
+        ),
+        const SizedBox(height: 16),
+      ],
     );
   }
 }

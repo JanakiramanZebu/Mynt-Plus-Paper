@@ -22,7 +22,9 @@ import '../../../../provider/thems.dart';
 import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
 import '../../../../res/web_colors.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import '../../../../res/global_font_web.dart';
+import '../../../../res/shadcn_text_styles.dart';
 import '../../../../sharedWidget/custom_drag_handler.dart';
 import '../../../../utils/responsive_navigation.dart';
 import '../../../../sharedWidget/list_divider.dart';
@@ -31,8 +33,10 @@ import '../../../../sharedWidget/snack_bar.dart';
 
 class OptionChainSSWeb extends ConsumerStatefulWidget {
   final DepthInputArgs wlValue;
-  final Function(bool)? onBasketModeChanged; // Callback to notify parent of basket mode changes
-  final Function(VoidCallback)? onToggleCallbackReady; // Callback to provide toggle function to parent
+  final Function(bool)?
+      onBasketModeChanged; // Callback to notify parent of basket mode changes
+  final Function(VoidCallback)?
+      onToggleCallbackReady; // Callback to provide toggle function to parent
   // final String isBasket;
 
   const OptionChainSSWeb({
@@ -51,7 +55,7 @@ class _OptionChainSSState extends ConsumerState<OptionChainSSWeb> {
   String regtoken = "";
   bool showPriceView = true; // true for Price, false for OI
   bool isBasketMode = false; // true for Basket mode, false for normal mode
-  
+
   // Expose basket mode state and toggle method for parent widget
   void toggleBasketMode() async {
     // Add delay for visual feedback
@@ -60,7 +64,7 @@ class _OptionChainSSState extends ConsumerState<OptionChainSSWeb> {
     setState(() {
       isBasketMode = !isBasketMode;
     });
-    
+
     // Notify parent of basket mode change
     widget.onBasketModeChanged?.call(isBasketMode);
 
@@ -98,7 +102,7 @@ class _OptionChainSSState extends ConsumerState<OptionChainSSWeb> {
       setState(() {});
     });
     super.initState();
-    
+
     // Provide toggle callback to parent
     WidgetsBinding.instance.addPostFrameCallback((_) {
       widget.onToggleCallbackReady?.call(toggleBasketMode);
@@ -369,7 +373,7 @@ class _NewAppBarTitle extends ConsumerWidget {
         //           value: scripInfo.selectedExpDate,
         //           isExpanded: false,
         //           isDense: true,
-        //           dropdownColor: theme.isDarkMode 
+        //           dropdownColor: theme.isDarkMode
         //               ? WebDarkColors.surface
         //               : WebColors.surface,
         //           icon: Icon(
@@ -535,167 +539,168 @@ void _showStrikeCountSelector(
           borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
       context: context,
       builder: (context) => SafeArea(
-        child: Container(
-             decoration: BoxDecoration(
-             borderRadius: const BorderRadius.only(
-        topLeft: Radius.circular(16),
-        topRight: Radius.circular(16),
-            ),
-           color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
-           border: Border(
-                                    top: BorderSide(
-                                      color: theme.isDarkMode
-                                          ? WebDarkColors.divider
-                                              .withOpacity(0.5)
-                                          : WebColors.surface,
-                                    ),
-                                    left: BorderSide(
-                                      color: theme.isDarkMode
-                                          ? WebDarkColors.divider
-                                              .withOpacity(0.5)
-                                          : WebColors.surface,
-                                    ),
-                                    right: BorderSide(
-                                      color: theme.isDarkMode
-                                          ? WebDarkColors.divider
-                                              .withOpacity(0.5)
-                                          : WebColors.surface,
-                                    ),
+            child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    topRight: Radius.circular(16),
+                  ),
+                  color: theme.isDarkMode
+                      ? WebDarkColors.surface
+                      : WebColors.surface,
+                  border: Border(
+                    top: BorderSide(
+                      color: theme.isDarkMode
+                          ? WebDarkColors.divider.withOpacity(0.5)
+                          : WebColors.surface,
+                    ),
+                    left: BorderSide(
+                      color: theme.isDarkMode
+                          ? WebDarkColors.divider.withOpacity(0.5)
+                          : WebColors.surface,
+                    ),
+                    right: BorderSide(
+                      color: theme.isDarkMode
+                          ? WebDarkColors.divider.withOpacity(0.5)
+                          : WebColors.surface,
+                    ),
+                  ),
+                ),
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // const CustomDragHandler(),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 8.0, horizontal: 16.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text("Select Number of Strike",
+                                style: TextStyle(
+                                  fontFamily: 'Geist',
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: shadcn.Theme.of(context)
+                                      .colorScheme
+                                      .foreground,
+                                )),
+                            Material(
+                              color: Colors.transparent,
+                              shape: const CircleBorder(),
+                              child: InkWell(
+                                onTap: () async {
+                                  await Future.delayed(
+                                      const Duration(milliseconds: 150));
+                                  Navigator.pop(context);
+                                },
+                                borderRadius: BorderRadius.circular(20),
+                                splashColor: shadcn.Theme.of(context)
+                                    .colorScheme
+                                    .accent
+                                    .withOpacity(0.15),
+                                highlightColor: shadcn.Theme.of(context)
+                                    .colorScheme
+                                    .accent
+                                    .withOpacity(0.08),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(6.0),
+                                  child: Icon(
+                                    Icons.close_rounded,
+                                    size: 22,
+                                    color: shadcn.Theme.of(context)
+                                        .colorScheme
+                                        .mutedForeground,
                                   ),
-        
-           
-          ),
-            child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // const CustomDragHandler(),
-                  Padding(
-                     padding: const EdgeInsets.symmetric(
-                          vertical: 8.0, horizontal: 16.0),
-                    child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                            "Select Number of Strike",
-                            style: WebTextStyles.title(
-                              isDarkTheme: theme.isDarkMode,
-                              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
-                              fontWeight: WebFonts.semiBold,
-                            )),
-                             Material(
-                            color: Colors.transparent,
-                            shape: const CircleBorder(),
-                            child: InkWell(
-                              onTap: () async {
-                                await Future.delayed(
-                                    const Duration(milliseconds: 150));
-                                Navigator.pop(context);
-                              },
-                              borderRadius: BorderRadius.circular(20),
-                              splashColor: theme.isDarkMode
-                                  ? Colors.white.withOpacity(0.15)
-                                  : Colors.black.withOpacity(0.15),
-                              highlightColor: theme.isDarkMode
-                                  ? Colors.white.withOpacity(0.08)
-                                  : Colors.black.withOpacity(0.08),
-                              child: Padding(
-                                padding: const EdgeInsets.all(6.0),
-                                child: Icon(
-                                  Icons.close_rounded,
-                                  size: 22,
-                                  color: theme.isDarkMode ? WebDarkColors.iconSecondary : WebColors.iconSecondary,
                                 ),
                               ),
                             ),
-                          ),
-                      ],
-                    ),
-                  ),
-                     Divider(
-                      color: theme.isDarkMode
-                          ? WebDarkColors.divider
-                          : WebColors.divider,
-                      height: 0,
-                    ),
-                  Flexible(
-                      child: ListView.separated(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                          physics: const ClampingScrollPhysics(),
-                          itemBuilder: (context, index) {
-                            return ListTile(
-                                onTap: () async {
-                                  scripInfo.selecNumStrike(
-                                      scripInfo.numStrikes[index]);
-        
-                                  // First close the modal
-                                  Navigator.pop(context);
-        
-                                  // Then fetch data with the new strike count
-                                  await ref
-                                      .read(marketWatchProvider)
-                                      .fetchOPtionChain(
-                                          context: context,
-                                          exchange: scripInfo.optionExch!,
-                                          numofStrike:
-                                              scripInfo.numStrikes[index],
-                                          strPrc: scripInfo.optionStrPrc,
-                                          tradeSym: scripInfo.selectedTradeSym!);
-        
-                                  // Use a longer delay to ensure data is loaded and widgets are built
-                                  Future.delayed(
-                                      const Duration(milliseconds: 500), () {
-                                    if (context.mounted) {
-                                      // Use the callback to main screen's scroll method
-                                      scrollToStrikePrice();
-                                    }
-                                  });
-                                },
-                                contentPadding:
-                                    const EdgeInsets.symmetric(horizontal: 0),
-                                dense: true,
-                                title: Text(
-                                    scripInfo.numStrikes[index],
-                                    style: WebTextStyles.sub(
-                                      isDarkTheme: theme.isDarkMode,
-                                      color: scripInfo.numStrike ==
+                          ],
+                        ),
+                      ),
+                      Divider(
+                        color: shadcn.Theme.of(context).colorScheme.border,
+                        height: 0,
+                      ),
+                      Flexible(
+                          child: ListView.separated(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16.0),
+                              physics: const ClampingScrollPhysics(),
+                              itemBuilder: (context, index) {
+                                return ListTile(
+                                    onTap: () async {
+                                      scripInfo.selecNumStrike(
+                                          scripInfo.numStrikes[index]);
+
+                                      // First close the modal
+                                      Navigator.pop(context);
+
+                                      // Then fetch data with the new strike count
+                                      await ref
+                                          .read(marketWatchProvider)
+                                          .fetchOPtionChain(
+                                              context: context,
+                                              exchange: scripInfo.optionExch!,
+                                              numofStrike:
+                                                  scripInfo.numStrikes[index],
+                                              strPrc: scripInfo.optionStrPrc,
+                                              tradeSym:
+                                                  scripInfo.selectedTradeSym!);
+
+                                      // Use a longer delay to ensure data is loaded and widgets are built
+                                      Future.delayed(
+                                          const Duration(milliseconds: 500),
+                                          () {
+                                        if (context.mounted) {
+                                          // Use the callback to main screen's scroll method
+                                          scrollToStrikePrice();
+                                        }
+                                      });
+                                    },
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        horizontal: 0),
+                                    dense: true,
+                                    title: Text(scripInfo.numStrikes[index],
+                                        style: TextStyle(
+                                          fontFamily: 'Geist',
+                                          fontSize: 13,
+                                          color: scripInfo.numStrike ==
                                                   scripInfo.numStrikes[index]
-                                              ? (theme.isDarkMode
-                                                  ? WebDarkColors.primary
-                                                  : WebColors.primary)
-                                              : (theme.isDarkMode
-                                                  ? WebDarkColors.iconSecondary
-                                                  : WebColors.iconSecondary),
-                                      fontWeight: scripInfo.numStrike ==
-                                              scripInfo.numStrikes[index]
-                                          ? WebFonts.semiBold
-                                          : WebFonts.regular,
-                                    )),
-                                trailing: SvgPicture.asset(theme.isDarkMode
-                                    ? scripInfo.numStrike ==
-                                            scripInfo.numStrikes[index]
-                                        ? assets.darkActProductIcon
-                                        : assets.darkProductIcon
-                                    : scripInfo.numStrike ==
-                                            scripInfo.numStrikes[index]
-                                        ? assets.actProductIcon
-                                        : assets.productIcon));
-                          },
-                          separatorBuilder: (context, index) {
-                            return const ListDivider();
-                          },
-                          shrinkWrap: true,
-                          itemCount: scripInfo.numStrikes.length))
-                ])),
-      ));
+                                              ? shadcn.Theme.of(context)
+                                                  .colorScheme
+                                                  .primary
+                                              : shadcn.Theme.of(context)
+                                                  .colorScheme
+                                                  .mutedForeground,
+                                          fontWeight: scripInfo.numStrike ==
+                                                  scripInfo.numStrikes[index]
+                                              ? FontWeight.w600
+                                              : FontWeight.w400,
+                                        )),
+                                    trailing: SvgPicture.asset(theme.isDarkMode
+                                        ? scripInfo.numStrike ==
+                                                scripInfo.numStrikes[index]
+                                            ? assets.darkActProductIcon
+                                            : assets.darkProductIcon
+                                        : scripInfo.numStrike ==
+                                                scripInfo.numStrikes[index]
+                                            ? assets.actProductIcon
+                                            : assets.productIcon));
+                              },
+                              separatorBuilder: (context, index) {
+                                return const ListDivider();
+                              },
+                              shrinkWrap: true,
+                              itemCount: scripInfo.numStrikes.length))
+                    ])),
+          ));
 }
 
 // Helper function to show strikes dropdown using showMenu (matching expiry dropdown style)
-void _showStrikesDropdown(
-    BuildContext context,
-    MarketWatchProvider scripInfo,
-    ThemesProvider theme,
-    VoidCallback scrollToStrikePrice) {
+void _showStrikesDropdown(BuildContext context, MarketWatchProvider scripInfo,
+    ThemesProvider theme, VoidCallback scrollToStrikePrice) {
   final RenderBox button = context.findRenderObject() as RenderBox;
   final RenderBox overlay =
       Overlay.of(context).context.findRenderObject() as RenderBox;
@@ -728,16 +733,13 @@ void _showStrikesDropdown(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Text(
               value,
-              style: WebTextStyles.bodySmall(
-                isDarkTheme: theme.isDarkMode,
-                color: isSelected
-                    ? (theme.isDarkMode
-                        ? WebDarkColors.primary
-                        : WebColors.primary)
-                    : (theme.isDarkMode
-                        ? WebDarkColors.textPrimary
-                        : WebColors.textPrimary),
+              style: TextStyle(
+                fontFamily: 'Geist',
+                fontSize: 13,
                 fontWeight: FontWeight.w500,
+                color: isSelected
+                    ? shadcn.Theme.of(context).colorScheme.primary
+                    : shadcn.Theme.of(context).colorScheme.foreground,
               ),
             ),
           ),
@@ -754,7 +756,7 @@ void _showStrikesDropdown(
         strPrc: scripInfo.optionStrPrc,
         tradeSym: scripInfo.selectedTradeSym!,
       );
-      
+
       Future.delayed(const Duration(milliseconds: 500), () {
         if (context.mounted) {
           scrollToStrikePrice();
@@ -784,7 +786,8 @@ class _ColumnHeaders extends ConsumerWidget {
     return RepaintBoundary(
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        color: theme.isDarkMode ? WebDarkColors.background : WebColors.background,
+        color:
+            theme.isDarkMode ? WebDarkColors.background : WebColors.background,
         child: Column(
           children: [
             // Main header row
@@ -798,12 +801,12 @@ class _ColumnHeaders extends ConsumerWidget {
                     children: [
                       Text(
                         "CALLS",
-                        style: WebTextStyles.sub(
-                          isDarkTheme: theme.isDarkMode,
-                          color: theme.isDarkMode
-                              ? WebDarkColors.textPrimary
-                              : WebColors.textPrimary,
-                          fontWeight: WebFonts.medium,
+                        style: TextStyle(
+                          fontFamily: 'Geist',
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color:
+                              shadcn.Theme.of(context).colorScheme.foreground,
                         ),
                       ),
                     ],
@@ -816,7 +819,8 @@ class _ColumnHeaders extends ConsumerWidget {
                     builder: (context) => Material(
                       color: Colors.transparent,
                       child: InkWell(
-                        onTap: () => _showStrikesDropdown(context, scripInfo, theme, scrollToStrikePrice),
+                        onTap: () => _showStrikesDropdown(
+                            context, scripInfo, theme, scrollToStrikePrice),
                         borderRadius: BorderRadius.circular(5),
                         child: Padding(
                           padding: const EdgeInsets.all(6.0),
@@ -825,21 +829,22 @@ class _ColumnHeaders extends ConsumerWidget {
                             children: [
                               Text(
                                 "STRIKES",
-                                style: WebTextStyles.sub(
-                                  isDarkTheme: theme.isDarkMode,
-                                  color: theme.isDarkMode
-                                      ? WebDarkColors.textPrimary
-                                      : WebColors.textPrimary,
-                                  fontWeight: WebFonts.medium,
+                                style: TextStyle(
+                                  fontFamily: 'Geist',
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                  color: shadcn.Theme.of(context)
+                                      .colorScheme
+                                      .foreground,
                                 ),
                               ),
                               const SizedBox(width: 6),
                               Icon(
                                 Icons.arrow_drop_down,
                                 size: 20,
-                                color: theme.isDarkMode
-                                    ? WebDarkColors.iconSecondary
-                                    : WebColors.iconSecondary,
+                                color: shadcn.Theme.of(context)
+                                    .colorScheme
+                                    .mutedForeground,
                               ),
                             ],
                           ),
@@ -856,12 +861,12 @@ class _ColumnHeaders extends ConsumerWidget {
                     children: [
                       Text(
                         "PUTS",
-                        style: WebTextStyles.sub(
-                          isDarkTheme: theme.isDarkMode,
-                          color: theme.isDarkMode
-                              ? WebDarkColors.textPrimary
-                              : WebColors.textPrimary,
-                          fontWeight: WebFonts.medium,
+                        style: TextStyle(
+                          fontFamily: 'Geist',
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color:
+                              shadcn.Theme.of(context).colorScheme.foreground,
                         ),
                       ),
                     ],
@@ -916,7 +921,9 @@ class _ColumnHeaders extends ConsumerWidget {
                           children: [
                             const SizedBox(width: 20),
                             _buildSubHeader(context, ref, "OI(ch)", theme),
-                            Expanded(child: _buildSubHeader(context, ref, "OI", theme)),
+                            Expanded(
+                                child:
+                                    _buildSubHeader(context, ref, "OI", theme)),
                           ],
                         ),
                       ),
@@ -925,7 +932,9 @@ class _ColumnHeaders extends ConsumerWidget {
                           children: [
                             const SizedBox(width: 15),
                             _buildSubHeader(context, ref, "CH", theme),
-                            Expanded(child: _buildSubHeader(context, ref, "LTP", theme)),
+                            Expanded(
+                                child: _buildSubHeader(
+                                    context, ref, "LTP", theme)),
                           ],
                         ),
                       ),
@@ -943,7 +952,9 @@ class _ColumnHeaders extends ConsumerWidget {
                         child: Row(
                           children: [
                             const SizedBox(width: 15),
-                            Expanded(child: _buildSubHeader(context, ref, "LTP", theme)),
+                            Expanded(
+                                child: _buildSubHeader(
+                                    context, ref, "LTP", theme)),
                             _buildSubHeader(context, ref, "CH", theme),
                           ],
                         ),
@@ -952,7 +963,9 @@ class _ColumnHeaders extends ConsumerWidget {
                         child: Row(
                           children: [
                             const SizedBox(width: 15),
-                            Expanded(child: _buildSubHeader(context, ref, "OI", theme)),
+                            Expanded(
+                                child:
+                                    _buildSubHeader(context, ref, "OI", theme)),
                             _buildSubHeader(context, ref, "OI(ch)", theme),
                           ],
                         ),
@@ -968,15 +981,16 @@ class _ColumnHeaders extends ConsumerWidget {
     );
   }
 
-  Widget _buildSubHeader(BuildContext context, WidgetRef ref, String text, ThemesProvider theme) {
+  Widget _buildSubHeader(
+      BuildContext context, WidgetRef ref, String text, ThemesProvider theme) {
     return Center(
       child: Text(
         text,
-        style: WebTextStyles.tableHeader(
-          isDarkTheme: theme.isDarkMode,
-          color: theme.isDarkMode
-              ? WebDarkColors.textSecondary
-              : WebColors.textSecondary,
+        style: TextStyle(
+          fontFamily: 'Geist',
+          fontSize: 11,
+          fontWeight: FontWeight.w500,
+          color: shadcn.Theme.of(context).colorScheme.mutedForeground,
         ),
         textAlign: TextAlign.center,
       ),
@@ -1001,15 +1015,19 @@ class _PreDefinedWatchlistBanner extends ConsumerWidget {
       child: Container(
           padding: const EdgeInsets.symmetric(vertical: 6),
           decoration: BoxDecoration(
-              color: theme.isDarkMode ? WebDarkColors.primary.withOpacity(0.3) : WebColors.primary.withOpacity(0.3),
+            color: theme.isDarkMode
+                ? WebDarkColors.primary.withOpacity(0.3)
+                : WebColors.primary.withOpacity(0.3),
           ),
           child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
             SvgPicture.asset(assets.dInfo, color: WebColors.primary),
             Text(
               " Long press to add Watchlist / Swipe to Trade",
-              style: WebTextStyles.caption(
-                isDarkTheme: theme.isDarkMode,
-                color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
+              style: TextStyle(
+                fontFamily: 'Geist',
+                fontSize: 11,
+                fontWeight: FontWeight.w400,
+                color: shadcn.Theme.of(context).colorScheme.mutedForeground,
               ),
             ),
           ])),
@@ -1110,92 +1128,94 @@ class _OptionChainContent extends ConsumerWidget {
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         controller: mainScrollController,
-          child: Column(children: [
-        RepaintBoundary(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 0),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                // CALLS column - shows all data
-                Expanded(
-                  flex: 6,
-                  child: Align(
-                    alignment: Alignment.centerLeft,
+        child: Column(children: [
+          RepaintBoundary(
+            child: Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 0),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  // CALLS column - shows all data
+                  Expanded(
+                    flex: 6,
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: OptChainCallList(
+                        swipe: swipecontroller,
+                        callData: scripInfo.optChainCallUP,
+                        isCallUp: false,
+                        showPriceView: true,
+                        isBasketMode: isBasketMode,
+                      ),
+                    ),
+                  ),
+                  // STRIKES column
+                  SizedBox(
+                    width: 150,
+                    child: StrikePriceListCard(
+                        strike: scripInfo.optChainCallUP, isCallUp: false),
+                  ),
+                  // PUTS column - shows all data
+                  Expanded(
+                    flex: 6,
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: OptChainPutList(
+                        putData: scripInfo.optChainPutUp,
+                        isPutUp: false,
+                        showPriceView: true,
+                        isBasketMode: isBasketMode,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 0, bottom: 0),
+            child: CurStrkprice(
+                key: strikePriceKey,
+                token: depthData.undTk ?? depthData.token ?? "0.00"),
+          ),
+          RepaintBoundary(
+            child: Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 0),
+              child: Row(
+                children: <Widget>[
+                  // CALLS column - shows all data
+                  Expanded(
+                    flex: 6,
                     child: OptChainCallList(
                       swipe: swipecontroller,
-                      callData: scripInfo.optChainCallUP,
+                      callData: scripInfo.optChainCallDown,
                       isCallUp: false,
                       showPriceView: true,
                       isBasketMode: isBasketMode,
                     ),
                   ),
-                ),
-                // STRIKES column
-                SizedBox(
-                  width: 150,
-                  child: StrikePriceListCard(
-                      strike: scripInfo.optChainCallUP, isCallUp: false),
-                ),
-                // PUTS column - shows all data
-                Expanded(
-                  flex: 6,
-                  child: Align(
-                    alignment: Alignment.centerRight,
+                  SizedBox(
+                    width: 150,
+                    child: StrikePriceListCard(
+                        strike: scripInfo.optChainCallDown, isCallUp: false),
+                  ),
+                  // PUTS column - shows all data
+                  Expanded(
+                    flex: 6,
                     child: OptChainPutList(
-                      putData: scripInfo.optChainPutUp,
+                      putData: scripInfo.optChainPutDown,
                       isPutUp: false,
                       showPriceView: true,
                       isBasketMode: isBasketMode,
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(top: 0, bottom: 0),
-          child: CurStrkprice(
-              key: strikePriceKey,
-              token: depthData.undTk ?? depthData.token ?? "0.00"),
-        ),
-        RepaintBoundary(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 0),
-            child: Row(
-              children: <Widget>[
-                // CALLS column - shows all data
-                Expanded(
-                  flex: 6,
-                  child: OptChainCallList(
-                    swipe: swipecontroller,
-                    callData: scripInfo.optChainCallDown,
-                    isCallUp: false,
-                    showPriceView: true,
-                    isBasketMode: isBasketMode,
-                  ),
-                ),
-                SizedBox(
-                  width: 150,
-                  child: StrikePriceListCard(
-                      strike: scripInfo.optChainCallDown, isCallUp: false),
-                ),
-                // PUTS column - shows all data
-                Expanded(
-                  flex: 6,
-                  child: OptChainPutList(
-                    putData: scripInfo.optChainPutDown,
-                    isPutUp: false,
-                    showPriceView: true,
-                    isBasketMode: isBasketMode,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        )
-      ]),
+          )
+        ]),
       ),
     );
   }
@@ -1242,15 +1262,17 @@ class _ActionButtons extends ConsumerWidget {
               child: Container(
                   height: 40,
                   decoration: BoxDecoration(
-                      color: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
+                      color: theme.isDarkMode
+                          ? WebDarkColors.primary
+                          : WebColors.primary,
                       borderRadius: BorderRadius.circular(5)),
                   child: Center(
-                    child: Text(
-                        "BUY",
-                        style: WebTextStyles.sub(
-                          isDarkTheme: theme.isDarkMode,
+                    child: Text("BUY",
+                        style: TextStyle(
+                          fontFamily: 'Geist',
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
                           color: Colors.white,
-                          fontWeight: WebFonts.semiBold,
                         )),
                   )),
             )),
@@ -1264,15 +1286,17 @@ class _ActionButtons extends ConsumerWidget {
                     child: Container(
                         height: 40,
                         decoration: BoxDecoration(
-                            color: theme.isDarkMode ? WebDarkColors.error : WebColors.error,
+                            color: theme.isDarkMode
+                                ? WebDarkColors.error
+                                : WebColors.error,
                             borderRadius: BorderRadius.circular(5)),
                         child: Center(
-                          child: Text(
-                              "SELL",
-                              style: WebTextStyles.sub(
-                                isDarkTheme: theme.isDarkMode,
+                          child: Text("SELL",
+                              style: TextStyle(
+                                fontFamily: 'Geist',
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
                                 color: Colors.white,
-                                fontWeight: WebFonts.semiBold,
                               )),
                         ))))
           ])),
@@ -1415,32 +1439,30 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
         duration: const Duration(milliseconds: 200),
         height: _sheetHeight,
         decoration: BoxDecoration(
-          color: theme.isDarkMode ? WebDarkColors.background : WebColors.background,
+          color: theme.isDarkMode
+              ? WebDarkColors.background
+              : WebColors.background,
           borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(16),
             topRight: Radius.circular(16),
           ),
-           border: Border(
-                                  top: BorderSide(
-                                    color: theme.isDarkMode
-                                        ? WebDarkColors.divider
-                                            .withOpacity(0.5)
-                                        : WebColors.surface,
-                                  ),
-                                  left: BorderSide(
-                                    color: theme.isDarkMode
-                                        ? WebDarkColors.divider
-                                            .withOpacity(0.5)
-                                        : WebColors.surface,
-                                  ),
-                                  right: BorderSide(
-                                    color: theme.isDarkMode
-                                        ? WebDarkColors.divider
-                                            .withOpacity(0.5)
-                                        : WebColors.surface,
-                                  ),
-                                ),
-
+          border: Border(
+            top: BorderSide(
+              color: theme.isDarkMode
+                  ? WebDarkColors.divider.withOpacity(0.5)
+                  : WebColors.surface,
+            ),
+            left: BorderSide(
+              color: theme.isDarkMode
+                  ? WebDarkColors.divider.withOpacity(0.5)
+                  : WebColors.surface,
+            ),
+            right: BorderSide(
+              color: theme.isDarkMode
+                  ? WebDarkColors.divider.withOpacity(0.5)
+                  : WebColors.surface,
+            ),
+          ),
         ),
         child: Column(
           children: [
@@ -1491,21 +1513,23 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                   orderProv.selectedBsktName.isNotEmpty
                       ? orderProv.selectedBsktName
                       : "No Basket Selected",
-                  style: WebTextStyles.title(
-                    isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode
-                        ? WebDarkColors.textPrimary
-                        : WebColors.textPrimary,
-                    fontWeight: WebFonts.semiBold,
+                  style: TextStyle(
+                    fontFamily: 'Geist',
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: shadcn.Theme.of(context).colorScheme.foreground,
                   ),
                 ),
                 const SizedBox(height: 4),
                 if (orderProv.selectedBsktName.isNotEmpty)
                   Text(
                     "${orderProv.bsktScripList.length} items",
-                    style: WebTextStyles.sub(
-                      isDarkTheme: theme.isDarkMode,
-                      color: theme.isDarkMode ? WebDarkColors.iconSecondary : WebColors.iconSecondary,
+                    style: TextStyle(
+                      fontFamily: 'Geist',
+                      fontSize: 13,
+                      fontWeight: FontWeight.w400,
+                      color:
+                          shadcn.Theme.of(context).colorScheme.mutedForeground,
                     ),
                   ),
               ],
@@ -1621,12 +1645,11 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
             children: [
               Text(
                 "Pre Trade Margin",
-                style: WebTextStyles.sub(
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textSecondary
-                      : WebColors.textSecondary,
-                  fontWeight: WebFonts.regular,
+                style: TextStyle(
+                  fontFamily: 'Geist',
+                  fontSize: 13,
+                  fontWeight: FontWeight.w400,
+                  color: shadcn.Theme.of(context).colorScheme.mutedForeground,
                 ),
               ),
               const SizedBox(height: 6),
@@ -1635,11 +1658,11 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                         orderProv.bsktOrderMargin == null
                     ? "0.00"
                     : "${orderProv.bsktOrderMargin!.marginusedtrade ?? 0.00}",
-                style: WebTextStyles.sub(
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
+                style: TextStyle(
+                  fontFamily: 'Geist',
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: shadcn.Theme.of(context).colorScheme.foreground,
                 ),
               ),
             ],
@@ -1649,11 +1672,11 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
             children: [
               Text(
                 "Post Trade Margin",
-                style: WebTextStyles.sub(
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textSecondary
-                      : WebColors.textSecondary,
+                style: TextStyle(
+                  fontFamily: 'Geist',
+                  fontSize: 13,
+                  fontWeight: FontWeight.w400,
+                  color: shadcn.Theme.of(context).colorScheme.mutedForeground,
                 ),
               ),
               const SizedBox(height: 6),
@@ -1662,11 +1685,11 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                         orderProv.bsktOrderMargin == null
                     ? "0.00"
                     : "${orderProv.bsktOrderMargin!.marginused ?? 0.00}",
-                style: WebTextStyles.title(
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
+                style: TextStyle(
+                  fontFamily: 'Geist',
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: shadcn.Theme.of(context).colorScheme.foreground,
                 ),
               ),
             ],
@@ -1688,8 +1711,10 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
         children: [
           Text(
             "Basket should contain orders of only 1 segment",
-            style: WebTextStyles.para(
-              isDarkTheme: theme.isDarkMode,
+            style: TextStyle(
+              fontFamily: 'Geist',
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
               color: Colors.white,
             ),
           ),
@@ -1710,10 +1735,11 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                   color: const Color(0xff777777)),
               const SizedBox(height: 2),
               Text("No Data Found",
-                  style: WebTextStyles.bodySmall(
-                    isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode ? WebDarkColors.iconSecondary : WebColors.iconSecondary,
-                    fontWeight: WebFonts.medium,
+                  style: TextStyle(
+                    fontFamily: 'Geist',
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: shadcn.Theme.of(context).colorScheme.mutedForeground,
                   )),
               //       SizedBox(height: 16),
               // TextWidget.subText(
@@ -1725,7 +1751,9 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
               ElevatedButton(
                 onPressed: () => _showCreateBasket(context),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
+                  backgroundColor: theme.isDarkMode
+                      ? WebDarkColors.primary
+                      : WebColors.primary,
                   padding:
                       const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 ),
@@ -1767,7 +1795,9 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
               ElevatedButton(
                 onPressed: () => _showBasketSelector(context),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
+                  backgroundColor: theme.isDarkMode
+                      ? WebDarkColors.primary
+                      : WebColors.primary,
                   minimumSize: const Size(0, 45),
                   padding:
                       const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
@@ -1917,8 +1947,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
               Row(
                 children: [
                   TextWidget.subText(
-                    text:
-                        script['symbol'].toString().replaceAll("-EQ", ""),
+                    text: script['symbol'].toString().replaceAll("-EQ", ""),
                     theme: theme.isDarkMode,
                     textOverflow: TextOverflow.ellipsis,
                     color: theme.isDarkMode
@@ -2160,8 +2189,8 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                   onPressed: () {
                     orderProv
                         .resetBasketOrderTracking(orderProv.selectedBsktName);
-                    showResponsiveSuccess(context,
-                        "Basket reset. You can place orders again.");
+                    showResponsiveSuccess(
+                        context, "Basket reset. You can place orders again.");
                   },
                   label: TextWidget.subText(
                     text: "Reset Orders",
@@ -2263,7 +2292,9 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
       case 'failed':
         return theme.isDarkMode ? WebDarkColors.error : WebColors.error;
       default:
-        return theme.isDarkMode ? WebDarkColors.iconSecondary : WebColors.iconSecondary;
+        return theme.isDarkMode
+            ? WebDarkColors.iconSecondary
+            : WebColors.iconSecondary;
     }
   }
 
@@ -2334,7 +2365,9 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
       case 'trigger_pending':
         return theme.isDarkMode ? WebDarkColors.warning : WebColors.warning;
       default:
-        return theme.isDarkMode ? WebDarkColors.iconSecondary : WebColors.iconSecondary;
+        return theme.isDarkMode
+            ? WebDarkColors.iconSecondary
+            : WebColors.iconSecondary;
     }
   }
 
@@ -2622,28 +2655,26 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
             topLeft: Radius.circular(16),
             topRight: Radius.circular(16),
           ),
-          color: theme.isDarkMode ? WebDarkColors.background : WebColors.background,
+          color: theme.isDarkMode
+              ? WebDarkColors.background
+              : WebColors.background,
           border: Border(
-                                  top: BorderSide(
-                                    color: theme.isDarkMode
-                                        ? WebDarkColors.divider
-                                            .withOpacity(0.5)
-                                        : WebColors.surface,
-                                  ),
-                                  left: BorderSide(
-                                    color: theme.isDarkMode
-                                        ? WebDarkColors.divider
-                                            .withOpacity(0.5)
-                                        : WebColors.surface,
-                                  ),
-                                  right: BorderSide(
-                                    color: theme.isDarkMode
-                                        ? WebDarkColors.divider
-                                            .withOpacity(0.5)
-                                        : WebColors.surface,
-                                  ),
-                                ),
-
+            top: BorderSide(
+              color: theme.isDarkMode
+                  ? WebDarkColors.divider.withOpacity(0.5)
+                  : WebColors.surface,
+            ),
+            left: BorderSide(
+              color: theme.isDarkMode
+                  ? WebDarkColors.divider.withOpacity(0.5)
+                  : WebColors.surface,
+            ),
+            right: BorderSide(
+              color: theme.isDarkMode
+                  ? WebDarkColors.divider.withOpacity(0.5)
+                  : WebColors.surface,
+            ),
+          ),
         ),
         child: SafeArea(
           child: Column(
@@ -2653,7 +2684,8 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
               // const CustomDragHandler(),
               // const SizedBox(height: 8),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -2671,7 +2703,8 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                       shape: const CircleBorder(),
                       child: InkWell(
                         onTap: () async {
-                          await Future.delayed(const Duration(milliseconds: 150));
+                          await Future.delayed(
+                              const Duration(milliseconds: 150));
                           Navigator.pop(context);
                         },
                         borderRadius: BorderRadius.circular(20),
@@ -2708,7 +2741,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                     final basket = orderProv.bsktList[index];
                     final basketName = basket['bsketName'].toString();
                     final isDark = ref.read(themeProvider).isDarkMode;
-          
+
                     return ListTile(
                       minLeadingWidth: 25,
                       leading: Column(
@@ -2739,7 +2772,8 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                       subtitle: Padding(
                         padding: const EdgeInsets.only(top: 8),
                         child: TextWidget.paraText(
-                          text: "${basket['curLength']} / ${basket['max']} items",
+                          text:
+                              "${basket['curLength']} / ${basket['max']} items",
                           theme: isDark,
                           textOverflow: TextOverflow.ellipsis,
                           maxLines: 1,
@@ -2759,7 +2793,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                   },
                 ),
               ),
-          
+
               // ...orderProv.bsktList.map<Widget>((basket) {
               //   final basketName = basket['bsketName'].toString();
               //   return ListTile(

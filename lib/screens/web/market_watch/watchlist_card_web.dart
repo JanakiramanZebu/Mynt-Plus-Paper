@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/legacy.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter/foundation.dart';
 import 'package:percent_indicator/percent_indicator.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import '../../../routes/route_names.dart';
 import '../../../utils/custom_navigator.dart';
 import '../../../models/marketwatch_model/get_quotes.dart';
@@ -162,11 +163,11 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                                 .toString()
                                 .replaceAll("-EQ", "")
                                 .toUpperCase(),
-                            style: WebTextStyles.symbolList(
-                              isDarkTheme: theme.isDarkMode,
-                              color: theme.isDarkMode
-                                  ? WebDarkColors.textPrimary
-                                  : WebColors.textPrimary,
+                            style: TextStyle(
+                              color: shadcn.Theme.of(context).colorScheme.foreground,
+                              fontFamily: 'Geist',
+                              fontWeight: FontWeight.w500,
+                              fontSize: 14,
                             ),
                           ),
                           if (widget.watchListData["option"].toString().isNotEmpty)
@@ -174,11 +175,11 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                               padding: const EdgeInsets.only(left: 4),
                               child: Text(
                                 "${widget.watchListData["option"]}",
-                                style: WebTextStyles.symbolList(
-                                  isDarkTheme: theme.isDarkMode,
-                                  color: theme.isDarkMode
-                                      ? WebDarkColors.textPrimary
-                                      : WebColors.textPrimary,
+                                style: TextStyle(
+                                  color: shadcn.Theme.of(context).colorScheme.foreground,
+                                  fontFamily: 'Geist',
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 14,
                                 ),
                               ),
                             ),
@@ -204,18 +205,21 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                       children: [
                         Text(
                           '${widget.watchListData["exch"]} ',
-                          style: WebTextStyles.exchText(
-                              isDarkTheme: theme.isDarkMode,
-                              color: WebColors.textSecondary),
+                          style: TextStyle(
+                            color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+                            fontFamily: 'Geist',
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                         if (widget.watchListData['expDate'].toString().isNotEmpty)
                           Text(
                             "${widget.watchListData['expDate']}",
-                            style: WebTextStyles.symbolList(
-                              isDarkTheme: theme.isDarkMode,
-                              color: theme.isDarkMode
-                                  ? WebDarkColors.textPrimary
-                                  : WebColors.textPrimary,
+                            style: TextStyle(
+                              color: shadcn.Theme.of(context).colorScheme.foreground,
+                              fontFamily: 'Geist',
+                              fontWeight: FontWeight.w500,
+                              fontSize: 14,
                             ),
                           ),
                         if (widget.watchListData['holdingQty'] != null &&
@@ -226,17 +230,15 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                           SvgPicture.asset(assets.suitcase,
                               height: 14,
                               width: 18,
-                              color: theme.isDarkMode
-                                  ? WebDarkColors.iconSecondary
-                                  : WebColors.iconSecondary),
+                              color: shadcn.Theme.of(context).colorScheme.mutedForeground),
                           const SizedBox(width: 4),
                           Text(
                             "${widget.watchListData['holdingQty']}",
-                            style: WebTextStyles.symbolList(
-                              isDarkTheme: theme.isDarkMode,
-                              color: theme.isDarkMode
-                                  ? WebDarkColors.textSecondary
-                                  : WebColors.textSecondary,
+                            style: TextStyle(
+                              color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+                              fontFamily: 'Geist',
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ]
@@ -1148,6 +1150,53 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
   }) {
     final theme = ref.read(themeProvider);
     final borderRadiusValue = borderRadius ?? 5.0;
+    
+    // Use shadcn IconButton for icon buttons, keep custom colors
+    if (icon != null || iconAsset != null) {
+      return SizedBox(
+        width: 24,
+        height: 24,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(borderRadiusValue),
+          child: Container(
+            decoration: BoxDecoration(
+              color: backgroundColor ?? Colors.transparent,
+              borderRadius: BorderRadius.circular(borderRadiusValue),
+              border: borderColor != null
+                  ? Border.all(
+                      color: borderColor,
+                      width: 1,
+                    )
+                  : null,
+            ),
+            child: shadcn.IconButton(
+              size: shadcn.ButtonSize.small,
+              density: shadcn.ButtonDensity.dense,
+              variance: shadcn.ButtonVariance.ghost,
+              onPressed: onPressed,
+              shape: shadcn.ButtonShape.rectangle,
+              icon: iconAsset != null
+                  ? SvgPicture.asset(
+                      iconAsset,
+                      width: 13,
+                      height: 13,
+                      colorFilter: ColorFilter.mode(
+                        color,
+                        BlendMode.srcIn,
+                      ),
+                    )
+                  : Icon(
+                      icon,
+                      size: 13,
+                      color: color,
+                    ),
+            ),
+          ),
+        ),
+      );
+    }
+    
+    // Keep original implementation for label buttons
     return SizedBox(
       width: 24,
       height: 24,
@@ -1170,29 +1219,13 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                   : null,
             ),
             child: Center(
-              child: iconAsset != null
-                  ? SvgPicture.asset(
-                      iconAsset,
-                      width: 13,
-                      height: 13,
-                      colorFilter: ColorFilter.mode(
-                        color,
-                        BlendMode.srcIn,
-                      ),
-                    )
-                  : icon != null
-                      ? Icon(
-                          icon,
-                          size: 13,
-                          color: color,
-                        )
-                      : Text(
-                          label ?? "",
-                          style: WebTextStyles.buttonXs(
-                            isDarkTheme: theme.isDarkMode,
-                            color: color,
-                          ),
-                        ),
+              child: Text(
+                label ?? "",
+                style: WebTextStyles.buttonXs(
+                  isDarkTheme: theme.isDarkMode,
+                  color: color,
+                ),
+              ),
             ),
           ),
         ),
@@ -2227,21 +2260,15 @@ class _LTPWidgetWebState extends ConsumerState<_LTPWidgetWeb> {
     
      final changeColor =
         displayLtp.startsWith("-") || displayLtp.startsWith('-')
-            ? theme.isDarkMode
-                ? WebDarkColors.loss
-                : WebColors.loss
+            ? shadcn.Theme.of(context).colorScheme.destructiveForeground
             : (displayLtp == "0.00" || displayLtp == "0.00")
-                ? theme.isDarkMode
-                    ? WebDarkColors.textSecondary
-                    : WebColors.textSecondary
-                : theme.isDarkMode
-                    ? WebDarkColors.profit
-                    : WebColors.profit;
+                  ? shadcn.Theme.of(context).colorScheme.mutedForeground
+                : shadcn.Theme.of(context).colorScheme.chart2;
 
     return Text(
       displayLtp,
-      style: WebTextStyles.priceWatch(
-        isDarkTheme: theme.isDarkMode,
+      style: TextStyle(
+        fontFamily: 'Geist',
         color: changeColor,
       ),
     );
@@ -2350,11 +2377,9 @@ class _PriceChangeWidgetWebState extends ConsumerState<_PriceChangeWidgetWeb> {
 
     return Text(
       "$displayChange ($displayPerChange%)",
-      style: WebTextStyles.pricePercent(
-        isDarkTheme: theme.isDarkMode,
-        color: theme.isDarkMode
-            ? WebDarkColors.textPrimary
-            : WebColors.textPrimary,
+      style: TextStyle(
+        fontFamily: 'Geist',
+        color: shadcn.Theme.of(context).colorScheme.mutedForeground,
       ),
     );
   }

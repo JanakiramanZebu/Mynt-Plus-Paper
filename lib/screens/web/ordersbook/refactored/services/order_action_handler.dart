@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import 'package:mynt_plus/models/order_book_model/order_book_model.dart';
 import 'package:mynt_plus/models/order_book_model/gtt_order_book.dart';
 import 'package:mynt_plus/provider/order_provider.dart';
@@ -27,13 +28,16 @@ class OrderActionHandler {
     required this.context,
   });
 
-  /// Open order detail dialog
+  /// Open order detail sheet
   void openOrderDetail(OrderBookModel order) {
-    showDialog(
+    final parentCtx = context; // Capture the parent context
+    shadcn.openSheet(
       context: context,
-      builder: (BuildContext context) {
-        return OrderBookDetailScreenWeb(orderBookData: order);
-      },
+      builder: (sheetContext) => OrderBookDetailScreenWeb(
+        orderBookData: order,
+        parentContext: parentCtx, // Pass the parent context
+      ),
+      position: shadcn.OverlayPosition.end,
     );
   }
 
@@ -107,6 +111,21 @@ class OrderActionHandler {
     try {
       onProcessingStateChanged(true);
 
+      print('🔵 [HOVER MODIFY] Starting modify order from hover button');
+      print('🔵 [HOVER MODIFY] Order Data:');
+      print('  - token: ${orderData.token}');
+      print('  - exch: ${orderData.exch}');
+      print('  - tsym: ${orderData.tsym}');
+      print('  - norenordno: ${orderData.norenordno}');
+      print('  - qty: ${orderData.qty}');
+      print('  - prc: ${orderData.prc}');
+      print('  - trgprc: ${orderData.trgprc}');
+      print('  - trantype: ${orderData.trantype}');
+      print('  - prd: ${orderData.prd}');
+      print('  - sPrdtAli: ${orderData.sPrdtAli}');
+      print('  - status: ${orderData.status}');
+      print('🔵 [HOVER MODIFY] Context mounted: ${context.mounted}');
+
       await ref.read(marketWatchProvider).fetchScripInfo(
             "${orderData.token}",
             '${orderData.exch}',
@@ -114,23 +133,42 @@ class OrderActionHandler {
             true,
           );
 
-      if (!context.mounted) return;
+      if (!context.mounted) {
+        print('🔵 [HOVER MODIFY] Context not mounted after fetchScripInfo');
+        return;
+      }
 
       final scripInfo = ref.read(marketWatchProvider).scripInfoModel;
       if (scripInfo == null) {
+        print('🔵 [HOVER MODIFY] ERROR: scripInfo is null');
         ResponsiveSnackBar.showError(
             context, 'Unable to fetch scrip information');
         return;
       }
+
+      print('🔵 [HOVER MODIFY] scripInfo fetched successfully');
+      
+      final orderArgs = _createOrderArgs(orderData);
+      print('🔵 [HOVER MODIFY] OrderArgs created:');
+      print('  - exchange: ${orderArgs.exchange}');
+      print('  - tSym: ${orderArgs.tSym}');
+      print('  - token: ${orderArgs.token}');
+      print('  - ltp: ${orderArgs.ltp}');
+      print('  - prd: ${orderArgs.prd}');
+      print('  - lotSize: ${orderArgs.lotSize}');
+      print('  - transType: ${orderArgs.transType}');
+      print('🔵 [HOVER MODIFY] Calling showDraggable with initialPosition: $modifyDialogPosition');
 
       // Show draggable modify order dialog
       ModifyPlaceOrderScreenWeb.showDraggable(
         context: context,
         modifyOrderArgs: orderData,
         scripInfo: scripInfo,
-        orderArg: _createOrderArgs(orderData),
+        orderArg: orderArgs,
         initialPosition: modifyDialogPosition,
       );
+      
+      print('🔵 [HOVER MODIFY] showDraggable called successfully');
 
       // Refresh order book after a short delay
       if (context.mounted) {
@@ -276,17 +314,16 @@ class OrderActionHandler {
       context: context,
       builder: (BuildContext dialogContext) {
         return Dialog(
-          backgroundColor: Colors.transparent,
-          child: Container(
+          backgroundColor:
+              theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(5),
+          ),
+          child: SizedBox(
             width: 400,
-            decoration: BoxDecoration(
-              color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-              borderRadius: BorderRadius.circular(5),
-            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Header with close button
                 Container(
                   padding: const EdgeInsets.symmetric(
                       horizontal: 16, vertical: 10),
@@ -594,12 +631,13 @@ class OrderActionHandler {
     }
 
     return OrderScreenArgs(
-      exchange: orderData.exch.toString(),
-      tSym: orderData.tsym.toString(),
+      exchange: orderData.exch ?? '',
+      tSym: orderData.tsym ?? '',
       isExit: false,
-      token: orderData.token.toString(),
+      token: orderData.token ?? '',
       transType: orderData.trantype == 'B' ? true : false,
-      lotSize: orderData.ls,
+      prd: orderData.prd ?? orderData.sPrdtAli ?? 'CNC',
+      lotSize: orderData.ls ?? '1',
       ltp: ltpValue,
       perChange: orderData.change ?? "0.00",
       orderTpye: '',

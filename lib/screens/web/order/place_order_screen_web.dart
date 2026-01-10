@@ -126,7 +126,7 @@ class PlaceOrderScreenWeb extends ConsumerStatefulWidget {
     bool fromChart = false,
     Offset? initialPosition,
   }) {
-    final overlay = Overlay.of(context);
+    final overlay = Overlay.of(context, rootOverlay: true);
     
     // Close existing order screen if one is already open
     if (_currentOverlayEntry != null) {

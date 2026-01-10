@@ -41,6 +41,17 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
   List<Map<String, dynamic>> availableApps = [];
   bool _isDisposedIos = false;
 
+  // Helper function to convert Dart function to JS callback
+  // This replaces js_util.allowInterop which is not available in Wasm builds
+  // Uses js.context to create a proper JavaScript function wrapper
+  dynamic _allowInterop(Function callback) {
+    // Create a JS function that calls the Dart callback
+    final jsFunc = js.context.callMethod('eval', [
+      '(function(cb) { return function() { return cb.apply(null, Array.prototype.slice.call(arguments)); }; })'
+    ]);
+    return jsFunc.callMethod('call', [js.context, callback]);
+  }
+
   final List<Map<String, dynamic>> upiApptest = [
     {
       'icon': assets.biggpay,
@@ -770,7 +781,7 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
       final dialogShownRef = <bool>[false];
       
       // Create JavaScript callback functions
-      final handler = js.allowInterop((dynamic response) {
+      final handler = _allowInterop((dynamic response) {
         // Payment success callback
         // Note: Razorpay modal closes automatically on success
         final responseMap = Map<String, dynamic>.from(response as Map);
@@ -808,7 +819,7 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
         }
       });
       
-      final onDismiss = js.allowInterop(() {
+      final onDismiss = _allowInterop(() {
         // Payment cancelled manually by user - Razorpay modal will close automatically
         isCancelledRef[0] = true; // Mark as manually cancelled
         fundRef.togglefundLoading(false);
@@ -845,7 +856,7 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
         }
       });
       
-      final errorHandler = js.allowInterop((dynamic error) {
+      final errorHandler = _allowInterop((dynamic error) {
         // Payment error callback
         // Don't show error dialog if user manually cancelled (onDismiss already handled it)
         if (isCancelledRef[0]) {
@@ -1041,7 +1052,7 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
       });
       
       // Callback for payment cancelled event
-      final cancelledHandler = js.allowInterop((dynamic response) {
+      final cancelledHandler = _allowInterop((dynamic response) {
         // Payment cancelled by user
         isCancelledRef[0] = true;
         fundRef.togglefundLoading(false);
@@ -1533,6 +1544,7 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
     final theme = ref.watch(themeProvider);
     final fund = ref.watch(transcationProvider);
     final funds = ref.watch(fundProvider);
+    final colors = theme.isDarkMode ? WebDarkColors : WebColors;
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -1572,7 +1584,7 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
                     const SizedBox(height: 16),
                     
                     // Payment Method
-                    _buildPaymentMethods(fund, theme),
+                    _buildPaymentMethods(fund, theme, colors),
                   ],
                 ),
               ),
@@ -1820,7 +1832,7 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
     );
   }
 
-  Widget _buildPaymentMethods(TranctionProvider fund, ThemesProvider theme) {
+  Widget _buildPaymentMethods(TranctionProvider fund, ThemesProvider theme, dynamic colors) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

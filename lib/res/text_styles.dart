@@ -1,124 +1,139 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'colors.dart';
 
+// Helper function to use Geist font instead of Inter
+TextStyle geistFont({TextStyle? textStyle}) {
+  return TextStyle(
+    fontFamily: 'Geist',
+    fontWeight: textStyle?.fontWeight,
+    fontSize: textStyle?.fontSize,
+    color: textStyle?.color,
+    letterSpacing: textStyle?.letterSpacing,
+    height: textStyle?.height,
+    decoration: textStyle?.decoration,
+    decorationColor: textStyle?.decorationColor,
+    decorationStyle: textStyle?.decorationStyle,
+    fontStyle: textStyle?.fontStyle,
+  );
+}
+
 class AppTextStyles {
-  final appBarTitleTxt = GoogleFonts.inter(
+  final appBarTitleTxt = geistFont(
       textStyle: TextStyle(
     fontWeight: FontWeight.w600,
     fontSize: 15,
     color: AppColors().colorBlack,
   ));
   final textFieldLabelStyleInterV = TextStyle(
-    fontFamily: 'InterVariable',
+    fontFamily: 'Geist',
     fontWeight: FontWeight.w600,
     fontSize: 15,
     color: AppColors().colorBlack,
   );
-  final textFieldLabelStyle = GoogleFonts.inter(
+  final textFieldLabelStyle = geistFont(
       textStyle: TextStyle(
     fontWeight: FontWeight.w600,
     fontSize: 15,
     color: AppColors().colorBlack,
   ));
-  final notificationtextstyle = GoogleFonts.inter(
+  final notificationtextstyle = geistFont(
       textStyle: TextStyle(
     fontWeight: FontWeight.w500,
     fontSize: 14,
     color: AppColors().colorBlack,
   ));
-  final darkmorestyle = GoogleFonts.inter(
+  final darkmorestyle = geistFont(
       textStyle: TextStyle(
     fontWeight: FontWeight.w500,
     fontSize: 13,
     color: AppColors().colorLightBlue,
   ));
-  final morestyle = GoogleFonts.inter(
+  final morestyle = geistFont(
       textStyle: TextStyle(
     fontWeight: FontWeight.w500,
     fontSize: 13,
     color: AppColors().colorBlue,
   ));
-  final notificationtimestyle = GoogleFonts.inter(
+  final notificationtimestyle = geistFont(
       textStyle: TextStyle(
     fontWeight: FontWeight.w500,
     fontSize: 12,
     color: AppColors().colorGrey,
   ));
-  final actMenuTxt = GoogleFonts.inter(
+  final actMenuTxt = geistFont(
       textStyle: TextStyle(
     fontWeight: FontWeight.w500,
     fontSize: 12,
     color: AppColors().colorBlue,
   ));
-  final menuTxt = GoogleFonts.inter(
+  final menuTxt = geistFont(
       textStyle: TextStyle(
     fontWeight: FontWeight.w500,
     fontSize: 12,
     color: AppColors().colorGrey,
   ));
 
-  final prdText = GoogleFonts.inter(
+  final prdText = geistFont(
       textStyle: TextStyle(
     fontWeight: FontWeight.w500,
     fontSize: 14,
     color: AppColors().colorGrey,
   ));
-  final actPrdText = GoogleFonts.inter(
+  final actPrdText = geistFont(
       textStyle: TextStyle(
     fontWeight: FontWeight.w500,
     fontSize: 14,
     color: AppColors().colorBlue,
   ));
 
-  final darktextBtn = GoogleFonts.inter(
+  final darktextBtn = geistFont(
       textStyle: TextStyle(
     fontWeight: FontWeight.w500,
     fontSize: 13,
     color: AppColors().colorLightBlue,
   ));
 
-  final textBtn = GoogleFonts.inter(
+  final textBtn = geistFont(
       textStyle: TextStyle(
     fontWeight: FontWeight.w500,
     fontSize: 13,
     color: AppColors().colorBlue,
   ));
 
-  final btnText = GoogleFonts.inter(
+  final btnText = geistFont(
       textStyle: TextStyle(
     fontWeight: FontWeight.w500,
     fontSize: 13,
     color: AppColors().colorWhite,
   ));
 
-  final lengthtextstyle = GoogleFonts.inter(
+  final lengthtextstyle = geistFont(
       textStyle: const TextStyle(
           fontSize: 12, fontWeight: FontWeight.w500, color: Color(0xff666666)));
 
-  final cnfrmvalidInfo = GoogleFonts.inter(
+  final cnfrmvalidInfo = geistFont(
       textStyle: TextStyle(
     fontWeight: FontWeight.w500,
     fontSize: 12,
     color: AppColors().colorBlack,
   ));
 
-  final scripNameTxtStyle = GoogleFonts.inter(
+  final scripNameTxtStyle = geistFont(
       textStyle: TextStyle(
     fontWeight: FontWeight.w600,
     fontSize: 14,
     color: AppColors().colorBlack,
   ));
 
-  final scripExchTxtStyle = GoogleFonts.inter(
+  final scripExchTxtStyle = geistFont(
       textStyle: TextStyle(
     fontWeight: FontWeight.w500,
     fontSize: 11,
     color: AppColors().colorGrey,
   ));
 
-  final resendOtpstyle = GoogleFonts.inter(
+  final resendOtpstyle = geistFont(
       textStyle: TextStyle(
     fontWeight: FontWeight.w500,
     fontSize: 12,

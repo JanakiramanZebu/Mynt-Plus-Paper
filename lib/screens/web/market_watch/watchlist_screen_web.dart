@@ -9,14 +9,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_swipe_action_cell/flutter_swipe_action_cell.dart';
-// shadcn_flutter - using Material Dialog with smooth animations
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../res/res.dart';
 import '../../../res/web_colors.dart';
 import '../../../res/global_font_web.dart';
 import '../../../sharedWidget/list_divider.dart';
-import '../../../sharedWidget/cust_text_formfield.dart';
 import 'my_stocks/stocks_screen_web.dart';
 import 'watchlist_card_web.dart';
 import 'search_dialog_web.dart';
@@ -211,7 +210,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
     } else if (watchlistWidth >= 320) {
       return 100.0; // Medium watchlist: slightly narrower tabs
     } else {
-      return 90.0;  // Narrow watchlist: compact tabs
+      return 90.0; // Narrow watchlist: compact tabs
     }
   }
 
@@ -617,92 +616,80 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
             ),
             // Search bar
             Expanded(
-              child: Container(
-                height: 40,
-                decoration: BoxDecoration(
-                  // color: theme.isDarkMode ? WebDarkColors.inputBackground : WebColors.inputBackground,
-                  borderRadius: BorderRadius.circular(5),
-                  border: Border.all(
-                    color: theme.isDarkMode
-                        ? WebDarkColors.inputBorder
-                        : WebColors.inputBorder,
-                    width: 1,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.translucent,
-                        onTap: () {
-                          // final mw = ref.read(marketWatchProvider);
-                          // WidgetsBinding.instance.addPostFrameCallback((_) async {
-                          //   await mw.requestMWScrip(
-                          //       context: context, isSubscribe: false);
-                          // });
-                          _showSearchDialog(context, ref, wlName);
-                        },
-                        child: Row(
-                          children: [
-                            const SizedBox(width: 16),
-                            SvgPicture.asset(
-                              assets.searchIcon,
-                              width: 16,
-                              height: 16,
-                              color: theme.isDarkMode
-                                  ? WebDarkColors.iconSecondary
-                                  : WebColors.iconSecondary,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.translucent,
+                      onTap: () {
+                        _showSearchDialog(context, ref, wlName);
+                      },
+                      child: SizedBox(
+                        height: 40,
+                        child: DefaultTextStyle(
+                          style: const TextStyle(fontFamily: 'Geist'),
+                          child: shadcn.TextField(
+                            enabled: false,
+                            placeholder: const Text(
+                              'Search & add',
+                              style: TextStyle(fontFamily: 'Geist'),
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                'Search & add',
-                                style: WebTextStyles.formInput(
-                                  isDarkTheme: theme.isDarkMode,
-                                  color: theme.isDarkMode
-                                      ? WebDarkColors.textSecondary
-                                      : WebColors.textSecondary,
+                            features: [
+                              shadcn.InputFeature.leading(
+                                SvgPicture.asset(
+                                  assets.searchIcon,
+                                  width: 16,
+                                  height: 16,
+                                  color: shadcn.Theme.of(context)
+                                      .colorScheme
+                                      .mutedForeground,
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    if (isPreDef != 'Yes' && scripLen > 1)
-                      Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            customBorder: const CircleBorder(),
-                            hoverColor: theme.isDarkMode
-                                ? Colors.white.withOpacity(0.1)
-                                : Colors.black.withOpacity(0.1),
-                            splashColor: theme.isDarkMode
-                                ? Colors.white.withOpacity(0.2)
-                                : Colors.black.withOpacity(0.2),
-                            onTap: () async {
-                              await Future.delayed(
-                                  const Duration(milliseconds: 150));
-                              _showFilterPopup(context, ref);
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.all(10),
-                              child: SvgPicture.asset(
-                                assets.searchFilter,
-                                width: 14,
-                                height: 14,
-                                color: theme.isDarkMode
-                                    ? WebDarkColors.iconSecondary
-                                    : WebColors.iconSecondary,
-                              ),
-                            ),
+                            ],
                           ),
                         ),
                       ),
-                  ],
-                ),
+                    ),
+                  ),
+                  if (isPreDef != 'Yes' && scripLen > 1)
+                    Padding(
+                      padding: const EdgeInsets.only(left: 8),
+                      child: Builder(
+                        builder: (buttonContext) {
+                          return Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              customBorder: const CircleBorder(),
+                              hoverColor: shadcn.Theme.of(context)
+                                  .colorScheme
+                                  .accent
+                                  .withOpacity(0.1),
+                              splashColor: shadcn.Theme.of(context)
+                                  .colorScheme
+                                  .accent
+                                  .withOpacity(0.2),
+                              onTap: () async {
+                                await Future.delayed(
+                                    const Duration(milliseconds: 150));
+                                _showFilterPopup(buttonContext, ref);
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.all(10),
+                                child: SvgPicture.asset(
+                                  assets.searchFilter,
+                                  width: 14,
+                                  height: 14,
+                                  color: shadcn.Theme.of(context)
+                                      .colorScheme
+                                      .mutedForeground,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                ],
               ),
             ),
           ],
@@ -718,20 +705,9 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
     dynamic watchList,
     String wlName,
   ) {
-    final tabContent = Container(
+    final tabContent = Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        // border: Border(
-        //   bottom: BorderSide(
-        //     color: theme.isDarkMode
-        //         ? WebDarkColors.inputBorder
-        //         : WebColors.inputBorder,
-        //     width: 1,
-        //   ),
-        // ),
-      ),
-      child: _buildWatchlistTabs(ref, wlName, watchList, theme),
+      child: _buildWatchlistTabs(ref, wlName, watchList),
     );
 
     // Calculate total height: content (60) = 60
@@ -764,7 +740,8 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
         // Determine layout based on screen width
         final screenWidth = MediaQuery.of(context).size.width;
         final watchlistWidth = _getWatchlistWidth(screenWidth);
-        final showSingleSlot = watchlistWidth < 350; // Show 1 slot if watchlist < 350px
+        final showSingleSlot =
+            watchlistWidth < 350; // Show 1 slot if watchlist < 350px
 
         // Show only first 2 indices
         final displayIndices = indexValues.length >= 2
@@ -779,8 +756,10 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                 : WebColors.background,
           ),
           child: showSingleSlot
-              ? _buildSingleIndexSlot(displayIndices, theme, marketWatch, indexProvider)
-              : _buildDoubleIndexSlots(displayIndices, theme, marketWatch, indexProvider),
+              ? _buildSingleIndexSlot(
+                  displayIndices, theme, marketWatch, indexProvider)
+              : _buildDoubleIndexSlots(
+                  displayIndices, theme, marketWatch, indexProvider),
         );
       },
     );
@@ -866,7 +845,8 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
             (index) {
               final item = displayIndices[index];
               return Padding(
-                padding: EdgeInsets.only(right: index < displayIndices.length - 1 ? 8 : 0),
+                padding: EdgeInsets.only(
+                    right: index < displayIndices.length - 1 ? 8 : 0),
                 child: _WatchlistIndexSlotWeb(
                   indexItem: item,
                   indexPosition: index,
@@ -886,173 +866,43 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
     WidgetRef ref,
     String wlName,
     dynamic watchList,
-    ThemesProvider theme,
   ) {
     if (watchList?.values == null) return const SizedBox.shrink();
 
     final tabs = watchList.values.cast<String>();
+    final currentIndex = tabs.indexOf(wlName);
 
     return SizedBox(
-      height: 60, 
-      child: Row(
-        children: [
-          // Left arrow button
-          _buildTabArrowButton(
-            icon: Icons.chevron_left,
-            onPressed: () => _scrollTabsLeft(),
-            theme: theme,
-          ),
-
-          const SizedBox(width: 5),
-          // Tabs scrollable area
-          Expanded(
-            child: ScrollConfiguration(
-              behavior: DragScrollBehavior(),
-              child: SingleChildScrollView(
-                controller: _tabScrollController,
-                scrollDirection: Axis.horizontal,
-                physics: const ClampingScrollPhysics(),
-                child: Row(
-                  children: [
-                    for (final name in tabs)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 6),
-                        child: _buildTabItem(name, wlName, theme, ref),
-                      ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 5),
-          // Right arrow button
-          _buildTabArrowButton(
-            icon: Icons.chevron_right,
-            onPressed: () => _scrollTabsRight(),
-            theme: theme,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTabArrowButton({
-    required IconData icon,
-    required VoidCallback onPressed,
-    required ThemesProvider theme,
-  }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onPressed,
-        customBorder: const CircleBorder(),
-        child: Ink(
-          width: 22,
-          height: 22,
-          decoration: BoxDecoration(
-            color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: theme.isDarkMode ? WebDarkColors.border : WebColors.border,
-              width: 1,
-            ),
-          ),
-          child: Center(
-            child: Icon(
-              icon,
-              size: 18,
-              color: theme.isDarkMode
-                  ? WebDarkColors.iconSecondary
-                  : WebColors.iconSecondary,
+      height: 60,
+      child: ScrollConfiguration(
+        behavior: DragScrollBehavior(),
+        child: SingleChildScrollView(
+          controller: _tabScrollController,
+          scrollDirection: Axis.horizontal,
+          physics: const ClampingScrollPhysics(),
+          child: DefaultTextStyle(
+            style: const TextStyle(fontFamily: 'Geist'),
+            child: shadcn.TabList(
+              index: currentIndex >= 0 ? currentIndex : 0,
+              onChanged: (value) {
+                if (value < tabs.length) {
+                  _handleTabTap(tabs[value], value, ref);
+                  _scrollToSelectedTab(value, force: true);
+                }
+              },
+              children: [
+                for (final name in tabs)
+                  shadcn.TabItem(
+                    child: Text(
+                      _formatTabName(name),
+                      style: const TextStyle(fontFamily: 'Geist'),
+                    ),
+                  ),
+              ],
             ),
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildTabItem(
-      String name, String wlName, ThemesProvider theme, WidgetRef ref) {
-    final isActive = name == wlName;
-
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: InkWell(
-        onTap: () => _handleTabTap(
-            name,
-            ref
-                    .read(marketWatchProvider)
-                    .marketWatchlist
-                    ?.values
-                    ?.toList()
-                    .indexOf(name) ??
-                0,
-            ref),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-          decoration: BoxDecoration(
-            color: isActive
-                ? (theme.isDarkMode
-                    ? WebDarkColors.backgroundTertiary
-                    : WebColors.backgroundTertiary)
-                : Colors.white,
-            border: Border.all(
-              color: isActive
-                  ? (theme.isDarkMode
-                      ? WebDarkColors.primary
-                      : WebColors.primary)
-                  : (theme.isDarkMode
-                      ? WebDarkColors.textSecondary
-                      : WebColors.textSecondary),
-              width: isActive ? 1.5 : 1,
-            ),
-            borderRadius: BorderRadius.circular(50),
-          ),
-          child: Text(
-            _formatTabName(name),
-            overflow: TextOverflow.ellipsis,
-            style: WebTextStyles.tab(
-              isDarkTheme: theme.isDarkMode,
-              color: isActive
-                  ? (theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary)
-                  : (theme.isDarkMode
-                      ? WebDarkColors.navItem
-                      : WebColors.navItem),
-              fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _scrollTabsLeft() {
-    if (!_tabScrollController.hasClients) return;
-
-    final currentOffset = _tabScrollController.offset;
-    final newOffset = (currentOffset - 200)
-        .clamp(0.0, _tabScrollController.position.maxScrollExtent);
-
-    _tabScrollController.animateTo(
-      newOffset,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeOutCubic,
-    );
-  }
-
-  void _scrollTabsRight() {
-    if (!_tabScrollController.hasClients) return;
-
-    final currentOffset = _tabScrollController.offset;
-    final newOffset = (currentOffset + 200)
-        .clamp(0.0, _tabScrollController.position.maxScrollExtent);
-
-    _tabScrollController.animateTo(
-      newOffset,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeOutCubic,
     );
   }
 
@@ -1092,7 +942,8 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                     showGeneralDialog(
                       context: context,
                       barrierDismissible: true,
-                      barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+                      barrierLabel: MaterialLocalizations.of(context)
+                          .modalBarrierDismissLabel,
                       barrierColor: Colors.black.withOpacity(0.3),
                       transitionDuration: const Duration(milliseconds: 200),
                       pageBuilder: (context, animation, secondaryAnimation) {
@@ -1101,17 +952,19 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                           isBasket: "Watchlist",
                         );
                       },
-                      transitionBuilder: (context, animation, secondaryAnimation, child) {
+                      transitionBuilder:
+                          (context, animation, secondaryAnimation, child) {
                         final curvedAnimation = CurvedAnimation(
                           parent: animation,
                           curve: Curves.easeOut,
                           reverseCurve: Curves.easeIn,
                         );
-                        
+
                         return FadeTransition(
                           opacity: curvedAnimation,
                           child: ScaleTransition(
-                            scale: Tween<double>(begin: 0.95, end: 1.0).animate(curvedAnimation),
+                            scale: Tween<double>(begin: 0.95, end: 1.0)
+                                .animate(curvedAnimation),
                             child: child,
                           ),
                         );
@@ -1226,45 +1079,60 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
   }
 
   void _showFilterPopup(BuildContext context, WidgetRef ref) {
-    final theme = ref.read(themeProvider);
     final marketWatch = ref.read(marketWatchProvider);
     final currentSort = marketWatch.sortByWL;
 
-    final RenderBox button = context.findRenderObject() as RenderBox;
-    final RenderBox overlay =
-        Overlay.of(context).context.findRenderObject() as RenderBox;
-
-    final RelativeRect position = RelativeRect.fromRect(
-      Rect.fromPoints(
-        button.localToGlobal(Offset.zero, ancestor: overlay),
-        button.localToGlobal(button.size.bottomRight(Offset.zero),
-            ancestor: overlay),
-      ),
-      Offset.zero & overlay.size,
-    );
-
-    showMenu<String>(
+    shadcn.showPopover(
       context: context,
-      position: position,
-      color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
-      elevation: 8,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.zero,
+      alignment: Alignment.bottomCenter,
+      offset: const Offset(0, 4),
+      overlayBarrier: shadcn.OverlayBarrier(
+        borderRadius: shadcn.Theme.of(context).borderRadiusLg,
       ),
-      items: [
-        _buildFilterMenuItem('Scrip Name', 'scrip', theme, currentSort),
-        _buildFilterMenuItem('LTP', 'price', theme, currentSort),
-        _buildFilterMenuItem('Perc.Change', 'perchng', theme, currentSort),
-      ],
-    ).then((value) {
-      if (value != null) {
-        _handleFilterSelection(value, ref);
-      }
-    });
+      builder: (context) {
+        return shadcn.ModalContainer(
+          child: SizedBox(
+            width: 150,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _buildFilterMenuItem(
+                  context,
+                  'Scrip Name',
+                  'scrip',
+                  currentSort,
+                  ref,
+                ),
+                _buildFilterMenuItem(
+                  context,
+                  'LTP',
+                  'price',
+                  currentSort,
+                  ref,
+                ),
+                _buildFilterMenuItem(
+                  context,
+                  'Perc.Change',
+                  'perchng',
+                  currentSort,
+                  ref,
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
-  PopupMenuItem<String> _buildFilterMenuItem(
-      String title, String value, ThemesProvider theme, String currentSort) {
+  Widget _buildFilterMenuItem(
+    BuildContext context,
+    String title,
+    String value,
+    String currentSort,
+    WidgetRef ref,
+  ) {
     // Determine if this option is currently active and its direction
     bool isActive = false;
     bool isAscending = false;
@@ -1280,11 +1148,13 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
       isAscending = currentSort.contains("Low to High");
     }
 
-    return PopupMenuItem<String>(
-      value: value,
-      padding: EdgeInsets.zero,
-      child: SizedBox(
-        width: 150, // Fixed width to prevent resizing
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          shadcn.closeOverlay(context);
+          _handleFilterSelection(value, ref);
+        },
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
@@ -1293,16 +1163,13 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
               Expanded(
                 child: Text(
                   title,
-                  style: WebTextStyles.bodySmall(
-                    isDarkTheme: theme.isDarkMode,
-                    color: isActive
-                        ? (theme.isDarkMode
-                            ? WebDarkColors.primary
-                            : WebColors.primary)
-                        : (theme.isDarkMode
-                            ? WebDarkColors.textPrimary
-                            : WebColors.textPrimary),
+                  style: TextStyle(
+                    fontFamily: 'Geist',
+                    fontSize: 14,
                     fontWeight: FontWeight.w500,
+                    color: isActive
+                        ? shadcn.Theme.of(context).colorScheme.primary
+                        : shadcn.Theme.of(context).colorScheme.foreground,
                   ),
                 ),
               ),
@@ -1320,9 +1187,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                                 ? Icons.arrow_upward
                                 : Icons.arrow_downward,
                             size: 18,
-                            color: theme.isDarkMode
-                                ? WebDarkColors.primary
-                                : WebColors.primary,
+                            color: shadcn.Theme.of(context).colorScheme.primary,
                           ),
                         ],
                       )
@@ -1373,7 +1238,6 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
 
   void _showWatchlistDialog(
       BuildContext context, WidgetRef ref, String currentWLName) {
-    final theme = ref.read(themeProvider);
     final marketWatch = ref.read(marketWatchProvider);
     final watchlist = marketWatch.marketWatchlist!.values!;
     final preDefWl = marketWatch.preDefWL;
@@ -1385,36 +1249,25 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
       barrierColor: Colors.black.withOpacity(0.3),
       transitionDuration: const Duration(milliseconds: 200),
       pageBuilder: (context, animation, secondaryAnimation) {
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
+        return Center(
+            child: shadcn.Card(
+          borderRadius: BorderRadius.circular(8),
+          padding: EdgeInsets.zero,
           child: Container(
             width: 500,
             constraints: const BoxConstraints(maxHeight: 500),
-            decoration: BoxDecoration(
-              color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
-                ),
-              ],
-            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Header
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
                     border: Border(
                       bottom: BorderSide(
-                        color: theme.isDarkMode
-                            ? WebDarkColors.divider
-                            : WebColors.divider,
+                        color: shadcn.Theme.of(context).colorScheme.border,
                       ),
                     ),
                   ),
@@ -1423,173 +1276,193 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                     children: [
                       Text(
                         'Select Watchlist',
-                        style: WebTextStyles.dialogTitle(
-                          isDarkTheme: theme.isDarkMode,
-                          color: theme.isDarkMode
-                              ? WebDarkColors.textPrimary
-                              : WebColors.textPrimary,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color:
+                              shadcn.Theme.of(context).colorScheme.foreground,
+                          fontFamily: 'Geist',
                         ),
                       ),
-                      IconButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        icon: const Icon(Icons.close, size: 18),
-                        style: IconButton.styleFrom(
-                          padding: const EdgeInsets.all(8),
-                          minimumSize: Size.zero,
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          customBorder: const CircleBorder(),
+                          hoverColor: shadcn.Theme.of(context)
+                              .colorScheme
+                              .accent
+                              .withOpacity(0.1),
+                          splashColor: shadcn.Theme.of(context)
+                              .colorScheme
+                              .accent
+                              .withOpacity(0.2),
+                          onTap: () => Navigator.of(context).pop(),
+                          child: Padding(
+                            padding: const EdgeInsets.all(6.0),
+                            child: Icon(
+                              Icons.close,
+                              size: 18,
+                              color: shadcn.Theme.of(context)
+                                  .colorScheme
+                                  .mutedForeground,
+                            ),
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
-                    // Content
-                    Flexible(
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 10, top: 10, bottom: 10),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (watchlist.length - preDefWl.length < 10)
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 6, right: 10),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: [
-                                    TextButton(
-                                      onPressed: () {
-                                        Navigator.of(context).pop();
-                                        _showCreateWatchlistDialog(context, ref);
-                                      },
-                                      style: TextButton.styleFrom(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 12, vertical: 8),
-                                      ),
-                                      child: Text(
-                                        '+ Create New Watchlist',
-                                        style: WebTextStyles.buttonSm(
-                                          isDarkTheme: theme.isDarkMode,
-                                          color: WebColors.primary,
-                                          fontWeight: FontWeight.w600,
-                                        ),
+                // Content
+                Flexible(
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.only(left: 10, top: 10, bottom: 10),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (watchlist.length - preDefWl.length < 10)
+                          Padding(
+                            padding:
+                                const EdgeInsets.only(bottom: 6, right: 10),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                shadcn.SecondaryButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                    _showCreateWatchlistDialog(context, ref);
+                                  },
+                                  child: Text(
+                                    '+ Create New Watchlist',
+                                    style: TextStyle(
+                                      fontFamily: 'Geist',
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        Flexible(
+                          child: ScrollConfiguration(
+                            behavior: const MaterialScrollBehavior()
+                                .copyWith(scrollbars: false),
+                            child: RawScrollbar(
+                              thumbVisibility: false,
+                              thickness: 6,
+                              radius: const Radius.circular(0),
+                              thumbColor: shadcn.Theme.of(context)
+                                  .colorScheme
+                                  .mutedForeground
+                                  .withOpacity(0.5),
+                              child: ListView.builder(
+                                shrinkWrap: true,
+                                padding: const EdgeInsets.only(right: 4),
+                                itemCount: watchlist.length,
+                                itemBuilder: (context, index) {
+                                  final watchlistName = watchlist[index];
+                                  final isPredefined =
+                                      preDefWl.contains(watchlistName);
+
+                                  return InkWell(
+                                    onTap: () async {
+                                      Navigator.of(context).pop();
+                                      if (watchlistName != currentWLName) {
+                                        await _handleWatchlistSelection(
+                                            watchlistName, ref);
+                                      }
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.only(
+                                          top: 8,
+                                          bottom: 8,
+                                          left: 4,
+                                          right: 12),
+                                      child: Row(
+                                        children: [
+                                          Radio<String>(
+                                            value: watchlistName,
+                                            groupValue: currentWLName,
+                                            onChanged: (value) async {
+                                              Navigator.of(context).pop();
+                                              if (value != null &&
+                                                  value != currentWLName) {
+                                                await _handleWatchlistSelection(
+                                                    value, ref);
+                                              }
+                                            },
+                                            activeColor:
+                                                shadcn.Theme.of(context)
+                                                    .colorScheme
+                                                    .primary,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child: Text(
+                                              _formatWatchlistName(
+                                                  watchlistName),
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                                color: shadcn.Theme.of(context)
+                                                    .colorScheme
+                                                    .foreground,
+                                                fontWeight: FontWeight.w500,
+                                                fontFamily: 'Geist',
+                                              ),
+                                            ),
+                                          ),
+                                          if (!isPredefined) ...[
+                                            IconButton(
+                                              onPressed: () {
+                                                Navigator.of(context).pop();
+                                                _showEditWatchlistDialog(
+                                                    context,
+                                                    ref,
+                                                    watchlistName);
+                                              },
+                                              icon: const Icon(
+                                                  Icons.edit_outlined,
+                                                  size: 18),
+                                              style: IconButton.styleFrom(
+                                                padding:
+                                                    const EdgeInsets.all(8),
+                                                minimumSize: Size.zero,
+                                                tapTargetSize:
+                                                    MaterialTapTargetSize
+                                                        .shrinkWrap,
+                                              ),
+                                            ),
+                                            IconButton(
+                                              onPressed: () {
+                                                Navigator.of(context).pop();
+                                                _showDeleteWatchlistDialog(
+                                                    context,
+                                                    ref,
+                                                    watchlistName);
+                                              },
+                                              icon: Icon(
+                                                  Icons.delete_outline_outlined,
+                                                  size: 18,
+                                                  color:
+                                                      shadcn.Theme.of(context)
+                                                          .colorScheme
+                                                          .destructive),
+                                              style: IconButton.styleFrom(
+                                                padding:
+                                                    const EdgeInsets.all(8),
+                                                minimumSize: Size.zero,
+                                                tapTargetSize:
+                                                    MaterialTapTargetSize
+                                                        .shrinkWrap,
+                                              ),
+                                            ),
+                                          ],
+                                        ],
                                       ),
                                     ),
-                                  ],
-                                ),
-                              ),
-                            Flexible(
-                              child: Theme(
-                                data: Theme.of(context).copyWith(
-                                  scrollbarTheme: ScrollbarThemeData(
-                                    thickness: MaterialStateProperty.all(4.0),
-                                    radius: const Radius.circular(2),
-                                    crossAxisMargin: 0.0,
-                                    mainAxisMargin: 0.0,
-                                    thumbColor: MaterialStateProperty.resolveWith((states) {
-                                      return theme.isDarkMode
-                                          ? WebDarkColors.textSecondary.withOpacity(0.4)
-                                          : WebColors.textSecondary.withOpacity(0.4);
-                                    }),
-                                    trackColor: MaterialStateProperty.resolveWith((states) {
-                                      return Colors.transparent;
-                                    }),
-                                    minThumbLength: 40.0,
-                                  ),
-                                ),
-                                child: Scrollbar(
-                                  child: ListView.builder(
-                                    shrinkWrap: true,
-                                    padding: const EdgeInsets.only(right: 4),
-                                    itemCount: watchlist.length,
-                                    itemBuilder: (context, index) {
-                              final watchlistName = watchlist[index];
-                              final isPredefined =
-                                  preDefWl.contains(watchlistName);
-                              
-                              return InkWell(
-                                onTap: () async {
-                                  Navigator.of(context).pop();
-                                  if (watchlistName != currentWLName) {
-                                    await _handleWatchlistSelection(
-                                        watchlistName, ref);
-                                  }
+                                  );
                                 },
-                                child: Container(
-                                  padding: const EdgeInsets.only(
-                                      top: 8, bottom: 8, left: 4, right: 12),
-                                  child: Row(
-                                    children: [
-                                      Radio<String>(
-                                        value: watchlistName,
-                                        groupValue: currentWLName,
-                                        onChanged: (value) async {
-                                          Navigator.of(context).pop();
-                                          if (value != null &&
-                                              value != currentWLName) {
-                                            await _handleWatchlistSelection(
-                                                value, ref);
-                                          }
-                                        },
-                                        activeColor: theme.isDarkMode
-                                            ? WebDarkColors.primary
-                                            : WebColors.primary,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: Text(
-                                          _formatWatchlistName(watchlistName),
-                                          style: WebTextStyles.bodySmall(
-                                            isDarkTheme: theme.isDarkMode,
-                                            color: theme.isDarkMode
-                                                ? WebDarkColors.textPrimary
-                                                : WebColors.textPrimary,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      ),
-                                      if (!isPredefined) ...[
-                                        IconButton(
-                                          onPressed: () {
-                                            Navigator.of(context).pop();
-                                            _showEditWatchlistDialog(
-                                                context, ref, watchlistName);
-                                          },
-                                          icon: const Icon(
-                                              Icons.edit_outlined, size: 18),
-                                          style: IconButton.styleFrom(
-                                            padding: const EdgeInsets.all(8),
-                                            minimumSize: Size.zero,
-                                            tapTargetSize:
-                                                MaterialTapTargetSize
-                                                    .shrinkWrap,
-                                          ),
-                                        ),
-                                        IconButton(
-                                          onPressed: () {
-                                            Navigator.of(context).pop();
-                                            _showDeleteWatchlistDialog(
-                                                context, ref, watchlistName);
-                                          },
-                                          icon: Icon(
-                                              Icons.delete_outline_outlined,
-                                              size: 18,
-                                              color: theme.isDarkMode
-                                                  ? WebDarkColors.error
-                                                  : WebColors.error),
-                                          style: IconButton.styleFrom(
-                                            padding: const EdgeInsets.all(8),
-                                            minimumSize: Size.zero,
-                                            tapTargetSize:
-                                                MaterialTapTargetSize
-                                                    .shrinkWrap,
-                                          ),
-                                        ),
-                                      ],
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
                               ),
                             ),
                           ),
@@ -1601,7 +1474,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
               ],
             ),
           ),
-        );
+        ));
       },
       transitionBuilder: (context, animation, secondaryAnimation, child) {
         final curvedAnimation = CurvedAnimation(
@@ -1609,11 +1482,12 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
           curve: Curves.easeOut,
           reverseCurve: Curves.easeIn,
         );
-        
+
         return FadeTransition(
           opacity: curvedAnimation,
           child: ScaleTransition(
-            scale: Tween<double>(begin: 0.95, end: 1.0).animate(curvedAnimation),
+            scale:
+                Tween<double>(begin: 0.95, end: 1.0).animate(curvedAnimation),
             child: child,
           ),
         );
@@ -1672,7 +1546,6 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
 
   void _showEditWatchlistDialog(
       BuildContext context, WidgetRef ref, String watchlistName) {
-    final theme = ref.read(themeProvider);
     final TextEditingController controller =
         TextEditingController(text: watchlistName);
 
@@ -1683,35 +1556,24 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
       barrierColor: Colors.black.withOpacity(0.3),
       transitionDuration: const Duration(milliseconds: 200),
       pageBuilder: (context, animation, secondaryAnimation) {
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
+        return Center(
+            child: shadcn.Card(
+          borderRadius: BorderRadius.circular(8),
+          padding: EdgeInsets.zero,
           child: Container(
             width: 400,
             constraints: const BoxConstraints(maxHeight: 300),
-            decoration: BoxDecoration(
-              color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
-                ),
-              ],
-            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 // Header
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
                     border: Border(
                       bottom: BorderSide(
-                        color: theme.isDarkMode
-                            ? WebDarkColors.divider
-                            : WebColors.divider,
+                        color: shadcn.Theme.of(context).colorScheme.border,
                       ),
                     ),
                   ),
@@ -1720,20 +1582,34 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                     children: [
                       Text(
                         'Edit Watchlist',
-                        style: WebTextStyles.dialogTitle(
-                          isDarkTheme: theme.isDarkMode,
-                          color: theme.isDarkMode
-                              ? WebDarkColors.textPrimary
-                              : WebColors.textPrimary,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color:
+                              shadcn.Theme.of(context).colorScheme.foreground,
+                          fontFamily: 'Geist',
                         ),
                       ),
-                      IconButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        icon: const Icon(Icons.close, size: 18),
-                        style: IconButton.styleFrom(
-                          padding: const EdgeInsets.all(8),
-                          minimumSize: Size.zero,
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      InkWell(
+                        onTap: () => Navigator.of(context).pop(),
+                        borderRadius: BorderRadius.circular(4),
+                        hoverColor: shadcn.Theme.of(context)
+                            .colorScheme
+                            .accent
+                            .withOpacity(0.1),
+                        splashColor: shadcn.Theme.of(context)
+                            .colorScheme
+                            .accent
+                            .withOpacity(0.2),
+                        child: Padding(
+                          padding: const EdgeInsets.all(6.0),
+                          child: Icon(
+                            Icons.close,
+                            size: 18,
+                            color: shadcn.Theme.of(context)
+                                .colorScheme
+                                .mutedForeground,
+                          ),
                         ),
                       ),
                     ],
@@ -1747,77 +1623,39 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SizedBox(
-                          height: 40,
-                          child: CustomTextFormField(
-                            fillColor: theme.isDarkMode
-                                ? WebDarkColors.backgroundTertiary
-                                : WebColors.backgroundTertiary,
-                            onChanged: (value) {
-                              // Handle change if needed
-                            },
-                            hintText: "Enter watchlist name",
-                            hintStyle: WebTextStyles.formInput(
-                              isDarkTheme: theme.isDarkMode,
-                              color: theme.isDarkMode
-                                  ? WebDarkColors.textSecondary
-                                  : WebColors.textSecondary,
-                            ),
-                            keyboardType: TextInputType.text,
-                            style: WebTextStyles.formInput(
-                              isDarkTheme: theme.isDarkMode,
-                              color: theme.isDarkMode
-                                  ? WebDarkColors.textPrimary
-                                  : WebColors.textPrimary,
-                            ),
-                            textCtrl: controller,
-                            textAlign: TextAlign.start,
-                            autofocus: true,
-                            inputFormate: [
-                              FilteringTextInputFormatter.allow(
-                                RegExp(r'[a-zA-Z0-9 ]'),
-                              ),
-                            ],
+                        shadcn.TextField(
+                          controller: controller,
+                          placeholder: const Text(
+                            'Enter watchlist name',
+                            style: TextStyle(fontFamily: 'Geist'),
                           ),
+                          autofocus: true,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(
+                              RegExp(r'[a-zA-Z0-9 ]'),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 24),
                         SizedBox(
                           width: double.infinity,
-                          child: Container(
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: theme.isDarkMode
-                                  ? WebDarkColors.primary
-                                  : WebColors.primary,
-                              borderRadius: BorderRadius.circular(5),
-                            ),
-                            child: Material(
-                              color: Colors.transparent,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(5),
-                              ),
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(5),
-                                splashColor: Colors.white.withOpacity(0.2),
-                                highlightColor: Colors.white.withOpacity(0.1),
-                                onTap: () async {
-                                  final newName = controller.text.trim();
-                                  if (newName.isNotEmpty &&
-                                      newName != watchlistName) {
-                                    // Let the provider method handle dialog closing and notifications
-                                    await _handleWatchlistRename(
-                                        watchlistName, newName, ref, context);
-                                  }
-                                },
-                                child: Center(
-                                  child: Text(
-                                    'Save',
-                                    style: WebTextStyles.buttonMd(
-                                      isDarkTheme: theme.isDarkMode,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ),
+                          child: shadcn.PrimaryButton(
+                            onPressed: () async {
+                              final newName = controller.text.trim();
+                              if (newName.isNotEmpty &&
+                                  newName != watchlistName) {
+                                Navigator.of(context).pop();
+                                await _handleWatchlistRename(
+                                    watchlistName, newName, ref, context);
+                              }
+                            },
+                            child: Text(
+                              'Save',
+                              style: TextStyle(
+                                color: shadcn.Theme.of(context)
+                                    .colorScheme
+                                    .primaryForeground,
+                                fontFamily: 'Geist',
                               ),
                             ),
                           ),
@@ -1829,7 +1667,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
               ],
             ),
           ),
-        );
+        ));
       },
       transitionBuilder: (context, animation, secondaryAnimation, child) {
         final curvedAnimation = CurvedAnimation(
@@ -1837,11 +1675,12 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
           curve: Curves.easeOut,
           reverseCurve: Curves.easeIn,
         );
-        
+
         return FadeTransition(
           opacity: curvedAnimation,
           child: ScaleTransition(
-            scale: Tween<double>(begin: 0.95, end: 1.0).animate(curvedAnimation),
+            scale:
+                Tween<double>(begin: 0.95, end: 1.0).animate(curvedAnimation),
             child: child,
           ),
         );
@@ -1851,9 +1690,6 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
 
   void _showDeleteWatchlistDialog(
       BuildContext context, WidgetRef ref, String watchlistName) {
-    final theme = ref.read(themeProvider);
-    final mainDialogContext = context;
-
     showGeneralDialog(
       context: context,
       barrierDismissible: true,
@@ -1861,35 +1697,24 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
       barrierColor: Colors.black.withOpacity(0.3),
       transitionDuration: const Duration(milliseconds: 200),
       pageBuilder: (context, animation, secondaryAnimation) {
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
+        return Center(
+            child: shadcn.Card(
+          borderRadius: BorderRadius.circular(8),
+          padding: EdgeInsets.zero,
           child: Container(
             width: 400,
             constraints: const BoxConstraints(maxHeight: 250),
-            decoration: BoxDecoration(
-              color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
-                ),
-              ],
-            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 // Header
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
                     border: Border(
                       bottom: BorderSide(
-                        color: theme.isDarkMode
-                            ? WebDarkColors.divider
-                            : WebColors.divider,
+                        color: shadcn.Theme.of(context).colorScheme.border,
                       ),
                     ),
                   ),
@@ -1898,20 +1723,34 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                     children: [
                       Text(
                         'Delete Watchlist',
-                        style: WebTextStyles.dialogTitle(
-                          isDarkTheme: theme.isDarkMode,
-                          color: theme.isDarkMode
-                              ? WebDarkColors.textPrimary
-                              : WebColors.textPrimary,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color:
+                              shadcn.Theme.of(context).colorScheme.foreground,
+                          fontFamily: 'Geist',
                         ),
                       ),
-                      IconButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        icon: const Icon(Icons.close, size: 18),
-                        style: IconButton.styleFrom(
-                          padding: const EdgeInsets.all(8),
-                          minimumSize: Size.zero,
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      InkWell(
+                        onTap: () => Navigator.of(context).pop(),
+                        borderRadius: BorderRadius.circular(4),
+                        hoverColor: shadcn.Theme.of(context)
+                            .colorScheme
+                            .accent
+                            .withOpacity(0.1),
+                        splashColor: shadcn.Theme.of(context)
+                            .colorScheme
+                            .accent
+                            .withOpacity(0.2),
+                        child: Padding(
+                          padding: const EdgeInsets.all(6.0),
+                          child: Icon(
+                            Icons.close,
+                            size: 18,
+                            color: shadcn.Theme.of(context)
+                                .colorScheme
+                                .mutedForeground,
+                          ),
                         ),
                       ),
                     ],
@@ -1928,12 +1767,12 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                         Text(
                           'Are you sure you want to delete "${_formatWatchlistName(watchlistName)}"?',
                           textAlign: TextAlign.center,
-                          style: WebTextStyles.bodySmall(
-                            isDarkTheme: theme.isDarkMode,
-                            color: theme.isDarkMode
-                                ? WebDarkColors.textPrimary
-                                : WebColors.textPrimary,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color:
+                                shadcn.Theme.of(context).colorScheme.foreground,
                             fontWeight: FontWeight.w500,
+                            fontFamily: 'Geist',
                           ),
                         ),
                         const SizedBox(height: 24),
@@ -1942,36 +1781,39 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                           child: Container(
                             height: 40,
                             decoration: BoxDecoration(
-                              color: theme.isDarkMode
-                                  ? WebDarkColors.error
-                                  : WebColors.error,
-                              borderRadius: BorderRadius.circular(5),
+                              color: shadcn.Theme.of(context)
+                                  .colorScheme
+                                  .destructive,
+                              borderRadius: BorderRadius.circular(6),
                             ),
                             child: Material(
                               color: Colors.transparent,
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(5),
+                                borderRadius: BorderRadius.circular(6),
                               ),
                               child: InkWell(
-                                borderRadius: BorderRadius.circular(5),
-                                splashColor: Colors.white.withOpacity(0.2),
-                                highlightColor: Colors.white.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(6),
+                                splashColor: shadcn.Theme.of(context)
+                                    .colorScheme
+                                    .destructiveForeground
+                                    .withOpacity(0.2),
+                                highlightColor: shadcn.Theme.of(context)
+                                    .colorScheme
+                                    .destructiveForeground
+                                    .withOpacity(0.1),
                                 onTap: () async {
                                   Navigator.of(context).pop();
                                   await _handleWatchlistDelete(
                                       watchlistName, ref);
-                                  // Small delay to ensure deletion completes
-                                  await Future.delayed(
-                                      const Duration(milliseconds: 200));
-                                  // Close main dialog after successful deletion
-                                  Navigator.of(mainDialogContext).pop();
                                 },
                                 child: Center(
                                   child: Text(
                                     'Delete',
-                                    style: WebTextStyles.buttonMd(
-                                      isDarkTheme: theme.isDarkMode,
+                                    style: TextStyle(
                                       color: Colors.white,
+                                      fontFamily: 'Geist',
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 14,
                                     ),
                                   ),
                                 ),
@@ -1986,7 +1828,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
               ],
             ),
           ),
-        );
+        ));
       },
       transitionBuilder: (context, animation, secondaryAnimation, child) {
         final curvedAnimation = CurvedAnimation(
@@ -1994,11 +1836,12 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
           curve: Curves.easeOut,
           reverseCurve: Curves.easeIn,
         );
-        
+
         return FadeTransition(
           opacity: curvedAnimation,
           child: ScaleTransition(
-            scale: Tween<double>(begin: 0.95, end: 1.0).animate(curvedAnimation),
+            scale:
+                Tween<double>(begin: 0.95, end: 1.0).animate(curvedAnimation),
             child: child,
           ),
         );
@@ -2007,9 +1850,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
   }
 
   void _showCreateWatchlistDialog(BuildContext context, WidgetRef ref) {
-    final theme = ref.read(themeProvider);
     final TextEditingController controller = TextEditingController();
-    final mainDialogContext = context; // Store reference to main dialog context
 
     showGeneralDialog(
       context: context,
@@ -2018,35 +1859,24 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
       barrierColor: Colors.black.withOpacity(0.3),
       transitionDuration: const Duration(milliseconds: 200),
       pageBuilder: (context, animation, secondaryAnimation) {
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
+        return Center(
+            child: shadcn.Card(
+          borderRadius: BorderRadius.circular(8),
+          padding: EdgeInsets.zero,
           child: Container(
             width: 400,
             constraints: const BoxConstraints(maxHeight: 300),
-            decoration: BoxDecoration(
-              color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
-                ),
-              ],
-            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 // Header
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
                     border: Border(
                       bottom: BorderSide(
-                        color: theme.isDarkMode
-                            ? WebDarkColors.divider
-                            : WebColors.divider,
+                        color: shadcn.Theme.of(context).colorScheme.border,
                       ),
                     ),
                   ),
@@ -2055,20 +1885,34 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                     children: [
                       Text(
                         'New Watchlist',
-                        style: WebTextStyles.dialogTitle(
-                          isDarkTheme: theme.isDarkMode,
-                          color: theme.isDarkMode
-                              ? WebDarkColors.textPrimary
-                              : WebColors.textPrimary,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color:
+                              shadcn.Theme.of(context).colorScheme.foreground,
+                          fontFamily: 'Geist',
                         ),
                       ),
-                      IconButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        icon: const Icon(Icons.close, size: 18),
-                        style: IconButton.styleFrom(
-                          padding: const EdgeInsets.all(8),
-                          minimumSize: Size.zero,
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      InkWell(
+                        onTap: () => Navigator.of(context).pop(),
+                        borderRadius: BorderRadius.circular(4),
+                        hoverColor: shadcn.Theme.of(context)
+                            .colorScheme
+                            .accent
+                            .withOpacity(0.1),
+                        splashColor: shadcn.Theme.of(context)
+                            .colorScheme
+                            .accent
+                            .withOpacity(0.2),
+                        child: Padding(
+                          padding: const EdgeInsets.all(6.0),
+                          child: Icon(
+                            Icons.close,
+                            size: 18,
+                            color: shadcn.Theme.of(context)
+                                .colorScheme
+                                .mutedForeground,
+                          ),
                         ),
                       ),
                     ],
@@ -2082,80 +1926,37 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SizedBox(
-                          height: 40,
-                          child: CustomTextFormField(
-                            fillColor: theme.isDarkMode
-                                ? WebDarkColors.backgroundTertiary
-                                : WebColors.backgroundTertiary,
-                            onChanged: (value) {
-                              // Handle change if needed
-                            },
-                            hintText: "Enter watchlist name",
-                            hintStyle: WebTextStyles.formInput(
-                              isDarkTheme: theme.isDarkMode,
-                              color: theme.isDarkMode
-                                  ? WebDarkColors.textSecondary
-                                  : WebColors.textSecondary,
-                            ),
-                            keyboardType: TextInputType.text,
-                            style: WebTextStyles.formInput(
-                              isDarkTheme: theme.isDarkMode,
-                              color: theme.isDarkMode
-                                  ? WebDarkColors.textPrimary
-                                  : WebColors.textPrimary,
-                            ),
-                            textCtrl: controller,
-                            textAlign: TextAlign.start,
-                            autofocus: true,
-                            inputFormate: [
-                              FilteringTextInputFormatter.allow(
-                                RegExp(r'[a-zA-Z0-9 ]'),
-                              ),
-                            ],
+                        shadcn.TextField(
+                          controller: controller,
+                          placeholder: const Text(
+                            'Enter watchlist name',
+                            style: TextStyle(fontFamily: 'Geist'),
                           ),
+                          autofocus: true,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(
+                              RegExp(r'[a-zA-Z0-9 ]'),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 24),
                         SizedBox(
                           width: double.infinity,
-                          child: Container(
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: theme.isDarkMode
-                                  ? WebDarkColors.primary
-                                  : WebColors.primary,
-                              borderRadius: BorderRadius.circular(5),
-                            ),
-                            child: Material(
-                              color: Colors.transparent,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(5),
-                              ),
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(5),
-                                splashColor: Colors.white.withOpacity(0.2),
-                                highlightColor: Colors.white.withOpacity(0.1),
-                                onTap: () async {
-                                  final name = controller.text.trim();
-                                  if (name.isNotEmpty) {
-                                    Navigator.of(context).pop();
-                                    await _handleWatchlistCreate(name, ref);
-                                    // Small delay to ensure creation completes
-                                    await Future.delayed(
-                                        const Duration(milliseconds: 200));
-                                    // Close main dialog after successful creation
-                                    Navigator.of(mainDialogContext).pop();
-                                  }
-                                },
-                                child: Center(
-                                  child: Text(
-                                    'Create',
-                                    style: WebTextStyles.buttonMd(
-                                      isDarkTheme: theme.isDarkMode,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ),
+                          child: shadcn.PrimaryButton(
+                            onPressed: () async {
+                              final name = controller.text.trim();
+                              if (name.isNotEmpty) {
+                                Navigator.of(context).pop();
+                                await _handleWatchlistCreate(name, ref);
+                              }
+                            },
+                            child: Text(
+                              'Create',
+                              style: TextStyle(
+                                color: shadcn.Theme.of(context)
+                                    .colorScheme
+                                    .primaryForeground,
+                                fontFamily: 'Geist',
                               ),
                             ),
                           ),
@@ -2167,7 +1968,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
               ],
             ),
           ),
-        );
+        ));
       },
       transitionBuilder: (context, animation, secondaryAnimation, child) {
         final curvedAnimation = CurvedAnimation(
@@ -2175,11 +1976,12 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
           curve: Curves.easeOut,
           reverseCurve: Curves.easeIn,
         );
-        
+
         return FadeTransition(
           opacity: curvedAnimation,
           child: ScaleTransition(
-            scale: Tween<double>(begin: 0.95, end: 1.0).animate(curvedAnimation),
+            scale:
+                Tween<double>(begin: 0.95, end: 1.0).animate(curvedAnimation),
             child: child,
           ),
         );
@@ -2235,11 +2037,12 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
           curve: Curves.easeOut,
           reverseCurve: Curves.easeIn,
         );
-        
+
         return FadeTransition(
           opacity: curvedAnimation,
           child: ScaleTransition(
-            scale: Tween<double>(begin: 0.95, end: 1.0).animate(curvedAnimation),
+            scale:
+                Tween<double>(begin: 0.95, end: 1.0).animate(curvedAnimation),
             child: child,
           ),
         );
@@ -2295,8 +2098,8 @@ class _WatchlistIndexSlotWebState
 
       // Clean up after dialog closes
       await widget.indexProvider.fetchIndexList("exit", context);
-      await widget.marketWatch.requestMWScrip(
-          context: context, isSubscribe: true);
+      await widget.marketWatch
+          .requestMWScrip(context: context, isSubscribe: true);
     } catch (e) {
       debugPrint("Error in index slot tap: $e");
     }
@@ -2353,15 +2156,15 @@ class _WatchlistIndexSlotWebState
               ? WebDarkColors.primary.withOpacity(0.05)
               : WebColors.primary.withOpacity(0.05),
           onTap: () => _handleIndexClick(context),
-            child: Container(
+          child: Container(
             height: 52, // Compact height
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
               color: widget.theme.isDarkMode
-                    ? WebDarkColors.backgroundTertiary
-                    : WebColors.backgroundTertiary,
+                  ? WebDarkColors.backgroundTertiary
+                  : WebColors.backgroundTertiary,
               // border: Border.all(
-              //   color: widget.theme.isDarkMode                    
+              //   color: widget.theme.isDarkMode
               //         ? WebDarkColors.primary
               //         : WebColors.primary,
               //   // width: 1,
@@ -2382,8 +2185,8 @@ class _WatchlistIndexSlotWebState
                       style: WebTextStyles.symbolList(
                         isDarkTheme: widget.theme.isDarkMode,
                         color: widget.theme.isDarkMode
-                            ? WebDarkColors.textPrimary 
-                            : WebColors.textPrimary,                      
+                            ? WebDarkColors.textPrimary
+                            : WebColors.textPrimary,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -2617,7 +2420,6 @@ class _WatchlistLivePriceWidgetState
               1,
             ),
           ),
-
           Text(
             "$_change ",
             style: _getTextStyle(
@@ -2626,7 +2428,6 @@ class _WatchlistLivePriceWidgetState
               1,
             ),
           ),
-
           Text(
             "($_perChange%)",
             style: _getTextStyle(

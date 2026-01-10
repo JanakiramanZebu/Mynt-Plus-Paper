@@ -8,6 +8,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/models/marketwatch_model/market_watch_scrip_model.dart';
 import 'package:mynt_plus/provider/auth_provider.dart';
 import 'package:mynt_plus/provider/bonds_provider.dart';
+import 'package:mynt_plus/screens/web/holdings/holddeetsshadcn.dart';
 import 'package:mynt_plus/screens/web/market_watch/tv_chart/webview_chart.dart';
 import 'package:mynt_plus/screens/web/ordersbook/order_book_screen_web.dart';
 import 'package:mynt_plus/screens/web/funds/secure_fund_web.dart';
@@ -613,6 +614,11 @@ class _CustomizableSplitHomeScreenState
                       child: _buildSwapButton(isDarkMode),
                     ),
                     const SizedBox(width: 12),
+                    // Theme toggle button
+                    RepaintBoundary(
+                      child: _buildThemeToggleButton(isDarkMode),
+                    ),
+                    const SizedBox(width: 12),
                     // Profile section
                     RepaintBoundary(
                       child: _buildProfileSection(isDarkMode),
@@ -647,8 +653,7 @@ class _CustomizableSplitHomeScreenState
   }
 
   Widget _buildSplitView(ThemesProvider theme) {
-    // Use window-based system
-    return const WindowBasedHomeScreen();
+    return _buildGridContent(theme);
   }
   
   /// Calculate responsive split ratio for watchlist based on screen width
@@ -986,19 +991,17 @@ class _CustomizableSplitHomeScreenState
 
     return Stack(
       children: [
-        // Screen content (not draggable) - with padding to show below header
+        // Screen content (not draggable) - no header padding
         Positioned(
-          top: activeScreen == ScreenType.watchlist
-              ? 0
-              : 40, // No header for watchlist, 40px for others
+          top: 0, // No header, so content starts at top
           left: 0,
           right: 0,
           bottom: 0,
           child: ClipRRect(
-            borderRadius: const BorderRadius.only(
-              bottomLeft: Radius.circular(12),
-              bottomRight: Radius.circular(12),
-            ),
+            // borderRadius: const BorderRadius.only(
+            //   bottomLeft: Radius.circular(12),
+            //   bottomRight: Radius.circular(12),
+            // ),
             child: panel.screens.isNotEmpty
                 ? IndexedStack(
                     index: panel.activeScreenIndex >= 0 &&
@@ -1015,487 +1018,238 @@ class _CustomizableSplitHomeScreenState
           ),
         ),
 
-        // Header with controls (draggable) - COMMENTED OUT FOR FUTURE USE
-        /*
-        Positioned(
-          top: 0,
-          left: 0,
-          right: 0,
-          child: Draggable<PanelConfig>(
-            data: panel,
-            dragAnchorStrategy: pointerDragAnchorStrategy,
-            onDragStarted: () {
-            },
-            onDragEnd: (details) {
-            },
-            feedback: Material(
-              elevation: 8,
-              child: Container(
-                width: 200,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: Colors.transparent,
-                ),
-                child: Center(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.drag_indicator,
-                        color: WebDarkColors.iconSecondary,
-                        size: 16,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        _getScreenTitleNullable(panel.screens.isNotEmpty 
-                            ? panel.screens[panel.activeScreenIndex] 
-                            : panel.screenType),
-                        style: WebTextStyles.para(
-                          isDarkTheme: true,
-                          color: WebDarkColors.textSecondary,
-                          fontWeight: WebFonts.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            childWhenDragging: Container(
-              height: 40,
-              decoration: BoxDecoration(
-                color: Colors.grey.withOpacity(0.3),
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(12),
-                  topRight: Radius.circular(12),
-                ),
-                border: Border.all(color: colors.colorBlue, width: 2),
-              ),
-              child: const Center(
-                child: Icon(
-                  Icons.drag_indicator,
-                  size: 24,
-                  color: Colors.grey,
-                ),
-              ),
-            ),
-            child: Container(
-              height: 40,
-              decoration: BoxDecoration(
-                color: Colors.transparent,
-              ),
-              child: Row(
-                children: [
-                  // Drag handle
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    child: Icon(
-                      Icons.drag_indicator,
-                      color: theme.isDarkMode ? Colors.grey[400] : Colors.grey[600],
-                      size: 16,
-                    ),
-                  ),
-                  // Tabs for multiple screens
-                  if (panel.screens.length > 1) ...[
-                    Expanded(
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        physics: const BouncingScrollPhysics(),
-                        child: Row(
-                          children: panel.screens.asMap().entries.map((entry) {
-                                int index = entry.key;
-                                ScreenType screenType = entry.value;
-                                bool isActive = index == panel.activeScreenIndex;
-                                
-                                return Container(
-                                  constraints: const BoxConstraints(minWidth: 80),
-                                  child: GestureDetector(
-                                  onTap: () {
-                                    // Manage websockets when switching between screens
-                                    final previousScreenIndex = panel.activeScreenIndex;
-                                    final previousScreenType = previousScreenIndex >= 0 && previousScreenIndex < panel.screens.length
-                                        ? panel.screens[previousScreenIndex]
-                                        : null;
-                                    final newScreenType = panel.screens[index];
-                                    
-                                    setState(() {
-                                      panel.activeScreenIndex = index;
-                                    });
-                                    
-                                    // Handle websocket subscriptions for screen switching
-                                    _handleScreenSwitch(previousScreenType, newScreenType);
-                                    
-                                    _saveLayout();
-                                  },
-                                  child: Container(
-                                    margin: const EdgeInsets.symmetric(horizontal: 2),
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: isActive 
-                                          ? Colors.white.withOpacity(0.2)
-                                          : Colors.transparent,
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(
-                                          _getIconForScreenType(screenType),
-                                          color: WebDarkColors.textPrimary,
-                                          size: 12,
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          _getScreenTitle(screenType),
-                                          style: WebTextStyles.overline(
-                                            isDarkTheme: true,
-                                            color: WebDarkColors.textPrimary,
-                                            fontWeight: isActive ? WebFonts.bold : WebFonts.regular,
-                                          ),
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                        if (panel.screens.length > 1 && screenType != ScreenType.watchlist) ...[
-                                          const SizedBox(width: 4),
-                                          GestureDetector(
-                                            onTap: () => _removeScreenFromPanel(panel, index),
-                                            child: Icon(
-                                              Icons.close,
-                                              color: WebDarkColors.textSecondary,
-                                              size: 10,
-                                            ),
-                                          ),
-                                        ],
-                                      ],
-                                    ),
-                                  ),
-                                    ),
-                                  );
-                              }).toList(),
-                          ],
-                        ),
-                      ),
-                    ),
-                    
-                  ] else ...[
-                    // Single screen title
-                    Expanded(
-                      child: Row(
-                        children: [
-                          Text(
-                            _getScreenTitleNullable(activeScreen),
-                            style: WebTextStyles.para(
-                              isDarkTheme: true,
-                              color: WebDarkColors.textPrimary,
-                              fontWeight: WebFonts.bold,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                  if (activeScreen != ScreenType.watchlist && _hasAvailableScreensToAdd(panel))
-                      IconButton(
-                        icon: Icon(Icons.add, color: WebDarkColors.textPrimary, size: 16),
-                        tooltip: 'Add Screen Tab',
-                        onPressed: () {
-                          _showAddScreenToPanelDialog(panel);
-                        },
-                      ),
-                        ],
-                      ),
-                    ),
-                  ],
-                  // Screen selector (not for watchlist)
-                  if (activeScreen != ScreenType.watchlist)
-                    PopupMenuButton<ScreenType>(
-                      icon: Icon(Icons.swap_horiz, color: WebDarkColors.textPrimary, size: 16),
-                      tooltip: 'Replace Screen',
-                      onSelected: (ScreenType newType) {
-                        setState(() {
-                          if (panel.screens.isNotEmpty) {
-                            panel.screens[panel.activeScreenIndex] = newType;
-                            // Update screenType for consistency with size detection
-                            panel.screenType = newType;
-                          } else {
-                            panel.screenType = newType;
-                            panel.screens = [newType];
-                          }
-                        });
-                        _saveLayout();
-                        // Call the appropriate handler function for the new screen type
-                        _handleScreenTypeChange(newType);
-                      },
-                    itemBuilder: (context) => ScreenType.values
-                        .where((type) => _shouldShowScreenOption(type, panel))
-                        .map((type) {
-                      return PopupMenuItem(
-                        value: type,
-                        child: Row(
-                          children: [
-                            Icon(
-                              _getIconForScreenType(type), 
-                              size: 16,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(_getScreenTitle(type)),
-                          ],
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                  // Remove button (not for watchlist)
-                  if (activeScreen != ScreenType.watchlist)
-                    IconButton(
-                      icon: Icon(Icons.close, color: WebDarkColors.textPrimary, size: 16),
-                      onPressed: () {
-                        // Clean up websockets and cache for the current screen
-                        if (activeScreen != null) {
-                          _cleanupScreenResources(activeScreen);
-                        }
-                        
-                        setState(() {
-                          panel.screenType = null;
-                          panel.screens.clear();
-                          panel.activeScreenIndex = 0;
-                        });
-                        _saveLayout();
-                      },
-                    ),
-                ],
-              ),
-            ),
-          ),
-        ),
-        */
+       
+        // Tab header for non-watchlist panels (Layout 1) - COMMENTED OUT
+        // if (activeScreen != ScreenType.watchlist)
+        //   Positioned(
+        //     top: 0,
+        //     left: 0,
+        //     right: 0,
+        //     child: Container(
+        //       height: 45,
+        //       decoration: BoxDecoration(
+        //         // Window top bar - slight grey to indicate it's a window top bar
+        //         color: theme.isDarkMode
+        //             ? WebDarkColors.surface
+        //             : WebColors.surface, // Subtle grey for window top bar
+        //         // Window borders - all sides to make it look like a distinct window
+        //         border: Border(
+        //           top: BorderSide(
+        //             color: theme.isDarkMode
+        //                 ? WebDarkColors.divider.withOpacity(0.5)
+        //                 : WebColors.divider,
+        //             width: 1,
+        //           ),
+        //           bottom: BorderSide(
+        //             color: theme.isDarkMode
+        //                 ? WebDarkColors.divider.withOpacity(0.5)
+        //                 : WebColors.divider,
+        //             width: 1,
+        //           ),
+        //           left: BorderSide(
+        //             color: theme.isDarkMode
+        //                 ? WebDarkColors.divider.withOpacity(0.5)
+        //                 : WebColors.divider,
+        //             width: 1,
+        //           ),
+        //           right: BorderSide(
+        //             color: theme.isDarkMode
+        //                 ? WebDarkColors.divider.withOpacity(0.5)
+        //                 : WebColors.divider,
+        //             width: 1,
+        //           ),
+        //         ),
+        //         // Shadow to make it look elevated like a window
+        //         // boxShadow: [
+        //         //   BoxShadow(
+        //         //     color: Colors.black.withOpacity(0.05),
+        //         //     blurRadius: 4,
+        //         //     offset: const Offset(0, 2),
+        //         //     spreadRadius: 0,
+        //         //   ),
+        //         // ],
+        //       ),
+        //       child: Row(
+        //         children: [
+        //           const SizedBox(width: 8),
+        //           // Tabs for multiple screens
+        //           if (panel.screens.length > 1) ...[
+        //             Expanded(
+        //               child: SingleChildScrollView(
+        //                 scrollDirection: Axis.horizontal,
+        //                 physics: const BouncingScrollPhysics(),
+        //                 child: IntrinsicWidth(
+        //                   child: Row(
+        //                     children:
+        //                         panel.screens.asMap().entries.map((entry) {
+        //                       int index = entry.key;
+        //                       ScreenType screenType = entry.value;
+        //                       bool isActive = index == panel.activeScreenIndex;
 
-        // Tab header for non-watchlist panels (Layout 1)
-        if (activeScreen != ScreenType.watchlist)
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              height: 45,
-              decoration: BoxDecoration(
-                // Window top bar - slight grey to indicate it's a window top bar
-                color: theme.isDarkMode
-                    ? WebDarkColors.surface
-                    : WebColors.surface, // Subtle grey for window top bar
-                // Window borders - all sides to make it look like a distinct window
-                border: Border(
-                  top: BorderSide(
-                    color: theme.isDarkMode
-                        ? WebDarkColors.divider.withOpacity(0.5)
-                        : WebColors.divider,
-                    width: 1,
-                  ),
-                  bottom: BorderSide(
-                    color: theme.isDarkMode
-                        ? WebDarkColors.divider.withOpacity(0.5)
-                        : WebColors.divider,
-                    width: 1,
-                  ),
-                  left: BorderSide(
-                    color: theme.isDarkMode
-                        ? WebDarkColors.divider.withOpacity(0.5)
-                        : WebColors.divider,
-                    width: 1,
-                  ),
-                  right: BorderSide(
-                    color: theme.isDarkMode
-                        ? WebDarkColors.divider.withOpacity(0.5)
-                        : WebColors.divider,
-                    width: 1,
-                  ),
-                ),
-                // Shadow to make it look elevated like a window
-                // boxShadow: [
-                //   BoxShadow(
-                //     color: Colors.black.withOpacity(0.05),
-                //     blurRadius: 4,
-                //     offset: const Offset(0, 2),
-                //     spreadRadius: 0,
-                //   ),
-                // ],
-              ),
-              child: Row(
-                children: [
-                  const SizedBox(width: 8),
-                  // Tabs for multiple screens
-                  if (panel.screens.length > 1) ...[
-                    Expanded(
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        physics: const BouncingScrollPhysics(),
-                        child: IntrinsicWidth(
-                          child: Row(
-                            children:
-                                panel.screens.asMap().entries.map((entry) {
-                              int index = entry.key;
-                              ScreenType screenType = entry.value;
-                              bool isActive = index == panel.activeScreenIndex;
-
-                              return Container(
-                                constraints: const BoxConstraints(minWidth: 80),
-                                child: GestureDetector(
-                                  onTap: () {
-                                    setState(() {
-                                      panel.activeScreenIndex = index;
-                                      panel.screenType = screenType;
-                                    });
-                                    _saveLayout();
-                                    _updateSubscriptionManagerForPanels();
-                                    _handleScreenTypeChange(screenType);
-                                  },
-                                  child: Container(
-                                    margin: const EdgeInsets.symmetric(
-                                        horizontal: 2),
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: isActive
-                                          ? Colors.white.withOpacity(0.2)
-                                          : Colors.transparent,
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(
-                                          _getIconForScreenType(screenType),
-                                          color: WebDarkColors.textPrimary,
-                                          size: 12,
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          _getScreenTitle(screenType),
-                                          style: WebTextStyles.para(
-                                            isDarkTheme: true,
-                                            color: theme.isDarkMode
-                                                ? WebDarkColors.textPrimary
-                                                : WebColors.textPrimary,
-                                            fontWeight: isActive
-                                                ? WebFonts.bold
-                                                : WebFonts.medium,
-                                          ),
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                        if (panel.screens.length > 1) ...[
-                                          const SizedBox(width: 8),
-                                          GestureDetector(
-                                            onTap: () => _removeScreenFromPanel(
-                                                panel, index),
-                                            child: const Icon(
-                                              Icons.close,
-                                              color:
-                                                  WebDarkColors.textSecondary,
-                                              size: 14,
-                                            ),
-                                          ),
-                                        ],
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              );
-                            }).toList(),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ] else ...[
-                    // Single screen title
-                    Expanded(
-                      child: Row(
-                        children: [
-                          Text(
-                            _getScreenTitleNullable(activeScreen),
-                            style: WebTextStyles.title(
-                              isDarkTheme: true,
-                              color: theme.isDarkMode
-                                  ? WebDarkColors.textPrimary
-                                  : WebColors.textPrimary,
-                              fontWeight: WebFonts.bold,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                  // Add screen button (only show if there are screens available to add)
-                  // if (activeScreen != ScreenType.watchlist && _hasAvailableScreensToAdd(panel))
-                  //   IconButton(
-                  //     icon: Icon(Icons.add, color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary, size: 18),
-                  //     tooltip: 'Add Screen Tab',
-                  //     onPressed: () {
-                  //       _showAddScreenToPanelDialog(panel);
-                  //     },
-                  //   ),
-                  // Screen selector
-                  // PopupMenuButton<ScreenType>(
-                  //   icon: Icon(Icons.swap_horiz, color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary, size: 18),
-                  //   tooltip: 'Replace Screen',
-                  //   onSelected: (ScreenType newType) {
-                  //     setState(() {
-                  //       if (panel.screens.isNotEmpty) {
-                  //         panel.screens[panel.activeScreenIndex] = newType;
-                  //         panel.screenType = newType;
-                  //       } else {
-                  //         panel.screenType = newType;
-                  //         panel.screens = [newType];
-                  //       }
-                  //     });
-                  //     _saveLayout();
-                  //     _handleScreenTypeChange(newType);
-                  //   },
-                  //   itemBuilder: (context) => ScreenType.values
-                  //       .where((type) => _shouldShowScreenOption(type, panel))
-                  //       .map((type) {
-                  //     return PopupMenuItem(
-                  //       value: type,
-                  //       child: Row(
-                  //         children: [
-                  //           Icon(
-                  //             _getIconForScreenType(type),
-                  //             size: 16,
-                  //           ),
-                  //           const SizedBox(width: 8),
-                  //           Text(_getScreenTitle(type)),
-                  //         ],
-                  //       ),
-                  //     );
-                  //   }).toList(),
-                  // ),
-                  // Remove button
-                  // Material(
-                  //   color: Colors.transparent,
-                  //   child: InkWell(
-                  //     onTap: () {
-                  //       setState(() {
-                  //         panel.screenType = null;
-                  //         panel.screens.clear();
-                  //         panel.activeScreenIndex = 0;
-                  //       });
-                  //       if (activeScreen != null) {
-                  //         _cleanupScreenResources(activeScreen);
-                  //       }
-                  //       _saveLayout();
-                  //     },
-                  //     borderRadius: BorderRadius.circular(18),
-                  //     child: Padding(
-                  //       padding: const EdgeInsets.all(8.0),
-                  //       child: Icon(
-                  //         Icons.close,
-                  //         color: theme.isDarkMode
-                  //             ? WebDarkColors.textPrimary
-                  //             : WebColors.textPrimary,
-                  //         size: 18,
-                  //       ),
-                  //     ),
-                  //   ),
-                  // ),
-                ],
-              ),
-            ),
-          ),
+        //                       return Container(
+        //                         constraints: const BoxConstraints(minWidth: 80),
+        //                         child: GestureDetector(
+        //                           onTap: () {
+        //                             setState(() {
+        //                               panel.activeScreenIndex = index;
+        //                               panel.screenType = screenType;
+        //                             });
+        //                             _saveLayout();
+        //                             _updateSubscriptionManagerForPanels();
+        //                             _handleScreenTypeChange(screenType);
+        //                           },
+        //                           child: Container(
+        //                             margin: const EdgeInsets.symmetric(
+        //                                 horizontal: 2),
+        //                             padding: const EdgeInsets.symmetric(
+        //                                 horizontal: 8, vertical: 4),
+        //                             decoration: BoxDecoration(
+        //                               color: isActive
+        //                                   ? Colors.white.withOpacity(0.2)
+        //                                   : Colors.transparent,
+        //                               borderRadius: BorderRadius.circular(4),
+        //                             ),
+        //                             child: Row(
+        //                               mainAxisSize: MainAxisSize.min,
+        //                               children: [
+        //                                 Icon(
+        //                                   _getIconForScreenType(screenType),
+        //                                   color: WebDarkColors.textPrimary,
+        //                                   size: 12,
+        //                                 ),
+        //                                 const SizedBox(width: 4),
+        //                                 Text(
+        //                                   _getScreenTitle(screenType),
+        //                                   style: WebTextStyles.para(
+        //                                     isDarkTheme: true,
+        //                                     color: theme.isDarkMode
+        //                                         ? WebDarkColors.textPrimary
+        //                                         : WebColors.textPrimary,
+        //                                     fontWeight: isActive
+        //                                         ? WebFonts.bold
+        //                                         : WebFonts.medium,
+        //                                   ),
+        //                                   overflow: TextOverflow.ellipsis,
+        //                                 ),
+        //                                 if (panel.screens.length > 1) ...[
+        //                                   const SizedBox(width: 8),
+        //                                   GestureDetector(
+        //                                     onTap: () => _removeScreenFromPanel(
+        //                                         panel, index),
+        //                                     child: const Icon(
+        //                                       Icons.close,
+        //                                       color:
+        //                                           WebDarkColors.textSecondary,
+        //                                       size: 14,
+        //                                     ),
+        //                                   ),
+        //                                 ],
+        //                               ],
+        //                             ),
+        //                           ),
+        //                         ),
+        //                       );
+        //                     }).toList(),
+        //                   ),
+        //                 ),
+        //               ),
+        //             ),
+        //           ] else ...[
+        //             // Single screen title
+        //             Expanded(
+        //               child: Row(
+        //                 children: [
+        //                   Text(
+        //                     _getScreenTitleNullable(activeScreen),
+        //                     style: WebTextStyles.title(
+        //                       isDarkTheme: true,
+        //                       color: theme.isDarkMode
+        //                           ? WebDarkColors.textPrimary
+        //                           : WebColors.textPrimary,
+        //                       fontWeight: WebFonts.bold,
+        //                     ),
+        //                     overflow: TextOverflow.ellipsis,
+        //                   ),
+        //                 ],
+        //               ),
+        //             ),
+        //           ],
+        //           // Add screen button (only show if there are screens available to add)
+        //           // if (activeScreen != ScreenType.watchlist && _hasAvailableScreensToAdd(panel))
+        //           //   IconButton(
+        //           //     icon: Icon(Icons.add, color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary, size: 18),
+        //           //     tooltip: 'Add Screen Tab',
+        //           //     onPressed: () {
+        //           //       _showAddScreenToPanelDialog(panel);
+        //           //     },
+        //           //   ),
+        //           // Screen selector
+        //           // PopupMenuButton<ScreenType>(
+        //           //   icon: Icon(Icons.swap_horiz, color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary, size: 18),
+        //           //   tooltip: 'Replace Screen',
+        //           //   onSelected: (ScreenType newType) {
+        //           //     setState(() {
+        //           //       if (panel.screens.isNotEmpty) {
+        //           //         panel.screens[panel.activeScreenIndex] = newType;
+        //           //         panel.screenType = newType;
+        //           //       } else {
+        //           //         panel.screenType = newType;
+        //           //         panel.screens = [newType];
+        //           //       }
+        //           //     });
+        //           //     _saveLayout();
+        //           //     _handleScreenTypeChange(newType);
+        //           //   },
+        //           //   itemBuilder: (context) => ScreenType.values
+        //           //       .where((type) => _shouldShowScreenOption(type, panel))
+        //           //       .map((type) {
+        //           //     return PopupMenuItem(
+        //           //       value: type,
+        //           //       child: Row(
+        //           //         children: [
+        //           //           Icon(
+        //           //             _getIconForScreenType(type),
+        //           //             size: 16,
+        //           //           ),
+        //           //           const SizedBox(width: 8),
+        //           //           Text(_getScreenTitle(type)),
+        //           //         ],
+        //           //       ),
+        //           //     );
+        //           //   }).toList(),
+        //           // ),
+        //           // Remove button
+        //           // Material(
+        //           //   color: Colors.transparent,
+        //           //   child: InkWell(
+        //           //     onTap: () {
+        //           //       setState(() {
+        //           //         panel.screenType = null;
+        //           //         panel.screens.clear();
+        //           //         panel.activeScreenIndex = 0;
+        //           //       });
+        //           //       if (activeScreen != null) {
+        //           //         _cleanupScreenResources(activeScreen);
+        //           //       }
+        //           //       _saveLayout();
+        //           //     },
+        //           //     borderRadius: BorderRadius.circular(18),
+        //           //     child: Padding(
+        //           //       padding: const EdgeInsets.all(8.0),
+        //           //       child: Icon(
+        //           //         Icons.close,
+        //           //         color: theme.isDarkMode
+        //           //             ? WebDarkColors.textPrimary
+        //           //             : WebColors.textPrimary,
+        //           //         size: 18,
+        //           //       ),
+        //           //     ),
+        //           //   ),
+        //           // ),
+        //         ],
+        //       ),
+        //     ),
+        //   ),
       ],
     );
   }
@@ -1573,6 +1327,49 @@ class _CustomizableSplitHomeScreenState
     );
   }
 
+  // Build theme toggle button for app bar
+  Widget _buildThemeToggleButton(bool isDarkMode) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: InkWell(
+        onTap: () {
+          // Toggle theme
+          final themeProv = ref.read(themeProvider.notifier);
+          themeProv.toggleTheme(
+            themeMod: isDarkMode ? 'Light' : 'Dark',
+          );
+        },
+        borderRadius: BorderRadius.circular(10),
+        splashColor: (isDarkMode ? WebDarkColors.primary : WebColors.primary)
+            .withOpacity(0.2),
+        highlightColor: (isDarkMode ? WebDarkColors.primary : WebColors.primary)
+            .withOpacity(0.1),
+        child: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: isDarkMode
+                ? WebDarkColors.surfaceVariant.withOpacity(0.3)
+                : WebColors.surfaceVariant.withOpacity(0.5),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: isDarkMode
+                  ? WebDarkColors.border.withOpacity(0.3)
+                  : WebColors.border.withOpacity(0.3),
+              width: 1,
+            ),
+          ),
+          child: Icon(
+            isDarkMode ? Icons.light_mode : Icons.dark_mode,
+            size: 18,
+            color: isDarkMode
+                ? WebDarkColors.textSecondary
+                : WebColors.textSecondary,
+          ),
+        ),
+      ),
+    );
+  }
+
   // Build profile section for app bar
   Widget _buildProfileSection(bool isDarkMode) {
     return Consumer(
@@ -1595,7 +1392,7 @@ class _CustomizableSplitHomeScreenState
   Widget _getScreenForType(ScreenType type) {
     switch (type) {
       case ScreenType.dashboard:
-        return const DashboardScreenWeb();
+        return const PopoverExample1 ();
       case ScreenType.watchlist:
         return const WatchListScreenWeb();
       case ScreenType.holdings:
@@ -2667,9 +2464,7 @@ class _CustomizableSplitHomeScreenState
         .isNotEmpty;
   }
 
-  // Replace screen in panel (don't add as tab)
   void _replaceScreenInPanel(ScreenType screenType) {
-    // Find the panel that doesn't have watchlist (prefer left panel for non-watchlist screens)
     int targetPanelIndex = -1;
     for (int i = 0; i < _panels.length; i++) {
       final panel = _panels[i];

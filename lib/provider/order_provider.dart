@@ -353,7 +353,7 @@ class OrderProvider extends DefaultChangeNotifier {
     
     // Only perform search if there's text and we're on a searchable tab
     if (orderSearchCtrl.text.isNotEmpty && index <= 3) {
-      orderSearch(orderSearchCtrl.text, context);
+      searchOrders(orderSearchCtrl.text, context);
     }
     
     // Lazy load data for tabs that haven't been loaded yet
@@ -721,6 +721,8 @@ class OrderProvider extends DefaultChangeNotifier {
 
   // A single search function to handle search for all order tabs
   searchOrders(String value, BuildContext context) {
+    print('🔍 [searchOrders] Called with value: "$value", _selectedTab: $_selectedTab');
+    
     // Clear all previous search results
     _orderSearchItem = [];
     _tradeBooksearch = [];
@@ -731,30 +733,57 @@ class OrderProvider extends DefaultChangeNotifier {
     ref.read(notificationprovider).clearTriggeredAlertSearch();
 
     if (value.isNotEmpty) {
+      print('🔍 [searchOrders] Searching in tab $_selectedTab');
       switch (_selectedTab) {
         case 0: // Open Orders
-          _orderSearchItem = _openOrder!
-              .where((element) =>
-                  element.tsym!.toUpperCase().contains(value.toUpperCase()))
-              .toList();
+          if (_openOrder != null && _openOrder!.isNotEmpty) {
+            _orderSearchItem = _openOrder!
+                .where((element) =>
+                    element.tsym!.toUpperCase().contains(value.toUpperCase()))
+                .toList();
+          } else {
+            _orderSearchItem = [];
+          }
           break;
         case 1: // Executed Orders
-          _orderSearchItem = _executedOrder!
-              .where((element) =>
-                  element.tsym!.toUpperCase().contains(value.toUpperCase()))
-              .toList();
+          if (_executedOrder != null && _executedOrder!.isNotEmpty) {
+            _orderSearchItem = _executedOrder!
+                .where((element) =>
+                    element.tsym!.toUpperCase().contains(value.toUpperCase()))
+                .toList();
+          } else {
+            _orderSearchItem = [];
+          }
           break;
         case 2: // Trade Book
-          _tradeBooksearch = _tradeBook!
-              .where((element) =>
-                  element.tsym!.toUpperCase().contains(value.toUpperCase()))
-              .toList();
+          print('🔍 [searchOrders] Case 2 - Trade Book');
+          print('🔍 [searchOrders] _tradeBook is null: ${_tradeBook == null}');
+          print('🔍 [searchOrders] _tradeBook isEmpty: ${_tradeBook?.isEmpty ?? true}');
+          if (_tradeBook != null && _tradeBook!.isNotEmpty) {
+            _tradeBooksearch = _tradeBook!
+                .where((element) =>
+                    element.tsym!.toUpperCase().contains(value.toUpperCase()))
+                .toList();
+            print('🔍 [searchOrders] Trade Book search results: ${_tradeBooksearch?.length ?? 0}');
+          } else {
+            print('🔍 [searchOrders] Trade Book data is null or empty, setting empty results');
+            _tradeBooksearch = [];
+          }
           break;
         case 3: // GTT Orders
-          _gttOrderBookSearch = _gttOrderBookModel!
-              .where((element) =>
-                  element.tsym!.toUpperCase().contains(value.toUpperCase()))
-              .toList();
+          print('🔍 [searchOrders] Case 3 - GTT Orders');
+          print('🔍 [searchOrders] _gttOrderBookModel is null: ${_gttOrderBookModel == null}');
+          print('🔍 [searchOrders] _gttOrderBookModel isEmpty: ${_gttOrderBookModel?.isEmpty ?? true}');
+          if (_gttOrderBookModel != null && _gttOrderBookModel!.isNotEmpty) {
+            _gttOrderBookSearch = _gttOrderBookModel!
+                .where((element) =>
+                    element.tsym!.toUpperCase().contains(value.toUpperCase()))
+                .toList();
+            print('🔍 [searchOrders] GTT search results: ${_gttOrderBookSearch?.length ?? 0}');
+          } else {
+            print('🔍 [searchOrders] GTT data is null or empty, setting empty results');
+            _gttOrderBookSearch = [];
+          }
           break;
         case 4: // MF Orders (Web) / Basket (Mobile)
           // Only perform MF search on web (mobile uses case 4 for Basket which doesn't need search)

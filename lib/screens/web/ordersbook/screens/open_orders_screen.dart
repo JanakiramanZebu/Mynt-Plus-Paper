@@ -1,26 +1,18 @@
-import 'package:flutter/material.dart';
+import 'dart:async';
+import 'package:flutter/material.dart' hide DataTable, DataColumn, DataRow, DataCell;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:data_table_2/data_table_2.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
 import 'package:mynt_plus/models/order_book_model/order_book_model.dart';
 import 'package:mynt_plus/provider/order_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
+import 'package:mynt_plus/provider/websocket_provider.dart';
 import 'package:mynt_plus/res/web_colors.dart';
 import 'package:mynt_plus/res/global_font_web.dart';
-import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
-import '../refactored/widgets/base_order_table.dart';
-import '../refactored/widgets/sortable_column_header.dart';
-import '../refactored/widgets/cells/ltp_cell.dart';
-import '../refactored/widgets/cells/action_button.dart';
-import '../refactored/models/sort_config.dart';
-import '../refactored/models/table_column_config.dart';
-import '../refactored/utils/column_utils.dart';
-import '../refactored/utils/cell_formatters.dart';
-import '../refactored/utils/sorting_utils.dart';
 import '../refactored/services/order_action_handler.dart';
+import '../refactored/utils/cell_formatters.dart';
 
-/// Separate screen widget for Open Orders tab
-/// Manages its own state, sorting, and actions
+/// Open Orders tab using shadcn DataTable
 class OpenOrdersScreen extends ConsumerStatefulWidget {
   final ScrollController horizontalScrollController;
   final ScrollController verticalScrollController;
@@ -36,28 +28,428 @@ class OpenOrdersScreen extends ConsumerStatefulWidget {
 }
 
 class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
-  final ValueNotifier<String?> _hoveredRowToken = ValueNotifier<String?>(null);
-  final ValueNotifier<int?> _hoveredColumnIndex = ValueNotifier<int?>(null);
-  SortConfig _sortConfig = const SortConfig();
+  int? _sortColumnIndex;
+  bool _sortAscending = true;
+  int? _hoveredRowIndex;
   bool _isProcessingCancel = false;
   bool _isProcessingModify = false;
   String? _processingOrderToken;
   Offset _modifyDialogPosition = const Offset(100, 100);
 
+  // Scroll controllers - must be in state to persist across rebuilds
+  late ScrollController _verticalScrollController;
+  late ScrollController _horizontalScrollController;
+
+  @override
+  void initState() {
+    super.initState();
+    _verticalScrollController = ScrollController();
+    _horizontalScrollController = ScrollController();
+  }
+
   @override
   void dispose() {
-    _hoveredRowToken.dispose();
-    _hoveredColumnIndex.dispose();
+    _verticalScrollController.dispose();
+    _horizontalScrollController.dispose();
     super.dispose();
+  }
+
+  // Helper method to ensure Geist font is always applied
+  TextStyle _geistTextStyle({Color? color, double? fontSize, FontWeight? fontWeight}) {
+    return TextStyle(
+      fontFamily: 'Geist',
+      color: color,
+      fontSize: fontSize,
+      fontWeight: fontWeight,
+    );
+  }
+
+  // Builds a cell with hover detection (matches holdings pattern)
+  shadcn.TableCell buildCellWithHover({
+    required Widget child,
+    required int rowIndex,
+    required int columnIndex,
+    bool alignRight = false,
+    VoidCallback? onTap,
+  }) {
+    final isFirstColumn = columnIndex == 0; // Time column
+    final isInstrumentColumn = columnIndex == 1; // Instrument column
+    final isLastColumn = columnIndex == 10; // Status column
+    
+    // Match the cell padding logic - Instrument column has more left, minimal right
+    // Last column mirrors this - minimal left, more right
+    EdgeInsets cellPadding;
+    if (isFirstColumn) {
+      // First column - symmetric padding
+      cellPadding = const EdgeInsets.symmetric(horizontal: 16, vertical: 8);
+    } else if (isInstrumentColumn) {
+      // Instrument column - more left, minimal right (for overlay buttons)
+      cellPadding = const EdgeInsets.fromLTRB(16, 8, 4, 8);
+    } else if (isLastColumn) {
+      // Last column - minimal left, more right
+      cellPadding = const EdgeInsets.fromLTRB(4, 8, 16, 8);
+    } else {
+      // Other columns - symmetric padding
+      cellPadding = const EdgeInsets.symmetric(horizontal: 8, vertical: 8);
+    }
+
+    return shadcn.TableCell(
+      theme: const shadcn.TableCellTheme(
+        border: shadcn.WidgetStatePropertyAll(
+          shadcn.Border(
+            top: shadcn.BorderSide.none,
+            bottom: shadcn.BorderSide.none,
+            left: shadcn.BorderSide.none,
+            right: shadcn.BorderSide.none,
+          ),
+        ),
+      ),
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _hoveredRowIndex = rowIndex),
+        onExit: (_) => setState(() => _hoveredRowIndex = null),
+        child: GestureDetector(
+          onTap: onTap,
+          behavior: HitTestBehavior.opaque,
+          child: Container(
+            padding: cellPadding,
+            alignment: alignRight ? Alignment.topRight : null,
+            child: child,
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Builds a sortable header cell
+  shadcn.TableCell buildHeaderCell(String label, int columnIndex, [bool alignRight = false]) {
+    final isFirstColumn = columnIndex == 0; // Time column
+    final isInstrumentColumn = columnIndex == 1; // Instrument column
+    final isLastColumn = columnIndex == 10; // Status column
+    
+    // Match the cell padding logic - Instrument column has more left, minimal right
+    // Last column mirrors this - minimal left, more right
+    EdgeInsets headerPadding;
+    if (isFirstColumn) {
+      // First column - symmetric padding
+      headerPadding = const EdgeInsets.symmetric(horizontal: 16, vertical: 6);
+    } else if (isInstrumentColumn) {
+      // Instrument column - more left, minimal right
+      headerPadding = const EdgeInsets.fromLTRB(16, 6, 4, 6);
+    } else if (isLastColumn) {
+      // Last column - minimal left, more right
+      headerPadding = const EdgeInsets.fromLTRB(4, 6, 16, 6);
+    } else {
+      // Other columns - symmetric padding
+      headerPadding = const EdgeInsets.symmetric(horizontal: 6, vertical: 6);
+    }
+
+    return shadcn.TableCell(
+      theme: const shadcn.TableCellTheme(
+        border: shadcn.WidgetStatePropertyAll(
+          shadcn.Border(
+            top: shadcn.BorderSide.none,
+            bottom: shadcn.BorderSide.none,
+            left: shadcn.BorderSide.none,
+            right: shadcn.BorderSide.none,
+          ),
+        ),
+      ),
+      child: InkWell(
+        onTap: () => _onSort(columnIndex),
+        child: Container(
+          padding: headerPadding,
+          alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
+          child: Row(
+            mainAxisAlignment: alignRight ? MainAxisAlignment.end : MainAxisAlignment.start,
+            children: [
+              if (alignRight && _sortColumnIndex == columnIndex)
+                Icon(
+                  _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
+                  size: 16,
+                  color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+                ),
+              if (alignRight && _sortColumnIndex == columnIndex) const SizedBox(width: 4),
+              Text(
+                label,
+                style: _geistTextStyle(
+                  color: shadcn.Theme.of(context).colorScheme.foreground,
+                ),
+              ),
+              if (!alignRight && _sortColumnIndex == columnIndex) const SizedBox(width: 4),
+              if (!alignRight && _sortColumnIndex == columnIndex)
+                Icon(
+                  _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
+                  size: 16,
+                  color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _onSort(int columnIndex) {
+    setState(() {
+      if (_sortColumnIndex == columnIndex) {
+        _sortAscending = !_sortAscending;
+      } else {
+        _sortColumnIndex = columnIndex;
+        _sortAscending = true;
+      }
+    });
+  }
+
+  String _formatProductType(OrderBookModel order) {
+    final product = order.sPrdtAli ?? order.prd ?? '';
+    final priceType = order.prctyp ?? '';
+    
+    if (product.isEmpty && priceType.isEmpty) {
+      return 'N/A';
+    } else if (product.isEmpty) {
+      return priceType;
+    } else if (priceType.isEmpty) {
+      return product;
+    } else {
+      return '$product / $priceType';
+    }
+  }
+
+  // Helper method to get status color using shadcn theme
+  String _formatTime(String time) {
+    if (time.isEmpty || time == '0.00') return 'N/A';
+    
+    // Try using CellFormatters first (expects "HH:mm:ss dd-MM-yyyy" format)
+    final formatted = CellFormatters.formatTime(time);
+    if (formatted.isNotEmpty) {
+      // Extract just the time part (hh:mm a) from "dd MMM yyyy, hh:mm a"
+      final parts = formatted.split(', ');
+      if (parts.length == 2) {
+        return parts[1]; // Return "hh:mm a" part
+      }
+      return formatted;
+    }
+    
+    // Fallback: If formatDateTime failed, try parsing as simple time string (HHMMSS or HHMM)
+    try {
+      if (time.length >= 6) {
+        // Format: "HHMMSS" to "HH:MM:SS"
+        final hours = time.substring(0, 2);
+        final minutes = time.substring(2, 4);
+        final seconds = time.substring(4, 6);
+        return '$hours:$minutes:$seconds';
+      } else if (time.length >= 4) {
+        // Format: "HHMM" to "HH:MM"
+        final hours = time.substring(0, 2);
+        final minutes = time.substring(2, 4);
+        return '$hours:$minutes';
+      }
+    } catch (e) {
+      // If parsing fails, return as is
+    }
+    
+    return time;
+  }
+
+  Color _getStatusColor(String status) {
+    final colorScheme = shadcn.Theme.of(context).colorScheme;
+    final statusUpper = status.toUpperCase();
+    
+    if (statusUpper.contains('COMPLETE') || statusUpper.contains('FILLED')) {
+      return colorScheme.chart2;
+    } else if (statusUpper.contains('REJECT') || statusUpper.contains('CANCEL')) {
+      return colorScheme.destructive;
+    } else if (statusUpper.contains('PENDING') || statusUpper.contains('OPEN')) {
+      return colorScheme.chart1;
+    }
+    return colorScheme.mutedForeground;
+  }
+
+  // Calculate minimum column widths dynamically based on header and data
+  Map<int, double> _calculateMinWidths(List<OrderBookModel> orders, BuildContext context) {
+    // Use fixed font size for measurement (table text is not responsive, only buttons are)
+    final textStyle = const TextStyle(fontSize: 14, fontFamily: 'Geist');
+    const padding = 24.0; // Padding for cell content
+    const sortIconWidth = 24.0; // Extra space for sort indicator icon
+
+    final headers = [
+      'Time',
+      'Instrument',
+      'Product',
+      'Type',
+      'Qty',
+      'Avg price',
+      'LTP',
+      'Price',
+      'Trigger price',
+      'Order value',
+      'Status',
+    ];
+    final minWidths = <int, double>{};
+
+    // Calculate width for each column
+    for (int col = 0; col < headers.length; col++) {
+      double maxWidth = 0.0;
+
+      // Measure header width and add space for sort icon
+      final headerWidth = _measureTextWidth(headers[col], textStyle);
+      maxWidth = headerWidth + sortIconWidth;
+
+      // Measure widest value in this column (sample first 5 rows for performance)
+      for (final order in orders.take(5)) {
+        String cellText = '';
+        switch (col) {
+          case 0: // Time
+            cellText = _formatTime(order.norentm ?? '0.00');
+            break;
+          case 1: // Instrument
+            // For Instrument column, measure symbol + exchange separately
+            // since exchange uses smaller font
+            final symbol = (order.tsym ?? '').replaceAll("-EQ", "").trim();
+            final exchange = order.exch ?? '';
+            final exchangeText = exchange.isNotEmpty ? ' $exchange' : '';
+            
+            // Measure symbol with normal font (fixed 14px)
+            final symbolWidth = _measureTextWidth(symbol, textStyle);
+            
+            // Measure exchange with smaller font (fixed 12px, matches rendering)
+            final exchangeStyle = const TextStyle(fontSize: 12, fontFamily: 'Geist');
+            final exchangeWidth = exchangeText.isNotEmpty 
+                ? _measureTextWidth(exchangeText, exchangeStyle) 
+                : 0.0;
+            
+            // Total width = symbol + exchange + 4px gap
+            final totalWidth = symbolWidth + exchangeWidth + (exchangeText.isNotEmpty ? 4.0 : 0.0);
+            if (totalWidth > maxWidth) {
+              maxWidth = totalWidth;
+            }
+            // Skip normal cellWidth calculation for Instrument - already handled above
+            continue;
+          case 2: // Product
+            cellText = _formatProductType(order);
+            break;
+          case 3: // Type
+            cellText = order.trantype == "S" ? "SELL" : "BUY";
+            break;
+          case 4: // Qty
+            cellText = order.qty?.toString() ?? '0';
+            break;
+          case 5: // Avg price
+            cellText = order.avgprc ?? '0.00';
+            break;
+          case 6: // LTP
+            cellText = CellFormatters.getValidLTP(order);
+            break;
+          case 7: // Price
+            cellText = CellFormatters.getValidPrice(order);
+            break;
+          case 8: // Trigger price
+            cellText = (order.trgprc != null && order.trgprc != '0' && order.trgprc != '0.00')
+                ? order.trgprc!
+                : '0.00';
+            break;
+          case 9: // Order value
+            cellText = CellFormatters.calculateOrderValue(order);
+            break;
+          case 10: // Status
+            cellText = CellFormatters.getStatusText(order);
+            break;
+        }
+
+        final cellWidth = _measureTextWidth(cellText, textStyle);
+        if (cellWidth > maxWidth) {
+          maxWidth = cellWidth;
+        }
+      }
+
+      // For instrument column, no need to reserve space for buttons
+      // Buttons will overlay on the right side, covering only half the text
+      // Text can use full width, buttons appear on hover as overlay
+      // Ensure minimum width to prevent excessive truncation
+      if (headers[col] == 'Instrument') {
+        const minInstrumentWidth = 150.0;
+        maxWidth = maxWidth < minInstrumentWidth ? minInstrumentWidth : maxWidth;
+      }
+
+      // Set minimum width (max of header/data + padding)
+      minWidths[col] = maxWidth + padding;
+    }
+
+    return minWidths;
+  }
+
+  // Helper method to measure text width dynamically
+  double _measureTextWidth(String text, TextStyle style) {
+    final textPainter = TextPainter(
+      text: TextSpan(text: text, style: style),
+      textDirection: TextDirection.ltr,
+      maxLines: 1,
+    );
+    textPainter.layout();
+    return textPainter.width;
+  }
+
+  List<OrderBookModel> _getSortedOrders(List<OrderBookModel> orders) {
+    if (_sortColumnIndex == null) return orders;
+
+    final sorted = List<OrderBookModel>.from(orders);
+    sorted.sort((a, b) {
+      int comparison = 0;
+      
+      switch (_sortColumnIndex) {
+        case 0: // Time
+          comparison = (a.norentm ?? '').compareTo(b.norentm ?? '');
+          break;
+        case 1: // Instrument
+          comparison = (a.tsym ?? '').compareTo(b.tsym ?? '');
+          break;
+        case 2: // Product
+           comparison = _formatProductType(a).compareTo(_formatProductType(b));
+          break;
+        case 3: // Type
+          comparison = (a.trantype ?? '').compareTo(b.trantype ?? '');
+          break;
+        case 4: // Qty
+          comparison = (int.tryParse(a.qty ?? '0') ?? 0).compareTo(int.tryParse(b.qty ?? '0') ?? 0);
+          break;
+        case 5: // Avg price
+          comparison = (double.tryParse(a.avgprc ?? '0') ?? 0).compareTo(double.tryParse(b.avgprc ?? '0') ?? 0);
+          break;
+        case 6: // LTP
+          comparison = (double.tryParse(a.ltp ?? '0') ?? 0).compareTo(double.tryParse(b.ltp ?? '0') ?? 0);
+          break;
+        case 7: // Price
+          comparison = (double.tryParse(a.prc ?? '0') ?? 0).compareTo(double.tryParse(b.prc ?? '0') ?? 0);
+          break;
+        case 8: // Trigger price
+          comparison = (double.tryParse(a.trgprc ?? '0') ?? 0).compareTo(double.tryParse(b.trgprc ?? '0') ?? 0);
+          break;
+        case 9: // Order value
+          final aValue = (double.tryParse(a.prc ?? '0') ?? 0) * (int.tryParse(a.qty ?? '0') ?? 0);
+          final bValue = (double.tryParse(b.prc ?? '0') ?? 0) * (int.tryParse(b.qty ?? '0') ?? 0);
+          comparison = aValue.compareTo(bValue);
+          break;
+        case 10: // Status
+          comparison = (a.status ?? '').compareTo(b.status ?? '');
+          break;
+      }
+
+      return _sortAscending ? comparison : -comparison;
+    });
+
+    return sorted;
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = ref.watch(themeProvider);
-    final orderBook = ref.read(orderProvider);
-    
+    final orderBook = ref.watch(orderProvider);
+
     // Get orders (search or regular)
-    final orders = orderBook.orderSearchCtrl.text.isNotEmpty
+    // Only show search results if we're on the Open Orders tab (index 0)
+    final searchQuery = orderBook.orderSearchCtrl.text.trim();
+    final isOpenOrdersTab = orderBook.selectedTab == 0;
+    final orders = (searchQuery.isNotEmpty && isOpenOrdersTab)
         ? (orderBook.orderSearchItem ?? [])
         : (orderBook.openOrder ?? []);
 
@@ -78,213 +470,339 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
           ),
         );
       } else {
-        return const SizedBox(
+        return SizedBox(
           height: 400,
           child: Align(
             alignment: Alignment.center,
             child: Padding(
-              padding: EdgeInsets.all(16.0),
-              child: NoDataFound(),
+              padding: const EdgeInsets.all(16.0),
+              child: NoDataFound(
+                title: searchQuery.isNotEmpty 
+                    ? "No Orders Found" 
+                    : "No Orders",
+                subtitle: searchQuery.isNotEmpty
+                    ? "No orders match your search \"$searchQuery\"."
+                    : "You don't have any open orders yet.",
+                primaryEnabled: false,
+                secondaryEnabled: false,
+              ),
             ),
           ),
         );
       }
     }
 
-    // Get column configuration
-    final screenWidth = MediaQuery.of(context).size.width;
-    final columnConfig = TableColumnConfig.orderBook(screenWidth);
-    final headers = columnConfig.headers;
-
-    // Build columns
-    final columns = _buildColumns(headers, theme);
-    
-    // Build rows
-    final rows = _buildRows(orders, headers, theme);
-
-    return BaseOrderTable(
-      columns: columns,
-      rows: rows,
-      horizontalScrollController: widget.horizontalScrollController,
-      verticalScrollController: widget.verticalScrollController,
-      fixedLeftColumns: 1,
-      minWidth: 1840,
-      theme: theme,
-    );
-  }
-
-  List<DataColumn2> _buildColumns(List<String> headers, ThemesProvider theme) {
-    return headers.map((header) {
-      final columnIndex = ColumnUtils.getOrderBookColumnIndex(header);
-      final isNumeric = ColumnUtils.isNumericColumn(header, 'order');
-      final isInstrument = header == 'Instrument';
-      final isTime = header == 'Time';
-
-      return DataColumn2(
-        label: SortableColumnHeader(
-          header: header,
-          columnIndex: columnIndex,
-          sortConfig: _sortConfig,
-          hoveredColumnIndex: _hoveredColumnIndex,
-          onSort: () => setState(() {
-            _sortConfig = _sortConfig.toggleSort(columnIndex);
-          }),
-          theme: theme,
-          isNumeric: isNumeric,
-        ),
-        size: isInstrument ? ColumnSize.L : ColumnSize.S,
-        fixedWidth: isInstrument ? 300.0 : (isTime ? 220.0 : null),
-        onSort: null,
-      );
-    }).toList();
-  }
-
-  List<DataRow2> _buildRows(
-    List<OrderBookModel> orders,
-    List<String> headers,
-    ThemesProvider theme,
-  ) {
-    final sorted = SortingUtils.sortOrders(orders, _sortConfig);
+    final sortedOrders = _getSortedOrders(orders);
     final actionHandler = OrderActionHandler(ref: ref, context: context);
 
-    return sorted.map((order) {
-      final uniqueId = order.norenordno?.toString() ??
-          order.token?.toString() ??
-          '';
+    // Build data rows
+    final dataRows = <shadcn.TableRow>[];
+    for (var i = 0; i < sortedOrders.length; i++) {
+      final order = sortedOrders[i];
+      final uniqueId = order.norenordno?.toString() ?? order.token?.toString() ?? '';
+      final isHovered = _hoveredRowIndex == i;
+      final colorScheme = shadcn.Theme.of(context).colorScheme;
 
-      return DataRow2(
-        color: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.hovered) ||
-              _hoveredRowToken.value == uniqueId) {
-            return theme.isDarkMode
-                ? WebDarkColors.primary.withOpacity(0.06)
-                : WebColors.primary.withOpacity(0.10);
-          }
-          return Colors.transparent;
-        }),
-        cells: headers.map((header) {
-          return _buildCell(header, order, theme, uniqueId, actionHandler);
-        }).toList(),
-        onTap: () => actionHandler.openOrderDetail(order),
+      dataRows.add(
+        shadcn.TableRow(
+          cells: [
+            buildCellWithHover(
+              rowIndex: i,
+              columnIndex: 0,
+              onTap: () => actionHandler.openOrderDetail(order),
+              child: Text(
+                _formatTime(order.norentm ?? '0.00'),
+                style: _geistTextStyle(
+                  color: colorScheme.foreground,
+                ),
+                overflow: TextOverflow.visible,
+                softWrap: false,
+              ),
+            ),
+            buildCellWithHover(
+              rowIndex: i,
+              columnIndex: 1,
+              child: GestureDetector(
+                onTap: () => actionHandler.openOrderDetail(order),
+                behavior: HitTestBehavior.opaque,
+                child: _buildInstrumentCell(order, theme, uniqueId, actionHandler, isHovered),
+              ),
+            ),
+            buildCellWithHover(
+              rowIndex: i,
+              columnIndex: 2,
+              onTap: () => actionHandler.openOrderDetail(order),
+              child: Text(
+                _formatProductType(order),
+                style: _geistTextStyle(
+                  color: colorScheme.foreground,
+                ),
+                overflow: TextOverflow.visible,
+                softWrap: false,
+              ),
+            ),
+            buildCellWithHover(
+              rowIndex: i,
+              columnIndex: 3,
+              onTap: () => actionHandler.openOrderDetail(order),
+              child: Text(
+                order.trantype == "S" ? "SELL" : "BUY",
+                style: _geistTextStyle(
+                  color: order.trantype == "S" ? colorScheme.destructive : colorScheme.chart2,
+                ),
+              ),
+            ),
+            buildCellWithHover(
+              rowIndex: i,
+              columnIndex: 4,
+              alignRight: true,
+              onTap: () => actionHandler.openOrderDetail(order),
+              child: Text(
+                order.qty?.toString() ?? '0',
+                style: _geistTextStyle(
+                  color: colorScheme.foreground,
+                ),
+              ),
+            ),
+            buildCellWithHover(
+              rowIndex: i,
+              columnIndex: 5,
+              alignRight: true,
+              onTap: () => actionHandler.openOrderDetail(order),
+              child: Text(
+                order.avgprc ?? '0.00',
+                style: _geistTextStyle(
+                  color: colorScheme.foreground,
+                ),
+              ),
+            ),
+            buildCellWithHover(
+              rowIndex: i,
+              columnIndex: 6,
+              alignRight: true,
+              onTap: () => actionHandler.openOrderDetail(order),
+              child: _OrderLTPCell(
+                token: order.token ?? '',
+                initialLtp: CellFormatters.getValidLTP(order),
+              ),
+            ),
+            buildCellWithHover(
+              rowIndex: i,
+              columnIndex: 7,
+              alignRight: true,
+              onTap: () => actionHandler.openOrderDetail(order),
+              child: Text(
+                CellFormatters.getValidPrice(order),
+                style: _geistTextStyle(
+                  color: colorScheme.foreground,
+                ),
+              ),
+            ),
+            buildCellWithHover(
+              rowIndex: i,
+              columnIndex: 8,
+              alignRight: true,
+              onTap: () => actionHandler.openOrderDetail(order),
+              child: Text(
+                (order.trgprc != null && order.trgprc != '0' && order.trgprc != '0.00')
+                    ? order.trgprc!
+                    : '0.00',
+                style: _geistTextStyle(
+                  color: colorScheme.foreground,
+                ),
+              ),
+            ),
+            buildCellWithHover(
+              rowIndex: i,
+              columnIndex: 9,
+              alignRight: true,
+              onTap: () => actionHandler.openOrderDetail(order),
+              child: Text(
+                CellFormatters.calculateOrderValue(order),
+                style: _geistTextStyle(
+                  color: colorScheme.foreground,
+                ),
+              ),
+            ),
+            buildCellWithHover(
+              rowIndex: i,
+              columnIndex: 10,
+              onTap: () => actionHandler.openOrderDetail(order),
+              child: Text(
+                CellFormatters.getStatusText(order),
+                style: _geistTextStyle(
+                  color: _getStatusColor(CellFormatters.getStatusText(order)),
+                ),
+                overflow: TextOverflow.visible,
+                softWrap: false,
+              ),
+            ),
+          ],
+        ),
       );
-    }).toList();
-  }
-
-  DataCell _buildCell(
-    String column,
-    OrderBookModel order,
-    ThemesProvider theme,
-    String uniqueId,
-    OrderActionHandler actionHandler,
-  ) {
-    Widget cellContent;
-    final isNumeric = ColumnUtils.isNumericColumn(column, 'order');
-    final alignment = isNumeric ? Alignment.centerRight : Alignment.centerLeft;
-
-    switch (column) {
-      case 'Instrument':
-        cellContent = _buildInstrumentCell(order, theme, uniqueId, actionHandler);
-        break;
-      case 'Product':
-        cellContent = _buildTextCell(
-          order.sPrdtAli ?? order.prd ?? 'N/A',
-          theme,
-          Alignment.centerLeft,
-        );
-        break;
-      case 'Type':
-        final buySell = order.trantype == "S" ? "SELL" : "BUY";
-        final buttonColor = order.trantype == "S"
-            ? (theme.isDarkMode ? colors.lossDark : colors.lossLight)
-            : (theme.isDarkMode ? colors.profitDark : colors.profitLight);
-        cellContent = _buildTextCell(buySell, theme, Alignment.centerLeft,
-            color: buttonColor);
-        break;
-      case 'Qty':
-        cellContent = _buildTextCell(
-          order.qty?.toString() ?? '0',
-          theme,
-          Alignment.centerRight,
-        );
-        break;
-      case 'Avg price':
-        cellContent = _buildTextCell(
-          order.avgprc ?? '0.00',
-          theme,
-          Alignment.centerRight,
-        );
-        break;
-      case 'LTP':
-        if (order.token == null || order.token!.isEmpty) {
-          cellContent = _buildTextCell(
-            CellFormatters.getValidLTP(order),
-            theme,
-            Alignment.centerRight,
-          );
-        } else {
-          cellContent = OrderBookLTPCell(
-            token: order.token!,
-            initialLtp: CellFormatters.getValidLTP(order),
-            order: order,
-            theme: theme,
-          );
-        }
-        break;
-      case 'Price':
-        cellContent = _buildTextCell(
-          CellFormatters.getValidPrice(order),
-          theme,
-          Alignment.centerRight,
-        );
-        break;
-      case 'Trigger price':
-        final triggerPrice = (order.trgprc != null &&
-                order.trgprc != '0' &&
-                order.trgprc != '0.00')
-            ? order.trgprc!
-            : '0.00';
-        cellContent = _buildTextCell(triggerPrice, theme, Alignment.centerRight);
-        break;
-      case 'Order value':
-        cellContent = _buildTextCell(
-          CellFormatters.calculateOrderValue(order),
-          theme,
-          Alignment.centerRight,
-        );
-        break;
-      case 'Status':
-        final statusText = CellFormatters.getStatusText(order);
-        final statusColor = CellFormatters.getStatusColor(statusText, theme);
-        cellContent = _buildTextCell(
-          statusText,
-          theme,
-          Alignment.centerLeft,
-          color: statusColor,
-        );
-        break;
-      case 'Time':
-        final time = order.norentm != null ? order.norentm! : '0.00';
-        cellContent = _buildTextCell(
-          CellFormatters.formatTime(time),
-          theme,
-          Alignment.centerRight,
-        );
-        break;
-      default:
-        cellContent = const SizedBox.shrink();
     }
 
-    return DataCell(
-      MouseRegion(
-        onEnter: (_) => _hoveredRowToken.value = uniqueId,
-        onExit: (_) => _hoveredRowToken.value = null,
-        child: SizedBox.expand(
-          child: Container(
-            alignment: alignment,
-            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
-            child: cellContent,
-          ),
-        ),
+    // Return shadcn Table with proper structure
+    return shadcn.OutlinedContainer(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          // Calculate minimum widths dynamically based on actual content
+          final minWidths = _calculateMinWidths(sortedOrders, context);
+
+          // Available width
+          final availableWidth = constraints.maxWidth;
+          
+          // Step 1: Start with minimum widths (content-based, no wasted space)
+          final columnWidths = <int, double>{};
+          for (int i = 0; i < 11; i++) {
+            columnWidths[i] = minWidths[i] ?? 100.0;
+          }
+
+          // Step 2: Calculate total minimum width needed
+          final totalMinWidth = columnWidths.values.fold<double>(0.0, (sum, width) => sum + width);
+          
+          // Step 3: If there's extra space, distribute it proportionally
+          // This prevents unnecessary horizontal scroll while using available space efficiently
+          if (totalMinWidth < availableWidth) {
+            final extraSpace = availableWidth - totalMinWidth;
+            
+            // Define which columns can grow and their growth priorities
+            // Instrument gets more growth, text columns get medium, numeric get less
+            const instrumentGrowthFactor = 2.0; // Instrument can grow 2x more than numeric
+            const textGrowthFactor = 1.2;
+            const numericGrowthFactor = 1.0;
+            
+            // Calculate growth factors for each column
+            final growthFactors = <int, double>{};
+            double totalGrowthFactor = 0.0;
+            
+            for (int i = 0; i < 11; i++) {
+              // Column 0: Time (numeric)
+              // Column 1: Instrument
+              // Columns 2, 3, 10: Text columns (Product, Type, Status)
+              // Rest: Numeric columns
+              if (i == 1) {
+                growthFactors[i] = instrumentGrowthFactor;
+                totalGrowthFactor += instrumentGrowthFactor;
+              } else if (i == 2 || i == 3 || i == 10) {
+                growthFactors[i] = textGrowthFactor;
+                totalGrowthFactor += textGrowthFactor;
+              } else {
+                growthFactors[i] = numericGrowthFactor;
+                totalGrowthFactor += numericGrowthFactor;
+              }
+            }
+            
+            // Distribute extra space proportionally
+            if (totalGrowthFactor > 0) {
+              for (int i = 0; i < 11; i++) {
+                if (growthFactors[i]! > 0) {
+                  final extraForThisColumn = (extraSpace * growthFactors[i]!) / totalGrowthFactor;
+                  columnWidths[i] = columnWidths[i]! + extraForThisColumn;
+                }
+              }
+            }
+          }
+
+          // Calculate total required width
+          final totalRequiredWidth = columnWidths.values.fold<double>(0.0, (sum, width) => sum + width);
+          
+          // If total width exceeds available width, enable horizontal scrolling
+          final needsHorizontalScroll = totalRequiredWidth > availableWidth;
+
+          // Build table content
+          Widget buildTableContent() {
+            return Column(
+              children: [
+                // Fixed Header (synced with horizontal scroll)
+                shadcn.Table(
+                  columnWidths: {
+                    0: shadcn.FixedTableSize(columnWidths[0]!),
+                    1: shadcn.FixedTableSize(columnWidths[1]!),
+                    2: shadcn.FixedTableSize(columnWidths[2]!),
+                    3: shadcn.FixedTableSize(columnWidths[3]!),
+                    4: shadcn.FixedTableSize(columnWidths[4]!),
+                    5: shadcn.FixedTableSize(columnWidths[5]!),
+                    6: shadcn.FixedTableSize(columnWidths[6]!),
+                    7: shadcn.FixedTableSize(columnWidths[7]!),
+                    8: shadcn.FixedTableSize(columnWidths[8]!),
+                    9: shadcn.FixedTableSize(columnWidths[9]!),
+                    10: shadcn.FixedTableSize(columnWidths[10]!),
+                  },
+                  defaultRowHeight: const shadcn.FixedTableSize(40),
+                  rows: [
+                    shadcn.TableHeader(
+                      cells: [
+                        buildHeaderCell('Time', 0),
+                        buildHeaderCell('Instrument', 1),
+                        buildHeaderCell('Product/Type', 2),
+                        buildHeaderCell('Type', 3),
+                        buildHeaderCell('Qty', 4, true),
+                        buildHeaderCell('Avg price', 5, true),
+                        buildHeaderCell('LTP', 6, true),
+                        buildHeaderCell('Price', 7, true),
+                        buildHeaderCell('Trigger price', 8, true),
+                        buildHeaderCell('Order value', 9, true),
+                        buildHeaderCell('Status', 10),
+                      ],
+                    ),
+                  ],
+                ),
+                // Scrollable Body (vertical scroll)
+                Expanded(
+                  child: Scrollbar(
+                    controller: _verticalScrollController,
+                    thumbVisibility: true,
+                    trackVisibility: true,
+                    interactive: true,
+                    child: SingleChildScrollView(
+                      controller: _verticalScrollController,
+                      scrollDirection: Axis.vertical,
+                      child: shadcn.Table(
+                        key: ValueKey('table_${_sortColumnIndex}_$_sortAscending'),
+                        columnWidths: {
+                          0: shadcn.FixedTableSize(columnWidths[0]!),
+                          1: shadcn.FixedTableSize(columnWidths[1]!),
+                          2: shadcn.FixedTableSize(columnWidths[2]!),
+                          3: shadcn.FixedTableSize(columnWidths[3]!),
+                          4: shadcn.FixedTableSize(columnWidths[4]!),
+                          5: shadcn.FixedTableSize(columnWidths[5]!),
+                          6: shadcn.FixedTableSize(columnWidths[6]!),
+                          7: shadcn.FixedTableSize(columnWidths[7]!),
+                          8: shadcn.FixedTableSize(columnWidths[8]!),
+                          9: shadcn.FixedTableSize(columnWidths[9]!),
+                          10: shadcn.FixedTableSize(columnWidths[10]!),
+                        },
+                        defaultRowHeight: const shadcn.FixedTableSize(40),
+                        rows: dataRows,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          }
+
+          // Horizontal scroll wrapper (if needed)
+          if (needsHorizontalScroll) {
+            return Scrollbar(
+              controller: _horizontalScrollController,
+              thumbVisibility: true,
+              trackVisibility: true,
+              interactive: true,
+              child: SingleChildScrollView(
+                controller: _horizontalScrollController,
+                scrollDirection: Axis.horizontal,
+                child: SizedBox(
+                  width: totalRequiredWidth,
+                  child: buildTableContent(),
+                ),
+              ),
+            );
+          }
+
+          return buildTableContent();
+        },
       ),
     );
   }
@@ -294,182 +812,326 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
     ThemesProvider theme,
     String uniqueId,
     OrderActionHandler actionHandler,
+    bool isHovered,
   ) {
     final isProcessing = _processingOrderToken == uniqueId;
     final isPending = order.status == "PENDING" ||
         order.status == "OPEN" ||
         order.status == "TRIGGER_PENDING";
 
-    final displayText = CellFormatters.formatInstrumentText(order);
+    // Format instrument: remove "-EQ" and don't include exchange
+    final symbol = order.tsym ?? '';
+    final displayText = symbol.replaceAll("-EQ", "").trim();
+    final colorScheme = shadcn.Theme.of(context).colorScheme;
 
-    return ValueListenableBuilder<String?>(
-      valueListenable: _hoveredRowToken,
-      builder: (context, hoveredToken, child) {
-        final rowIsHovered = hoveredToken == uniqueId;
-
-        return Row(
-          children: [
-            // ✅ Instrument name - always visible, never compressed
-            Expanded(
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Tooltip(
-                  message: displayText,
-                  child: Text(
-                    displayText,
-                    style: WebTextStyles.custom(
-                      fontSize: 13,
-                      isDarkTheme: theme.isDarkMode,
-                      color: theme.isDarkMode
-                          ? WebDarkColors.textPrimary
-                          : WebColors.textPrimary,
-                      fontWeight: WebFonts.medium,
-                    ),
-                    maxLines: 1,
-                    softWrap: false,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ),
-            ),
-            // ✅ Action buttons - appear on hover, stay within bounds
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 140),
-              width: rowIsHovered ? null : 0,
-              curve: Curves.easeInOut,
-              child: IgnorePointer(
-                ignoring: !rowIsHovered,
-                child: AnimatedOpacity(
-                  opacity: rowIsHovered ? 1 : 0,
-                  duration: const Duration(milliseconds: 140),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
+    return SizedBox(
+      width: double.infinity,
+      height: double.infinity,
+      child: Stack(
+        clipBehavior: Clip.hardEdge,
+        children: [
+          // Instrument name - full width, can be partially covered by buttons
+          // Only truncate when hovered (buttons visible), otherwise show full text
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Tooltip(
+              message: '$displayText${order.exch != null && order.exch!.isNotEmpty ? ' ${order.exch}' : ''}',
+              child: Padding(
+                padding: EdgeInsets.only(right: isHovered ? 8.0 : 0.0),
+                child: RichText(
+                  overflow: isHovered ? TextOverflow.ellipsis : TextOverflow.visible,
+                  maxLines: 1,
+                  softWrap: false,
+                  text: TextSpan(
                     children: [
-                      const SizedBox(width: 8),
-                      if (isPending) ...[
-                        ActionButton(
-                          label: 'Cancel',
-                          color: Colors.white,
-                          backgroundColor: theme.isDarkMode
-                              ? WebDarkColors.error
-                              : WebColors.error,
-                          onPressed: isProcessing && _isProcessingCancel
-                              ? null
-                              : () async {
-                                  _processingOrderToken = uniqueId;
-                                  await actionHandler.cancelOrder(
-                                    order,
-                                    onProcessingStateChanged: (processing) {
-                                      setState(() {
-                                        _isProcessingCancel = processing;
-                                        if (!processing) _processingOrderToken = null;
-                                      });
-                                    },
-                                  );
-                                },
-                          theme: theme,
+                      // Symbol (normal color, fixed 14px)
+                      TextSpan(
+                        text: displayText,
+                        style: _geistTextStyle(
+                          color: colorScheme.foreground,
+                          fontSize: 14.0,
                         ),
-                        const SizedBox(width: 6),
-                        ActionButton(
-                          label: 'Modify',
-                          color: Colors.white,
-                          backgroundColor: theme.isDarkMode
-                              ? WebDarkColors.primary
-                              : WebColors.primary,
-                          onPressed: isProcessing && _isProcessingModify
-                              ? null
-                              : () async {
-                                  _processingOrderToken = uniqueId;
-                                  await actionHandler.modifyOrder(
-                                    order,
-                                    onProcessingStateChanged: (processing) {
-                                      setState(() {
-                                        _isProcessingModify = processing;
-                                        if (!processing) _processingOrderToken = null;
-                                      });
-                                    },
-                                    modifyDialogPosition: _modifyDialogPosition,
-                                    onPositionChanged: (pos) {
-                                      _modifyDialogPosition = pos;
-                                    },
-                                  );
-                                },
-                          theme: theme,
-                        ),
-                      ] else ...[
-                        ActionButton(
-                          label: 'Repeat',
-                          color: Colors.white,
-                          backgroundColor: theme.isDarkMode
-                              ? WebDarkColors.primary
-                              : WebColors.primary,
-                          onPressed: () => actionHandler.repeatOrder(order),
-                          theme: theme,
-                        ),
-                        if (order.status == "OPEN") ...[
-                          const SizedBox(width: 6),
-                          ActionButton(
-                            label: 'Cancel',
-                            color: Colors.white,
-                            backgroundColor: theme.isDarkMode
-                                ? WebDarkColors.error
-                                : WebColors.error,
-                            onPressed: isProcessing && _isProcessingCancel
-                                ? null
-                                : () async {
-                                    _processingOrderToken = uniqueId;
-                                    await actionHandler.cancelOrder(
-                                      order,
-                                      onProcessingStateChanged: (processing) {
-                                        setState(() {
-                                          _isProcessingCancel = processing;
-                                          if (!processing) _processingOrderToken = null;
-                                        });
-                                      },
-                                    );
-                                  },
-                            theme: theme,
+                      ),
+                      // Exchange (mutedForeground color, smaller font, fixed 12px)
+                      if (order.exch != null && order.exch!.isNotEmpty)
+                        TextSpan(
+                          text: ' ${order.exch}',
+                          style: _geistTextStyle(
+                            color: colorScheme.mutedForeground,
+                            fontSize: 12.0,
                           ),
-                        ],
-                      ],
+                        ),
                     ],
                   ),
                 ),
               ),
             ),
-          ],
-        );
-      },
+          ),
+          // Action buttons - overlay on the right side, covering only half the text
+          // Use Visibility to ensure buttons don't take space when not hovered
+          Visibility(
+            visible: isHovered,
+            maintainSize: false,
+            maintainAnimation: false,
+            maintainState: false,
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  // Responsive max width based on screen size
+                  final screenWidth = MediaQuery.of(context).size.width;
+                  final isSmallScreen = screenWidth < 768;
+                  final isVerySmallScreen = screenWidth < 480;
+                  final responsiveMaxWidth = isVerySmallScreen ? 120.0 : (isSmallScreen ? 160.0 : 200.0);
+                  
+                  // Use available width, but cap at responsive max to prevent overflow
+                  final maxButtonWidth = constraints.maxWidth.clamp(0.0, responsiveMaxWidth);
+                  return GestureDetector(
+                    onTap: () {}, // Empty handler to stop propagation
+                    behavior: HitTestBehavior.opaque,
+                    child: AnimatedOpacity(
+                      opacity: isHovered ? 1 : 0,
+                      duration: const Duration(milliseconds: 140),
+                      child: Container(
+                        constraints: BoxConstraints(maxWidth: maxButtonWidth),
+                        decoration: BoxDecoration(
+                          // Subtle background gradient for better button visibility
+                          gradient: LinearGradient(
+                            begin: Alignment.centerLeft,
+                            end: Alignment.centerRight,
+                            colors: [
+                              colorScheme.background.withOpacity(0.0),
+                              colorScheme.background.withOpacity(0.95),
+                            ],
+                          ),
+                        ),
+                        padding: const EdgeInsets.only(left: 8),
+                        child: Builder(
+                          builder: (buttonContext) {
+                            final screenWidth = MediaQuery.of(buttonContext).size.width;
+                            final isSmallScreen = screenWidth < 768;
+                            final buttonSpacing = isSmallScreen ? 4.0 : 6.0;
+                            
+                            return Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (isPending) ...[
+                                  _buildHoverButton(
+                                    label: 'Modify',
+                                    backgroundColor: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
+                                    textColor: Colors.white,
+                                    onPressed: isProcessing && _isProcessingModify
+                                        ? null
+                                        : () async {
+                                            setState(() {
+                                              _processingOrderToken = uniqueId;
+                                            });
+                                            await actionHandler.modifyOrder(
+                                              order,
+                                              onProcessingStateChanged: (processing) {
+                                                setState(() {
+                                                  _isProcessingModify = processing;
+                                                  if (!processing) _processingOrderToken = null;
+                                                });
+                                              },
+                                              modifyDialogPosition: _modifyDialogPosition,
+                                              onPositionChanged: (pos) {
+                                                _modifyDialogPosition = pos;
+                                              },
+                                            );
+                                          },
+                                    theme: theme,
+                                    context: buttonContext,
+                                  ),
+                                  SizedBox(width: buttonSpacing),
+                                  _buildHoverButton(
+                                    label: 'Cancel',
+                                    backgroundColor: theme.isDarkMode ? WebDarkColors.tertiary : WebColors.tertiary,
+                                    textColor: Colors.white,
+                                    onPressed: isProcessing && _isProcessingCancel
+                                        ? null
+                                        : () async {
+                                            setState(() {
+                                              _processingOrderToken = uniqueId;
+                                            });
+                                            await actionHandler.cancelOrder(
+                                              order,
+                                              onProcessingStateChanged: (processing) {
+                                                setState(() {
+                                                  _isProcessingCancel = processing;
+                                                  if (!processing) _processingOrderToken = null;
+                                                });
+                                              },
+                                            );
+                                          },
+                                    theme: theme,
+                                    context: buttonContext,
+                                  ),
+                                ] else ...[
+                                  _buildHoverButton(
+                                    label: 'Repeat',
+                                    backgroundColor: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
+                                    textColor: Colors.white,
+                                    onPressed: () => actionHandler.repeatOrder(order),
+                                    theme: theme,
+                                    context: buttonContext,
+                                  ),
+                                  if (order.status == "OPEN") ...[
+                                    SizedBox(width: buttonSpacing),
+                                    _buildHoverButton(
+                                      label: 'Cancel',
+                                      backgroundColor: theme.isDarkMode ? WebDarkColors.tertiary : WebColors.tertiary,
+                                      textColor: Colors.white,
+                                      onPressed: isProcessing && _isProcessingCancel
+                                          ? null
+                                          : () async {
+                                              setState(() {
+                                                _processingOrderToken = uniqueId;
+                                              });
+                                              await actionHandler.cancelOrder(
+                                                order,
+                                                onProcessingStateChanged: (processing) {
+                                                  setState(() {
+                                                    _isProcessingCancel = processing;
+                                                    if (!processing) _processingOrderToken = null;
+                                                  });
+                                                },
+                                              );
+                                            },
+                                      theme: theme,
+                                      context: buttonContext,
+                                    ),
+                                  ],
+                                ],
+                              ],
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildTextCell(
-    String text,
-    ThemesProvider theme,
-    Alignment alignment, {
-    Color? color,
+  Widget _buildHoverButton({
+    required String label,
+    required Color backgroundColor,
+    required Color textColor,
+    required VoidCallback? onPressed,
+    required ThemesProvider theme,
+    required BuildContext context,
   }) {
-    return Align(
-      alignment: alignment,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 6.0),
-        child: Text(
-          text,
-          style: WebTextStyles.custom(
-            fontSize: 13,
-            isDarkTheme: theme.isDarkMode,
-            color: color ??
-                (theme.isDarkMode
-                    ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary),
-            fontWeight: WebFonts.medium,
+    final borderRadiusValue = 5.0;
+    
+    // Detect screen size for responsive design
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 768; // Tablet breakpoint
+    final isVerySmallScreen = screenWidth < 480; // Mobile breakpoint
+    
+    // Responsive sizes
+    final buttonPadding = isVerySmallScreen 
+        ? const EdgeInsets.symmetric(horizontal: 4, vertical: 4)
+        : (isSmallScreen 
+            ? const EdgeInsets.symmetric(horizontal: 6, vertical: 4)
+            : const EdgeInsets.symmetric(horizontal: 8));
+    final fontSize = isVerySmallScreen ? 10.0 : (isSmallScreen ? 11.0 : 12.0);
+    
+    // Use Container only for background color, shadcn handles size/shape
+    return Container(
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(borderRadiusValue),
+      ),
+      child: shadcn.TextButton(
+        size: shadcn.ButtonSize.small,
+        density: shadcn.ButtonDensity.dense,
+        onPressed: onPressed,
+        shape: shadcn.ButtonShape.rectangle,
+        child: Padding(
+          padding: buttonPadding,
+          child: Text(
+            label,
+            style: WebTextStyles.buttonSm(
+              isDarkTheme: theme.isDarkMode,
+              color: textColor,
+              fontWeight: WebFonts.bold,
+            ).copyWith(fontSize: fontSize),
           ),
-          maxLines: 1,
-          softWrap: false,
-          overflow: TextOverflow.visible,
         ),
       ),
     );
   }
 }
 
+// Action button widget
+
+// LTP Cell with WebSocket updates
+class _OrderLTPCell extends ConsumerStatefulWidget {
+  final String token;
+  final String initialLtp;
+
+  const _OrderLTPCell({
+    required this.token,
+    required this.initialLtp,
+  });
+
+  @override
+  ConsumerState<_OrderLTPCell> createState() => _OrderLTPCellState();
+}
+
+class _OrderLTPCellState extends ConsumerState<_OrderLTPCell> {
+  late String ltp;
+  StreamSubscription? _subscription;
+  bool _didSetupSubscription = false;
+
+  @override
+  void initState() {
+    super.initState();
+    ltp = widget.initialLtp;
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    if (!_didSetupSubscription && widget.token.isNotEmpty) {
+      _didSetupSubscription = true;
+
+      Future.microtask(() {
+        if (!mounted) return;
+
+        _subscription = ref.read(websocketProvider).socketDataStream.listen((data) {
+          if (!mounted || !data.containsKey(widget.token)) return;
+
+          final newLtp = data[widget.token]['lp']?.toString();
+          if (newLtp != null && newLtp != ltp && newLtp != '0.00' && newLtp != 'null') {
+            setState(() => ltp = newLtp);
+          }
+        });
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      ltp,
+      style: TextStyle(
+        fontFamily: 'Geist',
+        color: shadcn.Theme.of(context).colorScheme.foreground,
+      ),
+    );
+  }
+}

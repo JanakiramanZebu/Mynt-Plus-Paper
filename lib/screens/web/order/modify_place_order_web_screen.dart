@@ -102,14 +102,26 @@ class ModifyPlaceOrderScreenWeb extends ConsumerStatefulWidget {
     required OrderScreenArgs orderArg,
     Offset? initialPosition,
   }) {
-    final overlay = Overlay.of(context);
-    late OverlayEntry overlayEntry;
+    print('🟡 [showDraggable] Starting - context mounted: ${context.mounted}');
+    print('🟡 [showDraggable] modifyOrderArgs: ${modifyOrderArgs.norenordno}');
+    print('🟡 [showDraggable] scripInfo provided: true');
+    print('🟡 [showDraggable] orderArg.token: ${orderArg.token}');
+    print('🟡 [showDraggable] initialPosition: $initialPosition');
+    
+    try {
+      // Use rootOverlay to ensure we can show dialog even after sheet closes
+      final overlay = Overlay.of(context, rootOverlay: true);
+      late OverlayEntry overlayEntry;
 
-    final position = initialPosition ??
-        Offset(
-          MediaQuery.of(context).size.width * 0.1,
-          MediaQuery.of(context).size.height * 0.05,
-        );
+      // Get MediaQuery - use rootOverlay context to ensure it's available
+      final mediaQuery = MediaQuery.of(context);
+      final position = initialPosition ??
+          Offset(
+            mediaQuery.size.width * 0.1,
+            mediaQuery.size.height * 0.05,
+          );
+      
+      print('🟡 [showDraggable] Overlay obtained, position: $position');
 
     overlayEntry = OverlayEntry(
       builder: (context) => _DraggableModifyPlaceOrderScreenDialog(
@@ -128,10 +140,17 @@ class ModifyPlaceOrderScreenWeb extends ConsumerStatefulWidget {
       ),
     );
 
-    overlay.insert(overlayEntry);
+      overlay.insert(overlayEntry);
+      print('🟡 [showDraggable] Overlay entry inserted');
 
-    // Register with overlay manager for global control
-    OverlayManager.register(overlayEntry);
+      // Register with overlay manager for global control
+      OverlayManager.register(overlayEntry);
+      print('🟡 [showDraggable] Overlay registered successfully');
+    } catch (e, stackTrace) {
+      print('🟡 [showDraggable] ERROR: $e');
+      print('🟡 [showDraggable] StackTrace: $stackTrace');
+      rethrow;
+    }
   }
 }
 
@@ -348,7 +367,7 @@ class _ModifyPlaceOrderScreenState
                                 child: Row(
                                   children: [
                                     Text(
-                                      "${widget.scripInfo.symbol!.replaceAll("-EQ", "")} ",
+                                      "${(widget.scripInfo.symbol ?? widget.orderArg.tSym).replaceAll("-EQ", "")} ",
                                       style: WebTextStyles.sub(
                                         isDarkTheme: theme.isDarkMode,
                                         color: theme.isDarkMode
@@ -359,9 +378,9 @@ class _ModifyPlaceOrderScreenState
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     ),
-                                    if (widget.scripInfo.expDate!.isNotEmpty)
+                                    if ((widget.scripInfo.expDate ?? '').isNotEmpty)
                                       Text(
-                                        " ${widget.scripInfo.expDate} ",
+                                        " ${widget.scripInfo.expDate ?? ''} ",
                                         style: WebTextStyles.symbolList(
                                           isDarkTheme: theme.isDarkMode,
                                           color: theme.isDarkMode
@@ -371,9 +390,9 @@ class _ModifyPlaceOrderScreenState
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                       ),
-                                    if (widget.scripInfo.option!.isNotEmpty)
+                                    if ((widget.scripInfo.option ?? '').isNotEmpty)
                                       Text(
-                                        widget.scripInfo.option!,
+                                        widget.scripInfo.option ?? '',
                                         style: WebTextStyles.sub(
                                           isDarkTheme: theme.isDarkMode,
                                           color: theme.isDarkMode
@@ -3028,6 +3047,13 @@ class _DraggableModifyPlaceOrderScreenDialogState
   @override
   void initState() {
     super.initState();
+    print('🟡 [_DraggableModifyPlaceOrderScreenDialog] initState - initialPosition: ${widget.initialPosition}');
+    print('🟡 [_DraggableModifyPlaceOrderScreenDialog] modifyOrderArgs: ${widget.modifyOrderArgs.norenordno}');
+    print('🟡 [_DraggableModifyPlaceOrderScreenDialog] scripInfo provided: true');
+    print('🟡 [_DraggableModifyPlaceOrderScreenDialog] scripInfo.symbol: ${widget.scripInfo.symbol}');
+    print('🟡 [_DraggableModifyPlaceOrderScreenDialog] orderArg.token: ${widget.orderArg.token}');
+    print('🟡 [_DraggableModifyPlaceOrderScreenDialog] onPositionChanged provided: true');
+    print('🟡 [_DraggableModifyPlaceOrderScreenDialog] onClose provided: true');
     _position = widget.initialPosition;
   }
 
@@ -3127,23 +3153,34 @@ class _DraggableModifyPlaceOrderScreenDialogState
                         onClose: widget.onClose,
                         child: _ModifyPlaceOrderDialogDragNotifier(
                           onPanStart: (details) {
-                            setState(() {
-                              _isDragging = true;
-                            });
+                            if (mounted) {
+                              setState(() {
+                                _isDragging = true;
+                              });
+                            }
                           },
                           onPanUpdate: (details) {
-                            setState(() {
-                              _position = Offset(
-                                _position.dx + details.delta.dx,
-                                _position.dy + details.delta.dy,
-                              );
-                            });
-                            widget.onPositionChanged(_position);
+                            if (mounted) {
+                              setState(() {
+                                _position = Offset(
+                                  _position.dx + details.delta.dx,
+                                  _position.dy + details.delta.dy,
+                                );
+                              });
+                              // Safely call onPositionChanged
+                              try {
+                                widget.onPositionChanged(_position);
+                              } catch (e) {
+                                debugPrint('Error in onPositionChanged: $e');
+                              }
+                            }
                           },
                           onPanEnd: (details) {
-                            setState(() {
-                              _isDragging = false;
-                            });
+                            if (mounted) {
+                              setState(() {
+                                _isDragging = false;
+                              });
+                            }
                           },
                           isDragging: _isDragging,
                           child: ModifyPlaceOrderScreenWeb(

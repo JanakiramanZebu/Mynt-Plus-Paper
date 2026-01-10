@@ -1,56 +1,6 @@
 import 'package:flutter/material.dart';
- 
-import 'package:google_fonts/google_fonts.dart';
 
-import 'res.dart';
-
-/// Web-specific font constants and text styles
-/// This file handles all typography for web platform using Inter font
-/// 
-/// TYPOGRAPHY SYSTEM OVERVIEW:
-/// ===========================
-/// 
-/// HEADERS (Use for titles, section headers, page titles):
-/// - Hero (20px): Main page titles, major section headers
-/// - Head (18px): Section titles, card headers, dialog titles
-/// - Title (16px): Subsection titles, card titles, list item titles
-/// - Title Medium (15px): Medium titles, slightly smaller card titles
-/// 
-/// BODY TEXT (Use for content, descriptions, data):
-/// - Sub (14px): Primary body text, table data, form inputs, descriptions
-/// - Body Small (13px): Secondary table data, compact text, smaller body content
-/// - Para (12px): Secondary body text, helper text, fine print
-/// 
-/// SMALL TEXT (Use for metadata, labels, captions):
-/// - Caption (10px): Timestamps, version info, small labels
-/// - Overline (8px): Tiny labels, status indicators (rarely used)
-/// 
-/// USAGE EXAMPLES:
-/// ===============
-/// 
-/// // Page/Screen Title
-/// Text('Orders Book', style: WebTextStyles.head(isDarkTheme: theme.isDarkMode))
-/// 
-/// // Section Header
-/// Text('Pending Orders', style: WebTextStyles.title(isDarkTheme: theme.isDarkMode))
-/// 
-/// // Table Header
-/// Text('Instrument', style: WebTextStyles.tableHeader(isDarkTheme: theme.isDarkMode))
-/// 
-/// // Table Data / Body Text
-/// Text('RELIANCE', style: WebTextStyles.sub(isDarkTheme: theme.isDarkMode))
-/// 
-/// // Button Text
-/// Text('Submit', style: WebTextStyles.button(isDarkTheme: theme.isDarkMode))
-/// 
-/// // Helper Text / Caption
-/// Text('Last updated 5 min ago', style: WebTextStyles.caption(isDarkTheme: theme.isDarkMode))
-class WebFonts {
-  // Font Family
-  static const String fontFamily = 'inter';
-  
-  // ===== FONT SIZES - DO NOT CHANGE THESE =====
-  // These are the ONLY allowed font sizes in the web project
+class WebFonts { 
   
   // HEADERS
   static const double heroSize = 20;      // Main page titles, major headers
@@ -80,15 +30,8 @@ class WebFonts {
   static const double wideLetterSpacing = 1.0;
 }
 
-/// Web-specific text styles using Inter font
-/// 
-/// This class provides semantic text styles for consistent typography across the web app.
-/// Always use these methods instead of hardcoding font sizes.
-/// 
-/// IMPORTANT: Use semantic methods (tableHeader, tableData, button, etc.) when available.
-/// Only use custom() when absolutely necessary, and always use WebFonts constants for sizes.
+
 class WebTextStyles {
-  /// Base text style with common properties
   static TextStyle _baseStyle({
     required double fontSize,
     required bool isDarkTheme,
@@ -98,15 +41,16 @@ class WebTextStyles {
     double? height,
     TextDecoration? decoration,
   }) {
-    final base = TextStyle(
+    return TextStyle(
       fontSize: fontSize,
-      color: color ?? (isDarkTheme ? colors.colorWhite : colors.colorBlack),
+      // Use Geist font from local assets
+      fontFamily: 'Geist',
+      color: color ?? (isDarkTheme ? Colors.white : Colors.black),
       fontWeight: fontWeight ?? WebFonts.regular,
       letterSpacing: letterSpacing ?? WebFonts.defaultLetterSpacing,
       height: height,
       decoration: decoration,
     );
-    return GoogleFonts.inter(textStyle: base);
   }
 
   /// Hero text style (20px)
@@ -313,7 +257,7 @@ class WebTextStyles {
   // ===== SEMANTIC HELPER METHODS =====
   // Use these for common UI elements to ensure consistency
 
-  /// Table header text style (14px, bold)
+  /// Table header text style (12px, bold)
   /// Use for DataTable column headers, table column titles
   static TextStyle tableHeader({
     required bool isDarkTheme,
@@ -327,7 +271,7 @@ class WebTextStyles {
     );
   }
 
-  /// Table data text style (14px, regular)
+  /// Table data text style (14px, medium)
   /// Use for DataTable cell content, table row data
   static TextStyle tableData({
     required bool isDarkTheme,
@@ -342,7 +286,7 @@ class WebTextStyles {
     );
   }
 
-  /// Compact table data text style (13px, regular)
+  /// Compact table data text style (13px, medium)
   /// Use for secondary table data, compact displays, smaller table cells
   static TextStyle tableDataCompact({
     required bool isDarkTheme,
@@ -357,8 +301,7 @@ class WebTextStyles {
     );
   }
 
-  /// Button text style (14px, medium)
-  /// Use for all button labels (ElevatedButton, TextButton, etc.)
+  /// Button extra small text style (10px, semiBold)
   static TextStyle buttonXs({
     required bool isDarkTheme,
     Color? color,
@@ -368,9 +311,11 @@ class WebTextStyles {
       fontSize: WebFonts.captionSize,
       isDarkTheme: isDarkTheme,
       color: color,
-      fontWeight: fontWeight ?? WebFonts.semiBold,
+      fontWeight: fontWeight ?? WebFonts.bold,
     );
   }
+
+  /// Button small text style (12px, semiBold)
   static TextStyle buttonSm({
     required bool isDarkTheme,
     Color? color,
@@ -380,9 +325,11 @@ class WebTextStyles {
       fontSize: WebFonts.paraSize,
       isDarkTheme: isDarkTheme,
       color: color,
-      fontWeight: fontWeight ?? WebFonts.semiBold,
+      fontWeight: fontWeight ?? WebFonts.bold,
     );
   }
+
+  /// Button medium text style (14px, semiBold)
   static TextStyle buttonMd({
     required bool isDarkTheme,
     Color? color,
@@ -392,7 +339,7 @@ class WebTextStyles {
       fontSize: WebFonts.subSize,
       isDarkTheme: isDarkTheme,
       color: color,
-      fontWeight: fontWeight ?? WebFonts.semiBold,
+      fontWeight: fontWeight ?? WebFonts.bold,
     );
   }
 
@@ -410,7 +357,7 @@ class WebTextStyles {
     );
   }
 
-  /// Form input text style (14px, regular)
+  /// Form input text style (14px, medium)
   /// Use for TextFormField input text, TextField content
   static TextStyle formInput({
     required bool isDarkTheme,
@@ -420,12 +367,12 @@ class WebTextStyles {
     return _baseStyle(
       fontSize: WebFonts.subSize,
       isDarkTheme: isDarkTheme,
-      color: color ,
+      color: color,
       fontWeight: fontWeight ?? WebFonts.medium,
     );
   }
 
-  /// Helper text style (12px, regular)
+  /// Helper text style (14px, medium)
   /// Use for helper text, form hints, validation messages
   static TextStyle helperText({
     required bool isDarkTheme,
@@ -481,7 +428,7 @@ class WebTextStyles {
     );
   }
 
-  /// Dialog title text style (18px, bold)
+  /// Dialog title text style (16px, semiBold)
   /// Use for dialog headers, modal titles
   static TextStyle dialogTitle({
     required bool isDarkTheme,
@@ -495,19 +442,22 @@ class WebTextStyles {
     );
   }
 
-  /// Dialog content text style (14px, regular)
+  /// Dialog content text style (14px, medium)
   /// Use for dialog body text, modal content
   static TextStyle dialogContent({
     required bool isDarkTheme,
     Color? color,
+    FontWeight? fontWeight,
   }) {
     return _baseStyle(
       fontSize: WebFonts.subSize,
       isDarkTheme: isDarkTheme,
       color: color,
-      fontWeight: WebFonts.medium,
+      fontWeight: fontWeight ?? WebFonts.medium,
     );
   }
+
+  /// Symbol list text style (13px, semiBold)
   static TextStyle symbolList({
     required bool isDarkTheme,
     Color? color,
@@ -519,6 +469,8 @@ class WebTextStyles {
       fontWeight: WebFonts.semiBold,
     );
   }
+
+  /// Price watch text style (13px, semiBold)
   static TextStyle priceWatch({
     required bool isDarkTheme,
     Color? color,
@@ -530,6 +482,8 @@ class WebTextStyles {
       fontWeight: WebFonts.semiBold,
     );
   }
+
+  /// Price percent text style (13px, semiBold)
   static TextStyle pricePercent({
     required bool isDarkTheme,
     Color? color,
@@ -541,6 +495,8 @@ class WebTextStyles {
       fontWeight: WebFonts.semiBold,
     ); 
   }
+
+  /// Exchange text style (12px, semiBold)
   static TextStyle exchText({
     required bool isDarkTheme,
     Color? color,
@@ -553,7 +509,7 @@ class WebTextStyles {
     );
   }
 
-  /// Tab text style (12px, medium)
+  /// Tab text style (13px, semiBold)
   /// Use for tab labels, navigation tabs, filter tabs
   static TextStyle tab({
     required bool isDarkTheme, 
@@ -597,4 +553,3 @@ class WebTextStyles {
   }
 }
 
- 

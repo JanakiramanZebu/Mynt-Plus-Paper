@@ -3,14 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/screens/web/ordersbook/basket/basket_list_web.dart';
-import 'package:mynt_plus/sharedWidget/functions.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../../../provider/order_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../res/res.dart';
 import '../../../res/web_colors.dart';
 import '../../../res/global_font_web.dart';
-import '../../../sharedWidget/custom_text_form_field.dart';
 import '../../../sharedWidget/splash_loader.dart';
 import 'mf/mf_order_book_screen_web.dart';
 import 'mf/mf_sip_screen_web.dart';
@@ -61,7 +60,29 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     // Defer heavy operations until after UI renders
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeHeavyComponents();
+      _setupSearchListener();
     });
+  }
+
+  void _setupSearchListener() {
+    if (!mounted) return;
+    final orderBook = ref.read(orderProvider);
+    orderBook.orderSearchCtrl.addListener(_onSearchChanged);
+  }
+
+  void _onSearchChanged() {
+    if (!mounted) return;
+    final orderBook = ref.read(orderProvider);
+    final context = this.context;
+    if (context.mounted) {
+      // Ensure _selectedTab is synced with current tab controller index
+      final currentTabIndex = _tabController?.index ?? orderBook.selectedTab;
+      if (currentTabIndex != orderBook.selectedTab) {
+        // Sync the tab index if it's out of sync
+        orderBook.changeTabIndex(currentTabIndex, context);
+      }
+      orderBook.searchOrders(orderBook.orderSearchCtrl.text, context);
+    }
   }
 
   void _initializeHeavyComponents() async {
@@ -80,15 +101,25 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
         if (!_tabController!.indexIsChanging) {
           // Only call when tab change is complete, not during animation
           if (mounted) {
+            final orderBook = ref.read(orderProvider);
+            
+            // Clear search when tab change completes (prevents showing wrong data)
+            orderBook.clearOrderSearch();
+            
+            // Update tab index in provider - this will handle all tab-related logic
+            orderBook.changeTabIndex(_tabController!.index, context);
+            
             setState(() {
               // Trigger rebuild to update tab selection UI
             });
           }
-          ref
-              .read(orderProvider)
-              .changeTabIndex(_tabController!.index, context);
         }
       });
+
+      // Initialize the first tab (Open Orders) immediately to set up WebSocket
+      if (mounted) {
+        ref.read(orderProvider).changeTabIndex(0, context);
+      }
 
       if (mounted) {
         setState(() {
@@ -108,6 +139,14 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
 
   @override
   void dispose() {
+    // Remove search listener
+    try {
+      final orderBook = ref.read(orderProvider);
+      orderBook.orderSearchCtrl.removeListener(_onSearchChanged);
+    } catch (e) {
+      // Ignore if provider is not available
+    }
+    
     _tabController?.dispose();
     _openOrdersHorizontalScrollController.dispose();
     _openOrdersVerticalScrollController.dispose();
@@ -178,283 +217,192 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
         const SizedBox(height: 16),
 
         // Content Area - Now just delegates to separate screens
-        _buildContentArea(theme, orderBook),
-      ],
-    );
-  }
-
-  Widget _buildTabsAndActionBar(ThemesProvider theme, OrderProvider orderBook) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        // Segmented Control Tabs on the left
-        _buildSegmentedControl(theme, orderBook),
-        // Fixed spacing instead of Spacer to avoid excessive gap
-        const SizedBox(width: 16),
-        // Search Bar with max width constraint
-        Flexible(
-          child: Container(
-            constraints: const BoxConstraints(maxWidth: 400),
-            height: 40,
-            decoration: BoxDecoration(
-              color: theme.isDarkMode
-                  ? WebDarkColors.inputBackground
-                  : WebColors.inputBackground,
-              borderRadius: BorderRadius.circular(5),
-              border: Border.all(
-                color: theme.isDarkMode
-                    ? WebDarkColors.inputBorder
-                    : WebColors.inputBorder,
-                width: 1,
-              ),
-            ),
-            child: Row(
-              children: [
-                const SizedBox(width: 12),
-                SvgPicture.asset(
-                  assets.searchIcon,
-                  width: 20,
-                  height: 20,
-                  fit: BoxFit.scaleDown,
-                  color: theme.isDarkMode
-                      ? colors.textSecondaryDark
-                      : colors.textSecondaryLight,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: TextFormField(
-                    controller: orderBook.orderSearchCtrl,
-                    autofocus: false,
-                    textCapitalization: TextCapitalization.characters,
-                    inputFormatters: [UpperCaseTextFormatter()],
-                    style: WebTextStyles.formInput(
-                      isDarkTheme: theme.isDarkMode,
-                      color: theme.isDarkMode
-                          ? WebDarkColors.textPrimary
-                          : WebColors.textPrimary,
-                    ),
-                    decoration: InputDecoration(
-                      hintText: 'Search orders',
-                      hintStyle: WebTextStyles.formInput(
-                        isDarkTheme: theme.isDarkMode,
-                        color: theme.isDarkMode
-                            ? WebDarkColors.textSecondary
-                            : WebColors.textSecondary,
-                      ),
-                      border: InputBorder.none,
-                      isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                    ),
-                    onChanged: (value) {
-                      orderBook.searchOrders(value, context);
-                    },
-                  ),
-                ),
-                if (orderBook.orderSearchCtrl.text.isNotEmpty)
-                  Material(
-                    color: Colors.transparent,
-                    shape: const CircleBorder(),
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(20),
-                      splashColor: theme.isDarkMode
-                          ? Colors.white.withOpacity(0.15)
-                          : Colors.black.withOpacity(0.15),
-                      highlightColor: theme.isDarkMode
-                          ? Colors.white.withOpacity(0.08)
-                          : Colors.black.withOpacity(0.08),
-                      onTap: () {
-                        FocusScope.of(context).unfocus();
-                        orderBook.clearOrderSearch();
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.all(6.0),
-                        child: SvgPicture.asset(
-                          assets.removeIcon,
-                          width: 20,
-                          height: 20,
-                          fit: BoxFit.scaleDown,
-                          color: theme.isDarkMode
-                              ? colors.textSecondaryDark
-                              : colors.textSecondaryLight,
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
+        Expanded(
+          child: _buildContentArea(theme, orderBook),
         ),
       ],
     );
   }
 
-  Widget _buildSegmentedControl(ThemesProvider theme, OrderProvider orderBook) {
-    return SizedBox(
-      height: 45,
+  Widget _buildTabsAndActionBar(ThemesProvider theme, OrderProvider orderBook) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
         children: [
-          SingleChildScrollView(
-            controller: _tabScrollController,
-            scrollDirection: Axis.horizontal,
-            physics: const ClampingScrollPhysics(),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: orderBook.orderTabName.asMap().entries.map((entry) {
-                final index = entry.key;
-                final tabString = entry.value;
-                final isSelected = (_tabController?.index ?? 0) == index;
+          // Shadcn TabList on the left - Direct implementation for better responsiveness
+          // Wrap with shadcn.Theme to use custom primary color for active tab
+          Builder(
+            builder: (context) {
+              final currentTheme = shadcn.Theme.of(context);
+              final isDark = theme.isDarkMode;
+              // Create a new ColorScheme based on the default, but with custom primary color
+              final baseColorScheme = isDark 
+                  ? shadcn.ColorSchemes.darkDefaultColor
+                  : shadcn.ColorSchemes.lightDefaultColor;
+              
+              // Create custom ColorScheme with theme-appropriate primary color
+              final primaryColor = theme.isDarkMode 
+                  ? WebDarkColors.primary 
+                  : WebColors.primary;
+              final customColorScheme = baseColorScheme.copyWith(
+                primary: () => primaryColor,
+              );
+              
+              return shadcn.Theme(
+                data: shadcn.ThemeData(
+                  colorScheme: customColorScheme,
+                  radius: currentTheme.radius,
+                ),
+                child: shadcn.TabList(
+                  index: _tabController?.index ?? 0,
+                  onChanged: (value) {
+                    if (_tabController != null && _tabController!.index != value) {
+                      // Just animate the tab - let the listener handle search clearing and provider updates
+                      // This prevents multiple state updates from interfering with the tab switch
+                      _tabController!.animateTo(value);
+                    }
+                  },
+                  children: orderBook.orderTabName.map((tabString) {
+                    final parts = tabString.text?.split(' ') ?? [];
+                    final title = parts.first;
+                    final badge = parts.length > 1 ? parts[1] : null;
 
-                final parts = tabString.text?.split(' ') ?? [];
-                final title = parts.first;
-                final badge = parts.length > 1 ? parts[1] : null;
+                    final isActive = (_tabController?.index ?? 0) == orderBook.orderTabName.indexOf(tabString);
+                    return shadcn.TabItem(
+                      child: DefaultTextStyle(
+                        style: TextStyle(
+                          fontFamily: 'Geist',
+                          color: isActive
+                              ? (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary)
+                              : shadcn.Theme.of(context).colorScheme.mutedForeground,
+                          fontWeight: WebFonts.bold,
+                        ),
+                        child: badge != null 
+                            ? Text('$title ($badge)')
+                            : Text(title),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              );
+            },
+          ),
+          // Spacer to push search to the right
+          const Spacer(),
+          // Search Bar with shadcn TextField
+          LayoutBuilder(
+            builder: (context, constraints) {
+              // Responsive search bar width
+              final screenWidth = MediaQuery.of(context).size.width;
+              double searchWidth;
+              if (screenWidth >= 1200) {
+                searchWidth = 400;
+              } else if (screenWidth >= 800) {
+                searchWidth = 300;
+              } else {
+                searchWidth = 200;
+              }
 
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 6),
-                  child: _buildSegmentedTab(
-                    title,
-                    badge,
-                    index,
-                    isSelected,
-                    theme,
+              return SizedBox(
+                height: 40,
+                width: searchWidth,
+                child: DefaultTextStyle(
+                  style: const TextStyle(fontFamily: 'Geist'),
+                  child: ValueListenableBuilder<TextEditingValue>(
+                    valueListenable: orderBook.orderSearchCtrl,
+                    builder: (context, value, child) {
+                      final features = <shadcn.InputFeature>[
+                        shadcn.InputFeature.leading(
+                          SvgPicture.asset(
+                            assets.searchIcon,
+                            color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+                            fit: BoxFit.scaleDown,
+                            width: 18,
+                          ),
+                        ),
+                      ];
+
+                      // Add clear button if there's text (like holdings screen)
+                      if (value.text.isNotEmpty) {
+                        features.add(
+                          shadcn.InputFeature.trailing(
+                            SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: Material(
+                                color: Colors.transparent,
+                                shape: const CircleBorder(),
+                                child: InkWell(
+                                  customBorder: const CircleBorder(),
+                                  onTap: () {
+                                    FocusScope.of(context).unfocus();
+                                    orderBook.clearOrderSearch();
+                                  },
+                                  child: Center(
+                                    child: Icon(
+                                      Icons.close,
+                                      size: 16,
+                                      color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      }
+
+                      return shadcn.TextField(
+                        controller: orderBook.orderSearchCtrl,
+                        placeholder: const Text(
+                          'Search orders',
+                          style: TextStyle(fontFamily: 'Geist'),
+                        ),
+                        features: features,
+                      );
+                    },
                   ),
-                );
-              }).toList(),
-            ),
+                ),
+              );
+            },
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSegmentedTab(
-    String title,
-    String? badge,
-    int index,
-    bool isSelected,
-    ThemesProvider theme,
-  ) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: InkWell(
-        onTap: () {
-          if (_tabController != null && _tabController!.index != index) {
-            _tabController!.animateTo(index);
-          }
-        },
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-          decoration: BoxDecoration(
-            color: isSelected
-                ? (theme.isDarkMode
-                    ? WebDarkColors.backgroundTertiary
-                    : WebColors.backgroundTertiary)
-                : Colors.white,
-            border: Border.all(
-              color: isSelected
-                  ? (theme.isDarkMode
-                      ? WebDarkColors.primary
-                      : WebColors.primary)
-                  : (theme.isDarkMode
-                      ? WebDarkColors.textSecondary
-                      : WebColors.textSecondary),
-              width: isSelected ? 1.5 : 1,
-            ),
-            borderRadius: BorderRadius.circular(50),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                title,
-                overflow: TextOverflow.ellipsis,
-                style: WebTextStyles.tab(
-                  isDarkTheme: theme.isDarkMode,
-                  color: isSelected
-                      ? (theme.isDarkMode
-                          ? WebDarkColors.textPrimary
-                          : WebColors.textPrimary)
-                      : (theme.isDarkMode
-                          ? WebDarkColors.navItem
-                          : WebColors.navItem),
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                ),
-              ),
-              if (badge != null) ...[
-                const SizedBox(width: 6),
-                Text(
-                  '($badge)',
-                  style: WebTextStyles.tab(
-                    isDarkTheme: theme.isDarkMode,
-                    color: isSelected
-                        ? (theme.isDarkMode
-                            ? WebDarkColors.textPrimary
-                            : WebColors.textPrimary)
-                        : (theme.isDarkMode
-                            ? WebDarkColors.navItem
-                            : WebColors.navItem),
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 
   Widget _buildContentArea(ThemesProvider theme, OrderProvider orderBook) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final screenHeight = MediaQuery.of(context).size.height;
-        final padding = 32.0;
-        final headerHeight = 50.0;
-        final spacing = 16.0;
-        final bottomMargin = 20.0;
-        final tableHeight =
-            screenHeight - padding - headerHeight - spacing - bottomMargin;
-
-        final maxHeight = screenHeight * 0.75;
-        final calculatedHeight = tableHeight > maxHeight
-            ? maxHeight
-            : (tableHeight > 400 ? tableHeight : 400.0);
-
-        return SizedBox(
-          height: calculatedHeight.toDouble(),
-          child: IndexedStack(
-            index: _tabController?.index ?? 0,
-            children: [
-              // Open Orders - Now uses separate screen widget
-              OpenOrdersScreen(
-                horizontalScrollController: _openOrdersHorizontalScrollController,
-                verticalScrollController: _openOrdersVerticalScrollController,
-              ),
-              // Executed Orders - Now uses separate screen widget
-              ExecutedOrdersScreen(
-                horizontalScrollController: _executedOrdersHorizontalScrollController,
-                verticalScrollController: _executedOrdersVerticalScrollController,
-              ),
-              // Trade Book - Now uses separate screen widget
-              TradeBookScreen(
-                horizontalScrollController: _tradeBookHorizontalScrollController,
-                verticalScrollController: _tradeBookVerticalScrollController,
-              ),
-              // GTT Orders - Now uses separate screen widget
-              GttOrdersScreen(
-                horizontalScrollController: _gttHorizontalScrollController,
-                verticalScrollController: _gttVerticalScrollController,
-              ),
-              // MF tab with sub tabs: Orders and SIP
-              _buildMFSubTabs(theme),
-              // Basket List
-              const BasketList(),
-              // Pending Alerts
-              const PendingAlertWeb(),
-            ],
-          ),
-        );
-      },
+    return IndexedStack(
+      index: _tabController?.index ?? 0,
+      children: [
+        // Open Orders - Now uses separate screen widget
+        OpenOrdersScreen(
+          horizontalScrollController: _openOrdersHorizontalScrollController,
+          verticalScrollController: _openOrdersVerticalScrollController,
+        ),
+        // Executed Orders - Now uses separate screen widget
+        ExecutedOrdersScreen(
+          horizontalScrollController: _executedOrdersHorizontalScrollController,
+          verticalScrollController: _executedOrdersVerticalScrollController,
+        ),
+        // Trade Book - Now uses separate screen widget
+        TradeBookScreen(
+          horizontalScrollController: _tradeBookHorizontalScrollController,
+          verticalScrollController: _tradeBookVerticalScrollController,
+        ),
+        // GTT Orders - Now uses separate screen widget
+        GttOrdersScreen(
+          horizontalScrollController: _gttHorizontalScrollController,
+          verticalScrollController: _gttVerticalScrollController,
+        ),
+        // MF tab with sub tabs: Orders and SIP
+        _buildMFSubTabs(theme),
+        // Basket List
+        const BasketList(),
+        // Pending Alerts
+        const PendingAlertWeb(),
+      ],
     );
   }
 
@@ -462,8 +410,75 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Segmented Control Tabs
-        _buildMFSegmentedControl(theme),
+        // Shadcn TabList - Matching holdings screen style
+        Container(
+          padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+          child: Builder(
+            builder: (context) {
+              final currentTheme = shadcn.Theme.of(context);
+              final isDark = theme.isDarkMode;
+              // Create a new ColorScheme based on the default, but with custom primary color
+              final baseColorScheme = isDark 
+                  ? shadcn.ColorSchemes.darkDefaultColor
+                  : shadcn.ColorSchemes.lightDefaultColor;
+              
+              // Create custom ColorScheme with theme-appropriate primary color
+              final primaryColor = theme.isDarkMode 
+                  ? WebDarkColors.primary 
+                  : WebColors.primary;
+              final customColorScheme = baseColorScheme.copyWith(
+                primary: () => primaryColor,
+              );
+              
+              return shadcn.Theme(
+                data: shadcn.ThemeData(
+                  colorScheme: customColorScheme,
+                  radius: currentTheme.radius,
+                ),
+                child: shadcn.TabList(
+                  index: _mfTabIndex,
+                  onChanged: (value) {
+                    if (mounted && _mfTabIndex != value) {
+                      setState(() {
+                        _mfTabIndex = value;
+                      });
+                    }
+                  },
+                  children: [
+                    shadcn.TabItem(
+                      child: DefaultTextStyle(
+                        style: TextStyle(
+                          fontFamily: 'Geist',
+                          color: _mfTabIndex == 0
+                              ? (theme.isDarkMode 
+                                  ? WebDarkColors.primary 
+                                  : WebColors.primary)
+                              : customColorScheme.mutedForeground,
+                          fontWeight: WebFonts.bold,
+                        ),
+                        child: const Text('Orders'),
+                      ),
+                    ),
+                    shadcn.TabItem(
+                      child: DefaultTextStyle(
+                        style: TextStyle(
+                          fontFamily: 'Geist',
+                          color: _mfTabIndex == 1
+                              ? (theme.isDarkMode 
+                                  ? WebDarkColors.primary 
+                                  : WebColors.primary)
+                              : customColorScheme.mutedForeground,
+                          fontWeight: WebFonts.bold,
+                        ),
+                        child: const Text('SIP'),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
         const SizedBox(height: 16),
         // Content Area - Use IndexedStack to keep both widgets alive
         Expanded(
@@ -476,93 +491,6 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildMFSegmentedControl(ThemesProvider theme) {
-    final tabs = ['Orders', 'SIP'];
-
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: SizedBox(
-        height: 45,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SingleChildScrollView(
-              controller: _tabScrollController,
-              scrollDirection: Axis.horizontal,
-              physics: const ClampingScrollPhysics(),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: List.generate(tabs.length, (index) {
-                  final isSelected = _mfTabIndex == index;
-
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 6),
-                    child: _buildMFSegmentedTab(
-                      tabs[index],
-                      index,
-                      isSelected,
-                      theme,
-                    ),
-                  );
-                }),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMFSegmentedTab(
-    String title,
-    int index,
-    bool isSelected,
-    ThemesProvider theme,
-  ) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: InkWell(
-        onTap: () => setState(() => _mfTabIndex = index),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-          decoration: BoxDecoration(
-            color: isSelected
-                ? (theme.isDarkMode
-                    ? WebDarkColors.backgroundTertiary
-                    : WebColors.backgroundTertiary)
-                : Colors.white,
-            border: Border.all(
-              color: isSelected
-                  ? (theme.isDarkMode
-                      ? WebDarkColors.primary
-                      : WebColors.primary)
-                  : (theme.isDarkMode
-                      ? WebDarkColors.textSecondary
-                      : WebColors.textSecondary),
-              width: isSelected ? 1.5 : 1,
-            ),
-            borderRadius: BorderRadius.circular(50),
-          ),
-          child: Text(
-            title,
-            overflow: TextOverflow.ellipsis,
-            style: WebTextStyles.tab(
-              isDarkTheme: theme.isDarkMode,
-              color: isSelected
-                  ? (theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary)
-                  : (theme.isDarkMode
-                      ? WebDarkColors.navItem
-                      : WebColors.navItem),
-              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-            ),
-          ),
-        ),
-      ),
     );
   }
 }

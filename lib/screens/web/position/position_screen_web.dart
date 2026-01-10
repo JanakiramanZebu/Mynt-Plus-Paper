@@ -2,10 +2,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:data_table_2/data_table_2.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import 'package:mynt_plus/screens/web/position/exit_all_positions_dialog_web.dart';
 import 'package:mynt_plus/screens/web/position/position_detail_screen_web.dart';
 import 'package:mynt_plus/screens/web/position/convert_position_dialogue_web.dart';
+import 'package:mynt_plus/screens/web/position/position_table.dart';
 
 import '../../../../models/portfolio_model/position_book_model.dart';
 import '../../../../provider/portfolio_provider.dart';
@@ -30,9 +31,11 @@ class PositionScreenWeb extends ConsumerStatefulWidget {
 }
 
 class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
-  int _selectedTabIndex = 0; // 0 for Positions, 1 for All Positions
+  int _selectedTabIndex = 0; // 0 for Positions
   // ✅ Use ValueNotifier for search query to avoid rebuilding entire widget
   final ValueNotifier<String> _searchQuery = ValueNotifier<String>('');
+  // TextEditingController to control the TextField value
+  final TextEditingController _searchController = TextEditingController();
   final String _selectedFilter = 'All';
   int? _sortColumnIndex;
   bool _sortAscending = true;
@@ -41,24 +44,26 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
   final ValueNotifier<int?> _hoveredColumnIndex = ValueNotifier<int?>(null);
   final ScrollController _horizontalScrollController = ScrollController();
   final ScrollController _verticalScrollController = ScrollController();
-  final ScrollController _tabScrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
-    // ✅ REMOVED: _setupSocketSubscription()
-    // Isolated cell widgets handle socket updates directly
-    // No need for parent widget to listen to socket at all
+    // Sync controller with ValueNotifier
+    _searchController.addListener(() {
+      if (_searchController.text != _searchQuery.value) {
+        _searchQuery.value = _searchController.text;
+      }
+    });
   }
 
   @override
   void dispose() {
     _horizontalScrollController.dispose();
     _verticalScrollController.dispose();
-    _tabScrollController.dispose();
     _hoveredRowToken.dispose();
     _hoveredColumnIndex.dispose();
     _searchQuery.dispose(); // ✅ Dispose search query ValueNotifier
+    _searchController.dispose(); // Dispose TextEditingController
 
     super.dispose();
   }
@@ -90,8 +95,8 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Summary Cards Section (includes Trade Positions)
-                _buildSummaryCards(theme, positionBook),
-                const SizedBox(height: 24),
+                // _buildSummaryCards(theme, positionBook),
+                // const SizedBox(height: 24),
 
                 // Main Content Area - Expanded to take remaining space
                 Expanded(
@@ -107,180 +112,150 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
 
   Widget _buildSummaryCards(
       ThemesProvider theme, PortfolioProvider positionBook) {
-    return Container(
-      height: 120,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: theme.isDarkMode
-            ? WebDarkColors.backgroundSecondary
-            : WebColors.backgroundSecondary.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
-          width: 1,
-        ),
-        // boxShadow: [
-        //   BoxShadow(
-        //     color: Colors.black.withOpacity(0.05),
-        //     blurRadius: 10,
-        //     offset: const Offset(0, 2),
-        //   ),
-        // ],
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // Main stats row
-          Row(
-            children: [
-              Expanded(
-                child: _buildStatItem(
-                  'Profit/Loss',
-                  positionBook.totPnL,
-                  _getValueColor(positionBook.totPnL, theme),
-                  theme,
-                ),
-              ),
-              _buildDivider(theme),
-              Expanded(
-                child: _buildStatItem(
-                  'MTM',
-                  positionBook.totMtM,
-                  _getValueColor(positionBook.totMtM, theme),
-                  theme,
-                ),
-              ),
-              _buildDivider(theme),
-              Expanded(
-                child: _buildStatItem(
-                  'Trade Value',
-                  _calculateTradeValue(positionBook),
-                  theme.isDarkMode
-                      ? WebDarkColors.textSecondary
-                      : WebColors.textSecondary,
-                  theme,
-                ),
-              ),
-              // _buildDivider(theme),
-              // Expanded(
-              //   child: _buildStatItem(
-              //     'Open Position',
-              //     _calculateOpenPosition(positionBook),
-              //     _getValueColor(_calculateOpenPosition(positionBook), theme),
-              //     theme,
-              //   ),
-              // ),
-            ],
-          ),
-          // const SizedBox(height: 20),
-          // // Trade Positions section
-          // Row(
-          //   mainAxisAlignment: MainAxisAlignment.end,
-          //   children: [
-          //     // Text(
-          //     //   'Trade Positions',
-          //     //   style: WebTextStyles.title(
-          //     //     isDarkTheme: theme.isDarkMode,
-          //     //     color: const Color(0xFF374151), // Dark grey
-          //     //     fontWeight: WebFonts.semiBold,
-          //     //   ),
-          //     // ),
-          //     const SizedBox(width: 20),
-          //     _buildPositionChip(
-          //         '$positiveCount Positive', theme.isDarkMode ? WebDarkColors.success : WebColors.success, theme),
-          //     const SizedBox(width: 12),
-          //     _buildPositionChip(
-          //         '$negativeCount Negative', theme.isDarkMode ? WebDarkColors.error : WebColors.error, theme),
-          //     const SizedBox(width: 12),
-          //     _buildPositionChip(
-          //         '$closedCount Closed', theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary, theme),
-          //   ],
-          // ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatItem(
-      String label, String value, Color valueColor, ThemesProvider theme) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
+    return Row(
       children: [
-        Text(
-          label,
-          style: WebTextStyles.sub(
-            isDarkTheme: theme.isDarkMode,
-            color: theme.isDarkMode
-                ? WebDarkColors.textSecondary
-                : WebColors.textSecondary,
-            fontWeight: WebFonts.semiBold,
+        Expanded(
+          child: _buildStatCard(
+            icon: Icons.trending_up,
+            label: 'Profit/Loss',
+            value: positionBook.totPnL,
+            valueColor: _getValueColor(positionBook.totPnL, theme),
+            theme: theme,
           ),
         ),
-        const SizedBox(height: 8),
-        Text(
-          value,
-          style: WebTextStyles.head(
-            isDarkTheme: theme.isDarkMode,
-            color: valueColor,
-            fontWeight: WebFonts.bold,
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildStatCard(
+            icon: Icons.pie_chart_outline,
+            label: 'MTM',
+            value: positionBook.totMtM,
+            valueColor: _getValueColor(positionBook.totMtM, theme),
+            theme: theme,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildStatCard(
+            icon: Icons.account_balance_wallet_outlined,
+            label: 'Trade Value',
+            value: _calculateTradeValue(positionBook),
+            valueColor:
+                _getStatValueColor(_calculateTradeValue(positionBook), theme),
+            theme: theme,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildDivider(ThemesProvider theme) {
-    return Container(
-      height: 40,
-      width: 1,
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
-    );
-  }
-
-  Widget _buildPositionChip(String text, Color color, ThemesProvider theme) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        // color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(5),
-        border: Border.all(color: color.withOpacity(0.2)),
-      ),
-      child: Text(
-        text,
-        style: WebTextStyles.sub(
-          isDarkTheme: theme.isDarkMode,
-          color: color,
-          fontWeight: WebFonts.semiBold,
+  Widget _buildStatCard({
+    required IconData icon,
+    required String label,
+    required String value,
+    String? percentage,
+    required Color valueColor,
+    required ThemesProvider theme,
+  }) {
+    return shadcn.Card(
+      child: Container(
+        padding: const EdgeInsets.all(10),
+        child: Row(
+          children: [
+            // Icon in circle
+            Container(
+              width: 45,
+              height: 45,
+              decoration: BoxDecoration(
+                color: colors.primary.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                child: Icon(
+                  icon,
+                  size: 20,
+                  color: colors.primary,
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            // Label and value
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    label,
+                    style: WebTextStyles.sub(
+                      isDarkTheme: theme.isDarkMode,
+                      color: theme.isDarkMode
+                          ? WebDarkColors.textSecondary
+                          : WebColors.textSecondary,
+                      fontWeight: WebFonts.medium,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          value,
+                          style: WebTextStyles.head(
+                            isDarkTheme: theme.isDarkMode,
+                            color: valueColor,
+                            fontWeight: WebFonts.bold,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      if (percentage != null) ...[
+                        const SizedBox(width: 4),
+                        Text(
+                          '($percentage%)',
+                          style: WebTextStyles.sub(
+                            isDarkTheme: theme.isDarkMode,
+                            color: valueColor,
+                            fontWeight: WebFonts.medium,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
+  Color _getStatValueColor(String value, ThemesProvider theme) {
+    // Extract numeric value from string (remove any text like percentages)
+    final cleanValue = value.replaceAll(RegExp(r'[^\d.-]'), '');
+    final numValue = double.tryParse(cleanValue) ?? 0.0;
+    final colorScheme = shadcn.Theme.of(context).colorScheme;
+   if (numValue > 0) {
+      return colorScheme.chart2;
+    } else if (numValue < 0) {
+      return colorScheme.destructive;
+    } else {
+      return colorScheme.mutedForeground;
+    }    
+  }
+
   Widget _buildMainContent(
       ThemesProvider theme, PortfolioProvider positionBook) {
-    return Container(
-      decoration: BoxDecoration(
-        color: theme.isDarkMode
-            ? WebColors.textPrimary
-            : WebDarkColors.textPrimary,
-        // borderRadius: BorderRadius.circular(8),
-        // border: Border.all(
-        //   color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
-        // ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Tabs and Action Bar in same row
-          _buildTabsAndActionBar(theme, positionBook),
-          const SizedBox(height: 16),
-          // Table - Expanded to take remaining space
-          Expanded(
-            child: _buildPositionsTable(theme, positionBook),
-          ),
-        ],
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildTabsAndActionBar(theme, positionBook),
+        const SizedBox(height: 16),
+        Expanded(
+          child: _buildPositionsTable(theme, positionBook),
+        ),
+      ],
     );
   }
 
@@ -289,70 +264,143 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
     final openPositionsCount = _getOpenPositionsCount(positionBook);
 
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
-          ),
-        ),
-      ),
+      padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
       child: Row(
         children: [
-          // Segmented Control Tabs on the left
-          _buildSegmentedControl(theme, positionBook, openPositionsCount),
+          Builder(
+            builder: (context) {
+              final currentTheme = shadcn.Theme.of(context);
+              final isDark = theme.isDarkMode;
+              // Create a new ColorScheme based on the default, but with custom primary color
+              final baseColorScheme = isDark
+                  ? shadcn.ColorSchemes.darkDefaultColor
+                  : shadcn.ColorSchemes.lightDefaultColor;
+
+              // Create custom ColorScheme with theme-appropriate primary color
+              final primaryColor =
+                  theme.isDarkMode ? WebDarkColors.primary : WebColors.primary;
+              final customColorScheme = baseColorScheme.copyWith(
+                primary: () => primaryColor,
+              );
+
+              return shadcn.Theme(
+                data: shadcn.ThemeData(
+                  colorScheme: customColorScheme,
+                  radius: currentTheme.radius,
+                ),
+                child: shadcn.TabList(
+                  index: _selectedTabIndex,
+                  onChanged: (value) {
+                    // Update state immediately without any delays or async operations
+                    if (mounted && _selectedTabIndex != value) {
+                      setState(() {
+                        _selectedTabIndex = value;
+                      });
+                    }
+                  },
+                  children: [
+                    shadcn.TabItem(
+                      child: DefaultTextStyle(
+                        style: TextStyle(
+                          fontFamily: 'Geist',
+                          color: _selectedTabIndex == 0
+                              ? (theme.isDarkMode
+                                  ? WebDarkColors.primary
+                                  : WebColors.primary)
+                              : customColorScheme.mutedForeground,
+                          fontWeight: WebFonts.bold,
+                        ),
+                        child: Text(
+                          'Positions ($openPositionsCount)',
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
           // Spacer to push action items to the right
           const Spacer(),
-          // Search Bar
-          SizedBox(
-            width: 400,
-            child: Container(
-              height: 40,
-              decoration: BoxDecoration(
-                color: theme.isDarkMode
-                    ? WebDarkColors.inputBackground
-                    : WebColors.inputBackground,
-                borderRadius: BorderRadius.circular(5),
-                border: Border.all(
-                  color: theme.isDarkMode
-                      ? WebDarkColors.inputBorder
-                      : WebColors.inputBorder,
-                  width: 1,
-                ),
-              ),
-              child: TextField(
-                onChanged: (value) => _searchQuery.value = value, // ✅ Use ValueNotifier instead of setState
-                style: WebTextStyles.formInput(
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
-                ),
-                decoration: InputDecoration(
-                  hintText: 'Search positions',
-                  hintStyle: WebTextStyles.formInput(
-                    isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode
-                        ? WebDarkColors.textSecondary
-                        : WebColors.textSecondary,
+          // Search Bar - Using shadcn.TextField like holdings
+          LayoutBuilder(
+            builder: (context, constraints) {
+              // Responsive search bar width
+              final screenWidth = MediaQuery.of(context).size.width;
+              double searchWidth;
+              if (screenWidth >= 1200) {
+                searchWidth = 400;
+              } else if (screenWidth >= 800) {
+                searchWidth = 300;
+              } else {
+                searchWidth = 200;
+              }
+
+              return SizedBox(
+                height: 40,
+                width: searchWidth,
+                child: DefaultTextStyle(
+                  style: const TextStyle(fontFamily: 'Geist'),
+                  child: ValueListenableBuilder<String>(
+                    valueListenable: _searchQuery,
+                    builder: (context, searchValue, child) {
+                      final features = <shadcn.InputFeature>[
+                        shadcn.InputFeature.leading(
+                          SvgPicture.asset(
+                            assets.searchIcon,
+                            color: shadcn.Theme.of(context)
+                                .colorScheme
+                                .mutedForeground,
+                            fit: BoxFit.scaleDown,
+                            width: 18,
+                          ),
+                        ),
+                      ];
+
+                      // Add clear button if there's text
+                      if (searchValue.isNotEmpty) {
+                        features.add(
+                          shadcn.InputFeature.trailing(
+                            SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: Material(
+                                color: Colors.transparent,
+                                shape: const CircleBorder(),
+                                child: InkWell(
+                                  customBorder: const CircleBorder(),
+                                  onTap: () {
+                                    _searchController.clear();
+                                  },
+                                  child: Center(
+                                    child: Icon(
+                                      Icons.close,
+                                      size: 16,
+                                      color: shadcn.Theme.of(context)
+                                          .colorScheme
+                                          .mutedForeground,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      }
+
+                      return shadcn.TextField(
+                        controller: _searchController,
+                        placeholder: Text(
+                          'Search positions',
+                          style: const TextStyle(fontFamily: 'Geist'),
+                        ),
+                        features: features,
+                      );
+                    },
                   ),
-                  prefixIcon: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: SvgPicture.asset(
-                      assets.searchIcon,
-                      color: theme.isDarkMode
-                          ? WebDarkColors.iconSecondary
-                          : WebColors.iconSecondary,
-                      fit: BoxFit.scaleDown,
-                      width: 18,
-                    ),
-                  ),
-                  border: InputBorder.none,
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                 ),
-              ),
-            ),
+              );
+            },
           ),
           const SizedBox(width: 16),
           // Exit All Button
@@ -361,31 +409,19 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
               final openPositions = positionBook.openPosition ?? [];
               final nonZeroPositions =
                   openPositions.where((p) => p.qty != "0").toList();
-
               // Count only selected positions
               final selectedPositions = nonZeroPositions
                   .where((p) => p.isExitSelection == true)
                   .toList();
               final selectedCount = selectedPositions.length;
-
               // Button should be enabled if there are positions to exit
               final buttonEnabled =
                   selectedCount > 0 || nonZeroPositions.isNotEmpty;
-
-              return ElevatedButton(
+              return shadcn.TextButton(
+                // size: shadcn.ButtonSize.large,
+                // density: shadcn.ButtonDensity.dense,
                 onPressed: buttonEnabled ? () => _exitAllPositions() : null,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: buttonEnabled
-                      ? (theme.isDarkMode
-                          ? WebDarkColors.primary
-                          : WebColors.primary)
-                      : Colors.grey,
-                  foregroundColor: Colors.white,
-                  minimumSize: const Size(100, 45),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                ),
+                shape: shadcn.ButtonShape.rectangle,
                 child: Text(
                   selectedCount == 0
                       ? 'Exit All'
@@ -394,11 +430,14 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                           : 'Exit ($selectedCount)'),
                   style: WebTextStyles.buttonMd(
                     isDarkTheme: theme.isDarkMode,
-                    color: Colors.white,
-                    fontWeight: WebFonts.medium,
+                    color: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
+                    fontWeight: WebFonts.bold,
                   ),
                 ),
               );
+
+              
+            
             },
           ),
           const SizedBox(width: 16),
@@ -446,154 +485,6 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
           ),
         ),
       ),
-      child: Row(
-        children: [
-          _buildTab('Positions ($openPositionsCount)', 0, theme),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSegmentedControl(ThemesProvider theme,
-      PortfolioProvider positionBook, int openPositionsCount) {
-    final tabs = [
-      'Positions ($openPositionsCount)',
-    ];
-
-    return SizedBox(
-      height: 45,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Left arrow button
-          // _buildTabArrowButton(
-          //   icon: Icons.chevron_left,
-          //   onPressed: () => _scrollTabsLeft(),
-          //   theme: theme,
-          // ),
-          // const SizedBox(width: 5),
-          // Tabs scrollable area
-          SingleChildScrollView(
-            controller: _tabScrollController,
-            scrollDirection: Axis.horizontal,
-            physics: const ClampingScrollPhysics(),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                for (int index = 0; index < tabs.length; index++)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 6),
-                    child: _buildSegmentedTab(
-                      tabs[index],
-                      index,
-                      _selectedTabIndex == index,
-                      false,
-                      theme,
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          // const SizedBox(width: 5),
-          // Right arrow button
-          // _buildTabArrowButton(
-          //   icon: Icons.chevron_right,
-          //   onPressed: () => _scrollTabsRight(),
-          //   theme: theme,
-          // ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSegmentedTab(
-    String title,
-    int index,
-    bool isSelected,
-    bool isLast,
-    ThemesProvider theme,
-  ) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: InkWell(
-        onTap: () => setState(() => _selectedTabIndex = index),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-          decoration: BoxDecoration(
-            color: isSelected
-                ? (theme.isDarkMode
-                    ? WebDarkColors.backgroundTertiary
-                    : WebColors.backgroundTertiary)
-                : Colors.white,
-            border: Border.all(
-              color: isSelected
-                  ? (theme.isDarkMode
-                      ? WebDarkColors.primary
-                      : WebColors.primary)
-                  : (theme.isDarkMode
-                      ? WebDarkColors.textSecondary
-                      : WebColors.textSecondary),
-              width: isSelected ? 1.5 : 1,
-            ),
-            borderRadius: BorderRadius.circular(50),
-          ),
-          child: Text(
-            title,
-            overflow: TextOverflow.ellipsis,
-            style: WebTextStyles.tab(
-              isDarkTheme: theme.isDarkMode,
-              color: isSelected
-                  ? (theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary)
-                  : (theme.isDarkMode
-                      ? WebDarkColors.navItem
-                      : WebColors.navItem),
-              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTab(String title, int index, ThemesProvider theme) {
-    final isSelected = _selectedTabIndex == index;
-
-    return GestureDetector(
-      onTap: () => setState(() => _selectedTabIndex = index),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary)
-              : Colors.transparent,
-          border: isSelected
-              ? Border(
-                  bottom: BorderSide(
-                    color: theme.isDarkMode
-                        ? WebDarkColors.primary
-                        : WebColors.primary,
-                    width: 2,
-                  ),
-                )
-              : null,
-        ),
-        child: Text(
-          title,
-          textAlign: TextAlign.center,
-          style: WebTextStyles.sub(
-            isDarkTheme: theme.isDarkMode,
-            color: isSelected
-                ? WebDarkColors.textPrimary
-                : (theme.isDarkMode
-                    ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary),
-            fontWeight: isSelected ? WebFonts.semiBold : WebFonts.medium,
-            letterSpacing: 0.0,
-          ),
-        ),
-      ),
     );
   }
 
@@ -620,7 +511,8 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                 ),
               ),
               child: TextField(
-                onChanged: (value) => _searchQuery.value = value, // ✅ Use ValueNotifier instead of setState
+                onChanged: (value) => _searchQuery.value =
+                    value, // ✅ Use ValueNotifier instead of setState
                 style: WebTextStyles.formInput(
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
@@ -672,30 +564,34 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
               final buttonEnabled =
                   selectedCount > 0 || nonZeroPositions.isNotEmpty;
 
-              return ElevatedButton(
-                onPressed: buttonEnabled ? () => _exitAllPositions() : null,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: buttonEnabled
+              return Container(
+                decoration: BoxDecoration(
+                  color: buttonEnabled
                       ? (theme.isDarkMode
                           ? WebDarkColors.primary
                           : WebColors.primary)
                       : Colors.grey,
-                  foregroundColor: Colors.white,
-                  minimumSize: const Size(100, 45),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5),
-                  ),
+                  borderRadius: BorderRadius.circular(5),
                 ),
-                child: Text(
-                  selectedCount == 0
-                      ? 'Exit All'
-                      : (selectedCount == 1
-                          ? 'Exit (1)'
-                          : 'Exit ($selectedCount)'),
-                  style: WebTextStyles.sub(
-                    isDarkTheme: theme.isDarkMode,
-                    color: Colors.white,
-                    fontWeight: WebFonts.bold,
+                child: shadcn.TextButton(
+                  size: shadcn.ButtonSize.small,
+                  density: shadcn.ButtonDensity.dense,
+                  onPressed: buttonEnabled ? () => _exitAllPositions() : null,
+                  shape: shadcn.ButtonShape.rectangle,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      selectedCount == 0
+                          ? 'Exit All'
+                          : (selectedCount == 1
+                              ? 'Exit (1)'
+                              : 'Exit ($selectedCount)'),
+                      style: WebTextStyles.buttonSm(
+                        isDarkTheme: theme.isDarkMode,
+                        color: Colors.white,
+                        fontWeight: WebFonts.bold,
+                      ),
+                    ),
                   ),
                 ),
               );
@@ -756,7 +652,15 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
     } else if (screenWidth < _tabletBreakpoint) {
       // Tablet: Show most columns
       return {
-        'headers': ['Select', 'Instrument', 'Product', 'Qty', 'LTP', 'P&L', 'MTM'],
+        'headers': [
+          'Select',
+          'Instrument',
+          'Product',
+          'Qty',
+          'LTP',
+          'P&L',
+          'MTM'
+        ],
         'columnMinWidth': {
           'Select': 60,
           'Instrument': 250,
@@ -770,7 +674,17 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
     } else if (screenWidth < _desktopBreakpoint) {
       // Small Desktop: Show more columns
       return {
-        'headers': ['Select', 'Instrument', 'Product', 'Qty', 'Act Avg Price', 'LTP', 'P&L', 'MTM', 'Avg Price'],
+        'headers': [
+          'Select',
+          'Instrument',
+          'Product',
+          'Qty',
+          'Act Avg Price',
+          'LTP',
+          'P&L',
+          'MTM',
+          'Avg Price'
+        ],
         'columnMinWidth': {
           'Select': 60,
           'Instrument': 250,
@@ -786,7 +700,21 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
     } else {
       // Large Desktop: Full columns with optimal widths
       return {
-        'headers': ['Select', 'Instrument', 'Product', 'Qty', 'Act Avg Price', 'LTP', 'P&L', 'MTM', 'Avg Price', 'Buy Qty', 'Sell Qty', 'Buy Avg', 'Sell Avg'],
+        'headers': [
+          'Select',
+          'Instrument',
+          'Product',
+          'Qty',
+          'Act Avg Price',
+          'LTP',
+          'P&L',
+          'MTM',
+          'Avg Price',
+          'Buy Qty',
+          'Sell Qty',
+          'Buy Avg',
+          'Sell Avg'
+        ],
         'columnMinWidth': {
           'Select': 60,
           'Instrument': 300,
@@ -808,30 +736,19 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
 
   Widget _buildPositionsTable(
       ThemesProvider theme, PortfolioProvider positionBook) {
-    // ✅ CRITICAL: Watch position list to rebuild when positions are added/removed
-    // Use select() to only rebuild when the list reference changes, not on every provider update
-    final currentPositions = ref.watch(portfolioProvider.select((p) => p.allPostionList));
-    
-    // ✅ Use ValueListenableBuilder to only rebuild table when search query changes
+    // Use ValueListenableBuilder to only rebuild table when search query changes
     return ValueListenableBuilder<String>(
       valueListenable: _searchQuery,
       builder: (context, searchQuery, child) {
-        // ✅ Use current positions from provider instead of widget.listofPosition
-        // This ensures table updates when positions are added/removed
-        final positionsToUse = currentPositions.isNotEmpty ? currentPositions : widget.listofPosition;
-        final filteredPositions = _getFilteredPositionsFromList(positionsToUse);
-
-        if (filteredPositions.isEmpty) {
-          return const Center(child: NoDataFound());
-        }
-        
-        return _buildTableContent(theme, positionBook, filteredPositions);
+        // Use new shadcn PositionTable
+        return PositionTable(searchQuery: searchQuery);
       },
     );
   }
-  
+
   // ✅ Helper method that works with a list instead of provider
-  List<PositionBookModel> _getFilteredPositionsFromList(List<PositionBookModel> positions) {
+  List<PositionBookModel> _getFilteredPositionsFromList(
+      List<PositionBookModel> positions) {
     List<PositionBookModel> filtered = positions.toList();
 
     // Apply search filter - use ValueNotifier value
@@ -912,9 +829,10 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
     return filtered;
   }
 
+  // OLD DataTable2 CODE - REMOVED - Using PositionTable widget now
+  /*
   Widget _buildTableContent(
       ThemesProvider theme, PortfolioProvider positionBook, List<PositionBookModel> filteredPositions) {
-
     return LayoutBuilder(
       builder: (context, constraints) {
         // Calculate available height: screen height minus all UI elements
@@ -1078,6 +996,8 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
     }
   }
 
+  // OLD DataTable2 CODE - REMOVED
+  /*
   List<DataColumn2> _buildDataTable2Columns(
     List<String> headers,
     Map<String, double> columnMinWidth,
@@ -1175,8 +1095,9 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
       );
     }).toList();
   }
+  */
 
-  List<DataRow2> _buildDataTable2Rows(
+  // List<DataRow2> _buildDataTable2Rows(
     List<PositionBookModel> positions,
     List<String> headers,
     ThemesProvider theme,
@@ -1387,6 +1308,8 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
       ),
     );
   }
+  */
+  // END OLD DataTable2 CODE
 
   Widget _buildInstrumentCellContent(
     PositionBookModel position,
@@ -1516,7 +1439,8 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
       // ✅ Watch provider state instead of using setState
       return Consumer(
         builder: (context, ref, child) {
-          final isExitAllPosition = ref.watch(portfolioProvider.select((p) => p.isExitAllPosition));
+          final isExitAllPosition =
+              ref.watch(portfolioProvider.select((p) => p.isExitAllPosition));
           return InkWell(
             onTap: filteredPositions.isNotEmpty
                 ? () {
@@ -1526,7 +1450,8 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
             child: Align(
               alignment: Alignment.centerLeft,
               child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 6.0),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 2.0, horizontal: 6.0),
                 child: Theme(
                   data: Theme.of(context).copyWith(
                     checkboxTheme: CheckboxThemeData(
@@ -1575,8 +1500,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
         ),
         const SizedBox(width: 4),
         // Sort icon - show unfold_more when not sorted, reserve space when sorted
-        if (columnIndex > 0)
-          _buildSortIcon(columnIndex, theme),
+        if (columnIndex > 0) _buildSortIcon(columnIndex, theme),
       ],
     );
   }
@@ -1604,7 +1528,6 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
     );
   }
 
-
   Widget _buildPositionCheckboxCell(
     PositionBookModel position,
     ThemesProvider theme,
@@ -1615,12 +1538,14 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
     return Consumer(
       builder: (context, ref, child) {
         // Find the position index and watch its selection state
-        final openPositions = ref.watch(portfolioProvider.select((p) => p.openPosition ?? []));
-        final positionIndex = openPositions.indexWhere((p) => p.token == position.token);
-        final isSelected = positionIndex >= 0 
+        final openPositions =
+            ref.watch(portfolioProvider.select((p) => p.openPosition ?? []));
+        final positionIndex =
+            openPositions.indexWhere((p) => p.token == position.token);
+        final isSelected = positionIndex >= 0
             ? (openPositions[positionIndex].isExitSelection ?? false)
             : (position.isExitSelection ?? false);
-        
+
         return Align(
           alignment: Alignment.centerLeft,
           child: Padding(
@@ -1848,16 +1773,22 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
   }
 
   void _showPositionDetail(PositionBookModel position) {
+    // Save parent context to pass to dialog
+    final parentCtx = context;
+
     showDialog(
       context: context,
       barrierDismissible: true,
-      builder: (BuildContext context) {
+      builder: (BuildContext dialogContext) {
         return Dialog(
           backgroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(5),
           ),
-          child: PositionDetailScreenWeb(positionList: position),
+          child: PositionDetailScreenWeb(
+            positionList: position,
+            parentContext: parentCtx, // Pass parent context for navigation
+          ),
         );
       },
     );
@@ -2144,7 +2075,10 @@ class _LTPCellState extends ConsumerState<_LTPCell> {
       if (!mounted || !data.containsKey(widget.token)) return;
 
       final newLtp = data[widget.token]['lp']?.toString();
-      if (newLtp != null && newLtp != ltp && newLtp != '0.00' && newLtp != 'null') {
+      if (newLtp != null &&
+          newLtp != ltp &&
+          newLtp != '0.00' &&
+          newLtp != 'null') {
         setState(() => ltp = newLtp);
       }
     });
@@ -2200,7 +2134,8 @@ class _PnLCellState extends ConsumerState<_PnLCell> {
       if (newLtp != null && newLtp != '0.00' && newLtp != 'null') {
         final ltp = double.tryParse(newLtp) ?? 0.0;
         // Simplified P&L calculation: (LTP - avgPrice) * qty
-        final newPnL = ((ltp - widget.avgPrice) * widget.qty).toStringAsFixed(2);
+        final newPnL =
+            ((ltp - widget.avgPrice) * widget.qty).toStringAsFixed(2);
         if (newPnL != pnl) {
           setState(() => pnl = newPnL);
         }
@@ -2221,7 +2156,9 @@ class _PnLCellState extends ConsumerState<_PnLCell> {
     } else if (numValue < 0) {
       return theme.isDarkMode ? WebDarkColors.error : WebColors.error;
     } else {
-      return theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary;
+      return theme.isDarkMode
+          ? WebDarkColors.textSecondary
+          : WebColors.textSecondary;
     }
   }
 
@@ -2232,9 +2169,8 @@ class _PnLCellState extends ConsumerState<_PnLCell> {
       style: WebTextStyles.custom(
         fontSize: 13,
         isDarkTheme: widget.theme.isDarkMode,
-        color: widget.isClosed
-            ? Colors.grey
-            : _getValueColor(pnl, widget.theme),
+        color:
+            widget.isClosed ? Colors.grey : _getValueColor(pnl, widget.theme),
         fontWeight: WebFonts.medium,
       ),
       textAlign: TextAlign.right,
@@ -2280,7 +2216,8 @@ class _MTMCellState extends ConsumerState<_MTMCell> {
       if (newLtp != null && newLtp != '0.00' && newLtp != 'null') {
         final ltp = double.tryParse(newLtp) ?? 0.0;
         // Simplified MTM calculation: (LTP - avgPrice) * qty
-        final newMtm = ((ltp - widget.avgPrice) * widget.qty).toStringAsFixed(2);
+        final newMtm =
+            ((ltp - widget.avgPrice) * widget.qty).toStringAsFixed(2);
         if (newMtm != mtm) {
           setState(() => mtm = newMtm);
         }
@@ -2301,7 +2238,9 @@ class _MTMCellState extends ConsumerState<_MTMCell> {
     } else if (numValue < 0) {
       return theme.isDarkMode ? WebDarkColors.error : WebColors.error;
     } else {
-      return theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary;
+      return theme.isDarkMode
+          ? WebDarkColors.textSecondary
+          : WebColors.textSecondary;
     }
   }
 
@@ -2312,9 +2251,8 @@ class _MTMCellState extends ConsumerState<_MTMCell> {
       style: WebTextStyles.custom(
         fontSize: 13,
         isDarkTheme: widget.theme.isDarkMode,
-        color: widget.isClosed
-            ? Colors.grey
-            : _getValueColor(mtm, widget.theme),
+        color:
+            widget.isClosed ? Colors.grey : _getValueColor(mtm, widget.theme),
         fontWeight: WebFonts.medium,
       ),
       textAlign: TextAlign.right,

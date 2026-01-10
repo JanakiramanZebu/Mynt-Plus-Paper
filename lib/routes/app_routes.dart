@@ -211,7 +211,7 @@ class AppRoutes {
       // case Routes.homeScreen:
       //   return MaterialPageRoute(builder: (_) => const HomeScreenDashBoard());
       case Routes.mainControlerScreenForWeb:
-        return MaterialPageRoute(builder: (_) => const WindowBasedHomeScreen());
+        return MaterialPageRoute(builder: (_) => const CustomizableSplitHomeScreen());
       case Routes.loginScreen:
         return _createRoute(
           pageBuilder: (_, __, ___) => const LoginScreen(),

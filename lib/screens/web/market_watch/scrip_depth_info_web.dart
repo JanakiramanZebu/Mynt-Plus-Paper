@@ -9,6 +9,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import 'package:mynt_plus/screens/web/market_watch/stock_report.dart';
 import 'package:mynt_plus/sharedWidget/list_divider.dart';
 import 'package:percent_indicator/percent_indicator.dart';
@@ -23,6 +24,7 @@ import '../../../provider/thems.dart';
 import '../../../res/res.dart';
 import '../../../res/global_font_web.dart';
 import '../../../res/web_colors.dart';
+import '../../../res/shadcn_text_styles.dart';
 import '../../../routes/route_names.dart';
 import '../../../utils/responsive_navigation.dart';
 import '../../web/order/quick_order_screen_web.dart';
@@ -71,19 +73,19 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
     final key = '${color.value}_${size}_${fw ?? "null"}';
     return _textStyleCache.putIfAbsent(
       key,
-      () => WebTextStyles.custom(
+      () => TextStyle(
+        fontFamily: 'Geist',
         fontSize: size,
-        isDarkTheme: true,
         color: color,
         fontWeight: fw == 0
-            ? WebFonts.regular
+            ? FontWeight.w400
             : fw == 1
-                ? WebFonts.medium
+                ? FontWeight.w500
                 : fw == 2
-                    ? WebFonts.semiBold
+                    ? FontWeight.w600
                     : fw == 3
-                        ? WebFonts.bold
-                        : WebFonts.regular,
+                        ? FontWeight.w700
+                        : FontWeight.w400,
       ),
     );
   }
@@ -92,10 +94,11 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
     final key = '${color.value}_title';
     return _titleStyleCache.putIfAbsent(
       key,
-      () => WebTextStyles.para(
-        isDarkTheme: true,
+      () => TextStyle(
+        fontFamily: 'Geist',
+        fontSize: 12,
         color: color,
-        fontWeight: WebFonts.medium,
+        fontWeight: FontWeight.w500,
       ),
     );
   }
@@ -104,10 +107,11 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
     final key = '${color.value}_value';
     return _valueStyleCache.putIfAbsent(
       key,
-      () => WebTextStyles.sub(
-        isDarkTheme: true,
+      () => TextStyle(
+        fontFamily: 'Geist',
+        fontSize: 13,
         color: color,
-        fontWeight: WebFonts.medium,
+        fontWeight: FontWeight.w500,
       ),
     );
   }
@@ -349,20 +353,11 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title,
-                style: _getTitleStyle(theme.isDarkMode
-                    ? WebDarkColors.textSecondary
-                    : WebColors.textSecondary)),
+            Text(title, style: ShadcnTextStyles.label(context)),
             const SizedBox(height: 6),
-            Text(value,
-                style: _getValueStyle(theme.isDarkMode
-                    ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary)),
+            Text(value, style: ShadcnTextStyles.value(context)),
             const SizedBox(height: 4),
-            Divider(
-                color: theme.isDarkMode
-                    ? WebDarkColors.divider
-                    : WebColors.divider)
+            Divider(color: ShadcnColors.border(context))
           ],
         ),
       );
@@ -556,12 +551,13 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                   children: [
                                     Text(
                                       "Scrip info",
-                                      style: WebTextStyles.title(
-                                        isDarkTheme: theme.isDarkMode,
-                                        color: theme.isDarkMode
-                                            ? WebDarkColors.textPrimary
-                                            : WebColors.textPrimary,
-                                        fontWeight: WebFonts.bold,
+                                      style: TextStyle(
+                                        fontFamily: 'Geist',
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w700,
+                                        color: shadcn.Theme.of(context)
+                                            .colorScheme
+                                            .foreground,
                                       ),
                                     ),
                                     // if (widget.onClose != null)
@@ -1302,10 +1298,14 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
 
                                                       // Responsive 4-column layout (2x2 on small screens)
                                                       LayoutBuilder(
-                                                        builder: (context, constraints) {
+                                                        builder: (context,
+                                                            constraints) {
                                                           // Use 2x2 layout if width is less than 600px
-                                                          final isSmallScreen = constraints.maxWidth < 300;
-                                                          
+                                                          final isSmallScreen =
+                                                              constraints
+                                                                      .maxWidth <
+                                                                  300;
+
                                                           if (isSmallScreen) {
                                                             // 2 rows of 2 columns each
                                                             return Column(
@@ -1313,15 +1313,19 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                 Row(
                                                                   children: [
                                                                     Expanded(
-                                                                      child: _buildInfoItem(
+                                                                      child:
+                                                                          _buildInfoItem(
                                                                         theme,
                                                                         "Open",
                                                                         "${depthData.o != "null" ? depthData.o ?? 0.00 : '0.00'}",
                                                                       ),
                                                                     ),
-                                                                    const SizedBox(width: 12),
+                                                                    const SizedBox(
+                                                                        width:
+                                                                            12),
                                                                     Expanded(
-                                                                      child: _buildInfoItem(
+                                                                      child:
+                                                                          _buildInfoItem(
                                                                         theme,
                                                                         "High",
                                                                         "${depthData.h != "null" ? depthData.h ?? 0.00 : '0.00'}",
@@ -1329,19 +1333,24 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                     ),
                                                                   ],
                                                                 ),
-                                                                const SizedBox(height: 12),
+                                                                const SizedBox(
+                                                                    height: 12),
                                                                 Row(
                                                                   children: [
                                                                     Expanded(
-                                                                      child: _buildInfoItem(
+                                                                      child:
+                                                                          _buildInfoItem(
                                                                         theme,
                                                                         "Low",
                                                                         "${depthData.l != "null" ? depthData.l ?? 0.00 : '0.00'}",
                                                                       ),
                                                                     ),
-                                                                    const SizedBox(width: 12),
+                                                                    const SizedBox(
+                                                                        width:
+                                                                            12),
                                                                     Expanded(
-                                                                      child: _buildInfoItem(
+                                                                      child:
+                                                                          _buildInfoItem(
                                                                         theme,
                                                                         "P.Close",
                                                                         "${depthData.c != "null" ? depthData.c ?? 0.00 : '0.00'}",
@@ -1478,27 +1487,31 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                     children: [
                                                                       Text(
                                                                         "Quantity",
-                                                                        style: WebTextStyles
-                                                                            .para(
-                                                                          isDarkTheme:
-                                                                              theme.isDarkMode,
-                                                                          color: theme.isDarkMode
-                                                                              ? WebDarkColors.textSecondary
-                                                                              : WebColors.textSecondary,
+                                                                        style:
+                                                                            TextStyle(
+                                                                          fontFamily:
+                                                                              'Geist',
+                                                                          fontSize:
+                                                                              12,
                                                                           fontWeight:
-                                                                              WebFonts.medium,
+                                                                              FontWeight.w500,
+                                                                          color: shadcn.Theme.of(context)
+                                                                              .colorScheme
+                                                                              .mutedForeground,
                                                                         ),
                                                                       ),
                                                                       Text(
                                                                         "Bid",
-                                                                        style: WebTextStyles
-                                                                            .para(
-                                                                          isDarkTheme:
-                                                                              theme.isDarkMode,
+                                                                        style:
+                                                                            TextStyle(
+                                                                          fontFamily:
+                                                                              'Geist',
+                                                                          fontSize:
+                                                                              12,
+                                                                          fontWeight:
+                                                                              FontWeight.w500,
                                                                           color:
                                                                               WebDarkColors.secondary,
-                                                                          fontWeight:
-                                                                              WebFonts.medium,
                                                                         ),
                                                                       )
                                                                     ]),
@@ -1556,28 +1569,32 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                     children: [
                                                                       Text(
                                                                         "Ask",
-                                                                        style: WebTextStyles
-                                                                            .para(
-                                                                          isDarkTheme:
-                                                                              theme.isDarkMode,
-                                                                          color: theme.isDarkMode
-                                                                              ? WebDarkColors.error
-                                                                              : WebColors.error,
+                                                                        style:
+                                                                            TextStyle(
+                                                                          fontFamily:
+                                                                              'Geist',
+                                                                          fontSize:
+                                                                              12,
                                                                           fontWeight:
-                                                                              WebFonts.medium,
+                                                                              FontWeight.w500,
+                                                                          color: shadcn.Theme.of(context)
+                                                                              .colorScheme
+                                                                              .destructive,
                                                                         ),
                                                                       ),
                                                                       Text(
                                                                         "Quantity",
-                                                                        style: WebTextStyles
-                                                                            .para(
-                                                                          isDarkTheme:
-                                                                              theme.isDarkMode,
-                                                                          color: theme.isDarkMode
-                                                                              ? WebDarkColors.textSecondary
-                                                                              : WebColors.textSecondary,
+                                                                        style:
+                                                                            TextStyle(
+                                                                          fontFamily:
+                                                                              'Geist',
+                                                                          fontSize:
+                                                                              12,
                                                                           fontWeight:
-                                                                              WebFonts.medium,
+                                                                              FontWeight.w500,
+                                                                          color: shadcn.Theme.of(context)
+                                                                              .colorScheme
+                                                                              .mutedForeground,
                                                                         ),
                                                                       )
                                                                     ]),
@@ -1630,19 +1647,18 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                   Text(
                                                                     "${depthData.tbq != "null" ? depthData.tbq ?? 0 : '0'}",
                                                                     style:
-                                                                        WebTextStyles
-                                                                            .sub(
-                                                                      isDarkTheme:
-                                                                          theme
-                                                                              .isDarkMode,
-                                                                      color: theme.isDarkMode
-                                                                          ? WebDarkColors
-                                                                              .textSecondary
-                                                                          : WebColors
-                                                                              .textSecondary,
+                                                                        TextStyle(
+                                                                      fontFamily:
+                                                                          'Geist',
+                                                                      fontSize:
+                                                                          13,
                                                                       fontWeight:
-                                                                          WebFonts
-                                                                              .medium,
+                                                                          FontWeight
+                                                                              .w500,
+                                                                      color: shadcn.Theme.of(
+                                                                              context)
+                                                                          .colorScheme
+                                                                          .mutedForeground,
                                                                     ),
                                                                   ),
                                                                   const SizedBox(
@@ -1651,19 +1667,18 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                   Text(
                                                                     "(${scripInfo.totBuyQtyPer.toStringAsFixed(2)}%)",
                                                                     style:
-                                                                        WebTextStyles
-                                                                            .para(
-                                                                      isDarkTheme:
-                                                                          theme
-                                                                              .isDarkMode,
-                                                                      color: theme.isDarkMode
-                                                                          ? WebDarkColors
-                                                                              .textSecondary
-                                                                          : WebColors
-                                                                              .textSecondary,
+                                                                        TextStyle(
+                                                                      fontFamily:
+                                                                          'Geist',
+                                                                      fontSize:
+                                                                          12,
                                                                       fontWeight:
-                                                                          WebFonts
-                                                                              .medium,
+                                                                          FontWeight
+                                                                              .w500,
+                                                                      color: shadcn.Theme.of(
+                                                                              context)
+                                                                          .colorScheme
+                                                                          .mutedForeground,
                                                                     ),
                                                                   ),
                                                                 ],
@@ -1673,19 +1688,18 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                   Text(
                                                                     "(${scripInfo.totSellQtyPer.toStringAsFixed(2)}%)",
                                                                     style:
-                                                                        WebTextStyles
-                                                                            .para(
-                                                                      isDarkTheme:
-                                                                          theme
-                                                                              .isDarkMode,
-                                                                      color: theme.isDarkMode
-                                                                          ? WebDarkColors
-                                                                              .textSecondary
-                                                                          : WebColors
-                                                                              .textSecondary,
+                                                                        TextStyle(
+                                                                      fontFamily:
+                                                                          'Geist',
+                                                                      fontSize:
+                                                                          12,
                                                                       fontWeight:
-                                                                          WebFonts
-                                                                              .medium,
+                                                                          FontWeight
+                                                                              .w500,
+                                                                      color: shadcn.Theme.of(
+                                                                              context)
+                                                                          .colorScheme
+                                                                          .mutedForeground,
                                                                     ),
                                                                   ),
                                                                   const SizedBox(
@@ -1694,19 +1708,18 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                   Text(
                                                                     "${depthData.tsq != "null" ? depthData.tsq ?? 0 : '0'}",
                                                                     style:
-                                                                        WebTextStyles
-                                                                            .sub(
-                                                                      isDarkTheme:
-                                                                          theme
-                                                                              .isDarkMode,
-                                                                      color: theme.isDarkMode
-                                                                          ? WebDarkColors
-                                                                              .textSecondary
-                                                                          : WebColors
-                                                                              .textSecondary,
+                                                                        TextStyle(
+                                                                      fontFamily:
+                                                                          'Geist',
+                                                                      fontSize:
+                                                                          13,
                                                                       fontWeight:
-                                                                          WebFonts
-                                                                              .medium,
+                                                                          FontWeight
+                                                                              .w500,
+                                                                      color: shadcn.Theme.of(
+                                                                              context)
+                                                                          .colorScheme
+                                                                          .mutedForeground,
                                                                     ),
                                                                   ),
                                                                 ],
@@ -1761,29 +1774,20 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                       backgroundColor: (scripInfo.totBuyQtyPer.toStringAsFixed(2) == "0.00" &&
                                                                               scripInfo.totSellQtyPer.toStringAsFixed(2) ==
                                                                                   "0.00")
-                                                                          ? theme
-                                                                                  .isDarkMode
-                                                                              ? WebDarkColors
-                                                                                  .textSecondary
-                                                                              : WebColors
-                                                                                  .textSecondary
-                                                                          : theme
-                                                                                  .isDarkMode
-                                                                              ? WebDarkColors
-                                                                                  .error
-                                                                              : WebColors
-                                                                                  .error,
-                                                                      percent: scripInfo
-                                                                          .totBuyQtyPerChng,
+                                                                          ? ShadcnColors.mutedForeground(
+                                                                              context)
+                                                                          : ShadcnColors.destructive(
+                                                                              context),
+                                                                      percent:
+                                                                          scripInfo
+                                                                              .totBuyQtyPerChng,
                                                                       padding: const EdgeInsets
                                                                           .symmetric(
                                                                           horizontal:
                                                                               0),
-                                                                      progressColor: theme.isDarkMode
-                                                                          ? WebDarkColors
-                                                                              .primary
-                                                                          : WebColors
-                                                                              .primary),
+                                                                      progressColor:
+                                                                          ShadcnColors.primaryBlue(
+                                                                              context)),
                                                                   const SizedBox(
                                                                       height:
                                                                           16),
@@ -1801,10 +1805,14 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                         const SizedBox(
                                                             height: 12),
                                                         LayoutBuilder(
-                                                          builder: (context, constraints) {
+                                                          builder: (context,
+                                                              constraints) {
                                                             // Use single column if width is less than 300px
-                                                            final isSmallScreen = constraints.maxWidth < 300;
-                                                            
+                                                            final isSmallScreen =
+                                                                constraints
+                                                                        .maxWidth <
+                                                                    300;
+
                                                             if (isSmallScreen) {
                                                               // Single column layout (stacked)
                                                               return Column(
@@ -1814,46 +1822,64 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                     "Avg Price",
                                                                     "${depthData.ap ?? 0.00}",
                                                                   ),
-                                                                  const SizedBox(height: 12),
+                                                                  const SizedBox(
+                                                                      height:
+                                                                          12),
                                                                   _buildInfoItem(
                                                                     theme,
                                                                     "Volume",
                                                                     "${depthData.v != "null" ? depthData.v ?? 0.00 : '0'}",
                                                                   ),
-                                                                  const SizedBox(height: 12),
+                                                                  const SizedBox(
+                                                                      height:
+                                                                          12),
                                                                   _buildInfoItem(
                                                                     theme,
                                                                     "LTQ",
                                                                     "${depthData.ltq != "null" ? depthData.ltq ?? 0.00 : '0'}",
                                                                   ),
-                                                                  const SizedBox(height: 12),
+                                                                  const SizedBox(
+                                                                      height:
+                                                                          12),
                                                                   _buildInfoItem(
                                                                     theme,
                                                                     "LTT",
-                                                                    depthData.ltt != "null"
-                                                                        ? (depthData.ltt ?? "--")
+                                                                    depthData.ltt !=
+                                                                            "null"
+                                                                        ? (depthData.ltt ??
+                                                                            "--")
                                                                         : "--",
                                                                   ),
-                                                                  const SizedBox(height: 12),
+                                                                  const SizedBox(
+                                                                      height:
+                                                                          12),
                                                                   _buildInfoItem(
                                                                     theme,
                                                                     "52 Weeks High-Low",
                                                                     "${(depthData.wk52H != "null" && depthData.wk52H != null) ? depthData.wk52H : 0.00} - ${(depthData.wk52L != "null" && depthData.wk52L != null) ? depthData.wk52L : 0.00}",
                                                                   ),
-                                                                  const SizedBox(height: 12),
+                                                                  const SizedBox(
+                                                                      height:
+                                                                          12),
                                                                   _buildInfoItem(
                                                                     theme,
                                                                     "DPR",
                                                                     "${depthData.uc != "null" ? depthData.uc ?? 0.00 : '0.00'} - ${depthData.lc != "null" ? depthData.lc ?? 0.00 : '0.00'}",
                                                                   ),
-                                                                  if (depthData.seg != "EQT") ...[
-                                                                    const SizedBox(height: 12),
+                                                                  if (depthData
+                                                                          .seg !=
+                                                                      "EQT") ...[
+                                                                    const SizedBox(
+                                                                        height:
+                                                                            12),
                                                                     _buildInfoItem(
                                                                       theme,
                                                                       "Open Interest - OI",
                                                                       "${depthData.oi != "null" ? depthData.oi ?? 0.00 : '0'}",
                                                                     ),
-                                                                    const SizedBox(height: 12),
+                                                                    const SizedBox(
+                                                                        height:
+                                                                            12),
                                                                     _buildInfoItem(
                                                                       theme,
                                                                       "Change in OI",
@@ -1870,15 +1896,19 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                   Row(
                                                                     children: [
                                                                       Expanded(
-                                                                        child: _buildInfoItem(
+                                                                        child:
+                                                                            _buildInfoItem(
                                                                           theme,
                                                                           "Avg Price",
                                                                           "${depthData.ap ?? 0.00}",
                                                                         ),
                                                                       ),
-                                                                      const SizedBox(width: 16),
+                                                                      const SizedBox(
+                                                                          width:
+                                                                              16),
                                                                       Expanded(
-                                                                        child: _buildInfoItem(
+                                                                        child:
+                                                                            _buildInfoItem(
                                                                           theme,
                                                                           "Volume",
                                                                           "${depthData.v != "null" ? depthData.v ?? 0.00 : '0'}",
@@ -1886,20 +1916,26 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                       ),
                                                                     ],
                                                                   ),
-                                                                  const SizedBox(height: 12),
+                                                                  const SizedBox(
+                                                                      height:
+                                                                          12),
                                                                   // Row 2: LTQ, LTT
                                                                   Row(
                                                                     children: [
                                                                       Expanded(
-                                                                        child: _buildInfoItem(
+                                                                        child:
+                                                                            _buildInfoItem(
                                                                           theme,
                                                                           "LTQ",
                                                                           "${depthData.ltq != "null" ? depthData.ltq ?? 0.00 : '0'}",
                                                                         ),
                                                                       ),
-                                                                      const SizedBox(width: 16),
+                                                                      const SizedBox(
+                                                                          width:
+                                                                              16),
                                                                       Expanded(
-                                                                        child: _buildInfoItem(
+                                                                        child:
+                                                                            _buildInfoItem(
                                                                           theme,
                                                                           "LTT",
                                                                           depthData.ltt != "null"
@@ -1909,20 +1945,26 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                       ),
                                                                     ],
                                                                   ),
-                                                                  const SizedBox(height: 12),
+                                                                  const SizedBox(
+                                                                      height:
+                                                                          12),
                                                                   // Row 3: 52 Weeks High-Low, DPR
                                                                   Row(
                                                                     children: [
                                                                       Expanded(
-                                                                        child: _buildInfoItem(
+                                                                        child:
+                                                                            _buildInfoItem(
                                                                           theme,
                                                                           "52 Weeks High-Low",
                                                                           "${(depthData.wk52H != "null" && depthData.wk52H != null) ? depthData.wk52H : 0.00} - ${(depthData.wk52L != "null" && depthData.wk52L != null) ? depthData.wk52L : 0.00}",
                                                                         ),
                                                                       ),
-                                                                      const SizedBox(width: 16),
+                                                                      const SizedBox(
+                                                                          width:
+                                                                              16),
                                                                       Expanded(
-                                                                        child: _buildInfoItem(
+                                                                        child:
+                                                                            _buildInfoItem(
                                                                           theme,
                                                                           "DPR",
                                                                           "${depthData.uc != "null" ? depthData.uc ?? 0.00 : '0.00'} - ${depthData.lc != "null" ? depthData.lc ?? 0.00 : '0.00'}",
@@ -1930,21 +1972,29 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                       ),
                                                                     ],
                                                                   ),
-                                                                  if (depthData.seg != "EQT") ...[
-                                                                    const SizedBox(height: 12),
+                                                                  if (depthData
+                                                                          .seg !=
+                                                                      "EQT") ...[
+                                                                    const SizedBox(
+                                                                        height:
+                                                                            12),
                                                                     // Row 4: Open Interest - OI, Change in OI
                                                                     Row(
                                                                       children: [
                                                                         Expanded(
-                                                                          child: _buildInfoItem(
+                                                                          child:
+                                                                              _buildInfoItem(
                                                                             theme,
                                                                             "Open Interest - OI",
                                                                             "${depthData.oi != "null" ? depthData.oi ?? 0.00 : '0'}",
                                                                           ),
                                                                         ),
-                                                                        const SizedBox(width: 16),
+                                                                        const SizedBox(
+                                                                            width:
+                                                                                16),
                                                                         Expanded(
-                                                                          child: _buildInfoItem(
+                                                                          child:
+                                                                              _buildInfoItem(
                                                                             theme,
                                                                             "Change in OI",
                                                                             "${depthData.poi != "null" ? depthData.poi ?? 0.00 : '0'}",
@@ -1983,76 +2033,72 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                           const SizedBox(
                                                               height: 16),
                                                           LayoutBuilder(
-                                                            builder: (context, constraints) {
+                                                            builder: (context,
+                                                                constraints) {
                                                               // Calculate how many items can fit per row
                                                               // Each item: 120px width + 12px spacing
-                                                              const itemWidth = 120.0;
-                                                              const spacing = 12.0;
-                                                              final availableWidth = constraints.maxWidth;
-                                                              final itemsPerRow = ((availableWidth + spacing) / (itemWidth + spacing)).floor();
-                                                              final calculatedWidth = itemsPerRow > 0 
-                                                                  ? (availableWidth - (spacing * (itemsPerRow - 1))) / itemsPerRow
+                                                              const itemWidth =
+                                                                  120.0;
+                                                              const spacing =
+                                                                  12.0;
+                                                              final availableWidth =
+                                                                  constraints
+                                                                      .maxWidth;
+                                                              final itemsPerRow =
+                                                                  ((availableWidth +
+                                                                              spacing) /
+                                                                          (itemWidth +
+                                                                              spacing))
+                                                                      .floor();
+                                                              final calculatedWidth = itemsPerRow >
+                                                                      0
+                                                                  ? (availableWidth -
+                                                                          (spacing *
+                                                                              (itemsPerRow - 1))) /
+                                                                      itemsPerRow
                                                                   : itemWidth;
-                                                              
+
                                                               return Wrap(
-                                                                spacing: spacing,
+                                                                spacing:
+                                                                    spacing,
                                                                 runSpacing: 10,
                                                                 children: List.generate(
                                                                     scripInfo
                                                                         .returnsGridview
                                                                         .length,
                                                                     (index) {
-                                                                  return Container(
-                                                                      width: calculatedWidth.clamp(100.0, 150.0), // Min 100px, Max 150px
-                                                                      padding: const EdgeInsets
-                                                                          .symmetric(
-                                                                          vertical:
-                                                                              14,
-                                                                          horizontal:
-                                                                              8),
-                                                                      decoration: BoxDecoration(
-                                                                          color: theme.isDarkMode
-                                                                              ? WebDarkColors
-                                                                                  .surfaceVariant
-                                                                              : WebColors
-                                                                                  .surfaceVariant,
-                                                                          borderRadius:
-                                                                              BorderRadius.circular(
-                                                                                  5)),
-                                                                      child: Column(
-                                                                          mainAxisAlignment:
-                                                                              MainAxisAlignment.center,
-                                                                          children: [
-                                                                            Text(
-                                                                              "${scripInfo.returnsGridview[index]['percent']}%",
-                                                                              style:
-                                                                                  WebTextStyles.sub(
-                                                                                isDarkTheme: theme.isDarkMode,
-                                                                                color: scripInfo.returnsGridview[index]['percent'].toString().startsWith("-")
-                                                                                    ? theme.isDarkMode
-                                                                                        ? WebDarkColors.error
-                                                                                        : WebColors.error
-                                                                                    : theme.isDarkMode
-                                                                                        ? WebDarkColors.success
-                                                                                        : WebColors.success,
-                                                                                fontWeight: WebFonts.medium,
+                                                                  return SizedBox(
+                                                                      width: calculatedWidth.clamp(
+                                                                          100.0,
+                                                                          150.0), // Min 100px, Max 150px
+                                                                      child: shadcn
+                                                                          .Card(
+                                                                        padding: const EdgeInsets
+                                                                            .symmetric(
+                                                                            vertical:
+                                                                                14,
+                                                                            horizontal:
+                                                                                8),
+                                                                        child: Column(
+                                                                            mainAxisAlignment:
+                                                                                MainAxisAlignment.center,
+                                                                            children: [
+                                                                              Text(
+                                                                                "${scripInfo.returnsGridview[index]['percent']}%",
+                                                                                style: ShadcnTextStyles.bodyMedium(
+                                                                                  context,
+                                                                                  color: ShadcnColors.forChange(context, scripInfo.returnsGridview[index]['percent'].toString()),
+                                                                                ),
                                                                               ),
-                                                                            ),
-                                                                            const SizedBox(
-                                                                                height: 6),
-                                                                            Center(
-                                                                                child: Text(
-                                                                              "${scripInfo.returnsGridview[index]['duration']}",
-                                                                              textAlign:
-                                                                                  TextAlign.center,
-                                                                              style:
-                                                                                  WebTextStyles.para(
-                                                                                isDarkTheme: theme.isDarkMode,
-                                                                                color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
-                                                                                fontWeight: WebFonts.medium,
-                                                                              ),
-                                                                            ))
-                                                                          ]));
+                                                                              const SizedBox(height: 6),
+                                                                              Center(
+                                                                                  child: Text(
+                                                                                "${scripInfo.returnsGridview[index]['duration']}",
+                                                                                textAlign: TextAlign.center,
+                                                                                style: ShadcnTextStyles.small(context),
+                                                                              ))
+                                                                            ]),
+                                                                      ));
                                                                 }),
                                                               );
                                                             },
@@ -2131,84 +2177,70 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                       builder:
                                                                           (BuildContext
                                                                               dialogContext) {
-                                                                        return Dialog(
-                                                                          backgroundColor: Colors.transparent,
-                                                                          child: Container(
-                                                                            width: 800,
-                                                                            height: 700,
-                                                                            decoration: BoxDecoration(
-                                                                              color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
-                                                                              borderRadius: BorderRadius.circular(5),
-                                                                              border: Border.all(
-                                                                                color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
-                                                                              ),
-                                                                            ),
-                                                                            child: Column(
-                                                                              mainAxisSize: MainAxisSize.min,
-                                                                              children: [
-                                                                                // Header
+                                                                        return Center(
+                                                                          child:
+                                                                              shadcn.Card(
+                                                                            borderRadius:
+                                                                                BorderRadius.circular(8),
+                                                                            child:
                                                                                 Container(
-                                                                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                                                                                  margin: const EdgeInsets.only(bottom: 8),
-                                                                                  decoration: BoxDecoration(
-                                                                                    border: Border(
-                                                                                      bottom: BorderSide(
-                                                                                        color: theme.isDarkMode
-                                                                                            ? WebDarkColors.divider
-                                                                                            : WebColors.divider,
-                                                                                      ),
-                                                                                    ),
-                                                                                  ),
-                                                                                  child: Row(
-                                                                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                                                    children: [
-                                                                                      Text(
-                                                                                        'Futures',
-                                                                                        style: WebTextStyles.dialogTitle(
-                                                                                          isDarkTheme: theme.isDarkMode,
-                                                                                          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                                                                              width: 800,
+                                                                              height: 700,
+                                                                              child: Column(
+                                                                                mainAxisSize: MainAxisSize.min,
+                                                                                children: [
+                                                                                  // Header
+                                                                                  Container(
+                                                                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                                                                    decoration: BoxDecoration(
+                                                                                      border: Border(
+                                                                                        bottom: BorderSide(
+                                                                                          color: ShadcnColors.border(context),
                                                                                         ),
                                                                                       ),
-                                                                                      Material(
-                                                                                        color: Colors.transparent,
-                                                                                        shape: const CircleBorder(),
-                                                                                        child: InkWell(
-                                                                                          customBorder: const CircleBorder(),
-                                                                                          splashColor: theme.isDarkMode
-                                                                                              ? Colors.white.withOpacity(.15)
-                                                                                              : Colors.black.withOpacity(.15),
-                                                                                          highlightColor: theme.isDarkMode
-                                                                                              ? Colors.white.withOpacity(.08)
-                                                                                              : Colors.black.withOpacity(.08),
-                                                                                          onTap: () {
-                                                                                            // Unsubscribe from futures WebSocket
-                                                                                            scripInfo.requestWSFut(context: context, isSubscribe: false);
-                                                                                            Navigator.of(context).pop();
-                                                                                          },
-                                                                                          child: Padding(
-                                                                                            padding: const EdgeInsets.all(6),
-                                                                                            child: Icon(
-                                                                                              Icons.close,
-                                                                                              size: 20,
-                                                                                              color: theme.isDarkMode
-                                                                                                  ? WebDarkColors.iconSecondary
-                                                                                                  : WebColors.iconSecondary,
+                                                                                    ),
+                                                                                    child: Row(
+                                                                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                                                      children: [
+                                                                                        Text(
+                                                                                          'Futures',
+                                                                                          style: ShadcnTextStyles.dialogTitle(context),
+                                                                                        ),
+                                                                                        Material(
+                                                                                          color: Colors.transparent,
+                                                                                          shape: const CircleBorder(),
+                                                                                          child: InkWell(
+                                                                                            customBorder: const CircleBorder(),
+                                                                                            splashColor: ShadcnColors.accent(context).withOpacity(.15),
+                                                                                            highlightColor: ShadcnColors.accent(context).withOpacity(.08),
+                                                                                            onTap: () {
+                                                                                              // Unsubscribe from futures WebSocket
+                                                                                              scripInfo.requestWSFut(context: context, isSubscribe: false);
+                                                                                              Navigator.of(context).pop();
+                                                                                            },
+                                                                                            child: Padding(
+                                                                                              padding: const EdgeInsets.all(6),
+                                                                                              child: Icon(
+                                                                                                Icons.close,
+                                                                                                size: 20,
+                                                                                                color: ShadcnColors.mutedForeground(context),
+                                                                                              ),
                                                                                             ),
                                                                                           ),
                                                                                         ),
-                                                                                      ),
-                                                                                    ],
+                                                                                      ],
+                                                                                    ),
                                                                                   ),
-                                                                                ),
-                                                                                // Content
-                                                                                Expanded(
-                                                                                  child: Consumer(
-                                                                                    builder: (context, ref, _) {
-                                                                                      return const FutureScreenWeb();
-                                                                                    },
+                                                                                  // Content
+                                                                                  Expanded(
+                                                                                    child: Consumer(
+                                                                                      builder: (context, ref, _) {
+                                                                                        return const FutureScreenWeb();
+                                                                                      },
+                                                                                    ),
                                                                                   ),
-                                                                                ),
-                                                                              ],
+                                                                                ],
+                                                                              ),
                                                                             ),
                                                                           ),
                                                                         );
@@ -2305,69 +2337,64 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                               true,
                                                                           builder:
                                                                               (BuildContext dialogContext) {
-                                                                            return Dialog(
-                                                                              backgroundColor: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
-                                                                              shape: RoundedRectangleBorder(
+                                                                            return Center(
+                                                                              child: shadcn.Card(
                                                                                 borderRadius: BorderRadius.circular(12),
-                                                                              ),
-                                                                              child: Container(
-                                                                                width: 700,
-                                                                                constraints: const BoxConstraints(maxHeight: 800, minHeight: 400),
-                                                                                child: Column(
-                                                                                  mainAxisSize: MainAxisSize.min,
-                                                                                  children: [
-                                                                                    // Header
-                                                                                    Padding(
-                                                                                      padding: const EdgeInsets.all(16),
-                                                                                      child: Row(
-                                                                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                                                        children: [
-                                                                                          Text(
-                                                                                            '${depthArgs.symbol.replaceAll("-EQ", "").toUpperCase()}${depthArgs.expDate} ${depthArgs.option} Stock Report',
-                                                                                            style: WebTextStyles.title(
-                                                                                              isDarkTheme: theme.isDarkMode,
-                                                                                              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
-                                                                                              fontWeight: FontWeight.w700,
+                                                                                child: Container(
+                                                                                  width: 700,
+                                                                                  constraints: const BoxConstraints(maxHeight: 800, minHeight: 400),
+                                                                                  child: Column(
+                                                                                    mainAxisSize: MainAxisSize.min,
+                                                                                    children: [
+                                                                                      // Header
+                                                                                      Padding(
+                                                                                        padding: const EdgeInsets.all(16),
+                                                                                        child: Row(
+                                                                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                                                          children: [
+                                                                                            Text(
+                                                                                              '${depthArgs.symbol.replaceAll("-EQ", "").toUpperCase()}${depthArgs.expDate} ${depthArgs.option} Stock Report',
+                                                                                              style: ShadcnTextStyles.title(context, fontWeight: FontWeight.w700),
                                                                                             ),
-                                                                                          ),
-                                                                                          Material(
-                                                                                            color: Colors.transparent,
-                                                                                            shape: const CircleBorder(),
-                                                                                            child: InkWell(
-                                                                                              customBorder: const CircleBorder(),
-                                                                                              splashColor: theme.isDarkMode ? Colors.white.withOpacity(.15) : Colors.black.withOpacity(.15),
-                                                                                              highlightColor: theme.isDarkMode ? Colors.white.withOpacity(.08) : Colors.black.withOpacity(.08),
-                                                                                              onTap: () => Navigator.of(context).pop(),
-                                                                                              child: Padding(
-                                                                                                padding: const EdgeInsets.all(8),
-                                                                                                child: Icon(
-                                                                                                  Icons.close,
-                                                                                                  size: 20,
-                                                                                                  color: theme.isDarkMode ? WebDarkColors.iconSecondary : WebColors.iconSecondary,
+                                                                                            Material(
+                                                                                              color: Colors.transparent,
+                                                                                              shape: const CircleBorder(),
+                                                                                              child: InkWell(
+                                                                                                customBorder: const CircleBorder(),
+                                                                                                splashColor: ShadcnColors.accent(context).withOpacity(.15),
+                                                                                                highlightColor: ShadcnColors.accent(context).withOpacity(.08),
+                                                                                                onTap: () => Navigator.of(context).pop(),
+                                                                                                child: Padding(
+                                                                                                  padding: const EdgeInsets.all(8),
+                                                                                                  child: Icon(
+                                                                                                    Icons.close,
+                                                                                                    size: 20,
+                                                                                                    color: ShadcnColors.mutedForeground(context),
+                                                                                                  ),
                                                                                                 ),
                                                                                               ),
                                                                                             ),
-                                                                                          ),
-                                                                                        ],
-                                                                                      ),
-                                                                                    ),
-                                                                                    // Content without AppBar
-                                                                                    Expanded(
-                                                                                      child: ClipRRect(
-                                                                                        borderRadius: const BorderRadius.vertical(
-                                                                                          bottom: Radius.circular(12),
-                                                                                        ),
-                                                                                        child: MediaQuery.removePadding(
-                                                                                          context: context,
-                                                                                          removeTop: true,
-                                                                                          child: NewFundamentalScreen(
-                                                                                            wlValue: depthArgs,
-                                                                                            depthData: depthData,
-                                                                                          ),
+                                                                                          ],
                                                                                         ),
                                                                                       ),
-                                                                                    ),
-                                                                                  ],
+                                                                                      // Content without AppBar
+                                                                                      Expanded(
+                                                                                        child: ClipRRect(
+                                                                                          borderRadius: const BorderRadius.vertical(
+                                                                                            bottom: Radius.circular(12),
+                                                                                          ),
+                                                                                          child: MediaQuery.removePadding(
+                                                                                            context: context,
+                                                                                            removeTop: true,
+                                                                                            child: NewFundamentalScreen(
+                                                                                              wlValue: depthArgs,
+                                                                                              depthData: depthData,
+                                                                                            ),
+                                                                                          ),
+                                                                                        ),
+                                                                                      ),
+                                                                                    ],
+                                                                                  ),
                                                                                 ),
                                                                               ),
                                                                             );
@@ -2435,18 +2462,15 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                               .primary),
                                                       Text(
                                                         " Long press to add ${scripInfo.wlName}'s Watchlist",
-                                                        style:
-                                                            WebTextStyles.para(
-                                                          isDarkTheme:
-                                                              theme.isDarkMode,
-                                                          color: theme
-                                                                  .isDarkMode
-                                                              ? WebDarkColors
-                                                                  .iconSecondary
-                                                              : WebColors
-                                                                  .iconSecondary,
+                                                        style: TextStyle(
+                                                          fontFamily: 'Geist',
+                                                          fontSize: 12,
                                                           fontWeight:
-                                                              WebFonts.regular,
+                                                              FontWeight.w400,
+                                                          color: shadcn.Theme
+                                                                  .of(context)
+                                                              .colorScheme
+                                                              .mutedForeground,
                                                         ),
                                                       )
                                                     ])),
@@ -2473,39 +2497,37 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                             // Quick Order embedded below scrip info - takes only what it needs
                             if (!isIndexOrCommodity)
                               Builder(builder: (context) {
-                                  final lotSize = _safeParseLotSize(
-                                      ref
-                                          .read(marketWatchProvider)
-                                          .scripInfoModel
-                                          ?.ls,
-                                      depthData.ls,
-                                      "1");
-                                  final orderArgs = OrderScreenArgs(
-                                    exchange: widget.wlValue.exch,
-                                    tSym: widget.wlValue.tsym,
-                                    isExit: false,
-                                    token: widget.wlValue.token,
-                                    transType: true,
-                                    lotSize: lotSize,
-                                    ltp:
-                                        "${depthData.lp ?? depthData.c ?? 0.00}",
-                                    perChange: depthData.pc ?? "0.00",
-                                    orderTpye: '',
-                                    holdQty: '',
-                                    isModify: false,
-                                    raw: {},
-                                  );
-                                  return QuickOrderScreenWeb(
-                                    key: ValueKey(
-                                        "${orderArgs.exchange}|${orderArgs.token}"),
-                                    orderArg: orderArgs,
-                                    scripInfo: ref
+                                final lotSize = _safeParseLotSize(
+                                    ref
                                         .read(marketWatchProvider)
-                                        .scripInfoModel!,
-                                    embedded: true,
-                                  );
-                                }),
-                              
+                                        .scripInfoModel
+                                        ?.ls,
+                                    depthData.ls,
+                                    "1");
+                                final orderArgs = OrderScreenArgs(
+                                  exchange: widget.wlValue.exch,
+                                  tSym: widget.wlValue.tsym,
+                                  isExit: false,
+                                  token: widget.wlValue.token,
+                                  transType: true,
+                                  lotSize: lotSize,
+                                  ltp: "${depthData.lp ?? depthData.c ?? 0.00}",
+                                  perChange: depthData.pc ?? "0.00",
+                                  orderTpye: '',
+                                  holdQty: '',
+                                  isModify: false,
+                                  raw: {},
+                                );
+                                return QuickOrderScreenWeb(
+                                  key: ValueKey(
+                                      "${orderArgs.exchange}|${orderArgs.token}"),
+                                  orderArg: orderArgs,
+                                  scripInfo: ref
+                                      .read(marketWatchProvider)
+                                      .scripInfoModel!,
+                                  embedded: true,
+                                );
+                              }),
                           ],
                         ),
                       ),
@@ -2632,12 +2654,11 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
     return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
       Text(
         low,
-        style: WebTextStyles.sub(
-          isDarkTheme: theme.isDarkMode,
-          color: theme.isDarkMode
-              ? WebDarkColors.textPrimary
-              : WebColors.textPrimary,
-          fontWeight: WebFonts.regular,
+        style: TextStyle(
+          fontFamily: 'Geist',
+          fontSize: 13,
+          fontWeight: FontWeight.w400,
+          color: shadcn.Theme.of(context).colorScheme.foreground,
         ),
       ),
       SizedBox(
@@ -2684,12 +2705,11 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
       ),
       Text(
         high,
-        style: WebTextStyles.sub(
-          isDarkTheme: theme.isDarkMode,
-          color: theme.isDarkMode
-              ? WebDarkColors.textPrimary
-              : WebColors.textPrimary,
-          fontWeight: WebFonts.regular,
+        style: TextStyle(
+          fontFamily: 'Geist',
+          fontSize: 13,
+          fontWeight: FontWeight.w400,
+          color: shadcn.Theme.of(context).colorScheme.foreground,
         ),
       )
     ]);
@@ -2718,20 +2738,20 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
           children: [
             Text(
               " ${price != "null" ? price : '0.00'} ",
-              style: WebTextStyles.sub(
-                isDarkTheme: theme.isDarkMode,
-                color: theme.isDarkMode ? WebDarkColors.error : WebColors.error,
-                fontWeight: WebFonts.medium,
+              style: TextStyle(
+                fontFamily: 'Geist',
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: shadcn.Theme.of(context).colorScheme.destructive,
               ),
             ),
             Text(
               " ${qty != "null" ? qty : '0'} ",
-              style: WebTextStyles.sub(
-                isDarkTheme: theme.isDarkMode,
-                color: theme.isDarkMode
-                    ? WebDarkColors.textSecondary
-                    : WebColors.textSecondary,
-                fontWeight: WebFonts.medium,
+              style: TextStyle(
+                fontFamily: 'Geist',
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: shadcn.Theme.of(context).colorScheme.mutedForeground,
               ),
             ),
           ],
@@ -2760,22 +2780,20 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
           children: [
             Text(
               " ${qty != "null" ? qty : '0'} ",
-              style: WebTextStyles.sub(
-                isDarkTheme: theme.isDarkMode,
-                color: theme.isDarkMode
-                    ? WebDarkColors.textSecondary
-                    : WebColors.textSecondary,
-                fontWeight: WebFonts.medium,
+              style: TextStyle(
+                fontFamily: 'Geist',
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: shadcn.Theme.of(context).colorScheme.mutedForeground,
               ),
             ),
             Text(
               " ${price != "null" ? price : '0.00'} ",
-              style: WebTextStyles.sub(
-                isDarkTheme: theme.isDarkMode,
-                color: theme.isDarkMode
-                    ? WebDarkColors.secondary
-                    : WebColors.secondary,
-                fontWeight: WebFonts.medium,
+              style: TextStyle(
+                fontFamily: 'Geist',
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: ShadcnColors.secondaryBlue(context),
               ),
             ),
           ],
@@ -2807,12 +2825,12 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                     children: [
                       Text(
                         "Futures",
-                        style: WebTextStyles.sub(
-                          isDarkTheme: theme.isDarkMode,
-                          color: theme.isDarkMode
-                              ? WebDarkColors.textPrimary
-                              : WebColors.textPrimary,
-                          fontWeight: WebFonts.regular,
+                        style: TextStyle(
+                          fontFamily: 'Geist',
+                          fontSize: 13,
+                          fontWeight: FontWeight.w400,
+                          color:
+                              shadcn.Theme.of(context).colorScheme.foreground,
                         ),
                       ),
                       AnimatedRotation(
@@ -2820,9 +2838,9 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                         duration: const Duration(milliseconds: 200),
                         child: Icon(
                           Icons.chevron_right,
-                          color: theme.isDarkMode
-                              ? WebDarkColors.iconSecondary
-                              : WebColors.iconSecondary,
+                          color: shadcn.Theme.of(context)
+                              .colorScheme
+                              .mutedForeground,
                           size: 20,
                         ),
                       ),
@@ -2858,12 +2876,13 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                           ),
                           Text(
                             " Long press to add ${scripInfo.wlName}'s Watchlist",
-                            style: WebTextStyles.para(
-                              isDarkTheme: theme.isDarkMode,
-                              color: theme.isDarkMode
-                                  ? WebDarkColors.iconSecondary
-                                  : WebColors.iconSecondary,
-                              fontWeight: WebFonts.regular,
+                            style: TextStyle(
+                              fontFamily: 'Geist',
+                              fontSize: 12,
+                              fontWeight: FontWeight.w400,
+                              color: shadcn.Theme.of(context)
+                                  .colorScheme
+                                  .mutedForeground,
                             ),
                           ),
                         ],
@@ -2933,19 +2952,19 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                     children: [
                       Text(
                         "Fundamentals",
-                        style: WebTextStyles.sub(
-                          isDarkTheme: theme.isDarkMode,
-                          color: theme.isDarkMode
-                              ? WebDarkColors.textPrimary
-                              : WebColors.textPrimary,
-                          fontWeight: WebFonts.regular,
+                        style: TextStyle(
+                          fontFamily: 'Geist',
+                          fontSize: 13,
+                          fontWeight: FontWeight.w400,
+                          color:
+                              shadcn.Theme.of(context).colorScheme.foreground,
                         ),
                       ),
                       Icon(
                         Icons.chevron_right,
-                        color: theme.isDarkMode
-                            ? WebDarkColors.iconSecondary
-                            : WebColors.iconSecondary,
+                        color: shadcn.Theme.of(context)
+                            .colorScheme
+                            .mutedForeground,
                         size: 20,
                       ),
                     ],
@@ -2967,35 +2986,12 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
     required String label,
     required VoidCallback onTap,
   }) {
-    return Material(
-      color: Colors.transparent,
-      borderRadius: BorderRadius.circular(6),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(6),
-        splashColor:
-            theme.isDarkMode ? colors.splashColorDark : colors.splashColorLight,
-        highlightColor:
-            theme.isDarkMode ? colors.highlightDark : colors.highlightLight,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              Text(
-                label,
-                style: WebTextStyles.sub(
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.primary
-                      : WebColors.primary,
-                  fontWeight: WebFonts.semiBold,
-                ),
-              ),
-            ],
-          ),
-        ),
+    return shadcn.GhostButton(
+      onPressed: onTap,
+      child: Text(
+        label,
+        style: ShadcnTextStyles.bodySemibold(context,
+            color: ShadcnColors.primaryBlue(context)),
       ),
     );
   }
@@ -3009,28 +3005,26 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
         children: [
           Text(
             label,
-            style: WebTextStyles.para(
-              isDarkTheme: theme.isDarkMode,
-              color: theme.isDarkMode
-                  ? WebDarkColors.textSecondary
-                  : WebColors.textSecondary,
-              fontWeight: WebFonts.medium,
+            style: TextStyle(
+              fontFamily: 'Geist',
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: shadcn.Theme.of(context).colorScheme.mutedForeground,
             ),
           ),
           const SizedBox(height: 6),
           Text(
             value,
-            style: WebTextStyles.sub(
-              isDarkTheme: theme.isDarkMode,
-              color: theme.isDarkMode
-                  ? WebDarkColors.textPrimary
-                  : WebColors.textPrimary,
-              fontWeight: WebFonts.medium,
+            style: TextStyle(
+              fontFamily: 'Geist',
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: shadcn.Theme.of(context).colorScheme.foreground,
             ),
           ),
           const SizedBox(height: 4),
           Divider(
-            color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
+            color: shadcn.Theme.of(context).colorScheme.border,
           ),
         ],
       ),
@@ -3049,30 +3043,27 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
             children: [
               Text(
                 name,
-                style: WebTextStyles.sub(
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textSecondary
-                      : WebColors.textSecondary,
-                  fontWeight: WebFonts.semiBold,
+                style: TextStyle(
+                  fontFamily: 'Geist',
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: shadcn.Theme.of(context).colorScheme.mutedForeground,
                 ),
               ),
               Text(
                 value,
-                style: WebTextStyles.sub(
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
-                  fontWeight: WebFonts.semiBold,
+                style: TextStyle(
+                  fontFamily: 'Geist',
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: shadcn.Theme.of(context).colorScheme.foreground,
                 ),
               ),
             ],
           ),
-          // const SizedBox(height: 12),
           Divider(
-              color:
-                  theme.isDarkMode ? WebDarkColors.divider : WebColors.divider)
+            color: shadcn.Theme.of(context).colorScheme.border,
+          ),
         ],
       ),
     );

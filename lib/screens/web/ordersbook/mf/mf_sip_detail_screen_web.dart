@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import '../../../../models/mf_model/sip_mf_list_model.dart';
 import '../../../../provider/thems.dart';
-import '../../../../res/global_state_text.dart';
-import '../../../../res/res.dart';
 import '../../../../res/web_colors.dart';
 import '../../../../res/global_font_web.dart';
 import '../../../../sharedWidget/functions.dart';
 import 'sip_pause_dialogue_web.dart';
 import 'sip_cancel_dialogue_web.dart';
 
-class MFSipDetailScreenWeb extends ConsumerWidget {
+class MFSipDetailScreenWeb extends ConsumerStatefulWidget {
   final Xsip sipData;
 
   const MFSipDetailScreenWeb({
@@ -18,320 +17,329 @@ class MFSipDetailScreenWeb extends ConsumerWidget {
     required this.sipData,
   });
 
+  @override
+  ConsumerState<MFSipDetailScreenWeb> createState() => _MFSipDetailScreenWebState();
+}
+
+class _MFSipDetailScreenWebState extends ConsumerState<MFSipDetailScreenWeb> {
   bool get _isActive {
-    return sipData.status?.toLowerCase() == 'active' || 
-           sipData.status?.toLowerCase() == 'running';
+    return widget.sipData.status?.toLowerCase() == 'active' || 
+           widget.sipData.status?.toLowerCase() == 'running';
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final theme = ref.watch(themeProvider);
 
-    return Dialog(
-      backgroundColor: Colors.transparent,
-      child: Container(
-        width: 700,
-        decoration: BoxDecoration(
-          color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-          borderRadius: BorderRadius.circular(5),
+    return Container(
+      constraints: const BoxConstraints(maxWidth: 400),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
+            width: 1,
+          ),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Header with close button
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              margin: const EdgeInsets.only(bottom: 8),
-              decoration: BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(
-                    color: theme.isDarkMode
-                        ? WebDarkColors.divider
-                        : WebColors.divider,
-                  ),
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _buildHeader(context, theme),
-                  Material(
-                    color: Colors.transparent,
-                    shape: const CircleBorder(),
-                    child: InkWell(
-                      customBorder: const CircleBorder(),
-                      splashColor: theme.isDarkMode
-                          ? Colors.white.withOpacity(.15)
-                          : Colors.black.withOpacity(.15),
-                      highlightColor: theme.isDarkMode
-                          ? Colors.white.withOpacity(.08)
-                          : Colors.black.withOpacity(.08),
-                      onTap: () => Navigator.of(context).pop(),
-                      child: Padding(
-                        padding: const EdgeInsets.all(6),
-                        child: Icon(
-                          Icons.close,
-                          size: 20,
-                          color: theme.isDarkMode
-                              ? WebDarkColors.iconSecondary
-                              : WebColors.iconSecondary,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            
-            // Content
-            Flexible(
-              fit: FlexFit.loose,
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.only(top: 0, bottom: 20, left: 20, right: 20),
-                child: Column(
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header with close button (fixed)
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 10),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // SIP Details Section
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      child: _buildSipDetailsSection(context, theme),
+                    Expanded(
+                      child: _buildHeader(theme),
+                    ),
+                    shadcn.TextButton(
+                      density: shadcn.ButtonDensity.icon,
+                      shape: shadcn.ButtonShape.circle,
+                      size: shadcn.ButtonSize.normal,
+                      child: const Icon(Icons.close),
+                      onPressed: () {
+                        shadcn.closeSheet(context);
+                      },
                     ),
                   ],
                 ),
               ),
-            ),
-          ],
-        ),
+              // Border divider
+              Container(
+                height: 1,
+                color: shadcn.Theme.of(context).colorScheme.border,
+              ),
+              // Scrollable Content
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // SIP Details Section
+                        _buildSipDetailsSection(theme),
+                        // Action Buttons
+                        _buildActionButtons(theme),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
 
-  Widget _buildHeader(BuildContext context, ThemesProvider theme) {
+  Widget _buildHeader(ThemesProvider theme) {
+    final colorScheme = shadcn.Theme.of(context).colorScheme;
     return Text(
-      sipData.name ?? "",
+      widget.sipData.name ?? "",
       style: WebTextStyles.dialogTitle(
         isDarkTheme: theme.isDarkMode,
-        color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+        color: colorScheme.foreground,
       ),
       overflow: TextOverflow.ellipsis,
     );
   }
 
-  Widget _buildSipDetailsSection(BuildContext context, ThemesProvider theme) {
-    return IntrinsicHeight(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Left column
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildInfoRow(
-                    "Status",
-                    _isActive
-                        ? Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: theme.isDarkMode ? colors.profitDark : colors.profitLight,
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(
-                              "LIVE",
-                              style: WebTextStyles.tableDataCompact(
-                                isDarkTheme: theme.isDarkMode,
-                                color: Colors.white,
-                              ),
-                            ),
-                          )
-                        : (sipData.status ?? '').toUpperCase(),
-                    theme,
-                  ),
-                  _buildInfoRow(
-                    "Amount",
-                    sipData.installmentAmount ?? '0.0',
-                    theme,
-                  ),
-                  _buildInfoRow(
-                    "Next Due Date",
-                    sipData.NextSIPDate != null && sipData.NextSIPDate!.isNotEmpty
-                        ? sipformatDateTime(value: sipData.NextSIPDate!)
-                        : "-",
-                    theme,
-                  ),
-                  _buildInfoRow(
-                    "Start Date",
-                    sipData.startDate != null && sipData.startDate!.isNotEmpty
-                        ? sipformatDateTime(value: sipData.startDate!)
-                        : "-",
-                    theme,
-                  ),
-                ],
-              ),
-            ),
-            // Vertical divider
-            Container(
-              width: 0.5,
-              margin: const EdgeInsets.symmetric(horizontal: 16),
-              color: theme.isDarkMode
-                  ? WebDarkColors.divider
-                  : WebColors.divider,
-            ),
-            // Right column
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildInfoRow(
-                    "End Date",
-                    sipData.endDate != null && sipData.endDate!.isNotEmpty
-                        ? sipformatDateTime(value: sipData.endDate!)
-                        : "-",
-                    theme,
-                  ),
-                  _buildInfoRow(
-                    "Sip Reg No",
-                    sipData.sIPRegnNo ?? "-",
-                    theme,
-                  ),
-                  _buildInfoRow(
-                    "Settlement Type",
-                    sipData.settType ?? "-",
-                    theme,
-                  ),
-                  _buildInfoRow(
-                    "Frequency Type",
-                    sipData.frequencyType ?? "-",
-                    theme,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+  Color _getStatusColor() {
+    final colorScheme = shadcn.Theme.of(context).colorScheme;
+    final status = (widget.sipData.status ?? '').toLowerCase();
+    
+    if (status == 'active' || status == 'running' || status == 'live') {
+      return colorScheme.chart2;
+    } else if (status == 'stopped' || status == 'cancelled' || status == 'rejected') {
+      return colorScheme.destructive;
+    } else {
+      return colorScheme.chart1;
+    }
   }
 
-  Widget _buildInfoRow(String title, dynamic value, ThemesProvider theme) {
+  Widget _buildSipDetailsSection(ThemesProvider theme) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      padding: const EdgeInsets.only(top: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: WebTextStyles.dialogContent(
-              isDarkTheme: theme.isDarkMode,
-              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
-            ),
+          _rowOfInfoDataWithColor(
+            "Status",
+            _isActive ? "LIVE" : (widget.sipData.status ?? '').toUpperCase(),
+            theme,
+            _getStatusColor(),
           ),
-          value is Widget
-              ? value
-              : Text(
-                  value.toString(),
-                  style: WebTextStyles.dialogContent(
-                    isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
-                  ),
-                ),
+          _rowOfInfoData(
+            "Amount",
+            widget.sipData.installmentAmount ?? '0.0',
+            theme,
+          ),
+          _rowOfInfoData(
+            "Next Due Date",
+            widget.sipData.NextSIPDate != null && widget.sipData.NextSIPDate!.isNotEmpty
+                ? sipformatDateTime(value: widget.sipData.NextSIPDate!)
+                : "-",
+            theme,
+          ),
+          _rowOfInfoData(
+            "Start Date",
+            widget.sipData.startDate != null && widget.sipData.startDate!.isNotEmpty
+                ? sipformatDateTime(value: widget.sipData.startDate!)
+                : "-",
+            theme,
+          ),
+          _rowOfInfoData(
+            "End Date",
+            widget.sipData.endDate != null && widget.sipData.endDate!.isNotEmpty
+                ? sipformatDateTime(value: widget.sipData.endDate!)
+                : "-",
+            theme,
+          ),
+          _rowOfInfoData(
+            "Sip Reg No",
+            widget.sipData.sIPRegnNo ?? "-",
+            theme,
+          ),
+          _rowOfInfoData(
+            "Settlement Type",
+            widget.sipData.settType ?? "-",
+            theme,
+          ),
+          _rowOfInfoData(
+            "Frequency Type",
+            widget.sipData.frequencyType ?? "-",
+            theme,
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildPauseButton(BuildContext context, ThemesProvider theme) {
-    return SizedBox(
-      height: 50,
-      child: Container(
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: theme.isDarkMode ? colors.textSecondaryDark.withOpacity(0.6) : colors.primaryLight,
-            width: 1,
-          ),
-          color: theme.isDarkMode ? colors.textSecondaryDark.withOpacity(0.6) : colors.btnBg,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Material(
-          color: Colors.transparent,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(8),
-            splashColor: theme.isDarkMode ? colors.splashColorDark : colors.splashColorLight,
-            highlightColor: theme.isDarkMode ? colors.highlightDark : colors.highlightLight,
-            onTap: () {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return SipPauseDialogueWeb(sipData: sipData);
-                },
-              );
-            },
-            child: Center(
-              child: Text(
-                "Pause",
-                style: TextWidget.textStyle(
-                  fontSize: 14,
-                  theme: theme.isDarkMode,
-                  color: theme.isDarkMode ? colors.colorWhite : colors.primaryLight,
-                  fw: 2,
-                ),
+  Widget _buildActionButtons(ThemesProvider theme) {
+    // Check if any buttons should be shown
+    if (!_isActive) {
+      return const SizedBox.shrink();
+    }
+    
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildPauseButton(theme),
+          const SizedBox(height: 12),
+          _buildCancelSipButton(theme),
+        ],
+      ),
+    );
+  }
+
+  Widget _rowOfInfoData(String title1, String value1, ThemesProvider theme) {
+    final colorScheme = shadcn.Theme.of(context).colorScheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              title1,
+              style: WebTextStyles.sub(
+                isDarkTheme: theme.isDarkMode,
+                color: colorScheme.mutedForeground,
+                fontWeight: WebFonts.regular,
               ),
             ),
+            Text(
+              value1,
+              style: WebTextStyles.sub(
+                isDarkTheme: theme.isDarkMode,
+                color: colorScheme.mutedForeground,
+                fontWeight: WebFonts.medium,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
+
+  Widget _rowOfInfoDataWithColor(String title, String value, ThemesProvider theme, Color valueColor) {
+    final colorScheme = shadcn.Theme.of(context).colorScheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              title,
+              style: WebTextStyles.sub(
+                isDarkTheme: theme.isDarkMode,
+                color: colorScheme.mutedForeground,
+                fontWeight: WebFonts.regular,
+              ),
+            ),
+            Text(
+              value,
+              style: WebTextStyles.sub(
+                isDarkTheme: theme.isDarkMode,
+                color: valueColor,
+                fontWeight: WebFonts.medium,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
+
+  Widget _buildPauseButton(ThemesProvider theme) {
+    final backgroundColor = theme.isDarkMode
+        ? WebDarkColors.textSecondary.withOpacity(0.6)
+        : WebColors.buttonSecondary;
+    final textColor = theme.isDarkMode ? Colors.white : WebColors.primaryLight;
+    final borderColor = theme.isDarkMode ? WebDarkColors.primaryLight : WebColors.primaryLight;
+    
+    return Container(
+      height: 40,
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        border: Border.all(
+          color: borderColor,
+          width: 1,
+        ),
+        borderRadius: BorderRadius.circular(5),
+      ),
+      child: shadcn.TextButton(
+        size: shadcn.ButtonSize.large,
+        density: shadcn.ButtonDensity.dense,
+        onPressed: () {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return SipPauseDialogueWeb(sipData: widget.sipData);
+            },
+          );
+        },
+        shape: shadcn.ButtonShape.rectangle,
+        child: Text(
+          "Pause",
+          style: WebTextStyles.buttonMd(
+            isDarkTheme: theme.isDarkMode,
+            color: textColor,
+            fontWeight: WebFonts.bold,
           ),
         ),
       ),
     );
   }
 
-  Widget _buildCancelSipButton(BuildContext context, ThemesProvider theme) {
-    return SizedBox(
-      height: 50,
-      child: Container(
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: theme.isDarkMode ? colors.textSecondaryDark.withOpacity(0.6) : colors.primaryLight,
-            width: 1,
-          ),
-          color: theme.isDarkMode ? colors.textSecondaryDark.withOpacity(0.6) : colors.btnBg,
-          borderRadius: BorderRadius.circular(8),
+  Widget _buildCancelSipButton(ThemesProvider theme) {
+    final backgroundColor = theme.isDarkMode
+        ? WebDarkColors.textSecondary.withOpacity(0.6)
+        : WebColors.buttonSecondary;
+    final textColor = theme.isDarkMode ? Colors.white : WebColors.primaryLight;
+    final borderColor = theme.isDarkMode ? WebDarkColors.primaryLight : WebColors.primaryLight;
+    
+    return Container(
+      height: 40,
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        border: Border.all(
+          color: borderColor,
+          width: 1,
         ),
-        child: Material(
-          color: Colors.transparent,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(8),
-            splashColor: theme.isDarkMode ? colors.splashColorDark : colors.splashColorLight,
-            highlightColor: theme.isDarkMode ? colors.highlightDark : colors.highlightLight,
-            onTap: () {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return SipCancelDialogueWeb(sipData: sipData);
-                },
-              );
+        borderRadius: BorderRadius.circular(5),
+      ),
+      child: shadcn.TextButton(
+        size: shadcn.ButtonSize.large,
+        density: shadcn.ButtonDensity.dense,
+        onPressed: () {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return SipCancelDialogueWeb(sipData: widget.sipData);
             },
-            child: Center(
-              child: Text(
-                "Cancel SIP",
-                style: TextWidget.textStyle(
-                  fontSize: 14,
-                  theme: theme.isDarkMode,
-                  color: theme.isDarkMode ? colors.colorWhite : colors.primaryLight,
-                  fw: 2,
-                ),
-              ),
-            ),
+          );
+        },
+        shape: shadcn.ButtonShape.rectangle,
+        child: Text(
+          "Cancel SIP",
+          style: WebTextStyles.buttonMd(
+            isDarkTheme: theme.isDarkMode,
+            color: textColor,
+            fontWeight: WebFonts.bold,
           ),
         ),
       ),
     );
   }
 }
-

@@ -1,29 +1,32 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import '../../../models/portfolio_model/holdings_model.dart';
 import '../../../models/marketwatch_model/get_quotes.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/websocket_provider.dart';
 import '../../../provider/ledger_provider.dart';
-import '../../../res/res.dart';
-import '../../../res/global_state_text.dart';
 import '../../../res/web_colors.dart';
 import '../../../res/global_font_web.dart';
 import '../../../utils/responsive_navigation.dart';
 import '../../../models/order_book_model/order_book_model.dart';
 import '../../../routes/route_names.dart';
 import '../../../sharedWidget/alert_dialogue.dart';
+import '../../../sharedWidget/snack_bar.dart';
+import '../../../main.dart';
 
 class HoldingDetailScreenWeb extends ConsumerStatefulWidget {
   final dynamic holding;
   final ExchTsym exchTsym;
+  final BuildContext? parentContext;
 
   const HoldingDetailScreenWeb({
     super.key,
     required this.holding,
     required this.exchTsym,
+    this.parentContext,
   });
 
   @override
@@ -218,250 +221,235 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
         expDate: scripInfo.getQuotes?.expDate ?? '',
         option: scripInfo.getQuotes?.option ?? '');
 
-    return Dialog(
-      backgroundColor: Colors.transparent,
-      child: Container(
-        width: 700,
-        decoration: BoxDecoration(
-          color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-          borderRadius: BorderRadius.circular(5),
+    return Container(
+      constraints: const BoxConstraints(maxWidth: 400),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
+            width: 1,
+          ),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Header with close button
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              margin: const EdgeInsets.only(bottom: 8),
-              decoration: BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(
-                    color: theme.isDarkMode
-                        ? WebDarkColors.divider
-                        : WebColors.divider,
-                  ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header with close button
+          Container(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Expanded(
+                  child: _buildSymbolSection(theme, scripInfo, depthArgs),
                 ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                shadcn.TextButton(
+                  density: shadcn.ButtonDensity.icon,
+                  child: const Icon(Icons.close),
+                  onPressed: () {
+                    shadcn.closeSheet(context);
+                  },
+                ),
+              ],
+            ),
+          ),
+          // Border divider
+          Container(
+            height: 1,
+            color: shadcn.Theme.of(context).colorScheme.border,
+          ),
+          // Content
+          Container(
+            padding: const EdgeInsets.all(16),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildSymbolSection(theme, scripInfo, depthArgs),
-                  Material(
-                    color: Colors.transparent,
-                    shape: const CircleBorder(),
-                    child: InkWell(
-                      customBorder: const CircleBorder(),
-                      splashColor: theme.isDarkMode
-                          ? Colors.white.withOpacity(.15)
-                          : Colors.black.withOpacity(.15),
-                      highlightColor: theme.isDarkMode
-                          ? Colors.white.withOpacity(.08)
-                          : Colors.black.withOpacity(.08),
-                      onTap: () => Navigator.of(context).pop(),
-                      child: Padding(
-                        padding: const EdgeInsets.all(6),
-                        child: Icon(
-                          Icons.close,
-                          size: 20,
-                          color: theme.isDarkMode
-                              ? WebDarkColors.iconSecondary
-                              : WebColors.iconSecondary,
-                        ),
-                      ),
-                    ),
+                  // P&L Section
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    child: _buildPnLSection(theme),
                   ),
+                  
+                  // Action Buttons
+                  _buildActionButtons(theme, scripInfo),
+                  
+                  // Details Section
+                  _buildDetailsSection(theme),
                 ],
               ),
             ),
-            
-            // Content
-            Flexible(
-              fit: FlexFit.loose,
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.only(top: 0, bottom: 20, left: 20, right: 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // P&L Section
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      child: _buildPnLSection(theme),
-                    ),
-                    
-                    // Details Section
-                    _buildDetailsSection(theme),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildSymbolSection(ThemesProvider theme, MarketWatchProvider scripInfo, DepthInputArgs depthArgs) {
-    return Material(
-      color: Colors.transparent,
-      shape: const RoundedRectangleBorder(),
-      child: InkWell(
-        customBorder: const RoundedRectangleBorder(),
-        borderRadius: BorderRadius.circular(0),
-        splashColor: theme.isDarkMode ? colors.primaryDark.withOpacity(0.1) : colors.primaryLight.withOpacity(0.1),
-        highlightColor: theme.isDarkMode ? colors.primaryDark.withOpacity(0.2) : colors.primaryLight.withOpacity(0.2),
-        onTap: () async {
-          Navigator.pop(context);
-          await scripInfo.scripdepthsize(false);
-          await scripInfo.calldepthApis(context, depthArgs, "");
-        },
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    final colorScheme = shadcn.Theme.of(context).colorScheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Symbol and Exchange
+        Row(
           children: [
-            // Symbol and Exchange
-            Row(
-              children: [
-                Text(
-                  "${_exchTsym.tsym?.replaceAll("-EQ", "") ?? ''} ${_exchTsym.expDate ?? ''} ${_exchTsym.option ?? ''} ",
-                  style: WebTextStyles.dialogTitle(
-                    isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
-                  ),
+            Flexible(
+              child: Text(
+                "${_exchTsym.tsym?.replaceAll("-EQ", "") ?? ''} ${_exchTsym.expDate ?? ''} ${_exchTsym.option ?? ''} ",
+                style: WebTextStyles.dialogTitle(
+                  isDarkTheme: theme.isDarkMode,
+                  color: colorScheme.foreground,
                 ),
-                const SizedBox(width: 4),
-                Text(
-                  "${_exchTsym.exch}",
-                  style: WebTextStyles.dialogTitle(
-                    isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
-                  ),
-                ),
-              ],
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
-            const SizedBox(height: 8),
-            
-            // Price and Change
-            Row(
-              children: [
-                Text(
-                  "${_exchTsym.lp != "null" ? _exchTsym.lp ?? _exchTsym.close ?? 0.00 : '0.00'}",
-                  style: WebTextStyles.title(
-                    isDarkTheme: theme.isDarkMode,
-                    color: (_exchTsym.change == "null" || _exchTsym.change == null) ||
-                            _exchTsym.change == "0.00"
-                        ? theme.isDarkMode
-                            ? colors.textSecondaryDark
-                            : colors.textSecondaryLight
-                        : (_exchTsym.change?.startsWith("-") == true || _exchTsym.perChange?.startsWith("-") == true)
-                            ? theme.isDarkMode
-                                ? colors.lossDark
-                                : colors.lossLight
-                            : theme.isDarkMode
-                                ? colors.profitDark
-                                : colors.profitLight,
-                    fontWeight: WebFonts.medium,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  "${(double.tryParse(_exchTsym.change ?? '0.00') ?? 0.00).toStringAsFixed(2)} (${(double.tryParse(_exchTsym.perChange ?? '0.00') ?? 0.00).toStringAsFixed(2)}%)",
-                  style: WebTextStyles.sub(
-                    isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
-                    fontWeight: WebFonts.medium,
-                  ),
-                ),
-              ],
+            const SizedBox(width: 4),
+            Text(
+              "${_exchTsym.exch}",
+              style: WebTextStyles.dialogTitle(
+                isDarkTheme: theme.isDarkMode,
+                color: colorScheme.mutedForeground,
+              ),
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildActionButtons(ThemesProvider theme, MarketWatchProvider scripInfo) {
-    // Check if there's saleable quantity for Exit button
-    final hasSaleableQty = (_holdingData.saleableQty ?? 0) > 0;
-    // Check if there's current quantity for Add button
-    final hasCurrentQty = (_holdingData.currentQty ?? 0) > 0;
-    
-    // If no quantity at all, don't show buttons
-    if (!hasSaleableQty && !hasCurrentQty) {
-      return const SizedBox.shrink();
-    }
-
-    return Row(
-      children: [
-        // Show Exit button only if there's saleable quantity
-        if (hasSaleableQty) ...[
-          Expanded(
-            child: _buildActionButton(
-              "Exit",
-              false,
-              theme,
-              _isProcessingSell ? null : _handleSell,
-              _isProcessingSell,
+        const SizedBox(height: 8),
+        
+        // Price and Change
+        Row(
+          children: [
+            Text(
+              "${_exchTsym.lp != "null" ? _exchTsym.lp ?? _exchTsym.close ?? 0.00 : '0.00'}",
+              style: WebTextStyles.title(
+                isDarkTheme: theme.isDarkMode,
+                color: (_exchTsym.change == "null" || _exchTsym.change == null) ||
+                        _exchTsym.change == "0.00"
+                    ? colorScheme.mutedForeground
+                    : (_exchTsym.change?.startsWith("-") == true || _exchTsym.perChange?.startsWith("-") == true)
+                        ? colorScheme.destructive
+                        : colorScheme.chart2,
+                fontWeight: WebFonts.medium,
+              ),
             ),
-          ),
-          if (hasCurrentQty) const SizedBox(width: 12),
-        ],
-        // Show Add button only if there's current quantity
-        if (hasCurrentQty) ...[
-          Expanded(
-            child: _buildActionButton(
-              "Add",
-              true,
-              theme,
-              _isProcessingBuy ? null : _handleBuy,
-              _isProcessingBuy,
+            const SizedBox(width: 4),
+            Text(
+              "${(double.tryParse(_exchTsym.change ?? '0.00') ?? 0.00).toStringAsFixed(2)} (${(double.tryParse(_exchTsym.perChange ?? '0.00') ?? 0.00).toStringAsFixed(2)}%)",
+              style: WebTextStyles.sub(
+                isDarkTheme: theme.isDarkMode,
+                color: colorScheme.mutedForeground,
+                fontWeight: WebFonts.medium,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ],
     );
   }
 
-  Widget _buildActionButton(String text, bool isPrimary, ThemesProvider theme, VoidCallback? onPressed, bool isLoading) {
-    return SizedBox(
-      height: 40,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: isPrimary
-              ? colors.primaryLight
-              : (theme.isDarkMode
-                  ? colors.textSecondaryDark.withOpacity(0.6)
-                  : colors.btnBg),
-          foregroundColor: isPrimary
-              ? colors.colorWhite
-              : (theme.isDarkMode ? colors.colorWhite : colors.primaryLight),
-          side: isPrimary
-              ? null
-              : BorderSide(
-                  color: colors.primaryLight,
-                  width: 1,
+  Widget _buildActionButtons(ThemesProvider theme, MarketWatchProvider scripInfo) {
+    final qty = _holdingData.currentQty ?? 0;
+    final hasQty = qty > 0;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Add and Exit buttons in a row
+          if (hasQty) ...[
+            Row(
+              children: [
+                Expanded(
+                  child: _buildActionButton(
+                    "Add",
+                    true,
+                    theme,
+                    _isProcessingBuy ? () {} : _handleBuy,
+                    isLoading: _isProcessingBuy,
+                  ),
                 ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(5),
-          ),
-        ),
-        onPressed: onPressed,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildActionButton(
+                    "Exit",
+                    false,
+                    theme,
+                    _isProcessingSell ? () {} : _handleSell,
+                    isLoading: _isProcessingSell,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+          ],
+          // Chart button
+          // Row(
+          //   children: [
+          //     Expanded(
+          //       child: _buildActionButton(
+          //         "Chart",
+          //         false,
+          //         theme,
+          //         _handleChartTap,
+          //       ),
+          //     ),
+          //   ],
+          // ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionButton(
+    String text,
+    bool isPrimary,
+    ThemesProvider theme,
+    VoidCallback onPressed, {
+    bool isLoading = false,
+  }) {
+    final backgroundColor = isPrimary
+        ? (theme.isDarkMode ? WebDarkColors.primaryLight : WebColors.primaryLight)
+        : (theme.isDarkMode
+            ? WebDarkColors.textSecondary.withOpacity(0.6)
+            : WebColors.buttonSecondary);
+    final textColor = isPrimary
+        ? Colors.white
+        : (theme.isDarkMode ? Colors.white : WebColors.primaryLight);
+    final borderColor = theme.isDarkMode ? WebDarkColors.primaryLight : WebColors.primaryLight;
+    
+    return Container(
+      height: 40,
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        border: isPrimary
+            ? null
+            : Border.all(
+                color: borderColor,
+                width: 1,
+              ),
+        borderRadius: BorderRadius.circular(5),
+      ),
+      child: shadcn.TextButton(
+        size: shadcn.ButtonSize.large,
+        density: shadcn.ButtonDensity.dense,
+        onPressed: isLoading ? null : onPressed,
+        shape: shadcn.ButtonShape.rectangle,
         child: isLoading
             ? SizedBox(
-                width: 18,
-                height: 18,
+                width: 16,
+                height: 16,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    isPrimary ? colors.colorWhite : (theme.isDarkMode ? colors.colorWhite : colors.primaryLight),
-                  ),
+                  valueColor: AlwaysStoppedAnimation<Color>(textColor),
                 ),
               )
             : Text(
                 text,
-                style: TextWidget.textStyle(
-                  fontSize: 14,
-                  theme: false,
-                  color: isPrimary ? colors.colorWhite : (theme.isDarkMode ? colors.colorWhite : colors.primaryLight),
-                  fw: 2,
+                style: WebTextStyles.buttonMd(
+                  isDarkTheme: theme.isDarkMode,
+                  color: textColor,
+                  fontWeight: WebFonts.bold,
                 ),
               ),
       ),
@@ -469,6 +457,7 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
   }
 
   Widget _buildPledgeUnpledgeButton(ThemesProvider theme, LDProvider ledgerdate) {
+    final borderColor = theme.isDarkMode ? WebDarkColors.btnOutlinedBorder : WebColors.btnOutlinedBorder;
     return Center(
       child: InkWell(
         onTap: () async {
@@ -481,7 +470,7 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
-            border: Border.all(color: colors.btnOutlinedBorder),
+            border: Border.all(color: borderColor),
             borderRadius: BorderRadius.circular(5),
           ),
           child: Row(
@@ -489,11 +478,10 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
             children: [
               Text(
                 "Pledge-Unpledge",
-                style: TextWidget.textStyle(
-                  fontSize: 14,
-                  theme: false,
-                  color: colors.btnOutlinedBorder,
-                  fw: 2,
+                style: WebTextStyles.buttonMd(
+                  isDarkTheme: theme.isDarkMode,
+                  color: borderColor,
+                  fontWeight: WebFonts.bold,
                 ),
               ),
             ],
@@ -504,6 +492,9 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
   }
 
   Widget _buildPnLSection(ThemesProvider theme) {
+    final colorScheme = shadcn.Theme.of(context).colorScheme;
+    final displayValue = _exchTsym.profitNloss ?? "0.00";
+    
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -513,16 +504,16 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
               "P&L",
               style: WebTextStyles.title(
                 isDarkTheme: theme.isDarkMode,
-                color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
+                color: colorScheme.mutedForeground,
                 fontWeight: WebFonts.medium,
               ),
             ),
             const SizedBox(height: 6),
             Text(
-              _exchTsym.profitNloss ?? "0.00",
+              displayValue,
               style: WebTextStyles.head(
                 isDarkTheme: theme.isDarkMode,
-                color: _getPnLColor(theme),
+                color: _getPnLColor(displayValue),
                 fontWeight: WebFonts.medium,
               ),
             ),
@@ -532,204 +523,328 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
     );
   }
 
-  Color _getPnLColor(ThemesProvider theme) {
-    final pnl = _exchTsym.profitNloss ?? "0.00";
-    if (pnl.startsWith("-")) {
-      return theme.isDarkMode ? colors.lossDark : colors.lossLight;
-    } else if (pnl == "0.00") {
-      return theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight;
+  Color _getPnLColor(String value) {
+    final colorScheme = shadcn.Theme.of(context).colorScheme;
+    final numValue = double.tryParse(value) ?? 0.0;
+    
+    if (numValue > 0) {
+      return colorScheme.chart2;
+    } else if (numValue < 0) {
+      return colorScheme.destructive;
     } else {
-      return theme.isDarkMode ? colors.profitDark : colors.profitLight;
+      return colorScheme.mutedForeground;
     }
   }
 
   Widget _buildDetailsSection(ThemesProvider theme) {
-    return IntrinsicHeight(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Left column
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildInfoRow(
-                    "Net Qty",
-                    "${_holdingData.currentQty ?? 0}",
-                    theme,
-                  ),
-                  _buildInfoRow(
-                    "Avg Price",
-                    "${_holdingData.upldprc ?? 0}",
-                    theme,
-                  ),
-                  _buildInfoRow(
-                    "Product",
-                    _holdingData.sPrdtAli != "null" ? "${_holdingData.sPrdtAli}" : "",
-                    theme,
-                  ),
-                  _buildInfoRow(
-                    "Non POA / Sell",
-                    "${_holdingData.saleableQty ?? 0}/${_holdingData.npoadqty ?? 0}",
-                    theme,
-                  ),
-                ],
-              ),
-            ),
-            // Vertical divider
-            Container(
-              width: 0.5,
-              margin: const EdgeInsets.symmetric(horizontal: 16),
-              color: theme.isDarkMode
-                  ? WebDarkColors.divider
-                  : WebColors.divider,
-            ),
-            // Right column
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildInfoRow(
-                    "Invested",
-                    "${_holdingData.invested == "0.00" ? _exchTsym.close ?? 0.00 : _holdingData.invested ?? 0.00}",
-                    theme,
-                  ),
-                  _buildInfoRow(
-                    "Current Value",
-                    (int.parse("${_holdingData.currentQty ?? 0}") *
-                            double.parse(_exchTsym.lp?.toString() ?? "0.0"))
-                        .toStringAsFixed(2),
-                    theme,
-                  ),
-                  if (_holdingData.btstqty != "0") ...[
-                    _buildInfoRow(
-                      "T1 Qty",
-                      "${_holdingData.btstqty ?? 0}",
-                      theme,
-                    ),
-                  ],
-                  if (_holdingData.rpnl != null && _holdingData.rpnl != "0") ...[
-                    _buildInfoRow(
-                      "Realised P&L",
-                      "${_holdingData.rpnl ?? 0}",
-                      theme,
-                    ),
-                  ],
-                  _buildInfoRow(
-                    "Pledged Qty",
-                    "${_holdingData.brkcolqty ?? 0}",
-                    theme,
-                  ),
-                ],
-              ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _rowOfInfoData(
+            "Net Qty",
+            "${_holdingData.currentQty ?? 0}",
+            theme,
+          ),
+          const SizedBox(height: 8),
+          _rowOfInfoData(
+            "Avg Price",
+            "${_holdingData.upldprc ?? 0}",
+            theme,
+          ),
+          const SizedBox(height: 8),
+          _rowOfInfoData(
+            "Product",
+            _holdingData.sPrdtAli != "null" ? "${_holdingData.sPrdtAli}" : "--",
+            theme,
+          ),
+          const SizedBox(height: 8),
+          _rowOfInfoData(
+            "Non POA / Sell",
+            "${_holdingData.saleableQty ?? 0}/${_holdingData.npoadqty ?? 0}",
+            theme,
+          ),
+          const SizedBox(height: 8),
+          _rowOfInfoData(
+            "Invested",
+            "${_holdingData.invested == "0.00" ? _exchTsym.close ?? 0.00 : _holdingData.invested ?? 0.00}",
+            theme,
+          ),
+          const SizedBox(height: 8),
+          _rowOfInfoData(
+            "Current Value",
+            (int.parse("${_holdingData.currentQty ?? 0}") *
+                    double.parse(_exchTsym.lp?.toString() ?? "0.0"))
+                .toStringAsFixed(2),
+            theme,
+          ),
+          if (_holdingData.btstqty != "0") ...[
+            const SizedBox(height: 8),
+            _rowOfInfoData(
+              "T1 Qty",
+              "${_holdingData.btstqty ?? 0}",
+              theme,
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildInfoRow(String title, String value, ThemesProvider theme) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            title,
-            style: WebTextStyles.dialogContent(
-              isDarkTheme: theme.isDarkMode,
-              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          if (_holdingData.rpnl != null && _holdingData.rpnl != "0") ...[
+            const SizedBox(height: 8),
+            _rowOfInfoData(
+              "Realised P&L",
+              "${_holdingData.rpnl ?? 0}",
+              theme,
             ),
-          ),
-          Text(
-            value,
-            style: WebTextStyles.dialogContent(
-              isDarkTheme: theme.isDarkMode,
-              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
-            ),
+          ],
+          const SizedBox(height: 8),
+          _rowOfInfoData(
+            "Pledged Qty",
+            "${_holdingData.brkcolqty ?? 0}",
+            theme,
           ),
         ],
       ),
     );
   }
 
+  Widget _rowOfInfoData(String title1, String value1, ThemesProvider theme) {
+    final colorScheme = shadcn.Theme.of(context).colorScheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              title1,
+              style: WebTextStyles.sub(
+                isDarkTheme: theme.isDarkMode,
+                color: colorScheme.mutedForeground,
+                fontWeight: WebFonts.medium,
+              ),
+            ),
+            Text(
+              value1,
+              style: WebTextStyles.sub(
+                isDarkTheme: theme.isDarkMode,
+                color: colorScheme.foreground,
+                fontWeight: WebFonts.medium,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
+
   // Handle buy button click
   Future<void> _handleBuy() async {
     if (_isProcessingBuy) return;
+    
+    print("=== _handleBuy started ===");
 
     try {
       setState(() {
         _isProcessingBuy = true;
       });
 
-      final wsProvider = ref.read(websocketProvider);
-      final mwProvider = ref.read(marketWatchProvider);
+      // Get root navigator context - this is crucial for overlay access
+      final rootContext = rootNavigatorKey.currentContext;
+      if (rootContext == null) {
+        print("ERROR: Root context is null");
+        if (mounted) {
+          setState(() {
+            _isProcessingBuy = false;
+          });
+          showResponsiveWarningMessage(context, "Unable to access root context");
+        }
+        return;
+      }
 
-      wsProvider.establishConnection(
-          channelInput: "${_exchTsym.exch}|${_exchTsym.token}#",
-          task: "t",
-          context: context);
+      print("Fetching scrip info for token: ${_exchTsym.token}, exch: ${_exchTsym.exch}");
+      final scripData = ref.read(marketWatchProvider);
+      
+      // Add timeout to prevent hanging
+      await scripData.fetchScripInfo(
+        _exchTsym.token ?? "",
+        _exchTsym.exch ?? "",
+        rootContext,
+        true,
+      ).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          print("ERROR: fetchScripInfo timed out after 10 seconds");
+          throw Exception("Request timed out");
+        },
+      );
 
-      await mwProvider.fetchScripInfo(
-          "${_exchTsym.token}", '${_exchTsym.exch}', context, true);
+      print("Scrip info fetched successfully");
 
-      if (!mounted) return;
+      if (!mounted) {
+        print("Widget not mounted, returning");
+        return;
+      }
 
-      Navigator.of(context).pop();
+      if (scripData.scripInfoModel == null) {
+        print("ERROR: scripInfoModel is null");
+        if (mounted) {
+          setState(() {
+            _isProcessingBuy = false;
+          });
+          showResponsiveWarningMessage(rootContext, "Unable to fetch scrip information");
+        }
+        return;
+      }
+
+      final lotSize = scripData.scripInfoModel!.ls?.toString() ?? "1";
+      print("Lot size: $lotSize");
 
       final OrderScreenArgs orderArgs = OrderScreenArgs(
-          exchange: '${_exchTsym.exch}',
-          tSym: '${_exchTsym.tsym}',
-          token: '',
-          transType: true,
-          prd: '${_holdingData.prd}',
-          lotSize: '${_exchTsym.ls}',
-          orderTpye: "${_holdingData.sPrdtAli}",
-          isExit: false,
-          ltp: '${_exchTsym.lp}',
-          perChange: '${_exchTsym.perChange}',
-          holdQty: '',
-          isModify: false,
-          raw: {});
+        exchange: _exchTsym.exch ?? "",
+        tSym: _exchTsym.tsym ?? "",
+        isExit: false,
+        token: _exchTsym.token ?? "",
+        transType: true,
+        prd: _holdingData.prd ?? "",
+        lotSize: lotSize,
+        ltp: _exchTsym.lp ?? "0.00",
+        perChange: _exchTsym.perChange ?? "0.00",
+        orderTpye: _holdingData.sPrdtAli ?? '',
+        holdQty: _holdingData.currentQty?.toString() ?? '',
+        isModify: false,
+        raw: {},
+      );
 
-      if (mwProvider.scripInfoModel != null) {
-        ResponsiveNavigation.toPlaceOrderScreen(context: context, arguments: {
-          "orderArg": orderArgs,
-          "scripInfo": mwProvider.scripInfoModel!,
-          "isBskt": ""
-        }).then((_) {
-          if (mounted) {
-            setState(() {
-              _isProcessingBuy = false;
-            });
-          }
-        });
+      print("Opening place order screen...");
+      // Use parent context (from hold_table) if available, otherwise use root context
+      final targetContext = widget.parentContext ?? rootContext;
+      
+      if (targetContext.mounted) {
+        ResponsiveNavigation.toPlaceOrderScreen(
+          context: targetContext,
+          arguments: {
+            "orderArg": orderArgs,
+            "scripInfo": scripData.scripInfoModel!,
+            "isBskt": "",
+          },
+        );
+        print("Place order screen opened successfully");
+      } else {
+        print("ERROR: targetContext is not mounted");
+        if (mounted) {
+          setState(() {
+            _isProcessingBuy = false;
+          });
+        }
+        return;
       }
-    } catch (e) {
+
+      print("Closing sheet...");
+      // Close the sheet AFTER opening the order screen
+      if (mounted) {
+        try {
+          shadcn.closeSheet(context);
+        } catch (e) {
+          print("Error closing sheet: $e");
+          // Ignore sheet close errors
+        }
+      }
+
       if (mounted) {
         setState(() {
           _isProcessingBuy = false;
         });
       }
+      print("=== _handleBuy completed successfully ===");
+    } catch (e, stackTrace) {
+      print("ERROR in _handleBuy: $e");
+      print("Stack trace: $stackTrace");
+      
+      // Try to close sheet on error
+      if (mounted) {
+        try {
+          shadcn.closeSheet(context);
+        } catch (_) {
+          // Ignore sheet close errors
+        }
+      }
+      
+      // Show error using root context
+      if (mounted) {
+        setState(() {
+          _isProcessingBuy = false;
+        });
+        
+        final rootCtx = rootNavigatorKey.currentContext;
+        if (rootCtx != null) {
+          try {
+            showResponsiveWarningMessage(
+                rootCtx, "Error adding holding: ${e.toString()}");
+          } catch (displayError) {
+            print("Failed to show error message: $displayError");
+          }
+        }
+      }
+    }
+  }
+
+  // Handle chart button click (Show market depth)
+  Future<void> _handleChartTap() async {
+    final scripData = ref.read(marketWatchProvider);
+    await scripData.fetchScripQuoteIndex(
+      _exchTsym.token ?? "",
+      _exchTsym.exch ?? "",
+      context,
+    );
+
+    final quots = scripData.getQuotes;
+    if (quots != null) {
+      DepthInputArgs depthArgs = DepthInputArgs(
+        exch: quots.exch?.toString() ?? "",
+        token: quots.token?.toString() ?? "",
+        tsym: quots.tsym?.toString() ?? "",
+        instname: quots.instname?.toString() ?? "",
+        symbol: quots.symbol?.toString() ?? "",
+        expDate: quots.expDate?.toString() ?? "",
+        option: quots.option?.toString() ?? "",
+      );
+      scripData.scripdepthsize(false);
+      await scripData.calldepthApis(context, depthArgs, "");
     }
   }
 
   // Handle sell button click
   Future<void> _handleSell() async {
     if (_isProcessingSell) return;
+    
+    print("=== _handleSell started ===");
 
     try {
       setState(() {
         _isProcessingSell = true;
       });
 
+      // Get root navigator context - this is crucial for overlay access
+      final rootContext = rootNavigatorKey.currentContext;
+      if (rootContext == null) {
+        print("ERROR: Root context is null");
+        if (mounted) {
+          setState(() {
+            _isProcessingSell = false;
+          });
+          showResponsiveWarningMessage(context, "Unable to access root context");
+        }
+        return;
+      }
 
-      if (_holdingData.saleableQty == 0) {
-        showDialog(
-            context: context,
+      if (_holdingData.saleableQty == null || _holdingData.saleableQty == 0) {
+        print("ERROR: No saleable quantity");
+        if (mounted) {
+          setState(() {
+            _isProcessingSell = false;
+          });
+          showDialog(
+            context: rootContext,
             builder: (BuildContext context) {
               return AlertDialogue(
                 scripName: "${_exchTsym.tsym}",
@@ -737,62 +852,135 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
                 content:
                     'You are unable to exit because there are no sellable quantity.',
               );
-            }).then((_) {
-          if (mounted) {
-            setState(() {
-              _isProcessingSell = false;
-            });
-          }
-        });
+            },
+          );
+        }
         return;
       }
 
-      final wsProvider = ref.read(websocketProvider);
-      final mwProvider = ref.read(marketWatchProvider);
+      print("Fetching scrip info for token: ${_exchTsym.token}, exch: ${_exchTsym.exch}");
+      final scripData = ref.read(marketWatchProvider);
+      
+      // Add timeout to prevent hanging
+      await scripData.fetchScripInfo(
+        _exchTsym.token ?? "",
+        _exchTsym.exch ?? "",
+        rootContext,
+        true,
+      ).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          print("ERROR: fetchScripInfo timed out after 10 seconds");
+          throw Exception("Request timed out");
+        },
+      );
 
-      wsProvider.establishConnection(
-          channelInput: "${_exchTsym.exch}|${_exchTsym.token}#",
-          task: "t",
-          context: context);
+      print("Scrip info fetched successfully");
 
-      await mwProvider.fetchScripInfo(
-          "${_exchTsym.token}", '${_exchTsym.exch}', context, true);
+      if (!mounted) {
+        print("Widget not mounted, returning");
+        return;
+      }
 
-      if (!mounted) return;
-      Navigator.of(context).pop();
+      if (scripData.scripInfoModel == null) {
+        print("ERROR: scripInfoModel is null");
+        if (mounted) {
+          setState(() {
+            _isProcessingSell = false;
+          });
+          showResponsiveWarningMessage(rootContext, "Unable to fetch scrip information");
+        }
+        return;
+      }
+
+      final lotSize = scripData.scripInfoModel!.ls?.toString() ?? "1";
+      print("Lot size: $lotSize");
 
       final OrderScreenArgs orderArgs = OrderScreenArgs(
-          exchange: '${_exchTsym.exch}',
-          tSym: '${_exchTsym.tsym}',
-          token: '',
-          transType: false,
-          lotSize: '${_exchTsym.ls}',
-          isExit: true,
-          ltp: '${_exchTsym.lp}',
-          perChange: '${_exchTsym.perChange}',
-          orderTpye: "${_holdingData.sPrdtAli}",
-          holdQty: "${_holdingData.saleableQty ?? 0}",
-          isModify: false,
-          raw: {});
+        exchange: _exchTsym.exch ?? "",
+        tSym: _exchTsym.tsym ?? "",
+        isExit: true,
+        token: _exchTsym.token ?? "",
+        transType: false,
+        prd: _holdingData.prd ?? "",
+        lotSize: lotSize,
+        ltp: _exchTsym.lp ?? "0.00",
+        perChange: _exchTsym.perChange ?? "0.00",
+        orderTpye: _holdingData.sPrdtAli ?? '',
+        holdQty: _holdingData.saleableQty?.toString() ?? '0',
+        isModify: false,
+        raw: {},
+      );
 
-      if (mwProvider.scripInfoModel != null) {
-        ResponsiveNavigation.toPlaceOrderScreen(context: context, arguments: {
-          "orderArg": orderArgs,
-          "scripInfo": mwProvider.scripInfoModel!,
-          "isBskt": ""
-        }).then((_) {
-          if (mounted) {
-            setState(() {
-              _isProcessingSell = false;
-            });
-          }
-        });
+      print("Opening place order screen...");
+      // Use parent context (from hold_table) if available, otherwise use root context
+      final targetContext = widget.parentContext ?? rootContext;
+      
+      if (targetContext.mounted) {
+        ResponsiveNavigation.toPlaceOrderScreen(
+          context: targetContext,
+          arguments: {
+            "orderArg": orderArgs,
+            "scripInfo": scripData.scripInfoModel!,
+            "isBskt": "",
+          },
+        );
+        print("Place order screen opened successfully");
+      } else {
+        print("ERROR: targetContext is not mounted");
+        if (mounted) {
+          setState(() {
+            _isProcessingSell = false;
+          });
+        }
+        return;
       }
-    } catch (e) {
+
+      print("Closing sheet...");
+      // Close the sheet AFTER opening the order screen
+      if (mounted) {
+        try {
+          shadcn.closeSheet(context);
+        } catch (e) {
+          print("Error closing sheet: $e");
+          // Ignore sheet close errors
+        }
+      }
+
       if (mounted) {
         setState(() {
           _isProcessingSell = false;
         });
+      }
+      print("=== _handleSell completed successfully ===");
+    } catch (e, stackTrace) {
+      print("ERROR in _handleSell: $e");
+      print("Stack trace: $stackTrace");
+      
+      // Try to close sheet on error
+      if (mounted) {
+        try {
+          shadcn.closeSheet(context);
+        } catch (_) {
+          // Ignore sheet close errors
+        }
+      }
+      
+      // Show error using root context
+      if (mounted) {
+        setState(() {
+          _isProcessingSell = false;
+        });
+        
+        final rootCtx = rootNavigatorKey.currentContext;
+        if (rootCtx != null) {
+          try {
+            showResponsiveWarningMessage(
+                rootCtx, "Error exiting holding: ${e.toString()}");
+          } catch (displayError) {
+            print("Failed to show error message: $displayError");
+          }
+        }
       }
     }
   }
