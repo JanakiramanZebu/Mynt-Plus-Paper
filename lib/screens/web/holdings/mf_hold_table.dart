@@ -1,12 +1,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart' show InkWell, Icons, VoidCallback, BorderRadius, Icon, BoxDecoration, TextPainter, TextSpan, TextStyle, TextDirection, GestureDetector, HitTestBehavior, Row, SizedBox, Text, Align, TextOverflow, Alignment, FontWeight, Container, SingleChildScrollView, Axis, Colors, LayoutBuilder, Center, BuildContext, Widget, ValueKey, Scrollbar, EdgeInsets, Color, IconData, MainAxisAlignment, MouseRegion, showDialog, ScrollController, Expanded, Column, WidgetsBinding, CircularProgressIndicator, Padding, Stack, LinearGradient, BoxConstraints, Clip, MediaQuery, Builder, Tooltip, Visibility, AnimatedOpacity;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mynt_plus/res/global_font_web.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../../../provider/mf_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../res/web_colors.dart';
-import '../../../res/global_font_web.dart';
+import '../../../res/global_font_web.dart' hide WebTextStyles;
 import '../../../sharedWidget/no_data_found.dart';
 import 'mf_holding_detail_screen_web.dart';
 import '../ordersbook/mf/redeem_bottom_sheet_web.dart';

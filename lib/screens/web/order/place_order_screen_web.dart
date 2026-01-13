@@ -1364,8 +1364,8 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                             ? textStyles
                                                                 .textFieldLabelStyle
                                                                 .copyWith(
-                                                                    color: colors
-                                                                        .colorWhite)
+                                                                color: colors
+                                                                    .colorWhite)
                                                             : textStyles
                                                                 .textFieldLabelStyle,
                                                         keyboardType:
@@ -1548,8 +1548,8 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                 ? textStyles
                                                                     .textFieldLabelStyle
                                                                     .copyWith(
-                                                                        color: colors
-                                                                            .colorWhite)
+                                                                    color: colors
+                                                                        .colorWhite)
                                                                 : textStyles
                                                                     .textFieldLabelStyle,
                                                             decoration: InputDecoration(

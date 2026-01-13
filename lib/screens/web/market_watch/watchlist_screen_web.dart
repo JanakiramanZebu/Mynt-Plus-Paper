@@ -9,12 +9,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_swipe_action_cell/flutter_swipe_action_cell.dart';
+import 'package:mynt_plus/res/shadcn_text_styles.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../res/res.dart';
 import '../../../res/web_colors.dart';
-import '../../../res/global_font_web.dart';
+import '../../../res/mynt_web_text_styles.dart';
 import '../../../sharedWidget/list_divider.dart';
 import 'my_stocks/stocks_screen_web.dart';
 import 'watchlist_card_web.dart';
@@ -62,12 +63,12 @@ class _SliverTabsDelegate extends SliverPersistentHeaderDelegate {
     // When maxExtent == minExtent, shrink should always be 0 when visible
     // But handle edge cases during initial layout
     final visibleHeight = (height - shrink).clamp(0.0, height);
-    
+
     // If no visible height, return empty widget to prevent layout errors
     if (visibleHeight <= 0) {
       return const SizedBox.shrink();
     }
-    
+
     // Use LayoutBuilder to check actual constraints and handle edge cases
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -75,7 +76,7 @@ class _SliverTabsDelegate extends SliverPersistentHeaderDelegate {
         if (constraints.maxHeight <= 0 || constraints.maxWidth <= 0) {
           return const SizedBox.shrink();
         }
-        
+
         // Use ConstrainedBox to respect both sliver constraints and child needs
         return ConstrainedBox(
           constraints: BoxConstraints(
@@ -130,12 +131,12 @@ class _SliverIndexSlotsDelegate extends SliverPersistentHeaderDelegate {
     // When maxExtent == minExtent, shrink should always be 0 when visible
     // But handle edge cases during initial layout
     final visibleHeight = (height - shrink).clamp(0.0, height);
-    
+
     // If no visible height, return empty widget to prevent layout errors
     if (visibleHeight <= 0) {
       return const SizedBox.shrink();
     }
-    
+
     // Use LayoutBuilder to check actual constraints and handle edge cases
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -143,7 +144,7 @@ class _SliverIndexSlotsDelegate extends SliverPersistentHeaderDelegate {
         if (constraints.maxHeight <= 0 || constraints.maxWidth <= 0) {
           return const SizedBox.shrink();
         }
-        
+
         // Use ConstrainedBox to respect both sliver constraints and child needs
         return ConstrainedBox(
           constraints: BoxConstraints(
@@ -475,9 +476,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
 
       return SafeArea(
         child: Container(
-          color: theme.isDarkMode
-              ? WebDarkColors.background
-              : WebColors.background,
+          color: shadcn.Theme.of(context).colorScheme.background,
           child: NestedScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             headerSliverBuilder: (_, inner) => [
@@ -576,7 +575,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
   ) {
     return SliverToBoxAdapter(
       child: Container(
-        color: colors.colorWhite,
+        color: shadcn.Theme.of(context).colorScheme.background,
         padding: const EdgeInsets.only(left: 10, right: 10, top: 10, bottom: 0),
         child: Row(
           children: [
@@ -587,12 +586,6 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                 color: Colors.transparent,
                 child: InkWell(
                   customBorder: const CircleBorder(),
-                  hoverColor: theme.isDarkMode
-                      ? Colors.white.withOpacity(0.1)
-                      : Colors.black.withOpacity(0.1),
-                  splashColor: theme.isDarkMode
-                      ? Colors.white.withOpacity(0.2)
-                      : Colors.black.withOpacity(0.2),
                   onTap: () => _showWatchlistDialog(context, ref, wlName),
                   child: Container(
                     width: 32,
@@ -605,9 +598,9 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                         assets.hamMenu,
                         width: 20,
                         height: 20,
-                        color: theme.isDarkMode
-                            ? WebDarkColors.iconSecondary
-                            : WebColors.iconSecondary,
+                        color: shadcn.Theme.of(context)
+                            .colorScheme
+                            .mutedForeground,
                       ),
                     ),
                   ),
@@ -627,12 +620,13 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                       child: SizedBox(
                         height: 40,
                         child: DefaultTextStyle(
-                          style: const TextStyle(fontFamily: 'Geist'),
+                          style:
+                              const TextStyle(fontFamily: WebFonts.fontFamily),
                           child: shadcn.TextField(
                             enabled: false,
                             placeholder: const Text(
                               'Search & add',
-                              style: TextStyle(fontFamily: 'Geist'),
+                              style: TextStyle(fontFamily: WebFonts.fontFamily),
                             ),
                             features: [
                               shadcn.InputFeature.leading(
@@ -751,9 +745,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: theme.isDarkMode
-                ? WebDarkColors.background
-                : WebColors.background,
+            color: shadcn.Theme.of(context).colorScheme.background,
           ),
           child: showSingleSlot
               ? _buildSingleIndexSlot(
@@ -764,8 +756,8 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
       },
     );
 
-    // Calculate total height: padding vertical (6*2) + item height (52) = 64
-    const double indexSlotsHeight = 64.0;
+    // Calculate total height: padding vertical (6*2) + shadcn Card height with potential wrap (~66) = 78
+    const double indexSlotsHeight = 78.0;
 
     return SliverPersistentHeader(
       pinned: true, // This keeps the index slots fixed at the top
@@ -791,39 +783,35 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
     }
   }
 
-  // Build double index slots layout (2 slots side by side with horizontal scroll)
+  // Build double index slots layout (2 slots side by side with equal width)
   Widget _buildDoubleIndexSlots(
     List<dynamic> displayIndices,
     ThemesProvider theme,
     dynamic marketWatch,
     dynamic indexProvider,
   ) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      physics: const ClampingScrollPhysics(),
-      child: IntrinsicHeight(
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: List.generate(2, (index) {
-            if (index >= displayIndices.length) {
-              return const SizedBox.shrink();
-            }
-            final item = displayIndices[index];
-            return Padding(
-              padding: EdgeInsets.only(
-                right: index < 1 ? 8 : 0,
-              ),
-              child: _WatchlistIndexSlotWeb(
-                indexItem: item,
-                indexPosition: index,
-                theme: theme,
-                marketWatch: marketWatch,
-                indexProvider: indexProvider,
-              ),
-            );
-          }),
-        ),
-      ),
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: List.generate(2, (index) {
+        if (index >= displayIndices.length) {
+          return const Expanded(child: SizedBox.shrink());
+        }
+        final item = displayIndices[index];
+        return Expanded(
+          child: Padding(
+            padding: EdgeInsets.only(
+              right: index < 1 ? 8 : 0,
+            ),
+            child: _WatchlistIndexSlotWeb(
+              indexItem: item,
+              indexPosition: index,
+              theme: theme,
+              marketWatch: marketWatch,
+              indexProvider: indexProvider,
+            ),
+          ),
+        );
+      }),
     );
   }
 
@@ -881,7 +869,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
           scrollDirection: Axis.horizontal,
           physics: const ClampingScrollPhysics(),
           child: DefaultTextStyle(
-            style: const TextStyle(fontFamily: 'Geist'),
+            style: const TextStyle(fontFamily: WebFonts.fontFamily),
             child: shadcn.TabList(
               index: currentIndex >= 0 ? currentIndex : 0,
               onChanged: (value) {
@@ -895,7 +883,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                   shadcn.TabItem(
                     child: Text(
                       _formatTabName(name),
-                      style: const TextStyle(fontFamily: 'Geist'),
+                      style: const TextStyle(fontFamily: WebFonts.fontFamily),
                     ),
                   ),
               ],
@@ -908,7 +896,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
 
   Widget _buildEmptyState(ThemesProvider theme, MarketWatchProvider mw) {
     return Container(
-      color: theme.isDarkMode ? WebDarkColors.background : WebColors.background,
+      color: shadcn.Theme.of(context).colorScheme.background,
       child: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -1002,10 +990,8 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
               Text(
                 'No symbol in this watchlist',
                 style: WebTextStyles.bodySmall(
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
+                  context,
+                  color: shadcn.Theme.of(context).colorScheme.foreground,
                 ),
               ),
               const SizedBox(height: 12),
@@ -1015,10 +1001,8 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                   'Use the search box above to find and add stocks, indices, futures or options.',
                   textAlign: TextAlign.center,
                   style: WebTextStyles.para(
-                    isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode
-                        ? WebDarkColors.textSecondary
-                        : WebColors.textSecondary,
+                    context,
+                    color: shadcn.Theme.of(context).colorScheme.mutedForeground,
                   ),
                 ),
               ),
@@ -1032,11 +1016,8 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
   Widget _buildWatchlistView(List scrips, String sortBy) {
     return Consumer(
       builder: (context, ref, child) {
-        final theme = ref.watch(themeProvider);
         return Container(
-          color: theme.isDarkMode
-              ? WebDarkColors.background
-              : WebColors.background,
+          color: shadcn.Theme.of(context).colorScheme.background,
           child: ListView.separated(
             key: ValueKey('${scrips.length}_$sortBy'),
             itemCount: scrips.length,
@@ -1091,6 +1072,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
       ),
       builder: (context) {
         return shadcn.ModalContainer(
+          padding: const EdgeInsets.all(8),
           child: SizedBox(
             width: 150,
             child: Column(
@@ -1164,7 +1146,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                 child: Text(
                   title,
                   style: TextStyle(
-                    fontFamily: 'Geist',
+                    fontFamily: WebFonts.fontFamily,
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                     color: isActive
@@ -1281,7 +1263,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                           fontWeight: FontWeight.w600,
                           color:
                               shadcn.Theme.of(context).colorScheme.foreground,
-                          fontFamily: 'Geist',
+                          fontFamily: WebFonts.fontFamily,
                         ),
                       ),
                       Material(
@@ -1336,7 +1318,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                                   child: Text(
                                     '+ Create New Watchlist',
                                     style: TextStyle(
-                                      fontFamily: 'Geist',
+                                      fontFamily: WebFonts.fontFamily,
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
@@ -1408,7 +1390,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                                                     .colorScheme
                                                     .foreground,
                                                 fontWeight: FontWeight.w500,
-                                                fontFamily: 'Geist',
+                                                fontFamily: WebFonts.fontFamily,
                                               ),
                                             ),
                                           ),
@@ -1587,7 +1569,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                           fontWeight: FontWeight.w600,
                           color:
                               shadcn.Theme.of(context).colorScheme.foreground,
-                          fontFamily: 'Geist',
+                          fontFamily: WebFonts.fontFamily,
                         ),
                       ),
                       InkWell(
@@ -1627,7 +1609,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                           controller: controller,
                           placeholder: const Text(
                             'Enter watchlist name',
-                            style: TextStyle(fontFamily: 'Geist'),
+                            style: TextStyle(fontFamily: WebFonts.fontFamily),
                           ),
                           autofocus: true,
                           inputFormatters: [
@@ -1639,7 +1621,8 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                         const SizedBox(height: 24),
                         SizedBox(
                           width: double.infinity,
-                          child: shadcn.PrimaryButton(
+                          height: 40,
+                          child: ElevatedButton(
                             onPressed: () async {
                               final newName = controller.text.trim();
                               if (newName.isNotEmpty &&
@@ -1649,13 +1632,20 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                                     watchlistName, newName, ref, context);
                               }
                             },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  ShadcnColors.primaryBlue(context),
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                            ),
                             child: Text(
                               'Save',
                               style: TextStyle(
-                                color: shadcn.Theme.of(context)
-                                    .colorScheme
-                                    .primaryForeground,
-                                fontFamily: 'Geist',
+                                color: Colors.white,
+                                fontFamily: WebFonts.fontFamily,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ),
@@ -1728,7 +1718,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                           fontWeight: FontWeight.w600,
                           color:
                               shadcn.Theme.of(context).colorScheme.foreground,
-                          fontFamily: 'Geist',
+                          fontFamily: WebFonts.fontFamily,
                         ),
                       ),
                       InkWell(
@@ -1772,7 +1762,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                             color:
                                 shadcn.Theme.of(context).colorScheme.foreground,
                             fontWeight: FontWeight.w500,
-                            fontFamily: 'Geist',
+                            fontFamily: WebFonts.fontFamily,
                           ),
                         ),
                         const SizedBox(height: 24),
@@ -1811,7 +1801,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                                     'Delete',
                                     style: TextStyle(
                                       color: Colors.white,
-                                      fontFamily: 'Geist',
+                                      fontFamily: WebFonts.fontFamily,
                                       fontWeight: FontWeight.w600,
                                       fontSize: 14,
                                     ),
@@ -1890,7 +1880,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                           fontWeight: FontWeight.w600,
                           color:
                               shadcn.Theme.of(context).colorScheme.foreground,
-                          fontFamily: 'Geist',
+                          fontFamily: WebFonts.fontFamily,
                         ),
                       ),
                       InkWell(
@@ -1930,7 +1920,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                           controller: controller,
                           placeholder: const Text(
                             'Enter watchlist name',
-                            style: TextStyle(fontFamily: 'Geist'),
+                            style: TextStyle(fontFamily: WebFonts.fontFamily),
                           ),
                           autofocus: true,
                           inputFormatters: [
@@ -1942,7 +1932,8 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                         const SizedBox(height: 24),
                         SizedBox(
                           width: double.infinity,
-                          child: shadcn.PrimaryButton(
+                          height: 40,
+                          child: ElevatedButton(
                             onPressed: () async {
                               final name = controller.text.trim();
                               if (name.isNotEmpty) {
@@ -1950,13 +1941,20 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                                 await _handleWatchlistCreate(name, ref);
                               }
                             },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  ShadcnColors.primaryBlue(context),
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                            ),
                             child: Text(
                               'Create',
                               style: TextStyle(
-                                color: shadcn.Theme.of(context)
-                                    .colorScheme
-                                    .primaryForeground,
-                                fontFamily: 'Geist',
+                                color: Colors.white,
+                                fontFamily: WebFonts.fontFamily,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ),
@@ -2141,121 +2139,90 @@ class _WatchlistIndexSlotWebState
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = shadcn.Theme.of(context).colorScheme;
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
-      child: Material(
-        color: Colors.transparent,
-        shape: const RoundedRectangleBorder(),
-        child: InkWell(
-          customBorder: const RoundedRectangleBorder(),
-          splashColor: widget.theme.isDarkMode
-              ? WebDarkColors.primary.withOpacity(0.1)
-              : WebColors.primary.withOpacity(0.1),
-          highlightColor: widget.theme.isDarkMode
-              ? WebDarkColors.primary.withOpacity(0.05)
-              : WebColors.primary.withOpacity(0.05),
-          onTap: () => _handleIndexClick(context),
-          child: Container(
-            height: 52, // Compact height
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: widget.theme.isDarkMode
-                  ? WebDarkColors.backgroundTertiary
-                  : WebColors.backgroundTertiary,
-              // border: Border.all(
-              //   color: widget.theme.isDarkMode
-              //         ? WebDarkColors.primary
-              //         : WebColors.primary,
-              //   // width: 1,
-
-              // ),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Stack(
-              children: [
-                // Main content
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Index name - match default_index_list_web.dart exactly
-                    Text(
-                      widget.indexItem.idxname ?? "",
-                      style: WebTextStyles.symbolList(
-                        isDarkTheme: widget.theme.isDarkMode,
-                        color: widget.theme.isDarkMode
-                            ? WebDarkColors.textPrimary
-                            : WebColors.textPrimary,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+      child: GestureDetector(
+        onTap: () => _handleIndexClick(context),
+        child: shadcn.Card(
+          padding: const EdgeInsets.all(8),
+          child: Stack(
+            children: [
+              // Main content
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Index name
+                  Text(
+                    widget.indexItem.idxname ?? "",
+                    style: WebTextStyles.symbol(
+                      context,
+                      color: colorScheme.foreground,
                     ),
-                    const SizedBox(height: 4),
-                    // Live price widget
-                    _WatchlistLivePriceWidget(
-                      key: ValueKey('price_${widget.indexItem.token ?? ""}'),
-                      token: widget.indexItem.token?.toString() ?? "",
-                      initialLtp: (widget.indexItem.ltp == null ||
-                              widget.indexItem.ltp == "null")
-                          ? "0.00"
-                          : widget.indexItem.ltp?.toString() ?? "0.00",
-                      initialChange: (widget.indexItem.change == null ||
-                              widget.indexItem.change == "null")
-                          ? "0.00"
-                          : widget.indexItem.change?.toString() ?? "0.00",
-                      initialPerChange: (widget.indexItem.perChange == null ||
-                              widget.indexItem.perChange == "null")
-                          ? "0.00"
-                          : widget.indexItem.perChange?.toString() ?? "0.00",
-                      isDarkMode: widget.theme.isDarkMode,
-                    ),
-                  ],
-                ),
-                // Edit icon on hover
-                if (_isHovered)
-                  Positioned(
-                    right: 0,
-                    top: 0,
-                    child: Material(
-                      color: Colors.transparent,
-                      shape: const CircleBorder(),
-                      child: InkWell(
-                        customBorder: const CircleBorder(),
-                        splashColor: widget.theme.isDarkMode
-                            ? Colors.white.withOpacity(.15)
-                            : Colors.black.withOpacity(.15),
-                        highlightColor: widget.theme.isDarkMode
-                            ? Colors.white.withOpacity(.08)
-                            : Colors.black.withOpacity(.08),
-                        onTap: () => _handleTap(context),
-                        child: Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            color: widget.theme.isDarkMode
-                                ? WebDarkColors.surface
-                                : WebColors.surface,
-                            shape: BoxShape.circle,
-                            // border: Border.all(
-                            //   color: widget.theme.isDarkMode
-                            //       ? WebDarkColors.border
-                            //       : WebColors.border,
-                            //   width: 1,
-                            // ),
-                          ),
-                          child: Icon(
-                            Icons.edit_outlined,
-                            size: 16,
-                            color: widget.theme.isDarkMode
-                                ? WebDarkColors.iconSecondary
-                                : WebColors.iconSecondary,
-                          ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  // Live price widget - fixed font size for consistency
+                  _WatchlistLivePriceWidget(
+                    key: ValueKey('price_${widget.indexItem.token ?? ""}'),
+                    token: widget.indexItem.token?.toString() ?? "",
+                    initialLtp: (widget.indexItem.ltp == null ||
+                            widget.indexItem.ltp == "null")
+                        ? "0.00"
+                        : widget.indexItem.ltp?.toString() ?? "0.00",
+                    initialChange: (widget.indexItem.change == null ||
+                            widget.indexItem.change == "null")
+                        ? "0.00"
+                        : widget.indexItem.change?.toString() ?? "0.00",
+                    initialPerChange: (widget.indexItem.perChange == null ||
+                            widget.indexItem.perChange == "null")
+                        ? "0.00"
+                        : widget.indexItem.perChange?.toString() ?? "0.00",
+                   
+                  ),
+                ],
+              ),
+              // Edit icon on hover
+              if (_isHovered)
+                Positioned(
+                  right: 0,
+                  top: 0,
+                  child: Material(
+                    color: Colors.transparent,
+                    shape: const CircleBorder(),
+                    child: InkWell(
+                      customBorder: const CircleBorder(),
+                      splashColor:
+                          shadcn.Theme.of(context).brightness == Brightness.dark
+                              ? Colors.white.withOpacity(.15)
+                              : Colors.black.withOpacity(.15),
+                      highlightColor:
+                          shadcn.Theme.of(context).brightness == Brightness.dark
+                              ? Colors.white.withOpacity(.08)
+                              : Colors.black.withOpacity(.08),
+                      onTap: () => _handleTap(context),
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: shadcn.Theme.of(context).colorScheme.card,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.edit_outlined,
+                          size: 16,
+                          color: shadcn.Theme.of(context)
+                              .colorScheme
+                              .mutedForeground,
                         ),
                       ),
                     ),
                   ),
-              ],
-            ),
+                ),
+            ],
           ),
         ),
       ),
@@ -2269,7 +2236,6 @@ class _WatchlistLivePriceWidget extends ConsumerStatefulWidget {
   final String initialLtp;
   final String initialChange;
   final String initialPerChange;
-  final bool isDarkMode;
 
   const _WatchlistLivePriceWidget({
     super.key,
@@ -2277,7 +2243,6 @@ class _WatchlistLivePriceWidget extends ConsumerStatefulWidget {
     required this.initialLtp,
     required this.initialChange,
     required this.initialPerChange,
-    required this.isDarkMode,
   });
 
   @override
@@ -2391,51 +2356,44 @@ class _WatchlistLivePriceWidgetState
   }
 
   Color _getChangeColor(String change, String perChange) {
+    final colorScheme = shadcn.Theme.of(context).colorScheme;
     if (change.startsWith("-") || perChange.startsWith('-')) {
-      return widget.isDarkMode ? WebDarkColors.error : WebColors.error;
+      return colorScheme.destructive;
     } else if ((change == "null" || perChange == "null") ||
         (change == "0.00" || perChange == "0.00")) {
-      return widget.isDarkMode
-          ? WebDarkColors.textSecondary
-          : WebColors.textSecondary;
+      return colorScheme.mutedForeground;
     } else {
-      return widget.isDarkMode ? WebDarkColors.success : WebColors.success;
+      return colorScheme.chart2;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final changeColor = _getChangeColor(_change, _perChange);
+    final colorScheme = shadcn.Theme.of(context).colorScheme;
     // Match default_index_list_web.dart _LivePriceWidgetWeb exactly (src: false)
     return RepaintBoundary(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
+      child: Wrap(
+        crossAxisAlignment: WrapCrossAlignment.center,
+        spacing: 0,
+        runSpacing: 2,
         children: [
           Text(
             "$_ltp  ",
             style: _getTextStyle(
               changeColor,
-              13, // Match font size from default_index_list_web.dart
+              13, // Slightly smaller for better fit
               1,
             ),
           ),
           Text(
-            "$_change ",
+            "$_change ($_perChange%)",
             style: _getTextStyle(
-              WebColors.textPrimary, // Match default_index_list_web.dart
-              13, // Match font size
+              colorScheme.mutedForeground,
+              13,
               1,
             ),
           ),
-          Text(
-            "($_perChange%)",
-            style: _getTextStyle(
-              WebColors.textPrimary, // Match default_index_list_web.dart
-              13, // Match font size
-              1,
-            ),
-          )
         ],
       ),
     );
@@ -2448,8 +2406,8 @@ class _WatchlistLivePriceWidgetState
     final key = '${color.value}|$size|${fw ?? "null"}';
     return _textStyleCache.putIfAbsent(
       key,
-      () => WebTextStyles.priceWatch(
-        isDarkTheme: true, // Match default_index_list_web.dart
+      () => WebTextStyles.priceChng(
+        context,
         color: color,
       ),
     );

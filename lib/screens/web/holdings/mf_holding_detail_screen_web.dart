@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mynt_plus/res/global_font_web.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../../../../provider/thems.dart';
 import '../../../../provider/mf_provider.dart';
 import '../../../res/web_colors.dart';
-import '../../../res/global_font_web.dart';
+import '../../../res/global_font_web.dart' hide WebTextStyles;
 import '../ordersbook/mf/redeem_bottom_sheet_web.dart';
 import '../../../../main.dart';
 

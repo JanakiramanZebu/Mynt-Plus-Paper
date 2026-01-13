@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/provider/thems.dart';
-import 'package:mynt_plus/res/global_state_text.dart';
 import 'package:mynt_plus/res/global_font_web.dart';
+import 'package:mynt_plus/res/global_state_text.dart';
+import 'package:mynt_plus/res/mynt_web_text_styles.dart' hide WebTextStyles;
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/res/web_colors.dart';
 

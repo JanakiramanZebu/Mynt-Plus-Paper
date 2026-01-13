@@ -1,14 +1,14 @@
 import 'dart:async';
 import 'package:flutter/material.dart' show InkWell, Icons, VoidCallback, BorderRadius, Icon, BoxDecoration, TextPainter, TextSpan, TextStyle, TextDirection, GestureDetector, HitTestBehavior, Row, MainAxisSize, SizedBox, Colors, Widget, BuildContext, Color, EdgeInsets, Alignment, MainAxisAlignment, TextOverflow, Axis, FontWeight, Container, MouseRegion, Expanded, Align, Text, AnimatedOpacity, ScrollController, SingleChildScrollView, Scrollbar, Column, LayoutBuilder, ValueKey, IconData, Padding, Tooltip, RichText, Stack, LinearGradient, BoxConstraints, Clip, MediaQuery, Builder, Visibility;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mynt_plus/res/global_font_web.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
 
 import '../../../provider/portfolio_provider.dart';
 import '../../../provider/websocket_provider.dart';
 import '../../../provider/market_watch_provider.dart';
-import '../../../provider/thems.dart';
-import '../../../res/web_colors.dart';
-import '../../../res/global_font_web.dart';
+  import '../../../provider/thems.dart';
+    import '../../../res/web_colors.dart';
 import '../../../sharedWidget/snack_bar.dart';
 import '../../../sharedWidget/no_data_found.dart';
 import '../../../utils/responsive_navigation.dart';

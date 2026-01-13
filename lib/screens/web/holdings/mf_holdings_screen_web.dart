@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:data_table_2/data_table_2.dart';
+import 'package:mynt_plus/res/global_font_web.dart';
 
 import '../../../../provider/mf_provider.dart';
 import '../../../../provider/thems.dart';
 import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
 import '../../../../res/web_colors.dart';
-import '../../../../res/global_font_web.dart';
+import '../../../res/global_font_web.dart' hide WebTextStyles;
 import '../../../../sharedWidget/no_data_found.dart';
 import 'mf_holding_detail_screen_web.dart';
 import '../ordersbook/mf/redeem_bottom_sheet_web.dart';

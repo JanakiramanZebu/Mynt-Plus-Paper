@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:mynt_plus/res/global_font_web.dart';
 
 import '../../../provider/thems.dart';
 import '../../../provider/fund_provider.dart';
 import '../../../provider/transcation_provider.dart';
 import '../../../res/res.dart';
 import '../../../res/web_colors.dart';
-import '../../../res/global_font_web.dart';
+import '../../../res/global_font_web.dart' hide WebTextStyles;
 import '../../../sharedWidget/snack_bar.dart';
 
 class WithdrawScreenWeb extends ConsumerStatefulWidget {

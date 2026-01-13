@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart' hide Colors;
 import 'package:flutter/material.dart' as material show showDialog;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mynt_plus/res/global_font_web.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 
 import '../../../provider/thems.dart';
@@ -9,7 +10,7 @@ import '../../../provider/websocket_provider.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/ledger_provider.dart';
 import '../../../res/web_colors.dart';
-import '../../../res/global_font_web.dart';
+import '../../../res/global_font_web.dart' hide WebTextStyles;
 import '../../../sharedWidget/snack_bar.dart';
 import '../../../routes/route_names.dart';
 import '../../../utils/responsive_navigation.dart';

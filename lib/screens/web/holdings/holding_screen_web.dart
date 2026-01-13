@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:mynt_plus/res/global_font_web.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import 'package:mynt_plus/provider/mf_provider.dart';
 import 'package:mynt_plus/screens/web/holdings/hold_table.dart';
@@ -11,7 +12,7 @@ import '../../../../provider/thems.dart';
 import '../../../../provider/websocket_provider.dart';
 import '../../../../res/res.dart';
 import '../../../../res/web_colors.dart';
-import '../../../../res/global_font_web.dart';
+import '../../../res/global_font_web.dart' hide WebTextStyles;
 
 class HoldingScreenWeb extends ConsumerWidget {
   final List<dynamic> listofHolding;
@@ -40,15 +41,12 @@ class _HoldingScreenContent extends ConsumerStatefulWidget {
 
 
 class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
-  int _selectedTabIndex = 0; // 0 for Stocks, 1 for Mutual Funds
-  // ✅ Use ValueNotifier for search queries to avoid rebuilding entire widget
+  int _selectedTabIndex = 0; 
   final ValueNotifier<String> _searchQuery = ValueNotifier<String>('');
   final ValueNotifier<String> _mfSearchQuery = ValueNotifier<String>('');
-  // TextEditingControllers to control the TextField values
   final TextEditingController _stocksSearchController = TextEditingController();
   final TextEditingController _mfSearchController = TextEditingController();
 
-  // ✅ Use ValueNotifier instead of setState to avoid rebuilding entire widget
   final ValueNotifier<String?> _hoveredRowToken = ValueNotifier<String?>(null);
   final ValueNotifier<int?> _hoveredColumnIndex = ValueNotifier<int?>(null);
 
@@ -74,18 +72,16 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
   void dispose() {
     _hoveredRowToken.dispose();
     _hoveredColumnIndex.dispose();
-    _searchQuery.dispose(); // ✅ Dispose search query ValueNotifier
-    _mfSearchQuery.dispose(); // ✅ Dispose MF search query ValueNotifier
-    _stocksSearchController.dispose(); // Dispose TextEditingController
-    _mfSearchController.dispose(); // Dispose TextEditingController
+    _searchQuery.dispose(); 
+    _mfSearchQuery.dispose(); 
+    _stocksSearchController.dispose(); 
+    _mfSearchController.dispose(); 
 
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // ✅ CRITICAL FIX: Only watch holdloader to prevent unnecessary rebuilds
-    // Using select() ensures we only rebuild when loading state changes
     final isLoading = ref.watch(portfolioProvider.select((p) => p.holdloader));
     final theme = ref.read(themeProvider);
 
@@ -93,7 +89,6 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    // ✅ Access portfolioData without watching to avoid rebuilds
     final portfolioData = ref.read(portfolioProvider);
 
     return SizedBox.expand(

@@ -3,9 +3,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:data_table_2/data_table_2.dart';
+import 'package:mynt_plus/res/global_font_web.dart';
 import '../../../../../provider/iop_provider.dart';
 import '../../../../../provider/thems.dart';
-import '../../../../../res/global_font_web.dart';
+import '../../../../../res/global_font_web.dart' hide WebTextStyles;
 import '../../../../../res/web_colors.dart';
 import '../../../../../res/res.dart';
 import '../../../../../sharedWidget/functions.dart';

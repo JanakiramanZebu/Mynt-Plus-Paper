@@ -99,7 +99,7 @@ class _ApplyIpoScreenState extends ConsumerState<ApplyIpoScreen> {
                     theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
                 shadowColor: const Color(0xffECEFF3),
                 title: Text("IPO Order",
-                    style: textStyles.appBarTitleTxt.copyWith(
+                    style: TextStyle(
                         color: theme.isDarkMode
                             ? colors.colorWhite
                             : colors.colorBlack)),

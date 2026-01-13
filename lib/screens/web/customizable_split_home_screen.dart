@@ -142,7 +142,8 @@ class _CustomizableSplitHomeScreenState
       WebNavigationHelper.initialize(
         navigatorKey: GlobalKey<NavigatorState>(),
         navigateToScreen: (routeName, {arguments}) {
-          debugPrint("WebNavigationHelper.navigateToScreen called with: $routeName");
+          debugPrint(
+              "WebNavigationHelper.navigateToScreen called with: $routeName");
           if (routeName == "orderBook") {
             showOrderBookInPanel();
           } else if (routeName == "optionChain") {
@@ -157,27 +158,36 @@ class _CustomizableSplitHomeScreenState
             _handleReportsTap();
           } else if (routeName == "settings") {
             _handleSettingsTap();
-          } else if (routeName == Routes.tradeActionScreen || routeName == "tradeActionScreen") {
-            debugPrint("Trade action screen navigation triggered with arguments: $arguments");
+          } else if (routeName == Routes.tradeActionScreen ||
+              routeName == "tradeActionScreen") {
+            debugPrint(
+                "Trade action screen navigation triggered with arguments: $arguments");
             final tabIndex = arguments is int ? arguments : null;
             showTradeActionInPanel(tabIndex: tabIndex);
             // caEvent and cpAction removed from panel navigation
-          } else if (routeName == Routes.holdingscreen || routeName == "HoldingScreen") {
+          } else if (routeName == Routes.holdingscreen ||
+              routeName == "HoldingScreen") {
             _handleHoldingsTap();
-          } else if (routeName == Routes.positionscreen || routeName == "PositionScreen") {
+          } else if (routeName == Routes.positionscreen ||
+              routeName == "PositionScreen") {
             _handlePositionsTap();
-          } else if (routeName == Routes.orderBook || routeName == "orderBook") {
+          } else if (routeName == Routes.orderBook ||
+              routeName == "orderBook") {
             showOrderBookInPanel();
-          } else if (routeName == Routes.fundscreen || routeName == "fundscreen") {
+          } else if (routeName == Routes.fundscreen ||
+              routeName == "fundscreen") {
             _handleFundsTap();
-          } else if (routeName == Routes.ipo || routeName == "Ipo" || routeName == "ipo") {
+          } else if (routeName == Routes.ipo ||
+              routeName == "Ipo" ||
+              routeName == "ipo") {
             _handleIPOTap();
           } else {
             debugPrint("Unknown route: $routeName");
           }
         },
         replaceScreen: (routeName, {arguments}) {
-          debugPrint("WebNavigationHelper.replaceScreen called with: $routeName");
+          debugPrint(
+              "WebNavigationHelper.replaceScreen called with: $routeName");
           if (routeName == "orderBook") {
             showOrderBookInPanel();
           } else if (routeName == "optionChain") {
@@ -192,20 +202,28 @@ class _CustomizableSplitHomeScreenState
             _handleReportsTap();
           } else if (routeName == "settings") {
             _handleSettingsTap();
-          } else if (routeName == Routes.tradeActionScreen || routeName == "tradeActionScreen") {
-            debugPrint("Trade action screen replacement triggered with arguments: $arguments");
+          } else if (routeName == Routes.tradeActionScreen ||
+              routeName == "tradeActionScreen") {
+            debugPrint(
+                "Trade action screen replacement triggered with arguments: $arguments");
             final tabIndex = arguments is int ? arguments : null;
             showTradeActionInPanel(tabIndex: tabIndex);
             // caEvent and cpAction removed from panel navigation
-          } else if (routeName == Routes.holdingscreen || routeName == "HoldingScreen") {
+          } else if (routeName == Routes.holdingscreen ||
+              routeName == "HoldingScreen") {
             _handleHoldingsTap();
-          } else if (routeName == Routes.positionscreen || routeName == "PositionScreen") {
+          } else if (routeName == Routes.positionscreen ||
+              routeName == "PositionScreen") {
             _handlePositionsTap();
-          } else if (routeName == Routes.orderBook || routeName == "orderBook") {
+          } else if (routeName == Routes.orderBook ||
+              routeName == "orderBook") {
             showOrderBookInPanel();
-          } else if (routeName == Routes.fundscreen || routeName == "fundscreen") {
+          } else if (routeName == Routes.fundscreen ||
+              routeName == "fundscreen") {
             _handleFundsTap();
-          } else if (routeName == Routes.ipo || routeName == "Ipo" || routeName == "ipo") {
+          } else if (routeName == Routes.ipo ||
+              routeName == "Ipo" ||
+              routeName == "ipo") {
             _handleIPOTap();
           } else {
             debugPrint("Unknown route: $routeName");
@@ -229,7 +247,7 @@ class _CustomizableSplitHomeScreenState
         _handleWebSocketConnections();
       }
     });
-    
+
     // Update subscription manager context
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -242,7 +260,7 @@ class _CustomizableSplitHomeScreenState
   void didChangeDependencies() {
     super.didChangeDependencies();
     socketProvider = ref.read(websocketProvider);
-    
+
     // Update subscription manager context whenever dependencies change
     ref.read(webSubscriptionManagerProvider).updateContext(context);
   }
@@ -351,7 +369,8 @@ class _CustomizableSplitHomeScreenState
                 ref.read(indexListProvider).checkSess?.stat == "Ok" &&
                 shouldFetchPortfolio) {
               // Only fetch data for ACTIVE screens (smart fetching)
-              debugPrint('Fetching data for active portfolio screens after cooldown');
+              debugPrint(
+                  'Fetching data for active portfolio screens after cooldown');
               _lastPortfolioFetch = now;
 
               final futures = <Future>[];
@@ -359,21 +378,27 @@ class _CustomizableSplitHomeScreenState
               // Check each panel and only fetch data for active screens
               for (var panel in _panels) {
                 if (panel.screenType == ScreenType.positions) {
-                  futures.add(ref.read(portfolioProvider).fetchPositionBook(context, false));
+                  futures.add(ref
+                      .read(portfolioProvider)
+                      .fetchPositionBook(context, false));
                 } else if (panel.screenType == ScreenType.holdings) {
-                  futures.add(ref.read(portfolioProvider).fetchHoldings(context, ""));
+                  futures.add(
+                      ref.read(portfolioProvider).fetchHoldings(context, ""));
                 } else if (panel.screenType == ScreenType.orderBook) {
-                  futures.add(ref.read(orderProvider).fetchOrderBook(context, false));
+                  futures.add(
+                      ref.read(orderProvider).fetchOrderBook(context, false));
                   // Note: Trade Book and SIP are lazy loaded, only fetch if already loaded
                   if (ref.read(orderProvider).tradeBook != null &&
                       ref.read(orderProvider).tradeBook!.isNotEmpty) {
-                    futures.add(ref.read(orderProvider).fetchTradeBook(context));
+                    futures
+                        .add(ref.read(orderProvider).fetchTradeBook(context));
                   }
                 }
               }
 
               if (futures.isNotEmpty) {
-                debugPrint('Fetching ${futures.length} API(s) for ${_panels.where((p) => p.screenType == ScreenType.positions || p.screenType == ScreenType.holdings || p.screenType == ScreenType.orderBook).length} active portfolio screen(s)');
+                debugPrint(
+                    'Fetching ${futures.length} API(s) for ${_panels.where((p) => p.screenType == ScreenType.positions || p.screenType == ScreenType.holdings || p.screenType == ScreenType.orderBook).length} active portfolio screen(s)');
                 await Future.wait(futures);
               } else {
                 debugPrint('No portfolio screens active, skipping data fetch');
@@ -383,7 +408,8 @@ class _CustomizableSplitHomeScreenState
                 setState(() {});
               }
             } else if (!shouldFetchPortfolio) {
-              debugPrint('Skipping portfolio fetch - cooldown active or no portfolio screens');
+              debugPrint(
+                  'Skipping portfolio fetch - cooldown active or no portfolio screens');
             }
             _handleWebSocketConnections();
           } catch (e) {
@@ -655,56 +681,19 @@ class _CustomizableSplitHomeScreenState
   Widget _buildSplitView(ThemesProvider theme) {
     return _buildGridContent(theme);
   }
-  
-  /// Calculate responsive split ratio for watchlist based on screen width
-  /// Uses Bootstrap-inspired breakpoints for optimal layout at different screen sizes
-  ///
-  /// Breakpoints:
-  /// - XL (>= 1600px): 20% watchlist width
-  /// - LG (>= 1200px): 25% watchlist width (default)
-  /// - MD (>= 992px): 28% watchlist width
-  /// - SM (>= 768px): 30% watchlist width
-  /// - XS (< 768px): 35% watchlist width
+
+  /// Calculate split ratio for watchlist - Fixed 75-25 split
+  /// Watchlist always takes 25% of screen width for consistent UX
   ///
   /// [isLeftPanel] - true if watchlist is in left panel, false if in right panel
-  double _getResponsiveWatchlistRatio(BuildContext context, {required bool isLeftPanel}) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    double watchlistRatio;
-
-    // Calculate watchlist width percentage based on screen size
-    if (screenWidth >= 1600) {
-      // Extra Large screens (>= 1600px): 20% watchlist
-      watchlistRatio = 0.20;
-    } else if (screenWidth >= 1200) {
-      // Large screens (>= 1200px): 25% watchlist (default)
-      watchlistRatio = 0.25;
-    } else if (screenWidth >= 992) {
-      // Medium screens (>= 992px): 28% watchlist
-      watchlistRatio = 0.28;
-    } else if (screenWidth >= 768) {
-      // Small screens (>= 768px): 30% watchlist
-      watchlistRatio = 0.30;
-    } else {
-      // Extra Small screens (< 768px): 35% watchlist
-      watchlistRatio = 0.35;
-    }
-
-    // Apply min/max constraints to prevent extreme widths
-    const double minWatchlistWidth = 280.0;  // Minimum 280px for readability
-    const double maxWatchlistWidth = 450.0;  // Maximum 450px to prevent oversized
-
-    // Calculate actual pixel width
-    double actualWidth = screenWidth * watchlistRatio;
-
-    // Clamp to min/max bounds
-    actualWidth = actualWidth.clamp(minWatchlistWidth, maxWatchlistWidth);
-
-    // Recalculate ratio based on clamped width
-    watchlistRatio = actualWidth / screenWidth;
+  double _getResponsiveWatchlistRatio(BuildContext context,
+      {required bool isLeftPanel}) {
+    // Fixed 25% for watchlist, 75% for main content
+    const double watchlistRatio = 0.25;
 
     // Return appropriate ratio based on panel position
-    // If watchlist is on left: return the ratio directly (left panel = ratio, right panel = 1-ratio)
-    // If watchlist is on right: return 1-ratio (left panel = 1-ratio, right panel = ratio)
+    // If watchlist is on left: return 0.25 (left panel = 25%, right panel = 75%)
+    // If watchlist is on right: return 0.75 (left panel = 75%, right panel = 25%)
     return isLeftPanel ? watchlistRatio : (1.0 - watchlistRatio);
   }
 
@@ -1018,7 +1007,6 @@ class _CustomizableSplitHomeScreenState
           ),
         ),
 
-       
         // Tab header for non-watchlist panels (Layout 1) - COMMENTED OUT
         // if (activeScreen != ScreenType.watchlist)
         //   Positioned(
@@ -1276,8 +1264,7 @@ class _CustomizableSplitHomeScreenState
         _buildNavItem(
             'Fund', isDarkMode, ScreenType.funds, () => _handleFundsTap()),
         const SizedBox(width: 8),
-        _buildNavItem(
-            'IPO', isDarkMode, ScreenType.ipo, () => _handleIPOTap()),
+        _buildNavItem('IPO', isDarkMode, ScreenType.ipo, () => _handleIPOTap()),
       ],
     );
   }
@@ -1392,17 +1379,21 @@ class _CustomizableSplitHomeScreenState
   Widget _getScreenForType(ScreenType type) {
     switch (type) {
       case ScreenType.dashboard:
-        return const PopoverExample1 ();
+        return const PopoverExample1();
       case ScreenType.watchlist:
         return const WatchListScreenWeb();
       case ScreenType.holdings:
         return Consumer(
           builder: (context, ref, _) {
             // ✅ Optimize: Only watch specific properties instead of entire provider
-            final isLoading = _screenLoadingStates[ScreenType.holdings] ?? false;
-            final holdloader = ref.watch(portfolioProvider.select((p) => p.holdloader));
-            final holdingsModel = ref.watch(portfolioProvider.select((p) => p.holdingsModel));
-            final theme = ref.read(themeProvider); // Use read() since theme doesn't change often
+            final isLoading =
+                _screenLoadingStates[ScreenType.holdings] ?? false;
+            final holdloader =
+                ref.watch(portfolioProvider.select((p) => p.holdloader));
+            final holdingsModel =
+                ref.watch(portfolioProvider.select((p) => p.holdingsModel));
+            final theme = ref.read(
+                themeProvider); // Use read() since theme doesn't change often
             final hasData = holdingsModel != null && holdingsModel.isNotEmpty;
 
             // Show loader if local loading state is true, provider loading is true, or no data yet
@@ -1415,18 +1406,21 @@ class _CustomizableSplitHomeScreenState
                 child: const CircularLoaderImage(),
               );
             }
-            return HoldingScreenWeb(
-                listofHolding: holdingsModel ?? []);
+            return HoldingScreenWeb(listofHolding: holdingsModel ?? []);
           },
         );
       case ScreenType.positions:
         return Consumer(
           builder: (context, ref, _) {
             // ✅ Optimize: Only watch specific properties instead of entire provider
-            final isLoading = _screenLoadingStates[ScreenType.positions] ?? false;
-            final posloader = ref.watch(portfolioProvider.select((p) => p.posloader));
-            final allPostionList = ref.watch(portfolioProvider.select((p) => p.allPostionList));
-            final theme = ref.read(themeProvider); // Use read() since theme doesn't change often
+            final isLoading =
+                _screenLoadingStates[ScreenType.positions] ?? false;
+            final posloader =
+                ref.watch(portfolioProvider.select((p) => p.posloader));
+            final allPostionList =
+                ref.watch(portfolioProvider.select((p) => p.allPostionList));
+            final theme = ref.read(
+                themeProvider); // Use read() since theme doesn't change often
 
             // Show loader only when actively loading, not when no data exists
             if (isLoading || posloader) {
@@ -1772,8 +1766,7 @@ class _CustomizableSplitHomeScreenState
                           .where((screenType) =>
                               screenType != ScreenType.watchlist)
                           .map((screenType) =>
-                              _buildScreenOption(screenType, theme))
-                          ,
+                              _buildScreenOption(screenType, theme)),
                     ],
                   ),
                 ),
@@ -1875,7 +1868,7 @@ class _CustomizableSplitHomeScreenState
   void _handleScreenTypeChange(ScreenType screenType) {
     // Update subscription manager with active screen
     _updateSubscriptionManagerForPanels();
-    
+
     // Only call handlers if this is not the initial load
     if (_isInitialLoad) {
       return;
@@ -1981,9 +1974,7 @@ class _CustomizableSplitHomeScreenState
         case ScreenType.orderBook:
           if (mounted) {
             // Unsubscribe from current active tab when leaving order book screen
-            ref
-                .read(orderProvider)
-                .unsubscribeFromCurrentTab(context);
+            ref.read(orderProvider).unsubscribeFromCurrentTab(context);
           }
           _clearScreenCache(screenType);
           break;
@@ -2125,7 +2116,7 @@ class _CustomizableSplitHomeScreenState
         _cleanupScreenResources(previousScreenType);
       }
     });
-    
+
     // Update subscription manager
     _updateSubscriptionManagerForPanels();
 
@@ -2184,7 +2175,7 @@ class _CustomizableSplitHomeScreenState
       _panels[targetPanelIndex].screens = [ScreenType.orderBook];
       _panels[targetPanelIndex].activeScreenIndex = 0;
     });
-    
+
     // Update subscription manager
     _updateSubscriptionManagerForPanels();
 
@@ -2251,7 +2242,7 @@ class _CustomizableSplitHomeScreenState
       // Store the tab index for the screen
       _tradeActionTabIndex = tabIndex;
     });
-    
+
     // Update subscription manager
     _updateSubscriptionManagerForPanels();
 
@@ -2300,10 +2291,10 @@ class _CustomizableSplitHomeScreenState
       _panels[targetPanelIndex].screens = [ScreenType.optionChain];
       _panels[targetPanelIndex].activeScreenIndex = 0;
     });
-    
+
     // Update subscription manager
     _updateSubscriptionManagerForPanels();
-    
+
     _saveLayout();
   }
 
@@ -2362,31 +2353,33 @@ class _CustomizableSplitHomeScreenState
 
   // Debounce timer to prevent rapid subscription manager updates
   Timer? _subscriptionUpdateDebounceTimer;
-  static const Duration _subscriptionUpdateDebounceDelay = Duration(milliseconds: 200);
-  
+  static const Duration _subscriptionUpdateDebounceDelay =
+      Duration(milliseconds: 200);
+
   // Track last update to prevent duplicate calls
   Map<int, ScreenType?> _lastSubscriptionUpdate = {};
-  
+
   // Update subscription manager based on current active panels (with debouncing)
   void _updateSubscriptionManagerForPanels() {
     // Cancel any pending debounce timer
     _subscriptionUpdateDebounceTimer?.cancel();
-    
+
     // Debounce the update to prevent rapid calls
-    _subscriptionUpdateDebounceTimer = Timer(_subscriptionUpdateDebounceDelay, () {
+    _subscriptionUpdateDebounceTimer =
+        Timer(_subscriptionUpdateDebounceDelay, () {
       _performSubscriptionManagerUpdate();
     });
   }
-  
+
   /// Actually perform the subscription manager update (called after debounce)
   void _performSubscriptionManagerUpdate() {
     final subscriptionManager = ref.read(webSubscriptionManagerProvider);
-    
+
     // Update subscription manager for each panel
     for (int i = 0; i < _panels.length; i++) {
       final panel = _panels[i];
       ScreenType? activeScreen;
-      
+
       if (panel.screens.isNotEmpty &&
           panel.activeScreenIndex >= 0 &&
           panel.activeScreenIndex < panel.screens.length) {
@@ -2394,7 +2387,7 @@ class _CustomizableSplitHomeScreenState
       } else {
         activeScreen = panel.screenType;
       }
-      
+
       // Only update if the screen actually changed
       final lastScreen = _lastSubscriptionUpdate[i];
       if (lastScreen != activeScreen) {
@@ -2416,7 +2409,7 @@ class _CustomizableSplitHomeScreenState
       final indexProvider = ref.read(indexListProvider);
       final stocksProvider = ref.read(stocksProvide);
       final portfolio = ref.read(portfolioProvider);
-      
+
       portfolio.cancelTimer();
 
       // Ensure top indices are fetched before WebSubscriptionManager subscribes
@@ -2424,16 +2417,19 @@ class _CustomizableSplitHomeScreenState
       if (indexProvider.topIndicesForDashboard == null) {
         await indexProvider.getTopIndicesForDashboard(context);
       }
-      
+
       // Fetch trade action data only if not already available
       // This prevents duplicate TopList API calls when clicking dashboard multiple times
-      if (stocksProvider.topGainers.isEmpty && stocksProvider.topLosers.isEmpty) {
-        await stocksProvider.fetchTradeAction("NSE", "NSEALL", "topG_L", "topG_L");
+      if (stocksProvider.topGainers.isEmpty &&
+          stocksProvider.topLosers.isEmpty) {
+        await stocksProvider.fetchTradeAction(
+            "NSE", "NSEALL", "topG_L", "topG_L");
       }
       if (stocksProvider.byValue.isEmpty && stocksProvider.byVolume.isEmpty) {
-        await stocksProvider.fetchTradeAction("NSE", "NSEALL", "mostActive", "mostActive");
+        await stocksProvider.fetchTradeAction(
+            "NSE", "NSEALL", "mostActive", "mostActive");
       }
-      
+
       // Update subscription manager AFTER data is fetched
       // This ensures tokens are available for subscription
       if (mounted) {
@@ -2445,8 +2441,6 @@ class _CustomizableSplitHomeScreenState
   void _handleWatchlistTap() async {
     // Update subscription manager
     _updateSubscriptionManagerForPanels();
-    
-   
 
     final portfolio = ref.read(portfolioProvider);
     portfolio.cancelTimer();
@@ -2488,7 +2482,7 @@ class _CustomizableSplitHomeScreenState
       _panels[targetPanelIndex].screens = [screenType];
       _panels[targetPanelIndex].activeScreenIndex = 0;
     });
-    
+
     // Update subscription manager
     _updateSubscriptionManagerForPanels();
 
@@ -2544,7 +2538,8 @@ class _CustomizableSplitHomeScreenState
 
       // Check if request is already in progress (prevents duplicate calls on rapid clicks)
       if (_isRequestInProgress('order_book')) {
-        debugPrint('⏭️ Skipping Order Book fetch - request already in progress');
+        debugPrint(
+            '⏭️ Skipping Order Book fetch - request already in progress');
         return;
       }
 
@@ -2564,7 +2559,8 @@ class _CustomizableSplitHomeScreenState
         if (mounted) {
           // Reset to Open Orders tab (index 0) and subscribe
           orderProviderRef.changeTabIndex(0, context);
-          debugPrint("📥 [Order Book] Initial subscription to Open Orders tab (Tab 0)");
+          debugPrint(
+              "📥 [Order Book] Initial subscription to Open Orders tab (Tab 0)");
         }
 
         // Update subscription manager (order book is now SubscriptionType.none, so it won't subscribe)
@@ -2601,7 +2597,9 @@ class _CustomizableSplitHomeScreenState
         // Unsubscribe from other real-time data (non-blocking)
         portfolio.requestWSHoldings(context: context, isSubscribe: false);
         portfolio.requestWSPosition(context: context, isSubscribe: false);
-        ref.read(orderProvider).requestWSOrderBook(context: context, isSubscribe: false);
+        ref
+            .read(orderProvider)
+            .requestWSOrderBook(context: context, isSubscribe: false);
 
         // Fetch IPO data in the background (non-blocking)
         if (mounted) {
@@ -2872,8 +2870,8 @@ class _CustomizableSplitHomeScreenState
     // Fetch reports data
     if (reportsprovider.ledgerAllData == null) {
       await reportsprovider.getCurrentDate('else');
-      reportsprovider.fetchLegerData(
-          context, reportsprovider.startDate, reportsprovider.endDate, reportsprovider.includeBillMargin);
+      reportsprovider.fetchLegerData(context, reportsprovider.startDate,
+          reportsprovider.endDate, reportsprovider.includeBillMargin);
     }
     if (reportsprovider.holdingsAllData == null) {
       await reportsprovider.getCurrentDate('else');
@@ -2941,7 +2939,8 @@ class _CustomizableSplitHomeScreenState
 
     // Check if request is already in progress (prevents duplicate calls on rapid clicks)
     if (_isRequestInProgress('trade_action')) {
-      debugPrint('⏭️ Skipping Trade Action fetch - request already in progress');
+      debugPrint(
+          '⏭️ Skipping Trade Action fetch - request already in progress');
       return;
     }
 
@@ -2952,8 +2951,10 @@ class _CustomizableSplitHomeScreenState
       // Fetch trade action data before WebSubscriptionManager subscribes
       // This ensures tokens are available for subscription
       // Always fetch fresh data when switching to Trade Action
-      await stocksProvider.fetchTradeAction("NSE", "NSEALL", "topG_L", "topG_L");
-      await stocksProvider.fetchTradeAction("NSE", "NSEALL", "mostActive", "mostActive");
+      await stocksProvider.fetchTradeAction(
+          "NSE", "NSEALL", "topG_L", "topG_L");
+      await stocksProvider.fetchTradeAction(
+          "NSE", "NSEALL", "mostActive", "mostActive");
 
       // WebSubscriptionManager will handle subscription after data is fetched
       // via _updateSubscriptionManagerForPanels() which is called when screen is added
@@ -3085,8 +3086,7 @@ class _CustomizableSplitHomeScreenState
                           .where((screenType) =>
                               _shouldShowScreenOption(screenType, panel))
                           .map((screenType) => _buildScreenOptionForPanel(
-                              screenType, theme, panel))
-                          ,
+                              screenType, theme, panel)),
                     ],
                   ),
                 ),
@@ -3622,7 +3622,8 @@ class _ProfileDropdownOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = isDarkMode ? WebColorScheme.dark() : WebColorScheme.light();
+    final colorScheme =
+        isDarkMode ? WebColorScheme.dark() : WebColorScheme.light();
 
     return GestureDetector(
       onTap: onClose,
@@ -3658,7 +3659,8 @@ class _ProfileDropdownOverlay extends StatelessWidget {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(8),
                     child: ProfileMenuContentWrapper(
-                      onNavigate: onClose, // Pass callback to close on any navigation
+                      onNavigate:
+                          onClose, // Pass callback to close on any navigation
                     ),
                   ),
                 ),
