@@ -20,6 +20,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:flutter/material.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/notification/notification_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'locator/locator.dart';
@@ -295,8 +296,7 @@ class MyApp extends ConsumerWidget {
                     textScaler: TextScaler.linear(1.0),
                   ),
                   child: DefaultTextStyle(
-                    style: const TextStyle(
-                      fontFamily: 'Geist',
+                    style: GoogleFonts.inter(
                       fontFeatures: [FontFeature.proportionalFigures()],
                     ),
                     child: child!,

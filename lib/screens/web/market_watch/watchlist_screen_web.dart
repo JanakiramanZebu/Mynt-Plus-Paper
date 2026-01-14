@@ -9,14 +9,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_swipe_action_cell/flutter_swipe_action_cell.dart';
-import 'package:mynt_plus/res/shadcn_text_styles.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../res/res.dart';
-import '../../../res/web_colors.dart';
 import '../../../res/mynt_web_text_styles.dart';
+import '../../../res/mynt_web_color_styles.dart';
 import '../../../sharedWidget/list_divider.dart';
+import '../../../sharedWidget/common_buttons_web.dart';
+import '../../../sharedWidget/common_text_fields_web.dart';
+import '../../../sharedWidget/common_search_fields_web.dart';
 import 'my_stocks/stocks_screen_web.dart';
 import 'watchlist_card_web.dart';
 import 'search_dialog_web.dart';
@@ -483,7 +485,6 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
               _buildSearchBar(context, ref, theme, wlName, isPreDef,
                   watchList?.values?.length ?? 0),
               _buildPinnedTabs(ref, theme, watchList, wlName),
-              _buildIndexSlots(ref, theme),
             ],
             body: showDeleteMode
                 ? EditScripWeb(
@@ -582,29 +583,11 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
             // Menu button
             Padding(
               padding: const EdgeInsets.only(right: 8),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  customBorder: const CircleBorder(),
-                  onTap: () => _showWatchlistDialog(context, ref, wlName),
-                  child: Container(
-                    width: 32,
-                    height: 32,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                    ),
-                    child: Center(
-                      child: SvgPicture.asset(
-                        assets.hamMenu,
-                        width: 20,
-                        height: 20,
-                        color: shadcn.Theme.of(context)
-                            .colorScheme
-                            .mutedForeground,
-                      ),
-                    ),
-                  ),
-                ),
+              child: MyntIconButton(
+                iconAsset: assets.hamMenu,
+                 color: resolveThemeColor(context, darkColor: WebColors.textSecondaryDark, lightColor: WebColors.textSecondary),
+                size: MyntButtonSize.medium,
+                onPressed: () => _showWatchlistDialog(context, ref, wlName),
               ),
             ),
             // Search bar
@@ -612,35 +595,19 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
               child: Row(
                 children: [
                   Expanded(
-                    child: GestureDetector(
-                      behavior: HitTestBehavior.translucent,
-                      onTap: () {
-                        _showSearchDialog(context, ref, wlName);
-                      },
-                      child: SizedBox(
-                        height: 40,
-                        child: DefaultTextStyle(
-                          style:
-                              const TextStyle(fontFamily: WebFonts.fontFamily),
-                          child: shadcn.TextField(
-                            enabled: false,
-                            placeholder: const Text(
-                              'Search & add',
-                              style: TextStyle(fontFamily: WebFonts.fontFamily),
-                            ),
-                            features: [
-                              shadcn.InputFeature.leading(
-                                SvgPicture.asset(
-                                  assets.searchIcon,
-                                  width: 16,
-                                  height: 16,
-                                  color: shadcn.Theme.of(context)
-                                      .colorScheme
-                                      .mutedForeground,
-                                ),
-                              ),
-                            ],
-                          ),
+                    child: MouseRegion(
+                      cursor: SystemMouseCursors.click,
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.translucent,
+                        onTap: () {
+                          _showSearchDialog(context, ref, wlName);
+                        },
+                        child: MyntSearchTextField(
+                          controller: TextEditingController(),
+                          placeholder: 'Search & add',
+                          leadingIcon: assets.searchIcon,
+                          enabled: false,
+                          leadingIconHoverEffect: false,
                         ),
                       ),
                     ),
@@ -650,35 +617,15 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                       padding: const EdgeInsets.only(left: 8),
                       child: Builder(
                         builder: (buttonContext) {
-                          return Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              customBorder: const CircleBorder(),
-                              hoverColor: shadcn.Theme.of(context)
-                                  .colorScheme
-                                  .accent
-                                  .withOpacity(0.1),
-                              splashColor: shadcn.Theme.of(context)
-                                  .colorScheme
-                                  .accent
-                                  .withOpacity(0.2),
-                              onTap: () async {
-                                await Future.delayed(
-                                    const Duration(milliseconds: 150));
-                                _showFilterPopup(buttonContext, ref);
-                              },
-                              child: Padding(
-                                padding: const EdgeInsets.all(10),
-                                child: SvgPicture.asset(
-                                  assets.searchFilter,
-                                  width: 14,
-                                  height: 14,
-                                  color: shadcn.Theme.of(context)
-                                      .colorScheme
-                                      .mutedForeground,
-                                ),
-                              ),
-                            ),
+                          return MyntIconButton(
+                            iconAsset: assets.searchFilter,
+                            color: resolveThemeColor(context, darkColor: WebColors.textSecondaryDark, lightColor: WebColors.textSecondary),
+                            size: MyntButtonSize.medium,
+                            onPressed: () async {
+                              await Future.delayed(
+                                  const Duration(milliseconds: 150));
+                              _showFilterPopup(buttonContext, ref);
+                            },
                           );
                         },
                       ),
@@ -860,34 +807,79 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
     final tabs = watchList.values.cast<String>();
     final currentIndex = tabs.indexOf(wlName);
 
-    return SizedBox(
+    return Container(
       height: 60,
+      alignment: Alignment.bottomCenter,
       child: ScrollConfiguration(
         behavior: DragScrollBehavior(),
         child: SingleChildScrollView(
           controller: _tabScrollController,
           scrollDirection: Axis.horizontal,
           physics: const ClampingScrollPhysics(),
-          child: DefaultTextStyle(
-            style: const TextStyle(fontFamily: WebFonts.fontFamily),
-            child: shadcn.TabList(
-              index: currentIndex >= 0 ? currentIndex : 0,
-              onChanged: (value) {
-                if (value < tabs.length) {
-                  _handleTabTap(tabs[value], value, ref);
-                  _scrollToSelectedTab(value, force: true);
-                }
-              },
-              children: [
-                for (final name in tabs)
-                  shadcn.TabItem(
-                    child: Text(
-                      _formatTabName(name),
-                      style: const TextStyle(fontFamily: WebFonts.fontFamily),
-                    ),
-                  ),
-              ],
-            ),
+          child: Builder(
+            builder: (context) {
+              final currentTheme = shadcn.Theme.of(context);
+              final isDark = isDarkMode(context);
+              // Create a new ColorScheme based on the default, but with custom primary color
+              final baseColorScheme = isDark
+                  ? shadcn.ColorSchemes.darkDefaultColor
+                  : shadcn.ColorSchemes.lightDefaultColor;
+
+              // Create custom ColorScheme with theme-appropriate primary color
+              final primaryColor = resolveThemeColor(
+                context,
+                darkColor: WebColors.primaryDark,
+                lightColor: WebColors.primary,
+              );
+              final customColorScheme = baseColorScheme.copyWith(
+                primary: () => primaryColor,
+              );
+
+              return shadcn.Theme(
+                data: shadcn.ThemeData(
+                  colorScheme: customColorScheme,
+                  radius: currentTheme.radius,
+                ),
+                child: shadcn.TabList(
+                  index: currentIndex >= 0 ? currentIndex : 0,
+                  onChanged: (value) {
+                    if (value < tabs.length) {
+                      _handleTabTap(tabs[value], value, ref);
+                      _scrollToSelectedTab(value, force: true);
+                    }
+                  },
+                  children: [
+                    for (var i = 0; i < tabs.length; i++)
+                      shadcn.TabItem(
+                        child: Builder(
+                          builder: (context) {
+                            final isActive = i == currentIndex;
+                            return Text(
+                              _formatTabName(tabs[i]),
+                              style: webTextStyle(
+                                context,
+                                fontSize: WebFonts.subSize,
+                                fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+                                color: isActive
+                                    ? resolveThemeColor(
+                                        context,
+                                        darkColor: WebColors.primaryDark,
+                                        lightColor: WebColors.primary,
+                                      )
+                                    : resolveThemeColor(
+                                        context,
+                                        darkColor: WebColors.textSecondaryDark,
+                                        lightColor: WebColors.textSecondary,
+                                      ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                  ],
+                ),
+              );
+            },
           ),
         ),
       ),
@@ -976,9 +968,9 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                           width: 18,
                         ),
                         const SizedBox(width: 6),
-                        const Text(
+                        Text(
                           'Add Symbol',
-                          style: TextStyle(fontSize: 14),
+                          style: WebTextStyles.sub(context),
                         ),
                       ],
                     ),
@@ -991,7 +983,11 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                 'No symbol in this watchlist',
                 style: WebTextStyles.bodySmall(
                   context,
-                  color: shadcn.Theme.of(context).colorScheme.foreground,
+                            color: resolveThemeColor(
+                              context,
+                              darkColor: WebColors.textPrimaryDark,
+                              lightColor: WebColors.textPrimary,
+                            ),
                 ),
               ),
               const SizedBox(height: 12),
@@ -1002,7 +998,11 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                   textAlign: TextAlign.center,
                   style: WebTextStyles.para(
                     context,
-                    color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+                              color: resolveThemeColor(
+                                context,
+                                darkColor: WebColors.textSecondaryDark,
+                                lightColor: WebColors.textSecondary,
+                              ),
                   ),
                 ),
               ),
@@ -1074,7 +1074,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
         return shadcn.ModalContainer(
           padding: const EdgeInsets.all(8),
           child: SizedBox(
-            width: 150,
+            width: 200,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1145,13 +1145,21 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
               Expanded(
                 child: Text(
                   title,
-                  style: TextStyle(
-                    fontFamily: WebFonts.fontFamily,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
+                  style: webTextStyle(
+                    context,
+                    fontSize: WebFonts.subSize,
+                    fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
                     color: isActive
-                        ? shadcn.Theme.of(context).colorScheme.primary
-                        : shadcn.Theme.of(context).colorScheme.foreground,
+                        ? resolveThemeColor(
+                            context,
+                            darkColor: WebColors.primaryDark,
+                            lightColor: WebColors.primary,
+                          )
+                        : resolveThemeColor(
+                            context,
+                            darkColor: WebColors.textPrimaryDark,
+                            lightColor: WebColors.textPrimary,
+                          ),
                   ),
                 ),
               ),
@@ -1169,7 +1177,11 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                                 ? Icons.arrow_upward
                                 : Icons.arrow_downward,
                             size: 18,
-                            color: shadcn.Theme.of(context).colorScheme.primary,
+                            color: resolveThemeColor(
+                              context,
+                              darkColor: WebColors.primaryDark,
+                              lightColor: WebColors.primary,
+                            ),
                           ),
                         ],
                       )
@@ -1258,38 +1270,17 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                     children: [
                       Text(
                         'Select Watchlist',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color:
-                              shadcn.Theme.of(context).colorScheme.foreground,
-                          fontFamily: WebFonts.fontFamily,
-                        ),
-                      ),
-                      Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          customBorder: const CircleBorder(),
-                          hoverColor: shadcn.Theme.of(context)
-                              .colorScheme
-                              .accent
-                              .withOpacity(0.1),
-                          splashColor: shadcn.Theme.of(context)
-                              .colorScheme
-                              .accent
-                              .withOpacity(0.2),
-                          onTap: () => Navigator.of(context).pop(),
-                          child: Padding(
-                            padding: const EdgeInsets.all(6.0),
-                            child: Icon(
-                              Icons.close,
-                              size: 18,
-                              color: shadcn.Theme.of(context)
-                                  .colorScheme
-                                  .mutedForeground,
-                            ),
+                        style: WebTextStyles.dialogTitle(
+                          context,
+                          color: resolveThemeColor(
+                            context,
+                            darkColor: WebColors.textPrimaryDark,
+                            lightColor: WebColors.textPrimary,
                           ),
                         ),
+                      ),
+                      MyntCloseButton(
+                        onPressed: () => Navigator.of(context).pop(),
                       ),
                     ],
                   ),
@@ -1310,18 +1301,13 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
-                                shadcn.SecondaryButton(
+                                MyntIconTextButton(
+                                  label: 'New Watchlist',
+                                  iconAsset: assets.addCircleIcon,
                                   onPressed: () {
                                     Navigator.of(context).pop();
                                     _showCreateWatchlistDialog(context, ref);
                                   },
-                                  child: Text(
-                                    '+ Create New Watchlist',
-                                    style: TextStyle(
-                                      fontFamily: WebFonts.fontFamily,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
                                 ),
                               ],
                             ),
@@ -1375,27 +1361,31 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                                               }
                                             },
                                             activeColor:
-                                                shadcn.Theme.of(context)
-                                                    .colorScheme
-                                                    .primary,
+                                               resolveThemeColor(
+                                                 context,
+                                                 darkColor: WebColors.primaryDark,
+                                                 lightColor: WebColors.primary,
+                                               ),
                                           ),
                                           const SizedBox(width: 8),
                                           Expanded(
                                             child: Text(
                                               _formatWatchlistName(
                                                   watchlistName),
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                                color: shadcn.Theme.of(context)
-                                                    .colorScheme
-                                                    .foreground,
-                                                fontWeight: FontWeight.w500,
-                                                fontFamily: WebFonts.fontFamily,
+                                              style: WebTextStyles.dialogContent(
+                                                context,
+                                                color: resolveThemeColor(
+                                                  context,
+                                                  darkColor: WebColors.textPrimaryDark,
+                                                  lightColor: WebColors.textPrimary,
+                                                ),
                                               ),
                                             ),
                                           ),
                                           if (!isPredefined) ...[
-                                            IconButton(
+                                            MyntIconButton(
+                                              icon: Icons.edit_outlined,
+                                              size: MyntButtonSize.medium,
                                               onPressed: () {
                                                 Navigator.of(context).pop();
                                                 _showEditWatchlistDialog(
@@ -1403,19 +1393,13 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                                                     ref,
                                                     watchlistName);
                                               },
-                                              icon: const Icon(
-                                                  Icons.edit_outlined,
-                                                  size: 18),
-                                              style: IconButton.styleFrom(
-                                                padding:
-                                                    const EdgeInsets.all(8),
-                                                minimumSize: Size.zero,
-                                                tapTargetSize:
-                                                    MaterialTapTargetSize
-                                                        .shrinkWrap,
-                                              ),
                                             ),
-                                            IconButton(
+                                            MyntIconButton(
+                                              icon: Icons.delete_outline_outlined,
+                                              size: MyntButtonSize.medium,
+                                              color: shadcn.Theme.of(context)
+                                                  .colorScheme
+                                                  .destructive,
                                               onPressed: () {
                                                 Navigator.of(context).pop();
                                                 _showDeleteWatchlistDialog(
@@ -1423,21 +1407,6 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                                                     ref,
                                                     watchlistName);
                                               },
-                                              icon: Icon(
-                                                  Icons.delete_outline_outlined,
-                                                  size: 18,
-                                                  color:
-                                                      shadcn.Theme.of(context)
-                                                          .colorScheme
-                                                          .destructive),
-                                              style: IconButton.styleFrom(
-                                                padding:
-                                                    const EdgeInsets.all(8),
-                                                minimumSize: Size.zero,
-                                                tapTargetSize:
-                                                    MaterialTapTargetSize
-                                                        .shrinkWrap,
-                                              ),
                                             ),
                                           ],
                                         ],
@@ -1564,35 +1533,19 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                     children: [
                       Text(
                         'Edit Watchlist',
-                        style: TextStyle(
-                          fontSize: 16,
+                        style: webTextStyle(
+                          context,
+                          fontSize: WebFonts.headSize,
                           fontWeight: FontWeight.w600,
-                          color:
-                              shadcn.Theme.of(context).colorScheme.foreground,
-                          fontFamily: WebFonts.fontFamily,
+                            color: resolveThemeColor(
+                              context,
+                              darkColor: WebColors.textPrimaryDark,
+                              lightColor: WebColors.textPrimary,
+                            ),
                         ),
                       ),
-                      InkWell(
-                        onTap: () => Navigator.of(context).pop(),
-                        borderRadius: BorderRadius.circular(4),
-                        hoverColor: shadcn.Theme.of(context)
-                            .colorScheme
-                            .accent
-                            .withOpacity(0.1),
-                        splashColor: shadcn.Theme.of(context)
-                            .colorScheme
-                            .accent
-                            .withOpacity(0.2),
-                        child: Padding(
-                          padding: const EdgeInsets.all(6.0),
-                          child: Icon(
-                            Icons.close,
-                            size: 18,
-                            color: shadcn.Theme.of(context)
-                                .colorScheme
-                                .mutedForeground,
-                          ),
-                        ),
+                      MyntCloseButton(
+                        onPressed: () => Navigator.of(context).pop(),
                       ),
                     ],
                   ),
@@ -1605,13 +1558,9 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        shadcn.TextField(
+                        MyntFormTextField(
                           controller: controller,
-                          placeholder: const Text(
-                            'Enter watchlist name',
-                            style: TextStyle(fontFamily: WebFonts.fontFamily),
-                          ),
-                          autofocus: true,
+                          placeholder: 'Enter watchlist name',
                           inputFormatters: [
                             FilteringTextInputFormatter.allow(
                               RegExp(r'[a-zA-Z0-9 ]'),
@@ -1619,36 +1568,18 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                           ],
                         ),
                         const SizedBox(height: 24),
-                        SizedBox(
-                          width: double.infinity,
-                          height: 40,
-                          child: ElevatedButton(
-                            onPressed: () async {
-                              final newName = controller.text.trim();
-                              if (newName.isNotEmpty &&
-                                  newName != watchlistName) {
-                                Navigator.of(context).pop();
-                                await _handleWatchlistRename(
-                                    watchlistName, newName, ref, context);
-                              }
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  ShadcnColors.primaryBlue(context),
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                            ),
-                            child: Text(
-                              'Save',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontFamily: WebFonts.fontFamily,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
+                        MyntPrimaryButton(
+                          label: 'Save',
+                          isFullWidth: true,
+                          onPressed: () async {
+                            final newName = controller.text.trim();
+                            if (newName.isNotEmpty &&
+                                newName != watchlistName) {
+                              Navigator.of(context).pop();
+                              await _handleWatchlistRename(
+                                  watchlistName, newName, ref, context);
+                            }
+                          },
                         ),
                       ],
                     ),
@@ -1713,35 +1644,19 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                     children: [
                       Text(
                         'Delete Watchlist',
-                        style: TextStyle(
-                          fontSize: 16,
+                        style: webTextStyle(
+                          context,
+                          fontSize: WebFonts.headSize,
                           fontWeight: FontWeight.w600,
-                          color:
-                              shadcn.Theme.of(context).colorScheme.foreground,
-                          fontFamily: WebFonts.fontFamily,
+                            color: resolveThemeColor(
+                              context,
+                              darkColor: WebColors.textPrimaryDark,
+                              lightColor: WebColors.textPrimary,
+                            ),
                         ),
                       ),
-                      InkWell(
-                        onTap: () => Navigator.of(context).pop(),
-                        borderRadius: BorderRadius.circular(4),
-                        hoverColor: shadcn.Theme.of(context)
-                            .colorScheme
-                            .accent
-                            .withOpacity(0.1),
-                        splashColor: shadcn.Theme.of(context)
-                            .colorScheme
-                            .accent
-                            .withOpacity(0.2),
-                        child: Padding(
-                          padding: const EdgeInsets.all(6.0),
-                          child: Icon(
-                            Icons.close,
-                            size: 18,
-                            color: shadcn.Theme.of(context)
-                                .colorScheme
-                                .mutedForeground,
-                          ),
-                        ),
+                      MyntCloseButton(
+                        onPressed: () => Navigator.of(context).pop(),
                       ),
                     ],
                   ),
@@ -1757,12 +1672,15 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                         Text(
                           'Are you sure you want to delete "${_formatWatchlistName(watchlistName)}"?',
                           textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 14,
-                            color:
-                                shadcn.Theme.of(context).colorScheme.foreground,
+                          style: webTextStyle(
+                            context,
+                            fontSize: WebFonts.subSize,
+                            color: resolveThemeColor(
+                              context,
+                              darkColor: WebColors.textPrimaryDark,
+                              lightColor: WebColors.textPrimary,
+                            ),
                             fontWeight: FontWeight.w500,
-                            fontFamily: WebFonts.fontFamily,
                           ),
                         ),
                         const SizedBox(height: 24),
@@ -1799,11 +1717,11 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                                 child: Center(
                                   child: Text(
                                     'Delete',
-                                    style: TextStyle(
+                                    style: webTextStyle(
+                                      context,
                                       color: Colors.white,
-                                      fontFamily: WebFonts.fontFamily,
                                       fontWeight: FontWeight.w600,
-                                      fontSize: 14,
+                                      fontSize: WebFonts.subSize,
                                     ),
                                   ),
                                 ),
@@ -1875,35 +1793,17 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                     children: [
                       Text(
                         'New Watchlist',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color:
-                              shadcn.Theme.of(context).colorScheme.foreground,
-                          fontFamily: WebFonts.fontFamily,
-                        ),
-                      ),
-                      InkWell(
-                        onTap: () => Navigator.of(context).pop(),
-                        borderRadius: BorderRadius.circular(4),
-                        hoverColor: shadcn.Theme.of(context)
-                            .colorScheme
-                            .accent
-                            .withOpacity(0.1),
-                        splashColor: shadcn.Theme.of(context)
-                            .colorScheme
-                            .accent
-                            .withOpacity(0.2),
-                        child: Padding(
-                          padding: const EdgeInsets.all(6.0),
-                          child: Icon(
-                            Icons.close,
-                            size: 18,
-                            color: shadcn.Theme.of(context)
-                                .colorScheme
-                                .mutedForeground,
+                        style: WebTextStyles.dialogTitle(
+                          context,
+                          color: resolveThemeColor(
+                            context,
+                            darkColor: WebColors.textPrimaryDark,
+                            lightColor: WebColors.textPrimary,
                           ),
                         ),
+                      ),
+                      MyntCloseButton(
+                        onPressed: () => Navigator.of(context).pop(),
                       ),
                     ],
                   ),
@@ -1916,13 +1816,9 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        shadcn.TextField(
+                        MyntFormTextField(
                           controller: controller,
-                          placeholder: const Text(
-                            'Enter watchlist name',
-                            style: TextStyle(fontFamily: WebFonts.fontFamily),
-                          ),
-                          autofocus: true,
+                          placeholder: 'Enter watchlist name',
                           inputFormatters: [
                             FilteringTextInputFormatter.allow(
                               RegExp(r'[a-zA-Z0-9 ]'),
@@ -1930,34 +1826,17 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                           ],
                         ),
                         const SizedBox(height: 24),
-                        SizedBox(
-                          width: double.infinity,
-                          height: 40,
-                          child: ElevatedButton(
-                            onPressed: () async {
-                              final name = controller.text.trim();
-                              if (name.isNotEmpty) {
-                                Navigator.of(context).pop();
-                                await _handleWatchlistCreate(name, ref);
-                              }
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  ShadcnColors.primaryBlue(context),
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                            ),
-                            child: Text(
-                              'Create',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontFamily: WebFonts.fontFamily,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
+                        MyntPrimaryButton(
+                          size: MyntButtonSize.large,
+                          label: 'Create',
+                          isFullWidth: true,
+                          onPressed: () async {
+                            final name = controller.text.trim();
+                            if (name.isNotEmpty) {
+                              Navigator.of(context).pop();
+                              await _handleWatchlistCreate(name, ref);
+                            }
+                          },
                         ),
                       ],
                     ),
@@ -2160,7 +2039,11 @@ class _WatchlistIndexSlotWebState
                     widget.indexItem.idxname ?? "",
                     style: WebTextStyles.symbol(
                       context,
-                      color: colorScheme.foreground,
+                            color: resolveThemeColor(
+                              context,
+                              darkColor: WebColors.textPrimaryDark,
+                              lightColor: WebColors.textPrimary,
+                            ),
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -2361,7 +2244,11 @@ class _WatchlistLivePriceWidgetState
       return colorScheme.destructive;
     } else if ((change == "null" || perChange == "null") ||
         (change == "0.00" || perChange == "0.00")) {
-      return colorScheme.mutedForeground;
+      return resolveThemeColor(
+        context,
+        darkColor: WebColors.textSecondaryDark,
+        lightColor: WebColors.textSecondary,
+      );
     } else {
       return colorScheme.chart2;
     }
@@ -2389,7 +2276,11 @@ class _WatchlistLivePriceWidgetState
           Text(
             "$_change ($_perChange%)",
             style: _getTextStyle(
-              colorScheme.mutedForeground,
+              resolveThemeColor(
+              context,
+              darkColor: WebColors.textSecondaryDark,
+              lightColor: WebColors.textSecondary,
+            ),
               13,
               1,
             ),

@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:google_fonts/google_fonts.dart';
 
 /// ===============================================================
 /// WEB FONTS – single source of truth
 /// ===============================================================
 class WebFonts {
-  static const String fontFamily = 'Geist';
+  static const String fontFamily = 'Inter'; // Google Fonts Inter
 
   // HEADERS
   static const double heroSize = 20;
@@ -61,7 +62,6 @@ TextStyle webTextStyle(
   Color? lightColor,
   double? fontSize,
   FontWeight? fontWeight,
-  double letterSpacing = 0, // 👈 stable default
   double? height,
   TextDecoration? decoration,
 }) {
@@ -76,12 +76,11 @@ TextStyle webTextStyle(
             )
           : scheme.foreground);
 
-  return TextStyle(
-    fontFamily: WebFonts.fontFamily,
+  // Use Google Fonts Inter as base and merge with custom properties
+  return GoogleFonts.inter(
     fontSize: fontSize,
     fontWeight: fontWeight ?? WebFonts.regular,
     color: resolvedColor,
-    letterSpacing: letterSpacing,
     height: height,
     decoration: decoration,
   );
@@ -94,214 +93,523 @@ class WebTextStyles {
   // ---------------- HEADERS ----------------
 
   static TextStyle hero(BuildContext context,
-          {Color? color, Color? darkColor, Color? lightColor}) =>
-      webTextStyle(
-        context,
-        fontSize: WebFonts.heroSize,
-        fontWeight: WebFonts.bold,
-        color: color,
-        darkColor: darkColor,
-        lightColor: lightColor,
-      );
+          {Color? color, Color? darkColor, Color? lightColor}) {
+    final scheme = shadcn.Theme.of(context).colorScheme;
+    final Color resolvedColor = color ??
+        ((darkColor != null && lightColor != null)
+            ? resolveThemeColor(
+                context,
+                darkColor: darkColor,
+                lightColor: lightColor,
+              )
+            : scheme.foreground);
+    
+    return GoogleFonts.inter(
+      fontSize: WebFonts.heroSize,
+      fontWeight: WebFonts.bold,
+      color: resolvedColor,
+      
+    );
+  }
 
   static TextStyle head(BuildContext context,
-          {Color? color, Color? darkColor, Color? lightColor}) =>
-      webTextStyle(
-        context,
-        fontSize: WebFonts.headSize,
-        fontWeight: WebFonts.semiBold,
-        color: color,
-        darkColor: darkColor,
-        lightColor: lightColor,
-      );
+          {Color? color, Color? darkColor, Color? lightColor}) {
+    final scheme = shadcn.Theme.of(context).colorScheme;
+    final Color resolvedColor = color ??
+        ((darkColor != null && lightColor != null)
+            ? resolveThemeColor(
+                context,
+                darkColor: darkColor,
+                lightColor: lightColor,
+              )
+            : scheme.foreground);
+    
+    return GoogleFonts.inter(
+      fontSize: WebFonts.headSize,
+      fontWeight: WebFonts.semiBold,
+      color: resolvedColor,
+      
+    );
+  }
 
   static TextStyle title(BuildContext context,
-          {Color? color, Color? darkColor, Color? lightColor}) =>
-      webTextStyle(
-        context,
-        fontSize: WebFonts.titleSize,
-        fontWeight: WebFonts.semiBold,
-        color: color,
-        darkColor: darkColor,
-        lightColor: lightColor,
-      );
+          {Color? color, Color? darkColor, Color? lightColor}) {
+    final scheme = shadcn.Theme.of(context).colorScheme;
+    final Color resolvedColor = color ??
+        ((darkColor != null && lightColor != null)
+            ? resolveThemeColor(
+                context,
+                darkColor: darkColor,
+                lightColor: lightColor,
+              )
+            : scheme.foreground);
+    
+    return GoogleFonts.inter(
+      fontSize: WebFonts.titleSize,
+      fontWeight: WebFonts.semiBold,
+      color: resolvedColor,
+      
+    );
+  }
 
   static TextStyle titleMedium(BuildContext context,
-          {Color? color, Color? darkColor, Color? lightColor}) =>
-      webTextStyle(
-        context,
-        fontSize: WebFonts.titleMediumSize,
-        fontWeight: WebFonts.medium,
-        color: color,
-        darkColor: darkColor,
-        lightColor: lightColor,
-      );
+          {Color? color, Color? darkColor, Color? lightColor}) {
+    final scheme = shadcn.Theme.of(context).colorScheme;
+    final Color resolvedColor = color ??
+        ((darkColor != null && lightColor != null)
+            ? resolveThemeColor(
+                context,
+                darkColor: darkColor,
+                lightColor: lightColor,
+              )
+            : scheme.foreground);
+    
+    return GoogleFonts.inter(
+      fontSize: WebFonts.titleMediumSize,
+      fontWeight: WebFonts.medium,
+      color: resolvedColor,
+      
+    );
+  }
 
   // ---------------- BODY ----------------
 
   static TextStyle sub(BuildContext context,
-          {Color? color, Color? darkColor, Color? lightColor}) =>
-      webTextStyle(
-        context,
-        fontSize: WebFonts.subSize,
-        color: color,
-        darkColor: darkColor,
-        lightColor: lightColor,
-      );
+          {Color? color, Color? darkColor, Color? lightColor}) {
+    final scheme = shadcn.Theme.of(context).colorScheme;
+    final Color resolvedColor = color ??
+        ((darkColor != null && lightColor != null)
+            ? resolveThemeColor(
+                context,
+                darkColor: darkColor,
+                lightColor: lightColor,
+              )
+            : scheme.foreground);
+    
+    return GoogleFonts.inter(
+      fontSize: WebFonts.subSize,
+      fontWeight: WebFonts.regular,
+      color: resolvedColor,
+      
+    );
+  }
 
   static TextStyle bodySmall(BuildContext context,
-          {Color? color, Color? darkColor, Color? lightColor}) =>
-      webTextStyle(
-        context,
-        fontSize: WebFonts.bodySmallSize,
-        color: color,
-        darkColor: darkColor,
-        lightColor: lightColor,
-      );
+          {Color? color, Color? darkColor, Color? lightColor}) {
+    final scheme = shadcn.Theme.of(context).colorScheme;
+    final Color resolvedColor = color ??
+        ((darkColor != null && lightColor != null)
+            ? resolveThemeColor(
+                context,
+                darkColor: darkColor,
+                lightColor: lightColor,
+              )
+            : scheme.foreground);
+    
+    return GoogleFonts.inter(
+      fontSize: WebFonts.bodySmallSize,
+      fontWeight: WebFonts.regular,
+      color: resolvedColor,
+      
+    );
+  }
 
   static TextStyle para(BuildContext context,
-          {Color? color, Color? darkColor, Color? lightColor}) =>
-      webTextStyle(
-        context,
-        fontSize: WebFonts.paraSize,
-        color: color,
-        darkColor: darkColor,
-        lightColor: lightColor,
-      );
+          {Color? color, Color? darkColor, Color? lightColor}) {
+    final scheme = shadcn.Theme.of(context).colorScheme;
+    final Color resolvedColor = color ??
+        ((darkColor != null && lightColor != null)
+            ? resolveThemeColor(
+                context,
+                darkColor: darkColor,
+                lightColor: lightColor,
+              )
+            : scheme.foreground);
+    
+    return GoogleFonts.inter(
+      fontSize: WebFonts.paraSize,
+      fontWeight: WebFonts.regular,
+      color: resolvedColor,
+      
+    );
+  }
 
   static TextStyle caption(BuildContext context,
-          {Color? color, Color? darkColor, Color? lightColor}) =>
-      webTextStyle(
-        context,
-        fontSize: WebFonts.captionSize,
-        color: color,
-        darkColor: darkColor,
-        lightColor: lightColor,
-      );
+          {Color? color, Color? darkColor, Color? lightColor}) {
+    final scheme = shadcn.Theme.of(context).colorScheme;
+    final Color resolvedColor = color ??
+        ((darkColor != null && lightColor != null)
+            ? resolveThemeColor(
+                context,
+                darkColor: darkColor,
+                lightColor: lightColor,
+              )
+            : scheme.foreground);
+    
+    return GoogleFonts.inter(
+      fontSize: WebFonts.captionSize,
+      fontWeight: WebFonts.regular,
+      color: resolvedColor,
+      
+    );
+  }
 
+
+
+
+
+
+
+
+
+
+
+
+
+  // ---------------- BUTTONS ----------------
+  static TextStyle buttonSm(BuildContext context,
+          {Color? color, Color? darkColor, Color? lightColor}) {
+    final scheme = shadcn.Theme.of(context).colorScheme;
+    final Color resolvedColor = color ??
+        ((darkColor != null && lightColor != null)
+            ? resolveThemeColor(
+                context,
+                darkColor: darkColor,
+                lightColor: lightColor,
+              )
+            : scheme.foreground);
+
+    return GoogleFonts.inter(
+      fontSize: WebFonts.captionSize,
+      fontWeight: WebFonts.bold,
+      color: resolvedColor,
+      
+    );
+  }
+  static TextStyle buttonMd(BuildContext context,
+          {Color? color, Color? darkColor, Color? lightColor}) {
+    final scheme = shadcn.Theme.of(context).colorScheme;
+    final Color resolvedColor = color ??
+        ((darkColor != null && lightColor != null)
+            ? resolveThemeColor(
+                context,
+                darkColor: darkColor,
+                lightColor: lightColor,
+              )
+            : scheme.foreground);
+
+    return GoogleFonts.inter(
+      fontSize: WebFonts.paraSize,
+      fontWeight: WebFonts.bold,
+      color: resolvedColor,
+      
+    );
+  }
+  static TextStyle buttonXl(BuildContext context,
+          {Color? color, Color? darkColor, Color? lightColor}) {
+    final scheme = shadcn.Theme.of(context).colorScheme;
+    final Color resolvedColor = color ??
+        ((darkColor != null && lightColor != null)
+            ? resolveThemeColor(
+                context,
+                darkColor: darkColor,
+                lightColor: lightColor,
+              )
+            : scheme.foreground);
+
+    return GoogleFonts.inter(
+      fontSize: WebFonts.subSize,
+      fontWeight: WebFonts.bold,
+      color: resolvedColor,
+      
+    );
+  }
   // ---------------- TABLE ----------------
 
   static TextStyle tableHeader(BuildContext context,
-          {Color? color, Color? darkColor, Color? lightColor}) =>
-      webTextStyle(
-        context,
-        fontSize: WebFonts.paraSize,
-        fontWeight: WebFonts.bold,
-        color: color,
-        darkColor: darkColor,
-        lightColor: lightColor,
-      );
+          {Color? color, Color? darkColor, Color? lightColor}) {
+    final scheme = shadcn.Theme.of(context).colorScheme;
+    final Color resolvedColor = color ??
+        ((darkColor != null && lightColor != null)
+            ? resolveThemeColor(
+                context,
+                darkColor: darkColor,
+                lightColor: lightColor,
+              )
+            : scheme.foreground);
+    
+    return GoogleFonts.inter(
+      fontSize: WebFonts.paraSize,
+      fontWeight: WebFonts.bold,
+      color: resolvedColor,
+      
+    );
+  }
 
   static TextStyle tableData(BuildContext context,
-          {Color? color, Color? darkColor, Color? lightColor}) =>
-      webTextStyle(
-        context,
-        fontSize: WebFonts.subSize,
-        fontWeight: WebFonts.medium,
-        color: color,
-        darkColor: darkColor,
-        lightColor: lightColor,
-      );
+          {Color? color, Color? darkColor, Color? lightColor}) {
+    final scheme = shadcn.Theme.of(context).colorScheme;
+    final Color resolvedColor = color ??
+        ((darkColor != null && lightColor != null)
+            ? resolveThemeColor(
+                context,
+                darkColor: darkColor,
+                lightColor: lightColor,
+              )
+            : scheme.foreground);
+    
+    return GoogleFonts.inter(
+      fontSize: WebFonts.subSize,
+      fontWeight: WebFonts.medium,
+      color: resolvedColor,
+      
+    );
+  }
 
   // ---------------- NAV / TABS ----------------
 
   static TextStyle tab(BuildContext context,
-          {Color? color, Color? darkColor, Color? lightColor}) =>
-      webTextStyle(
-        context,
-        fontSize: WebFonts.bodySmallSize,
-        fontWeight: WebFonts.semiBold,
-        color: color,
-        darkColor: darkColor,
-        lightColor: lightColor,
-      );
+          {Color? color, Color? darkColor, Color? lightColor}) {
+    final scheme = shadcn.Theme.of(context).colorScheme;
+    final Color resolvedColor = color ??
+        ((darkColor != null && lightColor != null)
+            ? resolveThemeColor(
+                context,
+                darkColor: darkColor,
+                lightColor: lightColor,
+              )
+            : scheme.foreground);
+    
+    return GoogleFonts.inter(
+      fontSize: WebFonts.bodySmallSize,
+      fontWeight: WebFonts.semiBold,
+      color: resolvedColor,
+      
+    );
+  }
 
   // ---------------- DIALOGS ----------------
 
   static TextStyle dialogTitle(BuildContext context,
-          {Color? color, Color? darkColor, Color? lightColor}) =>
-      webTextStyle(
-        context,
-        fontSize: WebFonts.titleSize,
-        fontWeight: WebFonts.semiBold,
-        color: color,
-        darkColor: darkColor,
-        lightColor: lightColor,
-      );
+          {Color? color, Color? darkColor, Color? lightColor}) {
+    final scheme = shadcn.Theme.of(context).colorScheme;
+    final Color resolvedColor = color ??
+        ((darkColor != null && lightColor != null)
+            ? resolveThemeColor(
+                context,
+                darkColor: darkColor,
+                lightColor: lightColor,
+              )
+            : scheme.foreground);
+    
+    return GoogleFonts.inter(
+      fontSize: WebFonts.titleSize,
+      fontWeight: WebFonts.semiBold,
+      color: resolvedColor,
+      
+    );
+  }
 
   static TextStyle dialogContent(BuildContext context,
-          {Color? color, Color? darkColor, Color? lightColor}) =>
-      webTextStyle(
-        context,
-        fontSize: WebFonts.subSize,
-        fontWeight: WebFonts.medium,
-        color: color,
-        darkColor: darkColor,
-        lightColor: lightColor,
-      );
+          {Color? color, Color? darkColor, Color? lightColor}) {
+    final scheme = shadcn.Theme.of(context).colorScheme;
+    final Color resolvedColor = color ??
+        ((darkColor != null && lightColor != null)
+            ? resolveThemeColor(
+                context,
+                darkColor: darkColor,
+                lightColor: lightColor,
+              )
+            : scheme.foreground);
+    
+    return GoogleFonts.inter(
+      fontSize: WebFonts.subSize,
+      fontWeight: WebFonts.medium,
+      color: resolvedColor,
+      
+    );
+  }
 
   // ---------------------------------------- Watchlist ````````````````````````````
 
   static TextStyle symbol(BuildContext context,
-          {Color? color, Color? darkColor, Color? lightColor}) =>
-      webTextStyle(
-        context,
-        fontSize: WebFonts.bodySmallSize,
-        fontWeight: WebFonts.medium,
-        color: color,
-        darkColor: darkColor,
-        lightColor: lightColor,
-      );
+          {Color? color, Color? darkColor, Color? lightColor}) {
+    final scheme = shadcn.Theme.of(context).colorScheme;
+    final Color resolvedColor = color ??
+        ((darkColor != null && lightColor != null)
+            ? resolveThemeColor(
+                context,
+                darkColor: darkColor,
+                lightColor: lightColor,
+              )
+            : scheme.foreground);
+    
+    return GoogleFonts.inter(
+      fontSize: WebFonts.subSize,
+      fontWeight: WebFonts.medium,
+      color: resolvedColor,
+      
+    );
+  }
   static TextStyle price(BuildContext context,
-          {Color? color, Color? darkColor, Color? lightColor}) =>
-      webTextStyle(
-        context,
-        fontSize: WebFonts.bodySmallSize,
-        fontWeight: WebFonts.medium,
-        color: color,
-        darkColor: darkColor,
-        lightColor: lightColor,
-      );
+          {Color? color, Color? darkColor, Color? lightColor}) {
+    final scheme = shadcn.Theme.of(context).colorScheme;
+    final Color resolvedColor = color ??
+        ((darkColor != null && lightColor != null)
+            ? resolveThemeColor(
+                context,
+                darkColor: darkColor,
+                lightColor: lightColor,
+              )
+            : scheme.foreground);
+    
+    return GoogleFonts.inter(
+      fontSize: WebFonts.subSize,
+      fontWeight: WebFonts.medium,
+      color: resolvedColor,
+      
+    );
+  }
   static TextStyle priceChng(BuildContext context,
-          {Color? color, Color? darkColor, Color? lightColor}) =>
-      webTextStyle(
-        context,
-        fontSize: WebFonts.bodySmallSize,
-        fontWeight: WebFonts.medium,
-        color: color,
-        darkColor: darkColor,
-        lightColor: lightColor,
-      );
+          {Color? color, Color? darkColor, Color? lightColor}) {
+    final scheme = shadcn.Theme.of(context).colorScheme;
+    final Color resolvedColor = color ??
+        ((darkColor != null && lightColor != null)
+            ? resolveThemeColor(
+                context,
+                darkColor: darkColor,
+                lightColor: lightColor,
+              )
+            : scheme.foreground);
+    
+    return GoogleFonts.inter(
+      fontSize: WebFonts.subSize,
+      fontWeight: WebFonts.medium,
+      color: resolvedColor,
+      
+    );
+  }
   static TextStyle priceChngperc(BuildContext context,
-          {Color? color, Color? darkColor, Color? lightColor}) =>
-      webTextStyle(
-        context,
-        fontSize: WebFonts.bodySmallSize,
-        fontWeight: WebFonts.medium,
-        color: color,
-        darkColor: darkColor,
-        lightColor: lightColor,
-      );
+          {Color? color, Color? darkColor, Color? lightColor}) {
+    final scheme = shadcn.Theme.of(context).colorScheme;
+    final Color resolvedColor = color ??
+        ((darkColor != null && lightColor != null)
+            ? resolveThemeColor(
+                context,
+                darkColor: darkColor,
+                lightColor: lightColor,
+              )
+            : scheme.foreground);
+    
+    return GoogleFonts.inter(
+      fontSize: WebFonts.subSize,
+      fontWeight: WebFonts.medium,
+      color: resolvedColor,
+      
+    );
+  }
 
   static TextStyle priceWatch(BuildContext context,
-          {Color? color, Color? darkColor, Color? lightColor}) =>
-      webTextStyle(
-        context,
-        fontSize: WebFonts.bodySmallSize,
-        fontWeight: WebFonts.medium,
-        color: color,
-        darkColor: darkColor,
-        lightColor: lightColor,
-      );
+          {Color? color, Color? darkColor, Color? lightColor}) {
+    final scheme = shadcn.Theme.of(context).colorScheme;
+    final Color resolvedColor = color ??
+        ((darkColor != null && lightColor != null)
+            ? resolveThemeColor(
+                context,
+                darkColor: darkColor,
+                lightColor: lightColor,
+              )
+            : scheme.foreground);
+    
+    return GoogleFonts.inter(
+      fontSize: WebFonts.subSize,
+      fontWeight: WebFonts.medium,
+      color: resolvedColor,
+      
+    );
+  }
 
   static TextStyle pricePercent(BuildContext context,
-          {Color? color, Color? darkColor, Color? lightColor}) =>
-      webTextStyle(
-        context,
-        fontSize: WebFonts.bodySmallSize,
-        fontWeight: WebFonts.medium,
-        color: color,
-        darkColor: darkColor,
-        lightColor: lightColor,
-      );
+          {Color? color, Color? darkColor, Color? lightColor}) {
+    final scheme = shadcn.Theme.of(context).colorScheme;
+    final Color resolvedColor = color ??
+        ((darkColor != null && lightColor != null)
+            ? resolveThemeColor(
+                context,
+                darkColor: darkColor,
+                lightColor: lightColor,
+              )
+            : scheme.foreground);
+    
+    return GoogleFonts.inter(
+      fontSize: WebFonts.subSize,
+      fontWeight: WebFonts.medium,
+      color: resolvedColor,
+      
+    );
+  }
+
+      // ---------------- search text and placeholder text ----------------
+
+      static TextStyle searchText(BuildContext context,
+          {Color? color, Color? darkColor, Color? lightColor}) {
+    final scheme = shadcn.Theme.of(context).colorScheme;
+    final Color resolvedColor = color ??
+        ((darkColor != null && lightColor != null)
+            ? resolveThemeColor(
+                context,
+                darkColor: darkColor,
+                lightColor: lightColor,
+              )
+            : scheme.foreground);
+    
+    return GoogleFonts.inter(
+      fontSize: WebFonts.subSize,
+      fontWeight: WebFonts.medium,
+      color: resolvedColor,
+      
+    );
+  }
+      static TextStyle placeholderText(BuildContext context,
+          {Color? color, Color? darkColor, Color? lightColor}) {
+    final scheme = shadcn.Theme.of(context).colorScheme;
+    final Color resolvedColor = color ??
+        ((darkColor != null && lightColor != null)
+            ? resolveThemeColor(
+                context,
+                darkColor: darkColor,
+                lightColor: lightColor,
+              )
+            : scheme.foreground);
+    
+    return GoogleFonts.inter(
+      fontSize: WebFonts.subSize,
+      fontWeight: WebFonts.medium,
+      color: resolvedColor,
+      
+    );
+  }
+
+
+      // ---------------- Tab list text  ----------------
+
+      static TextStyle tabListText(BuildContext context,
+          {Color? color, Color? darkColor, Color? lightColor}) {
+    final scheme = shadcn.Theme.of(context).colorScheme;
+    final Color resolvedColor = color ??
+        ((darkColor != null && lightColor != null)
+            ? resolveThemeColor(
+                context,
+                darkColor: darkColor,
+                lightColor: lightColor,
+              )
+            : scheme.foreground);
+    
+    return GoogleFonts.inter(
+      fontSize: WebFonts.bodySmallSize,
+      fontWeight: WebFonts.medium,
+      color: resolvedColor,
+      
+    );
+  }
 }

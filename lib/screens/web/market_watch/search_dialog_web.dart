@@ -13,6 +13,7 @@ import '../../../res/mynt_web_text_styles.dart';
 import '../../../locator/preference.dart';
 import '../../../sharedWidget/no_data_found.dart';
 import '../../../sharedWidget/snack_bar.dart';
+import '../../../sharedWidget/common_search_fields_web.dart';
 import '../../../utils/responsive_navigation.dart';
 
 class SearchDialogWeb extends ConsumerStatefulWidget {
@@ -217,75 +218,29 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
               Row(
                 children: [
                   Expanded(
-                    child: SizedBox(
-                      height: 40,
-                      child: DefaultTextStyle(
-                                style: const TextStyle(fontFamily: 'Geist'),
-                        child: shadcn.TextField(
-                          controller: _textController,
-                          autofocus: true,
-                          textCapitalization: TextCapitalization.characters,
-                          inputFormatters: [
-                            UpperCaseTextFormatter(),
-                            FilteringTextInputFormatter.deny(
-                                RegExp('[π£•₹€℅™∆√¶/.,]'))
-                          ],
-                          placeholder: const Text(
-                            'Search stocks, indices, options',
-                            style: TextStyle(fontFamily: WebFonts.fontFamily),
-                          ),
-                          features: [
-                            // Leading search icon with hover animation - only visible when text is empty
-                            shadcn.InputFeature.leading(
-                              shadcn.StatedWidget.builder(
-                                builder: (context, states) {
-                                  // Use full color icon on hover, muted when not hovered
-                                  if (states.hovered) {
-                                    return SvgPicture.asset(
-                                      assets.searchIcon,
-                                      color: shadcn.Theme.of(context)
-                                          .colorScheme
-                                          .foreground,
-                                      fit: BoxFit.scaleDown,
-                                      width: 16,
-                                    );
-                                  } else {
-                                    return SvgPicture.asset(
-                                      assets.searchIcon,
-                                      color: shadcn.Theme.of(context)
-                                          .colorScheme
-                                          .mutedForeground,
-                                      fit: BoxFit.scaleDown,
-                                      width: 16,
-                                    );
-                                  }
-                                },
-                              ),
-                              visibility:
-                                  shadcn.InputFeatureVisibility.textEmpty,
-                            ),
-                            // Clear button with smart visibility - appears when text exists and field is focused, or when hovered
-                            shadcn.InputFeature.clear(
-                              visibility: (shadcn
-                                          .InputFeatureVisibility.textNotEmpty &
-                                      shadcn.InputFeatureVisibility.focused) |
-                                  shadcn.InputFeatureVisibility.hovered,
-                            ),
-                          ],
-                          onChanged: (value) async {
-                            final searchScrip = ref.read(marketWatchProvider);
-                            setState(() {
-                              _searchValue = value;
-                            });
-                            if (value.isEmpty) {
-                              await searchScrip.searchClear();
-                            } else {
-                              searchScrip.scripSearch(value, context,
-                                  _tabController.index, widget.isBasket);
-                            }
-                          },
-                        ),
-                      ),
+                    child: MyntSearchTextField.withSmartClear(
+                      controller: _textController,
+                      placeholder: 'Search stocks, indices, options',
+                      leadingIcon: assets.searchIcon,
+                      leadingIconHoverEffect: true,
+                      autofocus: true,
+                      inputFormatters: [
+                        UpperCaseTextFormatter(),
+                        FilteringTextInputFormatter.deny(
+                            RegExp('[π£•₹€℅™∆√¶/.,]'))
+                      ],
+                      onChanged: (value) async {
+                        final searchScrip = ref.read(marketWatchProvider);
+                        setState(() {
+                          _searchValue = value;
+                        });
+                        if (value.isEmpty) {
+                          await searchScrip.searchClear();
+                        } else {
+                          searchScrip.scripSearch(value, context,
+                              _tabController.index, widget.isBasket);
+                        }
+                      },
                     ),
                   ),
                   // Close dialog icon (always visible, outside search bar)

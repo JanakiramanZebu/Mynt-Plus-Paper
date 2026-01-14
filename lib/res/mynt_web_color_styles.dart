@@ -1,10 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 /// ===============================================================
 /// WEB COLORS (Brand + Business + Semantic Aliases)
 /// ===============================================================
+/// 
+/// Usage: Use the singleton instance `MyntColors` instead of `WebColors()`
+/// Example: MyntColors.primary instead of WebColors().primary
+/// 
 class WebColors {
+  // Private constructor for singleton pattern
+  const WebColors._();
+  
+  // Singleton instance - use this instead of WebColors()
+  static const WebColors instance = WebColors._();
+
   // ---------------- BRAND ----------------
 
   static const Color primary = Color(0xFF0037B7);
@@ -16,11 +25,11 @@ class WebColors {
 
   //-------------------------Text---------------------
 
-  final textPrimary = const Color(0xFF121212);
-  final textPrimaryDark = const Color(0xFFFFFFFF);
+  static const Color textPrimary = Color(0xFF121212);
+  static const Color textPrimaryDark = Color(0xFFFFFFFF);
 
-  final textSecondary = const Color(0xFF4A4A4A);
-  final textSecondaryDark = const Color(0xFF8A8A8A);
+  static const Color textSecondary = Color(0xFF4A4A4A);
+  static const Color textSecondaryDark = Color(0xFF8A8A8A);
 
   // ---------------- BUSINESS / STATUS ----------------
 
@@ -60,3 +69,7 @@ class WebColors {
   static const Color icon = Color(0xFF777777);
   static const Color iconDark = Color(0xFF8A8A8A);
 }
+
+/// Convenient alias for WebColors - use this throughout the app
+/// Example: MyntColors.primary, MyntColors.textPrimaryDark
+typedef MyntColors = WebColors;

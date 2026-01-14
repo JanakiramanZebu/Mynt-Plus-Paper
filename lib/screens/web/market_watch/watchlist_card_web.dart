@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter/foundation.dart';
-import 'package:mynt_plus/res/web_colors_2.dart';
+import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/screens/web/market_watch/future_screen_web.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
@@ -15,10 +15,10 @@ import '../../../models/order_book_model/order_book_model.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/websocket_provider.dart';
-import '../../../res/res.dart';
-import '../../../res/web_colors.dart' hide WebColors;
 import '../../../res/mynt_web_text_styles.dart';
+import '../../../res/mynt_web_color_styles.dart';
 import '../../../sharedWidget/snack_bar.dart';
+import '../../../sharedWidget/common_buttons_web.dart';
 import '../../../utils/responsive_navigation.dart';
 import '../../../utils/responsive_snackbar.dart';
 // import '../../Mobile/market_watch/edit_scrip.dart';
@@ -147,74 +147,79 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // First row: Symbol name | LTP
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        // Left: Symbol name and option
-                        Expanded(
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Text(
-                                widget.watchListData["symbol"]
-                                    .toString()
-                                    .replaceAll("-EQ", "")
-                                    .toUpperCase(),
-                                style: TextStyle(
-                                  color: shadcn.Theme.of(context)
-                                      .colorScheme
-                                      .foreground,
-                                  fontFamily: WebFonts.fontFamily,
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 13,
-                                ),
-                              ),
-                              if (widget.watchListData["option"]
-                                  .toString()
-                                  .isNotEmpty)
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 4),
-                                  child: Text(
-                                    "${widget.watchListData["option"]}",
-                                    style: TextStyle(
-                                      color: shadcn.Theme.of(context)
-                                          .colorScheme
-                                          .foreground,
-                                      fontFamily: WebFonts.fontFamily,
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 13,
+                    SizedBox(
+                      height: 24, // Fixed height matching row 2 (accommodates 24px buttons)
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          // Left: Symbol name and option
+                          Expanded(
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text(
+                                  widget.watchListData["symbol"]
+                                      .toString()
+                                      .replaceAll("-EQ", "")
+                                      .toUpperCase(),
+                                  style: WebTextStyles.symbol(
+                                    context,
+                                    color: resolveThemeColor(
+                                      context,
+                                      darkColor: WebColors.textPrimaryDark,
+                                      lightColor: WebColors.textPrimary,
                                     ),
                                   ),
                                 ),
-                            ],
+                                if (widget.watchListData["option"]
+                                    .toString()
+                                    .isNotEmpty)
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 4),
+                                    child: Text(
+                                      "${widget.watchListData["option"]}",
+                                      style: WebTextStyles.symbol(
+                                        context,
+                                        color: resolveThemeColor(
+                                      context,
+                                      darkColor: WebColors.textPrimaryDark,
+                                      lightColor: WebColors.textPrimary,
+                                    ),
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
                           ),
-                        ),
-                        // Right: LTP only
-                        RepaintBoundary(
-                          child: _LTPWidgetWeb(
-                              token: widget.watchListData['token'],
-                              initialData: widget.watchListData),
-                        ),
-                      ],
+                          // Right: LTP only
+                          RepaintBoundary(
+                            child: _LTPWidgetWeb(
+                                token: widget.watchListData['token'],
+                                initialData: widget.watchListData),
+                          ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 8),
+                    // const SizedBox(height: 8),
                     // Second row: Exchange | Action buttons | Price Change
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
+                    SizedBox(
+                      height: 24, // Fixed height to accommodate 24px buttons
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
                         // Left: Exchange info
                         Row(
-                          mainAxisSize: MainAxisSize.min,
+                          // mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
                               '${widget.watchListData["exch"]} ',
-                              style: TextStyle(
-                                color: shadcn.Theme.of(context)
-                                    .colorScheme
-                                    .mutedForeground,
-                                fontFamily: WebFonts.fontFamily,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
+                              style: WebTextStyles.symbol(
+                                context,
+                                color: resolveThemeColor(
+                                  context,
+                                  darkColor: WebColors.textSecondaryDark,
+                                  lightColor: WebColors.textSecondary,
+                                ),
                               ),
                             ),
                             if (widget.watchListData['expDate']
@@ -222,13 +227,13 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                                 .isNotEmpty)
                               Text(
                                 "${widget.watchListData['expDate']}",
-                                style: TextStyle(
-                                  color: shadcn.Theme.of(context)
-                                      .colorScheme
-                                      .foreground,
-                                  fontFamily: WebFonts.fontFamily,
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 13,
+                                style: WebTextStyles.symbol(
+                                  context,
+                                  color: resolveThemeColor(
+                context,
+                darkColor: WebColors.textPrimaryDark,
+                lightColor: WebColors.textPrimary,
+              ),
                                 ),
                               ),
                             if (widget.watchListData['holdingQty'] != null &&
@@ -246,13 +251,13 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                               const SizedBox(width: 4),
                               Text(
                                 "${widget.watchListData['holdingQty']}",
-                                style: TextStyle(
-                                  color: shadcn.Theme.of(context)
-                                      .colorScheme
-                                      .mutedForeground,
-                                  fontFamily: WebFonts.fontFamily,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w500,
+                                style: WebTextStyles.symbol(
+                                  context,
+                                  color: resolveThemeColor(
+                                  context,
+                                  darkColor: WebColors.textSecondaryDark,
+                                  lightColor: WebColors.textSecondary,
+                                ),
                                 ),
                               ),
                             ]
@@ -483,6 +488,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                         ),
                       ],
                     ),
+                    ),
                   ],
                 ),
               ),
@@ -495,7 +501,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
           //     curve: Curves.easeInOut,
           //     child: Container(
           //       width: double.infinity,
-          //       // color: theme.isDarkMode ? WebDarkColors.surfaceVariant : WebColors.surfaceVariant,
+          //       // color: theme.isDarkMode ? WebColors.surfaceVariant : WebColors.surfaceVariant,
           //       padding: const EdgeInsets.fromLTRB(16, 16, 28,
           //           16), // Extra right padding to prevent scrollbar overlap
           //       child: _buildExpandedContent(depthData, theme),
@@ -678,7 +684,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
         //   "Market Depth",
         //   style: WebTextStyles.title(
         //     isDarkTheme: theme.isDarkMode,
-        //     color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+        //     color: theme.isDarkMode ? WebColors.textPrimary : WebColors.textPrimary,
         //     fontWeight: WebFonts.medium,
         //   ),
         // ),
@@ -698,7 +704,11 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                           "Quantity",
                           style: WebTextStyles.para(
                             context,
-                            color : shadcn.Theme.of(context).colorScheme.mutedForeground
+                            color: resolveThemeColor(
+                              context,
+                              darkColor: WebColors.textSecondaryDark,
+                              lightColor: WebColors.textSecondary,
+                            )
                           ),
                         ),
                         Text(
@@ -745,7 +755,11 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                           "Quantity",
                           style: WebTextStyles.para(
                             context,
-                            color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+                            color: resolveThemeColor(
+          context,
+          darkColor: WebColors.textSecondaryDark,
+          lightColor: WebColors.textSecondary,
+        ),
                           ),
                         )
                       ]),
@@ -796,7 +810,11 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                   tbq,
                   style: WebTextStyles.sub(
                     context,
-                    color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+                    color: resolveThemeColor(
+          context,
+          darkColor: WebColors.textSecondaryDark,
+          lightColor: WebColors.textSecondary,
+        ),
                   ),
                 ),
                 const SizedBox(width: 4),
@@ -804,7 +822,11 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                   "(${scripInfo.totBuyQtyPer.toStringAsFixed(2)}%)",
                   style: WebTextStyles.para(
                     context,
-                    color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+                    color: resolveThemeColor(
+          context,
+          darkColor: WebColors.textSecondaryDark,
+          lightColor: WebColors.textSecondary,
+        ),
                   ),
                 ),
               ],
@@ -815,7 +837,11 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                   "(${scripInfo.totSellQtyPer.toStringAsFixed(2)}%)",
                   style: WebTextStyles.para(
                     context,
-                    color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+                    color: resolveThemeColor(
+          context,
+          darkColor: WebColors.textSecondaryDark,
+          lightColor: WebColors.textSecondary,
+        ),
                   ),
                 ),
                 const SizedBox(width: 4),
@@ -823,7 +849,11 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                   tsq,
                   style: WebTextStyles.sub(
                     context,
-                    color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+                    color: resolveThemeColor(
+          context,
+          darkColor: WebColors.textSecondaryDark,
+          lightColor: WebColors.textSecondary,
+        ),
                   ),
                 ),
               ],
@@ -871,10 +901,18 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
               context,
               darkColor: isAsk
                   ? WebColors.lossDark
-                  : shadcn.Theme.of(context).colorScheme.mutedForeground,
+                  : resolveThemeColor(
+                      context,
+                      darkColor: WebColors.textSecondaryDark,
+                      lightColor: WebColors.textSecondary,
+                    ),
               lightColor: isAsk
                   ? WebColors.loss
-                  : shadcn.Theme.of(context).colorScheme.mutedForeground,
+                  : resolveThemeColor(
+                      context,
+                      darkColor: WebColors.textSecondaryDark,
+                      lightColor: WebColors.textSecondary,
+                    ),
             ),
           ),
           Text(
@@ -882,10 +920,18 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
             style: WebTextStyles.para(
               context,
               darkColor: isAsk
-                  ? shadcn.Theme.of(context).colorScheme.mutedForeground
+                  ? resolveThemeColor(
+                      context,
+                      darkColor: WebColors.textSecondaryDark,
+                      lightColor: WebColors.textSecondary,
+                    )
                   : WebColors.secondary,
               lightColor: isAsk
-                  ? shadcn.Theme.of(context).colorScheme.mutedForeground
+                  ? resolveThemeColor(
+                      context,
+                      darkColor: WebColors.textSecondaryDark,
+                      lightColor: WebColors.textSecondary,
+                    )
                   : WebColors.secondary,
             ),
           ),
@@ -914,7 +960,11 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                           "Quantity",
                           style: WebTextStyles.para(
                             context,
-                            color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+                            color: resolveThemeColor(
+          context,
+          darkColor: WebColors.textSecondaryDark,
+          lightColor: WebColors.textSecondary,
+        ),
                           ),
                         ),
                         Text(
@@ -964,7 +1014,11 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                           "Quantity",
                           style: WebTextStyles.para(
                             context,
-                            color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+                            color: resolveThemeColor(
+          context,
+          darkColor: WebColors.textSecondaryDark,
+          lightColor: WebColors.textSecondary,
+        ),
                           ),
                         )
                       ]),
@@ -996,7 +1050,11 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                 "${depthData.tbq != "null" ? depthData.tbq ?? 0 : '0'}",
                 style: WebTextStyles.para(
                   context,
-                            color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+                            color: resolveThemeColor(
+          context,
+          darkColor: WebColors.textSecondaryDark,
+          lightColor: WebColors.textSecondary,
+        ),
                 ),
               ),
               const SizedBox(
@@ -1006,7 +1064,11 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                 "(${scripInfo.totBuyQtyPer.toStringAsFixed(2)}%)",
                 style: WebTextStyles.para(
                   context,
-                            color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+                            color: resolveThemeColor(
+          context,
+          darkColor: WebColors.textSecondaryDark,
+          lightColor: WebColors.textSecondary,
+        ),
                 ),
               ),
             ],
@@ -1017,7 +1079,11 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                 "(${scripInfo.totSellQtyPer.toStringAsFixed(2)}%)",
                 style: WebTextStyles.para(
                   context,
-                            color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+                            color: resolveThemeColor(
+          context,
+          darkColor: WebColors.textSecondaryDark,
+          lightColor: WebColors.textSecondary,
+        ),
                 ),
               ),
               const SizedBox(
@@ -1027,7 +1093,11 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                 "${depthData.tsq != "null" ? depthData.tsq ?? 0 : '0'}",
                 style: WebTextStyles.para(
                   context,
-                            color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+                            color: resolveThemeColor(
+          context,
+          darkColor: WebColors.textSecondaryDark,
+          lightColor: WebColors.textSecondary,
+        ),
                 ),
               ),
             ],
@@ -1071,7 +1141,11 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                                       "0.00" &&
                                   scripInfo.totSellQtyPer.toStringAsFixed(2) ==
                                       "0.00")
-                              ? shadcn.Theme.of(context).colorScheme.mutedForeground
+                              ? resolveThemeColor(
+                      context,
+                      darkColor: WebColors.textSecondaryDark,
+                      lightColor: WebColors.textSecondary,
+                    )
                               : resolveThemeColor(
                                   context,
                                   darkColor: WebColors.errorDark,
@@ -1099,7 +1173,11 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
           " ${qty != "null" ? qty : '0'} ",
           style: WebTextStyles.para(
             context,
-                            color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+                            color: resolveThemeColor(
+          context,
+          darkColor: WebColors.textSecondaryDark,
+          lightColor: WebColors.textSecondary,
+        ),
           ),
         ),
         Text(
@@ -1129,7 +1207,11 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
           " ${qty != "null" ? qty : '0'} ",
           style: WebTextStyles.para(
             context,
-                            color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+                            color: resolveThemeColor(
+          context,
+          darkColor: WebColors.textSecondaryDark,
+          lightColor: WebColors.textSecondary,
+        ),
           ),
         ),
       ],
@@ -1146,7 +1228,11 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
             label,
             style: WebTextStyles.para(
               context,
-              color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+              color: resolveThemeColor(
+          context,
+          darkColor: WebColors.textSecondaryDark,
+          lightColor: WebColors.textSecondary,
+        ),
             ),
           ),
           const SizedBox(height: 4),
@@ -1154,7 +1240,11 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
             value,
             style: WebTextStyles.sub(
               context,
-              color: shadcn.Theme.of(context).colorScheme.foreground,
+              color: resolveThemeColor(
+                context,
+                darkColor: WebColors.textPrimaryDark,
+                lightColor: WebColors.textPrimary,
+              ),
             ),
           ),
           const SizedBox(height: 4),
@@ -1205,8 +1295,8 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
               icon: iconAsset != null
                   ? SvgPicture.asset(
                       iconAsset,
-                      width: 13,
-                      height: 13,
+                      width: 14,
+                      height: 14,
                       colorFilter: ColorFilter.mode(
                         color,
                         BlendMode.srcIn,
@@ -1214,7 +1304,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                     )
                   : Icon(
                       icon,
-                      size: 13,
+                      size: 14,
                       color: color,
                     ),
             ),
@@ -1342,7 +1432,11 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                             context,
                             fontSize: WebFonts.bodySmallSize,
                             fontWeight: FontWeight.w700,
-                            color: shadcn.Theme.of(context).colorScheme.foreground,
+                            color: resolveThemeColor(
+                context,
+                darkColor: WebColors.textPrimaryDark,
+                lightColor: WebColors.textPrimary,
+              ),
                           ),
                         ),
                       ],
@@ -1357,7 +1451,11 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                         context,
                         fontSize: WebFonts.bodySmallSize,
                         fontWeight: FontWeight.w700,
-                        color: shadcn.Theme.of(context).colorScheme.foreground,
+                        color: resolveThemeColor(
+                context,
+                darkColor: WebColors.textPrimaryDark,
+                lightColor: WebColors.textPrimary,
+              ),
                       ),
                     ),
                   ),
@@ -1370,7 +1468,11 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                         context,
                         fontSize: WebFonts.bodySmallSize,
                         fontWeight: FontWeight.w700,
-                        color: shadcn.Theme.of(context).colorScheme.foreground,
+                        color: resolveThemeColor(
+                context,
+                darkColor: WebColors.textPrimaryDark,
+                lightColor: WebColors.textPrimary,
+              ),
                       ),
                     ),
                   ),
@@ -1382,7 +1484,11 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                       context,
                       fontSize: WebFonts.bodySmallSize,
                       fontWeight: FontWeight.w700,
-                      color: shadcn.Theme.of(context).colorScheme.foreground,
+                      color: resolveThemeColor(
+                context,
+                darkColor: WebColors.textPrimaryDark,
+                lightColor: WebColors.textPrimary,
+              ),
                     ),
                   ),
                 ),
@@ -1394,7 +1500,11 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                       context,
                       fontSize: WebFonts.bodySmallSize,
                       fontWeight: FontWeight.w700,
-                      color: shadcn.Theme.of(context).colorScheme.foreground,
+                      color: resolveThemeColor(
+                context,
+                darkColor: WebColors.textPrimaryDark,
+                lightColor: WebColors.textPrimary,
+              ),
                     ),
                   ),
                 ),
@@ -1424,7 +1534,11 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                   width: 14,
                   height: 14,
                   colorFilter: ColorFilter.mode(
-                        shadcn.Theme.of(context).colorScheme.mutedForeground,
+                        resolveThemeColor(
+                          context,
+                          darkColor: WebColors.textSecondaryDark,
+                          lightColor: WebColors.textSecondary,
+                        ),
                           
                     BlendMode.srcIn,
                   ),
@@ -1497,37 +1611,20 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                                     context,
                                     fontSize: WebFonts.titleSize,
                                     fontWeight: FontWeight.w700,
-                                    color: shadcn.Theme.of(context).colorScheme.foreground,
+                                    color: resolveThemeColor(
+                                      context,
+                                      darkColor: WebColors.textPrimaryDark,
+                                      lightColor: WebColors.textPrimary,
+                                    ),
                                   ),
                             ),
-                            Material(
-                              color: Colors.transparent,
-                              shape: const CircleBorder(),
-                              child: InkWell(
-                                customBorder: const CircleBorder(),
-                                splashColor: theme.isDarkMode
-                                    ? Colors.white.withOpacity(.15)
-                                    : Colors.black.withOpacity(.15),
-                                highlightColor: theme.isDarkMode
-                                    ? Colors.white.withOpacity(.08)
-                                    : Colors.black.withOpacity(.08),
-                                onTap: () {
-                                  // Unsubscribe from futures WebSocket
-                                  marketWatch.requestWSFut(
-                                      context: context, isSubscribe: false);
-                                  Navigator.of(context).pop();
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.all(6),
-                                  child: Icon(
-                                    Icons.close,
-                                    size: 18,
-                                    color: 
-                                        shadcn.Theme.of(context).colorScheme.mutedForeground
-                                        
-                                  ),
-                                ),
-                              ),
+                            MyntCloseButton(
+                              onPressed: () {
+                                // Unsubscribe from futures WebSocket
+                                marketWatch.requestWSFut(
+                                    context: context, isSubscribe: false);
+                                Navigator.of(context).pop();
+                              },
                             ),
                           ],
                         ),
@@ -1537,7 +1634,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                       //   padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                       //   decoration: BoxDecoration(
                       //     color: theme.isDarkMode
-                      //         ? WebDarkColors.primary.withOpacity(0.1)
+                      //         ? WebColors.primary.withOpacity(0.1)
                       //         : WebColors.primary.withOpacity(0.1),
                       //     borderRadius: BorderRadius.circular(6),
                       //   ),
@@ -1548,7 +1645,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                       //         Icons.info_outline,
                       //         size: 16,
                       //         color: theme.isDarkMode
-                      //             ? WebDarkColors.primary
+                      //             ? WebColors.primary
                       //             : WebColors.primary,
                       //       ),
                       //       const SizedBox(width: 8),
@@ -1557,7 +1654,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                       //         style: WebTextStyles.para(
                       //           isDarkTheme: theme.isDarkMode,
                       //           color: theme.isDarkMode
-                      //               ? WebDarkColors.primary
+                      //               ? WebColors.primary
                       //               : WebColors.primary,
                       //           fontWeight: FontWeight.w500,
                       //         ),
@@ -1631,30 +1728,17 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                                     context,
                                     fontSize: WebFonts.titleSize,
                                     fontWeight: FontWeight.w700,
-                                    color: shadcn.Theme.of(context).colorScheme.foreground,
-                                  ),
-                                ),
-                                Material(
-                                  color: Colors.transparent,
-                                  shape: const CircleBorder(),
-                                  child: InkWell(
-                                    customBorder: const CircleBorder(),
-                                    splashColor: theme.isDarkMode
-                                        ? Colors.white.withOpacity(.15)
-                                        : Colors.black.withOpacity(.15),
-                                    highlightColor: theme.isDarkMode
-                                        ? Colors.white.withOpacity(.08)
-                                        : Colors.black.withOpacity(.08),
-                                    onTap: () => Navigator.of(context).pop(),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(8),
-                                      child: Icon(
-                                        Icons.close,
-                                        size: 20,
-                                        color: shadcn.Theme.of(context).colorScheme.mutedForeground,
-                                      ),
+                                    color: resolveThemeColor(
+                                      context,
+                                      darkColor: WebColors.textPrimaryDark,
+                                      lightColor: WebColors.textPrimary,
                                     ),
                                   ),
+                                ),
+                                MyntCloseButton(
+                                  onPressed: () => Navigator.of(context).pop(),
+                                  iconSize: 20,
+                                  padding: const EdgeInsets.all(8),
                                 ),
                               ],
                             ),
@@ -2175,7 +2259,11 @@ class _PriceDataWidgetWebState extends ConsumerState<_PriceDataWidgetWeb> {
                 lightColor: WebColors.loss,
               )
             : (displayChange == "0.00" || displayPerChange == "0.00")
-                ? shadcn.Theme.of(context).colorScheme.mutedForeground
+                ? resolveThemeColor(
+                context,
+                darkColor: WebColors.textSecondaryDark,
+                lightColor: WebColors.textSecondary,
+              )
                 : resolveThemeColor(
                     context,
                     darkColor: WebColors.profitDark,
@@ -2191,7 +2279,11 @@ class _PriceDataWidgetWebState extends ConsumerState<_PriceDataWidgetWeb> {
             displayLtp,
             style: WebTextStyles.priceWatch(
               context,
-              color: shadcn.Theme.of(context).colorScheme.foreground,
+              color: resolveThemeColor(
+                context,
+                darkColor: WebColors.textPrimaryDark,
+                lightColor: WebColors.textPrimary,
+              ),
             ),
           ),
           const SizedBox(height: 8), // Adjusted spacing to match Vue project
@@ -2286,18 +2378,28 @@ class _LTPWidgetWebState extends ConsumerState<_LTPWidgetWeb> {
     final displayLtp = _safeFormatPrice(ltp);
 
     final changeColor = displayLtp.startsWith("-") || displayLtp.startsWith('-')
-        ? shadcn.Theme.of(context).colorScheme.destructiveForeground
+        ? resolveThemeColor(
+                context,
+                darkColor: WebColors.lossDark,
+                lightColor: WebColors.loss,
+              )
         : (displayLtp == "0.00" || displayLtp == "0.00")
-            ? shadcn.Theme.of(context).colorScheme.mutedForeground
-            : shadcn.Theme.of(context).colorScheme.chart2;
+            ? resolveThemeColor(
+                context,
+                 darkColor: WebColors.textSecondaryDark,
+                 lightColor: WebColors.textSecondary,
+              )
+            :  resolveThemeColor(
+                context,
+                darkColor: WebColors.profitDark,
+                lightColor: WebColors.profit,
+              );
 
     return Text(
       displayLtp,
-      style: TextStyle(
-        fontFamily: WebFonts.fontFamily,
+      style: WebTextStyles.price(
+        context,
         color: changeColor,
-        fontWeight: FontWeight.w500,
-        fontSize: 14,
       ),
     );
   }
@@ -2402,11 +2504,13 @@ class _PriceChangeWidgetWebState extends ConsumerState<_PriceChangeWidgetWeb> {
 
     return Text(
       "$displayChange ($displayPerChange%)",
-      style: TextStyle(
-        fontFamily: WebFonts.fontFamily,
-        color: shadcn.Theme.of(context).colorScheme.mutedForeground,
-        fontWeight: FontWeight.w500,
-        fontSize: 13,
+      style: WebTextStyles.priceChng(
+        context,
+        color: resolveThemeColor(
+          context,
+          darkColor: WebColors.textSecondaryDark,
+          lightColor: WebColors.textSecondary,
+        ),
       ),
     );
   }
