@@ -108,7 +108,10 @@ class MyntButton extends StatelessWidget {
     this.padding,
     this.iconAlignment,
   }) : assert(
-          label != null || icon != null || iconAsset != null || customIcon != null,
+          label != null ||
+              icon != null ||
+              iconAsset != null ||
+              customIcon != null,
           'Button must have either label, icon, iconAsset, or customIcon',
         );
 
@@ -158,8 +161,8 @@ class MyntButton extends StatelessWidget {
     final bgColor = backgroundColor ??
         resolveThemeColor(
           context,
-          darkColor: WebColors.primary, // Using primary for dark mode
-          lightColor: WebColors.primary,
+          dark: WebColors.primary, // Using primary for dark mode
+          light: WebColors.primary,
         );
     final borderRadiusValue = borderRadius ?? 5.0;
     final buttonPadding = padding ?? _getDefaultPadding();
@@ -192,8 +195,8 @@ class MyntButton extends StatelessWidget {
     final txtColor = textColor ??
         resolveThemeColor(
           context,
-          darkColor: WebColors.textPrimaryDark,
-          lightColor: WebColors.textPrimary,
+          dark: WebColors.textPrimaryDark,
+          light: WebColors.textPrimary,
         );
 
     return shadcn.SecondaryButton(
@@ -206,20 +209,20 @@ class MyntButton extends StatelessWidget {
     final txtColor = textColor ??
         resolveThemeColor(
           context,
-          darkColor: Colors.white,
-          lightColor: WebColors.primary,
+          dark: Colors.white,
+          light: WebColors.primary,
         );
     final bgColor = backgroundColor ??
         resolveThemeColor(
           context,
-          darkColor: WebColors.textSecondaryDark.withOpacity(0.6),
-          lightColor: WebColors.listItemBg,
+          dark: WebColors.textSecondaryDark.withOpacity(0.6),
+          light: WebColors.listItemBg,
         );
     final brdrColor = borderColor ??
         resolveThemeColor(
           context,
-          darkColor: WebColors.primary,
-          lightColor: WebColors.primary,
+          dark: WebColors.primary,
+          light: WebColors.primary,
         );
     final borderRadiusValue = borderRadius ?? 5.0;
     final buttonPadding = padding ?? _getDefaultPadding();
@@ -256,8 +259,8 @@ class MyntButton extends StatelessWidget {
     final txtColor = textColor ??
         resolveThemeColor(
           context,
-          darkColor: WebColors.primaryDark,
-          lightColor: WebColors.primary,
+          dark: WebColors.primaryDark,
+          light: WebColors.primary,
         );
 
     return shadcn.TextButton(
@@ -270,8 +273,8 @@ class MyntButton extends StatelessWidget {
     final txtColor = textColor ??
         resolveThemeColor(
           context,
-          darkColor: WebColors.textPrimaryDark,
-          lightColor: WebColors.textPrimary,
+          dark: WebColors.textPrimaryDark,
+          light: WebColors.textPrimary,
         );
 
     // Use shadcn IconButton with ghost variance for ghost button
@@ -287,15 +290,15 @@ class MyntButton extends StatelessWidget {
     final txtColor = textColor ??
         resolveThemeColor(
           context,
-          darkColor: Colors.white,
-          lightColor: Colors.white,
+          dark: Colors.white,
+          light: Colors.white,
         );
-    
+
     final bgColor = backgroundColor ??
         resolveThemeColor(
           context,
-          darkColor: WebColors.tertiary,
-          lightColor: WebColors.tertiary,
+          dark: WebColors.tertiary,
+          light: WebColors.tertiary,
         );
 
     // Tertiary button: Primary style but with tertiary background
@@ -339,8 +342,9 @@ class MyntButton extends StatelessWidget {
     }
 
     // Use bold font weight for primary and outlined buttons
-    final shouldUseBold = type == MyntButtonType.primary || type == MyntButtonType.outlined;
-    final fontWeight = shouldUseBold ? WebFonts.bold : null;
+    final shouldUseBold =
+        type == MyntButtonType.primary || type == MyntButtonType.outlined;
+    final fontWeight = shouldUseBold ? MyntFonts.bold : null;
 
     if (hasLabel && !hasIcon) {
       // Text-only button
@@ -392,29 +396,32 @@ class MyntButton extends StatelessWidget {
     return const SizedBox.shrink();
   }
 
-  TextStyle _getTextStyle(BuildContext context, Color color, {FontWeight? fontWeight}) {
+  TextStyle _getTextStyle(BuildContext context, Color color,
+      {FontWeight? fontWeight}) {
     TextStyle baseStyle;
     switch (size) {
       case MyntButtonSize.small:
-        baseStyle = WebTextStyles.buttonSm(
+        baseStyle = MyntWebTextStyles.buttonSm(
           context,
           color: color,
         );
         break;
       case MyntButtonSize.medium:
-        baseStyle = WebTextStyles.buttonMd(
+        baseStyle = MyntWebTextStyles.buttonMd(
           context,
           color: color,
         );
         break;
       case MyntButtonSize.large:
-        baseStyle = WebTextStyles.buttonXl(
+        baseStyle = MyntWebTextStyles.buttonXl(
           context,
           color: color,
         );
         break;
     }
-    return fontWeight != null ? baseStyle.copyWith(fontWeight: fontWeight) : baseStyle;
+    return fontWeight != null
+        ? baseStyle.copyWith(fontWeight: fontWeight)
+        : baseStyle;
   }
 
   double _getIconSize() {
@@ -584,8 +591,8 @@ class MyntIconButton extends StatelessWidget {
     final iconColor = color ??
         resolveThemeColor(
           context,
-          darkColor: WebColors.textPrimaryDark,
-          lightColor: WebColors.textPrimary,
+          dark: WebColors.textPrimaryDark,
+          light: WebColors.textPrimary,
         );
 
     final iconSize = _getIconSize();
@@ -610,9 +617,16 @@ class MyntIconButton extends StatelessWidget {
       shape: const CircleBorder(),
       child: InkWell(
         customBorder: const CircleBorder(),
-        hoverColor: (isDarkMode ? Colors.white : Colors.black).withOpacity(0.05),
-        splashColor: (isDarkMode ? Colors.white : Colors.black).withOpacity(0.1),
-        highlightColor: (isDarkMode ? Colors.white : Colors.black).withOpacity(0.03),
+        splashColor: resolveThemeColor(
+          context,
+          dark: MyntColors.rippleDark,
+          light: MyntColors.rippleLight,
+        ),
+        highlightColor: resolveThemeColor(
+          context,
+          dark: MyntColors.highlightDark,
+          light: MyntColors.highlightLight,
+        ),
         onTap: onPressed,
         child: Padding(
           padding: buttonPadding,
@@ -671,7 +685,10 @@ class MyntIconTextButton extends StatelessWidget {
     this.padding,
     this.borderRadius,
   }) : assert(
-          label != null || icon != null || iconAsset != null || customIcon != null,
+          label != null ||
+              icon != null ||
+              iconAsset != null ||
+              customIcon != null,
           'IconTextButton must have either label, icon, iconAsset, or customIcon',
         );
 
@@ -683,8 +700,8 @@ class MyntIconTextButton extends StatelessWidget {
     final defaultTextColor = textColor ??
         resolveThemeColor(
           context,
-          darkColor: WebColors.primaryDark,
-          lightColor: WebColors.primary,
+          dark: WebColors.primaryDark,
+          light: WebColors.primary,
         );
 
     final defaultIconColor = iconColor ?? defaultTextColor;
@@ -713,9 +730,12 @@ class MyntIconTextButton extends StatelessWidget {
       borderRadius: BorderRadius.circular(borderRadiusValue),
       child: InkWell(
         borderRadius: BorderRadius.circular(borderRadiusValue),
-        hoverColor: (isDarkMode ? Colors.white : Colors.black).withOpacity(0.05),
-        splashColor: (isDarkMode ? Colors.white : Colors.black).withOpacity(0.1),
-        highlightColor: (isDarkMode ? Colors.white : Colors.black).withOpacity(0.03),
+        hoverColor:
+            (isDarkMode ? Colors.white : Colors.black).withOpacity(0.05),
+        splashColor:
+            (isDarkMode ? Colors.white : Colors.black).withOpacity(0.1),
+        highlightColor:
+            (isDarkMode ? Colors.white : Colors.black).withOpacity(0.03),
         onTap: onPressed,
         child: Padding(
           padding: buttonPadding,
@@ -740,17 +760,17 @@ class MyntIconTextButton extends StatelessWidget {
   TextStyle _getTextStyle(BuildContext context, Color color) {
     switch (size) {
       case MyntButtonSize.small:
-        return WebTextStyles.buttonSm(
+        return MyntWebTextStyles.buttonSm(
           context,
           color: color,
         );
       case MyntButtonSize.medium:
-        return WebTextStyles.buttonMd(
+        return MyntWebTextStyles.buttonMd(
           context,
           color: color,
         );
       case MyntButtonSize.large:
-        return WebTextStyles.buttonXl(
+        return MyntWebTextStyles.buttonXl(
           context,
           color: color,
         );
@@ -814,8 +834,8 @@ class MyntCloseButton extends StatelessWidget {
     final defaultIconColor = iconColor ??
         resolveThemeColor(
           context,
-          darkColor: WebColors.textSecondaryDark,
-          lightColor: WebColors.textSecondary,
+          dark: WebColors.textSecondaryDark,
+          light: WebColors.textSecondary,
         );
 
     return Material(
@@ -823,9 +843,12 @@ class MyntCloseButton extends StatelessWidget {
       shape: const CircleBorder(),
       child: InkWell(
         customBorder: const CircleBorder(),
-        hoverColor: (isDarkMode ? Colors.white : Colors.black).withOpacity(0.05),
-        splashColor: (isDarkMode ? Colors.white : Colors.black).withOpacity(0.1),
-        highlightColor: (isDarkMode ? Colors.white : Colors.black).withOpacity(0.03),
+        hoverColor:
+            (isDarkMode ? Colors.white : Colors.black).withOpacity(0.05),
+        splashColor:
+            (isDarkMode ? Colors.white : Colors.black).withOpacity(0.1),
+        highlightColor:
+            (isDarkMode ? Colors.white : Colors.black).withOpacity(0.03),
         onTap: onPressed,
         child: Padding(
           padding: padding ?? const EdgeInsets.all(6.0),
@@ -839,4 +862,3 @@ class MyntCloseButton extends StatelessWidget {
     );
   }
 }
-

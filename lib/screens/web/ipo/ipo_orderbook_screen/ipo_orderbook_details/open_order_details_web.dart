@@ -3,8 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/provider/thems.dart';
-import 'package:mynt_plus/res/global_font_web.dart';
-import 'package:mynt_plus/res/web_colors.dart';
+import 'package:mynt_plus/res/mynt_web_text_styles.dart';
+import 'package:mynt_plus/res/mynt_web_color_styles.dart';
 import '../../../../../models/ipo_model/ipo_order_book_model.dart';
 import '../../../../../sharedWidget/functions.dart';
 
@@ -12,7 +12,7 @@ class IpoOpenOrderDetails extends ConsumerStatefulWidget {
   final IpoOrderBookModel ipodetails;
   const IpoOpenOrderDetails({
     super.key,
-    required this.ipodetails,
+    required this.ipodetails, 
   });
 
   @override
@@ -27,8 +27,12 @@ class _IpoOpenOrderDetailsState extends ConsumerState<IpoOpenOrderDetails> {
     final isSuccess = widget.ipodetails.reponseStatus == "new success";
     final statusText = isSuccess ? "Success" : "Pending";
     final statusColor = isSuccess
-        ? (theme.isDarkMode ? WebDarkColors.success : WebColors.success)
-        : (theme.isDarkMode ? WebDarkColors.pending : WebColors.pending);
+        ? resolveThemeColor(
+            context,
+            dark: MyntColors.profitDark,
+            light: MyntColors.profit,
+          )
+        : MyntColors.pending;
 
     return Container(
       padding: const EdgeInsets.only(top: 0, bottom: 20, left: 20, right: 20),
@@ -56,12 +60,14 @@ class _IpoOpenOrderDetailsState extends ConsumerState<IpoOpenOrderDetails> {
           // Bid Details Section
           Text(
             'Bid Details',
-            style: WebTextStyles.title(
-              isDarkTheme: theme.isDarkMode,
-                                            color: theme.isDarkMode
-                  ? WebDarkColors.textPrimary
-                  : WebColors.textPrimary,
-              fontWeight: FontWeight.w600,
+            style: MyntWebTextStyles.title(
+              context,
+              color: resolveThemeColor(
+                context,
+                dark: MyntColors.textPrimaryDark,
+                light: MyntColors.textPrimary,
+              ),
+              fontWeight: MyntFonts.semiBold,
             ),
           ),
           const SizedBox(height: 12),
@@ -85,70 +91,78 @@ class _IpoOpenOrderDetailsState extends ConsumerState<IpoOpenOrderDetails> {
               dividerThickness: 1,
                                                 border: TableBorder(
                                                   horizontalInside: BorderSide(
-                    color: theme.isDarkMode
-                      ? WebDarkColors.divider
-                      : WebColors.divider,
-                  width: 1,
+                    // color: shadcn.Theme.of(context).colorScheme.border
+                    width: 1,
+                  ),
                 ),
-                                                ),
                                                 columns: [
                                                   DataColumn(
                   label: Text(
                     'Bid No.',
-                    style: WebTextStyles.sub(
-                      isDarkTheme: theme.isDarkMode,
-                        color: theme.isDarkMode
-                          ? WebDarkColors.textSecondary
-                          : WebColors.textSecondary,
-                      fontWeight: FontWeight.w600,
+                    style: MyntWebTextStyles.bodySmall(
+                      context,
+                      color: resolveThemeColor(
+                        context,
+                        dark: MyntColors.textSecondaryDark,
+                        light: MyntColors.textSecondary,
                       ),
+                      fontWeight: MyntFonts.semiBold,
+                    ),
                                                     ),
                                                   ),
                                                   DataColumn(
                   label: Text(
                     'Qty',
-                    style: WebTextStyles.sub(
-                      isDarkTheme: theme.isDarkMode,
-                                                        color: theme.isDarkMode
-                          ? WebDarkColors.textSecondary
-                          : WebColors.textSecondary,
-                      fontWeight: FontWeight.w600,
+                    style: MyntWebTextStyles.bodySmall(
+                      context,
+                      color: resolveThemeColor(
+                        context,
+                        dark: MyntColors.textSecondaryDark,
+                        light: MyntColors.textSecondary,
+                      ),
+                      fontWeight: MyntFonts.semiBold,
                     ),
                   ),
                                                   ),
                                                   DataColumn(
                   label: Text(
                     'Price (₹)',
-                    style: WebTextStyles.sub(
-                      isDarkTheme: theme.isDarkMode,
-                                                        color: theme.isDarkMode
-                          ? WebDarkColors.textSecondary
-                          : WebColors.textSecondary,
-                      fontWeight: FontWeight.w600,
+                    style: MyntWebTextStyles.bodySmall(
+                      context,
+                      color: resolveThemeColor(
+                        context,
+                        dark: MyntColors.textSecondaryDark,
+                        light: MyntColors.textSecondary,
+                      ),
+                      fontWeight: MyntFonts.semiBold,
                     ),
                   ),
                                                   ),
                                                   DataColumn(
                   label: Text(
                     'Amount (₹)',
-                    style: WebTextStyles.sub(
-                      isDarkTheme: theme.isDarkMode,
-                                                        color: theme.isDarkMode
-                          ? WebDarkColors.textSecondary
-                          : WebColors.textSecondary,
-                      fontWeight: FontWeight.w600,
-                                ),
+                    style: MyntWebTextStyles.bodySmall(
+                      context,
+                      color: resolveThemeColor(
+                        context,
+                        dark: MyntColors.textSecondaryDark,
+                        light: MyntColors.textSecondary,
+                      ),
+                      fontWeight: MyntFonts.semiBold,
+                    ),
                               ),
                                                   ),
                                                   DataColumn(
                   label: Text(
                     'Cut Off',
-                    style: WebTextStyles.sub(
-                      isDarkTheme: theme.isDarkMode,
-                                                        color: theme.isDarkMode
-                          ? WebDarkColors.textSecondary
-                          : WebColors.textSecondary,
-                      fontWeight: FontWeight.w600,
+                    style: MyntWebTextStyles.bodySmall(
+                      context,
+                      color: resolveThemeColor(
+                        context,
+                        dark: MyntColors.textSecondaryDark,
+                        light: MyntColors.textSecondary,
+                      ),
+                      fontWeight: MyntFonts.semiBold,
                     ),
                                               ),
                                                   ),
@@ -165,22 +179,26 @@ class _IpoOpenOrderDetailsState extends ConsumerState<IpoOpenOrderDetails> {
                       DataCell(
                         Text(
                                                                 "${index + 1}",
-                          style: WebTextStyles.sub(
-                            isDarkTheme: theme.isDarkMode,
-                            color: theme.isDarkMode
-                                ? WebDarkColors.textPrimary
-                                : WebColors.textPrimary,
+                          style: MyntWebTextStyles.bodySmall(
+                            context,
+                            color: resolveThemeColor(
+                              context,
+                              dark: MyntColors.textPrimaryDark,
+                              light: MyntColors.textPrimary,
+                            ),
                           ),
                         ),
                       ),
                                                       DataCell(
                         Text(
                           bid.quantity!,
-                          style: WebTextStyles.sub(
-                            isDarkTheme: theme.isDarkMode,
-                            color: theme.isDarkMode
-                                ? WebDarkColors.textPrimary
-                                : WebColors.textPrimary,
+                          style: MyntWebTextStyles.bodySmall(
+                            context,
+                            color: resolveThemeColor(
+                              context,
+                              dark: MyntColors.textPrimaryDark,
+                              light: MyntColors.textPrimary,
+                            ),
                           ),
                         ),
                                                       ),
@@ -189,11 +207,13 @@ class _IpoOpenOrderDetailsState extends ConsumerState<IpoOpenOrderDetails> {
                           widget.ipodetails.type == "BSE"
                               ? bid.rate.toString()
                                                                 : "${double.parse(bid.price.toString()).toInt()}",
-                          style: WebTextStyles.sub(
-                            isDarkTheme: theme.isDarkMode,
-                                            color: theme.isDarkMode
-                                ? WebDarkColors.textPrimary
-                                : WebColors.textPrimary,
+                          style: MyntWebTextStyles.bodySmall(
+                            context,
+                            color: resolveThemeColor(
+                              context,
+                              dark: MyntColors.textPrimaryDark,
+                              light: MyntColors.textPrimary,
+                            ),
                           ),
                         ),
                                                       ),
@@ -202,12 +222,14 @@ class _IpoOpenOrderDetailsState extends ConsumerState<IpoOpenOrderDetails> {
                           widget.ipodetails.type == "BSE"
                                                                 ? "₹${getFormatter(noDecimal: true, v4d: false, value: (double.parse(bid.rate!) * double.parse(bid.quantity!)))}"
                                                                 : "₹${getFormatter(noDecimal: true, v4d: false, value: double.parse(bid.amount!).toDouble())}",
-                          style: WebTextStyles.sub(
-                            isDarkTheme: theme.isDarkMode,
-                                              color: theme.isDarkMode
-                                ? WebDarkColors.textPrimary
-                                : WebColors.textPrimary,
-                                                ),
+                          style: MyntWebTextStyles.bodySmall(
+                            context,
+                            color: resolveThemeColor(
+                              context,
+                              dark: MyntColors.textPrimaryDark,
+                              light: MyntColors.textPrimary,
+                            ),
+                          ),
                                               ),
                                             ),
                       DataCell(
@@ -215,12 +237,16 @@ class _IpoOpenOrderDetailsState extends ConsumerState<IpoOpenOrderDetails> {
                           isCutOff ? Icons.check_circle : Icons.cancel,
                           size: 20,
                                                           color: isCutOff
-                              ? (theme.isDarkMode
-                                  ? WebDarkColors.success
-                                  : WebColors.success)
-                              : (theme.isDarkMode
-                                  ? WebDarkColors.error
-                                  : WebColors.error),
+                              ? resolveThemeColor(
+                                  context,
+                                  dark: MyntColors.profitDark,
+                                  light: MyntColors.profit,
+                                )
+                              : resolveThemeColor(
+                                  context,
+                                  dark: MyntColors.lossDark,
+                                  light: MyntColors.loss,
+                                ),
                                               ),
                                             ),
                                           ],
@@ -282,9 +308,7 @@ class _IpoOpenOrderDetailsState extends ConsumerState<IpoOpenOrderDetails> {
             Container(
               width: 0.5,
               margin: const EdgeInsets.symmetric(horizontal: 16),
-              color: theme.isDarkMode
-                  ? WebDarkColors.divider
-                  : WebColors.divider,
+                // color: shadcn.Theme.of(context).colorScheme.border
             ),
             // Right column
             Expanded(
@@ -325,16 +349,24 @@ class _IpoOpenOrderDetailsState extends ConsumerState<IpoOpenOrderDetails> {
         children: [
           Text(
             title,
-            style: WebTextStyles.dialogContent(
-              isDarkTheme: theme.isDarkMode,
-              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+            style: MyntWebTextStyles.bodySmall(
+              context,
+              color: resolveThemeColor(
+                context,
+                dark: MyntColors.textPrimaryDark,
+                light: MyntColors.textPrimary,
+              ),
             ),
           ),
           Text(
             value,
-            style: WebTextStyles.dialogContent(
-              isDarkTheme: theme.isDarkMode,
-              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+            style: MyntWebTextStyles.bodySmall(
+              context,
+              color: resolveThemeColor(
+                context,
+                dark: MyntColors.textPrimaryDark,
+                light: MyntColors.textPrimary,
+              ),
             ),
           ),
         ],
@@ -350,17 +382,22 @@ class _IpoOpenOrderDetailsState extends ConsumerState<IpoOpenOrderDetails> {
         children: [
           Text(
             title,
-            style: WebTextStyles.dialogContent(
-              isDarkTheme: theme.isDarkMode,
-              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+            style: MyntWebTextStyles.bodySmall(
+              context,
+              color: resolveThemeColor(
+                context,
+                dark: MyntColors.textPrimaryDark,
+                light: MyntColors.textPrimary,
+              ),
             ),
           ),
           Text(
             value,
-            style: WebTextStyles.dialogContent(
-              isDarkTheme: theme.isDarkMode,
+            style: MyntWebTextStyles.bodySmall(
+              context,
               color: statusColor,
-            ).copyWith(fontWeight: FontWeight.w600),
+              fontWeight: MyntFonts.semiBold,
+            ),
           ),
         ],
       ),
@@ -374,11 +411,14 @@ class _IpoOpenOrderDetailsState extends ConsumerState<IpoOpenOrderDetails> {
         // Bid Date & Time Title
         Text(
           "Bid Date & Time:",
-          style: WebTextStyles.custom(
-            fontSize: 14,
-            isDarkTheme: theme.isDarkMode,
-            color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
-            fontWeight: WebFonts.medium,
+          style: MyntWebTextStyles.bodySmall(
+            context,
+            color: resolveThemeColor(
+              context,
+              dark: MyntColors.textSecondaryDark,
+              light: MyntColors.textSecondary,
+            ),
+            fontWeight: MyntFonts.medium,
           ),
       ),
       const SizedBox(height: 8),
@@ -387,9 +427,13 @@ class _IpoOpenOrderDetailsState extends ConsumerState<IpoOpenOrderDetails> {
           widget.ipodetails.responseDatetime.toString() == ""
               ? "-"
               : ipodateres(widget.ipodetails.responseDatetime.toString()),
-          style: WebTextStyles.dialogContent(
-            isDarkTheme: theme.isDarkMode,
-            color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          style: MyntWebTextStyles.bodySmall(
+            context,
+            color: resolveThemeColor(
+              context,
+              dark: MyntColors.textPrimaryDark,
+              light: MyntColors.textPrimary,
+            ),
           ),
         ),
       ],
@@ -403,11 +447,14 @@ class _IpoOpenOrderDetailsState extends ConsumerState<IpoOpenOrderDetails> {
         // Reason Title
         Text(
           "Reason:",
-          style: WebTextStyles.custom(
-            fontSize: 14,
-            isDarkTheme: theme.isDarkMode,
-            color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
-            fontWeight: WebFonts.medium,
+          style: MyntWebTextStyles.bodySmall(
+            context,
+            color: resolveThemeColor(
+              context,
+              dark: MyntColors.textSecondaryDark,
+              light: MyntColors.textSecondary,
+            ),
+            fontWeight: MyntFonts.medium,
           ),
         ),
         const SizedBox(height: 8),
@@ -416,9 +463,13 @@ class _IpoOpenOrderDetailsState extends ConsumerState<IpoOpenOrderDetails> {
           widget.ipodetails.failReason == "" || widget.ipodetails.failReason == null
               ? "Order placed successfully"
               : widget.ipodetails.failReason.toString(),
-          style: WebTextStyles.dialogContent(
-            isDarkTheme: theme.isDarkMode,
-            color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          style: MyntWebTextStyles.bodySmall(
+            context,
+            color: resolveThemeColor(
+              context,
+              dark: MyntColors.textPrimaryDark,
+              light: MyntColors.textPrimary,
+            ),
           ),
         ),
       ],

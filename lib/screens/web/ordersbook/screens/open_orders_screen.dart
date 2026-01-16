@@ -6,9 +6,10 @@ import 'package:mynt_plus/models/order_book_model/order_book_model.dart';
 import 'package:mynt_plus/provider/order_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/provider/websocket_provider.dart';
-import 'package:mynt_plus/res/web_colors.dart';
-import 'package:mynt_plus/res/global_font_web.dart';
+import 'package:mynt_plus/res/mynt_web_text_styles.dart';
+import 'package:mynt_plus/res/mynt_web_color_styles.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
+import 'package:mynt_plus/sharedWidget/common_buttons_web.dart';
 import '../refactored/services/order_action_handler.dart';
 import '../refactored/utils/cell_formatters.dart';
 
@@ -54,13 +55,19 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
     super.dispose();
   }
 
-  // Helper method to ensure Geist font is always applied
-  TextStyle _geistTextStyle({Color? color, double? fontSize, FontWeight? fontWeight}) {
-    return TextStyle(
-      fontFamily: 'Geist',
+  // Helper method to get appropriate text style from MyntWebTextStyles
+  TextStyle _getTextStyle(BuildContext context, {Color? color}) {
+    return MyntWebTextStyles.tableCell(
+      context,
       color: color,
-      fontSize: fontSize,
-      fontWeight: fontWeight,
+    );
+  }
+
+  // Helper method for header text style
+  TextStyle _getHeaderStyle(BuildContext context, {Color? color}) {
+    return MyntWebTextStyles.tableHeader(
+      context,
+      color: color,
     );
   }
 
@@ -171,9 +178,7 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
               if (alignRight && _sortColumnIndex == columnIndex) const SizedBox(width: 4),
               Text(
                 label,
-                style: _geistTextStyle(
-                  color: shadcn.Theme.of(context).colorScheme.foreground,
-                ),
+                style: _getHeaderStyle(context),
               ),
               if (!alignRight && _sortColumnIndex == columnIndex) const SizedBox(width: 4),
               if (!alignRight && _sortColumnIndex == columnIndex)
@@ -512,9 +517,7 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
               onTap: () => actionHandler.openOrderDetail(order),
               child: Text(
                 _formatTime(order.norentm ?? '0.00'),
-                style: _geistTextStyle(
-                  color: colorScheme.foreground,
-                ),
+                style: _getTextStyle(context),
                 overflow: TextOverflow.visible,
                 softWrap: false,
               ),
@@ -534,9 +537,7 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
               onTap: () => actionHandler.openOrderDetail(order),
               child: Text(
                 _formatProductType(order),
-                style: _geistTextStyle(
-                  color: colorScheme.foreground,
-                ),
+                style: _getTextStyle(context),
                 overflow: TextOverflow.visible,
                 softWrap: false,
               ),
@@ -547,7 +548,8 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
               onTap: () => actionHandler.openOrderDetail(order),
               child: Text(
                 order.trantype == "S" ? "SELL" : "BUY",
-                style: _geistTextStyle(
+                style: _getTextStyle(
+                  context,
                   color: order.trantype == "S" ? colorScheme.destructive : colorScheme.chart2,
                 ),
               ),
@@ -559,9 +561,7 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
               onTap: () => actionHandler.openOrderDetail(order),
               child: Text(
                 order.qty?.toString() ?? '0',
-                style: _geistTextStyle(
-                  color: colorScheme.foreground,
-                ),
+                style: _getTextStyle(context),
               ),
             ),
             buildCellWithHover(
@@ -571,9 +571,7 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
               onTap: () => actionHandler.openOrderDetail(order),
               child: Text(
                 order.avgprc ?? '0.00',
-                style: _geistTextStyle(
-                  color: colorScheme.foreground,
-                ),
+                style: _getTextStyle(context),
               ),
             ),
             buildCellWithHover(
@@ -593,9 +591,7 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
               onTap: () => actionHandler.openOrderDetail(order),
               child: Text(
                 CellFormatters.getValidPrice(order),
-                style: _geistTextStyle(
-                  color: colorScheme.foreground,
-                ),
+                style: _getTextStyle(context),
               ),
             ),
             buildCellWithHover(
@@ -607,9 +603,7 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
                 (order.trgprc != null && order.trgprc != '0' && order.trgprc != '0.00')
                     ? order.trgprc!
                     : '0.00',
-                style: _geistTextStyle(
-                  color: colorScheme.foreground,
-                ),
+                style: _getTextStyle(context),
               ),
             ),
             buildCellWithHover(
@@ -619,9 +613,7 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
               onTap: () => actionHandler.openOrderDetail(order),
               child: Text(
                 CellFormatters.calculateOrderValue(order),
-                style: _geistTextStyle(
-                  color: colorScheme.foreground,
-                ),
+                style: _getTextStyle(context),
               ),
             ),
             buildCellWithHover(
@@ -630,7 +622,8 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
               onTap: () => actionHandler.openOrderDetail(order),
               child: Text(
                 CellFormatters.getStatusText(order),
-                style: _geistTextStyle(
+                style: _getTextStyle(
+                  context,
                   color: _getStatusColor(CellFormatters.getStatusText(order)),
                 ),
                 overflow: TextOverflow.visible,
@@ -844,21 +837,21 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
                   softWrap: false,
                   text: TextSpan(
                     children: [
-                      // Symbol (normal color, fixed 14px)
+                      // Symbol (normal color)
                       TextSpan(
                         text: displayText,
-                        style: _geistTextStyle(
+                        style: MyntWebTextStyles.body(
+                          context,
                           color: colorScheme.foreground,
-                          fontSize: 14.0,
                         ),
                       ),
-                      // Exchange (mutedForeground color, smaller font, fixed 12px)
+                      // Exchange (mutedForeground color, smaller font)
                       if (order.exch != null && order.exch!.isNotEmpty)
                         TextSpan(
                           text: ' ${order.exch}',
-                          style: _geistTextStyle(
+                          style: MyntWebTextStyles.para(
+                            context,
                             color: colorScheme.mutedForeground,
-                            fontSize: 12.0,
                           ),
                         ),
                     ],
@@ -918,8 +911,11 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
                                 if (isPending) ...[
                                   _buildHoverButton(
                                     label: 'Modify',
-                                    backgroundColor: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
-                                    textColor: Colors.white,
+                                    backgroundColor: resolveThemeColor(
+                                      buttonContext,
+                                      dark: MyntColors.primaryDark,
+                                      light: MyntColors.primary,
+                                    ),
                                     onPressed: isProcessing && _isProcessingModify
                                         ? null
                                         : () async {
@@ -940,14 +936,12 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
                                               },
                                             );
                                           },
-                                    theme: theme,
                                     context: buttonContext,
                                   ),
                                   SizedBox(width: buttonSpacing),
                                   _buildHoverButton(
                                     label: 'Cancel',
-                                    backgroundColor: theme.isDarkMode ? WebDarkColors.tertiary : WebColors.tertiary,
-                                    textColor: Colors.white,
+                                    backgroundColor: MyntColors.tertiary,
                                     onPressed: isProcessing && _isProcessingCancel
                                         ? null
                                         : () async {
@@ -964,24 +958,28 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
                                               },
                                             );
                                           },
-                                    theme: theme,
                                     context: buttonContext,
                                   ),
                                 ] else ...[
                                   _buildHoverButton(
                                     label: 'Repeat',
-                                    backgroundColor: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
-                                    textColor: Colors.white,
+                                    backgroundColor: resolveThemeColor(
+                                      buttonContext,
+                                      dark: MyntColors.primaryDark,
+                                      light: MyntColors.primary,
+                                    ),
                                     onPressed: () => actionHandler.repeatOrder(order),
-                                    theme: theme,
                                     context: buttonContext,
                                   ),
                                   if (order.status == "OPEN") ...[
                                     SizedBox(width: buttonSpacing),
                                     _buildHoverButton(
                                       label: 'Cancel',
-                                      backgroundColor: theme.isDarkMode ? WebDarkColors.tertiary : WebColors.tertiary,
-                                      textColor: Colors.white,
+                                      backgroundColor: resolveThemeColor(
+                                        buttonContext,
+                                        dark: MyntColors.tertiary,
+                                        light: MyntColors.tertiary,
+                                      ),
                                       onPressed: isProcessing && _isProcessingCancel
                                           ? null
                                           : () async {
@@ -998,7 +996,6 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
                                                 },
                                               );
                                             },
-                                      theme: theme,
                                       context: buttonContext,
                                     ),
                                   ],
@@ -1022,50 +1019,33 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
   Widget _buildHoverButton({
     required String label,
     required Color backgroundColor,
-    required Color textColor,
     required VoidCallback? onPressed,
-    required ThemesProvider theme,
     required BuildContext context,
+    bool isPrimary = true,
   }) {
-    final borderRadiusValue = 5.0;
-    
     // Detect screen size for responsive design
     final screenWidth = MediaQuery.of(context).size.width;
-    final isSmallScreen = screenWidth < 768; // Tablet breakpoint
-    final isVerySmallScreen = screenWidth < 480; // Mobile breakpoint
-    
-    // Responsive sizes
-    final buttonPadding = isVerySmallScreen 
-        ? const EdgeInsets.symmetric(horizontal: 4, vertical: 4)
-        : (isSmallScreen 
-            ? const EdgeInsets.symmetric(horizontal: 6, vertical: 4)
-            : const EdgeInsets.symmetric(horizontal: 8));
-    final fontSize = isVerySmallScreen ? 10.0 : (isSmallScreen ? 11.0 : 12.0);
-    
-    // Use Container only for background color, shadcn handles size/shape
-    return Container(
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(borderRadiusValue),
-      ),
-      child: shadcn.TextButton(
-        size: shadcn.ButtonSize.small,
-        density: shadcn.ButtonDensity.dense,
+    final isSmallScreen = screenWidth < 768;
+    final buttonSize = isSmallScreen ? MyntButtonSize.small : MyntButtonSize.small;
+
+    // Determine button type based on color
+    final isTertiary = backgroundColor == MyntColors.tertiary ||
+        backgroundColor == MyntColors.lossDark ||
+        backgroundColor == MyntColors.loss;
+
+    if (isTertiary) {
+      return MyntTertiaryButton(
+        label: label,
         onPressed: onPressed,
-        shape: shadcn.ButtonShape.rectangle,
-        child: Padding(
-          padding: buttonPadding,
-          child: Text(
-            label,
-            style: WebTextStyles.buttonSm(
-              isDarkTheme: theme.isDarkMode,
-              color: textColor,
-              fontWeight: WebFonts.bold,
-            ).copyWith(fontSize: fontSize),
-          ),
-        ),
-      ),
-    );
+        size: buttonSize,
+      );
+    } else {
+      return MyntPrimaryButton(
+        label: label,
+        onPressed: onPressed,
+        size: buttonSize,
+      );
+    }
   }
 }
 
@@ -1128,10 +1108,7 @@ class _OrderLTPCellState extends ConsumerState<_OrderLTPCell> {
   Widget build(BuildContext context) {
     return Text(
       ltp,
-      style: TextStyle(
-        fontFamily: 'Geist',
-        color: shadcn.Theme.of(context).colorScheme.foreground,
-      ),
+      style: MyntWebTextStyles.tableCell(context),
     );
   }
 }

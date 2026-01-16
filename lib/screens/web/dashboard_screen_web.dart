@@ -38,14 +38,14 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (mounted) {
         final indexProvider = ref.read(indexListProvider);
-        
+
         // Get top indices for dashboard (8 specific indices) if not already fetched
         // This ensures tokens are available for WebSubscriptionManager
         // Only fetch if not already available to avoid duplicate calls
         if (indexProvider.topIndicesForDashboard == null) {
           await indexProvider.getTopIndicesForDashboard(context);
         }
-        
+
         // Trade action data is fetched by _handleDashboardTap() before this screen is shown
         // No need to fetch here to avoid duplicate TopList API calls
       }
@@ -57,7 +57,7 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
     // Note: WebSubscriptionManager handles unsubscription automatically
     // when screen is replaced or removed via updateActiveScreen()
     // No need to unsubscribe here to avoid double calls
-    
+
     _indexScrollController.dispose();
     _tradeActionScrollController.dispose();
     super.dispose();
@@ -67,11 +67,10 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
   Widget build(BuildContext context) {
     final theme = ref.watch(themeProvider);
     final indexProvider = ref.watch(indexListProvider);
-    
+
     return Scaffold(
-      backgroundColor: theme.isDarkMode
-          ? WebDarkColors.background
-          : WebColors.background,
+      backgroundColor:
+          theme.isDarkMode ? WebDarkColors.background : WebColors.background,
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
@@ -116,7 +115,7 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
 
             // Calculate card width based on columns
             final cardWidth = crossAxisCount == 2
-                ? (width - 12) / 2  // Subtract spacing and divide by 2
+                ? (width - 12) / 2 // Subtract spacing and divide by 2
                 : width;
 
             // Use Wrap instead of GridView to allow natural card heights
@@ -157,13 +156,14 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
     final totalPnLPercent = portfolio.totPnlPercHolding;
     final todayPnL = portfolio.oneDayChng.toStringAsFixed(2);
     final todayPnLPercent = portfolio.oneDayChngPer.toStringAsFixed(2);
-    
+
     // Calculate positive and negative holdings
     int positiveCount = 0;
     int negativeCount = 0;
     for (var holding in holdings) {
       if (holding.exchTsym != null && holding.exchTsym!.isNotEmpty) {
-        final pnl = double.tryParse(holding.exchTsym![0].profitNloss ?? '0') ?? 0.0;
+        final pnl =
+            double.tryParse(holding.exchTsym![0].profitNloss ?? '0') ?? 0.0;
         final rpnl = double.tryParse(holding.rpnl ?? '0') ?? 0.0;
         if (pnl + rpnl > 0) {
           positiveCount++;
@@ -172,7 +172,7 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
         }
       }
     }
-    
+
     return _buildCard(
       theme: theme,
       title: 'Holdings',
@@ -181,8 +181,16 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
       metrics: [
         {'label': 'Invested', 'value': '₹$invested'},
         {'label': 'Current', 'value': '₹$current'},
-        {'label': 'Total P&L', 'value': '₹$totalPnL', 'percent': '$totalPnLPercent%'},
-        {'label': 'Today P&L', 'value': '₹$todayPnL', 'percent': '$todayPnLPercent%'},
+        {
+          'label': 'Total P&L',
+          'value': '₹$totalPnL',
+          'percent': '$totalPnLPercent%'
+        },
+        {
+          'label': 'Today P&L',
+          'value': '₹$todayPnL',
+          'percent': '$todayPnLPercent%'
+        },
       ],
       summary: 'No of holdings - $holdingsCount',
       positiveCount: positiveCount,
@@ -203,7 +211,7 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
     final mtm = portfolio.totMtM;
     final totalPnL = portfolio.totPnL;
     final openPnL = portfolio.totUnRealMtm;
-    
+
     // Calculate positive and negative positions
     int positiveCount = 0;
     int negativeCount = 0;
@@ -217,7 +225,7 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
         }
       }
     }
-    
+
     return _buildCard(
       theme: theme,
       title: 'Position',
@@ -229,7 +237,8 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
         {'label': 'Total P&L', 'value': '₹$totalPnL'},
         {'label': 'Open P&L', 'value': '₹$openPnL'},
       ],
-      summary: 'No of positions - $positionsCount / Open positions - $openPositionsCount',
+      summary:
+          'No of positions - $positionsCount / Open positions - $openPositionsCount',
       positiveCount: positiveCount,
       negativeCount: negativeCount,
       onViewDetails: () {
@@ -242,10 +251,15 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
 
   Widget _buildOrdersCard(ThemesProvider theme, OrderProvider orders) {
     final orderList = orders.orderBookModel ?? [];
-    final openOrders = orderList.where((o) => o.status == 'OPEN' || o.status == 'PENDING').length;
-    final executedOrders = orderList.where((o) => o.status == 'COMPLETE').length;
-    final rejectedOrders = orderList.where((o) => o.status == 'REJECTED' || o.status == 'CANCELED').length;
-    
+    final openOrders = orderList
+        .where((o) => o.status == 'OPEN' || o.status == 'PENDING')
+        .length;
+    final executedOrders =
+        orderList.where((o) => o.status == 'COMPLETE').length;
+    final rejectedOrders = orderList
+        .where((o) => o.status == 'REJECTED' || o.status == 'CANCELED')
+        .length;
+
     return _buildCard(
       theme: theme,
       title: 'Orders',
@@ -267,10 +281,11 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
 
   Widget _buildMarginsCard(ThemesProvider theme, FundProvider fund) {
     final fundDetail = fund.fundDetailModel;
-    final availableBalance = fundDetail?.avlMrg ?? fundDetail?.totCredit ?? '0.00';
+    final availableBalance =
+        fundDetail?.avlMrg ?? fundDetail?.totCredit ?? '0.00';
     final totalCredits = fundDetail?.totCredit ?? '0.00';
     final marginUsed = fundDetail?.marginused ?? '0.00';
-    
+
     return _buildCard(
       theme: theme,
       title: 'Margins',
@@ -382,7 +397,8 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
                   (index) {
                     final metric = metrics[index];
                     return SizedBox(
-                      width: (cardWidth - (8 * (metricsColumns - 1))) / metricsColumns,
+                      width: (cardWidth - (8 * (metricsColumns - 1))) /
+                          metricsColumns,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.start,
@@ -445,7 +461,7 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
               );
             },
           ),
-      // Summary and buttons
+          // Summary and buttons
           if (summary != null || showPositiveNegative) ...[
             const SizedBox(height: 10),
             Row(
@@ -471,7 +487,9 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
                     theme,
                     '$positiveCount Positive',
                     Icons.arrow_upward,
-                    theme.isDarkMode ? WebDarkColors.success : WebColors.success,
+                    theme.isDarkMode
+                        ? WebDarkColors.success
+                        : WebColors.success,
                   ),
                   const SizedBox(width: 8),
                   _buildPillButton(
@@ -494,7 +512,9 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
                 'View details',
                 style: WebTextStyles.para(
                   isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
+                  color: theme.isDarkMode
+                      ? WebDarkColors.primary
+                      : WebColors.primary,
                   fontWeight: WebFonts.bold,
                 ),
               ),
@@ -505,7 +525,8 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
     );
   }
 
-  Widget _buildPillButton(ThemesProvider theme, String label, IconData icon, Color color) {
+  Widget _buildPillButton(
+      ThemesProvider theme, String label, IconData icon, Color color) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
@@ -530,7 +551,8 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
     );
   }
 
-  Widget _buildTopIndicesSection(ThemesProvider theme, IndexListProvider indexProvider) {
+  Widget _buildTopIndicesSection(
+      ThemesProvider theme, IndexListProvider indexProvider) {
     // Use topIndicesForDashboard (8 specific indices for dashboard)
     final indexValues = indexProvider.topIndicesForDashboard?.indValues;
     final hasIndices = indexValues != null && indexValues.isNotEmpty;
@@ -555,7 +577,6 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
                     fontWeight: WebFonts.bold,
                   ),
                 ),
-               
               ],
             ),
             // Navigation arrows
@@ -712,10 +733,10 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
       final currentOffset = _indexScrollController.offset;
       final maxScrollExtent = _indexScrollController.position.maxScrollExtent;
       final newOffset = currentOffset + offset;
-      
+
       // Clamp the offset to prevent scrolling beyond boundaries
       final clampedOffset = newOffset.clamp(0.0, maxScrollExtent);
-      
+
       // Only animate if we're not at the boundary
       if (clampedOffset != currentOffset) {
         _indexScrollController.animateTo(
@@ -758,11 +779,11 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
             const totalCards = 4;
             const totalSpacing = cardSpacing * (totalCards - 1);
             const totalMinWidth = (minCardWidth * totalCards) + totalSpacing;
-            
+
             // Calculate card width
             double cardWidth;
             bool needsScrolling = false;
-            
+
             if (availableWidth >= totalMinWidth) {
               // All cards fit, distribute evenly
               cardWidth = (availableWidth - totalSpacing) / totalCards;
@@ -771,7 +792,7 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
               cardWidth = minCardWidth;
               needsScrolling = true;
             }
-            
+
             return Stack(
               children: [
                 SingleChildScrollView(
@@ -788,7 +809,9 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
                         title: 'Top gainer',
                         stocks: topGainers,
                         icon: Icons.trending_up,
-                        iconColor: theme.isDarkMode ? WebDarkColors.success : WebColors.success,
+                        iconColor: theme.isDarkMode
+                            ? WebDarkColors.success
+                            : WebColors.success,
                         width: cardWidth,
                       ),
                       const SizedBox(width: cardSpacing),
@@ -799,7 +822,9 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
                         title: 'Top losers',
                         stocks: topLosers,
                         icon: Icons.trending_down,
-                        iconColor: theme.isDarkMode ? WebDarkColors.error : WebColors.error,
+                        iconColor: theme.isDarkMode
+                            ? WebDarkColors.error
+                            : WebColors.error,
                         width: cardWidth,
                       ),
                       const SizedBox(width: cardSpacing),
@@ -843,9 +868,13 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
                             onTap: () {
                               if (_tradeActionScrollController.hasClients) {
                                 final scrollAmount = cardWidth + cardSpacing;
-                                final newOffset = (_tradeActionScrollController.offset - scrollAmount).clamp(
+                                final newOffset =
+                                    (_tradeActionScrollController.offset -
+                                            scrollAmount)
+                                        .clamp(
                                   0.0,
-                                  _tradeActionScrollController.position.maxScrollExtent,
+                                  _tradeActionScrollController
+                                      .position.maxScrollExtent,
                                 );
                                 _tradeActionScrollController.animateTo(
                                   newOffset,
@@ -907,9 +936,13 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
                             onTap: () {
                               if (_tradeActionScrollController.hasClients) {
                                 final scrollAmount = cardWidth + cardSpacing;
-                                final newOffset = (_tradeActionScrollController.offset + scrollAmount).clamp(
+                                final newOffset =
+                                    (_tradeActionScrollController.offset +
+                                            scrollAmount)
+                                        .clamp(
                                   0.0,
-                                  _tradeActionScrollController.position.maxScrollExtent,
+                                  _tradeActionScrollController
+                                      .position.maxScrollExtent,
                                 );
                                 _tradeActionScrollController.animateTo(
                                   newOffset,
@@ -982,9 +1015,7 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
       width: width,
       height: 400,
       decoration: BoxDecoration(
-        color: theme.isDarkMode
-            ? WebDarkColors.surface
-            : WebColors.surface,
+        color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
           color: theme.isDarkMode
@@ -1004,7 +1035,6 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
               children: [
                 Row(
                   children: [
-                   
                     Text(
                       title,
                       style: WebTextStyles.sub(
@@ -1021,20 +1051,26 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
                   cursor: SystemMouseCursors.click,
                   child: GestureDetector(
                     onTap: () {
-                      debugPrint("See all clicked, route: ${Routes.tradeActionScreen}, tabIndex: $tabIndex");
-                      debugPrint("WebNavigationHelper.isAvailable: ${WebNavigationHelper.isAvailable}");
-                      
+                      debugPrint(
+                          "See all clicked, route: ${Routes.tradeActionScreen}, tabIndex: $tabIndex");
+                      debugPrint(
+                          "WebNavigationHelper.isAvailable: ${WebNavigationHelper.isAvailable}");
+
                       if (WebNavigationHelper.isAvailable) {
                         try {
-                          WebNavigationHelper.navigateTo(Routes.tradeActionScreen, arguments: tabIndex);
-                          debugPrint("Navigation called via WebNavigationHelper with tabIndex: $tabIndex");
+                          WebNavigationHelper.navigateTo(
+                              Routes.tradeActionScreen,
+                              arguments: tabIndex);
+                          debugPrint(
+                              "Navigation called via WebNavigationHelper with tabIndex: $tabIndex");
                         } catch (e) {
                           debugPrint("WebNavigationHelper error: $e");
                           // Fallback to direct navigation
                           _navigateToTradeAction(context, tabIndex);
                         }
                       } else {
-                        debugPrint("WebNavigationHelper not available, using direct navigation");
+                        debugPrint(
+                            "WebNavigationHelper not available, using direct navigation");
                         _navigateToTradeAction(context, tabIndex);
                       }
                     },
@@ -1116,11 +1152,12 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
   void _scrollTradeAction(double offset) {
     if (_tradeActionScrollController.hasClients) {
       final currentOffset = _tradeActionScrollController.offset;
-      final maxScrollExtent = _tradeActionScrollController.position.maxScrollExtent;
+      final maxScrollExtent =
+          _tradeActionScrollController.position.maxScrollExtent;
       final newOffset = currentOffset + offset;
-      
+
       final clampedOffset = newOffset.clamp(0.0, maxScrollExtent);
-      
+
       if (clampedOffset != currentOffset) {
         _tradeActionScrollController.animateTo(
           clampedOffset,
@@ -1140,7 +1177,7 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
       // Get first index from top indices or default index list as reference
       final topIndices = indexProvider.topIndicesForDashboard?.indValues;
       final defaultIndices = indexProvider.defaultIndexList?.indValues;
-      
+
       // Use first index from top indices, or fallback to first default index
       final defaultIndex = (topIndices != null && topIndices.isNotEmpty)
           ? topIndices[0]
@@ -1191,7 +1228,8 @@ class _DashboardIndexCard extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<_DashboardIndexCard> createState() => _DashboardIndexCardState();
+  ConsumerState<_DashboardIndexCard> createState() =>
+      _DashboardIndexCardState();
 }
 
 class _DashboardIndexCardState extends ConsumerState<_DashboardIndexCard> {
@@ -1307,136 +1345,136 @@ class _DashboardIndexCardState extends ConsumerState<_DashboardIndexCard> {
       onExit: (_) => setState(() => _isHovered = false),
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
-      onTap: () async {
-        try {
-          // First, safely fetch the quote data
-          await marketWatch.fetchScripQuoteIndex(
-            widget.indexItem.token?.toString() ?? "",
-            widget.indexItem.exch?.toString() ?? "",
-            context,
-          );
+        onTap: () async {
+          try {
+            // First, safely fetch the quote data
+            await marketWatch.fetchScripQuoteIndex(
+              widget.indexItem.token?.toString() ?? "",
+              widget.indexItem.exch?.toString() ?? "",
+              context,
+            );
 
-          final quots = marketWatch.getQuotes;
+            final quots = marketWatch.getQuotes;
 
-          // Make sure we have valid quote data before proceeding
-          if (quots == null) {
-            return;
+            // Make sure we have valid quote data before proceeding
+            if (quots == null) {
+              return;
+            }
+
+            // Create DepthInputArgs with null safety
+            DepthInputArgs depthArgs = DepthInputArgs(
+                exch: quots.exch?.toString() ?? "",
+                token: quots.token?.toString() ?? "",
+                tsym: quots.tsym?.toString() ?? "",
+                instname: quots.instname?.toString() ?? "",
+                symbol: quots.symbol?.toString() ?? "",
+                expDate: quots.expDate?.toString() ?? "",
+                option: quots.option?.toString() ?? "");
+
+            // Call depth APIs with the safely constructed arguments
+            if (depthArgs.token.isNotEmpty && depthArgs.exch.isNotEmpty) {
+              await marketWatch.calldepthApis(context, depthArgs, "");
+            }
+          } catch (e) {
+            debugPrint("Error tapping index: $e");
           }
-
-          // Create DepthInputArgs with null safety
-          DepthInputArgs depthArgs = DepthInputArgs(
-              exch: quots.exch?.toString() ?? "",
-              token: quots.token?.toString() ?? "",
-              tsym: quots.tsym?.toString() ?? "",
-              instname: quots.instname?.toString() ?? "",
-              symbol: quots.symbol?.toString() ?? "",
-              expDate: quots.expDate?.toString() ?? "",
-              option: quots.option?.toString() ?? "");
-
-          // Call depth APIs with the safely constructed arguments
-          if (depthArgs.token.isNotEmpty && depthArgs.exch.isNotEmpty) {
-            await marketWatch.calldepthApis(context, depthArgs, "");
-          }
-        } catch (e) {
-          debugPrint("Error tapping index: $e");
-        }
-      },
+        },
         child: Container(
-         width: 180, // Fixed width for all cards
-         height: 125, // Fixed height for all cards
-         padding: const EdgeInsets.all(16),
-         decoration: BoxDecoration(
-           color: _isHovered
-               ? (widget.isDarkMode
-                   ? WebDarkColors.surfaceVariant.withOpacity(0.5)
-                   : WebColors.surfaceVariant.withOpacity(0.5))
-               : (widget.isDarkMode
-                   ? WebDarkColors.surface
-                   : WebColors.surface),
-           borderRadius: BorderRadius.circular(8),
-           border: Border.all(
-             color: (widget.isDarkMode
-                     ? WebDarkColors.divider
-                     : WebColors.divider),
-             width:  1,
-           ),
-         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            // Index name with underline
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  widget.indexItem.idxname?.toUpperCase() ?? "",
-                  style: WebTextStyles.sub(
-                    isDarkTheme: widget.isDarkMode,
+          width: 180, // Fixed width for all cards
+          height: 125, // Fixed height for all cards
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: _isHovered
+                ? (widget.isDarkMode
+                    ? WebDarkColors.surfaceVariant.withOpacity(0.5)
+                    : WebColors.surfaceVariant.withOpacity(0.5))
+                : (widget.isDarkMode
+                    ? WebDarkColors.surface
+                    : WebColors.surface),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: (widget.isDarkMode
+                  ? WebDarkColors.divider
+                  : WebColors.divider),
+              width: 1,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // Index name with underline
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.indexItem.idxname?.toUpperCase() ?? "",
+                    style: WebTextStyles.sub(
+                      isDarkTheme: widget.isDarkMode,
+                      color: widget.isDarkMode
+                          ? WebDarkColors.textPrimary
+                          : WebColors.textPrimary,
+                      fontWeight: WebFonts.bold,
+                    ),
+                  ),
+                  Container(
+                    margin: const EdgeInsets.only(top: 4, bottom: 8),
+                    height: 1,
+                    width: 30,
                     color: widget.isDarkMode
-                         ? WebDarkColors.textPrimary
+                        ? WebDarkColors.textPrimary
                         : WebColors.textPrimary,
-                    fontWeight: WebFonts.bold,
                   ),
-                ),
-                Container(
-                  margin: const EdgeInsets.only(top: 4, bottom: 8),
-                  height: 1,
-                  width: 30,
-                  color: widget.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
-                ),
-              ],
-            ),
-            // Price and change section
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // LTP without ₹ symbol, with profit/loss color
-                Text(
-                  _ltp,
-                  style: WebTextStyles.sub(
-                    isDarkTheme: widget.isDarkMode,
-                    color: changeColor, // Profit/loss color for LTP
-                    fontWeight: WebFonts.semiBold,
+                ],
+              ),
+              // Price and change section
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // LTP without ₹ symbol, with profit/loss color
+                  Text(
+                    _ltp,
+                    style: WebTextStyles.sub(
+                      isDarkTheme: widget.isDarkMode,
+                      color: changeColor, // Profit/loss color for LTP
+                      fontWeight: WebFonts.semiBold,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 8),
-                // Change and percentage - textPrimary color
-                Row(
-                  children: [
-                    Text(
-                      _change.startsWith("-") ? _change  : "+$_change " ,
-                      style: WebTextStyles.para(
-                        isDarkTheme: widget.isDarkMode,
-                        color: widget.isDarkMode
-                            ? WebDarkColors.textPrimary
-                            : WebColors.textPrimary,
-                        fontWeight: WebFonts.semiBold,
+                  const SizedBox(height: 8),
+                  // Change and percentage - textPrimary color
+                  Row(
+                    children: [
+                      Text(
+                        _change.startsWith("-") ? _change : "+$_change ",
+                        style: WebTextStyles.para(
+                          isDarkTheme: widget.isDarkMode,
+                          color: widget.isDarkMode
+                              ? WebDarkColors.textPrimary
+                              : WebColors.textPrimary,
+                          fontWeight: WebFonts.semiBold,
+                        ),
                       ),
-                    ),
-                    Text(
-                      "($_perChange%)",
-                      style: WebTextStyles.para(
-                        isDarkTheme: widget.isDarkMode,
-                        color: widget.isDarkMode
-                            ? WebDarkColors.textPrimary
-                            : WebColors.textPrimary,
-                        fontWeight: WebFonts.semiBold,
+                      Text(
+                        "($_perChange%)",
+                        style: WebTextStyles.para(
+                          isDarkTheme: widget.isDarkMode,
+                          color: widget.isDarkMode
+                              ? WebDarkColors.textPrimary
+                              : WebColors.textPrimary,
+                          fontWeight: WebFonts.semiBold,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ],
-         ),
-       ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
-   }
- }
+  }
+}
 
 // Custom stock card widget for gainers/losers
 class _DashboardStockCard extends ConsumerStatefulWidget {
@@ -1451,7 +1489,8 @@ class _DashboardStockCard extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<_DashboardStockCard> createState() => _DashboardStockCardState();
+  ConsumerState<_DashboardStockCard> createState() =>
+      _DashboardStockCardState();
 }
 
 class _DashboardStockCardState extends ConsumerState<_DashboardStockCard> {
@@ -1705,7 +1744,8 @@ class _TradeActionStockItem extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<_TradeActionStockItem> createState() => _TradeActionStockItemState();
+  ConsumerState<_TradeActionStockItem> createState() =>
+      _TradeActionStockItemState();
 }
 
 class _TradeActionStockItemState extends ConsumerState<_TradeActionStockItem> {
@@ -1818,120 +1858,123 @@ class _TradeActionStockItemState extends ConsumerState<_TradeActionStockItem> {
           onEnter: (_) => setState(() => isHovered = true),
           onExit: (_) => setState(() => isHovered = false),
           child: GestureDetector(
-        onTap: () async {
-          try {
-            await marketWatch.fetchScripQuoteIndex(
-              widget.stock.token?.toString() ?? "",
-              widget.stock.exch?.toString() ?? "",
-              context,
-            );
+            onTap: () async {
+              try {
+                await marketWatch.fetchScripQuoteIndex(
+                  widget.stock.token?.toString() ?? "",
+                  widget.stock.exch?.toString() ?? "",
+                  context,
+                );
 
-            final quots = marketWatch.getQuotes;
-            if (quots == null) {
-              return;
-            }
+                final quots = marketWatch.getQuotes;
+                if (quots == null) {
+                  return;
+                }
 
-            DepthInputArgs depthArgs = DepthInputArgs(
-                exch: quots.exch?.toString() ?? "",
-                token: quots.token?.toString() ?? "",
-                tsym: quots.tsym?.toString() ?? "",
-                instname: quots.instname?.toString() ?? "",
-                symbol: quots.symbol?.toString() ?? "",
-                expDate: quots.expDate?.toString() ?? "",
-                option: quots.option?.toString() ?? "");
+                DepthInputArgs depthArgs = DepthInputArgs(
+                    exch: quots.exch?.toString() ?? "",
+                    token: quots.token?.toString() ?? "",
+                    tsym: quots.tsym?.toString() ?? "",
+                    instname: quots.instname?.toString() ?? "",
+                    symbol: quots.symbol?.toString() ?? "",
+                    expDate: quots.expDate?.toString() ?? "",
+                    option: quots.option?.toString() ?? "");
 
-            if (depthArgs.token.isNotEmpty && depthArgs.exch.isNotEmpty) {
-              await marketWatch.calldepthApis(context, depthArgs, "");
-            }
-          } catch (e) {
-            debugPrint("Error tapping stock: $e");
-          }
-        },
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 0),
-          decoration: BoxDecoration(
-            color: isHovered
-                ? (widget.isDarkMode
-                    ? WebDarkColors.surfaceVariant.withOpacity(0.3)
-                    : WebColors.surfaceVariant.withOpacity(0.3))
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(4),
-          ),
-          child: Column(
-            children: [
-              // First row: Symbol | LTP
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Symbol
-                  Expanded(
-                    child: Text(
-                      symbolName,
-                      style: WebTextStyles.symbolList(
-                        isDarkTheme: widget.isDarkMode,
-                        color: widget.isDarkMode
-                            ? WebDarkColors.textPrimary
-                            : WebColors.textPrimary,
-                        
-                      ),
-                    ),
-                  ),
-                  // LTP
-                  if (widget.showPrice)
-                    Text(
-                      "₹$_ltp",
-                      style: WebTextStyles.priceWatch(
-                        isDarkTheme: widget.isDarkMode,
-                        color: changeColor,
-                      ),
-                    ),
-                ],
+                if (depthArgs.token.isNotEmpty && depthArgs.exch.isNotEmpty) {
+                  await marketWatch.calldepthApis(context, depthArgs, "");
+                }
+              } catch (e) {
+                debugPrint("Error tapping stock: $e");
+              }
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 0),
+              decoration: BoxDecoration(
+                color: isHovered
+                    ? (widget.isDarkMode
+                        ? WebDarkColors.surfaceVariant.withOpacity(0.3)
+                        : WebColors.surfaceVariant.withOpacity(0.3))
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(4),
               ),
-              const SizedBox(height: 8),
-              // Second row: Exchange | Change & Change %
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Column(
                 children: [
-                  // Exchange
-                  Expanded(
-                    child: Text(
-                      widget.stock.exch ?? "",
-                      style: WebTextStyles.exchText(
-                        isDarkTheme: widget.isDarkMode,
-                        color: widget.isDarkMode
-                            ? WebDarkColors.textSecondary
-                            : WebColors.textSecondary,
-                      ),
-                    ),
-                  ),
-                  // Change and percentage
-                  if (widget.showPrice)
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          _change.startsWith("-") ? _change : "+$_change",
-                          style: WebTextStyles.pricePercent(
+                  // First row: Symbol | LTP
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Symbol
+                      Expanded(
+                        child: Text(
+                          symbolName,
+                          style: WebTextStyles.symbolList(
                             isDarkTheme: widget.isDarkMode,
-                            color: widget.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                            color: widget.isDarkMode
+                                ? WebDarkColors.textPrimary
+                                : WebColors.textPrimary,
                           ),
                         ),
+                      ),
+                      // LTP
+                      if (widget.showPrice)
                         Text(
-                          " ($_perChange%)",  
-                          style: WebTextStyles.pricePercent(
+                          "₹$_ltp",
+                          style: WebTextStyles.priceWatch(
                             isDarkTheme: widget.isDarkMode,
-                            color: widget.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                            color: changeColor,
                           ),
                         ),
-                      ],
-                    ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  // Second row: Exchange | Change & Change %
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Exchange
+                      Expanded(
+                        child: Text(
+                          widget.stock.exch ?? "",
+                          style: WebTextStyles.exchText(
+                            isDarkTheme: widget.isDarkMode,
+                            color: widget.isDarkMode
+                                ? WebDarkColors.textSecondary
+                                : WebColors.textSecondary,
+                          ),
+                        ),
+                      ),
+                      // Change and percentage
+                      if (widget.showPrice)
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              _change.startsWith("-") ? _change : "+$_change",
+                              style: WebTextStyles.pricePercent(
+                                isDarkTheme: widget.isDarkMode,
+                                color: widget.isDarkMode
+                                    ? WebDarkColors.textPrimary
+                                    : WebColors.textPrimary,
+                              ),
+                            ),
+                            Text(
+                              " ($_perChange%)",
+                              style: WebTextStyles.pricePercent(
+                                isDarkTheme: widget.isDarkMode,
+                                color: widget.isDarkMode
+                                    ? WebDarkColors.textPrimary
+                                    : WebColors.textPrimary,
+                              ),
+                            ),
+                          ],
+                        ),
+                    ],
+                  ),
                 ],
               ),
-            ],
-          ),
-        ),
+            ),
           ),
         );
       },

@@ -9,8 +9,14 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:mynt_plus/res/mynt_web_text_styles.dart';
 import 'package:mynt_plus/screens/web/market_watch/future_screen_web.dart';
+
+import 'package:mynt_plus/sharedWidget/common_buttons_web.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:pointer_interceptor/pointer_interceptor.dart';
+import 'dart:html' as html;
+import 'tv_chart/chart_iframe_guard.dart';
 import 'package:mynt_plus/screens/web/market_watch/stock_report.dart';
 import 'package:mynt_plus/sharedWidget/list_divider.dart';
 import 'package:percent_indicator/percent_indicator.dart';
@@ -23,9 +29,9 @@ import '../../../provider/market_watch_provider.dart';
 import '../../../provider/thems.dart';
 
 import '../../../res/res.dart';
-import '../../../res/global_font_web.dart';
-import '../../../res/web_colors.dart';
-import '../../../res/shadcn_text_styles.dart';
+import '../../../res/mynt_web_text_styles.dart';
+import '../../../res/mynt_web_color_styles.dart';
+
 import '../../../routes/route_names.dart';
 import '../../../utils/responsive_navigation.dart';
 import '../../web/order/quick_order_screen_web.dart';
@@ -60,60 +66,60 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
   bool _isDisposed = false;
   final ScrollController _scrollController = ScrollController();
 
-  // Cache for text styles
-  static final Map<String, TextStyle> _textStyleCache = {};
-  static final Map<String, TextStyle> _titleStyleCache = {};
-  static final Map<String, TextStyle> _valueStyleCache = {};
-
   @override
   bool get wantKeepAlive => true; // Keep the state alive when navigating
 
   // Memoized text styles
-  TextStyle _getTextStyle(Color color, double size, [int? fw]) {
-    final key = '${color.value}_${size}_${fw ?? "null"}';
-    return _textStyleCache.putIfAbsent(
-      key,
-      () => TextStyle(
-        fontFamily: 'Geist',
-        fontSize: size,
-        color: color,
-        fontWeight: fw == 0
-            ? FontWeight.w400
-            : fw == 1
-                ? FontWeight.w500
-                : fw == 2
-                    ? FontWeight.w600
-                    : fw == 3
-                        ? FontWeight.w700
-                        : FontWeight.w400,
-      ),
-    );
-  }
 
   TextStyle _getTitleStyle(Color color) {
-    final key = '${color.value}_title';
-    return _titleStyleCache.putIfAbsent(
-      key,
-      () => TextStyle(
-        fontFamily: 'Geist',
-        fontSize: 12,
-        color: color,
-        fontWeight: FontWeight.w500,
-      ),
+    return MyntWebTextStyles.para(
+      context,
+      color: color,
+      fontWeight: MyntFonts.medium,
     );
   }
 
   TextStyle _getValueStyle(Color color) {
-    final key = '${color.value}_value';
-    return _valueStyleCache.putIfAbsent(
-      key,
-      () => TextStyle(
-        fontFamily: 'Geist',
-        fontSize: 13,
-        color: color,
-        fontWeight: FontWeight.w500,
-      ),
+    return MyntWebTextStyles.bodySmall(
+      context,
+      color: color,
+      fontWeight: MyntFonts.medium,
     );
+  }
+
+  // Directly disable all chart iframes and reset cursor (like chart's onExit)
+  void _disableAllChartIframes() {
+    try {
+      final iframes = html.document.querySelectorAll('iframe');
+      for (var iframe in iframes) {
+        if (iframe is html.IFrameElement &&
+            iframe.id.contains('chart-iframe')) {
+          iframe.style.pointerEvents = 'none';
+          // Reset cursor style to prevent cursor bleeding
+          iframe.style.cursor = 'default';
+        }
+      }
+      // Also reset cursor on document body to ensure it's reset globally
+      html.document.body?.style.cursor = 'default';
+    } catch (e) {
+      debugPrint('Error disabling iframes: $e');
+    }
+  }
+
+  void _enableAllChartIframes() {
+    try {
+      final iframes = html.document.querySelectorAll('iframe');
+      for (var iframe in iframes) {
+        if (iframe is html.IFrameElement &&
+            iframe.id.contains('chart-iframe')) {
+          iframe.style.pointerEvents = 'auto';
+          iframe.style.cursor = '';
+        }
+      }
+      html.document.body?.style.cursor = '';
+    } catch (e) {
+      debugPrint('Error enabling iframes: $e');
+    }
   }
 
   @override
@@ -296,17 +302,17 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title1, style: _getTitleStyle(WebDarkColors.textSecondary)),
+            Text(title1,
+                style: _getTitleStyle(resolveThemeColor(context,
+                    dark: MyntColors.textSecondaryDark,
+                    light: MyntColors.textSecondary))),
             const SizedBox(height: 4),
             Text(value1,
-                style: _getValueStyle(theme.isDarkMode
-                    ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary)),
+                style: _getValueStyle(resolveThemeColor(context,
+                    dark: MyntColors.textPrimaryDark,
+                    light: MyntColors.textPrimary))),
             const SizedBox(height: 4),
-            Divider(
-                color: theme.isDarkMode
-                    ? WebDarkColors.divider
-                    : WebColors.divider)
+            Divider(color: shadcn.Theme.of(context).colorScheme.border)
           ],
         ),
       ),
@@ -315,17 +321,17 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title2, style: _getTitleStyle(WebDarkColors.textSecondary)),
+            Text(title2,
+                style: _getTitleStyle(resolveThemeColor(context,
+                    dark: MyntColors.textSecondaryDark,
+                    light: MyntColors.textSecondary))),
             const SizedBox(height: 4),
             Text(value2,
-                style: _getValueStyle(theme.isDarkMode
-                    ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary)),
+                style: _getValueStyle(resolveThemeColor(context,
+                    dark: MyntColors.textPrimaryDark,
+                    light: MyntColors.textPrimary))),
             const SizedBox(height: 4),
-            Divider(
-                color: theme.isDarkMode
-                    ? WebDarkColors.divider
-                    : WebColors.divider)
+            Divider(color: shadcn.Theme.of(context).colorScheme.border)
           ],
         ),
       )
@@ -353,11 +359,21 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: ShadcnTextStyles.label(context)),
+            Text(title,
+                style: MyntWebTextStyles.para(context,
+                    fontWeight: MyntFonts.medium,
+                    color: resolveThemeColor(context,
+                        dark: MyntColors.textSecondaryDark,
+                        light: MyntColors.textSecondary))),
             const SizedBox(height: 6),
-            Text(value, style: ShadcnTextStyles.value(context)),
+            Text(value,
+                style: MyntWebTextStyles.body(context,
+                    fontWeight: MyntFonts.medium,
+                    color: resolveThemeColor(context,
+                        dark: MyntColors.textPrimaryDark,
+                        light: MyntColors.textPrimary))),
             const SizedBox(height: 4),
-            Divider(color: ShadcnColors.border(context))
+            Divider(color: shadcn.Theme.of(context).colorScheme.border)
           ],
         ),
       );
@@ -406,15 +422,15 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
     final maxQty = isBuy ? scripInfo.maxBuyQty : scripInfo.maxSellQty;
     final barPercentage =
         (((int.tryParse(qty) ?? 0) / maxQty) * 100 / 100).clamp(0.0, 1.0);
-    final color = isBuy ? WebDarkColors.success : WebDarkColors.error;
+    final color = isBuy ? MyntColors.profit : MyntColors.loss;
 
     return Stack(children: [
       Transform.flip(
         flipX: !isBuy,
         child: LinearPercentIndicator(
           lineHeight: 20.0,
-          backgroundColor:
-              !theme.isDarkMode ? WebColors.surface : WebDarkColors.surface,
+          backgroundColor: resolveThemeColor(context,
+              dark: MyntColors.searchBgDark, light: MyntColors.searchBg),
           percent: barPercentage,
           padding: const EdgeInsets.symmetric(horizontal: 0),
           progressColor: color.withOpacity(.2),
@@ -427,21 +443,19 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
           children: [
             Text(
               " ${qty != "null" ? qty : '0'} ",
-              style: _getTextStyle(
-                  theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
-                  13,
-                  0),
+              style: _getTitleStyle(
+                resolveThemeColor(context,
+                    dark: MyntColors.textPrimaryDark,
+                    light: MyntColors.textPrimary),
+              ),
             ),
             Text(
               " ${price != "null" ? price : '0.00'} ",
-              style: _getTextStyle(
-                  theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
-                  13,
-                  0),
+              style: _getTitleStyle(
+                resolveThemeColor(context,
+                    dark: MyntColors.textPrimaryDark,
+                    light: MyntColors.textPrimary),
+              ),
             ),
           ],
         ),
@@ -526,9 +540,8 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                     return Scaffold(
                       body: Container(
                         decoration: BoxDecoration(
-                          color: theme.isDarkMode
-                              ? WebDarkColors.background
-                              : WebColors.background,
+                          color:
+                              shadcn.Theme.of(context).colorScheme.background,
                         ),
                         child: Column(
                           children: [
@@ -551,14 +564,8 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                   children: [
                                     Text(
                                       "Scrip info",
-                                      style: TextStyle(
-                                        fontFamily: 'Geist',
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w700,
-                                        color: shadcn.Theme.of(context)
-                                            .colorScheme
-                                            .foreground,
-                                      ),
+                                      style: MyntWebTextStyles.body(context,
+                                          fontWeight: MyntFonts.bold),
                                     ),
                                     // if (widget.onClose != null)
                                     //   Material(
@@ -596,11 +603,11 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                   thumbVisibility: true,
                                   thickness: 6,
                                   radius: const Radius.circular(0),
-                                  thumbColor: theme.isDarkMode
-                                      ? WebDarkColors.textSecondary
-                                          .withOpacity(0.5)
-                                      : WebColors.textSecondary
-                                          .withOpacity(0.5),
+                                  thumbColor: resolveThemeColor(context,
+                                          dark: MyntColors.textSecondaryDark
+                                              .withOpacity(0.5),
+                                          light: MyntColors.textSecondary)
+                                      .withOpacity(0.5),
                                   child: SingleChildScrollView(
                                     controller: _scrollController,
                                     padding: EdgeInsets.zero,
@@ -610,7 +617,59 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                         mainAxisAlignment:
                                             MainAxisAlignment.start,
                                         children: [
-                                          Container(),
+                                          // if (!scripInfo.scripDepthloader &&
+                                          //     widget.wlValue.instname !=
+                                          //         "UNDIND" &&
+                                          //     widget.wlValue.instname != "COM")
+                                          //   Padding(
+                                          //     padding:
+                                          //         const EdgeInsets.symmetric(
+                                          //             horizontal: 10,
+                                          //             vertical: 16),
+                                          //     child: Row(
+                                          //       children: [
+                                          //         Expanded(
+                                          //           child: MyntButton(
+                                          //             label: "Buy",
+                                          //             backgroundColor:
+                                          //                 resolveThemeColor(
+                                          //                     context,
+                                          //                     dark: MyntColors
+                                          //                         .primary,
+                                          //                     light: MyntColors
+                                          //                         .primary),
+                                          //             onPressed: () async {
+                                          //               await placeOrderInput(
+                                          //                   scripInfo,
+                                          //                   context,
+                                          //                   depthData,
+                                          //                   true);
+                                          //             },
+                                          //           ),
+                                          //         ),
+                                          //         const SizedBox(width: 12),
+                                          //         Expanded(
+                                          //           child: MyntButton(
+                                          //             label: "Sell",
+                                          //             backgroundColor:
+                                          //                 resolveThemeColor(
+                                          //                     context,
+                                          //                     dark: MyntColors
+                                          //                         .loss,
+                                          //                     light: MyntColors
+                                          //                         .loss),
+                                          //             onPressed: () async {
+                                          //               await placeOrderInput(
+                                          //                   scripInfo,
+                                          //                   context,
+                                          //                   depthData,
+                                          //                   false);
+                                          //             },
+                                          //           ),
+                                          //         ),
+                                          //       ],
+                                          //     ),
+                                          //   ),
                                           /*
                                       Symbol and price section (temporarily commented)
                                       Container(
@@ -736,10 +795,10 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                         child: Center(
                                                                             child: Text(
                                                                                 "Buy",
-                                                                                style: WebTextStyles.sub(
+                                                                                style: MyntWebTextStyles.sub(
                                                                                     isDarkTheme: theme.isDarkMode,
                                                                                     color: WebDarkColors.textPrimary,
-                                                                                    fontWeight: WebFonts.semiBold,
+                                                                                    fontWeight: MyntFonts.semiBold,
                                                                                    ))),
                                                                       ),
                                                                     )),
@@ -765,7 +824,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                                       5)),
                                                                               child: Center(
                                                                                   child:
-                                                                                      Text("Sell", style: WebTextStyles.sub(isDarkTheme: theme.isDarkMode, color: WebDarkColors.textPrimary, fontWeight: WebFonts.semiBold,))))),
+                                                                                      Text("Sell", style: MyntWebTextStyles.sub(isDarkTheme: theme.isDarkMode, color: WebDarkColors.textPrimary, fontWeight: MyntFonts.semiBold,))))),
                                                                     ),
                                                                   ])),
                               
@@ -1487,32 +1546,23 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                     children: [
                                                                       Text(
                                                                         "Quantity",
-                                                                        style:
-                                                                            TextStyle(
-                                                                          fontFamily:
-                                                                              'Geist',
-                                                                          fontSize:
-                                                                              12,
-                                                                          fontWeight:
-                                                                              FontWeight.w500,
-                                                                          color: shadcn.Theme.of(context)
-                                                                              .colorScheme
-                                                                              .mutedForeground,
-                                                                        ),
+                                                                        style: MyntWebTextStyles.para(
+                                                                            context,
+                                                                            fontWeight: MyntFonts
+                                                                                .medium,
+                                                                            color: resolveThemeColor(context,
+                                                                                dark: MyntColors.textSecondaryDark,
+                                                                                light: MyntColors.textSecondary)),
                                                                       ),
                                                                       Text(
                                                                         "Bid",
-                                                                        style:
-                                                                            TextStyle(
-                                                                          fontFamily:
-                                                                              'Geist',
-                                                                          fontSize:
-                                                                              12,
-                                                                          fontWeight:
-                                                                              FontWeight.w500,
-                                                                          color:
-                                                                              WebDarkColors.secondary,
-                                                                        ),
+                                                                        style: MyntWebTextStyles.para(
+                                                                            context,
+                                                                            fontWeight: MyntFonts
+                                                                                .medium,
+                                                                            color: resolveThemeColor(context,
+                                                                                dark: MyntColors.primaryDark,
+                                                                                light: MyntColors.primary)),
                                                                       )
                                                                     ]),
                                                                 const SizedBox(
@@ -1569,32 +1619,27 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                     children: [
                                                                       Text(
                                                                         "Ask",
-                                                                        style:
-                                                                            TextStyle(
-                                                                          fontFamily:
-                                                                              'Geist',
-                                                                          fontSize:
-                                                                              12,
-                                                                          fontWeight:
-                                                                              FontWeight.w500,
-                                                                          color: shadcn.Theme.of(context)
-                                                                              .colorScheme
-                                                                              .destructive,
-                                                                        ),
+                                                                        style: MyntWebTextStyles.para(
+                                                                            context,
+                                                                            fontWeight:
+                                                                                MyntFonts.medium,
+                                                                            color: MyntColors.loss),
                                                                       ),
                                                                       Text(
                                                                         "Quantity",
-                                                                        style:
-                                                                            TextStyle(
-                                                                          fontFamily:
-                                                                              'Geist',
-                                                                          fontSize:
-                                                                              12,
+                                                                        style: MyntWebTextStyles
+                                                                            .para(
+                                                                          context,
                                                                           fontWeight:
-                                                                              FontWeight.w500,
-                                                                          color: shadcn.Theme.of(context)
-                                                                              .colorScheme
-                                                                              .mutedForeground,
+                                                                              MyntFonts.medium,
+                                                                          color:
+                                                                              resolveThemeColor(
+                                                                            context,
+                                                                            dark:
+                                                                                MyntColors.textSecondaryDark,
+                                                                            light:
+                                                                                MyntColors.textSecondary,
+                                                                          ),
                                                                         ),
                                                                       )
                                                                     ]),
@@ -1647,18 +1692,20 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                   Text(
                                                                     "${depthData.tbq != "null" ? depthData.tbq ?? 0 : '0'}",
                                                                     style:
-                                                                        TextStyle(
-                                                                      fontFamily:
-                                                                          'Geist',
-                                                                      fontSize:
-                                                                          13,
+                                                                        MyntWebTextStyles
+                                                                            .body(
+                                                                      context,
                                                                       fontWeight:
-                                                                          FontWeight
-                                                                              .w500,
-                                                                      color: shadcn.Theme.of(
-                                                                              context)
-                                                                          .colorScheme
-                                                                          .mutedForeground,
+                                                                          MyntFonts
+                                                                              .medium,
+                                                                      color:
+                                                                          resolveThemeColor(
+                                                                        context,
+                                                                        dark: MyntColors
+                                                                            .textSecondaryDark,
+                                                                        light: MyntColors
+                                                                            .textSecondary,
+                                                                      ),
                                                                     ),
                                                                   ),
                                                                   const SizedBox(
@@ -1667,18 +1714,20 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                   Text(
                                                                     "(${scripInfo.totBuyQtyPer.toStringAsFixed(2)}%)",
                                                                     style:
-                                                                        TextStyle(
-                                                                      fontFamily:
-                                                                          'Geist',
-                                                                      fontSize:
-                                                                          12,
+                                                                        MyntWebTextStyles
+                                                                            .body(
+                                                                      context,
                                                                       fontWeight:
-                                                                          FontWeight
-                                                                              .w500,
-                                                                      color: shadcn.Theme.of(
-                                                                              context)
-                                                                          .colorScheme
-                                                                          .mutedForeground,
+                                                                          MyntFonts
+                                                                              .medium,
+                                                                      color:
+                                                                          resolveThemeColor(
+                                                                        context,
+                                                                        dark: MyntColors
+                                                                            .textSecondaryDark,
+                                                                        light: MyntColors
+                                                                            .textSecondary,
+                                                                      ),
                                                                     ),
                                                                   ),
                                                                 ],
@@ -1688,18 +1737,20 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                   Text(
                                                                     "(${scripInfo.totSellQtyPer.toStringAsFixed(2)}%)",
                                                                     style:
-                                                                        TextStyle(
-                                                                      fontFamily:
-                                                                          'Geist',
-                                                                      fontSize:
-                                                                          12,
+                                                                        MyntWebTextStyles
+                                                                            .body(
+                                                                      context,
                                                                       fontWeight:
-                                                                          FontWeight
-                                                                              .w500,
-                                                                      color: shadcn.Theme.of(
-                                                                              context)
-                                                                          .colorScheme
-                                                                          .mutedForeground,
+                                                                          MyntFonts
+                                                                              .medium,
+                                                                      color:
+                                                                          resolveThemeColor(
+                                                                        context,
+                                                                        dark: MyntColors
+                                                                            .textSecondaryDark,
+                                                                        light: MyntColors
+                                                                            .textSecondary,
+                                                                      ),
                                                                     ),
                                                                   ),
                                                                   const SizedBox(
@@ -1708,18 +1759,20 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                   Text(
                                                                     "${depthData.tsq != "null" ? depthData.tsq ?? 0 : '0'}",
                                                                     style:
-                                                                        TextStyle(
-                                                                      fontFamily:
-                                                                          'Geist',
-                                                                      fontSize:
-                                                                          13,
+                                                                        MyntWebTextStyles
+                                                                            .body(
+                                                                      context,
                                                                       fontWeight:
-                                                                          FontWeight
-                                                                              .w500,
-                                                                      color: shadcn.Theme.of(
-                                                                              context)
-                                                                          .colorScheme
-                                                                          .mutedForeground,
+                                                                          MyntFonts
+                                                                              .medium,
+                                                                      color:
+                                                                          resolveThemeColor(
+                                                                        context,
+                                                                        dark: MyntColors
+                                                                            .textSecondaryDark,
+                                                                        light: MyntColors
+                                                                            .textSecondary,
+                                                                      ),
                                                                     ),
                                                                   ),
                                                                 ],
@@ -1768,26 +1821,28 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                       lineHeight:
                                                                           5.0,
                                                                       barRadius:
-                                                                          const Radius
-                                                                              .circular(
+                                                                          const Radius.circular(
                                                                               4.0), // Half of lineHeight for capsule shape
-                                                                      backgroundColor: (scripInfo.totBuyQtyPer.toStringAsFixed(2) == "0.00" &&
-                                                                              scripInfo.totSellQtyPer.toStringAsFixed(2) ==
-                                                                                  "0.00")
-                                                                          ? ShadcnColors.mutedForeground(
-                                                                              context)
-                                                                          : ShadcnColors.destructive(
-                                                                              context),
-                                                                      percent:
-                                                                          scripInfo
-                                                                              .totBuyQtyPerChng,
-                                                                      padding: const EdgeInsets
-                                                                          .symmetric(
+                                                                      backgroundColor: (scripInfo.totBuyQtyPer.toStringAsFixed(2) == "0.00" && scripInfo.totSellQtyPer.toStringAsFixed(2) == "0.00")
+                                                                          ? resolveThemeColor(
+                                                                              context,
+                                                                              dark: MyntColors
+                                                                                  .textSecondaryDark,
+                                                                              light: MyntColors
+                                                                                  .textSecondary)
+                                                                          : resolveThemeColor(
+                                                                              context,
+                                                                              dark: MyntColors
+                                                                                  .tertiary,
+                                                                              light: MyntColors
+                                                                                  .tertiary),
+                                                                      percent: scripInfo
+                                                                          .totBuyQtyPerChng,
+                                                                      padding: const EdgeInsets.symmetric(
                                                                           horizontal:
                                                                               0),
                                                                       progressColor:
-                                                                          ShadcnColors.primaryBlue(
-                                                                              context)),
+                                                                          MyntColors.primary),
                                                                   const SizedBox(
                                                                       height:
                                                                           16),
@@ -1804,223 +1859,50 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                         // Trading Info Section - Responsive layout with 300px breakpoint
                                                         const SizedBox(
                                                             height: 12),
-                                                        LayoutBuilder(
-                                                          builder: (context,
-                                                              constraints) {
-                                                            // Use single column if width is less than 300px
-                                                            final isSmallScreen =
-                                                                constraints
-                                                                        .maxWidth <
-                                                                    300;
-
-                                                            if (isSmallScreen) {
-                                                              // Single column layout (stacked)
-                                                              return Column(
-                                                                children: [
-                                                                  _buildInfoItem(
-                                                                    theme,
-                                                                    "Avg Price",
-                                                                    "${depthData.ap ?? 0.00}",
-                                                                  ),
-                                                                  const SizedBox(
-                                                                      height:
-                                                                          12),
-                                                                  _buildInfoItem(
-                                                                    theme,
-                                                                    "Volume",
-                                                                    "${depthData.v != "null" ? depthData.v ?? 0.00 : '0'}",
-                                                                  ),
-                                                                  const SizedBox(
-                                                                      height:
-                                                                          12),
-                                                                  _buildInfoItem(
-                                                                    theme,
-                                                                    "LTQ",
-                                                                    "${depthData.ltq != "null" ? depthData.ltq ?? 0.00 : '0'}",
-                                                                  ),
-                                                                  const SizedBox(
-                                                                      height:
-                                                                          12),
-                                                                  _buildInfoItem(
-                                                                    theme,
-                                                                    "LTT",
-                                                                    depthData.ltt !=
-                                                                            "null"
-                                                                        ? (depthData.ltt ??
-                                                                            "--")
-                                                                        : "--",
-                                                                  ),
-                                                                  const SizedBox(
-                                                                      height:
-                                                                          12),
-                                                                  _buildInfoItem(
-                                                                    theme,
-                                                                    "52 Weeks High-Low",
-                                                                    "${(depthData.wk52H != "null" && depthData.wk52H != null) ? depthData.wk52H : 0.00} - ${(depthData.wk52L != "null" && depthData.wk52L != null) ? depthData.wk52L : 0.00}",
-                                                                  ),
-                                                                  const SizedBox(
-                                                                      height:
-                                                                          12),
-                                                                  _buildInfoItem(
-                                                                    theme,
-                                                                    "DPR",
-                                                                    "${depthData.uc != "null" ? depthData.uc ?? 0.00 : '0.00'} - ${depthData.lc != "null" ? depthData.lc ?? 0.00 : '0.00'}",
-                                                                  ),
-                                                                  if (depthData
-                                                                          .seg !=
-                                                                      "EQT") ...[
-                                                                    const SizedBox(
-                                                                        height:
-                                                                            12),
-                                                                    _buildInfoItem(
-                                                                      theme,
-                                                                      "Open Interest - OI",
-                                                                      "${depthData.oi != "null" ? depthData.oi ?? 0.00 : '0'}",
-                                                                    ),
-                                                                    const SizedBox(
-                                                                        height:
-                                                                            12),
-                                                                    _buildInfoItem(
-                                                                      theme,
-                                                                      "Change in OI",
-                                                                      "${depthData.poi != "null" ? depthData.poi ?? 0.00 : '0'}",
-                                                                    ),
-                                                                  ],
-                                                                ],
-                                                              );
-                                                            } else {
-                                                              // Two column layout (side by side)
-                                                              return Column(
-                                                                children: [
-                                                                  // Row 1: Avg Price, Volume
-                                                                  Row(
-                                                                    children: [
-                                                                      Expanded(
-                                                                        child:
-                                                                            _buildInfoItem(
-                                                                          theme,
-                                                                          "Avg Price",
-                                                                          "${depthData.ap ?? 0.00}",
-                                                                        ),
-                                                                      ),
-                                                                      const SizedBox(
-                                                                          width:
-                                                                              16),
-                                                                      Expanded(
-                                                                        child:
-                                                                            _buildInfoItem(
-                                                                          theme,
-                                                                          "Volume",
-                                                                          "${depthData.v != "null" ? depthData.v ?? 0.00 : '0'}",
-                                                                        ),
-                                                                      ),
-                                                                    ],
-                                                                  ),
-                                                                  const SizedBox(
-                                                                      height:
-                                                                          12),
-                                                                  // Row 2: LTQ, LTT
-                                                                  Row(
-                                                                    children: [
-                                                                      Expanded(
-                                                                        child:
-                                                                            _buildInfoItem(
-                                                                          theme,
-                                                                          "LTQ",
-                                                                          "${depthData.ltq != "null" ? depthData.ltq ?? 0.00 : '0'}",
-                                                                        ),
-                                                                      ),
-                                                                      const SizedBox(
-                                                                          width:
-                                                                              16),
-                                                                      Expanded(
-                                                                        child:
-                                                                            _buildInfoItem(
-                                                                          theme,
-                                                                          "LTT",
-                                                                          depthData.ltt != "null"
-                                                                              ? (depthData.ltt ?? "--")
-                                                                              : "--",
-                                                                        ),
-                                                                      ),
-                                                                    ],
-                                                                  ),
-                                                                  const SizedBox(
-                                                                      height:
-                                                                          12),
-                                                                  // Row 3: 52 Weeks High-Low, DPR
-                                                                  Row(
-                                                                    children: [
-                                                                      Expanded(
-                                                                        child:
-                                                                            _buildInfoItem(
-                                                                          theme,
-                                                                          "52 Weeks High-Low",
-                                                                          "${(depthData.wk52H != "null" && depthData.wk52H != null) ? depthData.wk52H : 0.00} - ${(depthData.wk52L != "null" && depthData.wk52L != null) ? depthData.wk52L : 0.00}",
-                                                                        ),
-                                                                      ),
-                                                                      const SizedBox(
-                                                                          width:
-                                                                              16),
-                                                                      Expanded(
-                                                                        child:
-                                                                            _buildInfoItem(
-                                                                          theme,
-                                                                          "DPR",
-                                                                          "${depthData.uc != "null" ? depthData.uc ?? 0.00 : '0.00'} - ${depthData.lc != "null" ? depthData.lc ?? 0.00 : '0.00'}",
-                                                                        ),
-                                                                      ),
-                                                                    ],
-                                                                  ),
-                                                                  if (depthData
-                                                                          .seg !=
-                                                                      "EQT") ...[
-                                                                    const SizedBox(
-                                                                        height:
-                                                                            12),
-                                                                    // Row 4: Open Interest - OI, Change in OI
-                                                                    Row(
-                                                                      children: [
-                                                                        Expanded(
-                                                                          child:
-                                                                              _buildInfoItem(
-                                                                            theme,
-                                                                            "Open Interest - OI",
-                                                                            "${depthData.oi != "null" ? depthData.oi ?? 0.00 : '0'}",
-                                                                          ),
-                                                                        ),
-                                                                        const SizedBox(
-                                                                            width:
-                                                                                16),
-                                                                        Expanded(
-                                                                          child:
-                                                                              _buildInfoItem(
-                                                                            theme,
-                                                                            "Change in OI",
-                                                                            "${depthData.poi != "null" ? depthData.poi ?? 0.00 : '0'}",
-                                                                          ),
-                                                                        ),
-                                                                      ],
-                                                                    ),
-                                                                  ],
-                                                                ],
-                                                              );
-                                                            }
-                                                          },
+                                                        Column(
+                                                          children: [
+                                                            data(
+                                                                "Avg Price",
+                                                                "${depthData.ap ?? 0.00}",
+                                                                theme),
+                                                            data(
+                                                                "Volume",
+                                                                "${depthData.v != "null" ? depthData.v ?? 0.00 : '0'}",
+                                                                theme),
+                                                            data(
+                                                                "LTQ",
+                                                                "${depthData.ltq != "null" ? depthData.ltq ?? 0.00 : '0'}",
+                                                                theme),
+                                                            data(
+                                                                "LTT",
+                                                                depthData.ltt !=
+                                                                        "null"
+                                                                    ? (depthData
+                                                                            .ltt ??
+                                                                        "--")
+                                                                    : "--",
+                                                                theme),
+                                                            data(
+                                                                "52 Weeks High-Low",
+                                                                "${(depthData.wk52H != "null" && depthData.wk52H != null) ? depthData.wk52H : 0.00} - ${(depthData.wk52L != "null" && depthData.wk52L != null) ? depthData.wk52L : 0.00}",
+                                                                theme),
+                                                            data(
+                                                                "DPR",
+                                                                "${depthData.uc != "null" ? depthData.uc ?? 0.00 : '0.00'} - ${depthData.lc != "null" ? depthData.lc ?? 0.00 : '0.00'}",
+                                                                theme),
+                                                            if (depthData.seg !=
+                                                                "EQT") ...[
+                                                              data(
+                                                                  "Open Interest - OI",
+                                                                  "${depthData.oi != "null" ? depthData.oi ?? 0.00 : '0'}",
+                                                                  theme),
+                                                              data(
+                                                                  "Change in OI",
+                                                                  "${depthData.poi != "null" ? depthData.poi ?? 0.00 : '0'}",
+                                                                  theme),
+                                                            ],
+                                                          ],
                                                         ),
-                                                        // if (depthData
-                                                        //         .seg !=
-                                                        //     "EQT") ...[
-                                                        //   _buildInfoRow(
-                                                        //       "Open Interest (OI)",
-                                                        //       "${depthData.oi != "null" ? depthData.oi ?? 0.00 : '0'}",
-                                                        //       "Change in OI",
-                                                        //       "${depthData.poi != "null" ? depthData.poi ?? 0.00 : '0'}",
-                                                        //       theme),
-                                                        //   const SizedBox(
-                                                        //       height:
-                                                        //           4),
-                                                        // ],
                                                         if (scripInfo
                                                             .returnsGridview
                                                             .isNotEmpty) ...[
@@ -2085,9 +1967,22 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                             children: [
                                                                               Text(
                                                                                 "${scripInfo.returnsGridview[index]['percent']}%",
-                                                                                style: ShadcnTextStyles.bodyMedium(
+                                                                                style: MyntWebTextStyles.body(
                                                                                   context,
-                                                                                  color: ShadcnColors.forChange(context, scripInfo.returnsGridview[index]['percent'].toString()),
+                                                                                  fontWeight: MyntFonts.medium,
+                                                                                  color: (scripInfo.returnsGridview[index]['percent'].toString().startsWith('-'))
+                                                                                      ? resolveThemeColor(
+                                                                                          context,
+                                                                                          dark: MyntColors.lossDark,
+                                                                                          light: MyntColors.loss,
+                                                                                        )
+                                                                                      : (scripInfo.returnsGridview[index]['percent'].toString() != '0' && scripInfo.returnsGridview[index]['percent'].toString() != '0.00')
+                                                                                          ? resolveThemeColor(
+                                                                                              context,
+                                                                                              dark: MyntColors.profitDark,
+                                                                                              light: MyntColors.profit,
+                                                                                            )
+                                                                                          : resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary),
                                                                                 ),
                                                                               ),
                                                                               const SizedBox(height: 6),
@@ -2095,7 +1990,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                                   child: Text(
                                                                                 "${scripInfo.returnsGridview[index]['duration']}",
                                                                                 textAlign: TextAlign.center,
-                                                                                style: ShadcnTextStyles.small(context),
+                                                                                style: MyntWebTextStyles.para(context, fontWeight: MyntFonts.medium, color: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary)),
                                                                               ))
                                                                             ]),
                                                                       ));
@@ -2108,11 +2003,6 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                         ]
                                                       ],
 
-                                                      // Add spacing before the new sections
-                                                      // const SizedBox(
-                                                      //     height: 16),
-
-                                                      // Quick actions row: Futures | Set Alert | Fundamentals
                                                       Row(
                                                         children: [
                                                           if (scripInfo
@@ -2178,72 +2068,82 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                           (BuildContext
                                                                               dialogContext) {
                                                                         return Center(
-                                                                          child:
-                                                                              shadcn.Card(
-                                                                            borderRadius:
-                                                                                BorderRadius.circular(8),
                                                                             child:
-                                                                                Container(
-                                                                              width: 800,
-                                                                              height: 700,
-                                                                              child: Column(
-                                                                                mainAxisSize: MainAxisSize.min,
-                                                                                children: [
-                                                                                  // Header
-                                                                                  Container(
-                                                                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                                                                                    decoration: BoxDecoration(
-                                                                                      border: Border(
-                                                                                        bottom: BorderSide(
-                                                                                          color: ShadcnColors.border(context),
-                                                                                        ),
-                                                                                      ),
-                                                                                    ),
-                                                                                    child: Row(
-                                                                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                                                      children: [
-                                                                                        Text(
-                                                                                          'Futures',
-                                                                                          style: ShadcnTextStyles.dialogTitle(context),
-                                                                                        ),
-                                                                                        Material(
-                                                                                          color: Colors.transparent,
-                                                                                          shape: const CircleBorder(),
-                                                                                          child: InkWell(
-                                                                                            customBorder: const CircleBorder(),
-                                                                                            splashColor: ShadcnColors.accent(context).withOpacity(.15),
-                                                                                            highlightColor: ShadcnColors.accent(context).withOpacity(.08),
-                                                                                            onTap: () {
-                                                                                              // Unsubscribe from futures WebSocket
-                                                                                              scripInfo.requestWSFut(context: context, isSubscribe: false);
-                                                                                              Navigator.of(context).pop();
-                                                                                            },
-                                                                                            child: Padding(
-                                                                                              padding: const EdgeInsets.all(6),
-                                                                                              child: Icon(
-                                                                                                Icons.close,
-                                                                                                size: 20,
-                                                                                                color: ShadcnColors.mutedForeground(context),
-                                                                                              ),
+                                                                                shadcn.Card(
+                                                                          borderRadius:
+                                                                              BorderRadius.circular(8),
+                                                                          padding:
+                                                                              EdgeInsets.zero,
+                                                                          child:
+                                                                              Container(
+                                                                            width:
+                                                                                800,
+                                                                            constraints:
+                                                                                const BoxConstraints(maxHeight: 500),
+                                                                            child:
+                                                                                PointerInterceptor(
+                                                                              child: MouseRegion(
+                                                                                cursor: SystemMouseCursors.basic,
+                                                                                onEnter: (_) {
+                                                                                  ChartIframeGuard.acquire();
+                                                                                  _disableAllChartIframes();
+                                                                                },
+                                                                                onHover: (_) {
+                                                                                  _disableAllChartIframes();
+                                                                                },
+                                                                                onExit: (_) {
+                                                                                  ChartIframeGuard.release();
+                                                                                  _enableAllChartIframes();
+                                                                                },
+                                                                                child: Listener(
+                                                                                  onPointerMove: (_) {
+                                                                                    _disableAllChartIframes();
+                                                                                  },
+                                                                                  child: Column(
+                                                                                    mainAxisSize: MainAxisSize.min,
+                                                                                    children: [
+                                                                                      // Header
+                                                                                      Container(
+                                                                                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                                                                        decoration: BoxDecoration(
+                                                                                          border: Border(
+                                                                                            bottom: BorderSide(
+                                                                                              color: shadcn.Theme.of(context).colorScheme.border,
                                                                                             ),
                                                                                           ),
                                                                                         ),
-                                                                                      ],
-                                                                                    ),
+                                                                                        child: Row(
+                                                                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                                                          children: [
+                                                                                            Text(
+                                                                                              'Futures',
+                                                                                              style: MyntWebTextStyles.title(context),
+                                                                                            ),
+                                                                                            MyntCloseButton(
+                                                                                              onPressed: () {
+                                                                                                // Unsubscribe from futures WebSocket
+                                                                                                scripInfo.requestWSFut(context: context, isSubscribe: false);
+                                                                                                Navigator.of(context).pop();
+                                                                                              },
+                                                                                            ),
+                                                                                          ],
+                                                                                        ),
+                                                                                      ),
+                                                                                      // Content
+                                                                                      Expanded(
+                                                                                        child: Consumer(
+                                                                                          builder: (context, ref, _) {
+                                                                                            return const FutureScreenWeb();
+                                                                                          },
+                                                                                        ),
+                                                                                      ),
+                                                                                    ],
                                                                                   ),
-                                                                                  // Content
-                                                                                  Expanded(
-                                                                                    child: Consumer(
-                                                                                      builder: (context, ref, _) {
-                                                                                        return const FutureScreenWeb();
-                                                                                      },
-                                                                                    ),
-                                                                                  ),
-                                                                                ],
+                                                                                ),
                                                                               ),
                                                                             ),
                                                                           ),
-                                                                        );
+                                                                        ));
                                                                       },
                                                                     );
                                                                   } catch (e) {
@@ -2354,22 +2254,32 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                                           children: [
                                                                                             Text(
                                                                                               '${depthArgs.symbol.replaceAll("-EQ", "").toUpperCase()}${depthArgs.expDate} ${depthArgs.option} Stock Report',
-                                                                                              style: ShadcnTextStyles.title(context, fontWeight: FontWeight.w700),
+                                                                                              style: MyntWebTextStyles.title(
+                                                                                                context,
+                                                                                              ),
                                                                                             ),
                                                                                             Material(
                                                                                               color: Colors.transparent,
                                                                                               shape: const CircleBorder(),
                                                                                               child: InkWell(
                                                                                                 customBorder: const CircleBorder(),
-                                                                                                splashColor: ShadcnColors.accent(context).withOpacity(.15),
-                                                                                                highlightColor: ShadcnColors.accent(context).withOpacity(.08),
+                                                                                                splashColor: resolveThemeColor(
+                                                                                                  context,
+                                                                                                  dark: MyntColors.rippleDark,
+                                                                                                  light: MyntColors.rippleLight,
+                                                                                                ),
+                                                                                                highlightColor: resolveThemeColor(
+                                                                                                  context,
+                                                                                                  dark: MyntColors.highlightDark,
+                                                                                                  light: MyntColors.highlightLight,
+                                                                                                ),
                                                                                                 onTap: () => Navigator.of(context).pop(),
                                                                                                 child: Padding(
                                                                                                   padding: const EdgeInsets.all(8),
                                                                                                   child: Icon(
                                                                                                     Icons.close,
                                                                                                     size: 20,
-                                                                                                    color: ShadcnColors.mutedForeground(context),
+                                                                                                    color: resolveThemeColor(context, dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary),
                                                                                                   ),
                                                                                                 ),
                                                                                               ),
@@ -2446,8 +2356,12 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                     const EdgeInsets.symmetric(
                                                         vertical: 3),
                                                 decoration: BoxDecoration(
-                                                    color:
-                                                        const Color(0xffe3f2fd),
+                                                    color: resolveThemeColor(
+                                                      context,
+                                                      dark: MyntColors
+                                                          .primaryDark,
+                                                      light: MyntColors.primary,
+                                                    ).withOpacity(0.05),
                                                     borderRadius:
                                                         BorderRadius.circular(
                                                             6)),
@@ -2458,20 +2372,22 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                     children: [
                                                       SvgPicture.asset(
                                                           assets.dInfo,
-                                                          color: WebDarkColors
-                                                              .primary),
+                                                          color: resolveThemeColor(
+                                                              context,
+                                                              dark: MyntColors
+                                                                  .textSecondaryDark,
+                                                              light: MyntColors
+                                                                  .textSecondary)),
                                                       Text(
                                                         " Long press to add ${scripInfo.wlName}'s Watchlist",
-                                                        style: TextStyle(
-                                                          fontFamily: 'Geist',
-                                                          fontSize: 12,
-                                                          fontWeight:
-                                                              FontWeight.w400,
-                                                          color: shadcn.Theme
-                                                                  .of(context)
-                                                              .colorScheme
-                                                              .mutedForeground,
-                                                        ),
+                                                        style: MyntWebTextStyles.caption(
+                                                            context,
+                                                            color: resolveThemeColor(
+                                                                context,
+                                                                dark: MyntColors
+                                                                    .textSecondaryDark,
+                                                                light: MyntColors
+                                                                    .textSecondary)),
                                                       )
                                                     ])),
                                             const FutureScreenWeb()
@@ -2487,47 +2403,47 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                 ),
                               ),
                             ),
-                            Divider(
-                              height: 1,
-                              thickness: 1.2,
-                              color: theme.isDarkMode
-                                  ? colors.darkColorDivider
-                                  : colors.colorDivider,
-                            ),
-                            // Quick Order embedded below scrip info - takes only what it needs
-                            if (!isIndexOrCommodity)
-                              Builder(builder: (context) {
-                                final lotSize = _safeParseLotSize(
-                                    ref
-                                        .read(marketWatchProvider)
-                                        .scripInfoModel
-                                        ?.ls,
-                                    depthData.ls,
-                                    "1");
-                                final orderArgs = OrderScreenArgs(
-                                  exchange: widget.wlValue.exch,
-                                  tSym: widget.wlValue.tsym,
-                                  isExit: false,
-                                  token: widget.wlValue.token,
-                                  transType: true,
-                                  lotSize: lotSize,
-                                  ltp: "${depthData.lp ?? depthData.c ?? 0.00}",
-                                  perChange: depthData.pc ?? "0.00",
-                                  orderTpye: '',
-                                  holdQty: '',
-                                  isModify: false,
-                                  raw: {},
-                                );
-                                return QuickOrderScreenWeb(
-                                  key: ValueKey(
-                                      "${orderArgs.exchange}|${orderArgs.token}"),
-                                  orderArg: orderArgs,
-                                  scripInfo: ref
-                                      .read(marketWatchProvider)
-                                      .scripInfoModel!,
-                                  embedded: true,
-                                );
-                              }),
+                            // Divider(
+                            //   height: 1,
+                            //   thickness: 1.2,
+                            //   color: theme.isDarkMode
+                            //       ? colors.darkColorDivider
+                            //       : colors.colorDivider,
+                            // ),
+                            // // Quick Order embedded below scrip info - takes only what it needs
+                            // if (!isIndexOrCommodity)
+                            //   Builder(builder: (context) {
+                            //     final lotSize = _safeParseLotSize(
+                            //         ref
+                            //             .read(marketWatchProvider)
+                            //             .scripInfoModel
+                            //             ?.ls,
+                            //         depthData.ls,
+                            //         "1");
+                            //     final orderArgs = OrderScreenArgs(
+                            //       exchange: widget.wlValue.exch,
+                            //       tSym: widget.wlValue.tsym,
+                            //       isExit: false,
+                            //       token: widget.wlValue.token,
+                            //       transType: true,
+                            //       lotSize: lotSize,
+                            //       ltp: "${depthData.lp ?? depthData.c ?? 0.00}",
+                            //       perChange: depthData.pc ?? "0.00",
+                            //       orderTpye: '',
+                            //       holdQty: '',
+                            //       isModify: false,
+                            //       raw: {},
+                            //     );
+                            //     return QuickOrderScreenWeb(
+                            //       key: ValueKey(
+                            //           "${orderArgs.exchange}|${orderArgs.token}"),
+                            //       orderArg: orderArgs,
+                            //       scripInfo: ref
+                            //           .read(marketWatchProvider)
+                            //           .scripInfoModel!,
+                            //       embedded: true,
+                            //     );
+                            //   }),
                           ],
                         ),
                       ),
@@ -2654,12 +2570,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
     return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
       Text(
         low,
-        style: TextStyle(
-          fontFamily: 'Geist',
-          fontSize: 13,
-          fontWeight: FontWeight.w400,
-          color: shadcn.Theme.of(context).colorScheme.foreground,
-        ),
+        style: MyntWebTextStyles.para(context),
       ),
       SizedBox(
         width: MediaQuery.of(context).size.width / 1.8,
@@ -2672,14 +2583,15 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                   child: Container(
                       decoration: BoxDecoration(
                           shape: BoxShape.rectangle,
-                          color: theme.isDarkMode
-                              ? const Color(0xffB0BEC5)
-                              : const Color(0xff000000)),
+                          color: resolveThemeColor(
+                            context,
+                            dark: MyntColors.iconDark,
+                            light: Colors.black,
+                          )),
                       child: const Center(
                           child: Text(
                         ' ',
                         style: TextStyle(
-                          fontFamily: kIsWeb ? 'tenon' : null,
                           color: Colors.transparent,
                         ),
                       ))))),
@@ -2705,12 +2617,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
       ),
       Text(
         high,
-        style: TextStyle(
-          fontFamily: 'Geist',
-          fontSize: 13,
-          fontWeight: FontWeight.w400,
-          color: shadcn.Theme.of(context).colorScheme.foreground,
-        ),
+        style: MyntWebTextStyles.para(context),
       )
     ]);
   }
@@ -2738,22 +2645,26 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
           children: [
             Text(
               " ${price != "null" ? price : '0.00'} ",
-              style: TextStyle(
-                fontFamily: 'Geist',
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: shadcn.Theme.of(context).colorScheme.destructive,
-              ),
+              style: MyntWebTextStyles.body(context,
+                  fontWeight: MyntFonts.medium,
+                  color: resolveThemeColor(
+                    context,
+                    dark: WebColors.tertiary,
+                    light: WebColors.tertiary,
+                  )),
             ),
             Text(
               " ${qty != "null" ? qty : '0'} ",
-              style: TextStyle(
-                fontFamily: 'Geist',
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+              style: MyntWebTextStyles.body(
+                context,
+                fontWeight: MyntFonts.medium,
+                color: resolveThemeColor(
+                  context,
+                  dark: MyntColors.textSecondaryDark,
+                  light: MyntColors.textSecondary,
+                ),
               ),
-            ),
+            )
           ],
         ),
       )
@@ -2780,20 +2691,26 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
           children: [
             Text(
               " ${qty != "null" ? qty : '0'} ",
-              style: TextStyle(
-                fontFamily: 'Geist',
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+              style: MyntWebTextStyles.body(
+                context,
+                color: resolveThemeColor(
+                  context,
+                  dark: MyntColors.textSecondaryDark,
+                  light: MyntColors.textSecondary,
+                ),
+                fontWeight: MyntFonts.medium,
               ),
             ),
             Text(
               " ${price != "null" ? price : '0.00'} ",
-              style: TextStyle(
-                fontFamily: 'Geist',
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: ShadcnColors.secondaryBlue(context),
+              style: MyntWebTextStyles.body(
+                context,
+                fontWeight: MyntFonts.medium,
+                color: resolveThemeColor(
+                  context,
+                  dark: MyntColors.primaryDark,
+                  light: MyntColors.primary,
+                ),
               ),
             ),
           ],
@@ -2825,22 +2742,18 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                     children: [
                       Text(
                         "Futures",
-                        style: TextStyle(
-                          fontFamily: 'Geist',
-                          fontSize: 13,
-                          fontWeight: FontWeight.w400,
-                          color:
-                              shadcn.Theme.of(context).colorScheme.foreground,
-                        ),
+                        style: MyntWebTextStyles.para(context),
                       ),
                       AnimatedRotation(
                         turns: scripInfo.isFuturesExpanded ? 0.25 : 0,
                         duration: const Duration(milliseconds: 200),
                         child: Icon(
                           Icons.chevron_right,
-                          color: shadcn.Theme.of(context)
-                              .colorScheme
-                              .mutedForeground,
+                          color: resolveThemeColor(
+                            context,
+                            dark: MyntColors.iconDark,
+                            light: MyntColors.icon,
+                          ),
                           size: 20,
                         ),
                       ),
@@ -2870,20 +2783,16 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                         children: [
                           SvgPicture.asset(
                             assets.dInfo,
-                            color: theme.isDarkMode
-                                ? WebDarkColors.iconSecondary
-                                : WebColors.iconSecondary,
+                            color: resolveThemeColor(context,
+                                dark: MyntColors.iconDark,
+                                light: MyntColors.icon),
                           ),
                           Text(
                             " Long press to add ${scripInfo.wlName}'s Watchlist",
-                            style: TextStyle(
-                              fontFamily: 'Geist',
-                              fontSize: 12,
-                              fontWeight: FontWeight.w400,
-                              color: shadcn.Theme.of(context)
-                                  .colorScheme
-                                  .mutedForeground,
-                            ),
+                            style: MyntWebTextStyles.caption(context,
+                                color: resolveThemeColor(context,
+                                    dark: MyntColors.textSecondaryDark,
+                                    light: MyntColors.textSecondary)),
                           ),
                         ],
                       ),
@@ -2952,13 +2861,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                     children: [
                       Text(
                         "Fundamentals",
-                        style: TextStyle(
-                          fontFamily: 'Geist',
-                          fontSize: 13,
-                          fontWeight: FontWeight.w400,
-                          color:
-                              shadcn.Theme.of(context).colorScheme.foreground,
-                        ),
+                        style: MyntWebTextStyles.para(context),
                       ),
                       Icon(
                         Icons.chevron_right,
@@ -2990,8 +2893,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
       onPressed: onTap,
       child: Text(
         label,
-        style: ShadcnTextStyles.bodySemibold(context,
-            color: ShadcnColors.primaryBlue(context)),
+        style: MyntWebTextStyles.buttonSm(context, color: MyntColors.primary),
       ),
     );
   }
@@ -3005,22 +2907,23 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
         children: [
           Text(
             label,
-            style: TextStyle(
-              fontFamily: 'Geist',
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: shadcn.Theme.of(context).colorScheme.mutedForeground,
-            ),
+            style: MyntWebTextStyles.para(context,
+                color: resolveThemeColor(
+                  context,
+                  dark: MyntColors.textSecondaryDark,
+                  light: MyntColors.textSecondary,
+                )),
           ),
           const SizedBox(height: 6),
           Text(
             value,
-            style: TextStyle(
-              fontFamily: 'Geist',
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: shadcn.Theme.of(context).colorScheme.foreground,
-            ),
+            style: MyntWebTextStyles.body(context,
+                color: resolveThemeColor(
+                  context,
+                  dark: MyntColors.textPrimaryDark,
+                  light: MyntColors.textPrimary,
+                ),
+                fontWeight: MyntFonts.medium),
           ),
           const SizedBox(height: 4),
           Divider(
@@ -3043,24 +2946,23 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
             children: [
               Text(
                 name,
-                style: TextStyle(
-                  fontFamily: 'Geist',
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: shadcn.Theme.of(context).colorScheme.mutedForeground,
-                ),
+                style: MyntWebTextStyles.body(context,
+                    fontWeight: MyntFonts.medium,
+                    color: resolveThemeColor(context,
+                        dark: MyntColors.textSecondaryDark,
+                        light: MyntColors.textSecondary)),
               ),
               Text(
                 value,
-                style: TextStyle(
-                  fontFamily: 'Geist',
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: shadcn.Theme.of(context).colorScheme.foreground,
-                ),
+                style: MyntWebTextStyles.body(context,
+                    color: resolveThemeColor(context,
+                        dark: MyntColors.textPrimaryDark,
+                        light: MyntColors.textPrimary),
+                    fontWeight: MyntFonts.medium),
               ),
             ],
           ),
+          const SizedBox(height: 10),
           Divider(
             color: shadcn.Theme.of(context).colorScheme.border,
           ),

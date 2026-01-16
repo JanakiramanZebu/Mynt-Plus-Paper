@@ -257,9 +257,13 @@ class MyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // ✅ Optimize: Only watch themeMode, use read() for methods
+    // Watch the entire provider for web to ensure proper theme updates
+    // For mobile, we optimize by only watching themeMode
+    final themeProvide = kIsWeb
+        ? ref.watch(themeProvider)  // Web: watch entire provider for theme sync
+        : ref.read(themeProvider);   // Mobile: read once for performance
+
     final themeMode = ref.watch(themeProvider.select((t) => t.themeMode));
-    final themeProvide = ref.read(themeProvider);
     themeProvide.getThemeData();
 
     // SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
@@ -277,9 +281,7 @@ class MyApp extends ConsumerWidget {
         title: 'MYNT',
         debugShowCheckedModeBanner: false,
         theme: shadcn.ThemeData(
-          colorScheme: themeMode == ThemeMode.dark
-              ? shadcn.ColorSchemes.darkDefaultColor
-              : shadcn.ColorSchemes.lightDefaultColor,
+          colorScheme: themeProvide.getShadcnColorScheme(),  // Use provider method for proper sync
           radius: 0,
           // Note: shadcn components inherit from DefaultTextStyle below
           // If shadcn.ThemeData supports textTheme, you can set it here
@@ -293,11 +295,11 @@ class MyApp extends ConsumerWidget {
               children: [
                 MediaQuery(
                   data: MediaQuery.of(context).copyWith(
-                    textScaler: TextScaler.linear(1.0),
+                    textScaler: const TextScaler.linear(1.0),
                   ),
                   child: DefaultTextStyle(
                     style: GoogleFonts.inter(
-                      fontFeatures: [FontFeature.proportionalFigures()],
+                      fontFeatures: const [FontFeature.proportionalFigures()],
                     ),
                     child: child!,
                   ),

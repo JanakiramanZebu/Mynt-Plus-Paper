@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mynt_plus/res/global_font_web.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import '../../../models/portfolio_model/holdings_model.dart';
 import '../../../models/marketwatch_model/get_quotes.dart';
@@ -9,8 +8,8 @@ import '../../../provider/market_watch_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/websocket_provider.dart';
 import '../../../provider/ledger_provider.dart';
-import '../../../res/web_colors.dart';
-import '../../../res/global_font_web.dart' hide WebTextStyles;
+import '../../../res/mynt_web_text_styles.dart';
+import '../../../res/mynt_web_color_styles.dart';
 import '../../../utils/responsive_navigation.dart';
 import '../../../models/order_book_model/order_book_model.dart';
 import '../../../routes/route_names.dart';
@@ -227,7 +226,7 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(
-            color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
+            color: shadcn.Theme.of(context).colorScheme.border,
             width: 1,
           ),
         ),
@@ -298,8 +297,8 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
             Flexible(
               child: Text(
                 "${_exchTsym.tsym?.replaceAll("-EQ", "") ?? ''} ${_exchTsym.expDate ?? ''} ${_exchTsym.option ?? ''} ",
-                style: WebTextStyles.dialogTitle(
-                  isDarkTheme: theme.isDarkMode,
+                style: MyntWebTextStyles.title(
+                  context,
                   color: colorScheme.foreground,
                 ),
                 overflow: TextOverflow.ellipsis,
@@ -308,8 +307,8 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
             const SizedBox(width: 4),
             Text(
               "${_exchTsym.exch}",
-              style: WebTextStyles.dialogTitle(
-                isDarkTheme: theme.isDarkMode,
+              style: MyntWebTextStyles.title(
+                context,
                 color: colorScheme.mutedForeground,
               ),
             ),
@@ -322,24 +321,24 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
           children: [
             Text(
               "${_exchTsym.lp != "null" ? _exchTsym.lp ?? _exchTsym.close ?? 0.00 : '0.00'}",
-              style: WebTextStyles.title(
-                isDarkTheme: theme.isDarkMode,
+              style: MyntWebTextStyles.title(
+                context,
                 color: (_exchTsym.change == "null" || _exchTsym.change == null) ||
                         _exchTsym.change == "0.00"
                     ? colorScheme.mutedForeground
                     : (_exchTsym.change?.startsWith("-") == true || _exchTsym.perChange?.startsWith("-") == true)
                         ? colorScheme.destructive
                         : colorScheme.chart2,
-                fontWeight: WebFonts.medium,
+                fontWeight: MyntFonts.medium,
               ),
             ),
             const SizedBox(width: 4),
             Text(
               "${(double.tryParse(_exchTsym.change ?? '0.00') ?? 0.00).toStringAsFixed(2)} (${(double.tryParse(_exchTsym.perChange ?? '0.00') ?? 0.00).toStringAsFixed(2)}%)",
-              style: WebTextStyles.sub(
-                isDarkTheme: theme.isDarkMode,
+              style: MyntWebTextStyles.bodySmall(
+                context,
                 color: colorScheme.mutedForeground,
-                fontWeight: WebFonts.medium,
+                fontWeight: MyntFonts.medium,
               ),
             ),
           ],
@@ -410,14 +409,24 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
     bool isLoading = false,
   }) {
     final backgroundColor = isPrimary
-        ? (theme.isDarkMode ? WebDarkColors.primaryLight : WebColors.primaryLight)
-        : (theme.isDarkMode
-            ? WebDarkColors.textSecondary.withOpacity(0.6)
-            : WebColors.buttonSecondary);
+        ? resolveThemeColor(
+            context,
+            dark: MyntColors.primaryDark,
+            light: MyntColors.primary,
+          )
+        : resolveThemeColor(
+            context,
+            dark: MyntColors.textSecondaryDark.withOpacity(0.6),
+            light: MyntColors.textSecondary.withOpacity(0.6),
+          );
     final textColor = isPrimary
         ? Colors.white
-        : (theme.isDarkMode ? Colors.white : WebColors.primaryLight);
-    final borderColor = theme.isDarkMode ? WebDarkColors.primaryLight : WebColors.primaryLight;
+        : (theme.isDarkMode ? Colors.white : MyntColors.primary);
+    final borderColor = resolveThemeColor(
+      context,
+      dark: MyntColors.primaryDark,
+      light: MyntColors.primary,
+    );
     
     return Container(
       height: 40,
@@ -447,10 +456,9 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
               )
             : Text(
                 text,
-                style: WebTextStyles.buttonMd(
-                  isDarkTheme: theme.isDarkMode,
+                style: MyntWebTextStyles.buttonMd(
+                  context,
                   color: textColor,
-                  fontWeight: WebFonts.bold,
                 ),
               ),
       ),
@@ -458,7 +466,11 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
   }
 
   Widget _buildPledgeUnpledgeButton(ThemesProvider theme, LDProvider ledgerdate) {
-    final borderColor = theme.isDarkMode ? WebDarkColors.btnOutlinedBorder : WebColors.btnOutlinedBorder;
+    final borderColor = resolveThemeColor(
+      context,
+      dark: MyntColors.outlinedBorderDark,
+      light: MyntColors.outlinedBorder,
+    );
     return Center(
       child: InkWell(
         onTap: () async {
@@ -479,10 +491,9 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
             children: [
               Text(
                 "Pledge-Unpledge",
-                style: WebTextStyles.buttonMd(
-                  isDarkTheme: theme.isDarkMode,
+                style: MyntWebTextStyles.buttonMd(
+                  context,
                   color: borderColor,
-                  fontWeight: WebFonts.bold,
                 ),
               ),
             ],
@@ -503,19 +514,19 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
           children: [
             Text(
               "P&L",
-              style: WebTextStyles.title(
-                isDarkTheme: theme.isDarkMode,
+              style: MyntWebTextStyles.title(
+                context,
                 color: colorScheme.mutedForeground,
-                fontWeight: WebFonts.medium,
+                fontWeight: MyntFonts.medium,
               ),
             ),
             const SizedBox(height: 6),
             Text(
               displayValue,
-              style: WebTextStyles.head(
-                isDarkTheme: theme.isDarkMode,
+              style: MyntWebTextStyles.head(
+                context,
                 color: _getPnLColor(displayValue),
-                fontWeight: WebFonts.medium,
+                fontWeight: MyntFonts.medium,
               ),
             ),
           ],
@@ -617,18 +628,18 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
           children: [
             Text(
               title1,
-              style: WebTextStyles.sub(
-                isDarkTheme: theme.isDarkMode,
+              style: MyntWebTextStyles.bodySmall(
+                context,
                 color: colorScheme.mutedForeground,
-                fontWeight: WebFonts.medium,
+                fontWeight: MyntFonts.medium,
               ),
             ),
             Text(
               value1,
-              style: WebTextStyles.sub(
-                isDarkTheme: theme.isDarkMode,
+              style: MyntWebTextStyles.bodySmall(
+                context,
                 color: colorScheme.foreground,
-                fontWeight: WebFonts.medium,
+                fontWeight: MyntFonts.medium,
               ),
             ),
           ],

@@ -105,8 +105,8 @@ class MyntSearchTextField extends StatelessWidget {
       placeholderStyle: placeholderStyle,
       leadingIcon: leadingIcon,
       leadingIconHoverEffect: leadingIconHoverEffect,
-      leadingIconVisibility: leadingIconVisibility ??
-          shadcn.InputFeatureVisibility.textEmpty,
+      leadingIconVisibility:
+          leadingIconVisibility ?? shadcn.InputFeatureVisibility.textEmpty,
       onChanged: onChanged,
       onSubmitted: onSubmitted,
       focusNode: focusNode,
@@ -125,26 +125,28 @@ class MyntSearchTextField extends StatelessWidget {
   Widget build(BuildContext context) {
     final effectiveHeight = height ?? 40;
     final effectiveBorderRadius = borderRadius ?? 5;
-    
+
     // Placeholder style: textSecondary
-    final effectivePlaceholderStyle = placeholderStyle ?? 
-        WebTextStyles.placeholderText(
+    final effectivePlaceholderStyle = placeholderStyle ??
+        MyntWebTextStyles.placeholder(
           context,
           color: resolveThemeColor(
             context,
-            darkColor: WebColors.textSecondaryDark,
-            lightColor: WebColors.textSecondary,
+            dark: WebColors.textSecondaryDark,
+            light: WebColors.textSecondary,
           ),
+          fontWeight: MyntFonts.medium,
         );
 
     // Input text style: textPrimary
-    final effectiveTextStyle = WebTextStyles.searchText(
+    final effectiveTextStyle = MyntWebTextStyles.body(
       context,
       color: resolveThemeColor(
         context,
-         darkColor: Color(0xffB5C0CF).withOpacity(.15),
-          lightColor: Color(0xffF1F3F8),
+        dark: WebColors.textPrimaryDark,
+        light: WebColors.textPrimary,
       ),
+      fontWeight: MyntFonts.medium,
     );
 
     // Build placeholder widget
@@ -194,13 +196,13 @@ class MyntSearchTextField extends StatelessWidget {
             final iconColor = states.hovered
                 ? resolveThemeColor(
                     context,
-                    darkColor: WebColors.textPrimaryDark,
-                    lightColor: WebColors.textPrimary,
+                    dark: WebColors.textPrimaryDark,
+                    light: WebColors.textPrimary,
                   )
                 : resolveThemeColor(
                     context,
-                    darkColor: WebColors.textSecondaryDark,
-                    lightColor: WebColors.textSecondary,
+                    dark: WebColors.textSecondaryDark,
+                    light: WebColors.textSecondary,
                   );
 
             return SvgPicture.asset(
@@ -220,8 +222,8 @@ class MyntSearchTextField extends StatelessWidget {
           colorFilter: ColorFilter.mode(
             resolveThemeColor(
               context,
-              darkColor: WebColors.iconDark,
-              lightColor: WebColors.icon,
+              dark: WebColors.iconDark,
+              light: WebColors.icon,
             ),
             BlendMode.srcIn,
           ),
@@ -257,4 +259,3 @@ class MyntSearchTextField extends StatelessWidget {
     return features;
   }
 }
-

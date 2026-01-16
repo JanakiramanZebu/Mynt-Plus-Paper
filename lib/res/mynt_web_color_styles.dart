@@ -66,8 +66,27 @@ class WebColors {
 
   // ---------------- ICON (Custom only) ----------------
 
-  static const Color icon = Color(0xFF777777);
+  static const Color icon = Color(0xFF4A4A4A);
   static const Color iconDark = Color(0xFF8A8A8A);
+
+  static const Color modalBarrierLight = Color(0x66000000); // black @ 40%
+static const Color modalBarrierDark  = Color(0x99000000); // black @ 60%
+
+
+// ---------------- SCROLLBAR ----------------
+static const Color scrollbarThumbLight = Color(0x804A4A4A); // textSecondary @ 50%
+static const Color scrollbarThumbDark  = Color(0x808A8A8A); // textSecondaryDark @ 50%
+
+// ---------------- INTERACTION / RIPPLE ----------------
+static const Color rippleLight = Color(0x26000000); // black @ 15%
+static const Color rippleDark  = Color(0x26FFFFFF); // white @ 15%
+
+static const Color highlightLight = Color(0x14000000); // black @ 8%
+static const Color highlightDark  = Color(0x14FFFFFF); // white @ 8%
+
+
+
+
 }
 
 /// Convenient alias for WebColors - use this throughout the app

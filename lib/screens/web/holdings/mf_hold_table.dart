@@ -1,13 +1,12 @@
 import 'dart:async';
 import 'package:flutter/material.dart' show InkWell, Icons, VoidCallback, BorderRadius, Icon, BoxDecoration, TextPainter, TextSpan, TextStyle, TextDirection, GestureDetector, HitTestBehavior, Row, SizedBox, Text, Align, TextOverflow, Alignment, FontWeight, Container, SingleChildScrollView, Axis, Colors, LayoutBuilder, Center, BuildContext, Widget, ValueKey, Scrollbar, EdgeInsets, Color, IconData, MainAxisAlignment, MouseRegion, showDialog, ScrollController, Expanded, Column, WidgetsBinding, CircularProgressIndicator, Padding, Stack, LinearGradient, BoxConstraints, Clip, MediaQuery, Builder, Tooltip, Visibility, AnimatedOpacity;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mynt_plus/res/global_font_web.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../../../provider/mf_provider.dart';
 import '../../../provider/thems.dart';
-import '../../../res/web_colors.dart';
-import '../../../res/global_font_web.dart' hide WebTextStyles;
+import '../../../res/mynt_web_text_styles.dart';
+import '../../../res/mynt_web_color_styles.dart';
 import '../../../sharedWidget/no_data_found.dart';
 import 'mf_holding_detail_screen_web.dart';
 import '../ordersbook/mf/redeem_bottom_sheet_web.dart';
@@ -364,11 +363,13 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
                 padding: buttonPadding,
                 child: Text(
                   label ?? "",
-                  style: WebTextStyles.buttonSm(
-                    isDarkTheme: theme.isDarkMode,
+                  style: MyntWebTextStyles.buttonSm(
+                    context,
                     color: textColor ?? Colors.white,
-                    fontWeight: WebFonts.bold,
-                  ).copyWith(fontSize: fontSize),
+                  ).copyWith(
+                    fontSize: fontSize,
+                    fontWeight: MyntFonts.bold,
+                  ),
                 ),
               ),
             ),
@@ -668,9 +669,11 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
                                                                 theme: theme,
                                                                 label: 'Redeem',
                                                                 onPressed: () => _handleRedeem(holding),
-                                                                backgroundColor: theme.isDarkMode
-                                                                    ? WebDarkColors.tertiary
-                                                                    : WebColors.tertiary,
+                                                                backgroundColor: resolveThemeColor(
+                                                                  buttonContext,
+                                                                  dark: MyntColors.tertiary,
+                                                                  light: MyntColors.tertiary,
+                                                                ),
                                                                 textColor: Colors.white,
                                                                 context: buttonContext,
                                                               );

@@ -13,12 +13,9 @@ import 'package:flutter/material.dart'
         TextSpan,
         TextStyle,
         TextDirection,
-        GestureDetector,
-        HitTestBehavior,
         Row,
         MainAxisSize,
         SizedBox,
-        Colors,
         Widget,
         BuildContext,
         Color,
@@ -27,7 +24,6 @@ import 'package:flutter/material.dart'
         MainAxisAlignment,
         TextOverflow,
         Axis,
-        FontWeight,
         Container,
         MouseRegion,
         Expanded,
@@ -43,7 +39,6 @@ import 'package:flutter/material.dart'
         IconData,
         Padding,
         Tooltip,
-        RichText,
         Stack,
         LinearGradient,
         BoxConstraints,
@@ -53,23 +48,33 @@ import 'package:flutter/material.dart'
         Visibility,
         Navigator,
         Center,
-        ColorFilter,
-        BlendMode,
-        StreamBuilder;
+        StreamBuilder,
+        Listener,
+        debugPrint,
+        Colors,
+        ClipRRect,
+        Material,
+        Border,
+        FontWeight;
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
+import 'package:pointer_interceptor/pointer_interceptor.dart';
+import 'dart:html' as html;
 
-import '../../../../models/marketwatch_model/get_quotes.dart';
-import '../../../../models/order_book_model/order_book_model.dart';
-import '../../../../provider/market_watch_provider.dart';
-import '../../../../provider/thems.dart';
-import '../../../../provider/websocket_provider.dart';
-import '../../../../res/web_colors.dart';
-import '../../../../res/global_font_web.dart';
-import '../../../../res/res.dart';
-import '../../../../utils/responsive_navigation.dart';
-import '../../../../utils/responsive_snackbar.dart';
+import 'tv_chart/chart_iframe_guard.dart';
+
+import '../../../models/marketwatch_model/get_quotes.dart';
+import '../../../models/order_book_model/order_book_model.dart';
+import '../../../provider/market_watch_provider.dart';
+import '../../../provider/thems.dart';
+import '../../../provider/websocket_provider.dart';
+
+import '../../../utils/responsive_navigation.dart';
+import '../../../utils/responsive_snackbar.dart';
+
+import '../../../res/mynt_web_color_styles.dart' as MyntColors;
+import '../../../res/mynt_web_text_styles.dart';
 
 class FutureScreenWeb extends ConsumerStatefulWidget {
   const FutureScreenWeb({super.key});
@@ -102,14 +107,122 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
     super.dispose();
   }
 
-  // Helper method to ensure Geist font is always applied
-  TextStyle _geistTextStyle(
-      {Color? color, double? fontSize, FontWeight? fontWeight}) {
-    return TextStyle(
-      fontFamily: 'Geist',
-      color: color,
-      fontSize: fontSize ?? 14,
-      fontWeight: fontWeight,
+  // Directly disable all chart iframes and reset cursor (like chart's onExit)
+  void _disableAllChartIframes() {
+    try {
+      final iframes = html.document.querySelectorAll('iframe');
+      for (var iframe in iframes) {
+        if (iframe is html.IFrameElement &&
+            iframe.id.contains('chart-iframe')) {
+          iframe.style.pointerEvents = 'none';
+          // Reset cursor style to prevent cursor bleeding
+          iframe.style.cursor = 'default';
+        }
+      }
+      // Also reset cursor on document body to ensure it's reset globally
+      html.document.body?.style.cursor = 'default';
+    } catch (e) {
+      debugPrint('Error disabling iframes: $e');
+    }
+  }
+
+  void _enableAllChartIframes() {
+    try {
+      final iframes = html.document.querySelectorAll('iframe');
+      for (var iframe in iframes) {
+        if (iframe is html.IFrameElement &&
+            iframe.id.contains('chart-iframe')) {
+          iframe.style.pointerEvents = 'auto';
+          iframe.style.cursor = '';
+        }
+      }
+      html.document.body?.style.cursor = '';
+    } catch (e) {
+      debugPrint('Error enabling iframes: $e');
+    }
+  }
+
+  // Helper widget to build consistent hover buttons (matching watchlist_card_web.dart)
+  Widget _buildHoverButton({
+    String? label,
+    IconData? icon,
+    required Color color,
+    Color? backgroundColor,
+    Color? borderColor,
+    double? borderRadius,
+    required VoidCallback? onPressed,
+  }) {
+    final borderRadiusValue = borderRadius ?? 5.0;
+
+    // Use shadcn IconButton for icon buttons, keep custom colors
+    if (icon != null) {
+      return SizedBox(
+        width: 24,
+        height: 24,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(borderRadiusValue),
+          child: Container(
+            decoration: BoxDecoration(
+              color: backgroundColor ?? Colors.transparent,
+              borderRadius: BorderRadius.circular(borderRadiusValue),
+              border: borderColor != null
+                  ? Border.all(
+                      color: borderColor,
+                      width: 1,
+                    )
+                  : null,
+            ),
+            child: shadcn.IconButton(
+              size: shadcn.ButtonSize.small,
+              density: shadcn.ButtonDensity.dense,
+              variance: shadcn.ButtonVariance.ghost,
+              onPressed: onPressed,
+              shape: shadcn.ButtonShape.rectangle,
+              icon: Icon(
+                icon,
+                size: 14,
+                color: color,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    // Keep original implementation for label buttons (matching watchlist_card_web.dart)
+    return SizedBox(
+      width: 24,
+      height: 24,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(borderRadiusValue),
+          splashColor: color.withOpacity(0.15),
+          highlightColor: color.withOpacity(0.08),
+          onTap: onPressed,
+          child: Container(
+            decoration: BoxDecoration(
+              color: backgroundColor ?? Colors.transparent,
+              borderRadius: BorderRadius.circular(borderRadiusValue),
+              border: borderColor != null
+                  ? Border.all(
+                      color: borderColor,
+                      width: 1,
+                    )
+                  : null,
+            ),
+            child: Center(
+              child: Text(
+                label ?? "",
+                style: MyntWebTextStyles.para(
+                  context,
+                  color: color,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -215,15 +328,24 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
                 Icon(
                   _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
                   size: 16,
-                  color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+                  color: resolveThemeColor(
+                    context,
+                    dark: MyntColors.WebColors.textSecondaryDark,
+                    light: MyntColors.WebColors.textSecondary,
+                  ),
                 ),
               if (alignRight && _sortColumnIndex == columnIndex)
                 const SizedBox(width: 4),
               Text(
                 label,
-                style: _geistTextStyle(
-                  color: shadcn.Theme.of(context).colorScheme.foreground,
-                  fontWeight: FontWeight.w500,
+                style: MyntWebTextStyles.para(
+                  context,
+                  color: resolveThemeColor(
+                    context,
+                    dark: MyntColors.WebColors.textPrimaryDark,
+                    light: MyntColors.WebColors.textPrimary,
+                  ),
+                  fontWeight: MyntFonts.semiBold,
                 ),
               ),
               if (!alignRight && _sortColumnIndex == columnIndex)
@@ -232,7 +354,11 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
                 Icon(
                   _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
                   size: 16,
-                  color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+                  color: resolveThemeColor(
+                    context,
+                    dark: MyntColors.WebColors.textSecondaryDark,
+                    light: MyntColors.WebColors.textSecondary,
+                  ),
                 ),
             ],
           ),
@@ -255,7 +381,17 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
   // Helper method to measure text width dynamically
   double _measureTextWidth(String text, TextStyle style) {
     final textPainter = TextPainter(
-      text: TextSpan(text: text, style: _geistTextStyle(fontSize: 14)),
+      text: TextSpan(
+          text: text,
+          style: MyntWebTextStyles.para(
+            context,
+            color: resolveThemeColor(
+              context,
+              dark: MyntColors.WebColors.textPrimaryDark,
+              light: MyntColors.WebColors.textPrimary,
+            ),
+            fontWeight: MyntFonts.semiBold,
+          )),
       textDirection: TextDirection.ltr,
       maxLines: 1,
     );
@@ -301,11 +437,11 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
       }
 
       // Symbol column needs extra space for action buttons
-      if (col == 0) {
-        minWidths[col] = maxWidth + padding + 180; // Extra for buttons
-      } else {
-        minWidths[col] = maxWidth + padding;
-      }
+      // Buttons will overlay on the right side, covering only half the text
+      // Text can use full width, buttons appear on hover as overlay
+
+      // Set minimum width (max of header/data + padding)
+      minWidths[col] = maxWidth + padding;
     }
 
     return minWidths;
@@ -320,8 +456,13 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
       return Center(
         child: Text(
           "No futures data available",
-          style: _geistTextStyle(
-            color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+          style: MyntWebTextStyles.para(
+            context,
+            color: resolveThemeColor(
+              context,
+              dark: MyntColors.WebColors.textSecondaryDark,
+              light: MyntColors.WebColors.textSecondary,
+            ),
           ),
         ),
       );
@@ -357,322 +498,427 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
       builder: (context, snapshot) {
         final socketDatas = snapshot.data ?? {};
 
-        return shadcn.OutlinedContainer(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              // Calculate minimum widths dynamically
-              final minWidths = _calculateMinWidths(sortedFutures, context);
+        return PointerInterceptor(
+          child: MouseRegion(
+            cursor: SystemMouseCursors.basic,
+            onEnter: (_) {
+              ChartIframeGuard.acquire();
+              _disableAllChartIframes();
+            },
+            onHover: (_) {
+              _disableAllChartIframes();
+            },
+            onExit: (_) {
+              ChartIframeGuard.release();
+              _enableAllChartIframes();
+            },
+            child: Listener(
+              onPointerMove: (_) {
+                _disableAllChartIframes();
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: shadcn.OutlinedContainer(
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      // Calculate minimum widths dynamically
+                      final minWidths =
+                          _calculateMinWidths(sortedFutures, context);
 
-              // Available width
-              final availableWidth = constraints.maxWidth;
+                      // Available width
+                      final availableWidth = constraints.maxWidth;
 
-              // Start with minimum widths
-              final columnWidths = <int, double>{};
-              for (int i = 0; i < 3; i++) {
-                columnWidths[i] = minWidths[i] ?? 100.0;
-              }
+                      // Start with minimum widths
+                      final columnWidths = <int, double>{};
+                      for (int i = 0; i < 3; i++) {
+                        columnWidths[i] = minWidths[i] ?? 100.0;
+                      }
 
-              // Calculate total minimum width needed
-              final totalMinWidth = columnWidths.values
-                  .fold<double>(0.0, (sum, width) => sum + width);
+                      // Calculate total minimum width needed
+                      final totalMinWidth = columnWidths.values
+                          .fold<double>(0.0, (sum, width) => sum + width);
 
-              // If there's extra space, distribute it proportionally
-              if (totalMinWidth < availableWidth) {
-                final extraSpace = availableWidth - totalMinWidth;
+                      // If there's extra space, distribute it proportionally
+                      if (totalMinWidth < availableWidth) {
+                        final extraSpace = availableWidth - totalMinWidth;
 
-                const symbolGrowthFactor = 2.0;
-                const numericGrowthFactor = 1.0;
+                        const symbolGrowthFactor = 2.0;
+                        const numericGrowthFactor = 1.0;
 
-                final growthFactors = <int, double>{};
-                double totalGrowthFactor = 0.0;
+                        final growthFactors = <int, double>{};
+                        double totalGrowthFactor = 0.0;
 
-                for (int i = 0; i < 3; i++) {
-                  if (i == 0) {
-                    growthFactors[i] = symbolGrowthFactor;
-                    totalGrowthFactor += symbolGrowthFactor;
-                  } else {
-                    growthFactors[i] = numericGrowthFactor;
-                    totalGrowthFactor += numericGrowthFactor;
-                  }
-                }
+                        for (int i = 0; i < 3; i++) {
+                          if (i == 0) {
+                            growthFactors[i] = symbolGrowthFactor;
+                            totalGrowthFactor += symbolGrowthFactor;
+                          } else {
+                            growthFactors[i] = numericGrowthFactor;
+                            totalGrowthFactor += numericGrowthFactor;
+                          }
+                        }
 
-                if (totalGrowthFactor > 0) {
-                  for (int i = 0; i < 3; i++) {
-                    if (growthFactors[i]! > 0) {
-                      final extraForThisColumn =
-                          (extraSpace * growthFactors[i]!) / totalGrowthFactor;
-                      columnWidths[i] = columnWidths[i]! + extraForThisColumn;
-                    }
-                  }
-                }
-              }
+                        if (totalGrowthFactor > 0) {
+                          for (int i = 0; i < 3; i++) {
+                            if (growthFactors[i]! > 0) {
+                              final extraForThisColumn =
+                                  (extraSpace * growthFactors[i]!) /
+                                      totalGrowthFactor;
+                              columnWidths[i] =
+                                  columnWidths[i]! + extraForThisColumn;
+                            }
+                          }
+                        }
+                      }
 
-              // Calculate total required width
-              final totalRequiredWidth = columnWidths.values
-                  .fold<double>(0.0, (sum, width) => sum + width);
+                      // Calculate total required width
+                      final totalRequiredWidth = columnWidths.values
+                          .fold<double>(0.0, (sum, width) => sum + width);
 
-              // If total width exceeds available width, enable horizontal scrolling
-              final needsHorizontalScroll = totalRequiredWidth > availableWidth;
+                      // If total width exceeds available width, enable horizontal scrolling
+                      final needsHorizontalScroll =
+                          totalRequiredWidth > availableWidth;
 
-              // Build table content
-              Widget buildTableContent() {
-                return Column(
-                  children: [
-                    // Fixed Header
-                    shadcn.Table(
-                      columnWidths: {
-                        0: shadcn.FixedTableSize(columnWidths[0]!),
-                        1: shadcn.FixedTableSize(columnWidths[1]!),
-                        2: shadcn.FixedTableSize(columnWidths[2]!),
-                      },
-                      defaultRowHeight: const shadcn.FixedTableSize(40),
-                      rows: [
-                        shadcn.TableHeader(
-                          cells: [
-                            buildHeaderCell('Symbol', 0),
-                            buildHeaderCell('LTP', 1, true),
-                            buildHeaderCell('%Change', 2, true),
-                          ],
-                        ),
-                      ],
-                    ),
-                    // Scrollable Body
-                    Expanded(
-                      child: Scrollbar(
-                        controller: _verticalScrollController,
-                        thumbVisibility: true,
-                        trackVisibility: true,
-                        interactive: true,
-                        child: SingleChildScrollView(
-                          controller: _verticalScrollController,
-                          scrollDirection: Axis.vertical,
-                          child: shadcn.Table(
-                            key: ValueKey(
-                                'futures_table_${_sortColumnIndex}_$_sortAscending'),
-                            columnWidths: {
-                              0: shadcn.FixedTableSize(columnWidths[0]!),
-                              1: shadcn.FixedTableSize(columnWidths[1]!),
-                              2: shadcn.FixedTableSize(columnWidths[2]!),
-                            },
-                            defaultRowHeight: const shadcn.FixedTableSize(40),
-                            rows: [
-                              // Data Rows
-                              ...sortedFutures.asMap().entries.map((entry) {
-                                final index = entry.key;
-                                var displayData = entry.value;
-                                final tokenKey = displayData.token?.toString();
-
-                                // Update with socket data if available
-                                if (tokenKey != null &&
-                                    socketDatas.containsKey(tokenKey)) {
-                                  final socketData = socketDatas[tokenKey];
-
-                                  final lp = socketData['lp']?.toString() ??
-                                      socketData['ltp']?.toString() ??
-                                      socketData['last_price']?.toString();
-                                  if (lp != null &&
-                                      lp != "null" &&
-                                      lp != "0" &&
-                                      lp != "0.00" &&
-                                      lp.isNotEmpty) {
-                                    try {
-                                      final ltpValue = double.parse(lp);
-                                      if (ltpValue > 0) {
-                                        displayData.ltp = lp;
-                                      }
-                                    } catch (e) {
-                                      // Keep original value
-                                    }
-                                  }
-
-                                  final chng = socketData['chng']?.toString() ??
-                                      socketData['change']?.toString();
-                                  if (chng != null &&
-                                      chng != "null" &&
-                                      chng.isNotEmpty) {
-                                    try {
-                                      displayData.change = chng;
-                                    } catch (e) {}
-                                  }
-
-                                  final pc = socketData['pc']?.toString() ??
-                                      socketData['per_change']?.toString();
-                                  if (pc != null &&
-                                      pc != "null" &&
-                                      pc.isNotEmpty) {
-                                    try {
-                                      displayData.perChange = pc;
-                                    } catch (e) {}
-                                  }
-                                }
-
-                                final isRowHovered = _hoveredRowIndex == index;
-                                final displayText =
-                                    displayData.tsym?.toString() ?? '';
-
-                                return shadcn.TableRow(
+                      // Build table content
+                      Widget buildTableContent() {
+                        return Column(
+                          children: [
+                            // Fixed Header
+                            shadcn.Table(
+                              columnWidths: {
+                                0: shadcn.FixedTableSize(columnWidths[0]!),
+                                1: shadcn.FixedTableSize(columnWidths[1]!),
+                                2: shadcn.FixedTableSize(columnWidths[2]!),
+                              },
+                              defaultRowHeight: const shadcn.FixedTableSize(40),
+                              rows: [
+                                shadcn.TableHeader(
                                   cells: [
-                                    // Symbol cell with action buttons on hover
-                                    buildCellWithHover(
-                                      rowIndex: index,
-                                      columnIndex: 0,
-                                      child: SizedBox(
-                                        width: double.infinity,
-                                        height: double.infinity,
-                                        child: Stack(
-                                          clipBehavior: Clip.hardEdge,
-                                          children: [
-                                            // Symbol name
-                                            Align(
-                                              alignment: Alignment.centerLeft,
-                                              child: Tooltip(
-                                                message: displayText,
-                                                child: Padding(
-                                                  padding: EdgeInsets.only(
-                                                      right: isRowHovered
-                                                          ? 8.0
-                                                          : 0.0),
-                                                  child: Text(
-                                                    displayText,
-                                                    style: _geistTextStyle(
-                                                      color: shadcn.Theme.of(
-                                                              context)
-                                                          .colorScheme
-                                                          .foreground,
+                                    buildHeaderCell('Symbol', 0),
+                                    buildHeaderCell('LTP', 1, true),
+                                    buildHeaderCell('%Change', 2, true),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            // Scrollable Body
+                            Expanded(
+                              child: Scrollbar(
+                                controller: _verticalScrollController,
+                                thumbVisibility: true,
+                                trackVisibility: true,
+                                interactive: true,
+                                child: SingleChildScrollView(
+                                  controller: _verticalScrollController,
+                                  scrollDirection: Axis.vertical,
+                                  child: shadcn.Table(
+                                    key: ValueKey(
+                                        'futures_table_${_sortColumnIndex}_$_sortAscending'),
+                                    columnWidths: {
+                                      0: shadcn.FixedTableSize(
+                                          columnWidths[0]!),
+                                      1: shadcn.FixedTableSize(
+                                          columnWidths[1]!),
+                                      2: shadcn.FixedTableSize(
+                                          columnWidths[2]!),
+                                    },
+                                    defaultRowHeight:
+                                        const shadcn.FixedTableSize(40),
+                                    rows: [
+                                      // Data Rows
+                                      ...sortedFutures
+                                          .asMap()
+                                          .entries
+                                          .map((entry) {
+                                        final index = entry.key;
+                                        var displayData = entry.value;
+                                        final tokenKey =
+                                            displayData.token?.toString();
+
+                                        // Update with socket data if available
+                                        if (tokenKey != null &&
+                                            socketDatas.containsKey(tokenKey)) {
+                                          final socketData =
+                                              socketDatas[tokenKey];
+
+                                          final lp = socketData['lp']
+                                                  ?.toString() ??
+                                              socketData['ltp']?.toString() ??
+                                              socketData['last_price']
+                                                  ?.toString();
+                                          if (lp != null &&
+                                              lp != "null" &&
+                                              lp != "0" &&
+                                              lp != "0.00" &&
+                                              lp.isNotEmpty) {
+                                            try {
+                                              final ltpValue = double.parse(lp);
+                                              if (ltpValue > 0) {
+                                                displayData.ltp = lp;
+                                              }
+                                            } catch (e) {
+                                              // Keep original value
+                                            }
+                                          }
+
+                                          final chng = socketData['chng']
+                                                  ?.toString() ??
+                                              socketData['change']?.toString();
+                                          if (chng != null &&
+                                              chng != "null" &&
+                                              chng.isNotEmpty) {
+                                            try {
+                                              displayData.change = chng;
+                                            } catch (e) {}
+                                          }
+
+                                          final pc =
+                                              socketData['pc']?.toString() ??
+                                                  socketData['per_change']
+                                                      ?.toString();
+                                          if (pc != null &&
+                                              pc != "null" &&
+                                              pc.isNotEmpty) {
+                                            try {
+                                              displayData.perChange = pc;
+                                            } catch (e) {}
+                                          }
+                                        }
+
+                                        final isRowHovered =
+                                            _hoveredRowIndex == index;
+                                        final displayText =
+                                            displayData.tsym?.toString() ?? '';
+
+                                        return shadcn.TableRow(
+                                          cells: [
+                                            // Symbol cell with action buttons on hover
+                                            buildCellWithHover(
+                                              rowIndex: index,
+                                              columnIndex: 0,
+                                              child: SizedBox(
+                                                width: double.infinity,
+                                                height: double.infinity,
+                                                child: Stack(
+                                                  clipBehavior: Clip.hardEdge,
+                                                  children: [
+                                                    // Symbol name
+                                                    Align(
+                                                      alignment:
+                                                          Alignment.centerLeft,
+                                                      child: Tooltip(
+                                                        message: displayText,
+                                                        child: Padding(
+                                                          padding: EdgeInsets.only(
+                                                              right:
+                                                                  isRowHovered
+                                                                      ? 8.0
+                                                                      : 0.0),
+                                                          child: Text(
+                                                            displayText,
+                                                            style: MyntWebTextStyles
+                                                                .para(
+                                                                    context,
+                                                                color :resolveThemeColor(
+                                                                      context,
+                                                                      dark: MyntColors.WebColors
+                                                                          .textPrimaryDark,
+                                                                      light: MyntColors.WebColors
+                                                                          .textPrimary,
+                                                                    )),
+                                                            overflow: isRowHovered
+                                                                ? TextOverflow
+                                                                    .ellipsis
+                                                                : TextOverflow
+                                                                    .visible,
+                                                            maxLines: 1,
+                                                          ),
+                                                        ),
+                                                      ),
                                                     ),
-                                                    overflow: isRowHovered
-                                                        ? TextOverflow.ellipsis
-                                                        : TextOverflow.visible,
-                                                    maxLines: 1,
+                                                    // Action buttons on hover
+                                                    Visibility(
+                                                      visible: isRowHovered,
+                                                      maintainSize: false,
+                                                      maintainAnimation: false,
+                                                      maintainState: false,
+                                                      child: Align(
+                                                        alignment: Alignment
+                                                            .centerRight,
+                                                        child: LayoutBuilder(
+                                                            builder: (context,
+                                                                constraints) {
+                                                          // Responsive max width based on screen size
+                                                          final screenWidth =
+                                                              MediaQuery.of(
+                                                                      context)
+                                                                  .size
+                                                                  .width;
+                                                          final isSmallScreen =
+                                                              screenWidth < 768;
+                                                          final isVerySmallScreen =
+                                                              screenWidth < 480;
+                                                          final responsiveMaxWidth =
+                                                              isVerySmallScreen
+                                                                  ? 120.0
+                                                                  : (isSmallScreen
+                                                                      ? 160.0
+                                                                      : 200.0);
+
+                                                          // Use available width, but cap at responsive max to prevent overflow
+                                                          final maxButtonWidth =
+                                                              constraints
+                                                                  .maxWidth
+                                                                  .clamp(0.0,
+                                                                      responsiveMaxWidth);
+
+                                                          return AnimatedOpacity(
+                                                            opacity:
+                                                                isRowHovered
+                                                                    ? 1
+                                                                    : 0,
+                                                            duration:
+                                                                const Duration(
+                                                                    milliseconds:
+                                                                        140),
+                                                            child: Container(
+                                                              constraints:
+                                                                  BoxConstraints(
+                                                                      maxWidth:
+                                                                          maxButtonWidth),
+                                                              decoration:
+                                                                  BoxDecoration(
+                                                                gradient:
+                                                                    LinearGradient(
+                                                                  begin: Alignment
+                                                                      .centerLeft,
+                                                                  end: Alignment
+                                                                      .centerRight,
+                                                                  colors: [
+                                                                    resolveThemeColor(
+                                                                      context,
+                                                                      dark: MyntColors
+                                                                          .WebColors
+                                                                          .listItemBgDark,
+                                                                      light: Colors
+                                                                          .white,
+                                                                    ).withOpacity(
+                                                                        0.0),
+                                                                    resolveThemeColor(
+                                                                      context,
+                                                                      dark: MyntColors
+                                                                          .WebColors
+                                                                          .listItemBgDark,
+                                                                      light: Colors
+                                                                          .white,
+                                                                    ).withOpacity(
+                                                                        0.95),
+                                                                  ],
+                                                                ),
+                                                              ),
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .only(
+                                                                      left: 8),
+                                                              child: _buildActionButtons(
+                                                                  context,
+                                                                  displayData,
+                                                                  future,
+                                                                  theme,
+                                                                  isRowHovered),
+                                                            ),
+                                                          );
+                                                        }),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                            // LTP cell
+                                            buildCellWithHover(
+                                              rowIndex: index,
+                                              columnIndex: 1,
+                                              alignRight: true,
+                                              child: Align(
+                                                alignment:
+                                                    Alignment.centerRight,
+                                                child: Text(
+                                                  displayData.ltp != null &&
+                                                          displayData.ltp !=
+                                                              "null"
+                                                      ? "${displayData.ltp}"
+                                                      : displayData.close !=
+                                                                  null &&
+                                                              displayData
+                                                                      .close !=
+                                                                  "null"
+                                                          ? "${displayData.close}"
+                                                          : '0.00',
+                                                  style: MyntWebTextStyles
+                                                      .para(
+                                                    context,
+                                                    color: _getPriceColor(
+                                                        displayData, theme),
                                                   ),
                                                 ),
                                               ),
                                             ),
-                                            // Action buttons on hover
-                                            Visibility(
-                                              visible: isRowHovered,
-                                              maintainSize: false,
-                                              maintainAnimation: false,
-                                              maintainState: false,
+                                            // %Change cell
+                                            buildCellWithHover(
+                                              rowIndex: index,
+                                              columnIndex: 2,
+                                              alignRight: true,
                                               child: Align(
                                                 alignment:
                                                     Alignment.centerRight,
-                                                child: AnimatedOpacity(
-                                                  opacity: isRowHovered ? 1 : 0,
-                                                  duration: const Duration(
-                                                      milliseconds: 140),
-                                                  child: Container(
-                                                    decoration: BoxDecoration(
-                                                      gradient: LinearGradient(
-                                                        begin: Alignment
-                                                            .centerLeft,
-                                                        end: Alignment
-                                                            .centerRight,
-                                                        colors: [
-                                                          shadcn.Theme.of(
-                                                                  context)
-                                                              .colorScheme
-                                                              .background
-                                                              .withOpacity(0.0),
-                                                          shadcn.Theme.of(
-                                                                  context)
-                                                              .colorScheme
-                                                              .background
-                                                              .withOpacity(
-                                                                  0.95),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                            left: 8),
-                                                    child: _buildActionButtons(
-                                                        context,
-                                                        displayData,
-                                                        future,
-                                                        theme,
-                                                        isRowHovered),
+                                                child: Text(
+                                                  "${_getChangeValue(displayData)} (${_getPerChangeValue(displayData)}%)",
+                                                  style: MyntWebTextStyles
+                                                      .para(
+                                                    context,
+                                                    color: _getChangeColor(
+                                                        displayData, theme),
                                                   ),
                                                 ),
                                               ),
                                             ),
                                           ],
-                                        ),
-                                      ),
-                                    ),
-                                    // LTP cell
-                                    buildCellWithHover(
-                                      rowIndex: index,
-                                      columnIndex: 1,
-                                      alignRight: true,
-                                      child: Align(
-                                        alignment: Alignment.centerRight,
-                                        child: Text(
-                                          displayData.ltp != null &&
-                                                  displayData.ltp != "null"
-                                              ? "${displayData.ltp}"
-                                              : displayData.close != null &&
-                                                      displayData.close !=
-                                                          "null"
-                                                  ? "${displayData.close}"
-                                                  : '0.00',
-                                          style: _geistTextStyle(
-                                            color: _getPriceColor(
-                                                displayData, theme),
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    // %Change cell
-                                    buildCellWithHover(
-                                      rowIndex: index,
-                                      columnIndex: 2,
-                                      alignRight: true,
-                                      child: Align(
-                                        alignment: Alignment.centerRight,
-                                        child: Text(
-                                          "${_getChangeValue(displayData)} (${_getPerChangeValue(displayData)}%)",
-                                          style: _geistTextStyle(
-                                            color: _getChangeColor(
-                                                displayData, theme),
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                );
-                              }),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                );
-              }
+                                        );
+                                      }),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      }
 
-              // Wrap in horizontal scroll if needed
-              if (needsHorizontalScroll) {
-                return Scrollbar(
-                  controller: _horizontalScrollController,
-                  thumbVisibility: true,
-                  trackVisibility: true,
-                  interactive: true,
-                  child: SingleChildScrollView(
-                    controller: _horizontalScrollController,
-                    scrollDirection: Axis.horizontal,
-                    child: SizedBox(
-                      width: totalRequiredWidth,
-                      child: buildTableContent(),
-                    ),
+                      // Wrap in horizontal scroll if needed
+                      if (needsHorizontalScroll) {
+                        return Scrollbar(
+                          controller: _horizontalScrollController,
+                          thumbVisibility: true,
+                          trackVisibility: true,
+                          interactive: true,
+                          child: SingleChildScrollView(
+                            controller: _horizontalScrollController,
+                            scrollDirection: Axis.horizontal,
+                            child: SizedBox(
+                              width: totalRequiredWidth,
+                              child: buildTableContent(),
+                            ),
+                          ),
+                        );
+                      } else {
+                        return buildTableContent();
+                      }
+                    },
                   ),
-                );
-              } else {
-                return buildTableContent();
-              }
-            },
+                ),
+              ),
+            ),
           ),
         );
       },
@@ -693,151 +939,110 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
         .scrips
         .any((e) => "${e['exch']}|${e['token']}" == key);
 
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // Buy Button
-        _buildHoverButton(
-          label: 'B',
-          color: Colors.white,
-          backgroundColor:
-              theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
-          onPressed: () async {
-            try {
-              await _placeOrderInput(context, displayData, true, future);
-            } catch (e) {
-              print('Buy button error: $e');
-            }
-          },
-          theme: theme,
-        ),
-        const SizedBox(width: 6),
-        // Sell Button
-        _buildHoverButton(
-          label: 'S',
-          color: Colors.white,
-          backgroundColor:
-              theme.isDarkMode ? WebDarkColors.tertiary : WebColors.tertiary,
-          onPressed: () async {
-            try {
-              await _placeOrderInput(context, displayData, false, future);
-            } catch (e) {
-              print('Sell button error: $e');
-            }
-          },
-          theme: theme,
-        ),
-        const SizedBox(width: 6),
-        // Chart Button
-        _buildHoverButton(
-          icon: Icons.bar_chart,
-          color: Colors.black,
-          backgroundColor: Colors.white,
-          borderRadius: 5.0,
-          onPressed: () {
-            Navigator.pop(context);
-            ref
-                .read(marketWatchProvider)
-                .calldepthApis(context, displayData, "");
-          },
-          theme: theme,
-        ),
-        const SizedBox(width: 6),
-        // Save Button (Add to watchlist)
-        _buildHoverButton(
-          svgIcon: isInWatchlist ? assets.bookmarkIcon : assets.bookmarkedIcon,
-          color: isInWatchlist
-              ? (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary)
-              : (theme.isDarkMode
-                  ? WebDarkColors.textSecondary
-                  : WebColors.textSecondary),
-          backgroundColor: Colors.white,
-          borderRadius: 5.0,
-          onPressed: () async {
-            final bool add = !isInWatchlist;
-            final success = await future.addDelMarketScrip(
-              future.wlName,
-              key,
-              context,
-              add,
-              true,
-              false,
-              false,
-            );
-            if (success && mounted) {
-              if (add) {
-                ResponsiveSnackBar.showSuccess(
-                    context, 'Added to ${future.wlName}');
-              } else {
-                ResponsiveSnackBar.showInfo(
-                    context, 'Removed from ${future.wlName}');
-              }
-              setState(() {});
-            }
-          },
-          theme: theme,
-        ),
-      ],
-    );
-  }
+    return Builder(
+      builder: (buttonContext) {
+        final screenWidth = MediaQuery.of(buttonContext).size.width;
+        final isSmallScreen = screenWidth < 768;
+        final buttonSpacing = isSmallScreen ? 4.0 : 6.0;
 
-  Widget _buildHoverButton({
-    String? label,
-    IconData? icon,
-    String? svgIcon,
-    required Color color,
-    Color? backgroundColor,
-    Color? borderColor,
-    double? borderRadius,
-    required VoidCallback? onPressed,
-    required ThemesProvider theme,
-  }) {
-    final isLongLabel = label != null && label.length > 1;
-    final borderRadiusValue = borderRadius ?? 5.0;
-    return SizedBox(
-      width: isLongLabel ? null : 25,
-      height: 25,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(borderRadiusValue),
-        onTap: onPressed,
-        child: Container(
-          padding:
-              isLongLabel ? const EdgeInsets.symmetric(horizontal: 8) : null,
-          decoration: BoxDecoration(
-            color: backgroundColor ?? Colors.transparent,
-            borderRadius: BorderRadius.circular(borderRadiusValue),
-            border: borderColor != null
-                ? shadcn.Border.all(
-                    color: borderColor,
-                    width: 1.3,
-                  )
-                : null,
-          ),
-          child: Center(
-            child: svgIcon != null
-                ? SvgPicture.asset(
-                    svgIcon,
-                    height: 16,
-                    width: 16,
-                    colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
-                  )
-                : icon != null
-                    ? Icon(
-                        icon,
-                        size: 16,
-                        color: color,
-                        weight: 400,
-                      )
-                    : Text(
-                        label ?? "",
-                        style: WebTextStyles.buttonXs(
-                          isDarkTheme: theme.isDarkMode,
-                          color: color,
-                        ),
-                      ),
-          ),
-        ),
-      ),
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Buy Button
+            _buildHoverButton(
+              label: 'B',
+              color: Colors.white,
+              backgroundColor: resolveThemeColor(
+                context,
+                dark: MyntColors.WebColors.primaryDark,
+                light: MyntColors.WebColors.primary,
+              ),
+              onPressed: () async {
+                try {
+                  await _placeOrderInput(context, displayData, true, future);
+                } catch (e) {
+                  print('Buy button error: $e');
+                }
+              },
+            ),
+            SizedBox(width: buttonSpacing),
+            // Sell Button
+            _buildHoverButton(
+              label: 'S',
+              color: Colors.white,
+              backgroundColor: resolveThemeColor(
+                context,
+                dark: MyntColors.WebColors.errorDark,
+                light: MyntColors.WebColors.error,
+              ),
+              onPressed: () async {
+                try {
+                  await _placeOrderInput(context, displayData, false, future);
+                } catch (e) {
+                  print('Sell button error: $e');
+                }
+              },
+            ),
+            SizedBox(width: buttonSpacing),
+            // Chart Button
+            _buildHoverButton(
+              icon: Icons.bar_chart,
+              color: Colors.white,
+              backgroundColor: resolveThemeColor(
+                context,
+                dark: MyntColors.WebColors.profitDark,
+                light: MyntColors.WebColors.profit,
+              ),
+              onPressed: () {
+                Navigator.pop(context);
+                ref
+                    .read(marketWatchProvider)
+                    .calldepthApis(context, displayData, "");
+              },
+            ),
+            SizedBox(width: buttonSpacing),
+            // Save Button (Add to watchlist)
+            _buildHoverButton(
+              icon: isInWatchlist ? Icons.bookmark : Icons.bookmark_border,
+              color: isInWatchlist
+                  ? resolveThemeColor(
+                      context,
+                      dark: MyntColors.WebColors.primaryDark,
+                      light: MyntColors.WebColors.primary,
+                    )
+                  : resolveThemeColor(
+                      context,
+                      dark: MyntColors.WebColors.textSecondaryDark,
+                      light: MyntColors.WebColors.textSecondary,
+                    ),
+              backgroundColor: Colors.white,
+              borderColor: shadcn.Theme.of(context).colorScheme.border,
+              onPressed: () async {
+                final bool add = !isInWatchlist;
+                final success = await future.addDelMarketScrip(
+                  future.wlName,
+                  key,
+                  context,
+                  add,
+                  true,
+                  false,
+                  false,
+                );
+                if (success && mounted) {
+                  if (add) {
+                    ResponsiveSnackBar.showSuccess(
+                        context, 'Added to ${future.wlName}');
+                  } else {
+                    ResponsiveSnackBar.showInfo(
+                        context, 'Removed from ${future.wlName}');
+                  }
+                  setState(() {});
+                }
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -862,14 +1067,26 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
     final perChange = displayData.perChange?.toString() ?? "0.00";
 
     if (change.startsWith("-") || perChange.startsWith('-')) {
-      return theme.isDarkMode ? WebDarkColors.loss : WebColors.loss;
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.WebColors.lossDark,
+        light: MyntColors.WebColors.loss,
+      );
     } else if (change == "null" ||
         perChange == "null" ||
         change == "0.00" ||
         perChange == "0.00") {
-      return shadcn.Theme.of(context).colorScheme.foreground;
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.WebColors.textPrimaryDark,
+        light: MyntColors.WebColors.textPrimary,
+      );
     } else {
-      return theme.isDarkMode ? WebDarkColors.profit : WebColors.profit;
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.WebColors.profitDark,
+        light: MyntColors.WebColors.profit,
+      );
     }
   }
 
@@ -878,14 +1095,26 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
     final perChange = displayData.perChange?.toString() ?? "0.00";
 
     if (change.startsWith("-") || perChange.startsWith('-')) {
-      return theme.isDarkMode ? WebDarkColors.loss : WebColors.loss;
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.WebColors.lossDark,
+        light: MyntColors.WebColors.loss,
+      );
     } else if (change == "null" ||
         perChange == "null" ||
         change == "0.00" ||
         perChange == "0.00") {
-      return shadcn.Theme.of(context).colorScheme.mutedForeground;
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.WebColors.textSecondaryDark,
+        light: MyntColors.WebColors.textSecondary,
+      );
     } else {
-      return theme.isDarkMode ? WebDarkColors.profit : WebColors.profit;
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.WebColors.profitDark,
+        light: MyntColors.WebColors.profit,
+      );
     }
   }
 

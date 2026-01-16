@@ -9,8 +9,8 @@ import '../../../provider/market_watch_provider.dart';
 import '../../../provider/portfolio_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/websocket_provider.dart';
-import '../../../res/web_colors.dart';
-import '../../../res/global_font_web.dart';
+import '../../../res/mynt_web_text_styles.dart';
+import '../../../res/mynt_web_color_styles.dart';
 import '../../../models/order_book_model/order_book_model.dart';
 import '../../../utils/responsive_navigation.dart';
 import '../../../sharedWidget/snack_bar.dart';
@@ -213,7 +213,11 @@ class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWe
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(
-            color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
+            color: resolveThemeColor(
+              context,
+              dark: MyntColors.dividerDark,
+              light: MyntColors.divider,
+            ),
             width: 1,
           ),
         ),
@@ -283,8 +287,8 @@ class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWe
             Flexible(
               child: Text(
                 "${_positionData.symbol?.replaceAll("-EQ", "") ?? ''} ${_positionData.expDate ?? ''} ${_positionData.option ?? ''} ",
-                style: WebTextStyles.dialogTitle(
-                  isDarkTheme: theme.isDarkMode,
+                style: MyntWebTextStyles.title(
+                  context,
                   color: colorScheme.foreground,
                 ),
                 overflow: TextOverflow.ellipsis,
@@ -293,8 +297,8 @@ class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWe
             const SizedBox(width: 4),
             Text(
               "${_positionData.exch}",
-              style: WebTextStyles.dialogTitle(
-                isDarkTheme: theme.isDarkMode,
+              style: MyntWebTextStyles.title(
+                context,
                 color: colorScheme.mutedForeground,
               ),
             ),
@@ -307,24 +311,24 @@ class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWe
           children: [
             Text(
               "${_positionData.lp != "null" ? _positionData.lp ?? '0.00' : '0.00'}",
-              style: WebTextStyles.title(
-                isDarkTheme: theme.isDarkMode,
+              style: MyntWebTextStyles.title(
+                context,
                 color: (_positionData.chng == "null" || _positionData.chng == null) ||
                         _positionData.chng == "0.00"
                     ? colorScheme.mutedForeground
                     : (_positionData.chng?.startsWith("-") == true || _positionData.perChange?.startsWith("-") == true)
                         ? colorScheme.destructive
                         : colorScheme.chart2,
-                fontWeight: WebFonts.medium,
+                fontWeight: MyntFonts.medium,
               ),
             ),
             const SizedBox(width: 4),
             Text(
               "${(double.tryParse(_positionData.chng ?? '0.00') ?? 0.00).toStringAsFixed(2)} (${(double.tryParse(_positionData.perChange ?? '0.00') ?? 0.00).toStringAsFixed(2)}%)",
-              style: WebTextStyles.sub(
-                isDarkTheme: theme.isDarkMode,
+              style: MyntWebTextStyles.bodySmall(
+                context,
                 color: colorScheme.mutedForeground,
-                fontWeight: WebFonts.medium,
+                fontWeight: MyntFonts.medium,
               ),
             ),
           ],
@@ -387,9 +391,13 @@ class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWe
               child: Text(
                 'Convert Position',
                 style: TextStyle(
-                  fontWeight: WebFonts.bold,
+                  fontWeight: MyntFonts.bold,
                   fontFamily: 'Geist',
-                  color: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
+                  color: resolveThemeColor(
+                    context,
+                    dark: MyntColors.primaryDark,
+                    light: MyntColors.primary,
+                  ),
                 ),
               ),
             ),
@@ -400,14 +408,24 @@ class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWe
 
   Widget _buildActionButton(String text, bool isPrimary, ThemesProvider theme, VoidCallback onPressed) {
     final backgroundColor = isPrimary
-        ? (theme.isDarkMode ? WebDarkColors.primaryLight : WebColors.primaryLight)
-        : (theme.isDarkMode
-            ? WebDarkColors.textSecondary.withOpacity(0.6)
-            : WebColors.buttonSecondary);
+        ? resolveThemeColor(
+            context,
+            dark: MyntColors.primaryDark,
+            light: MyntColors.primary,
+          )
+        : resolveThemeColor(
+            context,
+            dark: MyntColors.textSecondaryDark.withOpacity(0.6),
+            light: MyntColors.textSecondary,
+          );
     final textColor = isPrimary
         ? Colors.white
-        : (theme.isDarkMode ? Colors.white : WebColors.primaryLight);
-    final borderColor = theme.isDarkMode ? WebDarkColors.primaryLight : WebColors.primaryLight;
+        : (theme.isDarkMode ? Colors.white : MyntColors.primary);
+    final borderColor = resolveThemeColor(
+      context,
+      dark: MyntColors.primaryDark,
+      light: MyntColors.primary,
+    );
     
     return Container(
       height: 40,
@@ -428,10 +446,9 @@ class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWe
         shape: shadcn.ButtonShape.rectangle,
         child: Text(
           text,
-          style: WebTextStyles.buttonMd(
-            isDarkTheme: theme.isDarkMode,
+          style: MyntWebTextStyles.buttonMd(
+            context,
             color: textColor,
-            fontWeight: WebFonts.bold,
           ),
         ),
       ),
@@ -684,19 +701,19 @@ class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWe
           children: [
             Text(
               positions.isNetPnl ? "P&L" : "MTM",
-              style: WebTextStyles.title(
-                isDarkTheme: theme.isDarkMode,
+              style: MyntWebTextStyles.title(
+                context,
                 color: colorScheme.mutedForeground,
-                fontWeight: WebFonts.medium,
+                fontWeight: MyntFonts.medium,
               ),
             ),
             const SizedBox(height: 6),
             Text(
               displayValue,
-              style: WebTextStyles.head(
-                isDarkTheme: theme.isDarkMode,
+              style: MyntWebTextStyles.head(
+                context,
                 color: _getPnLColor(displayValue),
-                fontWeight: WebFonts.medium,
+                fontWeight: MyntFonts.medium,
               ),
             ),
           ],
@@ -786,18 +803,18 @@ class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWe
           children: [
             Text(
               title1,
-              style: WebTextStyles.sub(
-                isDarkTheme: theme.isDarkMode,
+              style: MyntWebTextStyles.bodySmall(
+                context,
                 color: colorScheme.mutedForeground,
-                fontWeight: WebFonts.medium,
+                fontWeight: MyntFonts.medium,
               ),
             ),
             Text(
               value1,
-              style: WebTextStyles.sub(
-                isDarkTheme: theme.isDarkMode,
+              style: MyntWebTextStyles.bodySmall(
+                context,
                 color: colorScheme.foreground,
-                fontWeight: WebFonts.medium,
+                fontWeight: MyntFonts.medium,
               ),
             ),
           ],

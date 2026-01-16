@@ -5,9 +5,10 @@ import 'package:mynt_plus/models/order_book_model/order_book_model.dart';
 import 'package:mynt_plus/provider/order_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/provider/websocket_provider.dart';
-import 'package:mynt_plus/res/web_colors.dart';
-import 'package:mynt_plus/res/global_font_web.dart';
+import 'package:mynt_plus/res/mynt_web_text_styles.dart';
+import 'package:mynt_plus/res/mynt_web_color_styles.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
+import 'package:mynt_plus/sharedWidget/common_buttons_web.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import '../refactored/services/order_action_handler.dart';
 import '../refactored/utils/cell_formatters.dart';
@@ -36,13 +37,19 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
   String? _processingOrderToken;
   Offset _modifyDialogPosition = const Offset(100, 100);
 
-  // Helper method to ensure Geist font is always applied
-  TextStyle _geistTextStyle({Color? color, double? fontSize, FontWeight? fontWeight}) {
-    return TextStyle(
-      fontFamily: 'Geist',
+  // Helper method to get appropriate text style from MyntWebTextStyles
+  TextStyle _getTextStyle(BuildContext context, {Color? color}) {
+    return MyntWebTextStyles.tableCell(
+      context,
       color: color,
-      fontSize: fontSize,
-      fontWeight: fontWeight,
+    );
+  }
+
+  // Helper method for header text style
+  TextStyle _getHeaderStyle(BuildContext context, {Color? color}) {
+    return MyntWebTextStyles.tableHeader(
+      context,
+      color: color,
     );
   }
 
@@ -278,7 +285,7 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                                       alignment: Alignment.centerLeft,
                                       child: Text(
                                         _formatTime(order.norentm ?? '0.00'),
-                                        style: _geistTextStyle(),
+                                        style: _getTextStyle(context),
                                         overflow: TextOverflow.visible,
                                         softWrap: false,
                                       ),
@@ -312,21 +319,21 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                                                   softWrap: false,
                                                   text: TextSpan(
                                                     children: [
-                                                      // Symbol (normal color, fixed 14px)
+                                                      // Symbol (normal color)
                                                       TextSpan(
                                                         text: _formatInstrumentText(order),
-                                                        style: _geistTextStyle(
+                                                        style: MyntWebTextStyles.body(
+                                                          context,
                                                           color: shadcn.Theme.of(context).colorScheme.foreground,
-                                                          fontSize: 14.0,
                                                         ),
                                                       ),
-                                                      // Exchange (mutedForeground color, smaller font, fixed 12px)
+                                                      // Exchange (mutedForeground color, smaller font)
                                                       if (order.exch != null && order.exch!.isNotEmpty)
                                                         TextSpan(
                                                           text: ' ${order.exch}',
-                                                          style: _geistTextStyle(
+                                                          style: MyntWebTextStyles.para(
+                                                            context,
                                                             color: shadcn.Theme.of(context).colorScheme.mutedForeground,
-                                                            fontSize: 12.0,
                                                           ),
                                                         ),
                                                     ],
@@ -411,7 +418,7 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                                       alignment: Alignment.centerLeft,
                                       child: Text(
                                         _formatProductType(order),
-                                        style: _geistTextStyle(),
+                                        style: _getTextStyle(context),
                                         overflow: TextOverflow.visible,
                                         softWrap: false,
                                       ),
@@ -429,7 +436,8 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                                       alignment: Alignment.centerLeft,
                                       child: Text(
                                         order.trantype == "S" ? "SELL" : "BUY",
-                                        style: _geistTextStyle(
+                                        style: _getTextStyle(
+                                          context,
                                           color: order.trantype == "S"
                                               ? shadcn.Theme.of(context).colorScheme.destructive
                                               : shadcn.Theme.of(context).colorScheme.chart2,
@@ -452,7 +460,7 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                                       alignment: Alignment.centerRight,
                                       child: Text(
                                         order.qty?.toString() ?? '0',
-                                        style: _geistTextStyle(),
+                                        style: _getTextStyle(context),
                                       ),
                                     ),
                                   ),
@@ -469,7 +477,7 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                                       alignment: Alignment.centerRight,
                                       child: Text(
                                         order.avgprc ?? '0.00',
-                                        style: _geistTextStyle(),
+                                        style: _getTextStyle(context),
                                       ),
                                     ),
                                   ),
@@ -504,7 +512,7 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                                       alignment: Alignment.centerRight,
                                       child: Text(
                                         _getValidPrice(order),
-                                        style: _geistTextStyle(),
+                                        style: _getTextStyle(context),
                                       ),
                                     ),
                                   ),
@@ -523,7 +531,7 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                                         (order.trgprc != null && order.trgprc != '0' && order.trgprc != '0.00')
                                             ? order.trgprc!
                                             : '0.00',
-                                        style: _geistTextStyle(),
+                                        style: _getTextStyle(context),
                                       ),
                                     ),
                                   ),
@@ -540,7 +548,7 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                                       alignment: Alignment.centerRight,
                                       child: Text(
                                         _calculateOrderValue(order),
-                                        style: _geistTextStyle(),
+                                        style: _getTextStyle(context),
                                       ),
                                     ),
                                   ),
@@ -556,7 +564,8 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                                       alignment: Alignment.centerLeft,
                                       child: Text(
                                         _getStatusText(order),
-                                        style: _geistTextStyle(
+                                        style: _getTextStyle(
+                                          context,
                                           color: _getStatusColor(_getStatusText(order), context),
                                         ),
                                         overflow: TextOverflow.visible,
@@ -706,9 +715,7 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
               if (alignRight && _sortColumnIndex == columnIndex) const SizedBox(width: 4),
               Text(
                 label,
-                style: _geistTextStyle(
-                  color: shadcn.Theme.of(context).colorScheme.foreground,
-                ),
+                style: _getHeaderStyle(context),
               ),
               if (!alignRight && _sortColumnIndex == columnIndex) const SizedBox(width: 4),
               if (!alignRight && _sortColumnIndex == columnIndex)
@@ -864,9 +871,8 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
     if (isPending) {
       return [
         _buildHoverButton(
-          theme: theme,
           label: 'Cancel',
-          backgroundColor: theme.isDarkMode ? WebDarkColors.error : WebColors.error,
+          backgroundColor: MyntColors.tertiary,
           onPressed: isProcessing && _isProcessingCancel
               ? null
               : () async {
@@ -887,9 +893,12 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
         ),
         SizedBox(width: buttonSpacing),
         _buildHoverButton(
-          theme: theme,
           label: 'Modify',
-          backgroundColor: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
+          backgroundColor: resolveThemeColor(
+            context,
+            dark: MyntColors.primaryDark,
+            light: MyntColors.primary,
+          ),
           onPressed: isProcessing && _isProcessingModify
               ? null
               : () async {
@@ -916,18 +925,24 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
     } else {
       return [
         _buildHoverButton(
-          theme: theme,
           label: 'Repeat',
-          backgroundColor: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
+          backgroundColor: resolveThemeColor(
+            context,
+            dark: MyntColors.primaryDark,
+            light: MyntColors.primary,
+          ),
           onPressed: () => actionHandler.repeatOrder(order),
           context: context,
         ),
         if (order.status == "OPEN") ...[
           SizedBox(width: buttonSpacing),
           _buildHoverButton(
-            theme: theme,
             label: 'Cancel',
-            backgroundColor: theme.isDarkMode ? WebDarkColors.error : WebColors.error,
+            backgroundColor: resolveThemeColor(
+              context,
+              dark: MyntColors.lossDark,
+              light: MyntColors.loss,
+            ),
             onPressed: isProcessing && _isProcessingCancel
                 ? null
                 : () async {
@@ -952,50 +967,34 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
   }
 
   Widget _buildHoverButton({
-    required ThemesProvider theme,
     required String label,
     required Color backgroundColor,
     required VoidCallback? onPressed,
     required BuildContext context,
   }) {
-    const borderRadiusValue = 5.0;
-    
     // Detect screen size for responsive design
     final screenWidth = MediaQuery.of(context).size.width;
-    final isSmallScreen = screenWidth < 768; // Tablet breakpoint
-    final isVerySmallScreen = screenWidth < 480; // Mobile breakpoint
-    
-    // Responsive sizes
-    final buttonPadding = isVerySmallScreen 
-        ? const EdgeInsets.symmetric(horizontal: 4, vertical: 4)
-        : (isSmallScreen 
-            ? const EdgeInsets.symmetric(horizontal: 6, vertical: 4)
-            : const EdgeInsets.symmetric(horizontal: 8));
-    final fontSize = isVerySmallScreen ? 10.0 : (isSmallScreen ? 11.0 : 12.0);
+    final isSmallScreen = screenWidth < 768;
+    final buttonSize = isSmallScreen ? MyntButtonSize.small : MyntButtonSize.small;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(borderRadiusValue),
-      ),
-      child: shadcn.TextButton(
-        size: shadcn.ButtonSize.small,
-        density: shadcn.ButtonDensity.dense,
+    // Determine button type based on color
+    final isTertiary = backgroundColor == MyntColors.tertiary ||
+        backgroundColor == MyntColors.lossDark ||
+        backgroundColor == MyntColors.loss;
+
+    if (isTertiary) {
+      return MyntTertiaryButton(
+        label: label,
         onPressed: onPressed,
-        shape: shadcn.ButtonShape.rectangle,
-        child: Padding(
-          padding: buttonPadding,
-          child: Text(
-            label,
-            style: WebTextStyles.buttonSm(
-              isDarkTheme: theme.isDarkMode,
-              color: Colors.white,
-              fontWeight: WebFonts.bold,
-            ).copyWith(fontSize: fontSize),
-          ),
-        ),
-      ),
-    );
+        size: buttonSize,
+      );
+    } else {
+      return MyntPrimaryButton(
+        label: label,
+        onPressed: onPressed,
+        size: buttonSize,
+      );
+    }
   }
 
   List<OrderBookModel> _getSortedOrders(List<OrderBookModel> orders) {
@@ -1224,10 +1223,7 @@ class _OrderBookLTPCellState extends ConsumerState<_OrderBookLTPCell> {
   Widget build(BuildContext context) {
     return Text(
       ltp,
-      style: TextStyle(
-        fontFamily: 'Geist',
-        color: shadcn.Theme.of(context).colorScheme.foreground,
-      ),
+      style: MyntWebTextStyles.tableCell(context),
     );
   }
 }

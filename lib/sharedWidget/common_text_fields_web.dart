@@ -139,16 +139,16 @@ class _MyntTextFieldState extends State<MyntTextField> {
     final effectiveBackgroundColor = widget.backgroundColor ??
         resolveThemeColor(
           context,
-          darkColor: Color(0xffB5C0CF).withOpacity(.15),
-          lightColor: Color(0xffF1F3F8),
+          dark: Color(0xffB5C0CF).withOpacity(.15),
+          light: Color(0xffF1F3F8),
         );
 
     // Determine border color
     final effectiveBorderColor = widget.borderColor ??
         resolveThemeColor(
           context,
-          darkColor: WebColors.outlinedBorderDark,
-          lightColor: WebColors.outlinedBorder,
+          dark: WebColors.outlinedBorderDark,
+          light: WebColors.outlinedBorder,
         );
 
     // Build prefix icon
@@ -161,8 +161,8 @@ class _MyntTextFieldState extends State<MyntTextField> {
         colorFilter: ColorFilter.mode(
           resolveThemeColor(
             context,
-            darkColor: WebColors.iconDark,
-            lightColor: WebColors.icon,
+            dark: WebColors.iconDark,
+            light: WebColors.icon,
           ),
           BlendMode.srcIn,
         ),
@@ -182,8 +182,8 @@ class _MyntTextFieldState extends State<MyntTextField> {
         onPressed: widget.onClear,
         color: resolveThemeColor(
           context,
-          darkColor: WebColors.iconDark,
-          lightColor: WebColors.icon,
+          dark: WebColors.iconDark,
+          light: WebColors.icon,
         ),
         padding: EdgeInsets.zero,
         constraints: BoxConstraints(),
@@ -196,8 +196,8 @@ class _MyntTextFieldState extends State<MyntTextField> {
         colorFilter: ColorFilter.mode(
           resolveThemeColor(
             context,
-            darkColor: WebColors.iconDark,
-            lightColor: WebColors.icon,
+            dark: WebColors.iconDark,
+            light: WebColors.icon,
           ),
           BlendMode.srcIn,
         ),
@@ -271,34 +271,34 @@ class _MyntTextFieldState extends State<MyntTextField> {
   TextStyle _getDefaultTextStyle(BuildContext context) {
     switch (widget.size) {
       case MyntTextFieldSize.small:
-        return WebTextStyles.bodySmall(context);
+        return MyntWebTextStyles.bodyMedium(context);
       case MyntTextFieldSize.medium:
-        return WebTextStyles.searchText(context);
+        return MyntWebTextStyles.bodyMedium(context);
       case MyntTextFieldSize.large:
-        return WebTextStyles.sub(context);
+        return MyntWebTextStyles.bodyMedium(context);
     }
   }
 
   TextStyle _getDefaultPlaceholderStyle(BuildContext context) {
     switch (widget.size) {
       case MyntTextFieldSize.small:
-        return WebTextStyles.bodySmall(
+        return MyntWebTextStyles.bodyMedium(
           context,
           color: resolveThemeColor(
             context,
-            darkColor: WebColors.textSecondaryDark,
-            lightColor: WebColors.textSecondary,
+            dark: WebColors.textSecondaryDark,
+            light: WebColors.textSecondary,
           ),
         );
       case MyntTextFieldSize.medium:
-        return WebTextStyles.placeholderText(context);
+        return MyntWebTextStyles.placeholder(context);
       case MyntTextFieldSize.large:
-        return WebTextStyles.sub(
+        return MyntWebTextStyles.body(
           context,
           color: resolveThemeColor(
             context,
-            darkColor: WebColors.textSecondaryDark,
-            lightColor: WebColors.textSecondary,
+            dark: WebColors.textSecondaryDark,
+            light: WebColors.textSecondary,
           ),
         );
     }

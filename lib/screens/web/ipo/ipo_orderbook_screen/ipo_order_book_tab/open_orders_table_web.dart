@@ -3,12 +3,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:data_table_2/data_table_2.dart';
-import 'package:mynt_plus/res/global_font_web.dart';
 import '../../../../../provider/iop_provider.dart';
 import '../../../../../provider/thems.dart';
-import '../../../../../res/global_font_web.dart' hide WebTextStyles;
-import '../../../../../res/web_colors.dart';
-import '../../../../../res/res.dart';
+import '../../../../../res/mynt_web_text_styles.dart';
+import '../../../../../res/mynt_web_color_styles.dart';
 import '../../../../../sharedWidget/functions.dart';
 import '../../../../../sharedWidget/no_data_found.dart';
 import '../ipo_orderbook_details/open_order_details_web.dart';
@@ -69,13 +67,17 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
             height: calculatedHeight.toDouble(),
             decoration: BoxDecoration(
               border: Border.all(
-                color: theme.isDarkMode
-                    ? WebDarkColors.divider
-                    : WebColors.divider,
+                color: resolveThemeColor(
+                  context,
+                  dark: MyntColors.dividerDark,
+                  light: MyntColors.divider,
+                ),
                 width: 1,
               ),
               borderRadius: BorderRadius.circular(4),
-              color: theme.isDarkMode ? WebDarkColors.background : Colors.white,
+              color: theme.isDarkMode
+                  ? Theme.of(context).colorScheme.background
+                  : Colors.white,
             ),
             child: Theme(
               data: Theme.of(context).copyWith(
@@ -87,14 +89,18 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
                   mainAxisMargin: 0.0,
                   radius: const Radius.circular(3),
                   thumbColor: WidgetStateProperty.resolveWith((states) {
-                    return theme.isDarkMode
-                        ? WebDarkColors.textSecondary.withOpacity(0.3)
-                        : WebColors.textSecondary.withOpacity(0.3);
+                    return resolveThemeColor(
+                      context,
+                      dark: MyntColors.textSecondaryDark,
+                      light: MyntColors.textSecondary,
+                    ).withOpacity(0.3);
                   }),
                   trackColor: WidgetStateProperty.resolveWith((states) {
-                    return theme.isDarkMode
-                        ? WebDarkColors.divider.withOpacity(0.1)
-                        : WebColors.divider.withOpacity(0.1);
+                    return resolveThemeColor(
+                      context,
+                      dark: MyntColors.dividerDark,
+                      light: MyntColors.divider,
+                    ).withOpacity(0.1);
                   }),
                   trackBorderColor: WidgetStateProperty.all(Colors.transparent),
                   minThumbLength: 48.0,
@@ -107,50 +113,63 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
                 sortColumnIndex: _sortColumnIndex,
                 sortAscending: _sortAscending,
                 fixedLeftColumns: 1,
-                fixedColumnsColor: theme.isDarkMode
-                    ? WebDarkColors.backgroundSecondary.withOpacity(0.8)
-                    : WebColors.backgroundSecondary.withOpacity(0.8),
+                fixedColumnsColor: resolveThemeColor(
+                  context,
+                  dark: MyntColors.searchBgDark.withOpacity(0.8),
+                  light: MyntColors.searchBg.withOpacity(0.8),
+                ),
                 showBottomBorder: true,
                 horizontalScrollController: _horizontalScrollController,
                 scrollController: _verticalScrollController,
                 showCheckboxColumn: false,
                 dataRowHeight: 56.0,
                 headingRowColor: WidgetStateProperty.all(
-                  theme.isDarkMode
-                      ? WebDarkColors.primary
-                      : WebColors.primary.withOpacity(0.05),
+                  resolveThemeColor(
+                    context,
+                    dark: MyntColors.primaryDark,
+                    light: MyntColors.primary.withOpacity(0.05),
+                  ),
                 ),
-                headingTextStyle: WebTextStyles.tableHeader(
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
+                headingTextStyle: MyntWebTextStyles.head(
+                  context,
+                  color: resolveThemeColor(
+                    context,
+                    dark: MyntColors.textPrimaryDark,
+                    light: MyntColors.textPrimary,
+                  ),
                 ),
-                dataTextStyle: WebTextStyles.custom(
-                  fontSize: 13,
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
-                  fontWeight: WebFonts.medium,
+                dataTextStyle: MyntWebTextStyles.bodySmall(
+                  context,
+                  color: resolveThemeColor(
+                    context,
+                    dark: MyntColors.textPrimaryDark,
+                    light: MyntColors.textPrimary,
+                  ),
+                  fontWeight: MyntFonts.medium,
                 ),
                 border: TableBorder(
                   top: BorderSide(
-                    color: theme.isDarkMode
-                        ? WebDarkColors.divider
-                        : WebColors.divider,
+                    color: resolveThemeColor(
+                      context,
+                      dark: MyntColors.dividerDark,
+                      light: MyntColors.divider,
+                    ),
                     width: 1,
                   ),
                   bottom: BorderSide(
-                    color: theme.isDarkMode
-                        ? WebDarkColors.divider
-                        : WebColors.divider,
+                    color: resolveThemeColor(
+                      context,
+                      dark: MyntColors.dividerDark,
+                      light: MyntColors.divider,
+                    ),
                     width: 1,
                   ),
                   horizontalInside: BorderSide(
-                    color: theme.isDarkMode
-                        ? WebDarkColors.divider
-                        : WebColors.divider,
+                    color: resolveThemeColor(
+                      context,
+                      dark: MyntColors.dividerDark,
+                      light: MyntColors.divider,
+                    ),
                     width: 1,
                   ),
                 ),
@@ -217,9 +236,11 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
       return Icon(
         Icons.unfold_more,
         size: 16,
-        color: theme.isDarkMode
-            ? WebDarkColors.textSecondary.withOpacity(0.6)
-            : WebColors.textSecondary.withOpacity(0.6),
+      color: resolveThemeColor(
+        context,
+        dark: MyntColors.textSecondaryDark,
+        light: MyntColors.textSecondary,
+      ).withOpacity(0.6),
       );
     }
   }
@@ -232,11 +253,13 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
           children: [
             Text(
               'Stock name',
-              style: WebTextStyles.tableHeader(
-                isDarkTheme: theme.isDarkMode,
-                color: theme.isDarkMode
-                    ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary,
+              style: MyntWebTextStyles.head(
+                context,
+                color: resolveThemeColor(
+                  context,
+                  dark: MyntColors.textPrimaryDark,
+                  light: MyntColors.textPrimary,
+                ),
               ),
             ),
             const SizedBox(width: 4),
@@ -253,11 +276,13 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
           children: [
             Text(
               'Date',
-              style: WebTextStyles.tableHeader(
-                isDarkTheme: theme.isDarkMode,
-                color: theme.isDarkMode
-                    ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary,
+              style: MyntWebTextStyles.head(
+                context,
+                color: resolveThemeColor(
+                  context,
+                  dark: MyntColors.textPrimaryDark,
+                  light: MyntColors.textPrimary,
+                ),
               ),
             ),
             const SizedBox(width: 4),
@@ -273,11 +298,13 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
           children: [
             Text(
               'Status',
-              style: WebTextStyles.tableHeader(
-                isDarkTheme: theme.isDarkMode,
-                color: theme.isDarkMode
-                    ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary,
+              style: MyntWebTextStyles.head(
+                context,
+                color: resolveThemeColor(
+                  context,
+                  dark: MyntColors.textPrimaryDark,
+                  light: MyntColors.textPrimary,
+                ),
               ),
             ),
             const SizedBox(width: 4),
@@ -293,11 +320,13 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
           children: [
             Text(
               'Amount',
-              style: WebTextStyles.tableHeader(
-                isDarkTheme: theme.isDarkMode,
-                color: theme.isDarkMode
-                    ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary,
+              style: MyntWebTextStyles.head(
+                context,
+                color: resolveThemeColor(
+                  context,
+                  dark: MyntColors.textPrimaryDark,
+                  light: MyntColors.textPrimary,
+                ),
               ),
             ),
             const SizedBox(width: 4),
@@ -342,8 +371,8 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
                     ),
                     decoration: BoxDecoration(
                       color: currentTheme.isDarkMode
-                          ? WebDarkColors.surface
-                          : WebColors.surface,
+                          ? Theme.of(context).colorScheme.background
+                          : Colors.white,
                       borderRadius: BorderRadius.circular(5),
                     ),
                     child: Column(
@@ -355,9 +384,11 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
                           decoration: BoxDecoration(
                             border: Border(
                               bottom: BorderSide(
-                                color: currentTheme.isDarkMode
-                                    ? WebDarkColors.divider
-                                    : WebColors.divider,
+                                color: resolveThemeColor(
+                                  context,
+                                  dark: MyntColors.dividerDark,
+                                  light: MyntColors.divider,
+                                ),
                                 width: 1,
                               ),
                             ),
@@ -367,12 +398,14 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
                             children: [
                               Text(
                                 '${order.companyName} ${order.symbol}',
-                                style: WebTextStyles.sub(
-                                  isDarkTheme: currentTheme.isDarkMode,
-                                  color: currentTheme.isDarkMode
-                                      ? WebDarkColors.textPrimary
-                                      : WebColors.textPrimary,
-                                  fontWeight: FontWeight.w700,
+                                style: MyntWebTextStyles.bodySmall(
+                                  context,
+                                  color: resolveThemeColor(
+                                    context,
+                                    dark: MyntColors.textPrimaryDark,
+                                    light: MyntColors.textPrimary,
+                                  ),
+                                  fontWeight: MyntFonts.bold,
                                 ),
                               ),
                               Material(
@@ -388,9 +421,11 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
                                     child: Icon(
                                       Icons.close,
                                       size: 18,
-                                      color: currentTheme.isDarkMode
-                                          ? WebDarkColors.iconSecondary
-                                          : WebColors.iconSecondary,
+                                      color: resolveThemeColor(
+                                        context,
+                                        dark: MyntColors.iconDark,
+                                        light: MyntColors.icon,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -446,8 +481,8 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
                   ? Icon(icon, size: 16, color: color)
                   : Text(
                       label ?? "",
-                      style: WebTextStyles.buttonXs(
-                        isDarkTheme: theme.isDarkMode,
+                      style: MyntWebTextStyles.buttonSm(
+                        context,
                         color: color,
                       ),
                     ),
@@ -518,9 +553,11 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
         },
         color: WidgetStateProperty.resolveWith<Color>((states) {
           if (states.contains(WidgetState.hovered) || isHovered) {
-            return theme.isDarkMode
-                ? WebDarkColors.primary.withOpacity(0.06)
-                : WebColors.primary.withOpacity(0.10);
+            return resolveThemeColor(
+              context,
+              dark: MyntColors.primaryDark,
+              light: MyntColors.primary,
+            ).withOpacity(theme.isDarkMode ? 0.06 : 0.10);
           }
           return Colors.transparent;
         }),
@@ -542,13 +579,14 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
                           message: companyName,
                           child: Text(
                             companyName,
-                            style: WebTextStyles.custom(
-                              fontSize: 13,
-                              isDarkTheme: theme.isDarkMode,
-                              color: theme.isDarkMode
-                                  ? WebDarkColors.textPrimary
-                                  : WebColors.textPrimary,
-                              fontWeight: WebFonts.medium,
+                            style: MyntWebTextStyles.bodySmall(
+                              context,
+                              color: resolveThemeColor(
+                                context,
+                                dark: MyntColors.textPrimaryDark,
+                                light: MyntColors.textPrimary,
+                              ),
+                              fontWeight: MyntFonts.medium,
                             ),
                             overflow: TextOverflow.ellipsis,
                             maxLines: 1,
@@ -565,9 +603,11 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
                             child: _buildHoverButton(
                               label: 'Cancel',
                               color: Colors.white,
-                              backgroundColor: theme.isDarkMode
-                                  ? WebDarkColors.tertiary
-                                  : WebColors.tertiary,
+                              backgroundColor: resolveThemeColor(
+                                context,
+                                dark: MyntColors.tertiary,
+                                light: MyntColors.tertiary,
+                              ),
                               onPressed: isHovered ? () {
                                 showDialog(
                                   context: context,
@@ -599,13 +639,14 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
                     order.responseDatetime?.toString() == "" || order.responseDatetime == null
                         ? "----"
                         : ipodateres(order.responseDatetime.toString()),
-                    style: WebTextStyles.custom(
-                      fontSize: 13,
-                      isDarkTheme: theme.isDarkMode,
-                      color: theme.isDarkMode
-                          ? WebDarkColors.textPrimary
-                          : WebColors.textPrimary,
-                      fontWeight: WebFonts.regular,
+                    style: MyntWebTextStyles.bodySmall(
+                      context,
+                      color: resolveThemeColor(
+                        context,
+                        dark: MyntColors.textPrimaryDark,
+                        light: MyntColors.textPrimary,
+                      ),
+                      fontWeight: MyntFonts.regular,
                     ),
                   ),
                 ),
@@ -623,17 +664,16 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
                   padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
                   child: Text(
                     order.reponseStatus == "new success" ? "Success" : "Pending",
-                    style: WebTextStyles.custom(
-                      fontSize: 13,
-                      isDarkTheme: theme.isDarkMode,
+                    style: MyntWebTextStyles.bodySmall(
+                      context,
                       color: order.reponseStatus == "new success"
-                          ? theme.isDarkMode
-                              ? colors.profitDark
-                              : colors.profitLight
-                          : theme.isDarkMode
-                              ? colors.pending
-                              : colors.pending,
-                      fontWeight: WebFonts.regular,
+                          ? resolveThemeColor(
+                              context,
+                              dark: MyntColors.profitDark,
+                              light: MyntColors.profit,
+                            )
+                          : MyntColors.pending,
+                      fontWeight: MyntFonts.regular,
                     ),
                   ),
                 ),
@@ -651,13 +691,14 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
                   padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
                   child: Text(
                     _getInvestedAmount(order),
-                    style: WebTextStyles.custom(
-                      fontSize: 13,
-                      isDarkTheme: theme.isDarkMode,
-                      color: theme.isDarkMode
-                          ? WebDarkColors.textPrimary
-                          : WebColors.textPrimary,
-                      fontWeight: WebFonts.regular,
+                    style: MyntWebTextStyles.bodySmall(
+                      context,
+                      color: resolveThemeColor(
+                        context,
+                        dark: MyntColors.textPrimaryDark,
+                        light: MyntColors.textPrimary,
+                      ),
+                      fontWeight: MyntFonts.regular,
                     ),
                   ),
                 ),

@@ -8,8 +8,8 @@ import '../../../provider/portfolio_provider.dart';
 import '../../../provider/websocket_provider.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/thems.dart';
-import '../../../res/web_colors.dart';
-import '../../../res/global_font_web.dart';
+import '../../../res/mynt_web_text_styles.dart';
+import '../../../res/mynt_web_color_styles.dart';
 import '../../../sharedWidget/snack_bar.dart';
 import '../../../sharedWidget/no_data_found.dart';
 import '../../../utils/responsive_navigation.dart';
@@ -757,9 +757,11 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                     }
                   : null,
               enabled: filteredPositions.isNotEmpty,
-              activeColor: theme.isDarkMode
-                  ? WebDarkColors.primary
-                  : WebColors.primary,
+              activeColor: resolveThemeColor(
+                context,
+                dark: MyntColors.primaryDark,
+                light: MyntColors.primary,
+              ),
               borderRadius: BorderRadius.circular(4),
               size: 18,
             ),
@@ -979,9 +981,11 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                     }
                   },
             enabled: !isClosed,
-            activeColor: theme.isDarkMode
-                ? WebDarkColors.primary
-                : WebColors.primary,
+            activeColor: resolveThemeColor(
+              context,
+              dark: MyntColors.primaryDark,
+              light: MyntColors.primary,
+            ),
             borderRadius: BorderRadius.circular(4),
             size: 18,
           ),
@@ -1109,9 +1113,11 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                                       theme: theme,
                                       label: 'Add',
                                       onPressed: () => _handleAddPosition(position),
-                                      backgroundColor: theme.isDarkMode
-                                          ? WebDarkColors.primary
-                                          : WebColors.primary,
+                                      backgroundColor: resolveThemeColor(
+                                        buttonContext,
+                                        dark: MyntColors.primaryDark,
+                                        light: MyntColors.primary,
+                                      ),
                                       textColor: Colors.white,
                                     ),
                                     SizedBox(width: buttonSpacing),
@@ -1120,9 +1126,11 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                                       theme: theme,
                                       label: 'Exit',
                                       onPressed: () => _handleExitPosition(position),
-                                      backgroundColor: theme.isDarkMode
-                                          ? WebDarkColors.tertiary
-                                          : WebColors.tertiary,
+                                      backgroundColor: resolveThemeColor(
+                                        buttonContext,
+                                        dark: MyntColors.tertiary,
+                                        light: MyntColors.tertiary,
+                                      ),
                                       textColor: Colors.white,
                                     ),
                                     SizedBox(width: buttonSpacing),
@@ -1223,12 +1231,11 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                 padding: buttonPadding,
                 child: Text(
                   label ?? "",
-                  style: WebTextStyles.buttonSm(
-                    isDarkTheme: theme.isDarkMode,
+                  style: MyntWebTextStyles.buttonSm(
+                    context,
                     color: textColor ?? (isDark
                         ? shadcn.Theme.of(context).colorScheme.foreground
                         : shadcn.Theme.of(context).colorScheme.foreground),
-                        fontWeight: WebFonts.bold,
                   ).copyWith(fontSize: fontSize),
                 ),
               ),

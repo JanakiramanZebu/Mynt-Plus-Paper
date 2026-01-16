@@ -9,9 +9,8 @@ import '../../../provider/market_watch_provider.dart';
 import '../../../provider/order_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/websocket_provider.dart';
-import '../../../res/res.dart';
-import '../../../res/web_colors.dart';
-import '../../../res/global_font_web.dart';
+import '../../../res/mynt_web_text_styles.dart';
+import '../../../res/mynt_web_color_styles.dart';
 import '../../../sharedWidget/functions.dart';
 import '../../../utils/responsive_navigation.dart';
 import '../../../utils/responsive_snackbar.dart';
@@ -186,7 +185,11 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(
-            color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
+            color: resolveThemeColor(
+              context,
+              dark: MyntColors.dividerDark,
+              light: MyntColors.divider,
+            ),
             width: 1,
           ),
         ),
@@ -247,10 +250,10 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
                           // const shadcn.Gap(24),
                           Text(
                             'Order History',
-                            style: WebTextStyles.sub(
-                              isDarkTheme: theme.isDarkMode,
+                            style: MyntWebTextStyles.bodySmall(
+                              context,
                               color: shadcn.Theme.of(context).colorScheme.foreground,
-                              fontWeight: WebFonts.semiBold,
+                              fontWeight: MyntFonts.semiBold,
                             ),
                           ),
                           const shadcn.Gap(12),
@@ -279,8 +282,8 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
             Flexible(
               child: Text(
                 "${_orderData.symbol?.replaceAll("-EQ", "") ?? ''} ${_orderData.expDate ?? ''} ${_orderData.option ?? ''} ",
-                style: WebTextStyles.dialogTitle(
-                  isDarkTheme: theme.isDarkMode,
+                style: MyntWebTextStyles.title(
+                  context,
                   color: colorScheme.foreground,
                 ),
                 overflow: TextOverflow.ellipsis,
@@ -303,24 +306,24 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
           children: [
             Text(
               _orderData.ltp ?? _orderData.close ?? '0.00',
-              style: WebTextStyles.title(
-                isDarkTheme: theme.isDarkMode,
+              style: MyntWebTextStyles.title(
+                context,
                 color: (_orderData.change == "null" || _orderData.change == null) ||
                         _orderData.change == "0.00"
                     ? colorScheme.mutedForeground
                     : (_orderData.change?.startsWith("-") == true || _orderData.perChange?.startsWith("-") == true)
                         ? colorScheme.destructive
                         : colorScheme.chart2,
-                fontWeight: WebFonts.medium,
+                fontWeight: MyntFonts.medium,
               ),
             ),
             const SizedBox(width: 4),
             Text(
               "${(double.tryParse(_orderData.change ?? '0.00') ?? 0.00).toStringAsFixed(2)} (${_orderData.perChange ?? '0.00'}%)",
-              style: WebTextStyles.sub(
-                isDarkTheme: theme.isDarkMode,
+              style: MyntWebTextStyles.bodySmall(
+                context,
                 color: colorScheme.mutedForeground,
-                fontWeight: WebFonts.medium,
+                fontWeight: MyntFonts.medium,
               ),
             ),
           ],
@@ -412,14 +415,28 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
     bool isLoading = false,
   }) {
     final backgroundColor = isPrimary
-        ? (theme.isDarkMode ? WebDarkColors.primaryLight : WebColors.primaryLight)
-        : (theme.isDarkMode
-            ? WebDarkColors.textSecondary.withOpacity(0.6)
-            : WebColors.buttonSecondary);
+        ? resolveThemeColor(
+            context,
+            dark: MyntColors.primaryDark,
+            light: MyntColors.primary,
+          )
+        : resolveThemeColor(
+            context,
+            dark: MyntColors.textSecondaryDark.withOpacity(0.6),
+            light: MyntColors.textSecondary,
+          );
     final textColor = isPrimary
         ? Colors.white
-        : (theme.isDarkMode ? Colors.white : WebColors.primaryLight);
-    final borderColor = theme.isDarkMode ? WebDarkColors.primaryLight : WebColors.primaryLight;
+        : resolveThemeColor(
+            context,
+            dark: Colors.white,
+            light: MyntColors.primary,
+          );
+    final borderColor = resolveThemeColor(
+      context,
+      dark: MyntColors.primaryDark,
+      light: MyntColors.primary,
+    );
     
     return Container(
       height: 40,
@@ -453,10 +470,9 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
               )
             : Text(
                 text,
-                style: WebTextStyles.buttonMd(
-                  isDarkTheme: theme.isDarkMode,
+                style: MyntWebTextStyles.buttonMd(
+                  context,
                   color: textColor,
-                  fontWeight: WebFonts.bold,
                 ),
               ),
       ),
@@ -506,18 +522,18 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
           children: [
             Text(
               title1,
-              style: WebTextStyles.sub(
-                isDarkTheme: theme.isDarkMode,
+              style: MyntWebTextStyles.bodySmall(
+                context,
                 color: colorScheme.mutedForeground,
-                fontWeight: WebFonts.regular,
+                fontWeight: MyntFonts.regular,
               ),
             ),
             Text(
               value1,
-              style: WebTextStyles.sub(
-                isDarkTheme: theme.isDarkMode,
+              style: MyntWebTextStyles.bodySmall(
+                context,
                 color: colorScheme.mutedForeground,
-                fontWeight: WebFonts.medium,
+                fontWeight: MyntFonts.medium,
               ),
             ),
           ],
@@ -537,18 +553,18 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
           children: [
             Text(
               title,
-              style: WebTextStyles.sub(
-                isDarkTheme: theme.isDarkMode,
+              style: MyntWebTextStyles.bodySmall(
+                context,
                 color: colorScheme.mutedForeground,
-                fontWeight: WebFonts.regular,
+                fontWeight: MyntFonts.regular,
               ),
             ),
             Text(
               value,
-              style: WebTextStyles.sub(
-                isDarkTheme: theme.isDarkMode,
+              style: MyntWebTextStyles.bodySmall(
+                context,
                 color: valueColor,
-                fontWeight: WebFonts.medium,
+                fontWeight: MyntFonts.medium,
               ),
             ),
           ],
@@ -565,19 +581,19 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
       children: [
         Text(
           "Reason:",
-          style: WebTextStyles.sub(
-            isDarkTheme: theme.isDarkMode,
+          style: MyntWebTextStyles.bodySmall(
+            context,
             color: colorScheme.mutedForeground,
-            fontWeight: WebFonts.regular,
+            fontWeight: MyntFonts.regular,
           ),
         ),
         const SizedBox(height: 8),
         Text(
           reason,
-          style: WebTextStyles.sub(
-            isDarkTheme: theme.isDarkMode,
-           color: colorScheme.mutedForeground,
-            fontWeight: WebFonts.medium,
+          style: MyntWebTextStyles.bodySmall(
+            context,
+            color: colorScheme.mutedForeground,
+            fontWeight: MyntFonts.medium,
           ),
         ),
       ],
@@ -675,19 +691,19 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
                 children: [
                   Text(
                     statusText,
-                    style: WebTextStyles.sub(
-                      isDarkTheme: theme.isDarkMode,
+                    style: MyntWebTextStyles.bodySmall(
+                      context,
                       color: colorScheme.foreground,
-                      fontWeight: WebFonts.regular,
+                      fontWeight: MyntFonts.regular,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     timeText,
-                    style: WebTextStyles.para(
-                      isDarkTheme: theme.isDarkMode,
+                    style: MyntWebTextStyles.para(
+                      context,
                       color: colorScheme.mutedForeground,
-                      fontWeight: WebFonts.regular,
+                      fontWeight: MyntFonts.regular,
                     ),
                   ),
                 ],
@@ -1008,7 +1024,11 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
           child: Container(
             width: 400,
             decoration: BoxDecoration(
-              color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+              color: resolveThemeColor(
+                dialogContext,
+                dark: Colors.black,
+                light: Colors.white,
+              ),
               borderRadius: BorderRadius.circular(5),
             ),
             child: Column(
@@ -1021,7 +1041,11 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
                   decoration: BoxDecoration(
                     border: Border(
                       bottom: BorderSide(
-                        color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
+                        color: resolveThemeColor(
+                          dialogContext,
+                          dark: MyntColors.dividerDark,
+                          light: MyntColors.divider,
+                        ),
                       ),
                     ),
                   ),
@@ -1030,16 +1054,24 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
                     children: [
                       Text(
                         'Cancel Order',
-                        style: WebTextStyles.dialogTitle(
-                          isDarkTheme: theme.isDarkMode,
-                          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                        style: MyntWebTextStyles.title(
+                          dialogContext,
+                          color: resolveThemeColor(
+                            dialogContext,
+                            dark: MyntColors.textPrimaryDark,
+                            light: MyntColors.textPrimary,
+                          ),
                         ),
                       ),
                       IconButton(
                         icon: Icon(
                           Icons.close,
                           size: 20,
-                          color: theme.isDarkMode ? WebDarkColors.iconSecondary : WebColors.iconSecondary,
+                          color: resolveThemeColor(
+                            dialogContext,
+                            dark: MyntColors.iconDark,
+                            light: MyntColors.icon,
+                          ),
                         ),
                         onPressed: () => Navigator.of(dialogContext).pop(false),
                       ),
@@ -1054,18 +1086,26 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
                       Text(
                         'Are you sure you want to cancel this order?',
                         textAlign: TextAlign.center,
-                        style: WebTextStyles.dialogContent(
-                          isDarkTheme: theme.isDarkMode,
-                          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                        style: MyntWebTextStyles.bodySmall(
+                          dialogContext,
+                          color: resolveThemeColor(
+                            dialogContext,
+                            dark: MyntColors.textPrimaryDark,
+                            light: MyntColors.textPrimary,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         displayText,
                         textAlign: TextAlign.center,
-                        style: WebTextStyles.dialogContent(
-                          isDarkTheme: theme.isDarkMode,
-                          color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
+                        style: MyntWebTextStyles.bodySmall(
+                          dialogContext,
+                          color: resolveThemeColor(
+                            dialogContext,
+                            dark: MyntColors.textSecondaryDark,
+                            light: MyntColors.textSecondary,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -1074,14 +1114,18 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
                         height: 40,
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: theme.isDarkMode ? WebDarkColors.error : WebColors.error,
+                            backgroundColor: resolveThemeColor(
+                              dialogContext,
+                              dark: MyntColors.lossDark,
+                              light: MyntColors.loss,
+                            ),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
                           ),
                           onPressed: () => Navigator.of(dialogContext).pop(true),
                           child: Text(
                             'Cancel Order',
-                            style: WebTextStyles.buttonMd(
-                              isDarkTheme: theme.isDarkMode,
+                            style: MyntWebTextStyles.buttonMd(
+                              dialogContext,
                               color: Colors.white,
                             ),
                           ),

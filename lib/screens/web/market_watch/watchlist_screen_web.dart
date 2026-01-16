@@ -10,6 +10,9 @@ import 'package:flutter_riverpod/legacy.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_swipe_action_cell/flutter_swipe_action_cell.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:pointer_interceptor/pointer_interceptor.dart';
+import 'dart:html' as html;
+import 'tv_chart/chart_iframe_guard.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../res/res.dart';
@@ -429,6 +432,41 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
     await _handlePageChanged(index, ref);
   }
 
+  // Directly disable all chart iframes and reset cursor (like chart's onExit)
+  void _disableAllChartIframes() {
+    try {
+      final iframes = html.document.querySelectorAll('iframe');
+      for (var iframe in iframes) {
+        if (iframe is html.IFrameElement &&
+            iframe.id.contains('chart-iframe')) {
+          iframe.style.pointerEvents = 'none';
+          // Reset cursor style to prevent cursor bleeding
+          iframe.style.cursor = 'default';
+        }
+      }
+      // Also reset cursor on document body to ensure it's reset globally
+      html.document.body?.style.cursor = 'default';
+    } catch (e) {
+      debugPrint('Error disabling iframes: $e');
+    }
+  }
+
+  void _enableAllChartIframes() {
+    try {
+      final iframes = html.document.querySelectorAll('iframe');
+      for (var iframe in iframes) {
+        if (iframe is html.IFrameElement &&
+            iframe.id.contains('chart-iframe')) {
+          iframe.style.pointerEvents = 'auto';
+          iframe.style.cursor = '';
+        }
+      }
+      html.document.body?.style.cursor = '';
+    } catch (e) {
+      debugPrint('Error enabling iframes: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -442,7 +480,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
       final sortBy = ref.watch(marketWatchProvider.select((p) => p.sortByWL));
       final providerPageIndex = ref.watch(
           marketWatchProvider.select((p) => p.currentWatchlistPageIndex));
-      final theme = ref.watch(themeProvider);
+      // Note: Theme is read directly from shadcn.Theme.of(context) throughout this widget
 
       // Listen for page index changes from provider (e.g., from bottom sheet)
       if (providerPageIndex != _currentPageIndex &&
@@ -482,16 +520,16 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
           child: NestedScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             headerSliverBuilder: (_, inner) => [
-              _buildSearchBar(context, ref, theme, wlName, isPreDef,
+              _buildSearchBar(context, ref, wlName, isPreDef,
                   watchList?.values?.length ?? 0),
-              _buildPinnedTabs(ref, theme, watchList, wlName),
+              _buildPinnedTabs(ref, watchList, wlName),
             ],
             body: showDeleteMode
                 ? EditScripWeb(
                     wlName: wlName,
                     showInDialog: false,
                   )
-                : _buildPageView(ref, theme, watchList, sortBy),
+                : _buildPageView(ref, watchList, sortBy),
           ),
         ),
       );
@@ -499,7 +537,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
   }
 
   Widget _buildPageView(
-      WidgetRef ref, ThemesProvider theme, dynamic watchList, String sortBy) {
+      WidgetRef ref, dynamic watchList, String sortBy) {
     // Show immediately even if watchList is null initially
     if (watchList?.values == null) {
       return const SizedBox.shrink(); // No loader, just empty space
@@ -544,7 +582,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                   await marketWatch.fetchMWScrip(pageName, context);
                 },
                 child:
-                    _buildPageContent(ref, theme, pageName, pageScrips, sortBy),
+                    _buildPageContent(ref, pageName, pageScrips, sortBy),
               );
             },
           ),
@@ -553,14 +591,14 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
     );
   }
 
-  Widget _buildPageContent(WidgetRef ref, ThemesProvider theme, String pageName,
+  Widget _buildPageContent(WidgetRef ref, String pageName,
       List scrips, String sortBy) {
     if (pageName == 'My Stocks') {
       return const StocksScreenWeb();
     }
 
     if (scrips.isEmpty) {
-      return _buildEmptyState(theme, ref.read(marketWatchProvider));
+      return _buildEmptyState(ref.read(marketWatchProvider));
     }
 
     return _buildWatchlistView(scrips, sortBy);
@@ -569,7 +607,6 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
   SliverToBoxAdapter _buildSearchBar(
     BuildContext context,
     WidgetRef ref,
-    ThemesProvider theme,
     String wlName,
     String isPreDef,
     int scripLen,
@@ -585,7 +622,9 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
               padding: const EdgeInsets.only(right: 8),
               child: MyntIconButton(
                 iconAsset: assets.hamMenu,
-                 color: resolveThemeColor(context, darkColor: WebColors.textSecondaryDark, lightColor: WebColors.textSecondary),
+                color: resolveThemeColor(context,
+                    dark: MyntColors.textSecondaryDark,
+                    light: MyntColors.textSecondary),
                 size: MyntButtonSize.medium,
                 onPressed: () => _showWatchlistDialog(context, ref, wlName),
               ),
@@ -619,7 +658,9 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                         builder: (buttonContext) {
                           return MyntIconButton(
                             iconAsset: assets.searchFilter,
-                            color: resolveThemeColor(context, darkColor: WebColors.textSecondaryDark, lightColor: WebColors.textSecondary),
+                            color: resolveThemeColor(context,
+                                dark: MyntColors.textSecondaryDark,
+                                light: MyntColors.textSecondary),
                             size: MyntButtonSize.medium,
                             onPressed: () async {
                               await Future.delayed(
@@ -642,7 +683,6 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
   // WEB VERSION
   Widget _buildPinnedTabs(
     WidgetRef ref,
-    ThemesProvider theme,
     dynamic watchList,
     String wlName,
   ) {
@@ -667,7 +707,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
 
   // Build index slots widget - shows 2 index slots below tabs (pinned like tabs)
   // Responsive: shows 1 slot on narrow watchlist, 2 slots on wide watchlist
-  Widget _buildIndexSlots(WidgetRef ref, ThemesProvider theme) {
+  Widget _buildIndexSlots(WidgetRef ref) {
     final indexContent = Consumer(
       builder: (context, ref, _) {
         final indexProvider = ref.watch(indexListProvider);
@@ -696,9 +736,9 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
           ),
           child: showSingleSlot
               ? _buildSingleIndexSlot(
-                  displayIndices, theme, marketWatch, indexProvider)
+                  displayIndices, ref.read(themeProvider), marketWatch, indexProvider)
               : _buildDoubleIndexSlots(
-                  displayIndices, theme, marketWatch, indexProvider),
+                  displayIndices, ref.read(themeProvider), marketWatch, indexProvider),
         );
       },
     );
@@ -828,8 +868,8 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
               // Create custom ColorScheme with theme-appropriate primary color
               final primaryColor = resolveThemeColor(
                 context,
-                darkColor: WebColors.primaryDark,
-                lightColor: WebColors.primary,
+                dark: MyntColors.primaryDark,
+                light: MyntColors.primary,
               );
               final customColorScheme = baseColorScheme.copyWith(
                 primary: () => primaryColor,
@@ -856,21 +896,22 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                             final isActive = i == currentIndex;
                             return Text(
                               _formatTabName(tabs[i]),
-                              style: webTextStyle(
+                              style: MyntWebTextStyles.body(
                                 context,
-                                fontSize: WebFonts.subSize,
-                                fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
                                 color: isActive
                                     ? resolveThemeColor(
                                         context,
-                                        darkColor: WebColors.primaryDark,
-                                        lightColor: WebColors.primary,
+                                        dark: MyntColors.primaryDark,
+                                        light: MyntColors.primary,
                                       )
                                     : resolveThemeColor(
                                         context,
-                                        darkColor: WebColors.textSecondaryDark,
-                                        lightColor: WebColors.textSecondary,
+                                        dark: MyntColors.textSecondaryDark,
+                                        light: MyntColors.textSecondary,
                                       ),
+                                fontWeight: isActive
+                                    ? MyntFonts.bold
+                                    : MyntFonts.medium,
                               ),
                             );
                           },
@@ -886,7 +927,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
     );
   }
 
-  Widget _buildEmptyState(ThemesProvider theme, MarketWatchProvider mw) {
+  Widget _buildEmptyState(MarketWatchProvider mw) {
     return Container(
       color: shadcn.Theme.of(context).colorScheme.background,
       child: Center(
@@ -970,7 +1011,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                         const SizedBox(width: 6),
                         Text(
                           'Add Symbol',
-                          style: WebTextStyles.sub(context),
+                          style: MyntWebTextStyles.body(context),
                         ),
                       ],
                     ),
@@ -981,13 +1022,13 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
               const SizedBox(height: 12),
               Text(
                 'No symbol in this watchlist',
-                style: WebTextStyles.bodySmall(
+                style: MyntWebTextStyles.bodyMedium(
                   context,
-                            color: resolveThemeColor(
-                              context,
-                              darkColor: WebColors.textPrimaryDark,
-                              lightColor: WebColors.textPrimary,
-                            ),
+                  color: resolveThemeColor(
+                    context,
+                    dark: MyntColors.textPrimaryDark,
+                    light: MyntColors.textPrimary,
+                  ),
                 ),
               ),
               const SizedBox(height: 12),
@@ -996,13 +1037,13 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                 child: Text(
                   'Use the search box above to find and add stocks, indices, futures or options.',
                   textAlign: TextAlign.center,
-                  style: WebTextStyles.para(
+                  style: MyntWebTextStyles.para(
                     context,
-                              color: resolveThemeColor(
-                                context,
-                                darkColor: WebColors.textSecondaryDark,
-                                lightColor: WebColors.textSecondary,
-                              ),
+                    color: resolveThemeColor(
+                      context,
+                      dark: MyntColors.textSecondaryDark,
+                      light: MyntColors.textSecondary,
+                    ),
                   ),
                 ),
               ),
@@ -1137,6 +1178,16 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
           shadcn.closeOverlay(context);
           _handleFilterSelection(value, ref);
         },
+        splashColor: resolveThemeColor(
+          context,
+          dark: MyntColors.rippleDark,
+          light: MyntColors.rippleLight,
+        ),
+        highlightColor: resolveThemeColor(
+          context,
+          dark: MyntColors.highlightDark,
+          light: MyntColors.highlightLight,
+        ),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
@@ -1145,20 +1196,20 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
               Expanded(
                 child: Text(
                   title,
-                  style: webTextStyle(
+                  style: MyntWebTextStyles.body(
                     context,
-                    fontSize: WebFonts.subSize,
-                    fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+                    fontWeight:
+                        isActive ? MyntFonts.semiBold : MyntFonts.medium,
                     color: isActive
                         ? resolveThemeColor(
                             context,
-                            darkColor: WebColors.primaryDark,
-                            lightColor: WebColors.primary,
+                            dark: MyntColors.primaryDark,
+                            light: MyntColors.primary,
                           )
                         : resolveThemeColor(
                             context,
-                            darkColor: WebColors.textPrimaryDark,
-                            lightColor: WebColors.textPrimary,
+                            dark: MyntColors.textPrimaryDark,
+                            light: MyntColors.textPrimary,
                           ),
                   ),
                 ),
@@ -1179,8 +1230,8 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                             size: 18,
                             color: resolveThemeColor(
                               context,
-                              darkColor: WebColors.primaryDark,
-                              lightColor: WebColors.primary,
+                              dark: MyntColors.primaryDark,
+                              light: MyntColors.primary,
                             ),
                           ),
                         ],
@@ -1240,192 +1291,231 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
       context: context,
       barrierDismissible: true,
       barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
-      barrierColor: Colors.black.withOpacity(0.3),
+      barrierColor: resolveThemeColor(
+        context,
+        dark: MyntColors.modalBarrierDark,
+        light: MyntColors.modalBarrierLight,
+      ),
       transitionDuration: const Duration(milliseconds: 200),
       pageBuilder: (context, animation, secondaryAnimation) {
-        return Center(
-            child: shadcn.Card(
-          borderRadius: BorderRadius.circular(8),
-          padding: EdgeInsets.zero,
-          child: Container(
-            width: 500,
-            constraints: const BoxConstraints(maxHeight: 500),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(
-                        color: shadcn.Theme.of(context).colorScheme.border,
-                      ),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        return PointerInterceptor(
+          child: MouseRegion(
+            cursor: SystemMouseCursors.basic,
+            onEnter: (_) {
+              ChartIframeGuard.acquire();
+              _disableAllChartIframes();
+            },
+            onHover: (_) {
+              _disableAllChartIframes();
+            },
+            onExit: (_) {
+              ChartIframeGuard.release();
+              _enableAllChartIframes();
+            },
+            child: Listener(
+              onPointerMove: (_) {
+                _disableAllChartIframes();
+              },
+              child: Center(
+                  child: shadcn.Card(
+                borderRadius: BorderRadius.circular(8),
+                padding: EdgeInsets.zero,
+                child: Container(
+                  width: 500,
+                  constraints: const BoxConstraints(maxHeight: 500),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Select Watchlist',
-                        style: WebTextStyles.dialogTitle(
-                          context,
-                          color: resolveThemeColor(
-                            context,
-                            darkColor: WebColors.textPrimaryDark,
-                            lightColor: WebColors.textPrimary,
+                      // Header
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(
+                              color:
+                                  shadcn.Theme.of(context).colorScheme.border,
+                            ),
                           ),
                         ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Select Watchlist',
+                              style: MyntWebTextStyles.title(
+                                context,
+                                color: resolveThemeColor(
+                                  context,
+                                  dark: MyntColors.textPrimaryDark,
+                                  light: MyntColors.textPrimary,
+                                ),
+                              ),
+                            ),
+                            MyntCloseButton(
+                              onPressed: () => Navigator.of(context).pop(),
+                            ),
+                          ],
+                        ),
                       ),
-                      MyntCloseButton(
-                        onPressed: () => Navigator.of(context).pop(),
+                      // Content
+                      Flexible(
+                        child: Padding(
+                          padding: const EdgeInsets.only(
+                              left: 10, top: 10, bottom: 10),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (watchlist.length - preDefWl.length < 10)
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                      bottom: 6, right: 10),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      MyntIconTextButton(
+                                        label: 'New Watchlist',
+                                        iconAsset: assets.addCircleIcon,
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                          _showCreateWatchlistDialog(
+                                              context, ref);
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              Flexible(
+                                child: ScrollConfiguration(
+                                  behavior: const MaterialScrollBehavior()
+                                      .copyWith(scrollbars: false),
+                                  child: RawScrollbar(
+                                    thumbVisibility: false,
+                                    thickness: 6,
+                                    radius: const Radius.circular(0),
+                                    thumbColor: resolveThemeColor(
+                                      context,
+                                      dark: MyntColors.scrollbarThumbDark,
+                                      light: MyntColors.scrollbarThumbLight,
+                                    ),
+                                    child: ListView.builder(
+                                      shrinkWrap: true,
+                                      padding: const EdgeInsets.only(right: 4),
+                                      itemCount: watchlist.length,
+                                      itemBuilder: (context, index) {
+                                        final watchlistName = watchlist[index];
+                                        final isPredefined =
+                                            preDefWl.contains(watchlistName);
+
+                                        return InkWell(
+                                          onTap: () async {
+                                            Navigator.of(context).pop();
+                                            if (watchlistName !=
+                                                currentWLName) {
+                                              await _handleWatchlistSelection(
+                                                  watchlistName, ref);
+                                            }
+                                          },
+                                          child: Container(
+                                            padding: const EdgeInsets.only(
+                                                top: 8,
+                                                bottom: 8,
+                                                left: 4,
+                                                right: 12),
+                                            child: Row(
+                                              children: [
+                                                Radio<String>(
+                                                  value: watchlistName,
+                                                  groupValue: currentWLName,
+                                                  onChanged: (value) async {
+                                                    Navigator.of(context).pop();
+                                                    if (value != null &&
+                                                        value !=
+                                                            currentWLName) {
+                                                      await _handleWatchlistSelection(
+                                                          value, ref);
+                                                    }
+                                                  },
+                                                  activeColor:
+                                                      resolveThemeColor(
+                                                    context,
+                                                    dark:
+                                                        MyntColors.primaryDark,
+                                                    light: MyntColors.primary,
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 8),
+                                                Expanded(
+                                                  child: Text(
+                                                    _formatWatchlistName(
+                                                        watchlistName),
+                                                    style:
+                                                        MyntWebTextStyles.body(
+                                                      context,
+                                                      color: resolveThemeColor(
+                                                        context,
+                                                        dark: MyntColors
+                                                            .textPrimaryDark,
+                                                        light: MyntColors
+                                                            .textPrimary,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                if (!isPredefined) ...[
+                                                  MyntIconButton(
+                                                    icon: Icons.edit_outlined,
+                                                    size: MyntButtonSize.medium,
+                                                    onPressed: () {
+                                                      Navigator.of(context)
+                                                          .pop();
+                                                      _showEditWatchlistDialog(
+                                                          context,
+                                                          ref,
+                                                          watchlistName);
+                                                    },
+                                                  ),
+                                                  MyntIconButton(
+                                                    icon: Icons
+                                                        .delete_outline_outlined,
+                                                    size: MyntButtonSize.medium,
+                                                    color: resolveThemeColor(
+                                                      context,
+                                                      dark: MyntColors.lossDark,
+                                                      light: MyntColors.loss,
+                                                    ),
+                                                    onPressed: () {
+                                                      Navigator.of(context)
+                                                          .pop();
+                                                      _showDeleteWatchlistDialog(
+                                                          context,
+                                                          ref,
+                                                          watchlistName);
+                                                    },
+                                                  ),
+                                                ],
+                                              ],
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ],
                   ),
                 ),
-                // Content
-                Flexible(
-                  child: Padding(
-                    padding:
-                        const EdgeInsets.only(left: 10, top: 10, bottom: 10),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (watchlist.length - preDefWl.length < 10)
-                          Padding(
-                            padding:
-                                const EdgeInsets.only(bottom: 6, right: 10),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                MyntIconTextButton(
-                                  label: 'New Watchlist',
-                                  iconAsset: assets.addCircleIcon,
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                    _showCreateWatchlistDialog(context, ref);
-                                  },
-                                ),
-                              ],
-                            ),
-                          ),
-                        Flexible(
-                          child: ScrollConfiguration(
-                            behavior: const MaterialScrollBehavior()
-                                .copyWith(scrollbars: false),
-                            child: RawScrollbar(
-                              thumbVisibility: false,
-                              thickness: 6,
-                              radius: const Radius.circular(0),
-                              thumbColor: shadcn.Theme.of(context)
-                                  .colorScheme
-                                  .mutedForeground
-                                  .withOpacity(0.5),
-                              child: ListView.builder(
-                                shrinkWrap: true,
-                                padding: const EdgeInsets.only(right: 4),
-                                itemCount: watchlist.length,
-                                itemBuilder: (context, index) {
-                                  final watchlistName = watchlist[index];
-                                  final isPredefined =
-                                      preDefWl.contains(watchlistName);
-
-                                  return InkWell(
-                                    onTap: () async {
-                                      Navigator.of(context).pop();
-                                      if (watchlistName != currentWLName) {
-                                        await _handleWatchlistSelection(
-                                            watchlistName, ref);
-                                      }
-                                    },
-                                    child: Container(
-                                      padding: const EdgeInsets.only(
-                                          top: 8,
-                                          bottom: 8,
-                                          left: 4,
-                                          right: 12),
-                                      child: Row(
-                                        children: [
-                                          Radio<String>(
-                                            value: watchlistName,
-                                            groupValue: currentWLName,
-                                            onChanged: (value) async {
-                                              Navigator.of(context).pop();
-                                              if (value != null &&
-                                                  value != currentWLName) {
-                                                await _handleWatchlistSelection(
-                                                    value, ref);
-                                              }
-                                            },
-                                            activeColor:
-                                               resolveThemeColor(
-                                                 context,
-                                                 darkColor: WebColors.primaryDark,
-                                                 lightColor: WebColors.primary,
-                                               ),
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Expanded(
-                                            child: Text(
-                                              _formatWatchlistName(
-                                                  watchlistName),
-                                              style: WebTextStyles.dialogContent(
-                                                context,
-                                                color: resolveThemeColor(
-                                                  context,
-                                                  darkColor: WebColors.textPrimaryDark,
-                                                  lightColor: WebColors.textPrimary,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          if (!isPredefined) ...[
-                                            MyntIconButton(
-                                              icon: Icons.edit_outlined,
-                                              size: MyntButtonSize.medium,
-                                              onPressed: () {
-                                                Navigator.of(context).pop();
-                                                _showEditWatchlistDialog(
-                                                    context,
-                                                    ref,
-                                                    watchlistName);
-                                              },
-                                            ),
-                                            MyntIconButton(
-                                              icon: Icons.delete_outline_outlined,
-                                              size: MyntButtonSize.medium,
-                                              color: shadcn.Theme.of(context)
-                                                  .colorScheme
-                                                  .destructive,
-                                              onPressed: () {
-                                                Navigator.of(context).pop();
-                                                _showDeleteWatchlistDialog(
-                                                    context,
-                                                    ref,
-                                                    watchlistName);
-                                              },
-                                            ),
-                                          ],
-                                        ],
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+              )),
             ),
           ),
-        ));
+        );
       },
       transitionBuilder: (context, animation, secondaryAnimation, child) {
         final curvedAnimation = CurvedAnimation(
@@ -1504,91 +1594,116 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
       context: context,
       barrierDismissible: true,
       barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
-      barrierColor: Colors.black.withOpacity(0.3),
+      barrierColor: resolveThemeColor(
+        context,
+        dark: MyntColors.modalBarrierDark,
+        light: MyntColors.modalBarrierLight,
+      ),
       transitionDuration: const Duration(milliseconds: 200),
       pageBuilder: (context, animation, secondaryAnimation) {
-        return Center(
-            child: shadcn.Card(
-          borderRadius: BorderRadius.circular(8),
-          padding: EdgeInsets.zero,
-          child: Container(
-            width: 400,
-            constraints: const BoxConstraints(maxHeight: 300),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Header
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(
-                        color: shadcn.Theme.of(context).colorScheme.border,
-                      ),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        return PointerInterceptor(
+          child: MouseRegion(
+            cursor: SystemMouseCursors.basic,
+            onEnter: (_) {
+              ChartIframeGuard.acquire();
+              _disableAllChartIframes();
+            },
+            onHover: (_) {
+              _disableAllChartIframes();
+            },
+            onExit: (_) {
+              ChartIframeGuard.release();
+              _enableAllChartIframes();
+            },
+            child: Listener(
+              onPointerMove: (_) {
+                _disableAllChartIframes();
+              },
+              child: Center(
+                  child: shadcn.Card(
+                borderRadius: BorderRadius.circular(8),
+                padding: EdgeInsets.zero,
+                child: Container(
+                  width: 400,
+                  constraints: const BoxConstraints(maxHeight: 300),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
-                        'Edit Watchlist',
-                        style: webTextStyle(
-                          context,
-                          fontSize: WebFonts.headSize,
-                          fontWeight: FontWeight.w600,
-                            color: resolveThemeColor(
-                              context,
-                              darkColor: WebColors.textPrimaryDark,
-                              lightColor: WebColors.textPrimary,
+                      // Header
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(
+                              color:
+                                  shadcn.Theme.of(context).colorScheme.border,
                             ),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Edit Watchlist',
+                              style: MyntWebTextStyles.title(
+                                context,
+                                color: resolveThemeColor(
+                                  context,
+                                  dark: MyntColors.textPrimaryDark,
+                                  light: MyntColors.textPrimary,
+                                ),
+                              ),
+                            ),
+                            MyntCloseButton(
+                              onPressed: () => Navigator.of(context).pop(),
+                            ),
+                          ],
                         ),
                       ),
-                      MyntCloseButton(
-                        onPressed: () => Navigator.of(context).pop(),
+                      // Content
+                      Flexible(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              MyntFormTextField(
+                                controller: controller,
+                                placeholder: 'Enter watchlist name',
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.allow(
+                                    RegExp(r'[a-zA-Z0-9 ]'),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 24),
+                              MyntPrimaryButton(
+                                size: MyntButtonSize.large,
+                                label: 'Save',
+                                isFullWidth: true,
+                                onPressed: () async {
+                                  final newName = controller.text.trim();
+                                  if (newName.isNotEmpty &&
+                                      newName != watchlistName) {
+                                    Navigator.of(context).pop();
+                                    await _handleWatchlistRename(
+                                        watchlistName, newName, ref, context);
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ],
                   ),
                 ),
-                // Content
-                Flexible(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        MyntFormTextField(
-                          controller: controller,
-                          placeholder: 'Enter watchlist name',
-                          inputFormatters: [
-                            FilteringTextInputFormatter.allow(
-                              RegExp(r'[a-zA-Z0-9 ]'),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 24),
-                        MyntPrimaryButton(
-                          label: 'Save',
-                          isFullWidth: true,
-                          onPressed: () async {
-                            final newName = controller.text.trim();
-                            if (newName.isNotEmpty &&
-                                newName != watchlistName) {
-                              Navigator.of(context).pop();
-                              await _handleWatchlistRename(
-                                  watchlistName, newName, ref, context);
-                            }
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+              )),
             ),
           ),
-        ));
+        );
       },
       transitionBuilder: (context, animation, secondaryAnimation, child) {
         final curvedAnimation = CurvedAnimation(
@@ -1618,125 +1733,114 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
       barrierColor: Colors.black.withOpacity(0.3),
       transitionDuration: const Duration(milliseconds: 200),
       pageBuilder: (context, animation, secondaryAnimation) {
-        return Center(
-            child: shadcn.Card(
-          borderRadius: BorderRadius.circular(8),
-          padding: EdgeInsets.zero,
-          child: Container(
-            width: 400,
-            constraints: const BoxConstraints(maxHeight: 250),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Header
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(
-                        color: shadcn.Theme.of(context).colorScheme.border,
-                      ),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        return PointerInterceptor(
+          child: MouseRegion(
+            cursor: SystemMouseCursors.basic,
+            onEnter: (_) {
+              ChartIframeGuard.acquire();
+              _disableAllChartIframes();
+            },
+            onHover: (_) {
+              _disableAllChartIframes();
+            },
+            onExit: (_) {
+              ChartIframeGuard.release();
+              _enableAllChartIframes();
+            },
+            child: Listener(
+              onPointerMove: (_) {
+                _disableAllChartIframes();
+              },
+              child: Center(
+                  child: shadcn.Card(
+                borderRadius: BorderRadius.circular(8),
+                padding: EdgeInsets.zero,
+                child: Container(
+                  width: 400,
+                  constraints: const BoxConstraints(maxHeight: 250),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
-                        'Delete Watchlist',
-                        style: webTextStyle(
-                          context,
-                          fontSize: WebFonts.headSize,
-                          fontWeight: FontWeight.w600,
-                            color: resolveThemeColor(
-                              context,
-                              darkColor: WebColors.textPrimaryDark,
-                              lightColor: WebColors.textPrimary,
+                      // Header
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(
+                              color:
+                                  shadcn.Theme.of(context).colorScheme.border,
                             ),
-                        ),
-                      ),
-                      MyntCloseButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                      ),
-                    ],
-                  ),
-                ),
-                // Content
-                Flexible(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text(
-                          'Are you sure you want to delete "${_formatWatchlistName(watchlistName)}"?',
-                          textAlign: TextAlign.center,
-                          style: webTextStyle(
-                            context,
-                            fontSize: WebFonts.subSize,
-                            color: resolveThemeColor(
-                              context,
-                              darkColor: WebColors.textPrimaryDark,
-                              lightColor: WebColors.textPrimary,
-                            ),
-                            fontWeight: FontWeight.w500,
                           ),
                         ),
-                        const SizedBox(height: 24),
-                        SizedBox(
-                          width: double.infinity,
-                          child: Container(
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: shadcn.Theme.of(context)
-                                  .colorScheme
-                                  .destructive,
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Material(
-                              color: Colors.transparent,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(6),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Delete Watchlist',
+                              style: MyntWebTextStyles.title(
+                                context,
+                                color: resolveThemeColor(
+                                  context,
+                                  dark: MyntColors.textPrimaryDark,
+                                  light: MyntColors.textPrimary,
+                                ),
                               ),
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(6),
-                                splashColor: shadcn.Theme.of(context)
-                                    .colorScheme
-                                    .destructiveForeground
-                                    .withOpacity(0.2),
-                                highlightColor: shadcn.Theme.of(context)
-                                    .colorScheme
-                                    .destructiveForeground
-                                    .withOpacity(0.1),
-                                onTap: () async {
+                            ),
+                            MyntCloseButton(
+                              onPressed: () => Navigator.of(context).pop(),
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Content
+                      Flexible(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Are you sure you want to delete "${_formatWatchlistName(watchlistName)}"?',
+                                textAlign: TextAlign.center,
+                                style: MyntWebTextStyles.body(
+                                  context,
+                                  color: resolveThemeColor(
+                                    context,
+                                    dark: MyntColors.textPrimaryDark,
+                                    light: MyntColors.textPrimary,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                              MyntButton(
+                                type: MyntButtonType.primary,
+                                size: MyntButtonSize.large,
+                                label: 'Delete',
+                                isFullWidth: true,
+                                backgroundColor: resolveThemeColor(
+                                  context,
+                                  dark: MyntColors.tertiary,
+                                  light: MyntColors.tertiary,
+                                ),
+                                onPressed: () async {
                                   Navigator.of(context).pop();
                                   await _handleWatchlistDelete(
                                       watchlistName, ref);
                                 },
-                                child: Center(
-                                  child: Text(
-                                    'Delete',
-                                    style: webTextStyle(
-                                      context,
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: WebFonts.subSize,
-                                    ),
-                                  ),
-                                ),
                               ),
-                            ),
+                            ],
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
+              )),
             ),
           ),
-        ));
+        );
       },
       transitionBuilder: (context, animation, secondaryAnimation, child) {
         final curvedAnimation = CurvedAnimation(
@@ -1764,88 +1868,114 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
       context: context,
       barrierDismissible: true,
       barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
-      barrierColor: Colors.black.withOpacity(0.3),
+      barrierColor: resolveThemeColor(
+        context,
+        dark: MyntColors.modalBarrierDark,
+        light: MyntColors.modalBarrierLight,
+      ),
       transitionDuration: const Duration(milliseconds: 200),
       pageBuilder: (context, animation, secondaryAnimation) {
-        return Center(
-            child: shadcn.Card(
-          borderRadius: BorderRadius.circular(8),
-          padding: EdgeInsets.zero,
-          child: Container(
-            width: 400,
-            constraints: const BoxConstraints(maxHeight: 300),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Header
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(
-                        color: shadcn.Theme.of(context).colorScheme.border,
-                      ),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        return PointerInterceptor(
+          child: MouseRegion(
+            cursor: SystemMouseCursors.basic,
+            onEnter: (_) {
+              ChartIframeGuard.acquire();
+              _disableAllChartIframes();
+            },
+            onHover: (_) {
+              _disableAllChartIframes();
+            },
+            onExit: (_) {
+              ChartIframeGuard.release();
+              _enableAllChartIframes();
+            },
+            child: Listener(
+              onPointerMove: (_) {
+                _disableAllChartIframes();
+              },
+              child: Center(
+                  child: shadcn.Card(
+                borderRadius: BorderRadius.circular(8),
+                padding: EdgeInsets.zero,
+                child: Container(
+                  width: 400,
+                  constraints: const BoxConstraints(maxHeight: 300),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
-                        'New Watchlist',
-                        style: WebTextStyles.dialogTitle(
-                          context,
-                          color: resolveThemeColor(
-                            context,
-                            darkColor: WebColors.textPrimaryDark,
-                            lightColor: WebColors.textPrimary,
+                      // Header
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(
+                              color:
+                                  shadcn.Theme.of(context).colorScheme.border,
+                            ),
                           ),
                         ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'New Watchlist',
+                              style: MyntWebTextStyles.title(
+                                context,
+                                color: resolveThemeColor(
+                                  context,
+                                  dark: MyntColors.textPrimaryDark,
+                                  light: MyntColors.textPrimary,
+                                ),
+                              ),
+                            ),
+                            MyntCloseButton(
+                              onPressed: () => Navigator.of(context).pop(),
+                            ),
+                          ],
+                        ),
                       ),
-                      MyntCloseButton(
-                        onPressed: () => Navigator.of(context).pop(),
+                      // Content
+                      Flexible(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              MyntFormTextField(
+                                controller: controller,
+                                placeholder: 'Enter watchlist name',
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.allow(
+                                    RegExp(r'[a-zA-Z0-9 ]'),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 24),
+                              MyntPrimaryButton(
+                                size: MyntButtonSize.large,
+                                label: 'Create',
+                                isFullWidth: true,
+                                onPressed: () async {
+                                  final name = controller.text.trim();
+                                  if (name.isNotEmpty) {
+                                    Navigator.of(context).pop();
+                                    await _handleWatchlistCreate(name, ref);
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ],
                   ),
                 ),
-                // Content
-                Flexible(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        MyntFormTextField(
-                          controller: controller,
-                          placeholder: 'Enter watchlist name',
-                          inputFormatters: [
-                            FilteringTextInputFormatter.allow(
-                              RegExp(r'[a-zA-Z0-9 ]'),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 24),
-                        MyntPrimaryButton(
-                          size: MyntButtonSize.large,
-                          label: 'Create',
-                          isFullWidth: true,
-                          onPressed: () async {
-                            final name = controller.text.trim();
-                            if (name.isNotEmpty) {
-                              Navigator.of(context).pop();
-                              await _handleWatchlistCreate(name, ref);
-                            }
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+              )),
             ),
           ),
-        ));
+        );
       },
       transitionBuilder: (context, animation, secondaryAnimation, child) {
         final curvedAnimation = CurvedAnimation(
@@ -1900,7 +2030,11 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
       context: context,
       barrierDismissible: true,
       barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
-      barrierColor: Colors.black.withOpacity(0.3),
+      barrierColor: resolveThemeColor(
+        context,
+        dark: MyntColors.modalBarrierDark,
+        light: MyntColors.modalBarrierLight,
+      ),
       transitionDuration: const Duration(milliseconds: 200),
       pageBuilder: (context, animation, secondaryAnimation) {
         return SearchDialogWeb(
@@ -2037,13 +2171,13 @@ class _WatchlistIndexSlotWebState
                   // Index name
                   Text(
                     widget.indexItem.idxname ?? "",
-                    style: WebTextStyles.symbol(
+                    style: MyntWebTextStyles.symbol(
                       context,
-                            color: resolveThemeColor(
-                              context,
-                              darkColor: WebColors.textPrimaryDark,
-                              lightColor: WebColors.textPrimary,
-                            ),
+                      color: resolveThemeColor(
+                        context,
+                        dark: MyntColors.textPrimaryDark,
+                        light: MyntColors.textPrimary,
+                      ),
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -2065,7 +2199,6 @@ class _WatchlistIndexSlotWebState
                             widget.indexItem.perChange == "null")
                         ? "0.00"
                         : widget.indexItem.perChange?.toString() ?? "0.00",
-                   
                   ),
                 ],
               ),
@@ -2239,18 +2372,26 @@ class _WatchlistLivePriceWidgetState
   }
 
   Color _getChangeColor(String change, String perChange) {
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
+    // final colorScheme = shadcn.Theme.of(context).colorScheme;
     if (change.startsWith("-") || perChange.startsWith('-')) {
-      return colorScheme.destructive;
+      return resolveThemeColor(
+        context,
+        dark: WebColors.lossDark,
+        light: WebColors.loss,
+      );
     } else if ((change == "null" || perChange == "null") ||
         (change == "0.00" || perChange == "0.00")) {
       return resolveThemeColor(
         context,
-        darkColor: WebColors.textSecondaryDark,
-        lightColor: WebColors.textSecondary,
+        dark: WebColors.textSecondaryDark,
+        light: WebColors.textSecondary,
       );
     } else {
-      return colorScheme.chart2;
+      return resolveThemeColor(
+        context,
+        dark: WebColors.profitDark,
+        light: WebColors.profit,
+      );
     }
   }
 
@@ -2277,10 +2418,10 @@ class _WatchlistLivePriceWidgetState
             "$_change ($_perChange%)",
             style: _getTextStyle(
               resolveThemeColor(
-              context,
-              darkColor: WebColors.textSecondaryDark,
-              lightColor: WebColors.textSecondary,
-            ),
+                context,
+                dark: WebColors.textSecondaryDark,
+                light: WebColors.textSecondary,
+              ),
               13,
               1,
             ),
@@ -2297,7 +2438,7 @@ class _WatchlistLivePriceWidgetState
     final key = '${color.value}|$size|${fw ?? "null"}';
     return _textStyleCache.putIfAbsent(
       key,
-      () => WebTextStyles.priceChng(
+      () => MyntWebTextStyles.priceChange(
         context,
         color: color,
       ),
