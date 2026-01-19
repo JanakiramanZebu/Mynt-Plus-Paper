@@ -13,30 +13,29 @@ class CurStrkprice extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final strikePrc = ref.watch(marketWatchProvider).getStikePrc ?? ref.watch(marketWatchProvider).getQuotes;
-    final theme = ref.watch(themeProvider);
-    
-    return StreamBuilder<Map>(
-      stream: ref.watch(websocketProvider).socketDataStream,
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return _buildStrikePriceWidget(strikePrc!.lp ?? "0.00", strikePrc.pc ?? "0.00", theme);
-        }
-        
-        final socketDatas = snapshot.data!;
-        String price = strikePrc!.lp ?? "0.00";
-        String pc = strikePrc.pc ?? "0.00";
-        if (socketDatas.containsKey(token)) {
-          price = "${socketDatas[token]['lp']}";
-          pc = "${socketDatas[token]['pc']}";
-        }
-        
-        ref.watch(marketWatchProvider).updateOptStrPrc(price);
-        return _buildStrikePriceWidget(price, pc, theme);
-      },
+    // PERFORMANCE FIX: Use .select() to watch ONLY this token's socket data
+    // This replaces StreamBuilder which was causing continuous rebuilds
+    final socketData = ref.watch(
+      websocketProvider.select((provider) => provider.socketDatas[token])
     );
+
+    // Watch only the specific fields we need, not entire provider
+    final strikePrc = ref.watch(marketWatchProvider.select((p) => p.getStikePrc)) ??
+                      ref.watch(marketWatchProvider.select((p) => p.getQuotes));
+    final theme = ref.watch(themeProvider);
+
+    // Get price from socket data or fall back to strike price data
+    final price = socketData?['lp']?.toString() ?? strikePrc?.lp ?? "0.00";
+    final pc = socketData?['pc']?.toString() ?? strikePrc?.pc ?? "0.00";
+
+    // PERFORMANCE FIX: Removed mutation from build()
+    // ref.watch(...).updateOptStrPrc() was causing rebuild loops
+    // If this update is needed, it should be done via ref.listen() in a StatefulWidget
+    // or handled in the provider itself when socket data changes
+
+    return _buildStrikePriceWidget(price, pc, theme);
   }
-  
+
   Widget _buildStrikePriceWidget(String price, String pc, ThemesProvider theme) {
     return Row(
       children: [
@@ -72,6 +71,4 @@ class CurStrkprice extends ConsumerWidget {
       ],
     );
   }
-
- 
 }

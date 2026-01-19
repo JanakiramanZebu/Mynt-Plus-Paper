@@ -60,6 +60,7 @@ class WebSocketProvider extends ChangeNotifier {
 
   // WebSocket and subscription management
   WebSocketChannel? _channel;
+  StreamSubscription? _channelSubscription; // Track stream subscription to prevent leaks
   Completer<void>? _connectionCompleter;
   final Map<String, Timer> _subscriptionTimers = {};
   final Map<String, dynamic> _socketDatas = {};
@@ -110,6 +111,11 @@ class WebSocketProvider extends ChangeNotifier {
   bool wsmount = true;
 
   Timer? _debounceTimer; // Added debounce timer for throttling updates
+  Timer? _throttleTimer; // Throttle timer for websocket data updates (330ms)
+  bool _hasPendingUpdates = false; // Track if we have pending updates to notify
+
+  // Buffer for pending socket data updates - key: token, value: pending update data
+  final Map<String, Map<String, dynamic>> _pendingSocketUpdates = {};
 
   void changeretryscreen(bool value) {
     _retryScreen = value;
@@ -179,6 +185,10 @@ class WebSocketProvider extends ChangeNotifier {
     if (_connectionCompleter != null && !_connectionCompleter!.isCompleted) {
       _connectionCompleter!.completeError("WebSocket connection closed intentionally");
     }
+
+    // Cancel stream subscription BEFORE closing channel to prevent memory leaks
+    _channelSubscription?.cancel();
+    _channelSubscription = null;
 
     // Properly close channel
     _channel?.sink.close();
@@ -316,6 +326,7 @@ class WebSocketProvider extends ChangeNotifier {
       ConstantName.lastSubscribeDepth = channelInput;
     }
 
+    // CRITICAL: Check and set _connecting flag FIRST to prevent race conditions
     // If already connected and we have a subscription request, process it
     if (_wsConnected && _channel != null) {
       print('ℹ️  [WEBSOCKET] Already connected, processing subscription request');
@@ -352,7 +363,7 @@ class WebSocketProvider extends ChangeNotifier {
       }
       return;
     }
-    
+
     // Prevent duplicate connection attempts
     if (_reconnecting) {
       print('⏸️  [WEBSOCKET] Reconnection in progress, deferring new connection attempt');
@@ -366,6 +377,11 @@ class WebSocketProvider extends ChangeNotifier {
       return;
     }
 
+    // SET _connecting flag IMMEDIATELY to prevent race conditions
+    // This must happen before any async operations or WebSocket channel creation
+    _connecting = true;
+    _connectionCompleter = Completer<void>();
+
     print('\n═══════════════════════════════════════════════════════════');
     print('🟡 [WEBSOCKET] ATTEMPTING CONNECTION');
     print('   URL: ${ApiLinks.wsURL}');
@@ -375,8 +391,17 @@ class WebSocketProvider extends ChangeNotifier {
     print('═══════════════════════════════════════════════════════════\n');
     log('🟡 WebSocket: Attempting connection (attempt ${_connectionCount + 1})');
 
-    _connecting = true;
-    _connectionCompleter = Completer<void>();
+    // Double-check that channel doesn't already exist
+    if (_channel != null) {
+      print('⚠️  [WEBSOCKET] Channel already exists, closing old channel first');
+      log('⚠️  WebSocket: Closing existing channel before creating new one');
+      try {
+        _channel?.sink.close();
+      } catch (e) {
+        log('Error closing old channel: $e');
+      }
+      _channel = null;
+    }
 
     try {
       // Connect with a timeout appropriate for network conditions
@@ -434,10 +459,16 @@ class WebSocketProvider extends ChangeNotifier {
       print('👂 [WEBSOCKET] Listening for server response...');
       log('👂 WebSocket: Listening for response');
 
-      _channel!.stream.listen(
+      // CRITICAL: Cancel previous stream subscription to prevent memory leaks
+      await _channelSubscription?.cancel();
+      _channelSubscription = null;
+
+      // Create new stream subscription and store it
+      _channelSubscription = _channel!.stream.listen(
         _handleWebSocketMessage,
         onDone: () => _handleConnectionClosed(context),
         onError: (error) => _handleConnectionError(error, context),
+        cancelOnError: false, // Keep listening even if there's an error
       );
 
       // Cancel timeout timer as we've successfully set up the connection
@@ -481,14 +512,76 @@ class WebSocketProvider extends ChangeNotifier {
         _failedPingCount = 0;
       }
 
-      // Use post-frame callback to avoid modifying provider during build
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        notifyListeners();
-      });
+      // Throttle UI updates to 330ms intervals to improve performance
+      _scheduleThrottledUpdate();
     } catch (e) {
       // Log parsing errors for debugging
       log("WebSocket message parsing error: $e");
     }
+  }
+
+  /// Schedules a throttled update to prevent excessive UI refreshes
+  /// Updates are batched within a 500ms window to reduce CPU load with many subscriptions
+  void _scheduleThrottledUpdate() {
+    _hasPendingUpdates = true;
+
+    // If throttle timer is already active, just mark that we have pending updates
+    if (_throttleTimer?.isActive ?? false) {
+      return;
+    }
+
+    // PERFORMANCE FIX: Increased throttle from 330ms to 500ms for web performance
+    // This reduces updates from 3/sec to 2/sec, lowering CPU usage by ~33%
+    // For web apps with many widgets, less frequent updates = smoother experience
+    _throttleTimer = Timer(const Duration(milliseconds: 500), () {
+      if (_hasPendingUpdates) {
+        _hasPendingUpdates = false;
+
+        // Apply all buffered updates to the main socket data
+        _applyBufferedUpdates();
+
+        // Use post-frame callback to avoid modifying provider during build
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          notifyListeners();
+        });
+      }
+    });
+  }
+
+  /// Applies all buffered socket data updates to the main _socketDatas map
+  void _applyBufferedUpdates() {
+    if (_pendingSocketUpdates.isEmpty) return;
+
+    // Apply each buffered update
+    for (final entry in _pendingSocketUpdates.entries) {
+      final token = entry.key;
+      final updateData = entry.value;
+
+      // If this is a new token, initialize it
+      if (!_socketDatas.containsKey(token)) {
+        _socketDatas[token] = <String, dynamic>{};
+        _initializeTokenData(token, updateData);
+
+        // Notify stream of new token
+        _socketDataController.add(_socketDatas);
+
+        // Update portfolio if we have valid price data
+        if (_socketDatas[token]['lp'] != null &&
+            _socketDatas[token]['lp'] != '0' &&
+            _socketDatas[token]['lp'] != '0.00') {
+          ref.read(portfolioProvider).updateHoldingValues(token, _socketDatas[token]);
+        }
+      } else {
+        // Update existing token data
+        _updateSocketData(token, updateData);
+      }
+    }
+
+    // Notify market watch provider with the updated data
+    _notifyMarketWatchProvider();
+
+    // Clear the buffer after applying
+    _pendingSocketUpdates.clear();
   }
 
   void _handleConnectionSuccess() {
@@ -547,38 +640,36 @@ class WebSocketProvider extends ChangeNotifier {
 
   void _handleMarketData(Map<String, dynamic> res) {
     final key = res['tk']?.toString();
-    if (key == null || !_socketDatas.containsKey(key)) return;
+    if (key == null) return;
 
-    // Batch updates - only update UI after processing the data
-    _updateSocketData(key, res);
+    // Buffer the update instead of applying immediately
+    _bufferSocketUpdate(key, res);
 
-    // Notify market watch provider to update its UI with the latest data
-    _notifyMarketWatchProvider();
+    // Schedule throttled update to apply buffered changes
+    _scheduleThrottledUpdate();
+  }
+
+  /// Buffers a socket data update to be applied later during throttle interval
+  void _bufferSocketUpdate(String token, Map<String, dynamic> updateData) {
+    // If we already have a pending update for this token, merge the new data
+    if (_pendingSocketUpdates.containsKey(token)) {
+      // Merge new data into existing buffered update
+      _pendingSocketUpdates[token]!.addAll(updateData);
+    } else {
+      // Create a new buffered update entry
+      _pendingSocketUpdates[token] = Map<String, dynamic>.from(updateData);
+    }
   }
 
   void _handleTokenData(Map<String, dynamic> res) {
     final key = res['tk']?.toString();
     if (key == null) return;
 
-    if (!_socketDatas.containsKey(key)) {
-      _socketDatas[key] = <String, dynamic>{};
-      _initializeTokenData(key, res);
+    // Buffer the update instead of applying immediately
+    _bufferSocketUpdate(key, res);
 
-      // Notify only after initialization is complete to avoid partial updates
-      _socketDataController.add(_socketDatas);
-
-      // Only trigger the portfolio update once after initialization
-      // and only if we have valid price data
-      if (_socketDatas[key]['lp'] != null && _socketDatas[key]['lp'] != '0' && _socketDatas[key]['lp'] != '0.00') {
-        ref.read(portfolioProvider).updateHoldingValues(key, _socketDatas[key]);
-      }
-
-      // Notify market watch provider to update its UI with the latest data
-      _notifyMarketWatchProvider();
-    } else {
-      // For existing tokens, use the optimized update method
-      _updateSocketData(key, res);
-    }
+    // Schedule throttled update to apply buffered changes
+    _scheduleThrottledUpdate();
   }
 
   void _handleOrderMessage(Map<String, dynamic> res) {
@@ -658,6 +749,12 @@ class WebSocketProvider extends ChangeNotifier {
 
     // Only notify listeners if we actually had meaningful changes
     if (hasUpdates) {
+      // PERFORMANCE FIX: Create NEW Map reference so Riverpod's .select() can detect change
+      // When using ref.watch(provider.select((p) => p.socketDatas[token])), Riverpod
+      // compares references. Modifying Map in-place keeps same reference, so Riverpod
+      // thinks nothing changed. Creating new Map ensures rebuild triggers.
+      _socketDatas[key] = Map<String, dynamic>.from(data);
+
       _socketDataController.add(_socketDatas);
 
       // Minimize portfolio recalculations by checking if this is a price update
@@ -866,14 +963,15 @@ class WebSocketProvider extends ChangeNotifier {
     } else {
       // If socket isn't ready yet, schedule a retry
       print('⚠️  [WEBSOCKET] Connection not ready, scheduling retry in 500ms');
-      print('   Current State: Connected=$_wsConnected, Channel=${_channel != null}');
+      print('   Current State: Connected=$_wsConnected, Connecting=$_connecting, Channel=${_channel != null}');
       log('⚠️  WebSocket: Connection not ready, scheduling retry');
       Future.delayed(const Duration(milliseconds: 500), () {
         if (_wsConnected && _channel != null) {
           print('🔄 [WEBSOCKET] Retrying ${task.toUpperCase()} request after delay');
           log('🔄 WebSocket: Retrying request after delay');
           _channel?.sink.add(jsonEncode({"t": task, "k": input}));
-        } else {
+        } else if (!_connecting && !_reconnecting) {
+          // Only attempt reconnection if not already connecting
           print('❌ [WEBSOCKET] Still not connected after delay, attempting full reconnection');
           log('❌ WebSocket: Still not connected, attempting reconnection');
           if (_context != null && input.isNotEmpty) {
@@ -883,6 +981,9 @@ class WebSocketProvider extends ChangeNotifier {
               context: _context!,
             );
           }
+        } else {
+          print('⏸️  [WEBSOCKET] Connection/reconnection already in progress, skipping');
+          log('⏸️  WebSocket: Connection already in progress, skipping');
         }
       });
     }
@@ -1233,6 +1334,7 @@ class WebSocketProvider extends ChangeNotifier {
     _reconnectBackoff?.cancel();
     _debounceTimer?.cancel(); // Cancel debounce timer
     _subscriptionDebounce?.cancel(); // Cancel subscription debounce timer
+    _throttleTimer?.cancel(); // Cancel throttle timer (330ms)
 
     // Cancel all subscription timers
     print('⏹️  [WEBSOCKET] Canceling ${_subscriptionTimers.length} subscription timer(s)');
@@ -1240,6 +1342,11 @@ class WebSocketProvider extends ChangeNotifier {
       timer.cancel();
     }
     _subscriptionTimers.clear();
+
+    // Cancel stream subscription to prevent memory leaks
+    print('🔌 [WEBSOCKET] Canceling stream subscription');
+    _channelSubscription?.cancel();
+    _channelSubscription = null;
 
     // Close socket channel
     print('🔌 [WEBSOCKET] Closing socket channel');
@@ -1252,6 +1359,9 @@ class WebSocketProvider extends ChangeNotifier {
     // Clear subscription tracking
     _sentSubscriptions.clear();
     _pendingSubscriptions.clear();
+
+    // Clear buffered socket updates
+    _pendingSocketUpdates.clear();
 
     print('✅ [WEBSOCKET] Provider disposed successfully\n');
     log('✅ WebSocket: Provider disposed');

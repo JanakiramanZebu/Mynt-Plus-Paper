@@ -228,6 +228,12 @@
       <div class="progress-track"><div class="progress-bar"></div></div>
     </div>
   </div>
+  <!-- PERFORMANCE: Configure Flutter web renderer -->
+  <script>
+    // Use CanvasKit renderer for better performance with complex UIs
+    // CanvasKit provides smoother animations and consistent rendering
+    window.flutterWebRenderer = "canvaskit";
+  </script>
   <!-- Flutter bootstrap: Use defer for better loading order -->
   <script src="flutter_bootstrap.js" defer></script>
 </body>

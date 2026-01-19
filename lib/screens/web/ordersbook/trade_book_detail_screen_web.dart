@@ -113,8 +113,9 @@ class _TradeBookDetailScreenWebState extends ConsumerState<TradeBookDetailScreen
         final theme = ref.watch(themeProvider);
         final marketwatch = ref.watch(marketWatchProvider);
 
+        // PERFORMANCE FIX: Use ref.read() for stream - watching causes double rebuild
         return StreamBuilder<Map>(
-          stream: ref.watch(websocketProvider).socketDataStream,
+          stream: ref.read(websocketProvider).socketDataStream,
           builder: (context, snapshot) {
             final socketDatas = snapshot.data ?? {};
 

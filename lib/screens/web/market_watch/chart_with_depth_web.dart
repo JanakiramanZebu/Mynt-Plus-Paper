@@ -207,8 +207,9 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
                                   ),
                                 ),
                                 const SizedBox(height: 4),
+                                // PERF FIX: ref.read() for stream
                                 StreamBuilder<Map>(
-                                  stream: ref.watch(websocketProvider).socketDataStream,
+                                  stream: ref.read(websocketProvider).socketDataStream,
                                   builder: (context, snapshot) {
                                     final socketDatas = snapshot.data ?? {};
                                     final currentToken = depthData?.token?.toString() ?? widget.wlValue.token;

@@ -137,8 +137,9 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
+                    // PERF FIX: ref.read() for stream
                     StreamBuilder<Map>(
-                  stream: ref.watch(websocketProvider).socketDataStream,
+                  stream: ref.read(websocketProvider).socketDataStream,
                   builder: (context, snapshot) {
                     final socketDatas = snapshot.data ?? {};
             

@@ -173,8 +173,9 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
     final theme = ref.read(themeProvider);
     final internet = ref.watch(networkStateProvider);
     
+    // PERFORMANCE FIX: Use ref.read() for stream - watching causes double rebuild
     return StreamBuilder<Map>(
-      stream: ref.watch(websocketProvider).socketDataStream,
+      stream: ref.read(websocketProvider).socketDataStream,
       builder: (context, snapshot) {
         final socketDatas = snapshot.data ?? {};
         

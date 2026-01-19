@@ -492,8 +492,10 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
               final isIndexOrCommodity =
                   instname == "UNDIND" || instname == "COM";
 
+              // PERFORMANCE FIX: Use ref.read() not ref.watch() for stream access
+              // The stream itself is reactive - watching provider causes double rebuilds
               return StreamBuilder<Map>(
-                  stream: ref.watch(websocketProvider).socketDataStream,
+                  stream: ref.read(websocketProvider).socketDataStream,
                   builder: (context, snapshot) {
                     final socketDatas = snapshot.data ?? {};
 

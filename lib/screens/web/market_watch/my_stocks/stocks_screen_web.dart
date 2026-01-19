@@ -25,8 +25,6 @@ class StocksScreenWeb extends ConsumerStatefulWidget {
 }
 
 class _StocksScreenWebState extends ConsumerState<StocksScreenWeb> {
-  int? hoveredIndex;
-
   @override
   Widget build(BuildContext context) {
     return Consumer(builder: (context, WidgetRef ref, _) {
@@ -92,11 +90,11 @@ class _StocksScreenWebState extends ConsumerState<StocksScreenWeb> {
           separatorBuilder: (_, __) => const ListDivider(),
           itemBuilder: (BuildContext context, int index) {
             return RepaintBoundary(
+              // PERFORMANCE FIX: Removed hoveredIndex/onHover from parent
+              // Each card now manages its own hover state independently
               child: _HoldingsCardWeb(
                 holding: holdingProvide[index],
                 index: index,
-                hoveredIndex: hoveredIndex,
-                onHover: (int? idx) => setState(() => hoveredIndex = idx),
                 marketWatch: marketWatch,
                 theme: theme,
               ),
@@ -111,16 +109,12 @@ class _StocksScreenWebState extends ConsumerState<StocksScreenWeb> {
 class _HoldingsCardWeb extends ConsumerStatefulWidget {
   final dynamic holding;
   final int index;
-  final int? hoveredIndex;
-  final Function(int?) onHover;
   final MarketWatchProvider marketWatch;
   final ThemesProvider theme;
 
   const _HoldingsCardWeb({
     required this.holding,
     required this.index,
-    required this.hoveredIndex,
-    required this.onHover,
     required this.marketWatch,
     required this.theme,
   });
@@ -130,8 +124,15 @@ class _HoldingsCardWeb extends ConsumerStatefulWidget {
 }
 
 class _HoldingsCardWebState extends ConsumerState<_HoldingsCardWeb> {
-  bool _isHovered = false;
+  // PERFORMANCE FIX: Use ValueNotifier for hover instead of setState
+  final ValueNotifier<bool> _isHovered = ValueNotifier<bool>(false);
   bool _isNavigating = false;
+
+  @override
+  void dispose() {
+    _isHovered.dispose();
+    super.dispose();
+  }
 
   String get _token => widget.holding.exchTsym?[0].token?.toString() ?? "";
   String get _exch => widget.holding.exchTsym?[0].exch?.toString() ?? "";
@@ -143,10 +144,9 @@ class _HoldingsCardWebState extends ConsumerState<_HoldingsCardWeb> {
 
   @override
   Widget build(BuildContext context) {
-    final isHovered = widget.hoveredIndex == widget.index || _isHovered;
-
+    // PERFORMANCE FIX: Use ref.read() for stream - watching causes double rebuild
     return StreamBuilder<Map>(
-      stream: ref.watch(websocketProvider).socketDataStream,
+      stream: ref.read(websocketProvider).socketDataStream,
       builder: (context, snapshot) {
         final socketDatas = snapshot.data ?? {};
 
@@ -167,63 +167,60 @@ class _HoldingsCardWebState extends ConsumerState<_HoldingsCardWeb> {
         }
 
         return MouseRegion(
-          onEnter: (_) {
-            setState(() => _isHovered = true);
-            widget.onHover(widget.index);
-          },
-          onExit: (_) {
-            setState(() => _isHovered = false);
-            widget.onHover(null);
-          },
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              splashColor: widget.theme.isDarkMode
-                  ? Colors.white.withOpacity(0.15)
-                  : Colors.black.withOpacity(0.15),
-              highlightColor: widget.theme.isDarkMode
-                  ? Colors.white.withOpacity(0.08)
-                  : Colors.black.withOpacity(0.08),
-              onTap: () async {
-                if (_isNavigating) return;
-                try {
-                  setState(() => _isNavigating = true);
-                  WidgetsBinding.instance.addPostFrameCallback((_) async {
-                    ref.read(marketWatchProvider).setIsDepthVisibleWeb(false);
+          onEnter: (_) => _isHovered.value = true,
+          onExit: (_) => _isHovered.value = false,
+          child: ValueListenableBuilder<bool>(
+            valueListenable: _isHovered,
+            builder: (context, isHovered, child) {
+              return Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  splashColor: widget.theme.isDarkMode
+                      ? Colors.white.withOpacity(0.15)
+                      : Colors.black.withOpacity(0.15),
+                  highlightColor: widget.theme.isDarkMode
+                      ? Colors.white.withOpacity(0.08)
+                      : Colors.black.withOpacity(0.08),
+                  onTap: () async {
+                    if (_isNavigating) return;
+                    try {
+                      setState(() => _isNavigating = true);
+                      WidgetsBinding.instance.addPostFrameCallback((_) async {
+                        ref.read(marketWatchProvider).setIsDepthVisibleWeb(false);
 
-                    DepthInputArgs depthArgs = DepthInputArgs(
-                      exch: _exch,
-                      token: _token,
-                      tsym: _tsym,
-                      instname: _symbol,
-                      symbol: _symbol,
-                      expDate: _expDate,
-                      option: _option,
-                    );
+                        DepthInputArgs depthArgs = DepthInputArgs(
+                          exch: _exch,
+                          token: _token,
+                          tsym: _tsym,
+                          instname: _symbol,
+                          symbol: _symbol,
+                          expDate: _expDate,
+                          option: _option,
+                        );
 
-                    widget.marketWatch.scripdepthsize(false);
-                    await widget.marketWatch.calldepthApis(
-                        context, depthArgs, "");
-                  });
-                } catch (e) {
-                  debugPrint('Error opening chart: $e');
-                } finally {
-                  if (mounted) {
-                    Future.delayed(const Duration(milliseconds: 500), () {
+                        widget.marketWatch.scripdepthsize(false);
+                        await widget.marketWatch.calldepthApis(
+                            context, depthArgs, "");
+                      });
+                    } catch (e) {
+                      debugPrint('Error opening chart: $e');
+                    } finally {
                       if (mounted) {
-                        setState(() => _isNavigating = false);
+                        Future.delayed(const Duration(milliseconds: 500), () {
+                          if (mounted) {
+                            setState(() => _isNavigating = false);
+                          }
+                        });
                       }
-                    });
-                  }
-                }
-              },
-              child: Container(
-                color: isHovered
-                    ? (widget.theme.isDarkMode
-                            ? WebDarkColors.primary
-                            : WebColors.primary)
-                        .withOpacity(0.15)
-                    : (widget.theme.isDarkMode ? Colors.black : Colors.white),
+                    }
+                  },
+                  child: Container(
+                    color: isHovered
+                        ? (widget.theme.isDarkMode
+                                ? WebDarkColors.primary
+                                : WebColors.primary)
+                            .withOpacity(0.15)
+                        : (widget.theme.isDarkMode ? Colors.black : Colors.white),
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -438,6 +435,8 @@ class _HoldingsCardWebState extends ConsumerState<_HoldingsCardWeb> {
                 ),
               ),
             ),
+              );
+            },
           ),
         );
       },

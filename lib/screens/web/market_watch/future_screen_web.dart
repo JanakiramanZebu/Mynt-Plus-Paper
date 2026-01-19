@@ -23,13 +23,16 @@ class FutureScreenWeb extends ConsumerStatefulWidget {
 }
 
 class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
-  String? _hoveredToken;
+  // PERFORMANCE FIX: Use ValueNotifier for hover instead of setState
+  // setState causes full widget rebuild, ValueNotifier only rebuilds hover-dependent parts
+  final ValueNotifier<String?> _hoveredToken = ValueNotifier<String?>(null);
   bool _isNavigating = false;
   final ScrollController _horizontalScrollController = ScrollController();
   final ScrollController _verticalScrollController = ScrollController();
 
   @override
   void dispose() {
+    _hoveredToken.dispose();
     _horizontalScrollController.dispose();
     _verticalScrollController.dispose();
     super.dispose();
@@ -54,8 +57,9 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
       );
     }
 
+    // PERFORMANCE FIX: Use ref.read() for stream - watching causes double rebuild
     return StreamBuilder<Map>(
-      stream: ref.watch(websocketProvider).socketDataStream,
+      stream: ref.read(websocketProvider).socketDataStream,
       builder: (context, snapshot) {
         final socketDatas = snapshot.data ?? {};
 
@@ -261,7 +265,7 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
                           // Row tap handler if needed
                         },
                         color: WidgetStateProperty.resolveWith<Color>((states) {
-                          if (states.contains(WidgetState.hovered) || _hoveredToken == uniqueId) {
+                          if (states.contains(WidgetState.hovered) || _hoveredToken.value == uniqueId) {
                             return theme.isDarkMode
                                 ? WebDarkColors.primary.withOpacity(0.06)
                                 : WebColors.primary.withOpacity(0.10);
@@ -272,8 +276,8 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
                           // Symbol cell with hover actions
                           DataCell(
                             MouseRegion(
-                              onEnter: (_) => setState(() => _hoveredToken = uniqueId),
-                              onExit: (_) => setState(() => _hoveredToken = null),
+                              onEnter: (_) => _hoveredToken.value = uniqueId,
+                              onExit: (_) => _hoveredToken.value = null,
                               child: SizedBox.expand(
                                 child: Container(
                                   alignment: Alignment.centerLeft,
@@ -286,8 +290,8 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
                           // LTP cell
                           DataCell(
                             MouseRegion(
-                              onEnter: (_) => setState(() => _hoveredToken = uniqueId),
-                              onExit: (_) => setState(() => _hoveredToken = null),
+                              onEnter: (_) => _hoveredToken.value = uniqueId,
+                              onExit: (_) => _hoveredToken.value = null,
                               child: SizedBox.expand(
                                 child: Container(
                                   alignment: Alignment.centerRight,
@@ -314,8 +318,8 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
                           // Change cell
                           DataCell(
                             MouseRegion(
-                              onEnter: (_) => setState(() => _hoveredToken = uniqueId),
-                              onExit: (_) => setState(() => _hoveredToken = null),
+                              onEnter: (_) => _hoveredToken.value = uniqueId,
+                              onExit: (_) => _hoveredToken.value = null,
                               child: SizedBox.expand(
                                 child: Container(
                                   alignment: Alignment.centerRight,
@@ -349,45 +353,51 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
 
   Widget _buildSymbolCellContent(
       dynamic displayData, ThemesProvider theme, MarketWatchProvider future, String uniqueId) {
-    final isHovered = _hoveredToken == uniqueId;
     final displayText = displayData.tsym?.toString() ?? '';
 
-    return Row(
-      children: [
-        Expanded(
-          flex: isHovered ? 1 : 2,
-          child: Tooltip(
-            message: displayText,
-            child: Text(
-              displayText,
-              style: WebTextStyles.custom(
-                fontSize: 13,
-                isDarkTheme: theme.isDarkMode,
-                color: theme.isDarkMode
-                    ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary,
-                fontWeight: WebFonts.medium,
+    // PERFORMANCE FIX: Use ValueListenableBuilder to only rebuild hover-dependent parts
+    return ValueListenableBuilder<String?>(
+      valueListenable: _hoveredToken,
+      builder: (context, hoveredToken, _) {
+        final isHovered = hoveredToken == uniqueId;
+        return Row(
+          children: [
+            Expanded(
+              flex: isHovered ? 1 : 2,
+              child: Tooltip(
+                message: displayText,
+                child: Text(
+                  displayText,
+                  style: WebTextStyles.custom(
+                    fontSize: 13,
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode
+                        ? WebDarkColors.textPrimary
+                        : WebColors.textPrimary,
+                    fontWeight: WebFonts.medium,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-              overflow: TextOverflow.ellipsis,
             ),
-          ),
-        ),
-        // Action buttons fade in on hover
-        IgnorePointer(
-          ignoring: !isHovered,
-          child: AnimatedOpacity(
-            opacity: isHovered ? 1 : 0,
-            duration: const Duration(milliseconds: 140),
-            child: _buildActionButtons(
-              context,
-              displayData,
-              future,
-              theme,
-              isHovered,
+            // Action buttons fade in on hover
+            IgnorePointer(
+              ignoring: !isHovered,
+              child: AnimatedOpacity(
+                opacity: isHovered ? 1 : 0,
+                duration: const Duration(milliseconds: 140),
+                child: _buildActionButtons(
+                  context,
+                  displayData,
+                  future,
+                  theme,
+                  isHovered,
+                ),
+              ),
             ),
-          ),
-        ),
-      ],
+          ],
+        );
+      },
     );
   }
 

@@ -19,8 +19,9 @@ class OrderScreenHeaderWeb extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref.watch(themeProvider);
     
+    // PERFORMANCE FIX: Use ref.read() for stream access
     return StreamBuilder<Map>(
-      stream: ref.watch(websocketProvider).socketDataStream,
+      stream: ref.read(websocketProvider).socketDataStream,
       builder: (context, snapshot) {
         final socketDatas = snapshot.data ?? {};
         

@@ -504,12 +504,18 @@ class _CustomizableSplitHomeScreenState
     return Consumer(
       builder: (context, ref, _) {
         final internet = ref.watch(networkStateProvider);
-        final websocket = ref.watch(websocketProvider);
+        // PERFORMANCE FIX: Use .select() to only watch connection status fields
+        // Before: ref.watch(websocketProvider) - ENTIRE provider caused rebuilds every 500ms!
+        // After: Only rebuild when connection status actually changes
+        final connectionCount = ref.watch(websocketProvider.select((p) => p.connectioncount));
+        final reconnectionSuccess = ref.watch(websocketProvider.select((p) => p.reconnectionSuccess));
+        final wsConnected = ref.watch(websocketProvider.select((p) => p.wsConnected));
+        final retryscreen = ref.watch(websocketProvider.select((p) => p.retryscreen));
 
         if ((internet.connectionStatus == ConnectivityResult.none ||
-                websocket.connectioncount >= 5) &&
-            !websocket.reconnectionSuccess &&
-            !websocket.wsConnected) {
+                connectionCount >= 5) &&
+            !reconnectionSuccess &&
+            !wsConnected) {
           ref.read(networkStateProvider).getContext(context);
           return Scaffold(
             appBar: AppBar(
@@ -523,12 +529,12 @@ class _CustomizableSplitHomeScreenState
         }
 
         if (internet.connectionStatus != ConnectivityResult.none &&
-            !websocket.wsConnected &&
-            websocket.retryscreen) {
+            !wsConnected &&
+            retryscreen) {
           Future.microtask(() {
             if (mounted) {
               _handleWebSocketConnections();
-              websocket.changeretryscreen(false);
+              ref.read(websocketProvider).changeretryscreen(false);
               _handleReconnectionSuccess();
             }
           });
@@ -1458,18 +1464,20 @@ class _CustomizableSplitHomeScreenState
           builder: (context, ref, _) {
             final args = _currentDepthArgs;
             if (args == null) {
-              final mw = ref.watch(marketWatchProvider);
+              // PERFORMANCE FIX: Use .select() to only watch getQuotes
+              // Watching entire marketWatchProvider causes unnecessary rebuilds
+              final quotes = ref.watch(marketWatchProvider.select((p) => p.getQuotes));
               final fallback =
                   ChartArgs(exch: 'ABC', tsym: 'ABCD', token: '0123');
               return ChartWithDepthWeb(
                 wlValue: DepthInputArgs(
-                  exch: mw.getQuotes?.exch ?? fallback.exch,
-                  token: mw.getQuotes?.token?.toString() ?? fallback.token,
-                  tsym: mw.getQuotes?.tsym ?? fallback.tsym,
-                  instname: mw.getQuotes?.instname ?? '',
-                  symbol: mw.getQuotes?.symbol ?? '',
-                  expDate: mw.getQuotes?.expDate ?? '',
-                  option: mw.getQuotes?.option ?? '',
+                  exch: quotes?.exch ?? fallback.exch,
+                  token: quotes?.token?.toString() ?? fallback.token,
+                  tsym: quotes?.tsym ?? fallback.tsym,
+                  instname: quotes?.instname ?? '',
+                  symbol: quotes?.symbol ?? '',
+                  expDate: quotes?.expDate ?? '',
+                  option: quotes?.option ?? '',
                 ),
               );
             }

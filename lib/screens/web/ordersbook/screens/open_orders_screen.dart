@@ -30,7 +30,8 @@ class OpenOrdersScreen extends ConsumerStatefulWidget {
 class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
   int? _sortColumnIndex;
   bool _sortAscending = true;
-  int? _hoveredRowIndex;
+  // PERFORMANCE FIX: Use ValueNotifier for hover instead of setState
+  final ValueNotifier<int?> _hoveredRowIndex = ValueNotifier<int?>(null);
   bool _isProcessingCancel = false;
   bool _isProcessingModify = false;
   String? _processingOrderToken;
@@ -49,6 +50,7 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
 
   @override
   void dispose() {
+    _hoveredRowIndex.dispose();
     _verticalScrollController.dispose();
     _horizontalScrollController.dispose();
     super.dispose();
@@ -105,8 +107,8 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
         ),
       ),
       child: MouseRegion(
-        onEnter: (_) => setState(() => _hoveredRowIndex = rowIndex),
-        onExit: (_) => setState(() => _hoveredRowIndex = null),
+        onEnter: (_) => _hoveredRowIndex.value = rowIndex,
+        onExit: (_) => _hoveredRowIndex.value = null,
         child: GestureDetector(
           onTap: onTap,
           behavior: HitTestBehavior.opaque,
@@ -500,7 +502,6 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
     for (var i = 0; i < sortedOrders.length; i++) {
       final order = sortedOrders[i];
       final uniqueId = order.norenordno?.toString() ?? order.token?.toString() ?? '';
-      final isHovered = _hoveredRowIndex == i;
       final colorScheme = shadcn.Theme.of(context).colorScheme;
 
       dataRows.add(
@@ -519,13 +520,20 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
                 softWrap: false,
               ),
             ),
+            // PERFORMANCE FIX: Use ValueListenableBuilder for hover-dependent UI
             buildCellWithHover(
               rowIndex: i,
               columnIndex: 1,
-              child: GestureDetector(
-                onTap: () => actionHandler.openOrderDetail(order),
-                behavior: HitTestBehavior.opaque,
-                child: _buildInstrumentCell(order, theme, uniqueId, actionHandler, isHovered),
+              child: ValueListenableBuilder<int?>(
+                valueListenable: _hoveredRowIndex,
+                builder: (context, hoveredIndex, _) {
+                  final isHovered = hoveredIndex == i;
+                  return GestureDetector(
+                    onTap: () => actionHandler.openOrderDetail(order),
+                    behavior: HitTestBehavior.opaque,
+                    child: _buildInstrumentCell(order, theme, uniqueId, actionHandler, isHovered),
+                  );
+                },
               ),
             ),
             buildCellWithHover(

@@ -363,17 +363,18 @@ class _WindowBasedHomeScreenState extends ConsumerState<WindowBasedHomeScreen>
           builder: (context, ref, _) {
             final args = _currentDepthArgs;
             if (args == null) {
-              final mw = ref.watch(marketWatchProvider);
+              // PERFORMANCE FIX: Use .select() to only watch getQuotes
+              final quotes = ref.watch(marketWatchProvider.select((p) => p.getQuotes));
               final fallback = ChartArgs(exch: 'ABC', tsym: 'ABCD', token: '0123');
               return ChartWithDepthWeb(
                 wlValue: DepthInputArgs(
-                  exch: mw.getQuotes?.exch ?? fallback.exch,
-                  token: mw.getQuotes?.token?.toString() ?? fallback.token,
-                  tsym: mw.getQuotes?.tsym ?? fallback.tsym,
-                  instname: mw.getQuotes?.instname ?? '',
-                  symbol: mw.getQuotes?.symbol ?? '',
-                  expDate: mw.getQuotes?.expDate ?? '',
-                  option: mw.getQuotes?.option ?? '',
+                  exch: quotes?.exch ?? fallback.exch,
+                  token: quotes?.token?.toString() ?? fallback.token,
+                  tsym: quotes?.tsym ?? fallback.tsym,
+                  instname: quotes?.instname ?? '',
+                  symbol: quotes?.symbol ?? '',
+                  expDate: quotes?.expDate ?? '',
+                  option: quotes?.option ?? '',
                 ),
               );
             }
@@ -801,12 +802,16 @@ class _WindowBasedHomeScreenState extends ConsumerState<WindowBasedHomeScreen>
     return Consumer(
       builder: (context, ref, _) {
         final internet = ref.watch(networkStateProvider);
-        final websocket = ref.watch(websocketProvider);
-        
+        // PERFORMANCE FIX: Use .select() to only watch connection status fields
+        // Watching entire websocketProvider caused rebuilds every 500ms!
+        final connectionCount = ref.watch(websocketProvider.select((p) => p.connectioncount));
+        final reconnectionSuccess = ref.watch(websocketProvider.select((p) => p.reconnectionSuccess));
+        final wsConnected = ref.watch(websocketProvider.select((p) => p.wsConnected));
+
         if ((internet.connectionStatus == ConnectivityResult.none ||
-                websocket.connectioncount >= 5) &&
-            !websocket.reconnectionSuccess &&
-            !websocket.wsConnected) {
+                connectionCount >= 5) &&
+            !reconnectionSuccess &&
+            !wsConnected) {
           ref.read(networkStateProvider).getContext(context);
           return material.Scaffold(
             appBar: material.AppBar(
@@ -820,7 +825,7 @@ class _WindowBasedHomeScreenState extends ConsumerState<WindowBasedHomeScreen>
             ),
           );
         }
-        
+
         final theme = ref.watch(themeProvider);
         return material.Scaffold(
           appBar: _buildAppBar(theme.isDarkMode),

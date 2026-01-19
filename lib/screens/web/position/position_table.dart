@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:flutter/material.dart' show InkWell, Icons, VoidCallback, BorderRadius, Icon, BoxDecoration, TextPainter, TextSpan, TextStyle, TextDirection, GestureDetector, HitTestBehavior, Row, MainAxisSize, SizedBox, Colors, Widget, BuildContext, Color, EdgeInsets, Alignment, MainAxisAlignment, TextOverflow, Axis, FontWeight, Container, MouseRegion, Expanded, Align, Text, AnimatedOpacity, ScrollController, SingleChildScrollView, Scrollbar, Column, ValueKey, IconData, Padding, LayoutBuilder, showDialog, RichText, Stack, LinearGradient, BoxConstraints, Clip, MediaQuery, Builder, Tooltip, Visibility;
+import 'package:flutter/material.dart' show InkWell, Icons, VoidCallback, BorderRadius, Icon, BoxDecoration, TextPainter, TextSpan, TextStyle, TextDirection, GestureDetector, HitTestBehavior, Row, MainAxisSize, SizedBox, Colors, Widget, BuildContext, Color, EdgeInsets, Alignment, MainAxisAlignment, TextOverflow, Axis, FontWeight, Container, MouseRegion, Expanded, Align, Text, AnimatedOpacity, ScrollController, SingleChildScrollView, Scrollbar, Column, ValueKey, IconData, Padding, LayoutBuilder, showDialog, RichText, Stack, LinearGradient, BoxConstraints, Clip, MediaQuery, Builder, Tooltip, Visibility, ValueNotifier, ValueListenableBuilder;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
 
@@ -31,21 +31,24 @@ class PositionTable extends ConsumerStatefulWidget {
 class _PositionTableState extends ConsumerState<PositionTable> {
   int? _sortColumnIndex;
   bool _sortAscending = true;
-  int? _hoveredRowIndex;
-  
+  // PERFORMANCE FIX: Use ValueNotifier for hover instead of setState
+  // setState causes full widget rebuild, ValueNotifier only rebuilds hover-dependent parts
+  final ValueNotifier<int?> _hoveredRowIndex = ValueNotifier<int?>(null);
+
   // Scroll controllers - must be in state to persist across rebuilds
   late ScrollController _verticalScrollController;
   late ScrollController _horizontalScrollController;
-  
+
   @override
   void initState() {
     super.initState();
     _verticalScrollController = ScrollController();
     _horizontalScrollController = ScrollController();
   }
-  
+
   @override
   void dispose() {
+    _hoveredRowIndex.dispose();
     _verticalScrollController.dispose();
     _horizontalScrollController.dispose();
     super.dispose();
@@ -125,8 +128,8 @@ class _PositionTableState extends ConsumerState<PositionTable> {
         ),
       ),
       child: MouseRegion(
-        onEnter: (_) => setState(() => _hoveredRowIndex = rowIndex),
-        onExit: (_) => setState(() => _hoveredRowIndex = null),
+        onEnter: (_) => _hoveredRowIndex.value = rowIndex,
+        onExit: (_) => _hoveredRowIndex.value = null,
         child: Container(
           padding: cellPadding,
           alignment: alignRight ? Alignment.topRight : null,
@@ -646,28 +649,43 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                           final index = entry.key;
                           final position = entry.value;
                           final isClosed = _isPositionClosed(position);
-                          final isRowHovered = _hoveredRowIndex == index;
 
                           return shadcn.TableRow(
                             cells: headers.map((header) {
                               final columnIndex = _getColumnIndexForHeader(header);
                               final isNumeric = _isNumericColumn(header);
-                              
+
                               // Make cells clickable except Select (checkbox) and Instrument (has buttons)
                               final isClickable = header != 'Select' && header != 'Instrument';
-                              
+
+                              // PERFORMANCE FIX: Use ValueListenableBuilder for hover-dependent content
                               return buildCellWithHover(
                                 rowIndex: index,
                                 columnIndex: columnIndex,
                                 alignRight: isNumeric,
-                                child: isClickable
-                                    ? GestureDetector(
-                                        onTap: () => _showPositionDetail(position),
-                                        behavior: HitTestBehavior.opaque,
-                                        child: SizedBox(
-                                          width: double.infinity,
-                                          height: double.infinity,
-                                          child: _buildCellContent(
+                                child: ValueListenableBuilder<int?>(
+                                  valueListenable: _hoveredRowIndex,
+                                  builder: (context, hoveredIndex, _) {
+                                    final isRowHovered = hoveredIndex == index;
+                                    return isClickable
+                                        ? GestureDetector(
+                                            onTap: () => _showPositionDetail(position),
+                                            behavior: HitTestBehavior.opaque,
+                                            child: SizedBox(
+                                              width: double.infinity,
+                                              height: double.infinity,
+                                              child: _buildCellContent(
+                                                context,
+                                                header,
+                                                position,
+                                                theme,
+                                                isClosed,
+                                                isRowHovered,
+                                                positionBook,
+                                              ),
+                                            ),
+                                          )
+                                        : _buildCellContent(
                                             context,
                                             header,
                                             position,
@@ -675,18 +693,9 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                                             isClosed,
                                             isRowHovered,
                                             positionBook,
-                                          ),
-                                        ),
-                                      )
-                                    : _buildCellContent(
-                                        context,
-                                        header,
-                                        position,
-                                        theme,
-                                        isClosed,
-                                        isRowHovered,
-                                        positionBook,
-                                      ),
+                                          );
+                                  },
+                                ),
                               );
                             }).toList(),
                           );

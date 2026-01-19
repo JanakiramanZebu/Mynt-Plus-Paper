@@ -520,15 +520,21 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
           key: ValueKey('${pageName}_$index'),
           child: Consumer(
             builder: (context, ref, _) {
-              final marketWatch = ref.watch(marketWatchProvider);
+              // PERFORMANCE FIX: Use .select() to watch ONLY specific fields
+              // Before: ref.watch(marketWatchProvider) - ANY change triggers rebuild
+              // After: Only rebuild when wlName, scrips, or marketWatchScripData changes
+              // This prevents socket data updates from rebuilding the entire watchlist
+              final wlName = ref.watch(marketWatchProvider.select((p) => p.wlName));
+              final scrips = ref.watch(marketWatchProvider.select((p) => p.scrips));
+              final marketWatchScripData = ref.watch(marketWatchProvider.select((p) => p.marketWatchScripData));
 
               // Get data immediately - no async waiting
               List pageScrips = [];
               if (index == _currentPageIndex &&
-                  pageName == marketWatch.wlName) {
-                pageScrips = marketWatch.scrips;
+                  pageName == wlName) {
+                pageScrips = scrips;
               } else {
-                final cachedData = marketWatch.marketWatchScripData[pageName];
+                final cachedData = marketWatchScripData[pageName];
                 if (cachedData != null) {
                   try {
                     pageScrips = jsonDecode(cachedData);
@@ -541,7 +547,8 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
 
               return RefreshIndicator(
                 onRefresh: () async {
-                  await marketWatch.fetchMWScrip(pageName, context);
+                  // Use ref.read() for method calls - doesn't affect rebuilds
+                  await ref.read(marketWatchProvider).fetchMWScrip(pageName, context);
                 },
                 child:
                     _buildPageContent(ref, theme, pageName, pageScrips, sortBy),

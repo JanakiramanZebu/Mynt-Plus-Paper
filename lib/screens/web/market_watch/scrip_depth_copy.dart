@@ -498,8 +498,9 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
               final theme = ref.read(themeProvider);
               final userProfile = ref.watch(userProfileProvider);
 
+              // PERFORMANCE FIX: Use ref.read() for stream - watching causes double rebuild
               return StreamBuilder<Map>(
-                  stream: ref.watch(websocketProvider).socketDataStream,
+                  stream: ref.read(websocketProvider).socketDataStream,
                   builder: (context, snapshot) {
                     final socketDatas = snapshot.data ?? {};
 

@@ -442,17 +442,22 @@ class SubscriptionManager extends ChangeNotifier with WidgetsBindingObserver {
         context: context,
       );
       
-      // Wait for connection to be established
+      // Wait for connection to be established using exponential backoff to reduce CPU usage
       int connectionAttempts = 0;
-      const maxConnectionAttempts = 10;
+      const maxConnectionAttempts = 5; // Reduced from 10
+
+      // Use exponential backoff: 500ms, 1000ms, 1500ms, 2000ms, 2500ms
       while (!wsProvider.wsConnected && connectionAttempts < maxConnectionAttempts) {
-        await Future.delayed(const Duration(milliseconds: 300));
+        // Progressive delay to reduce CPU polling
+        final delayMs = 500 + (connectionAttempts * 500); // 500ms, 1s, 1.5s, 2s, 2.5s
+        await Future.delayed(Duration(milliseconds: delayMs));
         connectionAttempts++;
-        log('SubscriptionManager: Waiting for connection... attempt $connectionAttempts/$maxConnectionAttempts');
+        log('SubscriptionManager: Waiting for connection... attempt $connectionAttempts/$maxConnectionAttempts (waited ${delayMs}ms)');
       }
-      
+
       if (!wsProvider.wsConnected) {
         log('SubscriptionManager: ❌ Failed to establish websocket connection after $connectionAttempts attempts');
+        _isReconnecting = false; // Reset flag on failure
         return;
       }
       

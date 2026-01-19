@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:flutter/material.dart' show InkWell, Icons, VoidCallback, BorderRadius, Icon, BoxDecoration, TextPainter, TextSpan, TextStyle, TextDirection, GestureDetector, HitTestBehavior, Row, MainAxisSize, SizedBox, Colors, Widget, BuildContext, Color, EdgeInsets, Alignment, MainAxisAlignment, TextOverflow, Axis, FontWeight, Container, MouseRegion, Expanded, Align, Text, AnimatedOpacity, ScrollController, SingleChildScrollView, Scrollbar, Column, LayoutBuilder, ValueKey, IconData, Padding, Tooltip, RichText, Stack, LinearGradient, BoxConstraints, Clip, MediaQuery, Builder, Visibility;
+import 'package:flutter/material.dart' show InkWell, Icons, VoidCallback, BorderRadius, Icon, BoxDecoration, TextPainter, TextSpan, TextStyle, TextDirection, GestureDetector, HitTestBehavior, Row, MainAxisSize, SizedBox, Colors, Widget, BuildContext, Color, EdgeInsets, Alignment, MainAxisAlignment, TextOverflow, Axis, FontWeight, Container, MouseRegion, Expanded, Align, Text, AnimatedOpacity, ScrollController, SingleChildScrollView, Scrollbar, Column, LayoutBuilder, ValueKey, IconData, Padding, Tooltip, RichText, Stack, LinearGradient, BoxConstraints, Clip, MediaQuery, Builder, Visibility, ValueNotifier, ValueListenableBuilder;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
 
@@ -31,21 +31,24 @@ class TableExample1 extends ConsumerStatefulWidget {
 class _TableExample1State extends ConsumerState<TableExample1> {
   int? _sortColumnIndex;
   bool _sortAscending = true;
-  int? _hoveredRowIndex;
-  
+  // PERFORMANCE FIX: Use ValueNotifier for hover instead of setState
+  // setState causes full widget rebuild, ValueNotifier only rebuilds hover-dependent parts
+  final ValueNotifier<int?> _hoveredRowIndex = ValueNotifier<int?>(null);
+
   // Scroll controllers - must be in state to persist across rebuilds
   late ScrollController _verticalScrollController;
   late ScrollController _horizontalScrollController;
-  
+
   @override
   void initState() {
     super.initState();
     _verticalScrollController = ScrollController();
     _horizontalScrollController = ScrollController();
   }
-  
+
   @override
   void dispose() {
+    _hoveredRowIndex.dispose();
     _verticalScrollController.dispose();
     _horizontalScrollController.dispose();
     super.dispose();
@@ -117,8 +120,8 @@ class _TableExample1State extends ConsumerState<TableExample1> {
         ),
       ),
       child: MouseRegion(
-        onEnter: (_) => setState(() => _hoveredRowIndex = rowIndex),
-        onExit: (_) => setState(() => _hoveredRowIndex = null),
+        onEnter: (_) => _hoveredRowIndex.value = rowIndex,
+        onExit: (_) => _hoveredRowIndex.value = null,
         child: Container(
           padding: cellPadding,
           alignment: alignRight ? Alignment.topRight : null,
@@ -569,156 +572,162 @@ class _TableExample1State extends ConsumerState<TableExample1> {
                       final token = exchTsym?.token ?? '';
                       final qty = holding.currentQty ?? 0;
                       final avgPrice = double.tryParse(holding.avgPrc ?? '0') ?? 0.0;
-                      final isRowHovered = _hoveredRowIndex == index;
 
                       return shadcn.TableRow(
                         cells: [
                           // Instrument with action buttons on hover - Make clickable for row tap
+                          // PERFORMANCE FIX: Use ValueListenableBuilder for hover-dependent UI
                           buildCellWithHover(
                             rowIndex: index,
                             columnIndex: 0,
-                            child: GestureDetector(
-                              onTap: () => _showHoldingDetail(holding, exchTsym),
-                              behavior: HitTestBehavior.opaque,
-                              child: SizedBox(
-                                width: double.infinity,
-                                height: double.infinity,
-                                child: Stack(
-                                  clipBehavior: Clip.hardEdge,
-                                  children: [
-                                    // Instrument name - full width, can be partially covered by buttons
-                                    // Only truncate when hovered (buttons visible), otherwise show full text
-                                    Align(
-                                      alignment: Alignment.centerLeft,
-                                      child: Tooltip(
-                                        message: '${(exchTsym?.tsym ?? 'N/A').replaceAll("-EQ", "").trim()}${exchTsym?.exch != null && exchTsym!.exch!.isNotEmpty ? ' ${exchTsym.exch}' : ''}',
-                                        child: Padding(
-                                          padding: EdgeInsets.only(right: isRowHovered ? 8.0 : 0.0),
-                                          child: RichText(
-                                            overflow: isRowHovered ? TextOverflow.ellipsis : TextOverflow.visible,
-                                            maxLines: 1,
-                                            softWrap: false,
-                                            text: TextSpan(
-                                              children: [
-                                                // Symbol (normal color, without -EQ, fixed 14px)
-                                                TextSpan(
-                                                  text: (exchTsym?.tsym ?? 'N/A').replaceAll("-EQ", "").trim(),
-                                                  style: _geistTextStyle(
-                                                    color: shadcn.Theme.of(context).colorScheme.foreground,
-                                                    fontSize: 14.0,
-                                                  ),
-                                                ),
-                                                // Exchange (mutedForeground color, smaller font, fixed 12px)
-                                                if (exchTsym?.exch != null && exchTsym!.exch!.isNotEmpty)
-                                                  TextSpan(
-                                                    text: ' ${exchTsym.exch}',
-                                                    style: _geistTextStyle(
-                                                      color: shadcn.Theme.of(context).colorScheme.mutedForeground,
-                                                      fontSize: 12.0,
+                            child: ValueListenableBuilder<int?>(
+                              valueListenable: _hoveredRowIndex,
+                              builder: (context, hoveredIndex, _) {
+                                final isRowHovered = hoveredIndex == index;
+                                return GestureDetector(
+                                  onTap: () => _showHoldingDetail(holding, exchTsym),
+                                  behavior: HitTestBehavior.opaque,
+                                  child: SizedBox(
+                                    width: double.infinity,
+                                    height: double.infinity,
+                                    child: Stack(
+                                      clipBehavior: Clip.hardEdge,
+                                      children: [
+                                        // Instrument name - full width, can be partially covered by buttons
+                                        // Only truncate when hovered (buttons visible), otherwise show full text
+                                        Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: Tooltip(
+                                            message: '${(exchTsym?.tsym ?? 'N/A').replaceAll("-EQ", "").trim()}${exchTsym?.exch != null && exchTsym!.exch!.isNotEmpty ? ' ${exchTsym.exch}' : ''}',
+                                            child: Padding(
+                                              padding: EdgeInsets.only(right: isRowHovered ? 8.0 : 0.0),
+                                              child: RichText(
+                                                overflow: isRowHovered ? TextOverflow.ellipsis : TextOverflow.visible,
+                                                maxLines: 1,
+                                                softWrap: false,
+                                                text: TextSpan(
+                                                  children: [
+                                                    // Symbol (normal color, without -EQ, fixed 14px)
+                                                    TextSpan(
+                                                      text: (exchTsym?.tsym ?? 'N/A').replaceAll("-EQ", "").trim(),
+                                                      style: _geistTextStyle(
+                                                        color: shadcn.Theme.of(context).colorScheme.foreground,
+                                                        fontSize: 14.0,
+                                                      ),
                                                     ),
-                                                  ),
-                                              ],
+                                                    // Exchange (mutedForeground color, smaller font, fixed 12px)
+                                                    if (exchTsym?.exch != null && exchTsym!.exch!.isNotEmpty)
+                                                      TextSpan(
+                                                        text: ' ${exchTsym.exch}',
+                                                        style: _geistTextStyle(
+                                                          color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+                                                          fontSize: 12.0,
+                                                        ),
+                                                      ),
+                                                  ],
+                                                ),
+                                              ),
                                             ),
                                           ),
                                         ),
-                                      ),
-                                    ),
-                                    // Action buttons - overlay on the right side, covering only half the text
-                                    // Use Visibility to ensure buttons don't take space when not hovered
-                                    Visibility(
-                                      visible: isRowHovered,
-                                      maintainSize: false,
-                                      maintainAnimation: false,
-                                      maintainState: false,
-                                      child: Align(
-                                        alignment: Alignment.centerRight,
-                                        child: LayoutBuilder(
-                                          builder: (context, constraints) {
-                                            // Responsive max width based on screen size
-                                            final screenWidth = MediaQuery.of(context).size.width;
-                                            final isSmallScreen = screenWidth < 768;
-                                            final isVerySmallScreen = screenWidth < 480;
-                                            final responsiveMaxWidth = isVerySmallScreen ? 120.0 : (isSmallScreen ? 160.0 : 200.0);
-                                            
-                                            // Use available width, but cap at responsive max to prevent overflow
-                                            final maxButtonWidth = constraints.maxWidth.clamp(0.0, responsiveMaxWidth);
-                                            return GestureDetector(
-                                              onTap: () {}, // Empty handler to stop propagation
-                                              behavior: HitTestBehavior.opaque,
-                                              child: AnimatedOpacity(
-                                                opacity: isRowHovered ? 1 : 0,
-                                                duration: const Duration(milliseconds: 140),
-                                                child: Container(
-                                                  constraints: BoxConstraints(maxWidth: maxButtonWidth),
-                                                  decoration: BoxDecoration(
-                                                    // Subtle background gradient for better button visibility
-                                                    gradient: LinearGradient(
-                                                      begin: Alignment.centerLeft,
-                                                      end: Alignment.centerRight,
-                                                      colors: [
-                                                        shadcn.Theme.of(context).colorScheme.background.withOpacity(0.0),
-                                                        shadcn.Theme.of(context).colorScheme.background.withOpacity(0.95),
-                                                      ],
+                                        // Action buttons - overlay on the right side, covering only half the text
+                                        // Use Visibility to ensure buttons don't take space when not hovered
+                                        Visibility(
+                                          visible: isRowHovered,
+                                          maintainSize: false,
+                                          maintainAnimation: false,
+                                          maintainState: false,
+                                          child: Align(
+                                            alignment: Alignment.centerRight,
+                                            child: LayoutBuilder(
+                                              builder: (context, constraints) {
+                                                // Responsive max width based on screen size
+                                                final screenWidth = MediaQuery.of(context).size.width;
+                                                final isSmallScreen = screenWidth < 768;
+                                                final isVerySmallScreen = screenWidth < 480;
+                                                final responsiveMaxWidth = isVerySmallScreen ? 120.0 : (isSmallScreen ? 160.0 : 200.0);
+
+                                                // Use available width, but cap at responsive max to prevent overflow
+                                                final maxButtonWidth = constraints.maxWidth.clamp(0.0, responsiveMaxWidth);
+                                                return GestureDetector(
+                                                  onTap: () {}, // Empty handler to stop propagation
+                                                  behavior: HitTestBehavior.opaque,
+                                                  child: AnimatedOpacity(
+                                                    opacity: isRowHovered ? 1 : 0,
+                                                    duration: const Duration(milliseconds: 140),
+                                                    child: Container(
+                                                      constraints: BoxConstraints(maxWidth: maxButtonWidth),
+                                                      decoration: BoxDecoration(
+                                                        // Subtle background gradient for better button visibility
+                                                        gradient: LinearGradient(
+                                                          begin: Alignment.centerLeft,
+                                                          end: Alignment.centerRight,
+                                                          colors: [
+                                                            shadcn.Theme.of(context).colorScheme.background.withOpacity(0.0),
+                                                            shadcn.Theme.of(context).colorScheme.background.withOpacity(0.95),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                      padding: const EdgeInsets.only(left: 8),
+                                                      child: Builder(
+                                                        builder: (buttonContext) {
+                                                          final screenWidth = MediaQuery.of(buttonContext).size.width;
+                                                          final isSmallScreen = screenWidth < 768;
+                                                          final buttonSpacing = isSmallScreen ? 4.0 : 6.0;
+
+                                                          return Row(
+                                                            mainAxisSize: MainAxisSize.min,
+                                                            children: [
+                                                              if (qty > 0) ...{
+                                                                _buildHoverButton(
+                                                                  theme: theme,
+                                                                  label: 'Add',
+                                                                  onPressed: () => _handleAddHolding(holding, exchTsym),
+                                                                  backgroundColor: theme.isDarkMode
+                                                                      ? WebDarkColors.primary
+                                                                      : WebColors.primary,
+                                                                  textColor: Colors.white,
+                                                                  context: buttonContext,
+                                                                ),
+                                                                SizedBox(width: buttonSpacing),
+                                                              },
+                                                              if (qty > 0) ...{
+                                                                _buildHoverButton(
+                                                                  theme: theme,
+                                                                  label: 'Exit',
+                                                                  onPressed: () => _handleExitHolding(holding, exchTsym),
+                                                                  backgroundColor: theme.isDarkMode
+                                                                      ? WebDarkColors.tertiary
+                                                                      : WebColors.tertiary,
+                                                                  textColor: Colors.white,
+                                                                  context: buttonContext,
+                                                                ),
+                                                                SizedBox(width: buttonSpacing),
+                                                              },
+                                                              _buildHoverButton(
+                                                                theme: theme,
+                                                                icon: Icons.bar_chart,
+                                                                onPressed: () => _handleChartTap(holding, exchTsym),
+                                                                backgroundColor: Colors.white,
+                                                                iconColor: Colors.black,
+                                                                context: buttonContext,
+                                                              ),
+                                                            ],
+                                                          );
+                                                        },
+                                                      ),
                                                     ),
                                                   ),
-                                                  padding: const EdgeInsets.only(left: 8),
-                                                  child: Builder(
-                                                    builder: (buttonContext) {
-                                                      final screenWidth = MediaQuery.of(buttonContext).size.width;
-                                                      final isSmallScreen = screenWidth < 768;
-                                                      final buttonSpacing = isSmallScreen ? 4.0 : 6.0;
-                                                      
-                                                      return Row(
-                                                        mainAxisSize: MainAxisSize.min,
-                                                        children: [
-                                                          if (qty > 0) ...{
-                                                            _buildHoverButton(
-                                                              theme: theme,
-                                                              label: 'Add',
-                                                              onPressed: () => _handleAddHolding(holding, exchTsym),
-                                                              backgroundColor: theme.isDarkMode
-                                                                  ? WebDarkColors.primary
-                                                                  : WebColors.primary,
-                                                              textColor: Colors.white,
-                                                              context: buttonContext,
-                                                            ),
-                                                            SizedBox(width: buttonSpacing),
-                                                          },
-                                                          if (qty > 0) ...{
-                                                            _buildHoverButton(
-                                                              theme: theme,
-                                                              label: 'Exit',
-                                                              onPressed: () => _handleExitHolding(holding, exchTsym),
-                                                              backgroundColor: theme.isDarkMode
-                                                                  ? WebDarkColors.tertiary
-                                                                  : WebColors.tertiary,
-                                                              textColor: Colors.white,
-                                                              context: buttonContext,
-                                                            ),
-                                                            SizedBox(width: buttonSpacing),
-                                                          },
-                                                          _buildHoverButton(
-                                                            theme: theme,
-                                                            icon: Icons.bar_chart,
-                                                            onPressed: () => _handleChartTap(holding, exchTsym),
-                                                            backgroundColor: Colors.white,
-                                                            iconColor: Colors.black,
-                                                            context: buttonContext,
-                                                          ),
-                                                        ],
-                                                      );
-                                                    },
-                                                  ),
-                                                ),
-                                              ),
-                                            );
-                                          },
+                                                );
+                                              },
+                                            ),
+                                          ),
                                         ),
-                                      ),
+                                      ],
                                     ),
-                                  ],
-                                ),
-                              ),
+                                  ),
+                                );
+                              },
                             ),
                           ),
                           // Net Qty - Make clickable for row tap

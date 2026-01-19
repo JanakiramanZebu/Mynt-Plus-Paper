@@ -1,4 +1,4 @@
-import 'dart:async';
+// REMOVED: dart:async import - no longer using StreamSubscription!
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
@@ -51,16 +51,24 @@ class WatchlistCardWeb extends ConsumerStatefulWidget {
 class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
   // Add navigation lock to prevent multiple navigation events
   bool _isNavigating = false;
-  bool _isHovered = false;
+  // PERFORMANCE FIX: Use ValueNotifier for hover instead of setState
+  final ValueNotifier<bool> _isHovered = ValueNotifier<bool>(false);
   // bool _isExpanded = false;
   bool _isMenuOpen = false;
   final GlobalKey _menuButtonKey = GlobalKey();
 
   @override
+  void dispose() {
+    _isHovered.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = ref.read(themeProvider);
     final marketWatch = ref.read(marketWatchProvider);
-    final depthData = ref.watch(marketWatchProvider).getQuotes!;
+    // PERFORMANCE FIX: Use .select() to watch only getQuotes, not entire provider
+    final depthData = ref.watch(marketWatchProvider.select((p) => p.getQuotes))!;
     // final expandedToken = ref.watch(expandedWatchlistItemProvider);
 
     // Check if this card is expanded
@@ -71,9 +79,11 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
       child: Column(
         children: [
           MouseRegion(
-            onEnter: (_) => setState(() => _isHovered = true),
-            onExit: (_) => setState(() => _isHovered = false),
-            child: InkWell(
+            onEnter: (_) => _isHovered.value = true,
+            onExit: (_) => _isHovered.value = false,
+            child: ValueListenableBuilder<bool>(
+              valueListenable: _isHovered,
+              builder: (context, isHovered, _) => InkWell(
               // Increased border radius for web
               splashColor: theme.isDarkMode
                   ? Colors.white.withOpacity(0.15)
@@ -139,7 +149,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                 }
               },
           child: Container(
-            color: _isHovered
+            color: isHovered
                 ? (theme.isDarkMode
                     ? WebDarkColors.primary
                     : WebColors.primary)
@@ -257,10 +267,10 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                         final bool isPredefined = marketWatch.isPreDefWLs == "Yes";
                         
                         return AnimatedOpacity(
-                          opacity: (_isHovered || _isMenuOpen) ? 1.0 : 0.0,
+                          opacity: (isHovered || _isMenuOpen) ? 1.0 : 0.0,
                           duration: const Duration(milliseconds: 150),
                           child: IgnorePointer(
-                            ignoring: !_isHovered && !_isMenuOpen,
+                            ignoring: !isHovered && !_isMenuOpen,
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
@@ -423,7 +433,8 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
             ),
           ),
         ),
-          ),
+          ),  // ValueListenableBuilder
+          ),  // MouseRegion
           // Expandable content section
           // if (_isExpanded)
           //   AnimatedSize(
@@ -447,7 +458,8 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
     final currentToken = widget.watchListData['token']?.toString() ?? "";
 
     return StreamBuilder<dynamic>(
-      stream: ref.watch(websocketProvider).socketDataStream,
+      // PERFORMANCE FIX: Use ref.read() for stream access - stream itself is reactive
+      stream: ref.read(websocketProvider).socketDataStream,
       builder: (context, snapshot) {
         Map<String, dynamic> socketData;
 
@@ -2024,98 +2036,8 @@ class _PriceDataWidgetWeb extends ConsumerStatefulWidget {
 }
 
 class _PriceDataWidgetWebState extends ConsumerState<_PriceDataWidgetWeb> {
-  late String ltp;
-  late String change;
-  late String perChange;
-  StreamSubscription? _subscription;
-
-  @override
-  void initState() {
-    super.initState();
-
-    // Initialize with initial data values
-    ltp = widget.initialData['ltp']?.toString() ?? '0.00';
-    change = widget.initialData['change']?.toString() ?? '0.00';
-    perChange = widget.initialData['perChange']?.toString() ?? '0.00';
-
-    // Pre-load from current socket data if available
-    final socketData = ref.read(websocketProvider).socketDatas[widget.token];
-    if (socketData != null) {
-      ltp = socketData['lp']?.toString() ?? ltp;
-      change = socketData['chng']?.toString() ?? change;
-      perChange = socketData['pc']?.toString() ?? perChange;
-    }
-
-    // Setup subscription with debounce to avoid excessive updates
-    _setupSubscription();
-  }
-
-  void _setupSubscription() {
-    // Using a more efficient approach to listen to only the relevant token's data
-    _subscription =
-        ref.read(websocketProvider).socketDataStream.listen((rawData) {
-      // Skip processing if widget is in the process of disposal
-      if (!mounted) return;
-
-      // Safely cast the data to handle LinkedMap type
-      final data = Map<String, dynamic>.from(rawData as Map? ?? {});
-
-      // Only process if data contains our token
-      if (!data.containsKey(widget.token)) return;
-
-      final rawNewData = data[widget.token];
-      if (rawNewData == null) return;
-
-      final newData = Map<String, dynamic>.from(rawNewData as Map);
-
-      // Only update state if values actually changed
-      bool valueChanged = false;
-
-      final newLtp = newData['lp']?.toString();
-      final newChange = newData['chng']?.toString();
-      final newPerChange = newData['pc']?.toString();
-
-      if (newLtp != null &&
-          newLtp != ltp &&
-          newLtp != '0.00' &&
-          newLtp != '0.0' &&
-          newLtp != 'null') {
-        ltp = newLtp;
-        valueChanged = true;
-      }
-
-      if (newChange != null &&
-          newChange != change &&
-          newChange != '0.0' &&
-          newChange != 'null') {
-        change = newChange;
-        valueChanged = true;
-      }
-
-      if (newPerChange != null &&
-          newPerChange != perChange &&
-          newPerChange != '0.0' &&
-          newPerChange != 'null') {
-        perChange = newPerChange;
-        valueChanged = true;
-      }
-
-      // Only rebuild if values actually changed and not already rebuilding
-      if (valueChanged) {
-        // Immediately update UI for price changes
-        if (mounted) {
-          setState(() {});
-        }
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    // Ensure subscription is properly cleaned up
-    _subscription?.cancel();
-    super.dispose();
-  }
+  // PERFORMANCE FIX: No more stream subscriptions or cached values!
+  // Using Riverpod's reactive system - data is fetched fresh in build()
 
   // Helper method to safely format price values
   String _safeFormatPrice(String value) {
@@ -2131,6 +2053,19 @@ class _PriceDataWidgetWebState extends ConsumerState<_PriceDataWidgetWeb> {
 
   @override
   Widget build(BuildContext context) {
+    // PERFORMANCE FIX: Watch ONLY this token's data using Riverpod's selective watching
+    // This prevents unnecessary rebuilds when other tokens update
+    final socketData = ref.watch(
+      websocketProvider.select((provider) =>
+        provider.socketDatas[widget.token]
+      )
+    );
+
+    // Calculate values fresh from socket data or fall back to initial data
+    final ltp = socketData?['lp']?.toString() ?? widget.initialData['ltp']?.toString() ?? '0.00';
+    final change = socketData?['chng']?.toString() ?? widget.initialData['change']?.toString() ?? '0.00';
+    final perChange = socketData?['pc']?.toString() ?? widget.initialData['perChange']?.toString() ?? '0.00';
+
     // Don't read theme on every rebuild - cache it once per build
     final theme = ref.read(themeProvider);
 
@@ -2193,54 +2128,8 @@ class _LTPWidgetWeb extends ConsumerStatefulWidget {
 }
 
 class _LTPWidgetWebState extends ConsumerState<_LTPWidgetWeb> {
-  late String ltp;
-  StreamSubscription? _subscription;
-
-  @override
-  void initState() {
-    super.initState();
-    ltp = widget.initialData['ltp']?.toString() ?? '0.00';
-
-    // Pre-load from current socket data if available
-    final socketData = ref.read(websocketProvider).socketDatas[widget.token];
-    if (socketData != null) {
-      ltp = socketData['lp']?.toString() ?? ltp;
-    }
-
-    _setupSubscription();
-  }
-
-  void _setupSubscription() {
-    _subscription =
-        ref.read(websocketProvider).socketDataStream.listen((rawData) {
-      if (!mounted) return;
-
-      final data = Map<String, dynamic>.from(rawData as Map? ?? {});
-      if (!data.containsKey(widget.token)) return;
-
-      final rawNewData = data[widget.token];
-      if (rawNewData == null) return;
-
-      final newData = Map<String, dynamic>.from(rawNewData as Map);
-      final newLtp = newData['lp']?.toString();
-
-      if (newLtp != null &&
-          newLtp != ltp &&
-          newLtp != '0.00' &&
-          newLtp != '0.0' &&
-          newLtp != 'null') {
-        setState(() {
-          ltp = newLtp;
-        });
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _subscription?.cancel();
-    super.dispose();
-  }
+  // PERFORMANCE FIX: No more stream subscriptions or cached values!
+  // Using Riverpod's reactive system - data is fetched fresh in build()
 
   String _safeFormatPrice(String value) {
     if (value == 'null' ||
@@ -2255,9 +2144,18 @@ class _LTPWidgetWebState extends ConsumerState<_LTPWidgetWeb> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = ref.read(themeProvider);
+    // PERFORMANCE FIX: Watch ONLY this token's data using Riverpod's selective watching
+    final socketData = ref.watch(
+      websocketProvider.select((provider) =>
+        provider.socketDatas[widget.token]
+      )
+    );
+
+    // Calculate values fresh from socket data or fall back to initial data
+    final ltp = socketData?['lp']?.toString() ?? widget.initialData['ltp']?.toString() ?? '0.00';
+
     final displayLtp = _safeFormatPrice(ltp);
-    
+
      final changeColor =
         displayLtp.startsWith("-") || displayLtp.startsWith('-')
             ? shadcn.Theme.of(context).colorScheme.destructiveForeground
@@ -2291,70 +2189,8 @@ class _PriceChangeWidgetWeb extends ConsumerStatefulWidget {
 }
 
 class _PriceChangeWidgetWebState extends ConsumerState<_PriceChangeWidgetWeb> {
-  late String change;
-  late String perChange;
-  StreamSubscription? _subscription;
-
-  @override
-  void initState() {
-    super.initState();
-    change = widget.initialData['change']?.toString() ?? '0.00';
-    perChange = widget.initialData['perChange']?.toString() ?? '0.00';
-
-    // Pre-load from current socket data if available
-    final socketData = ref.read(websocketProvider).socketDatas[widget.token];
-    if (socketData != null) {
-      change = socketData['chng']?.toString() ?? change;
-      perChange = socketData['pc']?.toString() ?? perChange;
-    }
-
-    _setupSubscription();
-  }
-
-  void _setupSubscription() {
-    _subscription =
-        ref.read(websocketProvider).socketDataStream.listen((rawData) {
-      if (!mounted) return;
-
-      final data = Map<String, dynamic>.from(rawData as Map? ?? {});
-      if (!data.containsKey(widget.token)) return;
-
-      final rawNewData = data[widget.token];
-      if (rawNewData == null) return;
-
-      final newData = Map<String, dynamic>.from(rawNewData as Map);
-      bool valueChanged = false;
-
-      final newChange = newData['chng']?.toString();
-      final newPerChange = newData['pc']?.toString();
-
-      if (newChange != null &&
-          newChange != change &&
-          newChange != '0.0' &&
-          newChange != 'null') {
-        change = newChange;
-        valueChanged = true;
-      }
-
-      if (newPerChange != null &&
-          newPerChange != perChange &&
-          newPerChange != '0.0' &&
-          newPerChange != 'null') {
-        perChange = newPerChange;
-        valueChanged = true;
-      }
-
-      if (valueChanged && mounted) {
-        setState(() {});
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _subscription?.cancel();
-    super.dispose();
-  }
+  // PERFORMANCE FIX: No more stream subscriptions or cached values!
+  // Using Riverpod's reactive system - data is fetched fresh in build()
 
   String _safeFormatPrice(String value) {
     if (value == 'null' ||
@@ -2369,7 +2205,17 @@ class _PriceChangeWidgetWebState extends ConsumerState<_PriceChangeWidgetWeb> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = ref.read(themeProvider);
+    // PERFORMANCE FIX: Watch ONLY this token's data using Riverpod's selective watching
+    final socketData = ref.watch(
+      websocketProvider.select((provider) =>
+        provider.socketDatas[widget.token]
+      )
+    );
+
+    // Calculate values fresh from socket data or fall back to initial data
+    final change = socketData?['chng']?.toString() ?? widget.initialData['change']?.toString() ?? '0.00';
+    final perChange = socketData?['pc']?.toString() ?? widget.initialData['perChange']?.toString() ?? '0.00';
+
     final displayChange = _safeFormatPrice(change);
     final displayPerChange = _safeFormatPrice(perChange);
 

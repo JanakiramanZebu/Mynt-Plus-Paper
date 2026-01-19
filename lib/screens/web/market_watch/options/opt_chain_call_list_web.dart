@@ -1,4 +1,4 @@
-import 'dart:async';
+// REMOVED: dart:async import - no longer using StreamSubscription!
 // import 'dart:developer';
 
 import 'package:flutter/material.dart';
@@ -27,6 +27,8 @@ class OptChainCallList extends StatelessWidget {
   final SwipeActionController? swipe;
   final bool showPriceView;
   final bool isBasketMode;
+  // PERFORMANCE FIX: Pre-computed watchlist Set for O(1) lookups
+  final Set<String> watchlistTokens;
 
   const OptChainCallList({
     super.key,
@@ -35,37 +37,47 @@ class OptChainCallList extends StatelessWidget {
     required this.isCallUp,
     required this.showPriceView,
     required this.isBasketMode,
+    required this.watchlistTokens,
   });
 
   @override
   Widget build(BuildContext context) {
-    return ListView.separated(
-      physics: const NeverScrollableScrollPhysics(),
-      shrinkWrap: true,
-      reverse: isCallUp,
-      itemCount: callData?.length ?? 0,
-      separatorBuilder: (context, index) => const ListDivider(),
-      itemBuilder: (context, index) {
-        final option = callData![index];
-        return _OptionChainCallRow(
-          key: ValueKey('call-${option.token}'),
-          option: option,
-          swipe: swipe,
-          index: index,
-          showPriceView: showPriceView,
-          isBasketMode: isBasketMode,
-        );
-      },
+    // PERFORMANCE FIX: Replace ListView.builder with Column to avoid shrinkWrap
+    // shrinkWrap: true forces ListView to build ALL items immediately (no lazy loading)
+    // Using Column with explicit children is more efficient for small lists
+    final items = callData ?? [];
+    final children = <Widget>[];
+
+    for (int i = 0; i < items.length; i++) {
+      if (i > 0) {
+        children.add(const ListDivider());
+      }
+      children.add(_OptionChainCallRow(
+        key: ValueKey('call-${items[i].token}'),
+        option: items[i],
+        swipe: swipe,
+        index: i,
+        showPriceView: showPriceView,
+        isBasketMode: isBasketMode,
+        watchlistTokens: watchlistTokens,
+      ));
+    }
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: isCallUp ? children.reversed.toList() : children,
     );
   }
 }
 
-class _OptionChainCallRow extends StatefulWidget {
+class _OptionChainCallRow extends ConsumerStatefulWidget {
   final OptionValues option;
   final SwipeActionController? swipe;
   final int index;
   final bool showPriceView;
   final bool isBasketMode;
+  // PERFORMANCE FIX: Pre-computed watchlist Set for O(1) lookups
+  final Set<String> watchlistTokens;
 
   const _OptionChainCallRow({
     super.key,
@@ -74,227 +86,73 @@ class _OptionChainCallRow extends StatefulWidget {
     required this.index,
     required this.showPriceView,
     required this.isBasketMode,
+    required this.watchlistTokens,
   });
 
   @override
-  _OptionChainCallRowState createState() => _OptionChainCallRowState();
+  ConsumerState<_OptionChainCallRow> createState() => _OptionChainCallRowState();
 }
 
-class _OptionChainCallRowState extends State<_OptionChainCallRow> {
-  // Cache the data locally to avoid rebuilds when parent rebuilds
-  late String _lp;
-  late String _perChange;
-  late String _oiLack;
-  late String _oiPerChng;
-  late double _currentOI;
-  bool _isHovered = false;
-  bool _isInWatchlist = false;
-  StreamSubscription? _subscription;
+class _OptionChainCallRowState extends ConsumerState<_OptionChainCallRow> {
+  // PERFORMANCE FIX: Use ValueNotifier instead of setState for hover
+  // setState causes full widget rebuild, ValueNotifier only rebuilds hover-dependent parts
+  // This reduces event listener recreation and improves performance
+  final _isHovered = ValueNotifier<bool>(false);
 
   // Static variable to track global maximum OI across all CALL options
   static double _globalMaxOI = 0.0;
 
   @override
-  void initState() {
-    super.initState();
-    
-    // Initialize with option model data first (context not available for websocket yet)
-    _lp = widget.option.lp ?? widget.option.close ?? "0.00";
-    _perChange = widget.option.perChange ?? "0.00";
-    _oiLack = widget.option.oiLack ?? "0.00";
-    _oiPerChng = widget.option.oiPerChng ?? "0.00";
-    
-    // Initialize current OI from option model
-    _currentOI = double.tryParse(widget.option.oi ?? "0") ?? 
-                 double.tryParse(widget.option.oiLack ?? "0") ?? 0.0;
-    
-    // Convert OI lack back to full OI if needed
-    if (_currentOI < 1000 && _currentOI > 0) {
-      _currentOI = _currentOI * 100000;
-    }
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-
-    // Check if current option is in watchlist
-    _checkIfInWatchlist();
-
-    // Now context is available - check for existing websocket data and update if needed
-    try {
-      final provider = ProviderScope.containerOf(context).read(websocketProvider);
-      final socketData = provider.socketDatas;
-      final existingData = socketData[widget.option.token];
-      
-      if (existingData != null) {
-        // Update with websocket data if available
-        final newLp = existingData['lp']?.toString();
-        final newPc = existingData['pc']?.toString();
-        final newOI = double.tryParse("${existingData['oi']}") ?? 0.0;
-        
-        if (newLp != null && newLp != "null") _lp = newLp;
-        if (newPc != null && newPc != "null") _perChange = newPc;
-        if (newOI >= 0) {
-          _currentOI = newOI;
-          _oiLack = (_currentOI / 100000).toStringAsFixed(2);
-          
-          // Calculate OI percentage change
-          final poi = double.tryParse("${existingData['poi'] ?? 0.00}") ?? 0.0;
-          if (poi > 0) {
-            _oiPerChng = (((_currentOI - poi) / poi) * 100).toStringAsFixed(2);
-          } else if (_currentOI > 0) {
-            _oiPerChng = "100.00";
-          } else {
-            _oiPerChng = "0.00";
-          }
-        }
-
-        // Update global max OI if current OI is greater
-        if (_currentOI > _globalMaxOI) {
-          _globalMaxOI = _currentOI;
-        }
-
-        // if (kDebugMode) {
-        //   print("=== CALL WEBSOCKET SYNC ===");
-        //   print("Token: ${widget.option.token}");
-        //   print("Updated from WebSocket - LTP: $_lp, PC: $_perChange, OI: $_currentOI");
-        //   print("LTP: $_lp, PC: $_perChange, OI: $_currentOI, OI Per Chng: $_oiPerChng, poi: ${existingData['poi']}, oi: ${existingData['oi']}");
-        //   print("===========================");
-        // }
-        
-        // Update UI with websocket data
-        setState(() {});
-      }
-    } catch (e) {
-      // If provider access fails, just use option model data
-      // if (kDebugMode) {
-      //   print("=== CALL INIT FALLBACK ===");
-      //   print("Token: ${widget.option.token}");
-      //   print("Using Option Model - LTP: $_lp, PC: $_perChange, OI: $_currentOI");
-
-        
-      //   print("==========================");
-      // }
-    }
-
-    // Always re-setup the listener to ensure fresh data flow
-    _setupSocketListener();
-  }
-
-
-  @override
   void dispose() {
-    _subscription?.cancel();
+    _isHovered.dispose();
     super.dispose();
-  }
-
-  void _setupSocketListener() {
-    // Cancel existing subscription first
-    _subscription?.cancel();
-    
-    // Get the stream of data
-    final provider = ProviderScope.containerOf(context).read(websocketProvider);
-
-    // Always subscribe to changes for THIS token
-    _subscription = provider.socketDataStream.listen((socketData) {
-      if (!mounted) return;
-
-      // Only process if this token's data exists
-      if (socketData.containsKey(widget.option.token)) {
-        final data = socketData[widget.option.token];
-        if (data == null) return;
-
-        // Always update values when websocket data comes in (remove restrictive checks)
-        bool needsUpdate = false;
-
-        final newLp = data['lp']?.toString();
-        if (newLp != null && newLp != "null" && newLp != _lp) {
-          _lp = newLp;
-          needsUpdate = true;
-        }
-
-        final newPc = data['pc']?.toString();
-        if (newPc != null && newPc != "null" && newPc != _perChange) {
-          _perChange = newPc;
-          needsUpdate = true;
-        }
-
-        // Calculate OI values only if needed
-        final oi = double.tryParse("${data['oi']}");
-        if (oi != null && oi >= 0) { // Allow 0 values
-          // Update current OI value
-          if (oi != _currentOI) {
-            _currentOI = oi;
-            needsUpdate = true;
-            
-            // Update GLOBAL max OI if current OI is greater
-            if (_currentOI > _globalMaxOI) {
-              _globalMaxOI = _currentOI;
-            }
-          }
-          
-          final newOiLack = (oi / 100000).toStringAsFixed(2);
-          if (newOiLack != _oiLack) {
-            _oiLack = newOiLack;
-            needsUpdate = true;
-          }
-
-          final poi = double.tryParse("${data['poi'] ?? 0.00}") ?? 0.0;
-          String newOiPerChng = "0.00";
-          // print("poi: $poi");
-          // print("oi: $oi");
-          // Safe calculation to avoid division by zero
-          if (poi > 0) {
-          
-            newOiPerChng = (((oi - poi) / poi) * 100).toStringAsFixed(2);
-          } else if (oi > 0) {
-            // If previous OI was 0 but current OI exists, show as 100% increase
-            newOiPerChng = "100.00";
-          }
-          
-          if (newOiPerChng != _oiPerChng && newOiPerChng != "NaN") {
-            _oiPerChng = newOiPerChng;
-            needsUpdate = true;
-          }
-        }
-
-        // Always rebuild if we have any data update
-        if (needsUpdate) {
-          // if (kDebugMode) {
-            // print("=== CALL DATA UPDATE ===");
-            // print("Token: ${widget.option.token}");
-            // print("LTP: $_lp, PC: $_perChange, OI: $_currentOI, OI Per Chng: $_oiPerChng, poi: $data['poi'], oi: $data['oi']");
-            // print("========================");
-          // }
-          setState(() {});
-          
-          // Also check basket state periodically
-              }
-      }
-    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final scripData =
-        ProviderScope.containerOf(context).read(marketWatchProvider);
-    final theme = ProviderScope.containerOf(context).read(themeProvider);
-    
-    // Check watchlist status on every build to react to changes
-    final scripToken = "${widget.option.exch}|${widget.option.token}";
-    final isCurrentlyInWatchlist = scripData.scrips.any((scrip) => 
-      "${scrip['exch']}|${scrip['token']}" == scripToken
+    // PERFORMANCE FIX: Each card watches ONLY its own token with .select()
+    // When token A updates, only card A rebuilds - NOT all 400 cards!
+    // This is the key fix: Parent no longer watches entire socketDatas map
+    final socketData = ref.watch(
+      websocketProvider.select((p) => p.socketDatas[widget.option.token])
     );
-    if (_isInWatchlist != isCurrentlyInWatchlist) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          setState(() {
-            _isInWatchlist = isCurrentlyInWatchlist;
-          });
-        }
-      });
+
+    final scripData = ref.read(marketWatchProvider);
+    final theme = ref.read(themeProvider);
+
+    // Calculate values from websocket data (with fallbacks to option model)
+    final lp = socketData?['lp']?.toString() ??
+              widget.option.lp ??
+              widget.option.close ??
+              "0.00";
+    final perChange = socketData?['pc']?.toString() ??
+                     widget.option.perChange ??
+                     "0.00";
+
+    // Calculate OI values
+    final currentOI = double.tryParse(socketData?['oi']?.toString() ??
+                                     widget.option.oi ??
+                                     "0") ?? 0.0;
+    final oiLack = (currentOI / 100000).toStringAsFixed(2);
+
+    // Calculate OI percentage change
+    final poi = double.tryParse(socketData?['poi']?.toString() ?? "0") ?? 0.0;
+    String oiPerChng = "0.00";
+    if (poi > 0) {
+      oiPerChng = (((currentOI - poi) / poi) * 100).toStringAsFixed(2);
+    } else if (currentOI > 0) {
+      oiPerChng = "100.00";
     }
+
+    // Update global max OI
+    if (currentOI > _globalMaxOI) {
+      _globalMaxOI = currentOI;
+    }
+
+    // PERFORMANCE FIX: O(1) Set lookup instead of O(n) .any() iteration
+    // This reduces 50+ iterations per card to a single hash lookup
+    final scripToken = "${widget.option.exch}|${widget.option.token}";
+    final isInWatchlist = widget.watchlistTokens.contains(scripToken);
 
     return RepaintBoundary(
       child: SwipeActionCell(
@@ -327,44 +185,46 @@ class _OptionChainCallRowState extends State<_OptionChainCallRow> {
             },
           ),
         ],
+        // PERFORMANCE FIX: Use ValueNotifier for hover - no setState rebuilds
         child: MouseRegion(
-          onEnter: (_) => setState(() => _isHovered = true),
-          onExit: (_) => setState(() => _isHovered = false),
-        child: InkWell(
-          // Long press disabled - using hover icon for add to watchlist instead
-          // onLongPress: () => {
-          //   widget.option.tsym!.contains("|||")
-          //       ? _symbolenotFound(context)
-          //       : _handleLongPress(context, widget.option)
-          // },
-          onTap: () => {
-            widget.option.tsym!.contains("|||")
-                ? _symbolenotFound(context)
-                : widget.isBasketMode 
-                  ? _handleBasketModeTap(context, widget.option)
-                  : _handleTap(context, widget.option)
-          },
-          child: Container(
-            height: 40,
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-            color: _isHovered
-                ? (theme.isDarkMode
-                    ? WebDarkColors.primary
-                    : WebColors.primary)
-                    .withOpacity(0.15)
-                : Colors.transparent,
-            child: _buildCompleteDataRow(theme, scripData),
-          ),
+          onEnter: (_) => _isHovered.value = true,
+          onExit: (_) => _isHovered.value = false,
+          child: InkWell(
+            onTap: () => {
+              widget.option.tsym!.contains("|||")
+                  ? _symbolenotFound(context)
+                  : widget.isBasketMode
+                    ? _handleBasketModeTap(context, widget.option)
+                    : _handleTap(context, widget.option)
+            },
+            // PERFORMANCE FIX: Only hover-dependent UI rebuilds via ValueListenableBuilder
+            child: ValueListenableBuilder<bool>(
+              valueListenable: _isHovered,
+              builder: (context, isHovered, child) {
+                return Container(
+                  height: 40,
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+                  color: isHovered
+                      ? (theme.isDarkMode
+                          ? WebDarkColors.primary
+                          : WebColors.primary)
+                          .withOpacity(0.15)
+                      : Colors.transparent,
+                  child: _buildCompleteDataRow(theme, scripData, lp, perChange, oiLack, oiPerChng, currentOI, isInWatchlist, isHovered),
+                );
+              },
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildCompleteDataRow(ThemesProvider theme, MarketWatchProvider scripData) {
-    final changeColor = _perChange.startsWith("-")
+  Widget _buildCompleteDataRow(ThemesProvider theme, MarketWatchProvider scripData,
+      String lp, String perChange, String oiLack, String oiPerChng, double currentOI, bool isInWatchlist, bool isHovered) {
+    final changeColor = perChange.startsWith("-")
         ? (theme.isDarkMode ? WebDarkColors.loss : WebColors.loss)
-        : (_perChange == "0.00" || _perChange == "0.0"
+        : (perChange == "0.00" || perChange == "0.0"
             ? (theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary)
             : (theme.isDarkMode ? WebDarkColors.profit : WebColors.profit));
 
@@ -384,10 +244,10 @@ class _OptionChainCallRowState extends State<_OptionChainCallRow> {
                           children: [
                             Expanded(
                               child: Text(
-                                "${_oiPerChng == "NaN" ? "0.00" : _oiPerChng}%",
+                                "${oiPerChng == "NaN" ? "0.00" : oiPerChng}%",
                                 style: WebTextStyles.tableDataCompact(
                                   isDarkTheme: theme.isDarkMode,
-                                  color: (_oiPerChng.startsWith("-"))
+                                  color: (oiPerChng.startsWith("-"))
                                       ? (theme.isDarkMode ? WebDarkColors.loss : WebColors.loss)
                                       : (theme.isDarkMode ? WebDarkColors.profit : WebColors.profit),
                                 ),
@@ -395,7 +255,7 @@ class _OptionChainCallRowState extends State<_OptionChainCallRow> {
                             ),
                             Expanded(
                               child: Text(
-                                _oiLack,
+                                oiLack,
                                 style: WebTextStyles.tableDataCompact(
                                   isDarkTheme: theme.isDarkMode,
                                   color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
@@ -417,7 +277,7 @@ class _OptionChainCallRowState extends State<_OptionChainCallRow> {
                           children: [
                             Expanded(
                               child: Text(
-                                "$_perChange%",
+                                "$perChange%",
                                 style: WebTextStyles.tableDataCompact(
                                   isDarkTheme: theme.isDarkMode,
                                   color: changeColor,
@@ -426,7 +286,7 @@ class _OptionChainCallRowState extends State<_OptionChainCallRow> {
                             ),
                             Expanded(
                               child: Text(
-                                _lp,
+                                lp,
                                 style: WebTextStyles.tableDataCompact(
                                   isDarkTheme: theme.isDarkMode,
                                   color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
@@ -457,7 +317,7 @@ class _OptionChainCallRowState extends State<_OptionChainCallRow> {
                 ],
               ),
         // Buttons positioned on top - aligned to right edge of CALLS column
-        if (_isHovered)
+        if (isHovered)
           Positioned(
             top: 0,
             right: 8,
@@ -496,8 +356,8 @@ class _OptionChainCallRowState extends State<_OptionChainCallRow> {
                   ),
                   const SizedBox(width: 6),
                   _buildHoverButton(
-                    svgIcon: _isInWatchlist ? assets.bookmarkIcon : assets.bookmarkedIcon,
-                    color: _isInWatchlist 
+                    svgIcon: isInWatchlist ? assets.bookmarkIcon : assets.bookmarkedIcon,
+                    color: isInWatchlist
                         ? (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary)
                         : (theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary),
                     backgroundColor: Colors.white,
@@ -623,24 +483,8 @@ class _OptionChainCallRowState extends State<_OptionChainCallRow> {
     }
   }
 
-  void _checkIfInWatchlist() {
-    try {
-      final scripData = ProviderScope.containerOf(context).read(marketWatchProvider);
-      final scrips = scripData.scrips;
-      
-      // Check if this option's token exists in the current watchlist
-      final scripToken = "${widget.option.exch}|${widget.option.token}";
-      _isInWatchlist = scrips.any((scrip) => 
-        "${scrip['exch']}|${scrip['token']}" == scripToken
-      );
-      
-      if (mounted) {
-        setState(() {});
-      }
-    } catch (e) {
-      _isInWatchlist = false;
-    }
-  }
+  // REMOVED: _checkIfInWatchlist() - no longer needed!
+  // Watchlist status is calculated fresh in build() method
 
   Future<void> _handleSaveToWatchlist(BuildContext context, OptionValues option) async {
     final provider = ProviderScope.containerOf(context);
@@ -693,107 +537,12 @@ class _OptionChainCallRowState extends State<_OptionChainCallRow> {
         setState(() {});
       }
     }
-    
-    // Update watchlist status after a brief delay to allow for API response
-    Future.delayed(const Duration(milliseconds: 500), () {
-      if (mounted) {
-        _checkIfInWatchlist();
-      }
-    });
+
+    // No need to manually update watchlist status - Riverpod handles it automatically!
   }
 
-Widget _buildOIData(ThemesProvider theme) {
-  // Calculate line width percentage based on current OI relative to GLOBAL max OI
-  double lineWidthPercentage = 0.0;
-  
-  if (_currentOI > 0 && _globalMaxOI > 0) {
-    // Calculate line width percentage based on current OI relative to GLOBAL max OI
-    lineWidthPercentage = (_currentOI / _globalMaxOI).clamp(0.0, 1.0);
-  }
-
-  return Container(
-    height: 55,
-    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text(
-          _oiLack,
-          style: _getTextStyle(
-              theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary, _oiPerChng, theme),
-        ),
-        const SizedBox(height: 3),
-        Text(
-          "(${_oiPerChng == "NaN" ? "0.00" : _oiPerChng}%)",
-          style: _getPercentageStyle(_oiPerChng, theme),
-        ),
-        const SizedBox(height: 2),
-        // Dynamic width line based on OI
-        Align(
-          alignment: Alignment.centerLeft,
-          child: Container(
-            height: 1.5,
-            width: MediaQuery.of(context).size.width * 0.25 * lineWidthPercentage,
-            decoration: BoxDecoration(
-              color: _oiPerChng.startsWith("-") 
-                  ? (theme.isDarkMode ? WebDarkColors.error : WebColors.error)
-                  : (theme.isDarkMode ? WebDarkColors.profit : WebColors.profit),
-              borderRadius: BorderRadius.circular(1),
-            ),
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-
-Widget _buildPriceData(ThemesProvider theme) {
-  // Calculate line width percentage based on current OI relative to GLOBAL max OI
-  double lineWidthPercentage = 0.0;
-  
-  if (_currentOI > 0 && _globalMaxOI > 0) {
-    // Calculate line width percentage based on current OI relative to GLOBAL max OI
-    lineWidthPercentage = (_currentOI / _globalMaxOI).clamp(0.0, 1.0);
-  }
-
-  return Container(
-    height: 55,
-    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text(
-          _lp,
-          style: _getTextStyle(
-              theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary, _perChange, theme),
-        ),
-        const SizedBox(height: 3),
-        
-        Text(
-          "($_perChange%)",
-          style: _getPercentageStyle(_perChange, theme),
-        ),
-        
-        const SizedBox(height: 2),
-        // Dynamic width line based on OI
-        Align(
-          alignment: Alignment.centerLeft,
-          child: Container(
-            height: 1.5,
-            width: MediaQuery.of(context).size.width * 0.25 * lineWidthPercentage,
-            decoration: BoxDecoration(
-              color: theme.isDarkMode ? WebDarkColors.profit : WebColors.profit,
-              borderRadius: BorderRadius.circular(1),
-            ),
-          ),
-        ),
-      ],
-    ),
-  );
-}
+  // REMOVED: Old _buildOIData and _buildPriceData methods
+  // Data is now passed directly as parameters to _buildCompleteDataRow
 
   void _symbolenotFound(BuildContext context) {
     showResponsiveWarningMessage(context, "Scrip Not founded");
@@ -904,29 +653,7 @@ Widget _buildPriceData(ThemesProvider theme) {
     );
   }
 
-  static TextStyle _getTextStyle(Color color, String perChange, ThemesProvider theme) {
-    Color textColor = theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary;
-    if (perChange != "0.00" && perChange.isNotEmpty) {
-      textColor = perChange.startsWith("-") 
-          ? (theme.isDarkMode ? WebDarkColors.loss : WebColors.loss) 
-          : (theme.isDarkMode ? WebDarkColors.profit : WebColors.profit);
-    }
-    return WebTextStyles.sub(
-      isDarkTheme: theme.isDarkMode,
-      color: textColor,
-    );
-  }
-
-  static TextStyle _getPercentageStyle(String? value, ThemesProvider theme) {
-        Color color = theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary;
-        // if (value != null && value != "0.00") {
-        //   color = value.startsWith("-") ? colors.darkred : colors.ltpgreen;
-        // } 
-        return WebTextStyles.para(
-            isDarkTheme: theme.isDarkMode, 
-            color: color,
-        );
-  }
+  // REMOVED: _getTextStyle and _getPercentageStyle - no longer needed with new reactive pattern
 }
 
 Future<void> placeOrderInput(
