@@ -20,7 +20,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:flutter/material.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
-import 'package:google_fonts/google_fonts.dart';
+
 import 'package:mynt_plus/notification/notification_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'locator/locator.dart';
@@ -260,8 +260,8 @@ class MyApp extends ConsumerWidget {
     // Watch the entire provider for web to ensure proper theme updates
     // For mobile, we optimize by only watching themeMode
     final themeProvide = kIsWeb
-        ? ref.watch(themeProvider)  // Web: watch entire provider for theme sync
-        : ref.read(themeProvider);   // Mobile: read once for performance
+        ? ref.watch(themeProvider) // Web: watch entire provider for theme sync
+        : ref.read(themeProvider); // Mobile: read once for performance
 
     final themeMode = ref.watch(themeProvider.select((t) => t.themeMode));
     themeProvide.getThemeData();
@@ -281,9 +281,10 @@ class MyApp extends ConsumerWidget {
         title: 'MYNT',
         debugShowCheckedModeBanner: false,
         theme: shadcn.ThemeData(
-          colorScheme: themeProvide.getShadcnColorScheme(),  // Use provider method for proper sync
+          colorScheme: themeProvide
+              .getShadcnColorScheme(), // Use provider method for proper sync
           radius: 0,
-          // Note: shadcn components inherit from DefaultTextStyle below
+          // Note: shadcn components inherit from DefaultTextStyle belowz
           // If shadcn.ThemeData supports textTheme, you can set it here
         ),
         initialRoute: Routes.splash,
@@ -298,7 +299,8 @@ class MyApp extends ConsumerWidget {
                     textScaler: const TextScaler.linear(1.0),
                   ),
                   child: DefaultTextStyle(
-                    style: GoogleFonts.inter(
+                    style: TextStyle(
+                      fontFamily: 'Geist',
                       fontFeatures: const [FontFeature.proportionalFigures()],
                     ),
                     child: child!,

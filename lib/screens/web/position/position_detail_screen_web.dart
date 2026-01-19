@@ -13,6 +13,7 @@ import '../../../res/mynt_web_text_styles.dart';
 import '../../../res/mynt_web_color_styles.dart';
 import '../../../models/order_book_model/order_book_model.dart';
 import '../../../utils/responsive_navigation.dart';
+import '../../../sharedWidget/common_buttons_web.dart';
 import '../../../sharedWidget/snack_bar.dart';
 import 'convert_position_dialogue_web.dart';
 import '../../../main.dart';
@@ -20,18 +21,20 @@ import '../../../main.dart';
 class PositionDetailScreenWeb extends ConsumerStatefulWidget {
   final PositionBookModel positionList;
   final BuildContext? parentContext;
-  
+
   const PositionDetailScreenWeb({
-    super.key, 
+    super.key,
     required this.positionList,
     this.parentContext,
   });
 
   @override
-  ConsumerState<PositionDetailScreenWeb> createState() => _PositionDetailScreenWebState();
+  ConsumerState<PositionDetailScreenWeb> createState() =>
+      _PositionDetailScreenWebState();
 }
 
-class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWeb> {
+class _PositionDetailScreenWebState
+    extends ConsumerState<PositionDetailScreenWeb> {
   StreamSubscription? _socketSubscription;
   late PositionBookModel _positionData;
 
@@ -235,9 +238,7 @@ class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWe
                 Expanded(
                   child: _buildSymbolSection(theme, scripInfo, depthArgs),
                 ),
-                shadcn.TextButton(
-                  density: shadcn.ButtonDensity.icon,
-                  child: const Icon(Icons.close),
+                MyntCloseButton(
                   onPressed: () {
                     shadcn.closeSheet(context);
                   },
@@ -248,7 +249,8 @@ class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWe
           // Border divider
           Container(
             height: 1,
-            color: shadcn.Theme.of(context).colorScheme.border,
+            color: resolveThemeColor(context,
+                dark: MyntColors.dividerDark, light: MyntColors.divider),
           ),
           // Content
           Container(
@@ -262,7 +264,7 @@ class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWe
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     child: _buildPnLSection(theme, positions),
-                  ),                
+                  ),
                   // Details Section
                   _buildDetailsSection(theme, positions),
                 ],
@@ -274,9 +276,8 @@ class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWe
     );
   }
 
-
-
-  Widget _buildSymbolSection(ThemesProvider theme, MarketWatchProvider scripInfo, DepthInputArgs depthArgs) {
+  Widget _buildSymbolSection(ThemesProvider theme,
+      MarketWatchProvider scripInfo, DepthInputArgs depthArgs) {
     final colorScheme = shadcn.Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -299,13 +300,15 @@ class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWe
               "${_positionData.exch}",
               style: MyntWebTextStyles.title(
                 context,
-                color: colorScheme.mutedForeground,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.textSecondaryDark,
+                    light: MyntColors.textSecondary),
               ),
             ),
           ],
         ),
         const SizedBox(height: 8),
-        
+
         // Price and Change
         Row(
           children: [
@@ -313,12 +316,19 @@ class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWe
               "${_positionData.lp != "null" ? _positionData.lp ?? '0.00' : '0.00'}",
               style: MyntWebTextStyles.title(
                 context,
-                color: (_positionData.chng == "null" || _positionData.chng == null) ||
+                color: (_positionData.chng == "null" ||
+                            _positionData.chng == null) ||
                         _positionData.chng == "0.00"
-                    ? colorScheme.mutedForeground
-                    : (_positionData.chng?.startsWith("-") == true || _positionData.perChange?.startsWith("-") == true)
-                        ? colorScheme.destructive
-                        : colorScheme.chart2,
+                    ? resolveThemeColor(context,
+                        dark: MyntColors.textSecondaryDark,
+                        light: MyntColors.textSecondary)
+                    : (_positionData.chng?.startsWith("-") == true ||
+                            _positionData.perChange?.startsWith("-") == true)
+                        ? resolveThemeColor(context,
+                            dark: MyntColors.lossDark, light: MyntColors.loss)
+                        : resolveThemeColor(context,
+                            dark: MyntColors.profitDark,
+                            light: MyntColors.profit),
                 fontWeight: MyntFonts.medium,
               ),
             ),
@@ -327,7 +337,9 @@ class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWe
               "${(double.tryParse(_positionData.chng ?? '0.00') ?? 0.00).toStringAsFixed(2)} (${(double.tryParse(_positionData.perChange ?? '0.00') ?? 0.00).toStringAsFixed(2)}%)",
               style: MyntWebTextStyles.bodySmall(
                 context,
-                color: colorScheme.mutedForeground,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.textSecondaryDark,
+                    light: MyntColors.textSecondary),
                 fontWeight: MyntFonts.medium,
               ),
             ),
@@ -339,17 +351,19 @@ class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWe
 
   // Old action buttons removed - not used in new UI design
 
-  Widget _buildActionButtons(ThemesProvider theme, MarketWatchProvider scripInfo, PortfolioProvider positions) {
+  Widget _buildActionButtons(ThemesProvider theme,
+      MarketWatchProvider scripInfo, PortfolioProvider positions) {
     final isClosed = _isPositionClosed();
     final hasQty = _positionData.qty != "0" && _positionData.qty != null;
     final isDay = positions.isDay;
-    final isBOorCO = _positionData.sPrdtAli == "BO" || _positionData.sPrdtAli == "CO";
-    
+    final isBOorCO =
+        _positionData.sPrdtAli == "BO" || _positionData.sPrdtAli == "CO";
+
     // Don't show buttons for BO/CO products
     if (isBOorCO) {
       return const SizedBox.shrink();
     }
-    
+
     // Don't show Add/Exit if it's day or position is closed
     final showAddExit = hasQty && !isDay && !isClosed;
     final showConvert = !isClosed && hasQty;
@@ -386,75 +400,31 @@ class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWe
           ],
           // Convert Position as text button
           if (showConvert)
-            shadcn.TextButton(
+            MyntTextButton(
               onPressed: _handleConvert,
-              child: Text(
-                'Convert Position',
-                style: TextStyle(
-                  fontWeight: MyntFonts.bold,
-                  fontFamily: 'Geist',
-                  color: resolveThemeColor(
-                    context,
-                    dark: MyntColors.primaryDark,
-                    light: MyntColors.primary,
-                  ),
-                ),
-              ),
+              label: 'Convert Position',
             ),
         ],
       ),
     );
   }
 
-  Widget _buildActionButton(String text, bool isPrimary, ThemesProvider theme, VoidCallback onPressed) {
-    final backgroundColor = isPrimary
-        ? resolveThemeColor(
-            context,
-            dark: MyntColors.primaryDark,
-            light: MyntColors.primary,
-          )
-        : resolveThemeColor(
-            context,
-            dark: MyntColors.textSecondaryDark.withOpacity(0.6),
-            light: MyntColors.textSecondary,
-          );
-    final textColor = isPrimary
-        ? Colors.white
-        : (theme.isDarkMode ? Colors.white : MyntColors.primary);
-    final borderColor = resolveThemeColor(
-      context,
-      dark: MyntColors.primaryDark,
-      light: MyntColors.primary,
-    );
-    
-    return Container(
-      height: 40,
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        border: isPrimary
-            ? null
-            : Border.all(
-                color: borderColor,
-                width: 1,
-              ),
-        borderRadius: BorderRadius.circular(5),
-      ),
-      child: shadcn.TextButton(
-        size: shadcn.ButtonSize.large,
-        density: shadcn.ButtonDensity.dense,
+  Widget _buildActionButton(String text, bool isPrimary, ThemesProvider theme,
+      VoidCallback onPressed) {
+    if (isPrimary) {
+      return MyntPrimaryButton(
+        label: text,
         onPressed: onPressed,
-        shape: shadcn.ButtonShape.rectangle,
-        child: Text(
-          text,
-          style: MyntWebTextStyles.buttonMd(
-            context,
-            color: textColor,
-          ),
-        ),
-      ),
-    );
+        isFullWidth: true,
+      );
+    } else {
+      return MyntOutlinedButton(
+        label: text,
+        onPressed: onPressed,
+        isFullWidth: true,
+      );
+    }
   }
-
 
   bool _isPositionClosed() {
     return _positionData.qty == "0" || _positionData.qty == null;
@@ -467,18 +437,21 @@ class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWe
       final rootContext = rootNavigatorKey.currentContext;
       if (rootContext == null) {
         if (mounted) {
-          showResponsiveWarningMessage(context, "Unable to access root context");
+          showResponsiveWarningMessage(
+              context, "Unable to access root context");
         }
         return;
       }
 
       final scripData = ref.read(marketWatchProvider);
-      await scripData.fetchScripInfo(
+      await scripData
+          .fetchScripInfo(
         _positionData.token ?? "",
         _positionData.exch ?? "",
         rootContext,
         true,
-      ).timeout(
+      )
+          .timeout(
         const Duration(seconds: 10),
         onTimeout: () {
           throw Exception("Request timed out");
@@ -513,7 +486,7 @@ class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWe
 
       // Use parent context (from position_table) if available, otherwise use root context
       final targetContext = widget.parentContext ?? rootContext;
-      
+
       if (targetContext.mounted) {
         ResponsiveNavigation.toPlaceOrderScreen(
           context: targetContext,
@@ -540,7 +513,7 @@ class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWe
       }
     } catch (e) {
       if (!mounted) return;
-      
+
       // Try to close sheet on error
       if (mounted) {
         try {
@@ -549,7 +522,7 @@ class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWe
           // Ignore sheet close errors
         }
       }
-      
+
       final rootCtx = rootNavigatorKey.currentContext;
       if (rootCtx != null) {
         try {
@@ -569,18 +542,21 @@ class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWe
       final rootContext = rootNavigatorKey.currentContext;
       if (rootContext == null) {
         if (mounted) {
-          showResponsiveWarningMessage(context, "Unable to access root context");
+          showResponsiveWarningMessage(
+              context, "Unable to access root context");
         }
         return;
       }
 
       final scripData = ref.read(marketWatchProvider);
-      await scripData.fetchScripInfo(
+      await scripData
+          .fetchScripInfo(
         _positionData.token ?? "",
         _positionData.exch ?? "",
         rootContext,
         true,
-      ).timeout(
+      )
+          .timeout(
         const Duration(seconds: 10),
         onTimeout: () {
           throw Exception("Request timed out");
@@ -613,7 +589,7 @@ class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWe
 
       // Use parent context (from position_table) if available, otherwise use root context
       final targetContext = widget.parentContext ?? rootContext;
-      
+
       if (targetContext.mounted) {
         ResponsiveNavigation.toPlaceOrderScreen(
           context: targetContext,
@@ -640,7 +616,7 @@ class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWe
       }
     } catch (e) {
       if (!mounted) return;
-      
+
       // Try to close sheet on error
       if (mounted) {
         try {
@@ -649,7 +625,7 @@ class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWe
           // Ignore sheet close errors
         }
       }
-      
+
       final rootCtx = rootNavigatorKey.currentContext;
       if (rootCtx != null) {
         try {
@@ -662,14 +638,13 @@ class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWe
     }
   }
 
-
   // Handle convert position
   Future<void> _handleConvert() async {
     try {
       // Close the sheet first
       if (!mounted) return;
       await shadcn.closeSheet(context);
-      
+
       // Show dialog after sheet closes using post-frame callback
       WidgetsBinding.instance.addPostFrameCallback((_) {
         final rootContext = rootNavigatorKey.currentContext;
@@ -689,7 +664,6 @@ class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWe
   }
 
   Widget _buildPnLSection(ThemesProvider theme, PortfolioProvider positions) {
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
     final displayValue = positions.isNetPnl
         ? (_positionData.profitNloss ?? _positionData.rpnl ?? "0.00")
         : (_positionData.mTm ?? "0.00");
@@ -703,7 +677,9 @@ class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWe
               positions.isNetPnl ? "P&L" : "MTM",
               style: MyntWebTextStyles.title(
                 context,
-                color: colorScheme.mutedForeground,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.textSecondaryDark,
+                    light: MyntColors.textSecondary),
                 fontWeight: MyntFonts.medium,
               ),
             ),
@@ -723,19 +699,22 @@ class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWe
   }
 
   Color _getPnLColor(String value) {
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
     final numValue = double.tryParse(value) ?? 0.0;
-    
+
     if (numValue > 0) {
-      return colorScheme.chart2;
+      return resolveThemeColor(context,
+          dark: MyntColors.profitDark, light: MyntColors.profit);
     } else if (numValue < 0) {
-      return colorScheme.destructive;
+      return resolveThemeColor(context,
+          dark: MyntColors.lossDark, light: MyntColors.loss);
     } else {
-      return colorScheme.mutedForeground;
+      return resolveThemeColor(context,
+          dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary);
     }
   }
 
-  Widget _buildDetailsSection(ThemesProvider theme, PortfolioProvider positions) {
+  Widget _buildDetailsSection(
+      ThemesProvider theme, PortfolioProvider positions) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12),
       child: Column(
@@ -755,7 +734,9 @@ class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWe
           const SizedBox(height: 8),
           _rowOfInfoData(
             "Product",
-            _positionData.sPrdtAli != "null" ? "${_positionData.sPrdtAli}" : "--",
+            _positionData.sPrdtAli != "null"
+                ? "${_positionData.sPrdtAli}"
+                : "--",
             theme,
           ),
           const SizedBox(height: 8),
@@ -794,7 +775,6 @@ class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWe
   }
 
   Widget _rowOfInfoData(String title1, String value1, ThemesProvider theme) {
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -805,7 +785,9 @@ class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWe
               title1,
               style: MyntWebTextStyles.bodySmall(
                 context,
-                color: colorScheme.mutedForeground,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.textSecondaryDark,
+                    light: MyntColors.textSecondary),
                 fontWeight: MyntFonts.medium,
               ),
             ),
@@ -813,7 +795,9 @@ class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWe
               value1,
               style: MyntWebTextStyles.bodySmall(
                 context,
-                color: colorScheme.foreground,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.textPrimaryDark,
+                    light: MyntColors.textPrimary),
                 fontWeight: MyntFonts.medium,
               ),
             ),

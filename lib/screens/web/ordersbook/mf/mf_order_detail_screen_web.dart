@@ -8,9 +8,9 @@ import '../../../../provider/mf_provider.dart';
 import '../../../../provider/thems.dart';
 import '../../../../provider/fund_provider.dart';
 import '../../../../provider/transcation_provider.dart';
-import '../../../../res/res.dart';
-import '../../../../res/web_colors.dart';
-import '../../../../res/global_font_web.dart';
+import '../../../../res/mynt_web_text_styles.dart';
+import '../../../../res/mynt_web_color_styles.dart';
+import '../../../../sharedWidget/common_buttons_web.dart';
 
 class MFOrderDetailScreenWeb extends ConsumerStatefulWidget {
   final Data mfOrderData;
@@ -48,7 +48,8 @@ class _MFOrderDetailScreenWebState
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(
-            color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
+            color: resolveThemeColor(context,
+                dark: MyntColors.dividerDark, light: MyntColors.divider),
             width: 1,
           ),
         ),
@@ -60,7 +61,8 @@ class _MFOrderDetailScreenWebState
             children: [
               // Header with close button (fixed)
               Container(
-                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 10),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 16, horizontal: 10),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -68,11 +70,7 @@ class _MFOrderDetailScreenWebState
                     Expanded(
                       child: _buildHeader(theme),
                     ),
-                    shadcn.TextButton(
-                      density: shadcn.ButtonDensity.icon,
-                      shape: shadcn.ButtonShape.circle,
-                      size: shadcn.ButtonSize.normal,
-                      child: const Icon(Icons.close),
+                    MyntCloseButton(
                       onPressed: () {
                         shadcn.closeSheet(context);
                       },
@@ -83,7 +81,8 @@ class _MFOrderDetailScreenWebState
               // Border divider
               Container(
                 height: 1,
-                color: shadcn.Theme.of(context).colorScheme.border,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.dividerDark, light: MyntColors.divider),
               ),
               // Scrollable Content
               Expanded(
@@ -95,7 +94,9 @@ class _MFOrderDetailScreenWebState
                       children: [
                         _buildActionButtons(theme),
                         // Order Details Section
-                        _buildOrderDetailsSection(theme, hasButtons: _shouldShowReinitiate() || _shouldShowCancel()),
+                        _buildOrderDetailsSection(theme,
+                            hasButtons:
+                                _shouldShowReinitiate() || _shouldShowCancel()),
                         // Reason/Remarks Section
                         if (_shouldShowReason()) ...[
                           const SizedBox(height: 16),
@@ -114,29 +115,31 @@ class _MFOrderDetailScreenWebState
   }
 
   Widget _buildHeader(ThemesProvider theme) {
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
     return Text(
       widget.mfOrderData.name ?? "Unknown Scheme",
-      style: WebTextStyles.dialogTitle(
-        isDarkTheme: theme.isDarkMode,
-        color: colorScheme.foreground,
+      style: MyntWebTextStyles.title(
+        context,
+        color: resolveThemeColor(context,
+            dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary),
       ),
       overflow: TextOverflow.ellipsis,
     );
   }
 
   Color _getStatusColor() {
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
     final status = (widget.mfOrderData.status ?? '').toUpperCase();
-    
+
     if (status == "ALLOCATED" || status == "COMPLETED") {
-      return colorScheme.chart2;
+      return resolveThemeColor(context,
+          dark: MyntColors.profitDark, light: MyntColors.profit);
     } else if (status == "REJECTED" ||
         status == "CANCELLED" ||
         status == "PAYMENT DECLINED") {
-      return colorScheme.destructive;
+      return resolveThemeColor(context,
+          dark: MyntColors.lossDark, light: MyntColors.loss);
     }
-    return colorScheme.chart1;
+    return resolveThemeColor(context,
+        dark: MyntColors.primary, light: MyntColors.primary);
   }
 
   String _getStatusText() {
@@ -174,106 +177,53 @@ class _MFOrderDetailScreenWebState
   }
 
   Widget _buildReinitiateButton(ThemesProvider theme, MFProvider mfdata) {
-    final backgroundColor = theme.isDarkMode
-        ? WebDarkColors.textSecondary.withOpacity(0.6)
-        : WebColors.buttonSecondary;
-    final textColor = theme.isDarkMode ? Colors.white : WebColors.primaryLight;
-    final borderColor = theme.isDarkMode ? WebDarkColors.primaryLight : WebColors.primaryLight;
-    
-    return Container(
-      height: 40,
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        border: Border.all(
-          color: borderColor,
-          width: 1,
-        ),
-        borderRadius: BorderRadius.circular(5),
-      ),
-      child: shadcn.TextButton(
-        size: shadcn.ButtonSize.large,
-        density: shadcn.ButtonDensity.dense,
-        onPressed: () async {
-          ref.read(fundProvider).fetchFunds(context);
-          ref.read(transcationProvider).initialdata(context);
-          mfdata.fetchUpiDetail('', context);
+    return MyntOutlinedButton(
+      label: "Re-Initiate Payment",
+      onPressed: () async {
+        ref.read(fundProvider).fetchFunds(context);
+        ref.read(transcationProvider).initialdata(context);
+        mfdata.fetchUpiDetail('', context);
 
-          shadcn.closeSheet(context);
+        shadcn.closeSheet(context);
 
-          _showBottomSheet(
-            context,
-            MfOrderBottomsheet(
-              data: widget.mfOrderData,
-              condval: 'reinitiatefromportfolio',
-            ),
-          );
-        },
-        shape: shadcn.ButtonShape.rectangle,
-        child: Text(
-          "Re-Initiate Payment",
-          style: WebTextStyles.buttonMd(
-            isDarkTheme: theme.isDarkMode,
-            color: textColor,
-            fontWeight: WebFonts.bold,
+        _showBottomSheet(
+          context,
+          MfOrderBottomsheet(
+            data: widget.mfOrderData,
+            condval: 'reinitiatefromportfolio',
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
   Widget _buildCancelOrderButton(ThemesProvider theme, MFProvider mfdata) {
     if (!_shouldShowCancel()) return const SizedBox.shrink();
 
-    final backgroundColor = theme.isDarkMode
-        ? WebDarkColors.textSecondary.withOpacity(0.6)
-        : WebColors.buttonSecondary;
-    final textColor = theme.isDarkMode ? Colors.white : WebColors.primaryLight;
-    final borderColor = theme.isDarkMode ? WebDarkColors.primaryLight : WebColors.primaryLight;
-    
-    return Container(
-      height: 40,
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        border: Border.all(
-          color: borderColor,
-          width: 1,
-        ),
-        borderRadius: BorderRadius.circular(5),
-      ),
-      child: shadcn.TextButton(
-        size: shadcn.ButtonSize.large,
-        density: shadcn.ButtonDensity.dense,
-        onPressed: () async {
-          await showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return MfCancelAlert(
-                mfcancel: widget.mfOrderData,
-                message: "order",
-              );
-            },
-          );
-        },
-        shape: shadcn.ButtonShape.rectangle,
-        child: Text(
-          "Cancel Order",
-          style: WebTextStyles.buttonMd(
-            isDarkTheme: theme.isDarkMode,
-            color: textColor,
-            fontWeight: WebFonts.bold,
-          ),
-        ),
-      ),
+    return MyntOutlinedButton(
+      label: "Cancel Order",
+      onPressed: () async {
+        await showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return MfCancelAlert(
+              mfcancel: widget.mfOrderData,
+              message: "order",
+            );
+          },
+        );
+      },
     );
   }
 
-  Widget _buildOrderDetailsSection(ThemesProvider theme, {bool hasButtons = false}) {
+  Widget _buildOrderDetailsSection(ThemesProvider theme,
+      {bool hasButtons = false}) {
     return Padding(
       padding: EdgeInsets.only(top: hasButtons ? 12 : 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-            _rowOfInfoDataWithColor(
+          _rowOfInfoDataWithColor(
             "Status",
             _getStatusText(),
             theme,
@@ -311,7 +261,6 @@ class _MFOrderDetailScreenWebState
                 : widget.mfOrderData.folioNo ?? "---",
             theme,
           ),
-        
         ],
       ),
     );
@@ -322,7 +271,7 @@ class _MFOrderDetailScreenWebState
     if (!_shouldShowReinitiate() && !_shouldShowCancel()) {
       return const SizedBox.shrink();
     }
-    
+
     final mfdata = ref.read(mfProvider);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12),
@@ -340,27 +289,30 @@ class _MFOrderDetailScreenWebState
   }
 
   Widget _buildReasonSection(ThemesProvider theme) {
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
     final reason = widget.mfOrderData.remarks ?? "No remarks available";
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           "Reason",
-          style: WebTextStyles.sub(
-            isDarkTheme: theme.isDarkMode,
-            color: colorScheme.mutedForeground,
-            fontWeight: WebFonts.regular,
+          style: MyntWebTextStyles.bodySmall(
+            context,
+            color: resolveThemeColor(context,
+                dark: MyntColors.textSecondaryDark,
+                light: MyntColors.textSecondary),
+            fontWeight: MyntFonts.regular,
           ),
         ),
         const SizedBox(height: 8),
         Text(
           reason,
-          style: WebTextStyles.sub(
-            isDarkTheme: theme.isDarkMode,
-            color: colorScheme.mutedForeground,
-            fontWeight: WebFonts.medium,
+          style: MyntWebTextStyles.bodySmall(
+            context,
+            color: resolveThemeColor(context,
+                dark: MyntColors.textPrimaryDark,
+                light: MyntColors.textPrimary),
+            fontWeight: MyntFonts.medium,
           ),
         ),
         const SizedBox(height: 16),
@@ -369,7 +321,6 @@ class _MFOrderDetailScreenWebState
   }
 
   Widget _rowOfInfoData(String title1, String value1, ThemesProvider theme) {
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -378,18 +329,22 @@ class _MFOrderDetailScreenWebState
           children: [
             Text(
               title1,
-              style: WebTextStyles.sub(
-                isDarkTheme: theme.isDarkMode,
-                color: colorScheme.mutedForeground,
-                fontWeight: WebFonts.regular,
+              style: MyntWebTextStyles.bodySmall(
+                context,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.textSecondaryDark,
+                    light: MyntColors.textSecondary),
+                fontWeight: MyntFonts.regular,
               ),
             ),
             Text(
               value1,
-              style: WebTextStyles.sub(
-                isDarkTheme: theme.isDarkMode,
-                color: colorScheme.mutedForeground,
-                fontWeight: WebFonts.medium,
+              style: MyntWebTextStyles.bodySmall(
+                context,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.textPrimaryDark,
+                    light: MyntColors.textPrimary),
+                fontWeight: MyntFonts.medium,
               ),
             ),
           ],
@@ -399,8 +354,8 @@ class _MFOrderDetailScreenWebState
     );
   }
 
-  Widget _rowOfInfoDataWithColor(String title, String value, ThemesProvider theme, Color valueColor) {
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
+  Widget _rowOfInfoDataWithColor(
+      String title, String value, ThemesProvider theme, Color valueColor) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -409,18 +364,20 @@ class _MFOrderDetailScreenWebState
           children: [
             Text(
               title,
-              style: WebTextStyles.sub(
-                isDarkTheme: theme.isDarkMode,
-                color: colorScheme.mutedForeground,
-                fontWeight: WebFonts.regular,
+              style: MyntWebTextStyles.bodySmall(
+                context,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.textSecondaryDark,
+                    light: MyntColors.textSecondary),
+                fontWeight: MyntFonts.regular,
               ),
             ),
             Text(
               value,
-              style: WebTextStyles.sub(
-                isDarkTheme: theme.isDarkMode,
+              style: MyntWebTextStyles.bodySmall(
+                context,
                 color: valueColor,
-                fontWeight: WebFonts.medium,
+                fontWeight: MyntFonts.medium,
               ),
             ),
           ],
@@ -437,7 +394,8 @@ class _MFOrderDetailScreenWebState
       ),
       useSafeArea: true,
       isDismissible: true,
-      backgroundColor: colors.colorWhite,
+      backgroundColor: resolveThemeColor(context,
+          dark: const Color(0xFF0F172A), light: Colors.white),
       context: context,
       isScrollControlled: true,
       builder: (context) => Container(

@@ -1,4 +1,41 @@
-import 'package:flutter/material.dart' show InkWell, Icons, VoidCallback, Icon, TextPainter, TextSpan, TextStyle, TextDirection, GestureDetector, HitTestBehavior, Row, SizedBox, Colors, Widget, BuildContext, Color, EdgeInsets, Alignment, MainAxisAlignment, TextOverflow, Axis, FontWeight, Container, MouseRegion, Expanded, Align, Text, ScrollController, SingleChildScrollView, Scrollbar, Column, ValueKey, Padding, LayoutBuilder, CircularProgressIndicator, Center, RichText;
+import 'package:flutter/material.dart'
+    show
+        InkWell,
+        Icons,
+        VoidCallback,
+        Icon,
+        TextPainter,
+        TextSpan,
+        TextStyle,
+        TextDirection,
+        GestureDetector,
+        HitTestBehavior,
+        Row,
+        SizedBox,
+        Colors,
+        Widget,
+        BuildContext,
+        Color,
+        EdgeInsets,
+        Alignment,
+        MainAxisAlignment,
+        TextOverflow,
+        Axis,
+        Container,
+        MouseRegion,
+        Expanded,
+        Align,
+        Text,
+        ScrollController,
+        SingleChildScrollView,
+        Scrollbar,
+        Column,
+        ValueKey,
+        Padding,
+        LayoutBuilder,
+        CircularProgressIndicator,
+        Center,
+        RichText;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
 import 'package:mynt_plus/models/order_book_model/trade_book_model.dart';
@@ -7,6 +44,8 @@ import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import '../refactored/utils/cell_formatters.dart';
 import 'trade_detail_screen_web.dart';
+import '../../../../res/mynt_web_text_styles.dart';
+import '../../../../res/mynt_web_color_styles.dart';
 
 /// Separate screen widget for Trade Book tab
 class TradeBookScreen extends ConsumerStatefulWidget {
@@ -28,18 +67,18 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
   bool _sortAscending = true;
   // ignore: unused_field
   int? _hoveredRowIndex;
-  
+
   // Scroll controllers - must be in state to persist across rebuilds
   late ScrollController _verticalScrollController;
   late ScrollController _horizontalScrollController;
-  
+
   @override
   void initState() {
     super.initState();
     _verticalScrollController = ScrollController();
     _horizontalScrollController = ScrollController();
   }
-  
+
   @override
   void dispose() {
     _verticalScrollController.dispose();
@@ -47,21 +86,36 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
     super.dispose();
   }
 
-  // Helper method to ensure Geist font is always applied
-  TextStyle _geistTextStyle({Color? color, double? fontSize, FontWeight? fontWeight}) {
-    return TextStyle(
-      fontFamily: 'Geist',
+  // Helper method to get appropriate text style for table cells
+  // 14px, weight 500, MyntColors for text
+  TextStyle _getTextStyle(BuildContext context, {Color? color}) {
+    return MyntWebTextStyles.tableCell(
+      context,
       color: color,
-      fontSize: fontSize,
-      fontWeight: fontWeight,
+      darkColor: color ?? MyntColors.textPrimaryDark,
+      lightColor: color ?? MyntColors.textPrimary,
+      fontWeight: MyntFonts.medium,
+    );
+  }
+
+  // Helper method for header text style
+  // 14px, weight 600, MyntColors for text
+  TextStyle _getHeaderStyle(BuildContext context, {Color? color}) {
+    return MyntWebTextStyles.tableHeader(
+      context,
+      color: color,
+      darkColor: color ?? MyntColors.textSecondaryDark,
+      lightColor: color ?? MyntColors.textSecondary,
+      fontWeight: MyntFonts.semiBold,
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = ref.watch(themeProvider);
-    final orderBook = ref.watch(orderProvider); // Changed to watch to rebuild on search changes
-    
+    final orderBook = ref
+        .watch(orderProvider); // Changed to watch to rebuild on search changes
+
     // Get trades (search or regular)
     // Only show search results if we're on the Trade Book tab (index 2)
     final searchQuery = orderBook.orderSearchCtrl.text.trim();
@@ -94,9 +148,7 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: NoDataFound(
-                title: searchQuery.isNotEmpty 
-                    ? "No Trades Found" 
-                    : "No Trades",
+                title: searchQuery.isNotEmpty ? "No Trades Found" : "No Trades",
                 subtitle: searchQuery.isNotEmpty
                     ? "No trades match your search \"$searchQuery\"."
                     : "You don't have any trades yet.",
@@ -120,7 +172,7 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
 
           // Available width
           final availableWidth = constraints.maxWidth;
-          
+
           // Step 1: Start with minimum widths (content-based, no wasted space)
           final columnWidths = <int, double>{};
           for (int i = 0; i < 8; i++) {
@@ -128,22 +180,24 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
           }
 
           // Step 2: Calculate total minimum width needed
-          final totalMinWidth = columnWidths.values.fold<double>(0.0, (sum, width) => sum + width);
-          
+          final totalMinWidth = columnWidths.values
+              .fold<double>(0.0, (sum, width) => sum + width);
+
           // Step 3: If there's extra space, distribute it proportionally
           // This prevents unnecessary horizontal scroll while using available space efficiently
           if (totalMinWidth < availableWidth) {
             final extraSpace = availableWidth - totalMinWidth;
-            
+
             // Define which columns can grow and their growth priorities
-            const instrumentGrowthFactor = 2.0; // Instrument can grow 2x more than numeric
+            const instrumentGrowthFactor =
+                2.0; // Instrument can grow 2x more than numeric
             const textGrowthFactor = 1.2;
             const numericGrowthFactor = 1.0;
-            
+
             // Calculate growth factors for each column
             final growthFactors = <int, double>{};
             double totalGrowthFactor = 0.0;
-            
+
             for (int i = 0; i < 8; i++) {
               // Column 0: Time (numeric)
               // Column 1: Instrument
@@ -160,12 +214,13 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
                 totalGrowthFactor += numericGrowthFactor;
               }
             }
-            
+
             // Distribute extra space proportionally
             if (totalGrowthFactor > 0) {
               for (int i = 0; i < 8; i++) {
                 if (growthFactors[i]! > 0) {
-                  final extraForThisColumn = (extraSpace * growthFactors[i]!) / totalGrowthFactor;
+                  final extraForThisColumn =
+                      (extraSpace * growthFactors[i]!) / totalGrowthFactor;
                   columnWidths[i] = columnWidths[i]! + extraForThisColumn;
                 }
               }
@@ -173,8 +228,9 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
           }
 
           // Calculate total required width
-          final totalRequiredWidth = columnWidths.values.fold<double>(0.0, (sum, width) => sum + width);
-          
+          final totalRequiredWidth = columnWidths.values
+              .fold<double>(0.0, (sum, width) => sum + width);
+
           // If total width exceeds available width, enable horizontal scrolling
           final needsHorizontalScroll = totalRequiredWidth > availableWidth;
 
@@ -221,7 +277,8 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
                       controller: _verticalScrollController,
                       scrollDirection: Axis.vertical,
                       child: shadcn.Table(
-                        key: ValueKey('table_${_sortColumnIndex}_$_sortAscending'),
+                        key: ValueKey(
+                            'table_${_sortColumnIndex}_$_sortAscending'),
                         columnWidths: {
                           0: shadcn.FixedTableSize(columnWidths[0]!),
                           1: shadcn.FixedTableSize(columnWidths[1]!),
@@ -247,7 +304,8 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
                                   _formatTime(trade.norentm ?? 'N/A'),
                                   theme,
                                   Alignment.centerLeft,
-                                  allowOverflow: true, // Show full time without truncation
+                                  allowOverflow:
+                                      true, // Show full time without truncation
                                 ),
                               ),
                               buildCellWithHover(
@@ -275,8 +333,12 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
                                   theme,
                                   Alignment.centerLeft,
                                   color: trade.trantype == "S"
-                                      ? shadcn.Theme.of(context).colorScheme.destructive
-                                      : shadcn.Theme.of(context).colorScheme.chart2,
+                                      ? resolveThemeColor(context,
+                                          dark: MyntColors.lossDark,
+                                          light: MyntColors.loss)
+                                      : resolveThemeColor(context,
+                                          dark: MyntColors.profitDark,
+                                          light: MyntColors.profit),
                                 ),
                               ),
                               buildCellWithHover(
@@ -321,7 +383,8 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
                                   trade.norenordno?.toString() ?? 'N/A',
                                   theme,
                                   Alignment.centerRight,
-                                  allowOverflow: true, // Show full order number without truncation
+                                  allowOverflow:
+                                      true, // Show full order number without truncation
                                 ),
                               ),
                             ],
@@ -370,7 +433,7 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
     final isFirstColumn = columnIndex == 0; // Time column
     final isInstrumentColumn = columnIndex == 1; // Instrument column
     final isLastColumn = columnIndex == 7; // Order no column
-    
+
     // Match the cell padding logic - Instrument column has more left, minimal right
     // Last column mirrors this - minimal left, more right
     EdgeInsets cellPadding;
@@ -416,11 +479,12 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
   }
 
   // Builds a sortable header cell
-  shadcn.TableCell buildHeaderCell(String label, int columnIndex, [bool alignRight = false]) {
+  shadcn.TableCell buildHeaderCell(String label, int columnIndex,
+      [bool alignRight = false]) {
     final isFirstColumn = columnIndex == 0; // Time column
     final isInstrumentColumn = columnIndex == 1; // Instrument column
     final isLastColumn = columnIndex == 7; // Order no column
-    
+
     // Match the cell padding logic - Instrument column has more left, minimal right
     // Last column mirrors this - minimal left, more right
     EdgeInsets headerPadding;
@@ -455,7 +519,8 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
           padding: headerPadding,
           alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
           child: Row(
-            mainAxisAlignment: alignRight ? MainAxisAlignment.end : MainAxisAlignment.start,
+            mainAxisAlignment:
+                alignRight ? MainAxisAlignment.end : MainAxisAlignment.start,
             children: [
               if (alignRight && _sortColumnIndex == columnIndex)
                 Icon(
@@ -463,14 +528,14 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
                   size: 16,
                   color: shadcn.Theme.of(context).colorScheme.mutedForeground,
                 ),
-              if (alignRight && _sortColumnIndex == columnIndex) const SizedBox(width: 4),
+              if (alignRight && _sortColumnIndex == columnIndex)
+                const SizedBox(width: 4),
               Text(
                 label,
-                style: _geistTextStyle(
-                  color: shadcn.Theme.of(context).colorScheme.foreground,
-                ),
+                style: _getHeaderStyle(context),
               ),
-              if (!alignRight && _sortColumnIndex == columnIndex) const SizedBox(width: 4),
+              if (!alignRight && _sortColumnIndex == columnIndex)
+                const SizedBox(width: 4),
               if (!alignRight && _sortColumnIndex == columnIndex)
                 Icon(
                   _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
@@ -486,7 +551,7 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
 
   String _formatTime(String time) {
     if (time.isEmpty || time == '0.00' || time == 'N/A') return 'N/A';
-    
+
     // Try using CellFormatters first (expects "HH:mm:ss dd-MM-yyyy" format)
     final formatted = CellFormatters.formatTime(time);
     if (formatted.isNotEmpty) {
@@ -497,7 +562,7 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
       }
       return formatted;
     }
-    
+
     // Fallback: If formatDateTime failed, try parsing as simple time string (HHMMSS or HHMM)
     try {
       if (time.length >= 6) {
@@ -515,7 +580,7 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
     } catch (e) {
       // If parsing fails, return as is
     }
-    
+
     return time;
   }
 
@@ -531,7 +596,8 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
   }
 
   // Calculate minimum column widths dynamically
-  Map<int, double> _calculateMinWidths(List<TradeBookModel> trades, BuildContext context) {
+  Map<int, double> _calculateMinWidths(
+      List<TradeBookModel> trades, BuildContext context) {
     // Use fixed font size for measurement (table text is not responsive, only buttons are)
     final textStyle = const TextStyle(fontSize: 14, fontFamily: 'Geist');
     const padding = 24.0;
@@ -566,18 +632,21 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
             final displayText = CellFormatters.formatTradeInstrumentText(trade);
             final exchange = trade.exch ?? '';
             final exchangeText = exchange.isNotEmpty ? ' $exchange' : '';
-            
+
             // Measure symbol with normal font
             final symbolWidth = _measureTextWidth(displayText, textStyle);
-            
+
             // Measure exchange with smaller font (fixed 12px, matches rendering)
-            final exchangeStyle = const TextStyle(fontSize: 12, fontFamily: 'Geist');
-            final exchangeWidth = exchangeText.isNotEmpty 
-                ? _measureTextWidth(exchangeText, exchangeStyle) 
+            final exchangeStyle =
+                const TextStyle(fontSize: 12, fontFamily: 'Geist');
+            final exchangeWidth = exchangeText.isNotEmpty
+                ? _measureTextWidth(exchangeText, exchangeStyle)
                 : 0.0;
-            
+
             // Total width = symbol + exchange + 4px gap
-            final totalWidth = symbolWidth + exchangeWidth + (exchangeText.isNotEmpty ? 4.0 : 0.0);
+            final totalWidth = symbolWidth +
+                exchangeWidth +
+                (exchangeText.isNotEmpty ? 4.0 : 0.0);
             if (totalWidth > maxWidth) {
               maxWidth = totalWidth;
             }
@@ -612,7 +681,8 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
       // Ensure minimum widths to prevent truncation for important columns
       if (headers[col] == 'Instrument') {
         const minInstrumentWidth = 150.0;
-        maxWidth = maxWidth < minInstrumentWidth ? minInstrumentWidth : maxWidth;
+        maxWidth =
+            maxWidth < minInstrumentWidth ? minInstrumentWidth : maxWidth;
       } else if (headers[col] == 'Time') {
         // Ensure Time column has enough width to show full time (e.g., "12:57 PM" or "11:14 AM")
         const minTimeWidth = 90.0;
@@ -645,13 +715,14 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
     final sorted = List<TradeBookModel>.from(trades);
     sorted.sort((a, b) {
       int comparison = 0;
-      
+
       switch (_sortColumnIndex!) {
         case 0: // Time
           comparison = (a.norentm ?? '').compareTo(b.norentm ?? '');
           break;
         case 1: // Instrument
-          comparison = CellFormatters.formatTradeInstrumentText(a).compareTo(CellFormatters.formatTradeInstrumentText(b));
+          comparison = CellFormatters.formatTradeInstrumentText(a)
+              .compareTo(CellFormatters.formatTradeInstrumentText(b));
           break;
         case 2: // Product
           comparison = _formatProductType(a).compareTo(_formatProductType(b));
@@ -660,14 +731,18 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
           comparison = (a.trantype ?? '').compareTo(b.trantype ?? '');
           break;
         case 4: // Qty
-          comparison = (int.tryParse(a.qty ?? '0') ?? 0).compareTo(int.tryParse(b.qty ?? '0') ?? 0);
+          comparison = (int.tryParse(a.qty ?? '0') ?? 0)
+              .compareTo(int.tryParse(b.qty ?? '0') ?? 0);
           break;
         case 5: // Price
-          comparison = (double.tryParse(a.avgprc ?? '0') ?? 0).compareTo(double.tryParse(b.avgprc ?? '0') ?? 0);
+          comparison = (double.tryParse(a.avgprc ?? '0') ?? 0)
+              .compareTo(double.tryParse(b.avgprc ?? '0') ?? 0);
           break;
         case 6: // Trade value
-          final aValue = (double.tryParse(a.avgprc ?? '0') ?? 0) * (int.tryParse(a.qty ?? '0') ?? 0);
-          final bValue = (double.tryParse(b.avgprc ?? '0') ?? 0) * (int.tryParse(b.qty ?? '0') ?? 0);
+          final aValue = (double.tryParse(a.avgprc ?? '0') ?? 0) *
+              (int.tryParse(a.qty ?? '0') ?? 0);
+          final bValue = (double.tryParse(b.avgprc ?? '0') ?? 0) *
+              (int.tryParse(b.qty ?? '0') ?? 0);
           comparison = aValue.compareTo(bValue);
           break;
         case 7: // Order no
@@ -685,7 +760,6 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
     // Format instrument using CellFormatters to include strike price and expiry date
     final displayText = CellFormatters.formatTradeInstrumentText(trade);
     final exchange = trade.exch ?? '';
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
 
     return Align(
       alignment: Alignment.centerLeft,
@@ -697,18 +771,17 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
             // Symbol with strike price (normal color, fixed 14px)
             TextSpan(
               text: displayText.isNotEmpty ? displayText : 'N/A',
-              style: _geistTextStyle(
-                color: colorScheme.foreground,
-                fontSize: 14.0,
-              ),
+              style: _getTextStyle(context),
             ),
             // Exchange (mutedForeground color, smaller font, fixed 12px)
             if (exchange.isNotEmpty)
               TextSpan(
                 text: ' $exchange',
-                style: _geistTextStyle(
-                  color: colorScheme.mutedForeground,
-                  fontSize: 12.0,
+                style: MyntWebTextStyles.para(
+                  context,
+                  darkColor: MyntColors.textSecondaryDark,
+                  lightColor: MyntColors.textSecondary,
+                  fontWeight: MyntFonts.medium,
                 ),
               ),
           ],
@@ -720,7 +793,7 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
   String _formatProductType(TradeBookModel trade) {
     final product = trade.sPrdtAli ?? trade.prd ?? '';
     final priceType = trade.prctyp ?? '';
-    
+
     if (product.isEmpty && priceType.isEmpty) {
       return 'N/A';
     } else if (product.isEmpty) {
@@ -743,9 +816,7 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
       alignment: alignment,
       child: Text(
         text,
-        style: _geistTextStyle(
-          color: color ?? shadcn.Theme.of(context).colorScheme.foreground,
-        ),
+        style: _getTextStyle(context, color: color),
         maxLines: 1,
         overflow: allowOverflow ? TextOverflow.visible : TextOverflow.ellipsis,
         softWrap: false,
@@ -765,4 +836,3 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
     );
   }
 }
-

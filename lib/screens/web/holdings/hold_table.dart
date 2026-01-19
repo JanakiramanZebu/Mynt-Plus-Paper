@@ -1,5 +1,53 @@
 import 'dart:async';
-import 'package:flutter/material.dart' show InkWell, Icons, VoidCallback, BorderRadius, Icon, BoxDecoration, TextPainter, TextSpan, TextStyle, TextDirection, GestureDetector, HitTestBehavior, Row, MainAxisSize, SizedBox, Colors, Widget, BuildContext, Color, EdgeInsets, Alignment, MainAxisAlignment, TextOverflow, Axis, FontWeight, Container, MouseRegion, Expanded, Align, Text, AnimatedOpacity, ScrollController, SingleChildScrollView, Scrollbar, Column, LayoutBuilder, ValueKey, IconData, Padding, Tooltip, RichText, Stack, LinearGradient, BoxConstraints, Clip, MediaQuery, Builder, Visibility;
+import 'package:flutter/material.dart'
+    show
+        InkWell,
+        Icons,
+        VoidCallback,
+        BorderRadius,
+        Icon,
+        BoxDecoration,
+        TextPainter,
+        TextSpan,
+        TextStyle,
+        TextDirection,
+        GestureDetector,
+        HitTestBehavior,
+        Row,
+        MainAxisSize,
+        SizedBox,
+        Colors,
+        Widget,
+        BuildContext,
+        Color,
+        EdgeInsets,
+        Alignment,
+        MainAxisAlignment,
+        TextOverflow,
+        Axis,
+        Container,
+        MouseRegion,
+        Expanded,
+        Align,
+        Text,
+        AnimatedOpacity,
+        ScrollController,
+        SingleChildScrollView,
+        Scrollbar,
+        Column,
+        LayoutBuilder,
+        ValueKey,
+        IconData,
+        Padding,
+        Tooltip,
+        RichText,
+        Stack,
+        LinearGradient,
+        BoxConstraints,
+        Clip,
+        MediaQuery,
+        Builder,
+        Visibility;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
 
@@ -21,7 +69,7 @@ import 'holding_detail_screen_web.dart';
 
 class TableExample1 extends ConsumerStatefulWidget {
   final String? searchQuery;
-  
+
   const TableExample1({super.key, this.searchQuery});
 
   @override
@@ -32,18 +80,18 @@ class _TableExample1State extends ConsumerState<TableExample1> {
   int? _sortColumnIndex;
   bool _sortAscending = true;
   int? _hoveredRowIndex;
-  
+
   // Scroll controllers - must be in state to persist across rebuilds
   late ScrollController _verticalScrollController;
   late ScrollController _horizontalScrollController;
-  
+
   @override
   void initState() {
     super.initState();
     _verticalScrollController = ScrollController();
     _horizontalScrollController = ScrollController();
   }
-  
+
   @override
   void dispose() {
     _verticalScrollController.dispose();
@@ -51,13 +99,24 @@ class _TableExample1State extends ConsumerState<TableExample1> {
     super.dispose();
   }
 
-  // Helper method to ensure Geist font is always applied
-  TextStyle _geistTextStyle({Color? color, double? fontSize, FontWeight? fontWeight}) {
-    return TextStyle(
-      fontFamily: 'Geist',
+  // Standardized text style helpers
+  TextStyle _getTextStyle(BuildContext context, {Color? color}) {
+    return MyntWebTextStyles.tableCell(
+      context,
       color: color,
-      fontSize: fontSize,
-      fontWeight: fontWeight,
+      darkColor: color ?? MyntColors.textPrimaryDark,
+      lightColor: color ?? MyntColors.textPrimary,
+      fontWeight: MyntFonts.medium,
+    );
+  }
+
+  TextStyle _getHeaderStyle(BuildContext context, {Color? color}) {
+    return MyntWebTextStyles.tableHeader(
+      context,
+      color: color,
+      darkColor: color ?? MyntColors.textSecondaryDark,
+      lightColor: color ?? MyntColors.textSecondary,
+      fontWeight: MyntFonts.semiBold,
     );
   }
 
@@ -92,19 +151,21 @@ class _TableExample1State extends ConsumerState<TableExample1> {
     // Add extra horizontal padding for first and last columns
     final isFirstColumn = columnIndex == 0;
     final isLastColumn = columnIndex == 9;
-    
+
     // For first column (Instrument), use more left padding, minimal right padding
     // For last column, use minimal left padding, more right padding (mirror of first)
     // For other columns, use minimal padding
     EdgeInsets cellPadding;
     if (isFirstColumn) {
-      cellPadding = const EdgeInsets.fromLTRB(16, 8, 4, 8); // More left, minimal right
+      cellPadding =
+          const EdgeInsets.fromLTRB(16, 8, 4, 8); // More left, minimal right
     } else if (isLastColumn) {
-      cellPadding = const EdgeInsets.fromLTRB(4, 8, 16, 8); // Minimal left, more right
+      cellPadding =
+          const EdgeInsets.fromLTRB(4, 8, 16, 8); // Minimal left, more right
     } else {
       cellPadding = const EdgeInsets.symmetric(horizontal: 8, vertical: 8);
     }
-    
+
     return shadcn.TableCell(
       theme: const shadcn.TableCellTheme(
         border: shadcn.WidgetStatePropertyAll(
@@ -130,72 +191,81 @@ class _TableExample1State extends ConsumerState<TableExample1> {
 
   // Helper method to get theme-aware colors for positive/negative/neutral values
   Color _getValueColor(double value) {
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
-
     if (value > 0) {
-      return colorScheme.chart2;
+      return resolveThemeColor(context,
+          dark: MyntColors.profitDark, light: MyntColors.profit);
     }
     if (value < 0) {
-      return colorScheme.destructive;
+      return resolveThemeColor(context,
+          dark: MyntColors.lossDark, light: MyntColors.loss);
     }
-    return colorScheme.mutedForeground;
+    return resolveThemeColor(context,
+        dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary);
   }
 
   // Builds a sortable header cell with sort indicator
-  shadcn.TableCell buildHeaderCell(String label, int columnIndex, [bool alignRight = false]) {
+  shadcn.TableCell buildHeaderCell(String label, int columnIndex,
+      [bool alignRight = false]) {
     // Add extra horizontal padding for first and last columns
     final isFirstColumn = columnIndex == 0;
     final isLastColumn = columnIndex == 9;
-    
+
     // Match the cell padding logic - first column has more left, minimal right
     // Last column mirrors this - minimal left, more right
     EdgeInsets headerPadding;
     if (isFirstColumn) {
-      headerPadding = const EdgeInsets.fromLTRB(16, 6, 8, 6); // More left, minimal right
+      headerPadding =
+          const EdgeInsets.fromLTRB(16, 6, 8, 6); // More left, minimal right
     } else if (isLastColumn) {
-      headerPadding = const EdgeInsets.fromLTRB(8, 6, 16, 6); // Minimal left, more right
+      headerPadding =
+          const EdgeInsets.fromLTRB(8, 6, 16, 6); // Minimal left, more right
     } else {
       headerPadding = const EdgeInsets.symmetric(horizontal: 6, vertical: 6);
     }
-    
+
     return shadcn.TableCell(
-     theme: const shadcn.TableCellTheme(
-    border: shadcn.WidgetStatePropertyAll(
-      shadcn.Border(
-        top: shadcn.BorderSide.none,
-        bottom: shadcn.BorderSide.none,
-        left: shadcn.BorderSide.none,
-        right: shadcn.BorderSide.none,
+      theme: const shadcn.TableCellTheme(
+        border: shadcn.WidgetStatePropertyAll(
+          shadcn.Border(
+            top: shadcn.BorderSide.none,
+            bottom: shadcn.BorderSide.none,
+            left: shadcn.BorderSide.none,
+            right: shadcn.BorderSide.none,
+          ),
+        ),
       ),
-    ),
-  ),
       child: InkWell(
         onTap: () => _onSort(columnIndex),
         child: Container(
           padding: headerPadding,
           alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
           child: Row(
-            mainAxisAlignment: alignRight ? MainAxisAlignment.end : MainAxisAlignment.start,
+            mainAxisAlignment:
+                alignRight ? MainAxisAlignment.end : MainAxisAlignment.start,
             children: [
               if (alignRight && _sortColumnIndex == columnIndex)
                 Icon(
                   _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
                   size: 16,
-                  color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.textSecondaryDark,
+                      light: MyntColors.textSecondary),
                 ),
-              if (alignRight && _sortColumnIndex == columnIndex) const SizedBox(width: 4),
+              if (alignRight && _sortColumnIndex == columnIndex)
+                const SizedBox(width: 4),
               Text(
                 label,
-                style: _geistTextStyle(
-                  color: shadcn.Theme.of(context).colorScheme.foreground,
-                ),
+                style: _getHeaderStyle(context),
               ),
-              if (!alignRight && _sortColumnIndex == columnIndex) const SizedBox(width: 4),
+              if (!alignRight && _sortColumnIndex == columnIndex)
+                const SizedBox(width: 4),
               if (!alignRight && _sortColumnIndex == columnIndex)
                 Icon(
                   _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
                   size: 16,
-                  color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.textSecondaryDark,
+                      light: MyntColors.textSecondary),
                 ),
             ],
           ),
@@ -226,7 +296,7 @@ class _TableExample1State extends ConsumerState<TableExample1> {
   // Helper method to measure text width dynamically
   double _measureTextWidth(String text, TextStyle style) {
     final textPainter = TextPainter(
-      text: TextSpan(text: text, style: _geistTextStyle(fontSize: 14)),
+      text: TextSpan(text: text, style: style),
       textDirection: TextDirection.ltr,
       maxLines: 1,
     );
@@ -235,11 +305,14 @@ class _TableExample1State extends ConsumerState<TableExample1> {
   }
 
   // Calculate minimum column widths dynamically based on header and data
-  Map<int, double> _calculateMinWidths(List<dynamic> holdings, BuildContext context) {
+  Map<int, double> _calculateMinWidths(
+      List<dynamic> holdings, BuildContext context) {
     // Use default text style for measurement
     final textStyle = const TextStyle(fontSize: 14);
-    const padding = 24.0; // Padding for cell content (8px on each side + some extra)
-    const sortIconWidth = 24.0; // Extra space for sort indicator icon (16px icon + 4px gap + buffer)
+    const padding =
+        24.0; // Padding for cell content (8px on each side + some extra)
+    const sortIconWidth =
+        24.0; // Extra space for sort indicator icon (16px icon + 4px gap + buffer)
 
     // Header texts
     final headers = [
@@ -263,11 +336,13 @@ class _TableExample1State extends ConsumerState<TableExample1> {
 
       // Measure header width and add space for sort icon
       final headerWidth = _measureTextWidth(headers[col], textStyle);
-      maxWidth = headerWidth + sortIconWidth; // Add extra space for sort indicator
+      maxWidth =
+          headerWidth + sortIconWidth; // Add extra space for sort indicator
 
       // Measure widest value in this column
       for (final holding in holdings) {
-        final exchTsym = holding.exchTsym?.isNotEmpty == true ? holding.exchTsym![0] : null;
+        final exchTsym =
+            holding.exchTsym?.isNotEmpty == true ? holding.exchTsym![0] : null;
         String cellText = '';
 
         switch (col) {
@@ -328,7 +403,8 @@ class _TableExample1State extends ConsumerState<TableExample1> {
 
     // Filter to show only stock holdings (not mutual funds)
     var stockHoldings = holdings.where((holding) {
-      final exchTsym = holding.exchTsym?.isNotEmpty == true ? holding.exchTsym![0] : null;
+      final exchTsym =
+          holding.exchTsym?.isNotEmpty == true ? holding.exchTsym![0] : null;
       return exchTsym != null && exchTsym.exch != 'MF';
     }).toList();
 
@@ -348,13 +424,16 @@ class _TableExample1State extends ConsumerState<TableExample1> {
     // Sort holdings based on selected column
     if (_sortColumnIndex != null) {
       stockHoldings.sort((a, b) {
-        final exchTsymA = a.exchTsym?.isNotEmpty == true ? a.exchTsym![0] : null;
-        final exchTsymB = b.exchTsym?.isNotEmpty == true ? b.exchTsym![0] : null;
+        final exchTsymA =
+            a.exchTsym?.isNotEmpty == true ? a.exchTsym![0] : null;
+        final exchTsymB =
+            b.exchTsym?.isNotEmpty == true ? b.exchTsym![0] : null;
 
         int comparison = 0;
         switch (_sortColumnIndex) {
           case 0: // Instrument
-            comparison = _formatInstrumentText(exchTsymA).compareTo(_formatInstrumentText(exchTsymB));
+            comparison = _formatInstrumentText(exchTsymA)
+                .compareTo(_formatInstrumentText(exchTsymB));
             break;
           case 1: // Net Qty
             comparison = (a.currentQty ?? 0).compareTo(b.currentQty ?? 0);
@@ -385,8 +464,10 @@ class _TableExample1State extends ConsumerState<TableExample1> {
             comparison = dayPnlA.compareTo(dayPnlB);
             break;
           case 7: // Day %
-            final dayPercentA = double.tryParse(exchTsymA?.perChange ?? '0') ?? 0.0;
-            final dayPercentB = double.tryParse(exchTsymB?.perChange ?? '0') ?? 0.0;
+            final dayPercentA =
+                double.tryParse(exchTsymA?.perChange ?? '0') ?? 0.0;
+            final dayPercentB =
+                double.tryParse(exchTsymB?.perChange ?? '0') ?? 0.0;
             comparison = dayPercentA.compareTo(dayPercentB);
             break;
           case 8: // Overall P&L
@@ -395,8 +476,10 @@ class _TableExample1State extends ConsumerState<TableExample1> {
             comparison = pnlA.compareTo(pnlB);
             break;
           case 9: // Overall %
-            final overallPercentA = double.tryParse(exchTsymA?.pNlChng ?? '0') ?? 0.0;
-            final overallPercentB = double.tryParse(exchTsymB?.pNlChng ?? '0') ?? 0.0;
+            final overallPercentA =
+                double.tryParse(exchTsymA?.pNlChng ?? '0') ?? 0.0;
+            final overallPercentB =
+                double.tryParse(exchTsymB?.pNlChng ?? '0') ?? 0.0;
             comparison = overallPercentA.compareTo(overallPercentB);
             break;
         }
@@ -411,9 +494,7 @@ class _TableExample1State extends ConsumerState<TableExample1> {
     if (displayHoldings.isEmpty) {
       return shadcn.OutlinedContainer(
         child: NoDataFound(
-          title: searchQuery.isNotEmpty 
-              ? "No Stocks Found" 
-              : "No Stocks",
+          title: searchQuery.isNotEmpty ? "No Stocks Found" : "No Stocks",
           subtitle: searchQuery.isNotEmpty
               ? "No stocks match your search \"$searchQuery\"."
               : "You don't have any stock holdings yet.",
@@ -433,7 +514,7 @@ class _TableExample1State extends ConsumerState<TableExample1> {
 
           // Available width
           final availableWidth = constraints.maxWidth;
-          
+
           // Step 1: Start with minimum widths (content-based, no wasted space)
           final columnWidths = <int, double>{};
           for (int i = 0; i < 10; i++) {
@@ -441,24 +522,27 @@ class _TableExample1State extends ConsumerState<TableExample1> {
           }
 
           // Step 2: Calculate total minimum width needed
-          final totalMinWidth = columnWidths.values.fold<double>(0.0, (sum, width) => sum + width);
-          
+          final totalMinWidth = columnWidths.values
+              .fold<double>(0.0, (sum, width) => sum + width);
+
           // Step 3: If there's extra space, distribute it proportionally
           // This prevents unnecessary horizontal scroll while using available space efficiently
           if (totalMinWidth < availableWidth) {
             final extraSpace = availableWidth - totalMinWidth;
-            
+
             // Define which columns can grow and their growth priorities
             // Instrument gets more growth, numeric columns get less
             // Net Qty (col 1) should not grow much - it has small content
-            const instrumentGrowthFactor = 2.0; // Instrument can grow 2x more than numeric
+            const instrumentGrowthFactor =
+                2.0; // Instrument can grow 2x more than numeric
             const numericGrowthFactor = 1.0;
-            const smallColumnGrowthFactor = 0.1; // Net Qty should grow minimally
-            
+            const smallColumnGrowthFactor =
+                0.1; // Net Qty should grow minimally
+
             // Calculate growth factors for each column
             final growthFactors = <int, double>{};
             double totalGrowthFactor = 0.0;
-            
+
             for (int i = 0; i < 10; i++) {
               if (i == 0) {
                 // Column 0 is Instrument
@@ -474,18 +558,19 @@ class _TableExample1State extends ConsumerState<TableExample1> {
                 totalGrowthFactor += numericGrowthFactor;
               }
             }
-            
+
             // Distribute extra space proportionally
             if (totalGrowthFactor > 0) {
               for (int i = 0; i < 10; i++) {
                 if (growthFactors[i]! > 0) {
-                  final extraForThisColumn = (extraSpace * growthFactors[i]!) / totalGrowthFactor;
+                  final extraForThisColumn =
+                      (extraSpace * growthFactors[i]!) / totalGrowthFactor;
                   columnWidths[i] = columnWidths[i]! + extraForThisColumn;
                 }
               }
             }
           }
-          
+
           // Step 4: Set maximum width for Net Qty column to prevent it from being too wide
           // Net Qty has small content, so cap it at a reasonable max width
           if (columnWidths[1] != null && columnWidths[1]! > 120) {
@@ -493,8 +578,9 @@ class _TableExample1State extends ConsumerState<TableExample1> {
           }
 
           // Calculate total required width
-          final totalRequiredWidth = columnWidths.values.fold<double>(0.0, (sum, width) => sum + width);
-          
+          final totalRequiredWidth = columnWidths.values
+              .fold<double>(0.0, (sum, width) => sum + width);
+
           // If total width exceeds available width, enable horizontal scrolling
           final needsHorizontalScroll = totalRequiredWidth > availableWidth;
 
@@ -504,7 +590,6 @@ class _TableExample1State extends ConsumerState<TableExample1> {
               children: [
                 // Fixed Header (synced with horizontal scroll)
                 shadcn.Table(
-                  
                   columnWidths: {
                     0: shadcn.FixedTableSize(columnWidths[0]!),
                     1: shadcn.FixedTableSize(columnWidths[1]!),
@@ -546,7 +631,8 @@ class _TableExample1State extends ConsumerState<TableExample1> {
                       controller: _verticalScrollController,
                       scrollDirection: Axis.vertical,
                       child: shadcn.Table(
-                        key: ValueKey('table_${_sortColumnIndex}_$_sortAscending'),
+                        key: ValueKey(
+                            'table_${_sortColumnIndex}_$_sortAscending'),
                         columnWidths: {
                           0: shadcn.FixedTableSize(columnWidths[0]!),
                           1: shadcn.FixedTableSize(columnWidths[1]!),
@@ -560,368 +646,512 @@ class _TableExample1State extends ConsumerState<TableExample1> {
                           9: shadcn.FixedTableSize(columnWidths[9]!),
                         },
                         defaultRowHeight: const shadcn.FixedTableSize(40),
-                  rows: [
-                    // Data Rows
-                    ...displayHoldings.asMap().entries.map((entry) {
-                      final index = entry.key;
-                      final holding = entry.value;
-                      final exchTsym = holding.exchTsym?.isNotEmpty == true ? holding.exchTsym![0] : null;
-                      final token = exchTsym?.token ?? '';
-                      final qty = holding.currentQty ?? 0;
-                      final avgPrice = double.tryParse(holding.avgPrc ?? '0') ?? 0.0;
-                      final isRowHovered = _hoveredRowIndex == index;
+                        rows: [
+                          // Data Rows
+                          ...displayHoldings.asMap().entries.map((entry) {
+                            final index = entry.key;
+                            final holding = entry.value;
+                            final exchTsym =
+                                holding.exchTsym?.isNotEmpty == true
+                                    ? holding.exchTsym![0]
+                                    : null;
+                            final token = exchTsym?.token ?? '';
+                            final qty = holding.currentQty ?? 0;
+                            final avgPrice =
+                                double.tryParse(holding.avgPrc ?? '0') ?? 0.0;
+                            final isRowHovered = _hoveredRowIndex == index;
 
-                      return shadcn.TableRow(
-                        cells: [
-                          // Instrument with action buttons on hover - Make clickable for row tap
-                          buildCellWithHover(
-                            rowIndex: index,
-                            columnIndex: 0,
-                            child: GestureDetector(
-                              onTap: () => _showHoldingDetail(holding, exchTsym),
-                              behavior: HitTestBehavior.opaque,
-                              child: SizedBox(
-                                width: double.infinity,
-                                height: double.infinity,
-                                child: Stack(
-                                  clipBehavior: Clip.hardEdge,
-                                  children: [
-                                    // Instrument name - full width, can be partially covered by buttons
-                                    // Only truncate when hovered (buttons visible), otherwise show full text
-                                    Align(
-                                      alignment: Alignment.centerLeft,
-                                      child: Tooltip(
-                                        message: '${(exchTsym?.tsym ?? 'N/A').replaceAll("-EQ", "").trim()}${exchTsym?.exch != null && exchTsym!.exch!.isNotEmpty ? ' ${exchTsym.exch}' : ''}',
-                                        child: Padding(
-                                          padding: EdgeInsets.only(right: isRowHovered ? 8.0 : 0.0),
-                                          child: RichText(
-                                            overflow: isRowHovered ? TextOverflow.ellipsis : TextOverflow.visible,
-                                            maxLines: 1,
-                                            softWrap: false,
-                                            text: TextSpan(
-                                              children: [
-                                                // Symbol (normal color, without -EQ, fixed 14px)
-                                                TextSpan(
-                                                  text: (exchTsym?.tsym ?? 'N/A').replaceAll("-EQ", "").trim(),
-                                                  style: _geistTextStyle(
-                                                    color: shadcn.Theme.of(context).colorScheme.foreground,
-                                                    fontSize: 14.0,
-                                                  ),
-                                                ),
-                                                // Exchange (mutedForeground color, smaller font, fixed 12px)
-                                                if (exchTsym?.exch != null && exchTsym!.exch!.isNotEmpty)
-                                                  TextSpan(
-                                                    text: ' ${exchTsym.exch}',
-                                                    style: _geistTextStyle(
-                                                      color: shadcn.Theme.of(context).colorScheme.mutedForeground,
-                                                      fontSize: 12.0,
-                                                    ),
-                                                  ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    // Action buttons - overlay on the right side, covering only half the text
-                                    // Use Visibility to ensure buttons don't take space when not hovered
-                                    Visibility(
-                                      visible: isRowHovered,
-                                      maintainSize: false,
-                                      maintainAnimation: false,
-                                      maintainState: false,
-                                      child: Align(
-                                        alignment: Alignment.centerRight,
-                                        child: LayoutBuilder(
-                                          builder: (context, constraints) {
-                                            // Responsive max width based on screen size
-                                            final screenWidth = MediaQuery.of(context).size.width;
-                                            final isSmallScreen = screenWidth < 768;
-                                            final isVerySmallScreen = screenWidth < 480;
-                                            final responsiveMaxWidth = isVerySmallScreen ? 120.0 : (isSmallScreen ? 160.0 : 200.0);
-                                            
-                                            // Use available width, but cap at responsive max to prevent overflow
-                                            final maxButtonWidth = constraints.maxWidth.clamp(0.0, responsiveMaxWidth);
-                                            return GestureDetector(
-                                              onTap: () {}, // Empty handler to stop propagation
-                                              behavior: HitTestBehavior.opaque,
-                                              child: AnimatedOpacity(
-                                                opacity: isRowHovered ? 1 : 0,
-                                                duration: const Duration(milliseconds: 140),
-                                                child: Container(
-                                                  constraints: BoxConstraints(maxWidth: maxButtonWidth),
-                                                  decoration: BoxDecoration(
-                                                    // Subtle background gradient for better button visibility
-                                                    gradient: LinearGradient(
-                                                      begin: Alignment.centerLeft,
-                                                      end: Alignment.centerRight,
-                                                      colors: [
-                                                        shadcn.Theme.of(context).colorScheme.background.withOpacity(0.0),
-                                                        shadcn.Theme.of(context).colorScheme.background.withOpacity(0.95),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  padding: const EdgeInsets.only(left: 8),
-                                                  child: Builder(
-                                                    builder: (buttonContext) {
-                                                      final screenWidth = MediaQuery.of(buttonContext).size.width;
-                                                      final isSmallScreen = screenWidth < 768;
-                                                      final buttonSpacing = isSmallScreen ? 4.0 : 6.0;
-                                                      
-                                                      return Row(
-                                                        mainAxisSize: MainAxisSize.min,
-                                                        children: [
-                                                          if (qty > 0) ...{
-                                                            _buildHoverButton(
-                                                              theme: theme,
-                                                              label: 'Add',
-                                                              onPressed: () => _handleAddHolding(holding, exchTsym),
-                                                              backgroundColor: resolveThemeColor(
-                                                                buttonContext,
-                                                                dark: MyntColors.primaryDark,
-                                                                light: MyntColors.primary,
-                                                              ),
-                                                              textColor: Colors.white,
-                                                              context: buttonContext,
-                                                            ),
-                                                            SizedBox(width: buttonSpacing),
-                                                          },
-                                                          if (qty > 0) ...{
-                                                            _buildHoverButton(
-                                                              theme: theme,
-                                                              label: 'Exit',
-                                                              onPressed: () => _handleExitHolding(holding, exchTsym),
-                                                              backgroundColor: resolveThemeColor(
-                                                                buttonContext,
-                                                                dark: MyntColors.tertiary,
-                                                                light: MyntColors.tertiary,
-                                                              ),
-                                                              textColor: Colors.white,
-                                                              context: buttonContext,
-                                                            ),
-                                                            SizedBox(width: buttonSpacing),
-                                                          },
-                                                          _buildHoverButton(
-                                                            theme: theme,
-                                                            icon: Icons.bar_chart,
-                                                            onPressed: () => _handleChartTap(holding, exchTsym),
-                                                            backgroundColor: Colors.white,
-                                                            iconColor: Colors.black,
-                                                            context: buttonContext,
+                            return shadcn.TableRow(
+                              cells: [
+                                // Instrument with action buttons on hover - Make clickable for row tap
+                                buildCellWithHover(
+                                  rowIndex: index,
+                                  columnIndex: 0,
+                                  child: GestureDetector(
+                                    onTap: () =>
+                                        _showHoldingDetail(holding, exchTsym),
+                                    behavior: HitTestBehavior.opaque,
+                                    child: SizedBox(
+                                      width: double.infinity,
+                                      height: double.infinity,
+                                      child: Stack(
+                                        clipBehavior: Clip.hardEdge,
+                                        children: [
+                                          // Instrument name - full width, can be partially covered by buttons
+                                          // Only truncate when hovered (buttons visible), otherwise show full text
+                                          Align(
+                                            alignment: Alignment.centerLeft,
+                                            child: Tooltip(
+                                              message:
+                                                  '${(exchTsym?.tsym ?? 'N/A').replaceAll("-EQ", "").trim()}${exchTsym?.exch != null && exchTsym!.exch!.isNotEmpty ? ' ${exchTsym.exch}' : ''}',
+                                              child: Padding(
+                                                padding: EdgeInsets.only(
+                                                    right: isRowHovered
+                                                        ? 140.0
+                                                        : 0.0),
+                                                child: RichText(
+                                                  overflow: isRowHovered
+                                                      ? TextOverflow.ellipsis
+                                                      : TextOverflow.visible,
+                                                  maxLines: 1,
+                                                  softWrap: false,
+                                                  text: TextSpan(
+                                                    children: [
+                                                      // Symbol (14px, 500)
+                                                      TextSpan(
+                                                        text: (exchTsym?.tsym ??
+                                                                'N/A')
+                                                            .replaceAll(
+                                                                "-EQ", "")
+                                                            .trim(),
+                                                        style: _getTextStyle(
+                                                            context),
+                                                      ),
+                                                      // Exchange (12px, 500, muted color)
+                                                      if (exchTsym?.exch !=
+                                                              null &&
+                                                          exchTsym!
+                                                              .exch!.isNotEmpty)
+                                                        TextSpan(
+                                                          text:
+                                                              ' ${exchTsym.exch}',
+                                                          style:
+                                                              MyntWebTextStyles
+                                                                  .para(
+                                                            context,
+                                                            darkColor: MyntColors
+                                                                .textSecondaryDark,
+                                                            lightColor: MyntColors
+                                                                .textSecondary,
+                                                            fontWeight:
+                                                                MyntFonts
+                                                                    .medium,
                                                           ),
-                                                        ],
-                                                      );
-                                                    },
+                                                        ),
+                                                    ],
                                                   ),
                                                 ),
                                               ),
-                                            );
-                                          },
-                                        ),
+                                            ),
+                                          ),
+                                          // Action buttons - overlay on the right side, covering only half the text
+                                          // Use Visibility to ensure buttons don't take space when not hovered
+                                          Visibility(
+                                            visible: isRowHovered,
+                                            maintainSize: false,
+                                            maintainAnimation: false,
+                                            maintainState: false,
+                                            child: Align(
+                                              alignment: Alignment.centerRight,
+                                              child: LayoutBuilder(
+                                                builder:
+                                                    (context, constraints) {
+                                                  // Responsive max width based on screen size
+                                                  final screenWidth =
+                                                      MediaQuery.of(context)
+                                                          .size
+                                                          .width;
+                                                  final isSmallScreen =
+                                                      screenWidth < 768;
+                                                  final isVerySmallScreen =
+                                                      screenWidth < 480;
+                                                  final responsiveMaxWidth =
+                                                      isVerySmallScreen
+                                                          ? 120.0
+                                                          : (isSmallScreen
+                                                              ? 160.0
+                                                              : 200.0);
+
+                                                  // Use available width, but cap at responsive max to prevent overflow
+                                                  final maxButtonWidth =
+                                                      constraints.maxWidth.clamp(
+                                                          0.0,
+                                                          responsiveMaxWidth);
+                                                  return GestureDetector(
+                                                    onTap:
+                                                        () {}, // Empty handler to stop propagation
+                                                    behavior:
+                                                        HitTestBehavior.opaque,
+                                                    child: AnimatedOpacity(
+                                                      opacity:
+                                                          isRowHovered ? 1 : 0,
+                                                      duration: const Duration(
+                                                          milliseconds: 140),
+                                                      child: Container(
+                                                        constraints: BoxConstraints(
+                                                            maxWidth:
+                                                                maxButtonWidth),
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          // Subtle background gradient for better button visibility
+                                                          gradient:
+                                                              LinearGradient(
+                                                            begin: Alignment
+                                                                .centerLeft,
+                                                            end: Alignment
+                                                                .centerRight,
+                                                            colors: [
+                                                              shadcn.Theme.of(
+                                                                      context)
+                                                                  .colorScheme
+                                                                  .background
+                                                                  .withOpacity(
+                                                                      0.0),
+                                                              shadcn.Theme.of(
+                                                                      context)
+                                                                  .colorScheme
+                                                                  .background
+                                                                  .withOpacity(
+                                                                      0.95),
+                                                              shadcn.Theme.of(
+                                                                      context)
+                                                                  .colorScheme
+                                                                  .background,
+                                                            ],
+                                                            stops: const [
+                                                              0.0,
+                                                              0.3,
+                                                              0.5
+                                                            ],
+                                                          ),
+                                                        ),
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .only(left: 8),
+                                                        child: Builder(
+                                                          builder:
+                                                              (buttonContext) {
+                                                            final screenWidth =
+                                                                MediaQuery.of(
+                                                                        buttonContext)
+                                                                    .size
+                                                                    .width;
+                                                            final isSmallScreen =
+                                                                screenWidth <
+                                                                    768;
+                                                            final buttonSpacing =
+                                                                isSmallScreen
+                                                                    ? 4.0
+                                                                    : 6.0;
+
+                                                            return Row(
+                                                              mainAxisSize:
+                                                                  MainAxisSize
+                                                                      .min,
+                                                              children: [
+                                                                if (qty >
+                                                                    0) ...{
+                                                                  _buildHoverButton(
+                                                                    theme:
+                                                                        theme,
+                                                                    label:
+                                                                        'Add',
+                                                                    onPressed: () =>
+                                                                        _handleAddHolding(
+                                                                            holding,
+                                                                            exchTsym),
+                                                                    backgroundColor:
+                                                                        resolveThemeColor(
+                                                                      buttonContext,
+                                                                      dark: MyntColors
+                                                                          .primaryDark,
+                                                                      light: MyntColors
+                                                                          .primary,
+                                                                    ),
+                                                                    textColor:
+                                                                        Colors
+                                                                            .white,
+                                                                    context:
+                                                                        buttonContext,
+                                                                  ),
+                                                                  SizedBox(
+                                                                      width:
+                                                                          buttonSpacing),
+                                                                },
+                                                                if (qty >
+                                                                    0) ...{
+                                                                  _buildHoverButton(
+                                                                    theme:
+                                                                        theme,
+                                                                    label:
+                                                                        'Exit',
+                                                                    onPressed: () =>
+                                                                        _handleExitHolding(
+                                                                            holding,
+                                                                            exchTsym),
+                                                                    backgroundColor:
+                                                                        resolveThemeColor(
+                                                                      buttonContext,
+                                                                      dark: MyntColors
+                                                                          .tertiary,
+                                                                      light: MyntColors
+                                                                          .tertiary,
+                                                                    ),
+                                                                    textColor:
+                                                                        Colors
+                                                                            .white,
+                                                                    context:
+                                                                        buttonContext,
+                                                                  ),
+                                                                  SizedBox(
+                                                                      width:
+                                                                          buttonSpacing),
+                                                                },
+                                                                _buildHoverButton(
+                                                                  theme: theme,
+                                                                  icon: Icons
+                                                                      .bar_chart,
+                                                                  onPressed: () =>
+                                                                      _handleChartTap(
+                                                                          holding,
+                                                                          exchTsym),
+                                                                  backgroundColor:
+                                                                      Colors
+                                                                          .white,
+                                                                  iconColor:
+                                                                      Colors
+                                                                          .black,
+                                                                  context:
+                                                                      buttonContext,
+                                                                ),
+                                                              ],
+                                                            );
+                                                          },
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  );
+                                                },
+                                              ),
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                          // Net Qty - Make clickable for row tap
-                          buildCellWithHover(
-                            rowIndex: index,
-                            columnIndex: 1,
-                            alignRight: true,
-                            child: GestureDetector(
-                              onTap: () => _showHoldingDetail(holding, exchTsym),
-                              behavior: HitTestBehavior.opaque,
-                              child: Align(
-                                alignment: Alignment.centerRight,
-                                child: Text(
-                                  qty > 0 ? '$qty' : '$qty',
-                                  style: _geistTextStyle(
-                                    color: shadcn.Theme.of(context).colorScheme.foreground,
                                   ),
                                 ),
-                              ),
-                            ),
-                          ),
-                          // Avg Price - Make clickable for row tap
-                          buildCellWithHover(
-                            rowIndex: index,
-                            columnIndex: 2,
-                            alignRight: true,
-                            child: GestureDetector(
-                              onTap: () => _showHoldingDetail(holding, exchTsym),
-                              behavior: HitTestBehavior.opaque,
-                              child: Align(
-                                alignment: Alignment.centerRight,
-                                child: Text(
-                                  holding.avgPrc ?? '0.00',
-                                  style: _geistTextStyle(
-                                    color: shadcn.Theme.of(context).colorScheme.foreground,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          // LTP - with WebSocket updates - Make clickable for row tap
-                          buildCellWithHover(
-                            rowIndex: index,
-                            columnIndex: 3,
-                            alignRight: true,
-                            child: GestureDetector(
-                              onTap: () => _showHoldingDetail(holding, exchTsym),
-                              behavior: HitTestBehavior.opaque,
-                              child: Align(
-                                alignment: Alignment.centerRight,
-                                child: token.isNotEmpty
-                                    ? _LTPCell(
-                                        token: token,
-                                        initialLtp: exchTsym?.lp ?? '0.00',
-                                      )
-                                    : Text(
-                                        exchTsym?.lp ?? '0.00',
-                                        style: _geistTextStyle(
-                                          color: shadcn.Theme.of(context).colorScheme.foreground,
-                                        ),
+                                // Net Qty - Make clickable for row tap
+                                buildCellWithHover(
+                                  rowIndex: index,
+                                  columnIndex: 1,
+                                  alignRight: true,
+                                  child: GestureDetector(
+                                    onTap: () =>
+                                        _showHoldingDetail(holding, exchTsym),
+                                    behavior: HitTestBehavior.opaque,
+                                    child: Align(
+                                      alignment: Alignment.centerRight,
+                                      child: Text(
+                                        qty > 0 ? '$qty' : '$qty',
+                                        style: _getTextStyle(context),
                                       ),
-                              ),
-                            ),
-                          ),
-                          // Invested - Make clickable for row tap
-                          buildCellWithHover(
-                            rowIndex: index,
-                            columnIndex: 4,
-                            alignRight: true,
-                            child: GestureDetector(
-                              onTap: () => _showHoldingDetail(holding, exchTsym),
-                              behavior: HitTestBehavior.opaque,
-                              child: Align(
-                                alignment: Alignment.centerRight,
-                                child: Text(
-                                  holding.invested ?? '0.00',
-                                  style: _geistTextStyle(
-                                    color: shadcn.Theme.of(context).colorScheme.foreground,
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ),
-                          ),
-                          // Current Value - with WebSocket updates - Make clickable for row tap
-                          buildCellWithHover(
-                            rowIndex: index,
-                            columnIndex: 5,
-                            alignRight: true,
-                            child: GestureDetector(
-                              onTap: () => _showHoldingDetail(holding, exchTsym),
-                              behavior: HitTestBehavior.opaque,
-                              child: Align(
-                                alignment: Alignment.centerRight,
-                                child: token.isNotEmpty
-                                    ? _CurrentValueCell(
-                                        token: token,
-                                        qty: qty,
-                                        initialValue: holding.currentValue ?? '0.00',
-                                      )
-                                    : Text(
-                                        holding.currentValue ?? '0.00',
-                                        style: _geistTextStyle(
-                                          color: shadcn.Theme.of(context).colorScheme.foreground,
-                                        ),
+                                // Avg Price - Make clickable for row tap
+                                buildCellWithHover(
+                                  rowIndex: index,
+                                  columnIndex: 2,
+                                  alignRight: true,
+                                  child: GestureDetector(
+                                    onTap: () =>
+                                        _showHoldingDetail(holding, exchTsym),
+                                    behavior: HitTestBehavior.opaque,
+                                    child: Align(
+                                      alignment: Alignment.centerRight,
+                                      child: Text(
+                                        holding.avgPrc ?? '0.00',
+                                        style: _getTextStyle(context),
                                       ),
-                              ),
-                            ),
-                          ),
-                          // Day P&L - with WebSocket updates - Make clickable for row tap
-                          buildCellWithHover(
-                            rowIndex: index,
-                            columnIndex: 6,
-                            alignRight: true,
-                            child: GestureDetector(
-                              onTap: () => _showHoldingDetail(holding, exchTsym),
-                              behavior: HitTestBehavior.opaque,
-                              child: Align(
-                                alignment: Alignment.centerRight,
-                                child: token.isNotEmpty
-                                    ? _DayPnLCell(
-                                        token: token,
-                                        initialValue: exchTsym?.oneDayChg ?? '0.00',
-                                      )
-                                    : _buildColoredText(exchTsym?.oneDayChg ?? '0.00'),
-                              ),
-                            ),
-                          ),
-                          // Day % - Make clickable for row tap
-                          buildCellWithHover(
-                            rowIndex: index,
-                            columnIndex: 7,
-                            alignRight: true,
-                            child: GestureDetector(
-                              onTap: () => _showHoldingDetail(holding, exchTsym),
-                              behavior: HitTestBehavior.opaque,
-                              child: Align(
-                                alignment: Alignment.centerRight,
-                                child: token.isNotEmpty
-                                    ? _DayPercentCell(
-                                        token: token,
-                                        initialValue: exchTsym?.perChange ?? '0.00',
-                                      )
-                                    : _buildColoredText(exchTsym?.perChange ?? '0.00'),
-                              ),
-                            ),
-                          ),
-                          // Overall P&L - with WebSocket updates - Make clickable for row tap
-                          buildCellWithHover(
-                            rowIndex: index,
-                            columnIndex: 8,
-                            alignRight: true,
-                            child: GestureDetector(
-                              onTap: () => _showHoldingDetail(holding, exchTsym),
-                              behavior: HitTestBehavior.opaque,
-                              child: Align(
-                                alignment: Alignment.centerRight,
-                                child: token.isNotEmpty
-                                    ? _OverallPnLCell(
-                                        token: token,
-                                        qty: qty,
-                                        avgPrice: avgPrice,
-                                        initialValue: exchTsym?.profitNloss ?? '0.00',
-                                      )
-                                    : _buildColoredText(exchTsym?.profitNloss ?? '0.00'),
-                              ),
-                            ),
-                          ),
-                          // Overall % - Make clickable for row tap
-                          buildCellWithHover(
-                            rowIndex: index,
-                            columnIndex: 9,
-                            alignRight: true,
-                            child: GestureDetector(
-                              onTap: () => _showHoldingDetail(holding, exchTsym),
-                              behavior: HitTestBehavior.opaque,
-                              child: Align(
-                                alignment: Alignment.centerRight,
-                                child: token.isNotEmpty
-                                    ? _OverallPercentCell(
-                                        token: token,
-                                        qty: qty,
-                                        avgPrice: avgPrice,
-                                        initialValue: exchTsym?.pNlChng ?? '0.00',
-                                      )
-                                    : _buildColoredText(exchTsym?.pNlChng ?? '0.00'),
-                              ),
-                            ),
-                          ),
+                                    ),
+                                  ),
+                                ),
+                                // LTP - with WebSocket updates - Make clickable for row tap
+                                buildCellWithHover(
+                                  rowIndex: index,
+                                  columnIndex: 3,
+                                  alignRight: true,
+                                  child: GestureDetector(
+                                    onTap: () =>
+                                        _showHoldingDetail(holding, exchTsym),
+                                    behavior: HitTestBehavior.opaque,
+                                    child: Align(
+                                      alignment: Alignment.centerRight,
+                                      child: token.isNotEmpty
+                                          ? _LTPCell(
+                                              token: token,
+                                              initialLtp:
+                                                  exchTsym?.lp ?? '0.00',
+                                            )
+                                          : Text(
+                                              exchTsym?.lp ?? '0.00',
+                                              style: MyntWebTextStyles.body(context,
+                                                color: resolveThemeColor(
+                                                    context,
+                                                    dark: MyntColors
+                                                        .textSecondaryDark,
+                                                    light: MyntColors
+                                                        .textSecondary),
+                                              ),
+                                            ),
+                                    ),
+                                  ),
+                                ),
+                                // Invested - Make clickable for row tap
+                                buildCellWithHover(
+                                  rowIndex: index,
+                                  columnIndex: 4,
+                                  alignRight: true,
+                                  child: GestureDetector(
+                                    onTap: () =>
+                                        _showHoldingDetail(holding, exchTsym),
+                                    behavior: HitTestBehavior.opaque,
+                                    child: Align(
+                                      alignment: Alignment.centerRight,
+                                      child: Text(
+                                        holding.invested ?? '0.00',
+                                        style: _getTextStyle(context),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                // Current Value - with WebSocket updates - Make clickable for row tap
+                                buildCellWithHover(
+                                  rowIndex: index,
+                                  columnIndex: 5,
+                                  alignRight: true,
+                                  child: GestureDetector(
+                                    onTap: () =>
+                                        _showHoldingDetail(holding, exchTsym),
+                                    behavior: HitTestBehavior.opaque,
+                                    child: Align(
+                                      alignment: Alignment.centerRight,
+                                      child: token.isNotEmpty
+                                          ? _CurrentValueCell(
+                                              token: token,
+                                              qty: qty,
+                                              initialValue:
+                                                  holding.currentValue ??
+                                                      '0.00',
+                                            )
+                                          : Text(
+                                              holding.currentValue ?? '0.00',
+                                              style: _getTextStyle(context,
+                                                color: resolveThemeColor(
+                                                    context,
+                                                    dark: MyntColors
+                                                        .textSecondaryDark,
+                                                    light: MyntColors
+                                                        .textSecondary),
+                                              ),
+                                            ),
+                                    ),
+                                  ),
+                                ),
+                                // Day P&L - with WebSocket updates - Make clickable for row tap
+                                buildCellWithHover(
+                                  rowIndex: index,
+                                  columnIndex: 6,
+                                  alignRight: true,
+                                  child: GestureDetector(
+                                    onTap: () =>
+                                        _showHoldingDetail(holding, exchTsym),
+                                    behavior: HitTestBehavior.opaque,
+                                    child: Align(
+                                      alignment: Alignment.centerRight,
+                                      child: token.isNotEmpty
+                                          ? _DayPnLCell(
+                                              token: token,
+                                              initialValue:
+                                                  exchTsym?.oneDayChg ?? '0.00',
+                                            )
+                                          : _buildColoredText(
+                                              exchTsym?.oneDayChg ?? '0.00'),
+                                    ),
+                                  ),
+                                ),
+                                // Day % - Make clickable for row tap
+                                buildCellWithHover(
+                                  rowIndex: index,
+                                  columnIndex: 7,
+                                  alignRight: true,
+                                  child: GestureDetector(
+                                    onTap: () =>
+                                        _showHoldingDetail(holding, exchTsym),
+                                    behavior: HitTestBehavior.opaque,
+                                    child: Align(
+                                      alignment: Alignment.centerRight,
+                                      child: token.isNotEmpty
+                                          ? _DayPercentCell(
+                                              token: token,
+                                              initialValue:
+                                                  exchTsym?.perChange ?? '0.00',
+                                            )
+                                          : _buildColoredText(
+                                              exchTsym?.perChange ?? '0.00'),
+                                    ),
+                                  ),
+                                ),
+                                // Overall P&L - with WebSocket updates - Make clickable for row tap
+                                buildCellWithHover(
+                                  rowIndex: index,
+                                  columnIndex: 8,
+                                  alignRight: true,
+                                  child: GestureDetector(
+                                    onTap: () =>
+                                        _showHoldingDetail(holding, exchTsym),
+                                    behavior: HitTestBehavior.opaque,
+                                    child: Align(
+                                      alignment: Alignment.centerRight,
+                                      child: token.isNotEmpty
+                                          ? _OverallPnLCell(
+                                              token: token,
+                                              qty: qty,
+                                              avgPrice: avgPrice,
+                                              initialValue:
+                                                  exchTsym?.profitNloss ??
+                                                      '0.00',
+                                            )
+                                          : _buildColoredText(
+                                              exchTsym?.profitNloss ?? '0.00'),
+                                    ),
+                                  ),
+                                ),
+                                // Overall % - Make clickable for row tap
+                                buildCellWithHover(
+                                  rowIndex: index,
+                                  columnIndex: 9,
+                                  alignRight: true,
+                                  child: GestureDetector(
+                                    onTap: () =>
+                                        _showHoldingDetail(holding, exchTsym),
+                                    behavior: HitTestBehavior.opaque,
+                                    child: Align(
+                                      alignment: Alignment.centerRight,
+                                      child: token.isNotEmpty
+                                          ? _OverallPercentCell(
+                                              token: token,
+                                              qty: qty,
+                                              avgPrice: avgPrice,
+                                              initialValue:
+                                                  exchTsym?.pNlChng ?? '0.00',
+                                            )
+                                          : _buildColoredText(
+                                              exchTsym?.pNlChng ?? '0.00'),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            );
+                          }),
                         ],
-                      );
-                    }),
-                      ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
-          );
-        }
+              ],
+            );
+          }
 
           // Wrap in horizontal scroll if needed
           if (needsHorizontalScroll) {
@@ -953,7 +1183,7 @@ class _TableExample1State extends ConsumerState<TableExample1> {
 
     return Text(
       value,
-      style: _geistTextStyle(color: color),
+      style: _getTextStyle(context, color: color),
     );
   }
 
@@ -968,21 +1198,21 @@ class _TableExample1State extends ConsumerState<TableExample1> {
     required BuildContext context,
   }) {
     final borderRadiusValue = 5.0;
-    
+
     // Detect screen size for responsive design
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmallScreen = screenWidth < 768; // Tablet breakpoint
     final isVerySmallScreen = screenWidth < 480; // Mobile breakpoint
-    
+
     // Responsive sizes
     final iconSize = isVerySmallScreen ? 14.0 : (isSmallScreen ? 16.0 : 18.0);
-    final buttonPadding = isVerySmallScreen 
+    final buttonPadding = isVerySmallScreen
         ? const EdgeInsets.symmetric(horizontal: 4, vertical: 4)
-        : (isSmallScreen 
+        : (isSmallScreen
             ? const EdgeInsets.symmetric(horizontal: 6, vertical: 4)
             : const EdgeInsets.symmetric(horizontal: 8));
     final fontSize = isVerySmallScreen ? 10.0 : (isSmallScreen ? 11.0 : 12.0);
-    
+
     // Use Container only for background color, shadcn handles size/shape
     return Container(
       decoration: backgroundColor != null
@@ -1138,7 +1368,7 @@ class _TableExample1State extends ConsumerState<TableExample1> {
 
     // Save parent context to pass to sheet
     final parentCtx = context;
-    
+
     shadcn.openSheet(
       context: context,
       builder: (sheetContext) => HoldingDetailScreenWeb(
@@ -1221,9 +1451,11 @@ class _LTPCellState extends ConsumerState<_LTPCell> {
   Widget build(BuildContext context) {
     return Text(
       ltp,
-      style: TextStyle(
-        fontFamily: 'Geist',
-        color: shadcn.Theme.of(context).colorScheme.foreground,
+      style: MyntWebTextStyles.tableCell(
+        context,
+        darkColor: MyntColors.textPrimaryDark,
+        lightColor: MyntColors.textPrimary,
+        fontWeight: MyntFonts.medium,
       ),
     );
   }
@@ -1278,9 +1510,11 @@ class _CurrentValueCellState extends ConsumerState<_CurrentValueCell> {
   Widget build(BuildContext context) {
     return Text(
       currentValue,
-      style: TextStyle(
-        fontFamily: 'Geist',
-        color: shadcn.Theme.of(context).colorScheme.foreground,
+      style: MyntWebTextStyles.tableCell(
+        context,
+        darkColor: MyntColors.textPrimaryDark,
+        lightColor: MyntColors.textPrimary,
+        fontWeight: MyntFonts.medium,
       ),
     );
   }
@@ -1334,26 +1568,31 @@ class _OverallPnLCellState extends ConsumerState<_OverallPnLCell> {
     super.dispose();
   }
 
-  Color _getValueColor(String value, BuildContext context) {
+  Color _getCellColor(String value) {
     final numValue = double.tryParse(value) ?? 0.0;
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
-
     if (numValue > 0) {
-      return colorScheme.chart2;
+      return resolveThemeColor(context,
+          dark: MyntColors.profitDark, light: MyntColors.profit);
     }
     if (numValue < 0) {
-      return colorScheme.destructive;
+      return resolveThemeColor(context,
+          dark: MyntColors.lossDark, light: MyntColors.loss);
     }
-    return colorScheme.mutedForeground;
+    return resolveThemeColor(context,
+        dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary);
   }
 
   @override
   Widget build(BuildContext context) {
+    final color = _getCellColor(overallPnL);
     return Text(
       overallPnL,
-      style: TextStyle(
-        fontFamily: 'Geist',
-        color: _getValueColor(overallPnL, context),
+      style: MyntWebTextStyles.tableCell(
+        context,
+        color: color,
+        darkColor: color,
+        lightColor: color,
+        fontWeight: MyntFonts.medium,
       ),
     );
   }
@@ -1398,26 +1637,31 @@ class _DayPnLCellState extends ConsumerState<_DayPnLCell> {
     super.dispose();
   }
 
-  Color _getValueColor(String value, BuildContext context) {
+  Color _getCellColor(String value) {
     final numValue = double.tryParse(value) ?? 0.0;
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
-
     if (numValue > 0) {
-      return colorScheme.chart2;
+      return resolveThemeColor(context,
+          dark: MyntColors.profitDark, light: MyntColors.profit);
     }
     if (numValue < 0) {
-      return colorScheme.destructive;
+      return resolveThemeColor(context,
+          dark: MyntColors.lossDark, light: MyntColors.loss);
     }
-    return colorScheme.mutedForeground;
+    return resolveThemeColor(context,
+        dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary);
   }
 
   @override
   Widget build(BuildContext context) {
+    final color = _getCellColor(dayPnL);
     return Text(
       dayPnL,
-      style: TextStyle(
-        fontFamily: 'Geist',
-        color: _getValueColor(dayPnL, context),
+      style: MyntWebTextStyles.tableCell(
+        context,
+        color: color,
+        darkColor: color,
+        lightColor: color,
+        fontWeight: MyntFonts.medium,
       ),
     );
   }
@@ -1450,7 +1694,9 @@ class _DayPercentCellState extends ConsumerState<_DayPercentCell> {
       if (!mounted || !data.containsKey(widget.token)) return;
 
       final newDayPercent = data[widget.token]['perChange']?.toString();
-      if (newDayPercent != null && newDayPercent != dayPercent && newDayPercent != 'null') {
+      if (newDayPercent != null &&
+          newDayPercent != dayPercent &&
+          newDayPercent != 'null') {
         setState(() => dayPercent = newDayPercent);
       }
     });
@@ -1462,26 +1708,31 @@ class _DayPercentCellState extends ConsumerState<_DayPercentCell> {
     super.dispose();
   }
 
-  Color _getValueColor(String value, BuildContext context) {
+  Color _getCellColor(String value) {
     final numValue = double.tryParse(value.replaceAll('%', '')) ?? 0.0;
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
-
     if (numValue > 0) {
-      return colorScheme.chart2;
+      return resolveThemeColor(context,
+          dark: MyntColors.profitDark, light: MyntColors.profit);
     }
     if (numValue < 0) {
-      return colorScheme.destructive;
+      return resolveThemeColor(context,
+          dark: MyntColors.lossDark, light: MyntColors.loss);
     }
-    return colorScheme.mutedForeground;
+    return resolveThemeColor(context,
+        dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary);
   }
 
   @override
   Widget build(BuildContext context) {
+    final color = _getCellColor(dayPercent);
     return Text(
       dayPercent,
-      style: TextStyle(
-        fontFamily: 'Geist',
-        color: _getValueColor(dayPercent, context),
+      style: MyntWebTextStyles.tableCell(
+        context,
+        color: color,
+        darkColor: color,
+        lightColor: color,
+        fontWeight: MyntFonts.medium,
       ),
     );
   }
@@ -1502,7 +1753,8 @@ class _OverallPercentCell extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<_OverallPercentCell> createState() => _OverallPercentCellState();
+  ConsumerState<_OverallPercentCell> createState() =>
+      _OverallPercentCellState();
 }
 
 class _OverallPercentCellState extends ConsumerState<_OverallPercentCell> {
@@ -1518,7 +1770,9 @@ class _OverallPercentCellState extends ConsumerState<_OverallPercentCell> {
       if (!mounted || !data.containsKey(widget.token)) return;
 
       final newPercent = data[widget.token]['pNlChng']?.toString();
-      if (newPercent != null && newPercent != overallPercent && newPercent != 'null') {
+      if (newPercent != null &&
+          newPercent != overallPercent &&
+          newPercent != 'null') {
         setState(() => overallPercent = newPercent);
       }
     });
@@ -1530,26 +1784,31 @@ class _OverallPercentCellState extends ConsumerState<_OverallPercentCell> {
     super.dispose();
   }
 
-  Color _getValueColor(String value, BuildContext context) {
+  Color _getCellColor(String value) {
     final numValue = double.tryParse(value.replaceAll('%', '')) ?? 0.0;
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
-
     if (numValue > 0) {
-      return colorScheme.chart2;
+      return resolveThemeColor(context,
+          dark: MyntColors.profitDark, light: MyntColors.profit);
     }
     if (numValue < 0) {
-      return colorScheme.destructive;
+      return resolveThemeColor(context,
+          dark: MyntColors.lossDark, light: MyntColors.loss);
     }
-    return colorScheme.mutedForeground;
+    return resolveThemeColor(context,
+        dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary);
   }
 
   @override
   Widget build(BuildContext context) {
+    final color = _getCellColor(overallPercent);
     return Text(
       overallPercent,
-      style: TextStyle(
-        fontFamily: 'Geist',
-        color: _getValueColor(overallPercent, context),
+      style: MyntWebTextStyles.tableCell(
+        context,
+        color: color,
+        darkColor: color,
+        lightColor: color,
+        fontWeight: MyntFonts.medium,
       ),
     );
   }

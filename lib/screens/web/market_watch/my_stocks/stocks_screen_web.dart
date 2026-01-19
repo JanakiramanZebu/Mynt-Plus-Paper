@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../../../../models/marketwatch_model/get_quotes.dart';
 import '../../../../provider/market_watch_provider.dart';
@@ -10,8 +11,8 @@ import '../../../../provider/portfolio_provider.dart';
 import '../../../../provider/thems.dart';
 import '../../../../provider/websocket_provider.dart';
 import '../../../../res/res.dart';
-import '../../../../res/web_colors.dart';
-import '../../../../res/global_font_web.dart';
+import '../../../../res/mynt_web_text_styles.dart';
+import '../../../../res/mynt_web_color_styles.dart';
 import '../../../../sharedWidget/list_divider.dart';
 import '../../../../utils/responsive_navigation.dart';
 import '../../../../utils/responsive_snackbar.dart';
@@ -37,16 +38,15 @@ class _StocksScreenWebState extends ConsumerState<StocksScreenWeb> {
       if (ref.watch(portfolioProvider).loading) {
         return Center(
           child: CircularProgressIndicator(
-            color: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
+            color: resolveThemeColor(context,
+                dark: MyntColors.primary, light: MyntColors.primary),
           ),
         );
       }
 
       if (holdingProvide == null || holdingProvide.isEmpty) {
         return Container(
-          color: theme.isDarkMode
-              ? WebDarkColors.background
-              : WebColors.background,
+          color: shadcn.Theme.of(context).colorScheme.background,
           child: Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -54,11 +54,11 @@ class _StocksScreenWebState extends ConsumerState<StocksScreenWeb> {
               children: [
                 Text(
                   "No Holdings",
-                  style: WebTextStyles.title(
-                    isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode
-                        ? WebDarkColors.textPrimary
-                        : WebColors.textPrimary,
+                  style: MyntWebTextStyles.title(
+                    context,
+                    color: resolveThemeColor(context,
+                        dark: MyntColors.textPrimaryDark,
+                        light: MyntColors.textPrimary),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -67,11 +67,11 @@ class _StocksScreenWebState extends ConsumerState<StocksScreenWeb> {
                   child: Text(
                     "You haven't made any investments yet. Build your portfolio today!",
                     textAlign: TextAlign.center,
-                    style: WebTextStyles.para(
-                      isDarkTheme: theme.isDarkMode,
-                      color: theme.isDarkMode
-                          ? WebDarkColors.textSecondary
-                          : WebColors.textSecondary,
+                    style: MyntWebTextStyles.para(
+                      context,
+                      color: resolveThemeColor(context,
+                          dark: MyntColors.textSecondaryDark,
+                          light: MyntColors.textSecondary),
                     ),
                   ),
                 ),
@@ -82,9 +82,7 @@ class _StocksScreenWebState extends ConsumerState<StocksScreenWeb> {
       }
 
       return Container(
-        color: theme.isDarkMode
-            ? WebDarkColors.background
-            : WebColors.background,
+        color: shadcn.Theme.of(context).colorScheme.background,
         child: ListView.separated(
           physics: const AlwaysScrollableScrollPhysics(),
           itemCount: holdingProvide.length,
@@ -202,8 +200,8 @@ class _HoldingsCardWebState extends ConsumerState<_HoldingsCardWeb> {
                     );
 
                     widget.marketWatch.scripdepthsize(false);
-                    await widget.marketWatch.calldepthApis(
-                        context, depthArgs, "");
+                    await widget.marketWatch
+                        .calldepthApis(context, depthArgs, "");
                   });
                 } catch (e) {
                   debugPrint('Error opening chart: $e');
@@ -219,12 +217,10 @@ class _HoldingsCardWebState extends ConsumerState<_HoldingsCardWeb> {
               },
               child: Container(
                 color: isHovered
-                    ? (widget.theme.isDarkMode
-                            ? WebDarkColors.primary
-                            : WebColors.primary)
-                        .withOpacity(0.15)
-                    : (widget.theme.isDarkMode ? Colors.black : Colors.white),
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                    ? MyntColors.primary.withOpacity(0.10)
+                    : shadcn.Theme.of(context).colorScheme.background,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -239,11 +235,11 @@ class _HoldingsCardWebState extends ConsumerState<_HoldingsCardWeb> {
                             children: [
                               Text(
                                 _symbol.replaceAll("-EQ", "").toUpperCase(),
-                                style: WebTextStyles.symbolList(
-                                  isDarkTheme: widget.theme.isDarkMode,
-                                  color: widget.theme.isDarkMode
-                                      ? WebDarkColors.textPrimary
-                                      : WebColors.textPrimary,
+                                style: MyntWebTextStyles.symbol(
+                                  context,
+                                  color: resolveThemeColor(context,
+                                      dark: MyntColors.textPrimaryDark,
+                                      light: MyntColors.textPrimary),
                                 ),
                               ),
                               if (_option.isNotEmpty)
@@ -251,11 +247,11 @@ class _HoldingsCardWebState extends ConsumerState<_HoldingsCardWeb> {
                                   padding: const EdgeInsets.only(left: 4),
                                   child: Text(
                                     _option,
-                                    style: WebTextStyles.symbolList(
-                                      isDarkTheme: widget.theme.isDarkMode,
-                                      color: widget.theme.isDarkMode
-                                          ? WebDarkColors.textPrimary
-                                          : WebColors.textPrimary,
+                                    style: MyntWebTextStyles.symbol(
+                                      context,
+                                      color: resolveThemeColor(context,
+                                          dark: MyntColors.textPrimaryDark,
+                                          light: MyntColors.textPrimary),
                                     ),
                                   ),
                                 ),
@@ -284,38 +280,44 @@ class _HoldingsCardWebState extends ConsumerState<_HoldingsCardWeb> {
                           children: [
                             Text(
                               '$_exch ',
-                              style: WebTextStyles.exchText(
-                                isDarkTheme: widget.theme.isDarkMode,
-                                color: WebColors.textSecondary,
+                              style: MyntWebTextStyles.exch(
+                                context,
+                                fontWeight: FontWeight.w500,
+                                color: resolveThemeColor(context,
+                                    dark: MyntColors.textSecondaryDark,
+                                    light: MyntColors.textSecondary),
                               ),
                             ),
                             if (_expDate.isNotEmpty)
                               Text(
                                 _expDate,
-                                style: WebTextStyles.symbolList(
-                                  isDarkTheme: widget.theme.isDarkMode,
-                                  color: widget.theme.isDarkMode
-                                      ? WebDarkColors.textPrimary
-                                      : WebColors.textPrimary,
+                                style: MyntWebTextStyles.exch(
+                                  context,
+                                  fontWeight: FontWeight.w500,
+                                  color: resolveThemeColor(context,
+                                      dark: MyntColors.textPrimaryDark,
+                                      light: MyntColors.textPrimary),
                                 ),
                               ),
-                            if (_currentQty != "0" && _currentQty.isNotEmpty) ...[
+                            if (_currentQty != "0" &&
+                                _currentQty.isNotEmpty) ...[
                               SvgPicture.asset(
                                 assets.suitcase,
                                 height: 14,
                                 width: 18,
-                                color: widget.theme.isDarkMode
-                                    ? WebDarkColors.iconSecondary
-                                    : WebColors.iconSecondary,
+                                color: resolveThemeColor(context,
+                                    dark: MyntColors.iconDark,
+                                    light: MyntColors.icon),
                               ),
                               const SizedBox(width: 4),
                               Text(
                                 _currentQty,
-                                style: WebTextStyles.symbolList(
-                                  isDarkTheme: widget.theme.isDarkMode,
-                                  color: widget.theme.isDarkMode
-                                      ? WebDarkColors.textSecondary
-                                      : WebColors.textSecondary,
+                                style: MyntWebTextStyles.exch(
+                                  context,
+                                  fontWeight: FontWeight.w500,
+                                  color: resolveThemeColor(context,
+                                      dark: MyntColors.textSecondaryDark,
+                                      light: MyntColors.textSecondary),
                                 ),
                               ),
                             ],
@@ -337,9 +339,9 @@ class _HoldingsCardWebState extends ConsumerState<_HoldingsCardWeb> {
                                 _buildHoverButton(
                                   label: 'B',
                                   color: Colors.white,
-                                  backgroundColor: widget.theme.isDarkMode
-                                      ? WebDarkColors.primary
-                                      : WebColors.primary,
+                                  backgroundColor: resolveThemeColor(context,
+                                      dark: MyntColors.primary,
+                                      light: MyntColors.primary),
                                   onPressed: () async {
                                     try {
                                       await _placeOrderInput(context, true);
@@ -352,9 +354,9 @@ class _HoldingsCardWebState extends ConsumerState<_HoldingsCardWeb> {
                                 _buildHoverButton(
                                   label: 'S',
                                   color: Colors.white,
-                                  backgroundColor: widget.theme.isDarkMode
-                                      ? WebDarkColors.tertiary
-                                      : WebColors.tertiary,
+                                  backgroundColor: resolveThemeColor(context,
+                                      dark: MyntColors.tertiary,
+                                      light: MyntColors.tertiary),
                                   onPressed: () async {
                                     try {
                                       await _placeOrderInput(context, false);
@@ -368,9 +370,9 @@ class _HoldingsCardWebState extends ConsumerState<_HoldingsCardWeb> {
                                   iconAsset: assets.depthIcon,
                                   color: Colors.black,
                                   backgroundColor: Colors.white,
-                                  borderColor: widget.theme.isDarkMode
-                                      ? WebDarkColors.border
-                                      : WebColors.border,
+                                  borderColor: resolveThemeColor(context,
+                                      dark: MyntColors.dividerDark,
+                                      light: MyntColors.divider),
                                   borderRadius: 5.0,
                                   onPressed: () async {
                                     if (_isNavigating) return;
@@ -382,7 +384,8 @@ class _HoldingsCardWebState extends ConsumerState<_HoldingsCardWeb> {
                                             .read(marketWatchProvider)
                                             .setIsDepthVisibleWeb(true);
 
-                                        DepthInputArgs depthArgs = DepthInputArgs(
+                                        DepthInputArgs depthArgs =
+                                            DepthInputArgs(
                                           exch: _exch,
                                           token: _token,
                                           tsym: _tsym,
@@ -392,7 +395,8 @@ class _HoldingsCardWebState extends ConsumerState<_HoldingsCardWeb> {
                                           option: _option,
                                         );
 
-                                        widget.marketWatch.scripdepthsize(false);
+                                        widget.marketWatch
+                                            .scripdepthsize(false);
                                         await widget.marketWatch.calldepthApis(
                                             context, depthArgs, "");
                                       });
@@ -404,7 +408,8 @@ class _HoldingsCardWebState extends ConsumerState<_HoldingsCardWeb> {
                                             const Duration(milliseconds: 500),
                                             () {
                                           if (mounted) {
-                                            setState(() => _isNavigating = false);
+                                            setState(
+                                                () => _isNavigating = false);
                                           }
                                         });
                                       }
@@ -424,11 +429,11 @@ class _HoldingsCardWebState extends ConsumerState<_HoldingsCardWeb> {
                           child: _PriceChangeWidgetWeb(
                             token: _token,
                             initialData: {
-                              'change': widget.holding.exchTsym?[0].change ??
-                                  '0.00',
-                              'perChange': widget.holding.exchTsym?[0]
-                                      .perChange ??
-                                  '0.00',
+                              'change':
+                                  widget.holding.exchTsym?[0].change ?? '0.00',
+                              'perChange':
+                                  widget.holding.exchTsym?[0].perChange ??
+                                      '0.00',
                             },
                           ),
                         ),
@@ -488,8 +493,9 @@ class _HoldingsCardWebState extends ConsumerState<_HoldingsCardWeb> {
                     )
                   : Text(
                       label ?? "",
-                      style: WebTextStyles.buttonXs(
-                        isDarkTheme: widget.theme.isDarkMode,
+                      style: MyntWebTextStyles.para(
+                        context,
+                        fontWeight: FontWeight.bold,
                         color: color,
                       ),
                     ),
@@ -511,9 +517,11 @@ class _HoldingsCardWebState extends ConsumerState<_HoldingsCardWeb> {
       print('Transaction Type: ${transType ? "BUY" : "SELL"}');
 
       // Fetch scrip info first
-      await ref.read(marketWatchProvider).fetchScripInfo(
-          _token, _exch, context, true);
-      await ref.read(marketWatchProvider)
+      await ref
+          .read(marketWatchProvider)
+          .fetchScripInfo(_token, _exch, context, true);
+      await ref
+          .read(marketWatchProvider)
           .fetchScripQuote(_token, _exch, context);
 
       // Ensure scripInfo is loaded
@@ -524,12 +532,14 @@ class _HoldingsCardWebState extends ConsumerState<_HoldingsCardWeb> {
 
       // Get fresh quote data
       final freshQuoteData = ref.read(marketWatchProvider).getQuotes;
-      print('Fresh Quote Data: lp=${freshQuoteData?.lp ?? "NULL"}, c=${freshQuoteData?.c ?? "NULL"}, pc=${freshQuoteData?.pc ?? "NULL"}');
+      print(
+          'Fresh Quote Data: lp=${freshQuoteData?.lp ?? "NULL"}, c=${freshQuoteData?.c ?? "NULL"}, pc=${freshQuoteData?.pc ?? "NULL"}');
 
       // Also check websocket data for the current token
       final wsProvider = ref.read(websocketProvider);
       final socketData = wsProvider.socketDatas[_token];
-      print('Websocket Data: ${socketData != null ? "lp=${socketData['lp']}, pc=${socketData['pc']}" : "NO WEBSOCKET DATA"}');
+      print(
+          'Websocket Data: ${socketData != null ? "lp=${socketData['lp']}, pc=${socketData['pc']}" : "NO WEBSOCKET DATA"}');
 
       // Priority: Websocket data > Fresh quote data > Holding data
       String? ltp;
@@ -588,8 +598,7 @@ class _HoldingsCardWebState extends ConsumerState<_HoldingsCardWeb> {
       print('Holding Data Raw: ${widget.holding.exchTsym?[0].lp}');
 
       // Use lot size from scripInfo or quote data
-      final lotSize = _safeParseLotSize(
-          scripInfo.ls, freshQuoteData?.ls, "1");
+      final lotSize = _safeParseLotSize(scripInfo.ls, freshQuoteData?.ls, "1");
 
       // Use safe parsing for price values
       final safeLtp = _safeParseNumeric(ltp, "0.00");
@@ -770,25 +779,21 @@ class _LTPWidgetWebState extends ConsumerState<_LTPWidgetWeb> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = ref.read(themeProvider);
     final displayLtp = _safeFormatPrice(ltp);
 
     final changeColor = displayLtp.startsWith("-") || displayLtp.startsWith('-')
-        ? theme.isDarkMode
-            ? WebDarkColors.loss
-            : WebColors.loss
+        ? resolveThemeColor(context,
+            dark: MyntColors.lossDark, light: MyntColors.loss)
         : (displayLtp == "0.00" || displayLtp == "0.00")
-            ? theme.isDarkMode
-                ? WebDarkColors.textSecondary
-                : WebColors.textSecondary
-            : theme.isDarkMode
-                ? WebDarkColors.profit
-                : WebColors.profit;
-
+            ? resolveThemeColor(context,
+                dark: MyntColors.textSecondaryDark,
+                light: MyntColors.textSecondary)
+            : resolveThemeColor(context,
+                dark: MyntColors.profitDark, light: MyntColors.profit);
     return Text(
       displayLtp,
-      style: WebTextStyles.priceWatch(
-        isDarkTheme: theme.isDarkMode,
+      style: MyntWebTextStyles.price(
+        context,
         color: changeColor,
       ),
     );
@@ -889,19 +894,18 @@ class _PriceChangeWidgetWebState extends ConsumerState<_PriceChangeWidgetWeb> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = ref.read(themeProvider);
     final displayChange = _safeFormatPrice(change);
     final displayPerChange = _safeFormatPrice(perChange);
 
     return Text(
       "$displayChange ($displayPerChange%)",
-      style: WebTextStyles.pricePercent(
-        isDarkTheme: theme.isDarkMode,
-        color: theme.isDarkMode
-            ? WebDarkColors.textPrimary
-            : WebColors.textPrimary,
+      style: MyntWebTextStyles.priceChange(
+        context,
+        fontWeight: FontWeight.w500,
+        color: resolveThemeColor(context,
+            dark: MyntColors.textSecondaryDark,
+            light: MyntColors.textSecondary),
       ),
     );
   }
 }
-

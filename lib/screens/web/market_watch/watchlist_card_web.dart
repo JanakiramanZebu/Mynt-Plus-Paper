@@ -217,6 +217,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                                 '${widget.watchListData["exch"]} ',
                                 style: MyntWebTextStyles.exch(
                                   context,
+                                  fontWeight: FontWeight.w500,
                                   color: resolveThemeColor(
                                     context,
                                     dark: MyntColors.textSecondaryDark,
@@ -231,6 +232,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                                   "${widget.watchListData['expDate']}",
                                   style: MyntWebTextStyles.exch(
                                     context,
+                                    fontWeight: FontWeight.w500,
                                     color: resolveThemeColor(
                                       context,
                                       dark: MyntColors.textPrimaryDark,
@@ -257,6 +259,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                                   "${widget.watchListData['holdingQty']}",
                                   style: MyntWebTextStyles.exch(
                                     context,
+                                    fontWeight: FontWeight.w500,
                                     color: resolveThemeColor(
                                       context,
                                       dark: MyntColors.textSecondaryDark,
@@ -1348,9 +1351,10 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
             child: Center(
               child: Text(
                 label ?? "",
-                style: MyntWebTextStyles.caption(
+                style: MyntWebTextStyles.para(
                   context,
                   color: color,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ),
@@ -2507,6 +2511,7 @@ class _PriceChangeWidgetWebState extends ConsumerState<_PriceChangeWidgetWeb> {
       "$displayChange ($displayPerChange%)",
       style: MyntWebTextStyles.priceChange(
         context,
+        fontWeight: FontWeight.w500,
         color: resolveThemeColor(
           context,
           dark: MyntColors.textSecondaryDark,

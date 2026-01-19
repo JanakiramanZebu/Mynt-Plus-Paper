@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
-import 'package:google_fonts/google_fonts.dart';
 
 /// ===============================================================
 /// FONT SYSTEM – single source of truth
 /// ===============================================================
 class MyntFonts {
-  static const String fontFamily = 'Inter';
+  static const String fontFamily = 'Geist';
 
   // HEADERS
   static const double hero = 20;
@@ -255,7 +254,7 @@ class MyntWebTextStyles {
   }) =>
       _text(
         c,
-        size: MyntFonts.para,
+        size: MyntFonts.body,
         weight: fontWeight ?? MyntFonts.bold,
         color: color,
         darkColor: darkColor,
@@ -385,7 +384,7 @@ class MyntWebTextStyles {
       _text(
         c,
         size: MyntFonts.para, // 12
-        weight: MyntFonts.medium,
+        weight: MyntFonts.bold,
         color: color,
         darkColor: darkColor,
         lightColor: lightColor,
@@ -396,7 +395,7 @@ class MyntWebTextStyles {
       _text(
         c,
         size: MyntFonts.bodySmall, // 13
-        weight: MyntFonts.semiBold,
+        weight: MyntFonts.bold,
         color: color,
         darkColor: darkColor,
         lightColor: lightColor,
@@ -407,7 +406,7 @@ class MyntWebTextStyles {
       _text(
         c,
         size: MyntFonts.body, // 14
-        weight: MyntFonts.semiBold,
+        weight: MyntFonts.bold,
         color: color,
         darkColor: darkColor,
         lightColor: lightColor,

@@ -1,17 +1,78 @@
 import 'dart:async';
-import 'package:flutter/material.dart' show InkWell, Icons, VoidCallback, Icon, TextPainter, TextSpan, TextStyle, TextDirection, GestureDetector, HitTestBehavior, Row, SizedBox, Colors, Widget, BuildContext, Color, EdgeInsets, Alignment, MainAxisAlignment, TextOverflow, Axis, FontWeight, Container, MouseRegion, Expanded, Align, Text, IgnorePointer, AnimatedOpacity, ScrollController, SingleChildScrollView, Scrollbar, Column, ValueKey, Padding, LayoutBuilder, CircularProgressIndicator, Center, BorderRadius, BoxDecoration, MainAxisSize, Dialog, Material, CircleBorder, Border, BorderSide, Navigator, CrossAxisAlignment, TextButton, showDialog, RoundedRectangleBorder, FlexFit, Flexible, TextAlign, Stack, LinearGradient, BoxConstraints, Clip, MediaQuery, Builder, Tooltip, RichText;
+import 'package:flutter/material.dart'
+    show
+        InkWell,
+        Icons,
+        VoidCallback,
+        Icon,
+        TextPainter,
+        TextSpan,
+        TextStyle,
+        TextDirection,
+        GestureDetector,
+        HitTestBehavior,
+        Row,
+        SizedBox,
+        Colors,
+        Widget,
+        BuildContext,
+        Color,
+        EdgeInsets,
+        Alignment,
+        MainAxisAlignment,
+        TextOverflow,
+        Axis,
+        Container,
+        MouseRegion,
+        Expanded,
+        Align,
+        Text,
+        ScrollController,
+        SingleChildScrollView,
+        Scrollbar,
+        Column,
+        ValueKey,
+        Padding,
+        LayoutBuilder,
+        CircularProgressIndicator,
+        Center,
+        BorderRadius,
+        BoxDecoration,
+        MainAxisSize,
+        Dialog,
+        Material,
+        CircleBorder,
+        Border,
+        BorderSide,
+        Navigator,
+        CrossAxisAlignment,
+        TextButton,
+        showDialog,
+        RoundedRectangleBorder,
+        FlexFit,
+        Flexible,
+        TextAlign,
+        Stack,
+        LinearGradient,
+        Clip,
+        Tooltip,
+        RichText,
+        Positioned,
+        BoxShadow,
+        Offset;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn
+    hide Colors, Tooltip;
 import 'package:mynt_plus/models/order_book_model/gtt_order_book.dart';
 import 'package:mynt_plus/provider/order_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/provider/websocket_provider.dart';
 import 'package:mynt_plus/provider/market_watch_provider.dart';
-import 'package:mynt_plus/res/web_colors.dart';
-import 'package:mynt_plus/res/global_font_web.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/utils/responsive_snackbar.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
+import '../../../../res/mynt_web_text_styles.dart';
+import '../../../../res/mynt_web_color_styles.dart';
 import '../refactored/utils/cell_formatters.dart';
 import '../gtt_order_book_detail_screen_web.dart';
 import '../modify_gtt_web.dart';
@@ -38,18 +99,18 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
   bool _isProcessingCancel = false;
   bool _isProcessingModify = false;
   String? _processingOrderToken;
-  
+
   // Scroll controllers - must be in state to persist across rebuilds
   late ScrollController _verticalScrollController;
   late ScrollController _horizontalScrollController;
-  
+
   @override
   void initState() {
     super.initState();
     _verticalScrollController = ScrollController();
     _horizontalScrollController = ScrollController();
   }
-  
+
   @override
   void dispose() {
     _verticalScrollController.dispose();
@@ -57,21 +118,36 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
     super.dispose();
   }
 
-  // Helper method to ensure Geist font is always applied
-  TextStyle _geistTextStyle({Color? color, double? fontSize, FontWeight? fontWeight}) {
-    return TextStyle(
-      fontFamily: 'Geist',
+  // Helper method to get appropriate text style for table cells
+  // 14px, weight 500, MyntColors for text
+  TextStyle _getTextStyle(BuildContext context, {Color? color}) {
+    return MyntWebTextStyles.tableCell(
+      context,
       color: color,
-      fontSize: fontSize,
-      fontWeight: fontWeight,
+      darkColor: color ?? MyntColors.textPrimaryDark,
+      lightColor: color ?? MyntColors.textPrimary,
+      fontWeight: MyntFonts.medium,
+    );
+  }
+
+  // Helper method for header text style
+  // 14px, weight 600, MyntColors for text
+  TextStyle _getHeaderStyle(BuildContext context, {Color? color}) {
+    return MyntWebTextStyles.tableHeader(
+      context,
+      color: color,
+      darkColor: color ?? MyntColors.textSecondaryDark,
+      lightColor: color ?? MyntColors.textSecondary,
+      fontWeight: MyntFonts.semiBold,
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = ref.watch(themeProvider);
-    final orderBook = ref.watch(orderProvider); // Changed to watch to rebuild on search changes
-    
+    final orderBook = ref
+        .watch(orderProvider); // Changed to watch to rebuild on search changes
+
     // Get GTT orders (search or regular)
     // Only show search results if we're on the GTT Orders tab (index 3)
     final searchQuery = orderBook.orderSearchCtrl.text.trim();
@@ -91,7 +167,8 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
               children: [
                 CircularProgressIndicator(),
                 SizedBox(height: 16),
-                Text('Loading GTT orders...', style: TextStyle(color: Colors.grey)),
+                Text('Loading GTT orders...',
+                    style: TextStyle(color: Colors.grey)),
               ],
             ),
           ),
@@ -104,8 +181,8 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: NoDataFound(
-                title: searchQuery.isNotEmpty 
-                    ? "No GTT Orders Found" 
+                title: searchQuery.isNotEmpty
+                    ? "No GTT Orders Found"
                     : "No GTT Orders",
                 subtitle: searchQuery.isNotEmpty
                     ? "No GTT orders match your search \"$searchQuery\"."
@@ -130,7 +207,7 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
 
           // Available width
           final availableWidth = constraints.maxWidth;
-          
+
           // Step 1: Start with minimum widths (content-based, no wasted space)
           final columnWidths = <int, double>{};
           for (int i = 0; i < 7; i++) {
@@ -138,19 +215,21 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
           }
 
           // Step 2: Calculate total minimum width needed
-          final totalMinWidth = columnWidths.values.fold<double>(0.0, (sum, width) => sum + width);
-          
+          final totalMinWidth = columnWidths.values
+              .fold<double>(0.0, (sum, width) => sum + width);
+
           // Step 3: If there's extra space, distribute it proportionally
           if (totalMinWidth < availableWidth) {
             final extraSpace = availableWidth - totalMinWidth;
-            
-            const instrumentGrowthFactor = 2.0; // Instrument can grow 2x more than numeric
+
+            const instrumentGrowthFactor =
+                2.0; // Instrument can grow 2x more than numeric
             const textGrowthFactor = 1.2;
             const numericGrowthFactor = 1.0;
-            
+
             final growthFactors = <int, double>{};
             double totalGrowthFactor = 0.0;
-            
+
             for (int i = 0; i < 7; i++) {
               if (i == 0) {
                 // Instrument
@@ -166,18 +245,20 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
                 totalGrowthFactor += numericGrowthFactor;
               }
             }
-            
+
             if (totalGrowthFactor > 0) {
               for (int i = 0; i < 7; i++) {
                 if (growthFactors[i]! > 0) {
-                  final extraForThisColumn = (extraSpace * growthFactors[i]!) / totalGrowthFactor;
+                  final extraForThisColumn =
+                      (extraSpace * growthFactors[i]!) / totalGrowthFactor;
                   columnWidths[i] = columnWidths[i]! + extraForThisColumn;
                 }
               }
             }
           }
 
-          final totalRequiredWidth = columnWidths.values.fold<double>(0.0, (sum, width) => sum + width);
+          final totalRequiredWidth = columnWidths.values
+              .fold<double>(0.0, (sum, width) => sum + width);
           final needsHorizontalScroll = totalRequiredWidth > availableWidth;
 
           Widget buildTableContent() {
@@ -220,7 +301,8 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
                       controller: _verticalScrollController,
                       scrollDirection: Axis.vertical,
                       child: shadcn.Table(
-                        key: ValueKey('table_${_sortColumnIndex}_$_sortAscending'),
+                        key: ValueKey(
+                            'table_${_sortColumnIndex}_$_sortAscending'),
                         columnWidths: {
                           0: shadcn.FixedTableSize(columnWidths[0]!),
                           1: shadcn.FixedTableSize(columnWidths[1]!),
@@ -242,7 +324,8 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
                                 rowIndex: index,
                                 columnIndex: 0,
                                 onTap: () => _showGttOrderDetail(gttOrder),
-                                child: _buildInstrumentCell(gttOrder, theme, isRowHovered),
+                                child: _buildInstrumentCell(
+                                    gttOrder, theme, isRowHovered),
                               ),
                               buildCellWithHover(
                                 rowIndex: index,
@@ -263,8 +346,12 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
                                   theme,
                                   Alignment.centerLeft,
                                   color: gttOrder.trantype == "B"
-                                      ? shadcn.Theme.of(context).colorScheme.chart2
-                                      : shadcn.Theme.of(context).colorScheme.destructive,
+                                      ? resolveThemeColor(context,
+                                          dark: MyntColors.profitDark,
+                                          light: MyntColors.profit)
+                                      : resolveThemeColor(context,
+                                          dark: MyntColors.lossDark,
+                                          light: MyntColors.loss),
                                 ),
                               ),
                               buildCellWithHover(
@@ -346,7 +433,7 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
   }) {
     final isFirstColumn = columnIndex == 0; // Instrument column
     final isLastColumn = columnIndex == 6; // Status column
-    
+
     // Match the cell padding logic - Instrument column has more left, minimal right
     // Last column mirrors this - minimal left, more right
     EdgeInsets cellPadding;
@@ -389,10 +476,11 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
   }
 
   // Builds a sortable header cell
-  shadcn.TableCell buildHeaderCell(String label, int columnIndex, [bool alignRight = false]) {
+  shadcn.TableCell buildHeaderCell(String label, int columnIndex,
+      [bool alignRight = false]) {
     final isFirstColumn = columnIndex == 0; // Instrument column
     final isLastColumn = columnIndex == 6; // Status column
-    
+
     // Match the cell padding logic - Instrument column has more left, minimal right
     // Last column mirrors this - minimal left, more right
     EdgeInsets headerPadding;
@@ -424,7 +512,8 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
           padding: headerPadding,
           alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
           child: Row(
-            mainAxisAlignment: alignRight ? MainAxisAlignment.end : MainAxisAlignment.start,
+            mainAxisAlignment:
+                alignRight ? MainAxisAlignment.end : MainAxisAlignment.start,
             children: [
               if (alignRight && _sortColumnIndex == columnIndex)
                 Icon(
@@ -432,14 +521,14 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
                   size: 16,
                   color: shadcn.Theme.of(context).colorScheme.mutedForeground,
                 ),
-              if (alignRight && _sortColumnIndex == columnIndex) const SizedBox(width: 4),
+              if (alignRight && _sortColumnIndex == columnIndex)
+                const SizedBox(width: 4),
               Text(
                 label,
-                style: _geistTextStyle(
-                  color: shadcn.Theme.of(context).colorScheme.foreground,
-                ),
+                style: _getHeaderStyle(context),
               ),
-              if (!alignRight && _sortColumnIndex == columnIndex) const SizedBox(width: 4),
+              if (!alignRight && _sortColumnIndex == columnIndex)
+                const SizedBox(width: 4),
               if (!alignRight && _sortColumnIndex == columnIndex)
                 Icon(
                   _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
@@ -465,7 +554,8 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
   }
 
   // Calculate minimum column widths dynamically
-  Map<int, double> _calculateMinWidths(List<GttOrderBookModel> gttOrders, BuildContext context) {
+  Map<int, double> _calculateMinWidths(
+      List<GttOrderBookModel> gttOrders, BuildContext context) {
     // Use fixed font size for measurement (table text is not responsive, only buttons are)
     final textStyle = const TextStyle(fontSize: 14, fontFamily: 'Geist');
     const padding = 24.0;
@@ -496,18 +586,21 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
             final symbol = (order.tsym ?? '').replaceAll("-EQ", "").trim();
             final exchange = order.exch ?? '';
             final exchangeText = exchange.isNotEmpty ? ' $exchange' : '';
-            
+
             // Measure symbol with normal font
             final symbolWidth = _measureTextWidth(symbol, textStyle);
-            
+
             // Measure exchange with smaller font (fixed 12px, matches rendering)
-            final exchangeStyle = const TextStyle(fontSize: 12, fontFamily: 'Geist');
-            final exchangeWidth = exchangeText.isNotEmpty 
-                ? _measureTextWidth(exchangeText, exchangeStyle) 
+            final exchangeStyle =
+                const TextStyle(fontSize: 12, fontFamily: 'Geist');
+            final exchangeWidth = exchangeText.isNotEmpty
+                ? _measureTextWidth(exchangeText, exchangeStyle)
                 : 0.0;
-            
+
             // Total width = symbol + exchange + 4px gap
-            final totalWidth = symbolWidth + exchangeWidth + (exchangeText.isNotEmpty ? 4.0 : 0.0);
+            final totalWidth = symbolWidth +
+                exchangeWidth +
+                (exchangeText.isNotEmpty ? 4.0 : 0.0);
             if (totalWidth > maxWidth) {
               maxWidth = totalWidth;
             }
@@ -529,7 +622,8 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
             cellText = order.d ?? '0.00';
             break;
           case 6:
-            cellText = CellFormatters.getGttStatusText(order.gttOrderCurrentStatus?.toUpperCase() ?? '');
+            cellText = CellFormatters.getGttStatusText(
+                order.gttOrderCurrentStatus?.toUpperCase() ?? '');
             break;
         }
 
@@ -542,7 +636,8 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
       // For instrument column, ensure minimum width to prevent excessive truncation
       if (headers[col] == 'Instrument') {
         const minInstrumentWidth = 150.0;
-        maxWidth = maxWidth < minInstrumentWidth ? minInstrumentWidth : maxWidth;
+        maxWidth =
+            maxWidth < minInstrumentWidth ? minInstrumentWidth : maxWidth;
       }
 
       minWidths[col] = maxWidth + padding;
@@ -567,7 +662,7 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
     final sorted = List<GttOrderBookModel>.from(orders);
     sorted.sort((a, b) {
       int comparison = 0;
-      
+
       switch (_sortColumnIndex!) {
         case 0: // Instrument - compare symbol first, then exchange
           final aSymbol = (a.tsym ?? '').replaceAll("-EQ", "").trim();
@@ -597,7 +692,8 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
           comparison = aTrigger.compareTo(bTrigger);
           break;
         case 6: // Status
-          comparison = (a.gttOrderCurrentStatus ?? '').compareTo(b.gttOrderCurrentStatus ?? '');
+          comparison = (a.gttOrderCurrentStatus ?? '')
+              .compareTo(b.gttOrderCurrentStatus ?? '');
           break;
       }
 
@@ -610,7 +706,7 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
   String _formatProductType(GttOrderBookModel gttOrder) {
     final product = gttOrder.placeOrderParams?.sPrdtAli ?? gttOrder.prd ?? '';
     final priceType = gttOrder.prctyp ?? '';
-    
+
     if (product.isEmpty && priceType.isEmpty) {
       return 'N/A';
     } else if (product.isEmpty) {
@@ -622,13 +718,12 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
     }
   }
 
-  Widget _buildInstrumentCell(GttOrderBookModel gttOrder, ThemesProvider theme, bool isRowHovered) {
+  Widget _buildInstrumentCell(
+      GttOrderBookModel gttOrder, ThemesProvider theme, bool isRowHovered) {
     final status = gttOrder.gttOrderCurrentStatus?.toUpperCase() ?? '';
     final isPending = status == 'PENDING' || status == 'TRIGGER_PENDING';
     final uniqueId = '${gttOrder.alId ?? ''}_${gttOrder.tsym ?? ''}';
     final isProcessing = _processingOrderToken == uniqueId;
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
-
     // Format instrument: remove "-EQ" and show symbol + exchange separately
     final symbol = gttOrder.tsym ?? '';
     final displayText = symbol.replaceAll("-EQ", "").trim();
@@ -641,139 +736,135 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
         children: [
           // Instrument name - full width, can be partially covered by buttons
           // Only truncate when hovered (buttons visible), otherwise show full text
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Tooltip(
-              message: '$displayText${gttOrder.exch != null && gttOrder.exch!.isNotEmpty ? ' ${gttOrder.exch}' : ''}',
-              child: Padding(
-                padding: EdgeInsets.only(right: isRowHovered ? 8.0 : 0.0),
-                child: RichText(
-                  overflow: isRowHovered ? TextOverflow.ellipsis : TextOverflow.visible,
-                  maxLines: 1,
-                  softWrap: false,
-                  text: TextSpan(
-                    children: [
-                      // Symbol (normal color, fixed 14px)
-                      TextSpan(
-                        text: displayText,
-                        style: _geistTextStyle(
-                          color: colorScheme.foreground,
-                          fontSize: 14.0,
-                        ),
-                      ),
-                      // Exchange (mutedForeground color, smaller font, fixed 12px)
-                      if (gttOrder.exch != null && gttOrder.exch!.isNotEmpty)
+          Positioned.fill(
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Tooltip(
+                message:
+                    '$displayText${gttOrder.exch != null && gttOrder.exch!.isNotEmpty ? ' ${gttOrder.exch}' : ''}',
+                child: Padding(
+                  padding: EdgeInsets.only(right: isRowHovered ? 140.0 : 0.0),
+                  child: RichText(
+                    overflow: isRowHovered
+                        ? TextOverflow.ellipsis
+                        : TextOverflow.visible,
+                    maxLines: 1,
+                    softWrap: false,
+                    text: TextSpan(
+                      children: [
+                        // Symbol (14px, 500)
                         TextSpan(
-                          text: ' ${gttOrder.exch}',
-                          style: _geistTextStyle(
-                            color: colorScheme.mutedForeground,
-                            fontSize: 12.0,
-                          ),
+                          text: displayText,
+                          style: _getTextStyle(context),
                         ),
-                    ],
+                        // Exchange (12px, 500, muted color)
+                        if (gttOrder.exch != null && gttOrder.exch!.isNotEmpty)
+                          TextSpan(
+                            text: ' ${gttOrder.exch}',
+                            style: MyntWebTextStyles.para(
+                              context,
+                              darkColor: MyntColors.textSecondaryDark,
+                              lightColor: MyntColors.textSecondary,
+                              fontWeight: MyntFonts.medium,
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
           ),
-          // Action buttons - overlay on the right side, covering only half the text
-          Align(
-            alignment: Alignment.centerRight,
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                // Responsive max width based on screen size
-                final screenWidth = MediaQuery.of(context).size.width;
-                final isSmallScreen = screenWidth < 768;
-                final isVerySmallScreen = screenWidth < 480;
-                final responsiveMaxWidth = isVerySmallScreen ? 120.0 : (isSmallScreen ? 160.0 : 200.0);
-                
-                // Use available width, but cap at responsive max to prevent overflow
-                final maxButtonWidth = constraints.maxWidth.clamp(0.0, responsiveMaxWidth);
-                return GestureDetector(
-                  onTap: () {}, // Empty handler to stop propagation
-                  behavior: HitTestBehavior.opaque,
-                  child: IgnorePointer(
-                    ignoring: !isRowHovered,
-                    child: AnimatedOpacity(
-                      opacity: isRowHovered ? 1 : 0,
-                      duration: const Duration(milliseconds: 140),
-                      child: Container(
-                        constraints: BoxConstraints(maxWidth: maxButtonWidth),
-                        decoration: BoxDecoration(
-                          // Subtle background gradient for better button visibility
-                          gradient: LinearGradient(
-                            begin: Alignment.centerLeft,
-                            end: Alignment.centerRight,
-                            colors: [
-                              colorScheme.background.withOpacity(0.0),
-                              colorScheme.background.withOpacity(0.95),
-                            ],
-                          ),
-                        ),
-                        padding: const EdgeInsets.only(left: 8),
-                        child: Builder(
-                          builder: (buttonContext) {
-                            final screenWidth = MediaQuery.of(buttonContext).size.width;
-                            final isSmallScreen = screenWidth < 768;
-                            final buttonSpacing = isSmallScreen ? 4.0 : 6.0;
-                            
-                            return Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                if (isPending) ...[
-                                  _buildHoverButton(
-                                    label: 'Modify',
-                                    onPressed: (isProcessing && _isProcessingModify) ? null : () async {
-                                      setState(() {
-                                        _processingOrderToken = uniqueId;
-                                        _isProcessingModify = true;
-                                      });
-                                      await _handleModifyGttOrder(gttOrder);
-                                      if (mounted) {
-                                        setState(() {
-                                          _isProcessingModify = false;
-                                          _processingOrderToken = null;
-                                        });
-                                      }
-                                    },
-                                    backgroundColor: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
-                                    textColor: Colors.white,
-                                    theme: theme,
-                                    context: buttonContext,
-                                  ),
-                                  SizedBox(width: buttonSpacing),
-                                  _buildHoverButton(
-                                    label: 'Cancel',
-                                    onPressed: (isProcessing && _isProcessingCancel) ? null : () async {
-                                      setState(() {
-                                        _processingOrderToken = uniqueId;
-                                        _isProcessingCancel = true;
-                                      });
-                                      await _handleCancelGttOrder(gttOrder);
-                                      if (mounted) {
-                                        setState(() {
-                                          _isProcessingCancel = false;
-                                          _processingOrderToken = null;
-                                        });
-                                      }
-                                    },
-                                    backgroundColor: theme.isDarkMode ? WebDarkColors.tertiary : WebColors.tertiary,
-                                    textColor: Colors.white,
-                                    theme: theme,
-                                    context: buttonContext,
-                                  ),
-                                ],
-                              ],
-                            );
-                          },
-                        ),
-                      ),
+          // Action buttons - positioned at the right edge
+          if (isRowHovered)
+            Positioned(
+              right: 0,
+              top: 0,
+              bottom: 0,
+              child: GestureDetector(
+                onTap: () {}, // Empty handler to stop propagation
+                behavior: HitTestBehavior.opaque,
+                child: Container(
+                  decoration: BoxDecoration(
+                    // Subtle background gradient for better button visibility
+                    gradient: LinearGradient(
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                      colors: [
+                        shadcn.Theme.of(context)
+                            .colorScheme
+                            .background
+                            .withOpacity(0.0),
+                        shadcn.Theme.of(context)
+                            .colorScheme
+                            .background
+                            .withOpacity(0.95),
+                        shadcn.Theme.of(context).colorScheme.background,
+                      ],
+                      stops: const [0.0, 0.3, 0.5],
                     ),
                   ),
-                );
-              },
+                  padding: const EdgeInsets.only(left: 16),
+                  child: Center(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (isPending) ...[
+                          _buildHoverButton(
+                            label: 'Modify',
+                            onPressed: (isProcessing && _isProcessingModify)
+                                ? null
+                                : () async {
+                                    setState(() {
+                                      _processingOrderToken = uniqueId;
+                                      _isProcessingModify = true;
+                                    });
+                                    await _handleModifyGttOrder(gttOrder);
+                                    if (mounted) {
+                                      setState(() {
+                                        _isProcessingModify = false;
+                                        _processingOrderToken = null;
+                                      });
+                                    }
+                                  },
+                            backgroundColor: resolveThemeColor(context,
+                                dark: MyntColors.primary,
+                                light: MyntColors.primary),
+                            textColor: Colors.white,
+                            theme: theme,
+                            context: context,
+                          ),
+                          const SizedBox(width: 6),
+                          _buildHoverButton(
+                            label: 'Cancel',
+                            onPressed: (isProcessing && _isProcessingCancel)
+                                ? null
+                                : () async {
+                                    setState(() {
+                                      _processingOrderToken = uniqueId;
+                                      _isProcessingCancel = true;
+                                    });
+                                    await _handleCancelGttOrder(gttOrder);
+                                    if (mounted) {
+                                      setState(() {
+                                        _isProcessingCancel = false;
+                                        _processingOrderToken = null;
+                                      });
+                                    }
+                                  },
+                            backgroundColor: resolveThemeColor(context,
+                                dark: MyntColors.loss, light: MyntColors.loss),
+                            textColor: Colors.white,
+                            theme: theme,
+                            context: context,
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+              ),
             ),
-          ),
         ],
       ),
     );
@@ -787,42 +878,30 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
     required ThemesProvider theme,
     required BuildContext context,
   }) {
-    final borderRadiusValue = 5.0;
-    
-    // Detect screen size for responsive design
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isSmallScreen = screenWidth < 768; // Tablet breakpoint
-    final isVerySmallScreen = screenWidth < 480; // Mobile breakpoint
-    
-    // Responsive sizes
-    final buttonPadding = isVerySmallScreen 
-        ? const EdgeInsets.symmetric(horizontal: 4, vertical: 4)
-        : (isSmallScreen 
-            ? const EdgeInsets.symmetric(horizontal: 6, vertical: 4)
-            : const EdgeInsets.symmetric(horizontal: 8));
-    final fontSize = isVerySmallScreen ? 10.0 : (isSmallScreen ? 11.0 : 12.0);
-    
-    // Use Container only for background color, shadcn handles size/shape
-    return Container(
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(borderRadiusValue),
-      ),
-      child: shadcn.TextButton(
-        size: shadcn.ButtonSize.small,
-        density: shadcn.ButtonDensity.dense,
-        onPressed: onPressed,
-        shape: shadcn.ButtonShape.rectangle,
-        child: Padding(
-          padding: buttonPadding,
-          child: Text(
-            label,
-            style: WebTextStyles.buttonSm(
-              isDarkTheme: theme.isDarkMode,
-              color: textColor,
-              fontWeight: WebFonts.bold,
-            ).copyWith(fontSize: fontSize),
-          ),
+    return GestureDetector(
+      onTap: onPressed,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          borderRadius: BorderRadius.circular(4),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 2,
+              offset: const Offset(0, 1),
+            ),
+          ],
+        ),
+        child: Text(
+          label,
+          style: MyntWebTextStyles.tableCell(
+            context,
+            color: textColor,
+            darkColor: textColor,
+            lightColor: textColor,
+            fontWeight: MyntFonts.medium,
+          ).copyWith(fontSize: 12),
         ),
       ),
     );
@@ -848,20 +927,25 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
 
   Widget _buildStatusCell(GttOrderBookModel gttOrder, ThemesProvider theme) {
     final status = gttOrder.gttOrderCurrentStatus?.toUpperCase() ?? '';
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
-    
-    // Use shadcn colors for status
+
+    // Use MyntColors for status
     Color statusColor;
     if (status == 'EXECUTED') {
-      statusColor = colorScheme.chart2; // Success/green
-    } else if (status == 'REJECTED' || status == 'CANCELLED' || status == 'CANCELED') {
-      statusColor = colorScheme.destructive; // Error/red
+      statusColor = resolveThemeColor(context,
+          dark: MyntColors.profitDark, light: MyntColors.profit);
+    } else if (status == 'REJECTED' ||
+        status == 'CANCELLED' ||
+        status == 'CANCELED') {
+      statusColor = resolveThemeColor(context,
+          dark: MyntColors.lossDark, light: MyntColors.loss);
     } else if (status == 'PENDING' || status == 'TRIGGER_PENDING') {
-      statusColor = colorScheme.chart1; // Warning/orange
+      statusColor = resolveThemeColor(context,
+          dark: MyntColors.warning, light: MyntColors.warning);
     } else {
-      statusColor = colorScheme.mutedForeground; // Default
+      statusColor = resolveThemeColor(context,
+          dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary);
     }
-    
+
     return _buildTextCell(
       CellFormatters.getGttStatusText(status),
       theme,
@@ -880,11 +964,10 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
       alignment: alignment,
       child: Text(
         text,
-        style: _geistTextStyle(
-          color: color ?? shadcn.Theme.of(context).colorScheme.foreground,
-        ),
+        style: _getTextStyle(context, color: color),
         maxLines: 1,
-        overflow: TextOverflow.visible, // Show full text, only Instrument column truncates
+        overflow: TextOverflow
+            .visible, // Show full text, only Instrument column truncates
         softWrap: false,
       ),
     );
@@ -904,30 +987,33 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
   Future<void> _handleCancelGttOrder(GttOrderBookModel gttOrder) async {
     // Show confirmation dialog first
     final shouldCancel = await _showCancelGttOrderDialog(gttOrder);
-    
+
     if (shouldCancel != true) {
       return;
     }
 
     try {
       // Cancel the GTT order
-    await ref.read(orderProvider).cancelGttOrder(gttOrder.alId ?? '', context);
-      
+      await ref
+          .read(orderProvider)
+          .cancelGttOrder(gttOrder.alId ?? '', context);
+
       // Refresh GTT order book after successful cancel
       await ref.read(orderProvider).fetchGTTOrderBook(context, "");
-      
+
       if (mounted) {
         ResponsiveSnackBar.showSuccess(context, 'GTT Order Cancelled');
       }
     } catch (e) {
       if (mounted) {
-        ResponsiveSnackBar.showError(context, 'Failed to cancel GTT order: ${e.toString()}');
+        ResponsiveSnackBar.showError(
+            context, 'Failed to cancel GTT order: ${e.toString()}');
       }
     }
   }
 
-  Future<bool?> _showCancelGttOrderDialog(GttOrderBookModel gttOrderData) async {
-    final theme = ref.read(themeProvider);
+  Future<bool?> _showCancelGttOrderDialog(
+      GttOrderBookModel gttOrderData) async {
     final symbol = gttOrderData.tsym?.replaceAll("-EQ", "") ?? 'N/A';
     final exchange = gttOrderData.exch ?? '';
     final displayText = '$symbol $exchange'.trim();
@@ -940,7 +1026,8 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
           child: Container(
             width: 400,
             decoration: BoxDecoration(
-              color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+              color: resolveThemeColor(context,
+                  dark: colors.colorBlack, light: colors.colorWhite),
               borderRadius: BorderRadius.circular(5),
             ),
             child: Column(
@@ -948,15 +1035,15 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
               children: [
                 // Header with close button
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   margin: const EdgeInsets.only(bottom: 8),
                   decoration: BoxDecoration(
                     border: Border(
                       bottom: BorderSide(
-                        color: theme.isDarkMode
-                            ? WebDarkColors.divider
-                            : WebColors.divider,
+                        color: resolveThemeColor(context,
+                            dark: MyntColors.dividerDark,
+                            light: MyntColors.divider),
                       ),
                     ),
                   ),
@@ -965,11 +1052,8 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
                     children: [
                       Text(
                         'Cancel GTT Order',
-                        style: WebTextStyles.dialogTitle(
-                          isDarkTheme: theme.isDarkMode,
-                          color: theme.isDarkMode
-                              ? WebDarkColors.textPrimary
-                              : WebColors.textPrimary,
+                        style: MyntWebTextStyles.title(
+                          context,
                         ),
                       ),
                       Material(
@@ -982,9 +1066,9 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
                             child: Icon(
                               Icons.close,
                               size: 20,
-                              color: theme.isDarkMode
-                                  ? WebDarkColors.textSecondary
-                                  : WebColors.textSecondary,
+                              color: resolveThemeColor(context,
+                                  dark: MyntColors.textSecondaryDark,
+                                  light: MyntColors.textSecondary),
                             ),
                           ),
                         ),
@@ -1007,11 +1091,8 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
                             child: Text(
                               'Are you sure you want to cancel this GTT order?',
                               textAlign: TextAlign.center,
-                              style: WebTextStyles.dialogContent(
-                                isDarkTheme: theme.isDarkMode,
-                                color: theme.isDarkMode
-                                    ? WebDarkColors.textPrimary
-                                    : WebColors.textPrimary,
+                              style: MyntWebTextStyles.bodyMedium(
+                                context,
                               ),
                             ),
                           ),
@@ -1021,11 +1102,10 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
                           child: Text(
                             displayText,
                             textAlign: TextAlign.center,
-                            style: WebTextStyles.dialogContent(
-                              isDarkTheme: theme.isDarkMode,
-                              color: theme.isDarkMode
-                                  ? WebDarkColors.textSecondary
-                                  : WebColors.textSecondary,
+                            style: MyntWebTextStyles.para(
+                              context,
+                              darkColor: MyntColors.textSecondaryDark,
+                              lightColor: MyntColors.textSecondary,
                             ),
                           ),
                         ),
@@ -1035,9 +1115,9 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
                           height: 40,
                           child: Container(
                             decoration: BoxDecoration(
-                              color: theme.isDarkMode
-                                  ? WebDarkColors.primary
-                                  : WebColors.primary,
+                              color: resolveThemeColor(context,
+                                  dark: MyntColors.primary,
+                                  light: MyntColors.primary),
                               borderRadius: BorderRadius.circular(5),
                             ),
                             child: TextButton(
@@ -1050,8 +1130,8 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
                               ),
                               child: Text(
                                 'Yes, Cancel',
-                                style: WebTextStyles.buttonMd(
-                                  isDarkTheme: theme.isDarkMode,
+                                style: MyntWebTextStyles.buttonMd(
+                                  context,
                                   color: Colors.white,
                                 ),
                               ),
@@ -1147,11 +1227,12 @@ class _GttLTPCellState extends ConsumerState<_GttLTPCell> {
   Widget build(BuildContext context) {
     return Text(
       ltp,
-      style: TextStyle(
-        fontFamily: 'Geist',
-        color: shadcn.Theme.of(context).colorScheme.foreground,
+      style: MyntWebTextStyles.tableCell(
+        context,
+        darkColor: MyntColors.textPrimaryDark,
+        lightColor: MyntColors.textPrimary,
+        fontWeight: MyntFonts.medium,
       ),
     );
   }
 }
-

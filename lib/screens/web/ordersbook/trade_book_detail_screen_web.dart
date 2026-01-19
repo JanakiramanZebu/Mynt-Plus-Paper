@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -7,12 +6,9 @@ import '../../../models/marketwatch_model/get_quotes.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/websocket_provider.dart';
-import '../../../res/global_state_text.dart';
-import '../../../res/res.dart';
-import '../../../res/web_colors.dart';
-import '../../../res/global_font_web.dart';
-import '../../../utils/responsive_navigation.dart';
-import '../../../models/order_book_model/order_book_model.dart';
+import '../../../res/mynt_web_text_styles.dart';
+import '../../../res/mynt_web_color_styles.dart';
+import '../../../sharedWidget/common_buttons_web.dart';
 
 class TradeBookDetailScreenWeb extends ConsumerStatefulWidget {
   final TradeBookModel tradeData;
@@ -23,17 +19,17 @@ class TradeBookDetailScreenWeb extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<TradeBookDetailScreenWeb> createState() => _TradeBookDetailScreenWebState();
+  ConsumerState<TradeBookDetailScreenWeb> createState() =>
+      _TradeBookDetailScreenWebState();
 }
 
-class _TradeBookDetailScreenWebState extends ConsumerState<TradeBookDetailScreenWeb>
+class _TradeBookDetailScreenWebState
+    extends ConsumerState<TradeBookDetailScreenWeb>
     with SingleTickerProviderStateMixin {
   late TradeBookModel _tradeData;
   late AnimationController _animationController;
 
   // Track processing states
-  bool _isProcessingBuy = false;
-  bool _isProcessingSell = false;
 
   @override
   void initState() {
@@ -125,7 +121,8 @@ class _TradeBookDetailScreenWebState extends ConsumerState<TradeBookDetailScreen
             if (socketDatas.containsKey(_tradeData.token)) {
               final lp = socketDatas["${_tradeData.token}"]['lp']?.toString();
               final pc = socketDatas["${_tradeData.token}"]['pc']?.toString();
-              final chng = socketDatas["${_tradeData.token}"]['chng']?.toString();
+              final chng =
+                  socketDatas["${_tradeData.token}"]['chng']?.toString();
 
               if (lp != null && lp != "null" && lp != "0" && lp != "0.00") {
                 updatedTradeData.ltp = lp;
@@ -140,127 +137,78 @@ class _TradeBookDetailScreenWebState extends ConsumerState<TradeBookDetailScreen
               }
             }
 
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          child: Container(
-            width: 700,
-            decoration: BoxDecoration(
-              color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-              borderRadius: BorderRadius.circular(5),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-              // Fixed Header
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                margin: const EdgeInsets.only(bottom: 8),
+            return Dialog(
+              backgroundColor: Colors.transparent,
+              child: Container(
+                width: 700,
                 decoration: BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(
-                      color: theme.isDarkMode
-                          ? WebDarkColors.divider
-                          : WebColors.divider,
-                    ),
-                  ),
+                  color: resolveThemeColor(context,
+                      dark: const Color(0xFF0F172A), light: Colors.white),
+                  borderRadius: BorderRadius.circular(5),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    _buildSymbolSection(theme, marketwatch, updatedTradeData),
-                    Material(
-                      color: Colors.transparent,
-                      shape: const CircleBorder(),
-                      child: InkWell(
-                        customBorder: const CircleBorder(),
-                        splashColor: theme.isDarkMode
-                            ? Colors.white.withOpacity(.15)
-                            : Colors.black.withOpacity(.15),
-                        highlightColor: theme.isDarkMode
-                            ? Colors.white.withOpacity(.08)
-                            : Colors.black.withOpacity(.08),
-                        onTap: () => Navigator.of(context).pop(),
-                        child: Padding(
-                          padding: const EdgeInsets.all(6),
-                          child: Icon(
-                            Icons.close,
-                            size: 20,
-                            color: theme.isDarkMode
-                                ? WebDarkColors.iconSecondary
-                                : WebColors.iconSecondary,
+                    // Fixed Header
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 10),
+                      margin: const EdgeInsets.only(bottom: 8),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color: resolveThemeColor(context,
+                                dark: MyntColors.dividerDark,
+                                light: MyntColors.divider),
                           ),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _buildSymbolSection(
+                              theme, marketwatch, updatedTradeData),
+                          MyntCloseButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Content
+                    Flexible(
+                      fit: FlexFit.loose,
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.only(
+                            top: 0, bottom: 20, left: 20, right: 20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Trade Value Section
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              child: _buildTradeValueSection(
+                                  theme, updatedTradeData),
+                            ),
+
+                            // Trade Details Section
+                            _buildTradeDetailsSection(theme, updatedTradeData),
+                          ],
                         ),
                       ),
                     ),
                   ],
                 ),
               ),
-              
-              // Content
-              Flexible(
-                fit: FlexFit.loose,
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.only(top: 0, bottom: 20, left: 20, right: 20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Trade Value Section
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        child: _buildTradeValueSection(theme, updatedTradeData),
-                      ),
-                      
-                      // Trade Details Section
-                      _buildTradeDetailsSection(theme, updatedTradeData),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-                    ),
-        );
+            );
           },
         );
       },
     );
   }
 
-  Widget _buildHeader(ThemesProvider theme) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: theme.isDarkMode ? colors.kColorLightGreyDarkTheme : colors.kColorLightGrey,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(16),
-          topRight: Radius.circular(16),
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            'Trade Details',
-            style: TextWidget.textStyle(
-              fontSize: 18,
-              theme: theme.isDarkMode,
-              color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-              fw: 3,
-            ),
-          ),
-          IconButton(
-            onPressed: () => Navigator.of(context).pop(),
-            icon: Icon(
-              Icons.close,
-              color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSymbolSection(ThemesProvider theme, MarketWatchProvider marketwatch, TradeBookModel displayData) {
+  Widget _buildSymbolSection(ThemesProvider theme,
+      MarketWatchProvider marketwatch, TradeBookModel displayData) {
     DepthInputArgs depthArgs = DepthInputArgs(
       exch: displayData.exch ?? "",
       token: displayData.token ?? "",
@@ -277,8 +225,12 @@ class _TradeBookDetailScreenWebState extends ConsumerState<TradeBookDetailScreen
       child: InkWell(
         customBorder: const RoundedRectangleBorder(),
         borderRadius: BorderRadius.circular(0),
-        splashColor: theme.isDarkMode ? colors.primaryDark.withOpacity(0.1) : colors.primaryLight.withOpacity(0.1),
-        highlightColor: theme.isDarkMode ? colors.primaryDark.withOpacity(0.2) : colors.primaryLight.withOpacity(0.2),
+        splashColor: resolveThemeColor(context,
+            dark: MyntColors.primary.withOpacity(0.1),
+            light: MyntColors.primary.withOpacity(0.1)),
+        highlightColor: resolveThemeColor(context,
+            dark: MyntColors.primary.withOpacity(0.2),
+            light: MyntColors.primary.withOpacity(0.2)),
         onTap: () async {
           Navigator.pop(context);
           await marketwatch.scripdepthsize(false);
@@ -292,52 +244,60 @@ class _TradeBookDetailScreenWebState extends ConsumerState<TradeBookDetailScreen
               children: [
                 Text(
                   "${displayData.symbol?.replaceAll("-EQ", "") ?? ''} ${displayData.expDate ?? ''} ${displayData.option ?? ''} ",
-                  style: WebTextStyles.dialogTitle(
-                    isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                  style: MyntWebTextStyles.title(
+                    context,
+                    color: resolveThemeColor(context,
+                        dark: MyntColors.textPrimaryDark,
+                        light: MyntColors.textPrimary),
                   ),
                 ),
                 const SizedBox(width: 4),
                 Text(
                   "${displayData.exch}",
-                  style: WebTextStyles.dialogTitle(
-                    isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
+                  style: MyntWebTextStyles.title(
+                    context,
+                    color: resolveThemeColor(context,
+                        dark: MyntColors.textSecondaryDark,
+                        light: MyntColors.textSecondary),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 8),
-            
+
             // Price and Change
             Row(
               children: [
                 Text(
                   displayData.ltp ?? displayData.prc ?? '0.00',
-                  style: WebTextStyles.title(
-                    isDarkTheme: theme.isDarkMode,
-                    color: (displayData.change == "null" || displayData.change == null) ||
+                  style: MyntWebTextStyles.title(
+                    context,
+                    color: (displayData.change == "null" ||
+                                displayData.change == null) ||
                             displayData.change == "0.00"
-                        ? theme.isDarkMode
-                            ? colors.textSecondaryDark
-                            : colors.textSecondaryLight
-                        : (displayData.change?.startsWith("-") == true || displayData.perChange?.startsWith("-") == true)
-                            ? theme.isDarkMode
-                                ? colors.lossDark
-                                : colors.lossLight
-                            : theme.isDarkMode
-                                ? colors.profitDark
-                                : colors.profitLight,
-                    fontWeight: WebFonts.medium,
+                        ? resolveThemeColor(context,
+                            dark: MyntColors.textSecondaryDark,
+                            light: MyntColors.textSecondary)
+                        : (displayData.change?.startsWith("-") == true ||
+                                displayData.perChange?.startsWith("-") == true)
+                            ? resolveThemeColor(context,
+                                dark: MyntColors.lossDark,
+                                light: MyntColors.loss)
+                            : resolveThemeColor(context,
+                                dark: MyntColors.profitDark,
+                                light: MyntColors.profit),
+                    fontWeight: MyntFonts.medium,
                   ),
                 ),
                 const SizedBox(width: 8),
                 Text(
                   "${(double.tryParse(displayData.change ?? '0.00') ?? 0.00).toStringAsFixed(2)} (${displayData.perChange ?? '0.00'}%)",
-                  style: WebTextStyles.sub(
-                    isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
-                    fontWeight: WebFonts.medium,
+                  style: MyntWebTextStyles.bodySmall(
+                    context,
+                    color: resolveThemeColor(context,
+                        dark: MyntColors.textSecondaryDark,
+                        light: MyntColors.textSecondary),
+                    fontWeight: MyntFonts.medium,
                   ),
                 ),
               ],
@@ -348,84 +308,11 @@ class _TradeBookDetailScreenWebState extends ConsumerState<TradeBookDetailScreen
     );
   }
 
-  Widget _buildActionButtons(ThemesProvider theme, MarketWatchProvider marketwatch, TradeBookModel displayData) {
-    return Row(
-      children: [
-        Expanded(
-          child: _buildActionButton(
-            "Exit",
-            false,
-            theme,
-            _isProcessingSell ? null : () => _handleSell(displayData),
-            _isProcessingSell,
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _buildActionButton(
-            "Add",
-            true,
-            theme,
-            _isProcessingBuy ? null : () => _handleBuy(displayData),
-            _isProcessingBuy,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildActionButton(String text, bool isPrimary, ThemesProvider theme, VoidCallback? onPressed, bool isLoading) {
-    return SizedBox(
-      height: 45,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: isPrimary
-              ? colors.primaryLight
-              : (theme.isDarkMode
-                  ? colors.textSecondaryDark.withOpacity(0.6)
-                  : colors.btnBg),
-          foregroundColor: isPrimary
-              ? colors.colorWhite
-              : (theme.isDarkMode ? colors.colorWhite : colors.primaryLight),
-          side: isPrimary
-              ? null
-              : BorderSide(
-                  color: colors.primaryLight,
-                  width: 1,
-                ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
-        ),
-        onPressed: onPressed,
-        child: isLoading
-            ? SizedBox(
-                width: 18,
-                height: 18,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    isPrimary ? colors.colorWhite : (theme.isDarkMode ? colors.colorWhite : colors.primaryLight),
-                  ),
-                ),
-              )
-            : Text(
-                text,
-                style: TextWidget.textStyle(
-                  fontSize: 14,
-                  theme: false,
-                  color: isPrimary ? colors.colorWhite : (theme.isDarkMode ? colors.colorWhite : colors.primaryLight),
-                  fw: 2,
-                ),
-              ),
-      ),
-    );
-  }
-
-  Widget _buildTradeValueSection(ThemesProvider theme, TradeBookModel displayData) {
+  Widget _buildTradeValueSection(
+      ThemesProvider theme, TradeBookModel displayData) {
     final tradeValue = _calculateTradeValue(displayData);
     final isProfit = tradeValue >= 0;
-    
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -433,25 +320,25 @@ class _TradeBookDetailScreenWebState extends ConsumerState<TradeBookDetailScreen
           children: [
             Text(
               "Trade Value",
-              style: WebTextStyles.title(
-                isDarkTheme: theme.isDarkMode,
-                color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
-                fontWeight: WebFonts.medium,
+              style: MyntWebTextStyles.title(
+                context,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.textSecondaryDark,
+                    light: MyntColors.textSecondary),
+                fontWeight: MyntFonts.medium,
               ),
             ),
             const SizedBox(height: 6),
             Text(
               "₹${tradeValue.toStringAsFixed(2)}",
-              style: WebTextStyles.head(
-                isDarkTheme: theme.isDarkMode,
+              style: MyntWebTextStyles.head(
+                context,
                 color: isProfit
-                    ? theme.isDarkMode
-                        ? colors.profitDark
-                        : colors.profitLight
-                    : theme.isDarkMode
-                        ? colors.lossDark
-                        : colors.lossLight,
-                fontWeight: WebFonts.medium,
+                    ? resolveThemeColor(context,
+                        dark: MyntColors.profitDark, light: MyntColors.profit)
+                    : resolveThemeColor(context,
+                        dark: MyntColors.lossDark, light: MyntColors.loss),
+                fontWeight: MyntFonts.medium,
               ),
             ),
           ],
@@ -460,7 +347,8 @@ class _TradeBookDetailScreenWebState extends ConsumerState<TradeBookDetailScreen
     );
   }
 
-  Widget _buildTradeDetailsSection(ThemesProvider theme, TradeBookModel displayData) {
+  Widget _buildTradeDetailsSection(
+      ThemesProvider theme, TradeBookModel displayData) {
     return IntrinsicHeight(
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 12),
@@ -472,12 +360,15 @@ class _TradeBookDetailScreenWebState extends ConsumerState<TradeBookDetailScreen
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildInfoRow("Transaction Type", displayData.trantype == "B" ? "Buy" : "Sell", theme),
+                  _buildInfoRow("Transaction Type",
+                      displayData.trantype == "B" ? "Buy" : "Sell", theme),
                   _buildInfoRow("Quantity", displayData.qty ?? '0', theme),
                   _buildInfoRow("Price", displayData.avgprc ?? '0.00', theme),
                   _buildInfoRow("Product", displayData.sPrdtAli ?? '-', theme),
-                  _buildInfoRow("Order Number", displayData.norenordno ?? '-', theme),
-                  _buildInfoRow("Trade Time", displayData.norentm ?? "-", theme),
+                  _buildInfoRow(
+                      "Order Number", displayData.norenordno ?? '-', theme),
+                  _buildInfoRow(
+                      "Trade Time", displayData.norentm ?? "-", theme),
                 ],
               ),
             ),
@@ -485,21 +376,24 @@ class _TradeBookDetailScreenWebState extends ConsumerState<TradeBookDetailScreen
             Container(
               width: 0.5,
               margin: const EdgeInsets.symmetric(horizontal: 16),
-              color: theme.isDarkMode
-                  ? WebDarkColors.divider
-                  : WebColors.divider,
+              color: resolveThemeColor(context,
+                  dark: MyntColors.dividerDark, light: MyntColors.divider),
             ),
             // Right column
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildInfoRow("Fill Quantity", displayData.flqty ?? '0', theme),
-                  _buildInfoRow("Fill Price", displayData.flprc ?? '0.00', theme),
+                  _buildInfoRow(
+                      "Fill Quantity", displayData.flqty ?? '0', theme),
+                  _buildInfoRow(
+                      "Fill Price", displayData.flprc ?? '0.00', theme),
                   _buildInfoRow("Fill ID", displayData.flid ?? '-', theme),
                   _buildInfoRow("Fill Time", displayData.fltm ?? "-", theme),
-                  _buildInfoRow("Fill Shares", displayData.fillshares ?? '0', theme),
-                  _buildInfoRow("Product Type", displayData.prctyp ?? '-', theme),
+                  _buildInfoRow(
+                      "Fill Shares", displayData.fillshares ?? '0', theme),
+                  _buildInfoRow(
+                      "Product Type", displayData.prctyp ?? '-', theme),
                 ],
               ),
             ),
@@ -509,7 +403,8 @@ class _TradeBookDetailScreenWebState extends ConsumerState<TradeBookDetailScreen
     );
   }
 
-  Widget _buildInfoRow(String title, String value, ThemesProvider theme, [Color? valueColor]) {
+  Widget _buildInfoRow(String title, String value, ThemesProvider theme,
+      [Color? valueColor]) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
@@ -517,16 +412,21 @@ class _TradeBookDetailScreenWebState extends ConsumerState<TradeBookDetailScreen
         children: [
           Text(
             title,
-            style: WebTextStyles.dialogContent(
-              isDarkTheme: theme.isDarkMode,
-              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+            style: MyntWebTextStyles.bodySmall(
+              context,
+              color: resolveThemeColor(context,
+                  dark: MyntColors.textPrimaryDark,
+                  light: MyntColors.textPrimary),
             ),
           ),
           Text(
             value,
-            style: WebTextStyles.dialogContent(
-              isDarkTheme: theme.isDarkMode,
-              color: valueColor ?? (theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary),
+            style: MyntWebTextStyles.bodySmall(
+              context,
+              color: valueColor ??
+                  resolveThemeColor(context,
+                      dark: MyntColors.textPrimaryDark,
+                      light: MyntColors.textPrimary),
             ),
           ),
         ],
@@ -545,118 +445,4 @@ class _TradeBookDetailScreenWebState extends ConsumerState<TradeBookDetailScreen
   }
 
   // Action handlers
-  Future<void> _handleBuy(TradeBookModel tradeData) async {
-    if (_isProcessingBuy) return;
-
-    try {
-      setState(() {
-        _isProcessingBuy = true;
-      });
-
-      final wsProvider = ref.read(websocketProvider);
-      final mwProvider = ref.read(marketWatchProvider);
-
-      wsProvider.establishConnection(
-          channelInput: "${tradeData.exch}|${tradeData.token}#",
-          task: "t",
-          context: context);
-
-      await mwProvider.fetchScripInfo(
-          "${tradeData.token}", '${tradeData.exch}', context, true);
-
-      if (!mounted) return;
-
-      final OrderScreenArgs orderArgs = OrderScreenArgs(
-          exchange: '${tradeData.exch}',
-          tSym: '${tradeData.tsym}',
-          token: '',
-          transType: true,
-          prd: '${tradeData.sPrdtAli}',
-          lotSize: '1',
-          orderTpye: "${tradeData.sPrdtAli}",
-          isExit: false,
-          ltp: '${tradeData.ltp}',
-          perChange: '${tradeData.perChange}',
-          holdQty: '',
-          isModify: false,
-          raw: {});
-
-      if (mwProvider.scripInfoModel != null) {
-        ResponsiveNavigation.toPlaceOrderScreen(context: context, arguments: {
-          "orderArg": orderArgs,
-          "scripInfo": mwProvider.scripInfoModel!,
-          "isBskt": ""
-        }).then((_) {
-          if (mounted) {
-            setState(() {
-              _isProcessingBuy = false;
-            });
-          }
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isProcessingBuy = false;
-        });
-      }
-    }
-  }
-
-  Future<void> _handleSell(TradeBookModel tradeData) async {
-    if (_isProcessingSell) return;
-
-    try {
-      setState(() {
-        _isProcessingSell = true;
-      });
-
-      final wsProvider = ref.read(websocketProvider);
-      final mwProvider = ref.read(marketWatchProvider);
-
-      wsProvider.establishConnection(
-          channelInput: "${tradeData.exch}|${tradeData.token}#",
-          task: "t",
-          context: context);
-
-      await mwProvider.fetchScripInfo(
-          "${tradeData.token}", '${tradeData.exch}', context, true);
-
-      if (!mounted) return;
-
-      final OrderScreenArgs orderArgs = OrderScreenArgs(
-          exchange: '${tradeData.exch}',
-          tSym: '${tradeData.tsym}',
-          token: '',
-          transType: false,
-          lotSize: '1',
-          isExit: true,
-          ltp: '${tradeData.ltp}',
-          perChange: '${tradeData.perChange}',
-          orderTpye: "${tradeData.sPrdtAli}",
-          holdQty: "${tradeData.qty ?? 0}",
-          isModify: false,
-          raw: {});
-
-      if (mwProvider.scripInfoModel != null) {
-        ResponsiveNavigation.toPlaceOrderScreen(context: context, arguments: {
-          "orderArg": orderArgs,
-          "scripInfo": mwProvider.scripInfoModel!,
-          "isBskt": ""
-        }).then((_) {
-          if (mounted) {
-            setState(() {
-              _isProcessingSell = false;
-            });
-          }
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isProcessingSell = false;
-        });
-      }
-    }
-  }
 }

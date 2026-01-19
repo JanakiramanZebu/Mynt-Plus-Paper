@@ -1,5 +1,6 @@
 import 'dart:async';
-import 'package:flutter/material.dart' hide DataTable, DataColumn, DataRow, DataCell;
+import 'package:flutter/material.dart'
+    hide DataTable, DataColumn, DataRow, DataCell;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
 import 'package:mynt_plus/models/order_book_model/order_book_model.dart';
@@ -9,7 +10,7 @@ import 'package:mynt_plus/provider/websocket_provider.dart';
 import 'package:mynt_plus/res/mynt_web_text_styles.dart';
 import 'package:mynt_plus/res/mynt_web_color_styles.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
-import 'package:mynt_plus/sharedWidget/common_buttons_web.dart';
+
 import '../refactored/services/order_action_handler.dart';
 import '../refactored/utils/cell_formatters.dart';
 
@@ -55,19 +56,27 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
     super.dispose();
   }
 
-  // Helper method to get appropriate text style from MyntWebTextStyles
+  // Helper method to get appropriate text style for table cells
+  // 14px, weight 500, MyntColors for text
   TextStyle _getTextStyle(BuildContext context, {Color? color}) {
     return MyntWebTextStyles.tableCell(
       context,
       color: color,
+      darkColor: color ?? MyntColors.textPrimaryDark,
+      lightColor: color ?? MyntColors.textPrimary,
+      fontWeight: MyntFonts.medium,
     );
   }
 
   // Helper method for header text style
+  // 14px, weight 600, MyntColors for text
   TextStyle _getHeaderStyle(BuildContext context, {Color? color}) {
     return MyntWebTextStyles.tableHeader(
       context,
       color: color,
+      darkColor: color ?? MyntColors.textSecondaryDark,
+      lightColor: color ?? MyntColors.textSecondary,
+      fontWeight: MyntFonts.semiBold,
     );
   }
 
@@ -82,7 +91,7 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
     final isFirstColumn = columnIndex == 0; // Time column
     final isInstrumentColumn = columnIndex == 1; // Instrument column
     final isLastColumn = columnIndex == 10; // Status column
-    
+
     // Match the cell padding logic - Instrument column has more left, minimal right
     // Last column mirrors this - minimal left, more right
     EdgeInsets cellPadding;
@@ -128,11 +137,12 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
   }
 
   // Builds a sortable header cell
-  shadcn.TableCell buildHeaderCell(String label, int columnIndex, [bool alignRight = false]) {
+  shadcn.TableCell buildHeaderCell(String label, int columnIndex,
+      [bool alignRight = false]) {
     final isFirstColumn = columnIndex == 0; // Time column
     final isInstrumentColumn = columnIndex == 1; // Instrument column
     final isLastColumn = columnIndex == 10; // Status column
-    
+
     // Match the cell padding logic - Instrument column has more left, minimal right
     // Last column mirrors this - minimal left, more right
     EdgeInsets headerPadding;
@@ -167,7 +177,8 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
           padding: headerPadding,
           alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
           child: Row(
-            mainAxisAlignment: alignRight ? MainAxisAlignment.end : MainAxisAlignment.start,
+            mainAxisAlignment:
+                alignRight ? MainAxisAlignment.end : MainAxisAlignment.start,
             children: [
               if (alignRight && _sortColumnIndex == columnIndex)
                 Icon(
@@ -175,12 +186,14 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
                   size: 16,
                   color: shadcn.Theme.of(context).colorScheme.mutedForeground,
                 ),
-              if (alignRight && _sortColumnIndex == columnIndex) const SizedBox(width: 4),
+              if (alignRight && _sortColumnIndex == columnIndex)
+                const SizedBox(width: 4),
               Text(
                 label,
                 style: _getHeaderStyle(context),
               ),
-              if (!alignRight && _sortColumnIndex == columnIndex) const SizedBox(width: 4),
+              if (!alignRight && _sortColumnIndex == columnIndex)
+                const SizedBox(width: 4),
               if (!alignRight && _sortColumnIndex == columnIndex)
                 Icon(
                   _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
@@ -208,7 +221,7 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
   String _formatProductType(OrderBookModel order) {
     final product = order.sPrdtAli ?? order.prd ?? '';
     final priceType = order.prctyp ?? '';
-    
+
     if (product.isEmpty && priceType.isEmpty) {
       return 'N/A';
     } else if (product.isEmpty) {
@@ -223,7 +236,7 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
   // Helper method to get status color using shadcn theme
   String _formatTime(String time) {
     if (time.isEmpty || time == '0.00') return 'N/A';
-    
+
     // Try using CellFormatters first (expects "HH:mm:ss dd-MM-yyyy" format)
     final formatted = CellFormatters.formatTime(time);
     if (formatted.isNotEmpty) {
@@ -234,7 +247,7 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
       }
       return formatted;
     }
-    
+
     // Fallback: If formatDateTime failed, try parsing as simple time string (HHMMSS or HHMM)
     try {
       if (time.length >= 6) {
@@ -252,26 +265,32 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
     } catch (e) {
       // If parsing fails, return as is
     }
-    
+
     return time;
   }
 
   Color _getStatusColor(String status) {
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
     final statusUpper = status.toUpperCase();
-    
+
     if (statusUpper.contains('COMPLETE') || statusUpper.contains('FILLED')) {
-      return colorScheme.chart2;
-    } else if (statusUpper.contains('REJECT') || statusUpper.contains('CANCEL')) {
-      return colorScheme.destructive;
-    } else if (statusUpper.contains('PENDING') || statusUpper.contains('OPEN')) {
-      return colorScheme.chart1;
+      return resolveThemeColor(context,
+          dark: MyntColors.profitDark, light: MyntColors.profit);
+    } else if (statusUpper.contains('REJECT') ||
+        statusUpper.contains('CANCEL')) {
+      return resolveThemeColor(context,
+          dark: MyntColors.lossDark, light: MyntColors.loss);
+    } else if (statusUpper.contains('PENDING') ||
+        statusUpper.contains('OPEN')) {
+      return resolveThemeColor(context,
+          dark: MyntColors.warning, light: MyntColors.warning);
     }
-    return colorScheme.mutedForeground;
+    return resolveThemeColor(context,
+        dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary);
   }
 
   // Calculate minimum column widths dynamically based on header and data
-  Map<int, double> _calculateMinWidths(List<OrderBookModel> orders, BuildContext context) {
+  Map<int, double> _calculateMinWidths(
+      List<OrderBookModel> orders, BuildContext context) {
     // Use fixed font size for measurement (table text is not responsive, only buttons are)
     final textStyle = const TextStyle(fontSize: 14, fontFamily: 'Geist');
     const padding = 24.0; // Padding for cell content
@@ -313,18 +332,21 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
             final symbol = (order.tsym ?? '').replaceAll("-EQ", "").trim();
             final exchange = order.exch ?? '';
             final exchangeText = exchange.isNotEmpty ? ' $exchange' : '';
-            
+
             // Measure symbol with normal font (fixed 14px)
             final symbolWidth = _measureTextWidth(symbol, textStyle);
-            
+
             // Measure exchange with smaller font (fixed 12px, matches rendering)
-            final exchangeStyle = const TextStyle(fontSize: 12, fontFamily: 'Geist');
-            final exchangeWidth = exchangeText.isNotEmpty 
-                ? _measureTextWidth(exchangeText, exchangeStyle) 
+            final exchangeStyle =
+                const TextStyle(fontSize: 12, fontFamily: 'Geist');
+            final exchangeWidth = exchangeText.isNotEmpty
+                ? _measureTextWidth(exchangeText, exchangeStyle)
                 : 0.0;
-            
+
             // Total width = symbol + exchange + 4px gap
-            final totalWidth = symbolWidth + exchangeWidth + (exchangeText.isNotEmpty ? 4.0 : 0.0);
+            final totalWidth = symbolWidth +
+                exchangeWidth +
+                (exchangeText.isNotEmpty ? 4.0 : 0.0);
             if (totalWidth > maxWidth) {
               maxWidth = totalWidth;
             }
@@ -349,7 +371,9 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
             cellText = CellFormatters.getValidPrice(order);
             break;
           case 8: // Trigger price
-            cellText = (order.trgprc != null && order.trgprc != '0' && order.trgprc != '0.00')
+            cellText = (order.trgprc != null &&
+                    order.trgprc != '0' &&
+                    order.trgprc != '0.00')
                 ? order.trgprc!
                 : '0.00';
             break;
@@ -373,7 +397,8 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
       // Ensure minimum width to prevent excessive truncation
       if (headers[col] == 'Instrument') {
         const minInstrumentWidth = 150.0;
-        maxWidth = maxWidth < minInstrumentWidth ? minInstrumentWidth : maxWidth;
+        maxWidth =
+            maxWidth < minInstrumentWidth ? minInstrumentWidth : maxWidth;
       }
 
       // Set minimum width (max of header/data + padding)
@@ -400,7 +425,7 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
     final sorted = List<OrderBookModel>.from(orders);
     sorted.sort((a, b) {
       int comparison = 0;
-      
+
       switch (_sortColumnIndex) {
         case 0: // Time
           comparison = (a.norentm ?? '').compareTo(b.norentm ?? '');
@@ -409,29 +434,36 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
           comparison = (a.tsym ?? '').compareTo(b.tsym ?? '');
           break;
         case 2: // Product
-           comparison = _formatProductType(a).compareTo(_formatProductType(b));
+          comparison = _formatProductType(a).compareTo(_formatProductType(b));
           break;
         case 3: // Type
           comparison = (a.trantype ?? '').compareTo(b.trantype ?? '');
           break;
         case 4: // Qty
-          comparison = (int.tryParse(a.qty ?? '0') ?? 0).compareTo(int.tryParse(b.qty ?? '0') ?? 0);
+          comparison = (int.tryParse(a.qty ?? '0') ?? 0)
+              .compareTo(int.tryParse(b.qty ?? '0') ?? 0);
           break;
         case 5: // Avg price
-          comparison = (double.tryParse(a.avgprc ?? '0') ?? 0).compareTo(double.tryParse(b.avgprc ?? '0') ?? 0);
+          comparison = (double.tryParse(a.avgprc ?? '0') ?? 0)
+              .compareTo(double.tryParse(b.avgprc ?? '0') ?? 0);
           break;
         case 6: // LTP
-          comparison = (double.tryParse(a.ltp ?? '0') ?? 0).compareTo(double.tryParse(b.ltp ?? '0') ?? 0);
+          comparison = (double.tryParse(a.ltp ?? '0') ?? 0)
+              .compareTo(double.tryParse(b.ltp ?? '0') ?? 0);
           break;
         case 7: // Price
-          comparison = (double.tryParse(a.prc ?? '0') ?? 0).compareTo(double.tryParse(b.prc ?? '0') ?? 0);
+          comparison = (double.tryParse(a.prc ?? '0') ?? 0)
+              .compareTo(double.tryParse(b.prc ?? '0') ?? 0);
           break;
         case 8: // Trigger price
-          comparison = (double.tryParse(a.trgprc ?? '0') ?? 0).compareTo(double.tryParse(b.trgprc ?? '0') ?? 0);
+          comparison = (double.tryParse(a.trgprc ?? '0') ?? 0)
+              .compareTo(double.tryParse(b.trgprc ?? '0') ?? 0);
           break;
         case 9: // Order value
-          final aValue = (double.tryParse(a.prc ?? '0') ?? 0) * (int.tryParse(a.qty ?? '0') ?? 0);
-          final bValue = (double.tryParse(b.prc ?? '0') ?? 0) * (int.tryParse(b.qty ?? '0') ?? 0);
+          final aValue = (double.tryParse(a.prc ?? '0') ?? 0) *
+              (int.tryParse(a.qty ?? '0') ?? 0);
+          final bValue = (double.tryParse(b.prc ?? '0') ?? 0) *
+              (int.tryParse(b.qty ?? '0') ?? 0);
           comparison = aValue.compareTo(bValue);
           break;
         case 10: // Status
@@ -482,9 +514,7 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: NoDataFound(
-                title: searchQuery.isNotEmpty 
-                    ? "No Orders Found" 
-                    : "No Orders",
+                title: searchQuery.isNotEmpty ? "No Orders Found" : "No Orders",
                 subtitle: searchQuery.isNotEmpty
                     ? "No orders match your search \"$searchQuery\"."
                     : "You don't have any open orders yet.",
@@ -504,9 +534,9 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
     final dataRows = <shadcn.TableRow>[];
     for (var i = 0; i < sortedOrders.length; i++) {
       final order = sortedOrders[i];
-      final uniqueId = order.norenordno?.toString() ?? order.token?.toString() ?? '';
+      final uniqueId =
+          order.norenordno?.toString() ?? order.token?.toString() ?? '';
       final isHovered = _hoveredRowIndex == i;
-      final colorScheme = shadcn.Theme.of(context).colorScheme;
 
       dataRows.add(
         shadcn.TableRow(
@@ -528,7 +558,8 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
               child: GestureDetector(
                 onTap: () => actionHandler.openOrderDetail(order),
                 behavior: HitTestBehavior.opaque,
-                child: _buildInstrumentCell(order, theme, uniqueId, actionHandler, isHovered),
+                child: _buildInstrumentCell(
+                    order, theme, uniqueId, actionHandler, isHovered),
               ),
             ),
             buildCellWithHover(
@@ -550,7 +581,12 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
                 order.trantype == "S" ? "SELL" : "BUY",
                 style: _getTextStyle(
                   context,
-                  color: order.trantype == "S" ? colorScheme.destructive : colorScheme.chart2,
+                  color: order.trantype == "S"
+                      ? resolveThemeColor(context,
+                          dark: MyntColors.lossDark, light: MyntColors.loss)
+                      : resolveThemeColor(context,
+                          dark: MyntColors.profitDark,
+                          light: MyntColors.profit),
                 ),
               ),
             ),
@@ -600,7 +636,9 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
               alignRight: true,
               onTap: () => actionHandler.openOrderDetail(order),
               child: Text(
-                (order.trgprc != null && order.trgprc != '0' && order.trgprc != '0.00')
+                (order.trgprc != null &&
+                        order.trgprc != '0' &&
+                        order.trgprc != '0.00')
                     ? order.trgprc!
                     : '0.00',
                 style: _getTextStyle(context),
@@ -644,7 +682,7 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
 
           // Available width
           final availableWidth = constraints.maxWidth;
-          
+
           // Step 1: Start with minimum widths (content-based, no wasted space)
           final columnWidths = <int, double>{};
           for (int i = 0; i < 11; i++) {
@@ -652,23 +690,25 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
           }
 
           // Step 2: Calculate total minimum width needed
-          final totalMinWidth = columnWidths.values.fold<double>(0.0, (sum, width) => sum + width);
-          
+          final totalMinWidth = columnWidths.values
+              .fold<double>(0.0, (sum, width) => sum + width);
+
           // Step 3: If there's extra space, distribute it proportionally
           // This prevents unnecessary horizontal scroll while using available space efficiently
           if (totalMinWidth < availableWidth) {
             final extraSpace = availableWidth - totalMinWidth;
-            
+
             // Define which columns can grow and their growth priorities
             // Instrument gets more growth, text columns get medium, numeric get less
-            const instrumentGrowthFactor = 2.0; // Instrument can grow 2x more than numeric
+            const instrumentGrowthFactor =
+                2.0; // Instrument can grow 2x more than numeric
             const textGrowthFactor = 1.2;
             const numericGrowthFactor = 1.0;
-            
+
             // Calculate growth factors for each column
             final growthFactors = <int, double>{};
             double totalGrowthFactor = 0.0;
-            
+
             for (int i = 0; i < 11; i++) {
               // Column 0: Time (numeric)
               // Column 1: Instrument
@@ -685,12 +725,13 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
                 totalGrowthFactor += numericGrowthFactor;
               }
             }
-            
+
             // Distribute extra space proportionally
             if (totalGrowthFactor > 0) {
               for (int i = 0; i < 11; i++) {
                 if (growthFactors[i]! > 0) {
-                  final extraForThisColumn = (extraSpace * growthFactors[i]!) / totalGrowthFactor;
+                  final extraForThisColumn =
+                      (extraSpace * growthFactors[i]!) / totalGrowthFactor;
                   columnWidths[i] = columnWidths[i]! + extraForThisColumn;
                 }
               }
@@ -698,8 +739,9 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
           }
 
           // Calculate total required width
-          final totalRequiredWidth = columnWidths.values.fold<double>(0.0, (sum, width) => sum + width);
-          
+          final totalRequiredWidth = columnWidths.values
+              .fold<double>(0.0, (sum, width) => sum + width);
+
           // If total width exceeds available width, enable horizontal scrolling
           final needsHorizontalScroll = totalRequiredWidth > availableWidth;
 
@@ -752,7 +794,8 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
                       controller: _verticalScrollController,
                       scrollDirection: Axis.vertical,
                       child: shadcn.Table(
-                        key: ValueKey('table_${_sortColumnIndex}_$_sortAscending'),
+                        key: ValueKey(
+                            'table_${_sortColumnIndex}_$_sortAscending'),
                         columnWidths: {
                           0: shadcn.FixedTableSize(columnWidths[0]!),
                           1: shadcn.FixedTableSize(columnWidths[1]!),
@@ -821,196 +864,175 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
       width: double.infinity,
       height: double.infinity,
       child: Stack(
-        clipBehavior: Clip.hardEdge,
+        clipBehavior: Clip.none,
         children: [
           // Instrument name - full width, can be partially covered by buttons
           // Only truncate when hovered (buttons visible), otherwise show full text
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Tooltip(
-              message: '$displayText${order.exch != null && order.exch!.isNotEmpty ? ' ${order.exch}' : ''}',
-              child: Padding(
-                padding: EdgeInsets.only(right: isHovered ? 8.0 : 0.0),
-                child: RichText(
-                  overflow: isHovered ? TextOverflow.ellipsis : TextOverflow.visible,
-                  maxLines: 1,
-                  softWrap: false,
-                  text: TextSpan(
-                    children: [
-                      // Symbol (normal color)
-                      TextSpan(
-                        text: displayText,
-                        style: MyntWebTextStyles.body(
-                          context,
-                          color: colorScheme.foreground,
-                        ),
-                      ),
-                      // Exchange (mutedForeground color, smaller font)
-                      if (order.exch != null && order.exch!.isNotEmpty)
+          Positioned.fill(
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Tooltip(
+                message:
+                    '$displayText${order.exch != null && order.exch!.isNotEmpty ? ' ${order.exch}' : ''}',
+                child: Padding(
+                  padding: EdgeInsets.only(right: isHovered ? 140.0 : 0.0),
+                  child: RichText(
+                    overflow: isHovered
+                        ? TextOverflow.ellipsis
+                        : TextOverflow.visible,
+                    maxLines: 1,
+                    softWrap: false,
+                    text: TextSpan(
+                      children: [
+                        // Symbol (14px, 500)
                         TextSpan(
-                          text: ' ${order.exch}',
-                          style: MyntWebTextStyles.para(
-                            context,
-                            color: colorScheme.mutedForeground,
-                          ),
+                          text: displayText,
+                          style: _getTextStyle(context),
                         ),
-                    ],
+                        // Exchange (12px, 500, muted color)
+                        if (order.exch != null && order.exch!.isNotEmpty)
+                          TextSpan(
+                            text: ' ${order.exch}',
+                            style: MyntWebTextStyles.para(
+                              context,
+                              darkColor: MyntColors.textSecondaryDark,
+                              lightColor: MyntColors.textSecondary,
+                              fontWeight: MyntFonts.medium,
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
           ),
-          // Action buttons - overlay on the right side, covering only half the text
-          // Use Visibility to ensure buttons don't take space when not hovered
-          Visibility(
-            visible: isHovered,
-            maintainSize: false,
-            maintainAnimation: false,
-            maintainState: false,
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  // Responsive max width based on screen size
-                  final screenWidth = MediaQuery.of(context).size.width;
-                  final isSmallScreen = screenWidth < 768;
-                  final isVerySmallScreen = screenWidth < 480;
-                  final responsiveMaxWidth = isVerySmallScreen ? 120.0 : (isSmallScreen ? 160.0 : 200.0);
-                  
-                  // Use available width, but cap at responsive max to prevent overflow
-                  final maxButtonWidth = constraints.maxWidth.clamp(0.0, responsiveMaxWidth);
-                  return GestureDetector(
-                    onTap: () {}, // Empty handler to stop propagation
-                    behavior: HitTestBehavior.opaque,
-                    child: AnimatedOpacity(
-                      opacity: isHovered ? 1 : 0,
-                      duration: const Duration(milliseconds: 140),
-                      child: Container(
-                        constraints: BoxConstraints(maxWidth: maxButtonWidth),
-                        decoration: BoxDecoration(
-                          // Subtle background gradient for better button visibility
-                          gradient: LinearGradient(
-                            begin: Alignment.centerLeft,
-                            end: Alignment.centerRight,
-                            colors: [
-                              colorScheme.background.withOpacity(0.0),
-                              colorScheme.background.withOpacity(0.95),
-                            ],
-                          ),
-                        ),
-                        padding: const EdgeInsets.only(left: 8),
-                        child: Builder(
-                          builder: (buttonContext) {
-                            final screenWidth = MediaQuery.of(buttonContext).size.width;
-                            final isSmallScreen = screenWidth < 768;
-                            final buttonSpacing = isSmallScreen ? 4.0 : 6.0;
-                            
-                            return Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                if (isPending) ...[
-                                  _buildHoverButton(
-                                    label: 'Modify',
-                                    backgroundColor: resolveThemeColor(
-                                      buttonContext,
-                                      dark: MyntColors.primaryDark,
-                                      light: MyntColors.primary,
-                                    ),
-                                    onPressed: isProcessing && _isProcessingModify
-                                        ? null
-                                        : () async {
-                                            setState(() {
-                                              _processingOrderToken = uniqueId;
-                                            });
-                                            await actionHandler.modifyOrder(
-                                              order,
-                                              onProcessingStateChanged: (processing) {
-                                                setState(() {
-                                                  _isProcessingModify = processing;
-                                                  if (!processing) _processingOrderToken = null;
-                                                });
-                                              },
-                                              modifyDialogPosition: _modifyDialogPosition,
-                                              onPositionChanged: (pos) {
-                                                _modifyDialogPosition = pos;
-                                              },
-                                            );
-                                          },
-                                    context: buttonContext,
-                                  ),
-                                  SizedBox(width: buttonSpacing),
-                                  _buildHoverButton(
-                                    label: 'Cancel',
-                                    backgroundColor: MyntColors.tertiary,
-                                    onPressed: isProcessing && _isProcessingCancel
-                                        ? null
-                                        : () async {
-                                            setState(() {
-                                              _processingOrderToken = uniqueId;
-                                            });
-                                            await actionHandler.cancelOrder(
-                                              order,
-                                              onProcessingStateChanged: (processing) {
-                                                setState(() {
-                                                  _isProcessingCancel = processing;
-                                                  if (!processing) _processingOrderToken = null;
-                                                });
-                                              },
-                                            );
-                                          },
-                                    context: buttonContext,
-                                  ),
-                                ] else ...[
-                                  _buildHoverButton(
-                                    label: 'Repeat',
-                                    backgroundColor: resolveThemeColor(
-                                      buttonContext,
-                                      dark: MyntColors.primaryDark,
-                                      light: MyntColors.primary,
-                                    ),
-                                    onPressed: () => actionHandler.repeatOrder(order),
-                                    context: buttonContext,
-                                  ),
-                                  if (order.status == "OPEN") ...[
-                                    SizedBox(width: buttonSpacing),
-                                    _buildHoverButton(
-                                      label: 'Cancel',
-                                      backgroundColor: resolveThemeColor(
-                                        buttonContext,
-                                        dark: MyntColors.tertiary,
-                                        light: MyntColors.tertiary,
-                                      ),
-                                      onPressed: isProcessing && _isProcessingCancel
-                                          ? null
-                                          : () async {
-                                              setState(() {
-                                                _processingOrderToken = uniqueId;
-                                              });
-                                              await actionHandler.cancelOrder(
-                                                order,
-                                                onProcessingStateChanged: (processing) {
-                                                  setState(() {
-                                                    _isProcessingCancel = processing;
-                                                    if (!processing) _processingOrderToken = null;
-                                                  });
-                                                },
-                                              );
-                                            },
-                                      context: buttonContext,
-                                    ),
-                                  ],
-                                ],
-                              ],
-                            );
-                          },
-                        ),
-                      ),
+          // Action buttons - positioned at the right edge
+          if (isHovered)
+            Positioned(
+              right: 0,
+              top: 0,
+              bottom: 0,
+              child: GestureDetector(
+                onTap: () {}, // Empty handler to stop propagation
+                behavior: HitTestBehavior.opaque,
+                child: Container(
+                  decoration: BoxDecoration(
+                    // Subtle background gradient for better button visibility
+                    gradient: LinearGradient(
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                      colors: [
+                        colorScheme.background.withOpacity(0.0),
+                        colorScheme.background.withOpacity(0.95),
+                        colorScheme.background,
+                      ],
+                      stops: const [0.0, 0.3, 0.5],
                     ),
-                  );
-                },
+                  ),
+                  padding: const EdgeInsets.only(left: 16),
+                  child: Center(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (isPending) ...[
+                          _buildHoverButton(
+                            label: 'Modify',
+                            backgroundColor: resolveThemeColor(
+                              context,
+                              dark: MyntColors.primaryDark,
+                              light: MyntColors.primary,
+                            ),
+                            onPressed: isProcessing && _isProcessingModify
+                                ? null
+                                : () async {
+                                    setState(() {
+                                      _processingOrderToken = uniqueId;
+                                    });
+                                    await actionHandler.modifyOrder(
+                                      order,
+                                      onProcessingStateChanged: (processing) {
+                                        setState(() {
+                                          _isProcessingModify = processing;
+                                          if (!processing)
+                                            _processingOrderToken = null;
+                                        });
+                                      },
+                                      modifyDialogPosition:
+                                          _modifyDialogPosition,
+                                      onPositionChanged: (pos) {
+                                        _modifyDialogPosition = pos;
+                                      },
+                                    );
+                                  },
+                            context: context,
+                          ),
+                          const SizedBox(width: 6),
+                          _buildHoverButton(
+                            label: 'Cancel',
+                            backgroundColor: MyntColors.tertiary,
+                            onPressed: isProcessing && _isProcessingCancel
+                                ? null
+                                : () async {
+                                    setState(() {
+                                      _processingOrderToken = uniqueId;
+                                    });
+                                    await actionHandler.cancelOrder(
+                                      order,
+                                      onProcessingStateChanged: (processing) {
+                                        setState(() {
+                                          _isProcessingCancel = processing;
+                                          if (!processing)
+                                            _processingOrderToken = null;
+                                        });
+                                      },
+                                    );
+                                  },
+                            context: context,
+                          ),
+                        ] else ...[
+                          _buildHoverButton(
+                            label: 'Repeat',
+                            backgroundColor: resolveThemeColor(
+                              context,
+                              dark: MyntColors.primaryDark,
+                              light: MyntColors.primary,
+                            ),
+                            onPressed: () => actionHandler.repeatOrder(order),
+                            context: context,
+                          ),
+                          if (order.status == "OPEN") ...[
+                            const SizedBox(width: 6),
+                            _buildHoverButton(
+                              label: 'Cancel',
+                              backgroundColor: MyntColors.tertiary,
+                              onPressed: isProcessing && _isProcessingCancel
+                                  ? null
+                                  : () async {
+                                      setState(() {
+                                        _processingOrderToken = uniqueId;
+                                      });
+                                      await actionHandler.cancelOrder(
+                                        order,
+                                        onProcessingStateChanged: (processing) {
+                                          setState(() {
+                                            _isProcessingCancel = processing;
+                                            if (!processing)
+                                              _processingOrderToken = null;
+                                          });
+                                        },
+                                      );
+                                    },
+                              context: context,
+                            ),
+                          ],
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
               ),
             ),
-          ),
         ],
       ),
     );
@@ -1023,29 +1045,41 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
     required BuildContext context,
     bool isPrimary = true,
   }) {
-    // Detect screen size for responsive design
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isSmallScreen = screenWidth < 768;
-    final buttonSize = isSmallScreen ? MyntButtonSize.small : MyntButtonSize.small;
-
     // Determine button type based on color
     final isTertiary = backgroundColor == MyntColors.tertiary ||
         backgroundColor == MyntColors.lossDark ||
         backgroundColor == MyntColors.loss;
 
-    if (isTertiary) {
-      return MyntTertiaryButton(
-        label: label,
-        onPressed: onPressed,
-        size: buttonSize,
-      );
-    } else {
-      return MyntPrimaryButton(
-        label: label,
-        onPressed: onPressed,
-        size: buttonSize,
-      );
-    }
+    final bgColor = isTertiary ? MyntColors.tertiary : backgroundColor;
+    final textColor = Colors.white;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(4),
+        child: Container(
+          height: 26,
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          decoration: BoxDecoration(
+            color: bgColor,
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Center(
+            child: Text(
+              label,
+              style: TextStyle(
+                color: textColor,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                fontFamily: 'Geist',
+                letterSpacing: 0.2,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -1086,11 +1120,15 @@ class _OrderLTPCellState extends ConsumerState<_OrderLTPCell> {
       Future.microtask(() {
         if (!mounted) return;
 
-        _subscription = ref.read(websocketProvider).socketDataStream.listen((data) {
+        _subscription =
+            ref.read(websocketProvider).socketDataStream.listen((data) {
           if (!mounted || !data.containsKey(widget.token)) return;
 
           final newLtp = data[widget.token]['lp']?.toString();
-          if (newLtp != null && newLtp != ltp && newLtp != '0.00' && newLtp != 'null') {
+          if (newLtp != null &&
+              newLtp != ltp &&
+              newLtp != '0.00' &&
+              newLtp != 'null') {
             setState(() => ltp = newLtp);
           }
         });
@@ -1108,7 +1146,12 @@ class _OrderLTPCellState extends ConsumerState<_OrderLTPCell> {
   Widget build(BuildContext context) {
     return Text(
       ltp,
-      style: MyntWebTextStyles.tableCell(context),
+      style: MyntWebTextStyles.tableCell(
+        context,
+        darkColor: MyntColors.textPrimaryDark,
+        lightColor: MyntColors.textPrimary,
+        fontWeight: MyntFonts.medium,
+      ),
     );
   }
 }
