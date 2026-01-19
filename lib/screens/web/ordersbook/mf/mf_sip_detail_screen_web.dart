@@ -3,9 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import '../../../../models/mf_model/sip_mf_list_model.dart';
 import '../../../../provider/thems.dart';
-import '../../../../res/web_colors.dart';
-import '../../../../res/global_font_web.dart';
+import '../../../../res/mynt_web_text_styles.dart';
+import '../../../../res/mynt_web_color_styles.dart';
 import '../../../../sharedWidget/functions.dart';
+import '../../../../sharedWidget/common_buttons_web.dart';
 import 'sip_pause_dialogue_web.dart';
 import 'sip_cancel_dialogue_web.dart';
 
@@ -18,13 +19,14 @@ class MFSipDetailScreenWeb extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<MFSipDetailScreenWeb> createState() => _MFSipDetailScreenWebState();
+  ConsumerState<MFSipDetailScreenWeb> createState() =>
+      _MFSipDetailScreenWebState();
 }
 
 class _MFSipDetailScreenWebState extends ConsumerState<MFSipDetailScreenWeb> {
   bool get _isActive {
-    return widget.sipData.status?.toLowerCase() == 'active' || 
-           widget.sipData.status?.toLowerCase() == 'running';
+    return widget.sipData.status?.toLowerCase() == 'active' ||
+        widget.sipData.status?.toLowerCase() == 'running';
   }
 
   @override
@@ -36,7 +38,8 @@ class _MFSipDetailScreenWebState extends ConsumerState<MFSipDetailScreenWeb> {
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(
-            color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
+            color: resolveThemeColor(context,
+                dark: MyntColors.dividerDark, light: MyntColors.divider),
             width: 1,
           ),
         ),
@@ -48,7 +51,8 @@ class _MFSipDetailScreenWebState extends ConsumerState<MFSipDetailScreenWeb> {
             children: [
               // Header with close button (fixed)
               Container(
-                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 10),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 16, horizontal: 10),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -56,11 +60,7 @@ class _MFSipDetailScreenWebState extends ConsumerState<MFSipDetailScreenWeb> {
                     Expanded(
                       child: _buildHeader(theme),
                     ),
-                    shadcn.TextButton(
-                      density: shadcn.ButtonDensity.icon,
-                      shape: shadcn.ButtonShape.circle,
-                      size: shadcn.ButtonSize.normal,
-                      child: const Icon(Icons.close),
+                    MyntCloseButton(
                       onPressed: () {
                         shadcn.closeSheet(context);
                       },
@@ -71,7 +71,8 @@ class _MFSipDetailScreenWebState extends ConsumerState<MFSipDetailScreenWeb> {
               // Border divider
               Container(
                 height: 1,
-                color: shadcn.Theme.of(context).colorScheme.border,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.dividerDark, light: MyntColors.divider),
               ),
               // Scrollable Content
               Expanded(
@@ -98,27 +99,31 @@ class _MFSipDetailScreenWebState extends ConsumerState<MFSipDetailScreenWeb> {
   }
 
   Widget _buildHeader(ThemesProvider theme) {
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
     return Text(
       widget.sipData.name ?? "",
-      style: WebTextStyles.dialogTitle(
-        isDarkTheme: theme.isDarkMode,
-        color: colorScheme.foreground,
+      style: MyntWebTextStyles.title(
+        context,
+        color: resolveThemeColor(context,
+            dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary),
       ),
       overflow: TextOverflow.ellipsis,
     );
   }
 
   Color _getStatusColor() {
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
     final status = (widget.sipData.status ?? '').toLowerCase();
-    
+
     if (status == 'active' || status == 'running' || status == 'live') {
-      return colorScheme.chart2;
-    } else if (status == 'stopped' || status == 'cancelled' || status == 'rejected') {
-      return colorScheme.destructive;
+      return resolveThemeColor(context,
+          dark: MyntColors.profitDark, light: MyntColors.profit);
+    } else if (status == 'stopped' ||
+        status == 'cancelled' ||
+        status == 'rejected') {
+      return resolveThemeColor(context,
+          dark: MyntColors.lossDark, light: MyntColors.loss);
     } else {
-      return colorScheme.chart1;
+      return resolveThemeColor(context,
+          dark: MyntColors.primary, light: MyntColors.primary);
     }
   }
 
@@ -141,14 +146,16 @@ class _MFSipDetailScreenWebState extends ConsumerState<MFSipDetailScreenWeb> {
           ),
           _rowOfInfoData(
             "Next Due Date",
-            widget.sipData.NextSIPDate != null && widget.sipData.NextSIPDate!.isNotEmpty
+            widget.sipData.NextSIPDate != null &&
+                    widget.sipData.NextSIPDate!.isNotEmpty
                 ? sipformatDateTime(value: widget.sipData.NextSIPDate!)
                 : "-",
             theme,
           ),
           _rowOfInfoData(
             "Start Date",
-            widget.sipData.startDate != null && widget.sipData.startDate!.isNotEmpty
+            widget.sipData.startDate != null &&
+                    widget.sipData.startDate!.isNotEmpty
                 ? sipformatDateTime(value: widget.sipData.startDate!)
                 : "-",
             theme,
@@ -185,7 +192,7 @@ class _MFSipDetailScreenWebState extends ConsumerState<MFSipDetailScreenWeb> {
     if (!_isActive) {
       return const SizedBox.shrink();
     }
-    
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12),
       child: Column(
@@ -200,7 +207,6 @@ class _MFSipDetailScreenWebState extends ConsumerState<MFSipDetailScreenWeb> {
   }
 
   Widget _rowOfInfoData(String title1, String value1, ThemesProvider theme) {
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -209,18 +215,22 @@ class _MFSipDetailScreenWebState extends ConsumerState<MFSipDetailScreenWeb> {
           children: [
             Text(
               title1,
-              style: WebTextStyles.sub(
-                isDarkTheme: theme.isDarkMode,
-                color: colorScheme.mutedForeground,
-                fontWeight: WebFonts.regular,
+              style: MyntWebTextStyles.bodySmall(
+                context,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.textSecondaryDark,
+                    light: MyntColors.textSecondary),
+                fontWeight: MyntFonts.regular,
               ),
             ),
             Text(
               value1,
-              style: WebTextStyles.sub(
-                isDarkTheme: theme.isDarkMode,
-                color: colorScheme.mutedForeground,
-                fontWeight: WebFonts.medium,
+              style: MyntWebTextStyles.bodySmall(
+                context,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.textPrimaryDark,
+                    light: MyntColors.textPrimary),
+                fontWeight: MyntFonts.medium,
               ),
             ),
           ],
@@ -230,8 +240,8 @@ class _MFSipDetailScreenWebState extends ConsumerState<MFSipDetailScreenWeb> {
     );
   }
 
-  Widget _rowOfInfoDataWithColor(String title, String value, ThemesProvider theme, Color valueColor) {
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
+  Widget _rowOfInfoDataWithColor(
+      String title, String value, ThemesProvider theme, Color valueColor) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -240,18 +250,20 @@ class _MFSipDetailScreenWebState extends ConsumerState<MFSipDetailScreenWeb> {
           children: [
             Text(
               title,
-              style: WebTextStyles.sub(
-                isDarkTheme: theme.isDarkMode,
-                color: colorScheme.mutedForeground,
-                fontWeight: WebFonts.regular,
+              style: MyntWebTextStyles.bodySmall(
+                context,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.textSecondaryDark,
+                    light: MyntColors.textSecondary),
+                fontWeight: MyntFonts.regular,
               ),
             ),
             Text(
               value,
-              style: WebTextStyles.sub(
-                isDarkTheme: theme.isDarkMode,
+              style: MyntWebTextStyles.bodySmall(
+                context,
                 color: valueColor,
-                fontWeight: WebFonts.medium,
+                fontWeight: MyntFonts.medium,
               ),
             ),
           ],
@@ -262,84 +274,30 @@ class _MFSipDetailScreenWebState extends ConsumerState<MFSipDetailScreenWeb> {
   }
 
   Widget _buildPauseButton(ThemesProvider theme) {
-    final backgroundColor = theme.isDarkMode
-        ? WebDarkColors.textSecondary.withOpacity(0.6)
-        : WebColors.buttonSecondary;
-    final textColor = theme.isDarkMode ? Colors.white : WebColors.primaryLight;
-    final borderColor = theme.isDarkMode ? WebDarkColors.primaryLight : WebColors.primaryLight;
-    
-    return Container(
-      height: 40,
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        border: Border.all(
-          color: borderColor,
-          width: 1,
-        ),
-        borderRadius: BorderRadius.circular(5),
-      ),
-      child: shadcn.TextButton(
-        size: shadcn.ButtonSize.large,
-        density: shadcn.ButtonDensity.dense,
-        onPressed: () {
-          showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return SipPauseDialogueWeb(sipData: widget.sipData);
-            },
-          );
-        },
-        shape: shadcn.ButtonShape.rectangle,
-        child: Text(
-          "Pause",
-          style: WebTextStyles.buttonMd(
-            isDarkTheme: theme.isDarkMode,
-            color: textColor,
-            fontWeight: WebFonts.bold,
-          ),
-        ),
-      ),
+    return MyntOutlinedButton(
+      label: "Pause",
+      onPressed: () {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return SipPauseDialogueWeb(sipData: widget.sipData);
+          },
+        );
+      },
     );
   }
 
   Widget _buildCancelSipButton(ThemesProvider theme) {
-    final backgroundColor = theme.isDarkMode
-        ? WebDarkColors.textSecondary.withOpacity(0.6)
-        : WebColors.buttonSecondary;
-    final textColor = theme.isDarkMode ? Colors.white : WebColors.primaryLight;
-    final borderColor = theme.isDarkMode ? WebDarkColors.primaryLight : WebColors.primaryLight;
-    
-    return Container(
-      height: 40,
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        border: Border.all(
-          color: borderColor,
-          width: 1,
-        ),
-        borderRadius: BorderRadius.circular(5),
-      ),
-      child: shadcn.TextButton(
-        size: shadcn.ButtonSize.large,
-        density: shadcn.ButtonDensity.dense,
-        onPressed: () {
-          showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return SipCancelDialogueWeb(sipData: widget.sipData);
-            },
-          );
-        },
-        shape: shadcn.ButtonShape.rectangle,
-        child: Text(
-          "Cancel SIP",
-          style: WebTextStyles.buttonMd(
-            isDarkTheme: theme.isDarkMode,
-            color: textColor,
-            fontWeight: WebFonts.bold,
-          ),
-        ),
-      ),
+    return MyntOutlinedButton(
+      label: "Cancel SIP",
+      onPressed: () {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return SipCancelDialogueWeb(sipData: widget.sipData);
+          },
+        );
+      },
     );
   }
 }

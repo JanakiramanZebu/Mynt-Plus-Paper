@@ -8,12 +8,13 @@ import '../../../provider/market_watch_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/websocket_provider.dart';
 import '../../../provider/ledger_provider.dart';
-import '../../../res/web_colors.dart';
-import '../../../res/global_font_web.dart';
+import '../../../res/mynt_web_text_styles.dart';
+import '../../../res/mynt_web_color_styles.dart';
 import '../../../utils/responsive_navigation.dart';
 import '../../../models/order_book_model/order_book_model.dart';
 import '../../../routes/route_names.dart';
 import '../../../sharedWidget/alert_dialogue.dart';
+import '../../../sharedWidget/common_buttons_web.dart';
 import '../../../sharedWidget/snack_bar.dart';
 import '../../../main.dart';
 
@@ -30,10 +31,12 @@ class HoldingDetailScreenWeb extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<HoldingDetailScreenWeb> createState() => _HoldingDetailScreenWebState();
+  ConsumerState<HoldingDetailScreenWeb> createState() =>
+      _HoldingDetailScreenWebState();
 }
 
-class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb> {
+class _HoldingDetailScreenWebState
+    extends ConsumerState<HoldingDetailScreenWeb> {
   StreamSubscription? _socketSubscription;
   late ExchTsym _exchTsym;
   late dynamic _holdingData;
@@ -74,15 +77,17 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
   @override
   void dispose() {
     _socketSubscription?.cancel();
-    
+
     // Close WebSocket connection when screen is disposed
     try {
-      ProviderScope.containerOf(context).read(websocketProvider).closeSocket(false);
+      ProviderScope.containerOf(context)
+          .read(websocketProvider)
+          .closeSocket(false);
     } catch (e) {
       // Context might not be available during disposal, ignore error
       print('WebSocket close error during disposal: $e');
     }
-    
+
     super.dispose();
   }
 
@@ -226,7 +231,8 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(
-            color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
+            color: resolveThemeColor(context,
+                dark: MyntColors.dividerDark, light: MyntColors.divider),
             width: 1,
           ),
         ),
@@ -244,9 +250,7 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
                 Expanded(
                   child: _buildSymbolSection(theme, scripInfo, depthArgs),
                 ),
-                shadcn.TextButton(
-                  density: shadcn.ButtonDensity.icon,
-                  child: const Icon(Icons.close),
+                MyntCloseButton(
                   onPressed: () {
                     shadcn.closeSheet(context);
                   },
@@ -257,7 +261,8 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
           // Border divider
           Container(
             height: 1,
-            color: shadcn.Theme.of(context).colorScheme.border,
+            color: resolveThemeColor(context,
+                dark: MyntColors.dividerDark, light: MyntColors.divider),
           ),
           // Content
           Container(
@@ -271,10 +276,10 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     child: _buildPnLSection(theme),
                   ),
-                  
+
                   // Action Buttons
                   _buildActionButtons(theme, scripInfo),
-                  
+
                   // Details Section
                   _buildDetailsSection(theme),
                 ],
@@ -286,8 +291,8 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
     );
   }
 
-  Widget _buildSymbolSection(ThemesProvider theme, MarketWatchProvider scripInfo, DepthInputArgs depthArgs) {
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
+  Widget _buildSymbolSection(ThemesProvider theme,
+      MarketWatchProvider scripInfo, DepthInputArgs depthArgs) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -297,48 +302,62 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
             Flexible(
               child: Text(
                 "${_exchTsym.tsym?.replaceAll("-EQ", "") ?? ''} ${_exchTsym.expDate ?? ''} ${_exchTsym.option ?? ''} ",
-                style: WebTextStyles.dialogTitle(
-                  isDarkTheme: theme.isDarkMode,
-                  color: colorScheme.foreground,
+                style: MyntWebTextStyles.title(
+                  context,
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.textPrimaryDark,
+                      light: MyntColors.textPrimary),
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            const SizedBox(width: 4),
-            Text(
-              "${_exchTsym.exch}",
-              style: WebTextStyles.dialogTitle(
-                isDarkTheme: theme.isDarkMode,
-                color: colorScheme.mutedForeground,
-              ),
-            ),
+            // const SizedBox(width: 4),
+            // Text(
+            //   "${_exchTsym.exch}",
+            //   style: MyntWebTextStyles.title(
+            //     context,
+            //     color: resolveThemeColor(context,
+            //         dark: MyntColors.textSecondaryDark,
+            //         light: MyntColors.textSecondary),
+            //   ),
+            // ),
           ],
         ),
         const SizedBox(height: 8),
-        
+
         // Price and Change
         Row(
           children: [
             Text(
               "${_exchTsym.lp != "null" ? _exchTsym.lp ?? _exchTsym.close ?? 0.00 : '0.00'}",
-              style: WebTextStyles.title(
-                isDarkTheme: theme.isDarkMode,
-                color: (_exchTsym.change == "null" || _exchTsym.change == null) ||
-                        _exchTsym.change == "0.00"
-                    ? colorScheme.mutedForeground
-                    : (_exchTsym.change?.startsWith("-") == true || _exchTsym.perChange?.startsWith("-") == true)
-                        ? colorScheme.destructive
-                        : colorScheme.chart2,
-                fontWeight: WebFonts.medium,
+              style: MyntWebTextStyles.body(
+                context,
+                color:
+                    (_exchTsym.change == "null" || _exchTsym.change == null) ||
+                            _exchTsym.change == "0.00"
+                        ? resolveThemeColor(context,
+                            dark: MyntColors.textSecondaryDark,
+                            light: MyntColors.textSecondary)
+                        : (_exchTsym.change?.startsWith("-") == true ||
+                                _exchTsym.perChange?.startsWith("-") == true)
+                            ? resolveThemeColor(context,
+                                dark: MyntColors.lossDark,
+                                light: MyntColors.loss)
+                            : resolveThemeColor(context,
+                                dark: MyntColors.profitDark,
+                                light: MyntColors.profit),
+                fontWeight: MyntFonts.medium,
               ),
             ),
             const SizedBox(width: 4),
             Text(
               "${(double.tryParse(_exchTsym.change ?? '0.00') ?? 0.00).toStringAsFixed(2)} (${(double.tryParse(_exchTsym.perChange ?? '0.00') ?? 0.00).toStringAsFixed(2)}%)",
-              style: WebTextStyles.sub(
-                isDarkTheme: theme.isDarkMode,
-                color: colorScheme.mutedForeground,
-                fontWeight: WebFonts.medium,
+              style: MyntWebTextStyles.para(
+                context,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.textSecondaryDark,
+                    light: MyntColors.textSecondary),
+                fontWeight: MyntFonts.medium,
               ),
             ),
           ],
@@ -347,7 +366,8 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
     );
   }
 
-  Widget _buildActionButtons(ThemesProvider theme, MarketWatchProvider scripInfo) {
+  Widget _buildActionButtons(
+      ThemesProvider theme, MarketWatchProvider scripInfo) {
     final qty = _holdingData.currentQty ?? 0;
     final hasQty = qty > 0;
 
@@ -408,93 +428,42 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
     VoidCallback onPressed, {
     bool isLoading = false,
   }) {
-    final backgroundColor = isPrimary
-        ? (theme.isDarkMode ? WebDarkColors.primaryLight : WebColors.primaryLight)
-        : (theme.isDarkMode
-            ? WebDarkColors.textSecondary.withOpacity(0.6)
-            : WebColors.buttonSecondary);
-    final textColor = isPrimary
-        ? Colors.white
-        : (theme.isDarkMode ? Colors.white : WebColors.primaryLight);
-    final borderColor = theme.isDarkMode ? WebDarkColors.primaryLight : WebColors.primaryLight;
-    
-    return Container(
-      height: 40,
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        border: isPrimary
-            ? null
-            : Border.all(
-                color: borderColor,
-                width: 1,
-              ),
-        borderRadius: BorderRadius.circular(5),
-      ),
-      child: shadcn.TextButton(
-        size: shadcn.ButtonSize.large,
-        density: shadcn.ButtonDensity.dense,
-        onPressed: isLoading ? null : onPressed,
-        shape: shadcn.ButtonShape.rectangle,
-        child: isLoading
-            ? SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(textColor),
-                ),
-              )
-            : Text(
-                text,
-                style: WebTextStyles.buttonMd(
-                  isDarkTheme: theme.isDarkMode,
-                  color: textColor,
-                  fontWeight: WebFonts.bold,
-                ),
-              ),
-      ),
-    );
+    if (isPrimary) {
+      return MyntPrimaryButton(
+        label: text,
+        onPressed: onPressed,
+        isLoading: isLoading,
+        isFullWidth: true,
+      );
+    } else {
+      return MyntOutlinedButton(
+        label: text,
+        onPressed: onPressed,
+        isLoading: isLoading,
+        isFullWidth: true,
+      );
+    }
   }
 
-  Widget _buildPledgeUnpledgeButton(ThemesProvider theme, LDProvider ledgerdate) {
-    final borderColor = theme.isDarkMode ? WebDarkColors.btnOutlinedBorder : WebColors.btnOutlinedBorder;
+  Widget _buildPledgeUnpledgeButton(
+      ThemesProvider theme, LDProvider ledgerdate) {
     return Center(
-      child: InkWell(
-        onTap: () async {
+      child: MyntOutlinedButton(
+        label: "Pledge-Unpledge",
+        onPressed: () async {
           if (ledgerdate.pledgeandunpledge == null) {
             await ledgerdate.getCurrentDate("pandu");
             ledgerdate.fetchpledgeandunpledge(context);
           }
           Navigator.pushNamed(context, Routes.pledgeandun, arguments: "DDDDD");
         },
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          decoration: BoxDecoration(
-            border: Border.all(color: borderColor),
-            borderRadius: BorderRadius.circular(5),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                "Pledge-Unpledge",
-                style: WebTextStyles.buttonMd(
-                  isDarkTheme: theme.isDarkMode,
-                  color: borderColor,
-                  fontWeight: WebFonts.bold,
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }
 
   Widget _buildPnLSection(ThemesProvider theme) {
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
     final displayValue = _exchTsym.profitNloss ?? "0.00";
-    
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -502,19 +471,21 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
           children: [
             Text(
               "P&L",
-              style: WebTextStyles.title(
-                isDarkTheme: theme.isDarkMode,
-                color: colorScheme.mutedForeground,
-                fontWeight: WebFonts.medium,
+              style: MyntWebTextStyles.title(
+                context,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.textSecondaryDark,
+                    light: MyntColors.textSecondary),
+                fontWeight: MyntFonts.medium,
               ),
             ),
             const SizedBox(height: 6),
             Text(
               displayValue,
-              style: WebTextStyles.head(
-                isDarkTheme: theme.isDarkMode,
+              style: MyntWebTextStyles.head(
+                context,
                 color: _getPnLColor(displayValue),
-                fontWeight: WebFonts.medium,
+                fontWeight: MyntFonts.medium,
               ),
             ),
           ],
@@ -524,15 +495,17 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
   }
 
   Color _getPnLColor(String value) {
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
     final numValue = double.tryParse(value) ?? 0.0;
-    
+
     if (numValue > 0) {
-      return colorScheme.chart2;
+      return resolveThemeColor(context,
+          dark: MyntColors.profitDark, light: MyntColors.profit);
     } else if (numValue < 0) {
-      return colorScheme.destructive;
+      return resolveThemeColor(context,
+          dark: MyntColors.lossDark, light: MyntColors.loss);
     } else {
-      return colorScheme.mutedForeground;
+      return resolveThemeColor(context,
+          dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary);
     }
   }
 
@@ -607,7 +580,6 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
   }
 
   Widget _rowOfInfoData(String title1, String value1, ThemesProvider theme) {
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -616,18 +588,22 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
           children: [
             Text(
               title1,
-              style: WebTextStyles.sub(
-                isDarkTheme: theme.isDarkMode,
-                color: colorScheme.mutedForeground,
-                fontWeight: WebFonts.medium,
+              style: MyntWebTextStyles.body(
+                context,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.textSecondaryDark,
+                    light: MyntColors.textSecondary),
+                fontWeight: MyntFonts.medium,
               ),
             ),
             Text(
               value1,
-              style: WebTextStyles.sub(
-                isDarkTheme: theme.isDarkMode,
-                color: colorScheme.foreground,
-                fontWeight: WebFonts.medium,
+              style: MyntWebTextStyles.body(
+                context,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.textSecondaryDark,
+                    light: MyntColors.textSecondary),
+                fontWeight: MyntFonts.medium,
               ),
             ),
           ],
@@ -640,7 +616,7 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
   // Handle buy button click
   Future<void> _handleBuy() async {
     if (_isProcessingBuy) return;
-    
+
     print("=== _handleBuy started ===");
 
     try {
@@ -656,21 +632,25 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
           setState(() {
             _isProcessingBuy = false;
           });
-          showResponsiveWarningMessage(context, "Unable to access root context");
+          showResponsiveWarningMessage(
+              context, "Unable to access root context");
         }
         return;
       }
 
-      print("Fetching scrip info for token: ${_exchTsym.token}, exch: ${_exchTsym.exch}");
+      print(
+          "Fetching scrip info for token: ${_exchTsym.token}, exch: ${_exchTsym.exch}");
       final scripData = ref.read(marketWatchProvider);
-      
+
       // Add timeout to prevent hanging
-      await scripData.fetchScripInfo(
+      await scripData
+          .fetchScripInfo(
         _exchTsym.token ?? "",
         _exchTsym.exch ?? "",
         rootContext,
         true,
-      ).timeout(
+      )
+          .timeout(
         const Duration(seconds: 10),
         onTimeout: () {
           print("ERROR: fetchScripInfo timed out after 10 seconds");
@@ -691,7 +671,8 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
           setState(() {
             _isProcessingBuy = false;
           });
-          showResponsiveWarningMessage(rootContext, "Unable to fetch scrip information");
+          showResponsiveWarningMessage(
+              rootContext, "Unable to fetch scrip information");
         }
         return;
       }
@@ -718,7 +699,7 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
       print("Opening place order screen...");
       // Use parent context (from hold_table) if available, otherwise use root context
       final targetContext = widget.parentContext ?? rootContext;
-      
+
       if (targetContext.mounted) {
         ResponsiveNavigation.toPlaceOrderScreen(
           context: targetContext,
@@ -759,7 +740,7 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
     } catch (e, stackTrace) {
       print("ERROR in _handleBuy: $e");
       print("Stack trace: $stackTrace");
-      
+
       // Try to close sheet on error
       if (mounted) {
         try {
@@ -768,13 +749,13 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
           // Ignore sheet close errors
         }
       }
-      
+
       // Show error using root context
       if (mounted) {
         setState(() {
           _isProcessingBuy = false;
         });
-        
+
         final rootCtx = rootNavigatorKey.currentContext;
         if (rootCtx != null) {
           try {
@@ -816,7 +797,7 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
   // Handle sell button click
   Future<void> _handleSell() async {
     if (_isProcessingSell) return;
-    
+
     print("=== _handleSell started ===");
 
     try {
@@ -832,7 +813,8 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
           setState(() {
             _isProcessingSell = false;
           });
-          showResponsiveWarningMessage(context, "Unable to access root context");
+          showResponsiveWarningMessage(
+              context, "Unable to access root context");
         }
         return;
       }
@@ -858,16 +840,19 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
         return;
       }
 
-      print("Fetching scrip info for token: ${_exchTsym.token}, exch: ${_exchTsym.exch}");
+      print(
+          "Fetching scrip info for token: ${_exchTsym.token}, exch: ${_exchTsym.exch}");
       final scripData = ref.read(marketWatchProvider);
-      
+
       // Add timeout to prevent hanging
-      await scripData.fetchScripInfo(
+      await scripData
+          .fetchScripInfo(
         _exchTsym.token ?? "",
         _exchTsym.exch ?? "",
         rootContext,
         true,
-      ).timeout(
+      )
+          .timeout(
         const Duration(seconds: 10),
         onTimeout: () {
           print("ERROR: fetchScripInfo timed out after 10 seconds");
@@ -888,7 +873,8 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
           setState(() {
             _isProcessingSell = false;
           });
-          showResponsiveWarningMessage(rootContext, "Unable to fetch scrip information");
+          showResponsiveWarningMessage(
+              rootContext, "Unable to fetch scrip information");
         }
         return;
       }
@@ -915,7 +901,7 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
       print("Opening place order screen...");
       // Use parent context (from hold_table) if available, otherwise use root context
       final targetContext = widget.parentContext ?? rootContext;
-      
+
       if (targetContext.mounted) {
         ResponsiveNavigation.toPlaceOrderScreen(
           context: targetContext,
@@ -956,7 +942,7 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
     } catch (e, stackTrace) {
       print("ERROR in _handleSell: $e");
       print("Stack trace: $stackTrace");
-      
+
       // Try to close sheet on error
       if (mounted) {
         try {
@@ -965,13 +951,13 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
           // Ignore sheet close errors
         }
       }
-      
+
       // Show error using root context
       if (mounted) {
         setState(() {
           _isProcessingSell = false;
         });
-        
+
         final rootCtx = rootNavigatorKey.currentContext;
         if (rootCtx != null) {
           try {
@@ -984,5 +970,4 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
       }
     }
   }
-
 }

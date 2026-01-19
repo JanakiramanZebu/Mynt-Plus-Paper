@@ -10,8 +10,8 @@ import '../../../../provider/portfolio_provider.dart';
 import '../../../../provider/thems.dart';
 import '../../../../provider/websocket_provider.dart';
 import '../../../../res/res.dart';
-import '../../../../res/web_colors.dart';
-import '../../../../res/global_font_web.dart';
+import '../../../../res/mynt_web_text_styles.dart';
+import '../../../../res/mynt_web_color_styles.dart';
 
 class HoldingScreenWeb extends ConsumerWidget {
   final List<dynamic> listofHolding;
@@ -40,15 +40,12 @@ class _HoldingScreenContent extends ConsumerStatefulWidget {
 
 
 class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
-  int _selectedTabIndex = 0; // 0 for Stocks, 1 for Mutual Funds
-  // ✅ Use ValueNotifier for search queries to avoid rebuilding entire widget
+  int _selectedTabIndex = 0; 
   final ValueNotifier<String> _searchQuery = ValueNotifier<String>('');
   final ValueNotifier<String> _mfSearchQuery = ValueNotifier<String>('');
-  // TextEditingControllers to control the TextField values
   final TextEditingController _stocksSearchController = TextEditingController();
   final TextEditingController _mfSearchController = TextEditingController();
 
-  // ✅ Use ValueNotifier instead of setState to avoid rebuilding entire widget
   final ValueNotifier<String?> _hoveredRowToken = ValueNotifier<String?>(null);
   final ValueNotifier<int?> _hoveredColumnIndex = ValueNotifier<int?>(null);
 
@@ -74,18 +71,16 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
   void dispose() {
     _hoveredRowToken.dispose();
     _hoveredColumnIndex.dispose();
-    _searchQuery.dispose(); // ✅ Dispose search query ValueNotifier
-    _mfSearchQuery.dispose(); // ✅ Dispose MF search query ValueNotifier
-    _stocksSearchController.dispose(); // Dispose TextEditingController
-    _mfSearchController.dispose(); // Dispose TextEditingController
+    _searchQuery.dispose(); 
+    _mfSearchQuery.dispose(); 
+    _stocksSearchController.dispose(); 
+    _mfSearchController.dispose(); 
 
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // ✅ CRITICAL FIX: Only watch holdloader to prevent unnecessary rebuilds
-    // Using select() ensures we only rebuild when loading state changes
     final isLoading = ref.watch(portfolioProvider.select((p) => p.holdloader));
     final theme = ref.read(themeProvider);
 
@@ -93,14 +88,13 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    // ✅ Access portfolioData without watching to avoid rebuilds
     final portfolioData = ref.read(portfolioProvider);
 
     return SizedBox.expand(
       child: Container(
         width: double.infinity,
         height: double.infinity,
-        color: theme.isDarkMode ? WebDarkColors.background : Colors.white,
+        color: shadcn.Theme.of(context).colorScheme.background,
         child: GestureDetector(
           onTap: () => FocusScope.of(context).unfocus(),
           child: RefreshIndicator(
@@ -208,14 +202,22 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
               width: 45,
               height: 45,
               decoration: BoxDecoration(
-                color: colors.primary.withOpacity(0.1),
+                color: resolveThemeColor(
+                  context,
+                  dark: MyntColors.primaryDark,
+                  light: MyntColors.primary,
+                ).withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
               child: Center(
                 child: Icon(
                   icon,
                   size: 20,
-                  color: colors.primary,
+                  color: resolveThemeColor(
+                    context,
+                    dark: MyntColors.primaryDark,
+                    light: MyntColors.primary,
+                  ),
                 ),
               ),
             ),
@@ -228,12 +230,14 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
                 children: [
                   Text(
                     label,
-                    style: WebTextStyles.sub(
-                      isDarkTheme: theme.isDarkMode,
-                      color: theme.isDarkMode
-                          ? WebDarkColors.textSecondary
-                          : WebColors.textSecondary,
-                      fontWeight: WebFonts.medium,
+                    style: MyntWebTextStyles.bodySmall(
+                      context,
+                      color: resolveThemeColor(
+                        context,
+                        dark: MyntColors.textSecondaryDark,
+                        light: MyntColors.textSecondary,
+                      ),
+                      fontWeight: MyntFonts.medium,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -243,10 +247,10 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
                       Flexible(
                         child: Text(
                           value,
-                          style: WebTextStyles.head(
-                            isDarkTheme: theme.isDarkMode,
+                          style: MyntWebTextStyles.head(
+                            context,
                             color: valueColor,
-                            fontWeight: WebFonts.bold,
+                            fontWeight: MyntFonts.bold,
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -255,10 +259,10 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
                         const SizedBox(width: 4),
                         Text(
                           '($percentage%)',
-                          style: WebTextStyles.sub(
-                            isDarkTheme: theme.isDarkMode,
+                          style: MyntWebTextStyles.bodySmall(
+                            context,
                             color: valueColor,
-                            fontWeight: WebFonts.medium,
+                            fontWeight: MyntFonts.medium,
                           ),
                         ),
                       ],
@@ -380,9 +384,11 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
                   : shadcn.ColorSchemes.lightDefaultColor;
               
               // Create custom ColorScheme with theme-appropriate primary color
-              final primaryColor = theme.isDarkMode 
-                  ? WebDarkColors.primary 
-                  : WebColors.primary;
+              final primaryColor = resolveThemeColor(
+                context,
+                dark: MyntColors.primaryDark,
+                light: MyntColors.primary,
+              );
               final customColorScheme = baseColorScheme.copyWith(
                 primary: () => primaryColor,
               );
@@ -416,11 +422,13 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
                         style: TextStyle(
                           fontFamily: 'Geist',
                           color: _selectedTabIndex == 0
-                              ? (theme.isDarkMode 
-                                  ? WebDarkColors.primary 
-                                  : WebColors.primary)
+                              ? resolveThemeColor(
+                                  context,
+                                  dark: MyntColors.primaryDark,
+                                  light: MyntColors.primary,
+                                )
                               : customColorScheme.mutedForeground,
-                          fontWeight: WebFonts.bold,
+                          fontWeight: MyntFonts.bold,
                         ),
                         child: Text(
                           'Stocks ($stocksCount)',
@@ -432,11 +440,13 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
                         style: TextStyle(
                           fontFamily: 'Geist',
                           color: _selectedTabIndex == 1
-                              ? (theme.isDarkMode 
-                                  ? WebDarkColors.primary 
-                                  : WebColors.primary)
+                              ? resolveThemeColor(
+                                  context,
+                                  dark: MyntColors.primaryDark,
+                                  light: MyntColors.primary,
+                                )
                               : customColorScheme.mutedForeground,
-                          fontWeight: WebFonts.bold,
+                          fontWeight: MyntFonts.bold,
                         ),
                         child: Text(
                           'Mutual Funds ($mutualFundsCount)',
@@ -930,11 +940,23 @@ class _DayPnLCellState extends ConsumerState<_DayPnLCell> {
   Color _getValueColor(String value, ThemesProvider theme) {
     final numValue = double.tryParse(value) ?? 0.0;
     if (numValue > 0) {
-      return theme.isDarkMode ? WebDarkColors.success : WebColors.success;
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.profitDark,
+        light: MyntColors.profit,
+      );
     } else if (numValue < 0) {
-      return theme.isDarkMode ? WebDarkColors.error : WebColors.error;
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.lossDark,
+        light: MyntColors.loss,
+      );
     } else {
-      return theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary;
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.textSecondaryDark,
+        light: MyntColors.textSecondary,
+      );
     }
   }
 
@@ -942,11 +964,10 @@ class _DayPnLCellState extends ConsumerState<_DayPnLCell> {
   Widget build(BuildContext context) {
     return Text(
       dayPnL,
-      style: WebTextStyles.custom(
-        fontSize: 13,
-        isDarkTheme: widget.theme.isDarkMode,
+      style: MyntWebTextStyles.bodySmall(
+        context,
         color: _getValueColor(dayPnL, widget.theme),
-        fontWeight: WebFonts.medium,
+        fontWeight: MyntFonts.medium,
       ),
       textAlign: TextAlign.right,
     );
@@ -997,11 +1018,23 @@ class _DayPercentCellState extends ConsumerState<_DayPercentCell> {
   Color _getValueColor(String value, ThemesProvider theme) {
     final numValue = double.tryParse(value) ?? 0.0;
     if (numValue > 0) {
-      return theme.isDarkMode ? WebDarkColors.success : WebColors.success;
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.profitDark,
+        light: MyntColors.profit,
+      );
     } else if (numValue < 0) {
-      return theme.isDarkMode ? WebDarkColors.error : WebColors.error;
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.lossDark,
+        light: MyntColors.loss,
+      );
     } else {
-      return theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary;
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.textSecondaryDark,
+        light: MyntColors.textSecondary,
+      );
     }
   }
 
@@ -1009,11 +1042,10 @@ class _DayPercentCellState extends ConsumerState<_DayPercentCell> {
   Widget build(BuildContext context) {
     return Text(
       '$dayPercent%',
-      style: WebTextStyles.custom(
-        fontSize: 13,
-        isDarkTheme: widget.theme.isDarkMode,
+      style: MyntWebTextStyles.bodySmall(
+        context,
         color: _getValueColor(dayPercent, widget.theme),
-        fontWeight: WebFonts.medium,
+        fontWeight: MyntFonts.medium,
       ),
       textAlign: TextAlign.right,
     );
@@ -1072,11 +1104,23 @@ class _OverallPnLCellState extends ConsumerState<_OverallPnLCell> {
   Color _getValueColor(String value, ThemesProvider theme) {
     final numValue = double.tryParse(value) ?? 0.0;
     if (numValue > 0) {
-      return theme.isDarkMode ? WebDarkColors.success : WebColors.success;
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.profitDark,
+        light: MyntColors.profit,
+      );
     } else if (numValue < 0) {
-      return theme.isDarkMode ? WebDarkColors.error : WebColors.error;
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.lossDark,
+        light: MyntColors.loss,
+      );
     } else {
-      return theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary;
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.textSecondaryDark,
+        light: MyntColors.textSecondary,
+      );
     }
   }
 
@@ -1084,11 +1128,10 @@ class _OverallPnLCellState extends ConsumerState<_OverallPnLCell> {
   Widget build(BuildContext context) {
     return Text(
       overallPnL,
-      style: WebTextStyles.custom(
-        fontSize: 13,
-        isDarkTheme: widget.theme.isDarkMode,
+      style: MyntWebTextStyles.bodySmall(
+        context,
         color: _getValueColor(overallPnL, widget.theme),
-        fontWeight: WebFonts.medium,
+        fontWeight: MyntFonts.medium,
       ),
       textAlign: TextAlign.right,
     );
@@ -1147,11 +1190,23 @@ class _OverallPercentCellState extends ConsumerState<_OverallPercentCell> {
   Color _getValueColor(String value, ThemesProvider theme) {
     final numValue = double.tryParse(value) ?? 0.0;
     if (numValue > 0) {
-      return theme.isDarkMode ? WebDarkColors.success : WebColors.success;
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.profitDark,
+        light: MyntColors.profit,
+      );
     } else if (numValue < 0) {
-      return theme.isDarkMode ? WebDarkColors.error : WebColors.error;
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.lossDark,
+        light: MyntColors.loss,
+      );
     } else {
-      return theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary;
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.textSecondaryDark,
+        light: MyntColors.textSecondary,
+      );
     }
   }
 
@@ -1159,11 +1214,10 @@ class _OverallPercentCellState extends ConsumerState<_OverallPercentCell> {
   Widget build(BuildContext context) {
     return Text(
       '$overallPercent%',
-      style: WebTextStyles.custom(
-        fontSize: 13,
-        isDarkTheme: widget.theme.isDarkMode,
+      style: MyntWebTextStyles.bodySmall(
+        context,
         color: _getValueColor(overallPercent, widget.theme),
-        fontWeight: WebFonts.medium,
+        fontWeight: MyntFonts.medium,
       ),
       textAlign: TextAlign.right,
     );

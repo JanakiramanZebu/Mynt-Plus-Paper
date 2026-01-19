@@ -13,8 +13,8 @@ import '../../../../provider/portfolio_provider.dart';
 import '../../../../provider/thems.dart';
 import '../../../../provider/websocket_provider.dart';
 import '../../../../res/res.dart';
-import '../../../../res/web_colors.dart';
-import '../../../../res/global_font_web.dart';
+import '../../../../res/mynt_web_text_styles.dart';
+import '../../../../res/mynt_web_color_styles.dart';
 import '../../../../sharedWidget/no_data_found.dart';
 import '../../../../provider/market_watch_provider.dart';
 import '../../../../sharedWidget/snack_bar.dart';
@@ -86,7 +86,11 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
       child: Container(
         width: double.infinity,
         height: double.infinity,
-        color: theme.isDarkMode ? WebDarkColors.background : Colors.white,
+        color: resolveThemeColor(
+          context,
+          dark: shadcn.Theme.of(context).colorScheme.background,
+          light: Colors.white,
+        ),
         child: GestureDetector(
           onTap: () => FocusScope.of(context).unfocus(),
           child: Padding(
@@ -166,14 +170,22 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
               width: 45,
               height: 45,
               decoration: BoxDecoration(
-                color: colors.primary.withOpacity(0.1),
+                color: resolveThemeColor(
+                  context,
+                  dark: MyntColors.primaryDark,
+                  light: MyntColors.primary,
+                ).withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
               child: Center(
                 child: Icon(
                   icon,
                   size: 20,
-                  color: colors.primary,
+                  color: resolveThemeColor(
+                    context,
+                    dark: MyntColors.primaryDark,
+                    light: MyntColors.primary,
+                  ),
                 ),
               ),
             ),
@@ -186,12 +198,14 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                 children: [
                   Text(
                     label,
-                    style: WebTextStyles.sub(
-                      isDarkTheme: theme.isDarkMode,
-                      color: theme.isDarkMode
-                          ? WebDarkColors.textSecondary
-                          : WebColors.textSecondary,
-                      fontWeight: WebFonts.medium,
+                    style: MyntWebTextStyles.bodySmall(
+                      context,
+                      color: resolveThemeColor(
+                        context,
+                        dark: MyntColors.textSecondaryDark,
+                        light: MyntColors.textSecondary,
+                      ),
+                      fontWeight: MyntFonts.medium,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -201,10 +215,10 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                       Flexible(
                         child: Text(
                           value,
-                          style: WebTextStyles.head(
-                            isDarkTheme: theme.isDarkMode,
+                          style: MyntWebTextStyles.head(
+                            context,
                             color: valueColor,
-                            fontWeight: WebFonts.bold,
+                            fontWeight: MyntFonts.bold,
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -213,10 +227,10 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                         const SizedBox(width: 4),
                         Text(
                           '($percentage%)',
-                          style: WebTextStyles.sub(
-                            isDarkTheme: theme.isDarkMode,
+                          style: MyntWebTextStyles.bodySmall(
+                            context,
                             color: valueColor,
-                            fontWeight: WebFonts.medium,
+                            fontWeight: MyntFonts.medium,
                           ),
                         ),
                       ],
@@ -277,8 +291,11 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                   : shadcn.ColorSchemes.lightDefaultColor;
 
               // Create custom ColorScheme with theme-appropriate primary color
-              final primaryColor =
-                  theme.isDarkMode ? WebDarkColors.primary : WebColors.primary;
+              final primaryColor = resolveThemeColor(
+                context,
+                dark: MyntColors.primaryDark,
+                light: MyntColors.primary,
+              );
               final customColorScheme = baseColorScheme.copyWith(
                 primary: () => primaryColor,
               );
@@ -304,11 +321,13 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                         style: TextStyle(
                           fontFamily: 'Geist',
                           color: _selectedTabIndex == 0
-                              ? (theme.isDarkMode
-                                  ? WebDarkColors.primary
-                                  : WebColors.primary)
+                              ? resolveThemeColor(
+                                  context,
+                                  dark: MyntColors.primaryDark,
+                                  light: MyntColors.primary,
+                                )
                               : customColorScheme.mutedForeground,
-                          fontWeight: WebFonts.bold,
+                          fontWeight: MyntFonts.bold,
                         ),
                         child: Text(
                           'Positions ($openPositionsCount)',
@@ -428,10 +447,13 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                       : (selectedCount == 1
                           ? 'Exit (1)'
                           : 'Exit ($selectedCount)'),
-                  style: WebTextStyles.buttonMd(
-                    isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
-                    fontWeight: WebFonts.bold,
+                  style: MyntWebTextStyles.buttonMd(
+                    context,
+                    color: resolveThemeColor(
+                      context,
+                      dark: MyntColors.primaryDark,
+                      light: MyntColors.primary,
+                    ),
                   ),
                 ),
               );
@@ -461,9 +483,11 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                 child: Icon(
                   Icons.refresh,
                   size: 20,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.iconSecondary
-                      : WebColors.iconSecondary,
+                  color: resolveThemeColor(
+                    context,
+                    dark: MyntColors.iconDark,
+                    light: MyntColors.icon,
+                  ),
                 ),
               ),
             ),
@@ -481,7 +505,11 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(
-            color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
+            color: resolveThemeColor(
+              context,
+              dark: MyntColors.dividerDark,
+              light: MyntColors.divider,
+            ),
           ),
         ),
       ),
@@ -499,41 +527,53 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
             child: Container(
               height: 40,
               decoration: BoxDecoration(
-                color: theme.isDarkMode
-                    ? WebDarkColors.inputBackground
-                    : WebColors.inputBackground,
+                color: resolveThemeColor(
+                  context,
+                  dark: MyntColors.searchBgDark,
+                  light: MyntColors.searchBg,
+                ),
                 borderRadius: BorderRadius.circular(5),
                 border: Border.all(
-                  color: theme.isDarkMode
-                      ? WebDarkColors.inputBorder
-                      : WebColors.inputBorder,
+                  color: resolveThemeColor(
+                    context,
+                    dark: MyntColors.outlinedBorderDark,
+                    light: MyntColors.outlinedBorder,
+                  ),
                   width: 1,
                 ),
               ),
               child: TextField(
                 onChanged: (value) => _searchQuery.value =
                     value, // ✅ Use ValueNotifier instead of setState
-                style: WebTextStyles.formInput(
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
-                ).copyWith(fontWeight: WebFonts.bold),
+                style: MyntWebTextStyles.bodySmall(
+                  context,
+                  color: resolveThemeColor(
+                    context,
+                    dark: MyntColors.textPrimaryDark,
+                    light: MyntColors.textPrimary,
+                  ),
+                  fontWeight: MyntFonts.bold,
+                ),
                 decoration: InputDecoration(
                   hintText: '',
-                  hintStyle: WebTextStyles.formInput(
-                    isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode
-                        ? WebDarkColors.textSecondary
-                        : WebColors.textSecondary,
-                  ).copyWith(fontWeight: WebFonts.bold),
+                  hintStyle: MyntWebTextStyles.bodySmall(
+                    context,
+                    color: resolveThemeColor(
+                      context,
+                      dark: MyntColors.textSecondaryDark,
+                      light: MyntColors.textSecondary,
+                    ),
+                    fontWeight: MyntFonts.bold,
+                  ),
                   prefixIcon: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: SvgPicture.asset(
                       assets.searchIcon,
-                      color: theme.isDarkMode
-                          ? WebDarkColors.iconSecondary
-                          : WebColors.iconSecondary,
+                      color: resolveThemeColor(
+                        context,
+                        dark: MyntColors.iconDark,
+                        light: MyntColors.icon,
+                      ),
                       fit: BoxFit.scaleDown,
                       width: 18,
                     ),
@@ -567,9 +607,11 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
               return Container(
                 decoration: BoxDecoration(
                   color: buttonEnabled
-                      ? (theme.isDarkMode
-                          ? WebDarkColors.primary
-                          : WebColors.primary)
+                      ? resolveThemeColor(
+                          context,
+                          dark: MyntColors.primaryDark,
+                          light: MyntColors.primary,
+                        )
                       : Colors.grey,
                   borderRadius: BorderRadius.circular(5),
                 ),
@@ -586,10 +628,9 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                           : (selectedCount == 1
                               ? 'Exit (1)'
                               : 'Exit ($selectedCount)'),
-                      style: WebTextStyles.buttonSm(
-                        isDarkTheme: theme.isDarkMode,
+                      style: MyntWebTextStyles.buttonSm(  
+                        context,
                         color: Colors.white,
-                        fontWeight: WebFonts.bold,
                       ),
                     ),
                   ),
@@ -618,9 +659,11 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                 child: Icon(
                   Icons.refresh,
                   size: 20,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.iconSecondary
-                      : WebColors.iconSecondary,
+                  color: resolveThemeColor(
+                    context,
+                    dark: MyntColors.iconDark,
+                    light: MyntColors.icon,
+                  ),
                 ),
               ),
             ),
@@ -1335,11 +1378,10 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                 message: displayText,
                 child: Text(
                   displayText,
-                  style: WebTextStyles.custom(
-                    fontSize: 13,
-                    isDarkTheme: theme.isDarkMode,
+                  style: MyntWebTextStyles.bodySmall(
+                    context,
                     color: _getPositionTextColor(position, theme),
-                    fontWeight: WebFonts.medium,
+                    fontWeight: MyntFonts.medium,
                   ),
                   maxLines: 1,
                   softWrap: false,
@@ -1370,9 +1412,11 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                         _buildHoverButton(
                           label: 'Add',
                           color: Colors.white,
-                          backgroundColor: theme.isDarkMode
-                              ? WebDarkColors.primary
-                              : WebColors.primary,
+                          backgroundColor: resolveThemeColor(
+                            context,
+                            dark: MyntColors.primaryDark,
+                            light: MyntColors.primary,
+                          ),
                           onPressed: () async {
                             await _handleAddPosition(context, position);
                           },
@@ -1382,9 +1426,11 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                         _buildHoverButton(
                           label: 'Exit',
                           color: Colors.white,
-                          backgroundColor: theme.isDarkMode
-                              ? WebDarkColors.tertiary
-                              : WebColors.tertiary,
+                          backgroundColor: resolveThemeColor(
+                            context,
+                            dark: MyntColors.tertiary,
+                            light: MyntColors.tertiary,
+                          ),
                           onPressed: () async {
                             await _handleExitPosition(context, position);
                           },
@@ -1459,9 +1505,11 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                         borderRadius: BorderRadius.circular(4),
                       ),
                       side: BorderSide(
-                        color: theme.isDarkMode
-                            ? WebDarkColors.textPrimary.withOpacity(0.5)
-                            : WebColors.textPrimary.withOpacity(0.5),
+                        color: resolveThemeColor(
+                          context,
+                          dark: MyntColors.textPrimaryDark,
+                          light: MyntColors.textPrimary,
+                        ).withOpacity(0.5),
                         width: 1.5,
                       ),
                     ),
@@ -1473,9 +1521,11 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                             positionBook.selectExitAllPosition(value ?? false);
                           }
                         : null,
-                    activeColor: theme.isDarkMode
-                        ? WebDarkColors.primary
-                        : WebColors.primary,
+                    activeColor: resolveThemeColor(
+                      context,
+                      dark: MyntColors.primaryDark,
+                      light: MyntColors.primary,
+                    ),
                   ),
                 ),
               ),
@@ -1491,11 +1541,13 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
       children: [
         Text(
           label,
-          style: WebTextStyles.tableHeader(
-            isDarkTheme: theme.isDarkMode,
-            color: theme.isDarkMode
-                ? WebDarkColors.textPrimary
-                : WebColors.textPrimary,
+          style: MyntWebTextStyles.head(
+            context,
+            color: resolveThemeColor(
+              context,
+              dark: MyntColors.textPrimaryDark,
+              light: MyntColors.textPrimary,
+            ),
           ),
         ),
         const SizedBox(width: 4),
@@ -1512,13 +1564,19 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
     if (_sortColumnIndex == columnIndex) {
       // Column is currently sorted
       icon = _sortAscending ? Icons.arrow_upward : Icons.arrow_downward;
-      color = theme.isDarkMode ? WebDarkColors.primary : WebColors.primary;
+      color = resolveThemeColor(
+        context,
+        dark: MyntColors.primaryDark,
+        light: MyntColors.primary,
+      );
     } else {
       // Column is not sorted
       icon = Icons.unfold_more;
-      color = theme.isDarkMode
-          ? WebDarkColors.iconSecondary.withOpacity(0.6)
-          : WebColors.iconSecondary.withOpacity(0.6);
+      color = resolveThemeColor(
+        context,
+        dark: MyntColors.iconDark,
+        light: MyntColors.icon,
+      ).withOpacity(0.6);
     }
 
     return Icon(
@@ -1557,9 +1615,11 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                     borderRadius: BorderRadius.circular(4),
                   ),
                   side: BorderSide(
-                    color: theme.isDarkMode
-                        ? WebDarkColors.textPrimary.withOpacity(0.5)
-                        : WebColors.textPrimary.withOpacity(0.5),
+                    color: resolveThemeColor(
+                      context,
+                      dark: MyntColors.textPrimaryDark,
+                      light: MyntColors.textPrimary,
+                    ).withOpacity(0.5),
                     width: 1.5,
                   ),
                 ),
@@ -1573,9 +1633,11 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                           positionBook.selectExitPosition(positionIndex);
                         }
                       },
-                activeColor: theme.isDarkMode
-                    ? WebDarkColors.primary
-                    : WebColors.primary,
+                activeColor: resolveThemeColor(
+                  context,
+                  dark: MyntColors.primaryDark,
+                  light: MyntColors.primary,
+                ),
               ),
             ),
           ),
@@ -1596,14 +1658,15 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
         padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 6.0),
         child: Text(
           text,
-          style: WebTextStyles.custom(
-            fontSize: 13,
-            isDarkTheme: theme.isDarkMode,
+          style: MyntWebTextStyles.bodySmall(
+            context,
             color: color ??
-                (theme.isDarkMode
-                    ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary),
-            fontWeight: WebFonts.medium,
+                resolveThemeColor(
+                  context,
+                  dark: MyntColors.textPrimaryDark,
+                  light: MyntColors.textPrimary,
+                ),
+            fontWeight: MyntFonts.medium,
           ),
           maxLines: 1,
           softWrap: false,
@@ -1676,28 +1739,46 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
   Color _getValueColor(String value, ThemesProvider theme) {
     final numValue = double.tryParse(value) ?? 0.0;
     if (numValue > 0) {
-      return theme.isDarkMode
-          ? WebDarkColors.success
-          : WebColors.success; // Green
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.profitDark,
+        light: MyntColors.profit,
+      ); // Green
     } else if (numValue < 0) {
-      return theme.isDarkMode ? WebDarkColors.error : WebColors.error; // Red
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.lossDark,
+        light: MyntColors.loss,
+      ); // Red
     } else {
-      return theme.isDarkMode
-          ? WebDarkColors.textSecondary
-          : WebColors.textSecondary; // Grey
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.textSecondaryDark,
+        light: MyntColors.textSecondary,
+      ); // Grey
     }
   }
 
   Color _getQtyColor(String qty, ThemesProvider theme) {
     final numQty = int.tryParse(qty) ?? 0;
     if (numQty > 0) {
-      return theme.isDarkMode ? WebDarkColors.success : WebColors.success;
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.profitDark,
+        light: MyntColors.profit,
+      );
     } else if (numQty < 0) {
-      return theme.isDarkMode ? WebDarkColors.error : WebColors.error;
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.lossDark,
+        light: MyntColors.loss,
+      );
     } else {
-      return theme.isDarkMode
-          ? WebDarkColors.textSecondary
-          : WebColors.textSecondary;
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.textSecondaryDark,
+        light: MyntColors.textSecondary,
+      );
     }
   }
 
@@ -1714,11 +1795,17 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
   Color _getPositionTextColor(
       PositionBookModel position, ThemesProvider theme) {
     if (_isPositionClosed(position)) {
-      return theme.isDarkMode
-          ? WebDarkColors.textSecondary.withOpacity(0.6)
-          : WebColors.textSecondary.withOpacity(0.6);
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.textSecondaryDark,
+        light: MyntColors.textSecondary,
+      ).withOpacity(0.6);
     }
-    return theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary;
+    return resolveThemeColor(
+      context,
+      dark: MyntColors.textPrimaryDark,
+      light: MyntColors.textPrimary,
+    );
   }
 
   void _exitAllPositions() {
@@ -1840,8 +1927,8 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                     )
                   : Text(
                       label ?? "",
-                      style: WebTextStyles.buttonXs(
-                        isDarkTheme: theme.isDarkMode,
+                      style: MyntWebTextStyles.buttonSm(
+                        context,
                         color: color,
                       ),
                     ),
@@ -2152,13 +2239,23 @@ class _PnLCellState extends ConsumerState<_PnLCell> {
   Color _getValueColor(String value, ThemesProvider theme) {
     final numValue = double.tryParse(value) ?? 0.0;
     if (numValue > 0) {
-      return theme.isDarkMode ? WebDarkColors.success : WebColors.success;
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.profitDark,
+        light: MyntColors.profit,
+      );
     } else if (numValue < 0) {
-      return theme.isDarkMode ? WebDarkColors.error : WebColors.error;
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.lossDark,
+        light: MyntColors.loss,
+      );
     } else {
-      return theme.isDarkMode
-          ? WebDarkColors.textSecondary
-          : WebColors.textSecondary;
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.textSecondaryDark,
+        light: MyntColors.textSecondary,
+      );
     }
   }
 
@@ -2166,12 +2263,11 @@ class _PnLCellState extends ConsumerState<_PnLCell> {
   Widget build(BuildContext context) {
     return Text(
       pnl,
-      style: WebTextStyles.custom(
-        fontSize: 13,
-        isDarkTheme: widget.theme.isDarkMode,
+      style: MyntWebTextStyles.bodySmall(
+        context,
         color:
             widget.isClosed ? Colors.grey : _getValueColor(pnl, widget.theme),
-        fontWeight: WebFonts.medium,
+        fontWeight: MyntFonts.medium,
       ),
       textAlign: TextAlign.right,
     );
@@ -2234,13 +2330,23 @@ class _MTMCellState extends ConsumerState<_MTMCell> {
   Color _getValueColor(String value, ThemesProvider theme) {
     final numValue = double.tryParse(value) ?? 0.0;
     if (numValue > 0) {
-      return theme.isDarkMode ? WebDarkColors.success : WebColors.success;
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.profitDark,
+        light: MyntColors.profit,
+      );
     } else if (numValue < 0) {
-      return theme.isDarkMode ? WebDarkColors.error : WebColors.error;
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.lossDark,
+        light: MyntColors.loss,
+      );
     } else {
-      return theme.isDarkMode
-          ? WebDarkColors.textSecondary
-          : WebColors.textSecondary;
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.textSecondaryDark,
+        light: MyntColors.textSecondary,
+      );
     }
   }
 
@@ -2248,12 +2354,11 @@ class _MTMCellState extends ConsumerState<_MTMCell> {
   Widget build(BuildContext context) {
     return Text(
       mtm,
-      style: WebTextStyles.custom(
-        fontSize: 13,
-        isDarkTheme: widget.theme.isDarkMode,
+      style: MyntWebTextStyles.bodySmall(
+        context,
         color:
             widget.isClosed ? Colors.grey : _getValueColor(mtm, widget.theme),
-        fontWeight: WebFonts.medium,
+        fontWeight: MyntFonts.medium,
       ),
       textAlign: TextAlign.right,
     );

@@ -1,19 +1,80 @@
-// import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:data_table_2/data_table_2.dart';
+// Futures screen with shadcn.Table implementation
+// Converted from DataTable2 to shadcn.Table pattern following hold_table.dart
 
-import '../../../../models/marketwatch_model/get_quotes.dart';
-import '../../../../models/order_book_model/order_book_model.dart';
-import '../../../../provider/market_watch_provider.dart';
-import '../../../../provider/thems.dart';
-import '../../../../provider/websocket_provider.dart';
-import '../../../../res/web_colors.dart';
-import '../../../../res/global_font_web.dart';
-import '../../../../res/res.dart';
-import '../../../../utils/responsive_navigation.dart';
-import '../../../../utils/responsive_snackbar.dart';
+import 'package:flutter/material.dart'
+    show
+        InkWell,
+        Icons,
+        VoidCallback,
+        BorderRadius,
+        Icon,
+        BoxDecoration,
+        TextPainter,
+        TextSpan,
+        TextStyle,
+        TextDirection,
+        Row,
+        MainAxisSize,
+        SizedBox,
+        Widget,
+        BuildContext,
+        Color,
+        EdgeInsets,
+        Alignment,
+        MainAxisAlignment,
+        TextOverflow,
+        Axis,
+        Container,
+        MouseRegion,
+        Expanded,
+        Align,
+        Text,
+        AnimatedOpacity,
+        ScrollController,
+        SingleChildScrollView,
+        Scrollbar,
+        Column,
+        LayoutBuilder,
+        ValueKey,
+        IconData,
+        Padding,
+        Tooltip,
+        Stack,
+        LinearGradient,
+        BoxConstraints,
+        Clip,
+        MediaQuery,
+        Builder,
+        Visibility,
+        Navigator,
+        Center,
+        StreamBuilder,
+        Listener,
+        debugPrint,
+        Colors,
+        ClipRRect,
+        Material,
+        Border,
+        FontWeight;
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
+import 'package:pointer_interceptor/pointer_interceptor.dart';
+import 'dart:html' as html;
+
+import 'tv_chart/chart_iframe_guard.dart';
+
+import '../../../models/marketwatch_model/get_quotes.dart';
+import '../../../models/order_book_model/order_book_model.dart';
+import '../../../provider/market_watch_provider.dart';
+import '../../../provider/thems.dart';
+import '../../../provider/websocket_provider.dart';
+
+import '../../../utils/responsive_navigation.dart';
+import '../../../utils/responsive_snackbar.dart';
+
+import '../../../res/mynt_web_color_styles.dart' as MyntColors;
+import '../../../res/mynt_web_text_styles.dart';
 
 class FutureScreenWeb extends ConsumerStatefulWidget {
   const FutureScreenWeb({super.key});
@@ -23,19 +84,367 @@ class FutureScreenWeb extends ConsumerStatefulWidget {
 }
 
 class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
-  // PERFORMANCE FIX: Use ValueNotifier for hover instead of setState
-  // setState causes full widget rebuild, ValueNotifier only rebuilds hover-dependent parts
-  final ValueNotifier<String?> _hoveredToken = ValueNotifier<String?>(null);
+  int? _hoveredRowIndex;
   bool _isNavigating = false;
-  final ScrollController _horizontalScrollController = ScrollController();
-  final ScrollController _verticalScrollController = ScrollController();
+  int? _sortColumnIndex;
+  bool _sortAscending = true;
+
+  // Scroll controllers
+  late ScrollController _verticalScrollController;
+  late ScrollController _horizontalScrollController;
+
+  @override
+  void initState() {
+    super.initState();
+    _verticalScrollController = ScrollController();
+    _horizontalScrollController = ScrollController();
+  }
 
   @override
   void dispose() {
-    _hoveredToken.dispose();
-    _horizontalScrollController.dispose();
     _verticalScrollController.dispose();
+    _horizontalScrollController.dispose();
     super.dispose();
+  }
+
+  // Directly disable all chart iframes and reset cursor (like chart's onExit)
+  void _disableAllChartIframes() {
+    try {
+      final iframes = html.document.querySelectorAll('iframe');
+      for (var iframe in iframes) {
+        if (iframe is html.IFrameElement &&
+            iframe.id.contains('chart-iframe')) {
+          iframe.style.pointerEvents = 'none';
+          // Reset cursor style to prevent cursor bleeding
+          iframe.style.cursor = 'default';
+        }
+      }
+      // Also reset cursor on document body to ensure it's reset globally
+      html.document.body?.style.cursor = 'default';
+    } catch (e) {
+      debugPrint('Error disabling iframes: $e');
+    }
+  }
+
+  void _enableAllChartIframes() {
+    try {
+      final iframes = html.document.querySelectorAll('iframe');
+      for (var iframe in iframes) {
+        if (iframe is html.IFrameElement &&
+            iframe.id.contains('chart-iframe')) {
+          iframe.style.pointerEvents = 'auto';
+          iframe.style.cursor = '';
+        }
+      }
+      html.document.body?.style.cursor = '';
+    } catch (e) {
+      debugPrint('Error enabling iframes: $e');
+    }
+  }
+
+  // Helper widget to build consistent hover buttons (matching watchlist_card_web.dart)
+  Widget _buildHoverButton({
+    String? label,
+    IconData? icon,
+    required Color color,
+    Color? backgroundColor,
+    Color? borderColor,
+    double? borderRadius,
+    required VoidCallback? onPressed,
+  }) {
+    final borderRadiusValue = borderRadius ?? 5.0;
+
+    // Use shadcn IconButton for icon buttons, keep custom colors
+    if (icon != null) {
+      return SizedBox(
+        width: 24,
+        height: 24,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(borderRadiusValue),
+          child: Container(
+            decoration: BoxDecoration(
+              color: backgroundColor ?? Colors.transparent,
+              borderRadius: BorderRadius.circular(borderRadiusValue),
+              border: borderColor != null
+                  ? Border.all(
+                      color: borderColor,
+                      width: 1,
+                    )
+                  : null,
+            ),
+            child: shadcn.IconButton(
+              size: shadcn.ButtonSize.small,
+              density: shadcn.ButtonDensity.dense,
+              variance: shadcn.ButtonVariance.ghost,
+              onPressed: onPressed,
+              shape: shadcn.ButtonShape.rectangle,
+              icon: Icon(
+                icon,
+                size: 14,
+                color: color,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    // Keep original implementation for label buttons (matching watchlist_card_web.dart)
+    return SizedBox(
+      width: 24,
+      height: 24,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(borderRadiusValue),
+          splashColor: color.withOpacity(0.15),
+          highlightColor: color.withOpacity(0.08),
+          onTap: onPressed,
+          child: Container(
+            decoration: BoxDecoration(
+              color: backgroundColor ?? Colors.transparent,
+              borderRadius: BorderRadius.circular(borderRadiusValue),
+              border: borderColor != null
+                  ? Border.all(
+                      color: borderColor,
+                      width: 1,
+                    )
+                  : null,
+            ),
+            child: Center(
+              child: Text(
+                label ?? "",
+                style: MyntWebTextStyles.para(
+                  context,
+                  color: color,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Builds a bordered cell
+  shadcn.TableCell buildCell(Widget child, [bool alignRight = false]) {
+    return shadcn.TableCell(
+      theme: const shadcn.TableCellTheme(
+        border: shadcn.WidgetStatePropertyAll(
+          shadcn.Border(
+            top: shadcn.BorderSide.none,
+            bottom: shadcn.BorderSide.none,
+            left: shadcn.BorderSide.none,
+            right: shadcn.BorderSide.none,
+          ),
+        ),
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(8),
+        alignment: alignRight ? Alignment.centerRight : null,
+        child: child,
+      ),
+    );
+  }
+
+  // Builds a cell with hover detection
+  shadcn.TableCell buildCellWithHover({
+    required Widget child,
+    required int rowIndex,
+    required int columnIndex,
+    bool alignRight = false,
+  }) {
+    final isFirstColumn = columnIndex == 0;
+    final isLastColumn = columnIndex == 2;
+
+    EdgeInsets cellPadding;
+    if (isFirstColumn) {
+      cellPadding = const EdgeInsets.fromLTRB(16, 8, 4, 8);
+    } else if (isLastColumn) {
+      cellPadding = const EdgeInsets.fromLTRB(4, 8, 16, 8);
+    } else {
+      cellPadding = const EdgeInsets.symmetric(horizontal: 8, vertical: 8);
+    }
+
+    return shadcn.TableCell(
+      theme: const shadcn.TableCellTheme(
+        border: shadcn.WidgetStatePropertyAll(
+          shadcn.Border(
+            top: shadcn.BorderSide.none,
+            bottom: shadcn.BorderSide.none,
+            left: shadcn.BorderSide.none,
+            right: shadcn.BorderSide.none,
+          ),
+        ),
+      ),
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _hoveredRowIndex = rowIndex),
+        onExit: (_) => setState(() => _hoveredRowIndex = null),
+        child: Container(
+          padding: cellPadding,
+          alignment: alignRight ? Alignment.centerRight : null,
+          child: child,
+        ),
+      ),
+    );
+  }
+
+  // Builds a sortable header cell with sort indicator
+  shadcn.TableCell buildHeaderCell(String label, int columnIndex,
+      [bool alignRight = false]) {
+    final isFirstColumn = columnIndex == 0;
+    final isLastColumn = columnIndex == 2;
+
+    EdgeInsets headerPadding;
+    if (isFirstColumn) {
+      headerPadding = const EdgeInsets.fromLTRB(16, 6, 8, 6);
+    } else if (isLastColumn) {
+      headerPadding = const EdgeInsets.fromLTRB(8, 6, 16, 6);
+    } else {
+      headerPadding = const EdgeInsets.symmetric(horizontal: 6, vertical: 6);
+    }
+
+    return shadcn.TableCell(
+      theme: const shadcn.TableCellTheme(
+        border: shadcn.WidgetStatePropertyAll(
+          shadcn.Border(
+            top: shadcn.BorderSide.none,
+            bottom: shadcn.BorderSide.none,
+            left: shadcn.BorderSide.none,
+            right: shadcn.BorderSide.none,
+          ),
+        ),
+      ),
+      child: InkWell(
+        onTap: () => _onSort(columnIndex),
+        child: Container(
+          padding: headerPadding,
+          alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
+          child: Row(
+            mainAxisAlignment:
+                alignRight ? MainAxisAlignment.end : MainAxisAlignment.start,
+            children: [
+              if (alignRight && _sortColumnIndex == columnIndex)
+                Icon(
+                  _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
+                  size: 16,
+                  color: resolveThemeColor(
+                    context,
+                    dark: MyntColors.WebColors.textSecondaryDark,
+                    light: MyntColors.WebColors.textSecondary,
+                  ),
+                ),
+              if (alignRight && _sortColumnIndex == columnIndex)
+                const SizedBox(width: 4),
+              Text(
+                label,
+                style: MyntWebTextStyles.para(
+                  context,
+                  color: resolveThemeColor(
+                    context,
+                    dark: MyntColors.WebColors.textPrimaryDark,
+                    light: MyntColors.WebColors.textPrimary,
+                  ),
+                  fontWeight: MyntFonts.semiBold,
+                ),
+              ),
+              if (!alignRight && _sortColumnIndex == columnIndex)
+                const SizedBox(width: 4),
+              if (!alignRight && _sortColumnIndex == columnIndex)
+                Icon(
+                  _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
+                  size: 16,
+                  color: resolveThemeColor(
+                    context,
+                    dark: MyntColors.WebColors.textSecondaryDark,
+                    light: MyntColors.WebColors.textSecondary,
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _onSort(int columnIndex) {
+    setState(() {
+      if (_sortColumnIndex == columnIndex) {
+        _sortAscending = !_sortAscending;
+      } else {
+        _sortColumnIndex = columnIndex;
+        _sortAscending = true;
+      }
+    });
+  }
+
+  // Helper method to measure text width dynamically
+  double _measureTextWidth(String text, TextStyle style) {
+    final textPainter = TextPainter(
+      text: TextSpan(
+          text: text,
+          style: MyntWebTextStyles.para(
+            context,
+            color: resolveThemeColor(
+              context,
+              dark: MyntColors.WebColors.textPrimaryDark,
+              light: MyntColors.WebColors.textPrimary,
+            ),
+            fontWeight: MyntFonts.semiBold,
+          )),
+      textDirection: TextDirection.ltr,
+      maxLines: 1,
+    );
+    textPainter.layout();
+    return textPainter.width;
+  }
+
+  // Calculate minimum column widths dynamically based on header and data
+  Map<int, double> _calculateMinWidths(
+      List<dynamic> futures, BuildContext context) {
+    const padding = 24.0;
+    const sortIconWidth = 24.0;
+
+    final headers = ['Symbol', 'LTP', '%Change'];
+    final minWidths = <int, double>{};
+
+    for (int col = 0; col < headers.length; col++) {
+      double maxWidth = 0.0;
+
+      final headerWidth = _measureTextWidth(headers[col], const TextStyle());
+      maxWidth = headerWidth + sortIconWidth;
+
+      for (final future in futures) {
+        String cellText = '';
+
+        switch (col) {
+          case 0: // Symbol
+            cellText = future.tsym?.toString() ?? '';
+            break;
+          case 1: // LTP
+            cellText = future.ltp ?? future.close ?? '0.00';
+            break;
+          case 2: // %Change
+            cellText =
+                '${_getChangeValue(future)} (${_getPerChangeValue(future)}%)';
+            break;
+        }
+
+        final cellWidth = _measureTextWidth(cellText, const TextStyle());
+        if (cellWidth > maxWidth) {
+          maxWidth = cellWidth;
+        }
+      }
+
+      // Symbol column needs extra space for action buttons
+      // Buttons will overlay on the right side, covering only half the text
+      // Text can use full width, buttons appear on hover as overlay
+
+      // Set minimum width (max of header/data + padding)
+      minWidths[col] = maxWidth + padding;
+    }
+
+    return minWidths;
   }
 
   @override
@@ -47,355 +456,470 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
       return Center(
         child: Text(
           "No futures data available",
-          style: WebTextStyles.sub(
-            isDarkTheme: theme.isDarkMode,
-            color: theme.isDarkMode
-                ? WebDarkColors.textSecondary
-                : WebColors.textSecondary,
+          style: MyntWebTextStyles.para(
+            context,
+            color: resolveThemeColor(
+              context,
+              dark: MyntColors.WebColors.textSecondaryDark,
+              light: MyntColors.WebColors.textSecondary,
+            ),
           ),
         ),
       );
     }
 
-    // PERFORMANCE FIX: Use ref.read() for stream - watching causes double rebuild
+    // Sort futures based on selected column
+    List<dynamic> sortedFutures = List.from(future.fut!);
+    if (_sortColumnIndex != null) {
+      sortedFutures.sort((a, b) {
+        int comparison = 0;
+        switch (_sortColumnIndex) {
+          case 0: // Symbol
+            comparison =
+                (a.tsym?.toString() ?? '').compareTo(b.tsym?.toString() ?? '');
+            break;
+          case 1: // LTP
+            final ltpA = double.tryParse(a.ltp ?? a.close ?? '0') ?? 0.0;
+            final ltpB = double.tryParse(b.ltp ?? b.close ?? '0') ?? 0.0;
+            comparison = ltpA.compareTo(ltpB);
+            break;
+          case 2: // %Change
+            final changeA = double.tryParse(a.perChange ?? '0') ?? 0.0;
+            final changeB = double.tryParse(b.perChange ?? '0') ?? 0.0;
+            comparison = changeA.compareTo(changeB);
+            break;
+        }
+        return _sortAscending ? comparison : -comparison;
+      });
+    }
+
     return StreamBuilder<Map>(
-      stream: ref.read(websocketProvider).socketDataStream,
+      stream: ref.watch(websocketProvider).socketDataStream,
       builder: (context, snapshot) {
         final socketDatas = snapshot.data ?? {};
 
-        return LayoutBuilder(
-          builder: (context, constraints) {
-            // Calculate available height for the table
-            final screenHeight = MediaQuery.of(context).size.height;
-            const padding = 32.0; // Top and bottom padding
-            final maxHeight = screenHeight * 0.75;
-            final calculatedHeight = (screenHeight - padding > maxHeight
-                ? maxHeight
-                : (screenHeight - padding > 400 ? screenHeight - padding : 400.0));
+        return PointerInterceptor(
+          child: MouseRegion(
+            cursor: SystemMouseCursors.basic,
+            onEnter: (_) {
+              ChartIframeGuard.acquire();
+              _disableAllChartIframes();
+            },
+            onHover: (_) {
+              _disableAllChartIframes();
+            },
+            onExit: (_) {
+              ChartIframeGuard.release();
+              _enableAllChartIframes();
+            },
+            child: Listener(
+              onPointerMove: (_) {
+                _disableAllChartIframes();
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: shadcn.OutlinedContainer(
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      // Calculate minimum widths dynamically
+                      final minWidths =
+                          _calculateMinWidths(sortedFutures, context);
 
-            return Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Container(
-                height: calculatedHeight.toDouble(),
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: theme.isDarkMode
-                        ? WebDarkColors.divider
-                        : WebColors.divider,
-                    width: 1,
-                  ),
-                  borderRadius: BorderRadius.circular(4),
-                  color: theme.isDarkMode
-                      ? WebDarkColors.background
-                      : Colors.white,
-                ),
-                child: Theme(
-                  data: Theme.of(context).copyWith(
-                    scrollbarTheme: ScrollbarThemeData(
-                      thumbVisibility: WidgetStateProperty.all(true),
-                      trackVisibility: WidgetStateProperty.all(true),
-                      thickness: WidgetStateProperty.all(6.0),
-                      crossAxisMargin: 0.0,
-                      mainAxisMargin: 0.0,
-                      radius: const Radius.circular(3),
-                      thumbColor: WidgetStateProperty.resolveWith((states) {
-                        return theme.isDarkMode 
-                            ? WebDarkColors.textSecondary.withOpacity(0.3)
-                            : WebColors.textSecondary.withOpacity(0.3);
-                      }),
-                      trackColor: WidgetStateProperty.resolveWith((states) {
-                        return theme.isDarkMode 
-                            ? WebDarkColors.divider.withOpacity(0.1)
-                            : WebColors.divider.withOpacity(0.1);
-                      }),
-                      trackBorderColor: WidgetStateProperty.all(Colors.transparent),
-                      minThumbLength: 48.0,
-                    ),
-                  ),
-                  child: DataTable2(
-                    columnSpacing: 12,
-                    horizontalMargin: 12,
-                    minWidth: 800,
-                    fixedLeftColumns: 1, // Fix the first column (Symbol)
-                    fixedColumnsColor: theme.isDarkMode 
-                        ? WebDarkColors.backgroundSecondary.withOpacity(0.8)
-                        : WebColors.backgroundSecondary.withOpacity(0.8),
-                    showBottomBorder: true,
-                    horizontalScrollController: _horizontalScrollController,
-                    scrollController: _verticalScrollController,
-                    showCheckboxColumn: false,
-                    headingRowColor: WidgetStateProperty.all(
-                      theme.isDarkMode
-                          ? WebDarkColors.primary
-                          : WebColors.primary.withOpacity(0.05),
-                    ),
-                    headingTextStyle: WebTextStyles.tableHeader(
-                      isDarkTheme: theme.isDarkMode,
-                      color: theme.isDarkMode
-                          ? WebDarkColors.textPrimary
-                          : WebColors.textPrimary,
-                    ),
-                    dataTextStyle: WebTextStyles.custom(
-                      fontSize: 13,
-                      isDarkTheme: theme.isDarkMode,
-                      color: theme.isDarkMode
-                          ? WebDarkColors.textPrimary
-                          : WebColors.textPrimary,
-                      fontWeight: WebFonts.medium,
-                    ),
-                    border: TableBorder(
-                      top: BorderSide(
-                        color: theme.isDarkMode
-                            ? WebDarkColors.divider
-                            : WebColors.divider,
-                        width: 1,
-                      ),
-                      bottom: BorderSide(
-                        color: theme.isDarkMode
-                            ? WebDarkColors.divider
-                            : WebColors.divider,
-                        width: 1,
-                      ),
-                      horizontalInside: BorderSide(
-                        color: theme.isDarkMode
-                            ? WebDarkColors.divider
-                            : WebColors.divider,
-                        width: 1,
-                      ),
-                    ),
-                    columns: [
-                      DataColumn2(
-                        label: Text(
-                          'Symbol',
-                          style: WebTextStyles.tableHeader(
-                            isDarkTheme: theme.isDarkMode,
-                            color: theme.isDarkMode
-                                ? WebDarkColors.textPrimary
-                                : WebColors.textPrimary,
-                          ),
-                        ),
-                        size: ColumnSize.L,
-                        fixedWidth: 300.0,
-                      ),
-                      DataColumn2(
-                        label: Text(
-                          'LTP',
-                          style: WebTextStyles.tableHeader(
-                            isDarkTheme: theme.isDarkMode,
-                            color: theme.isDarkMode
-                                ? WebDarkColors.textPrimary
-                                : WebColors.textPrimary,
-                          ),
-                        ),
-                        size: ColumnSize.S,
-                      ),
-                      DataColumn2(
-                        label: Text(
-                          '%Change',
-                          style: WebTextStyles.tableHeader(
-                            isDarkTheme: theme.isDarkMode,
-                            color: theme.isDarkMode
-                                ? WebDarkColors.textPrimary
-                                : WebColors.textPrimary,
-                          ),
-                        ),
-                        size: ColumnSize.S,
-                      ),
-                    ],
-                    rows: future.fut!.asMap().entries.map((entry) {
-                  final index = entry.key;
-                  final displayData = entry.value;
-                  // Update with socket data if available
-                  var updatedData = displayData;
-                  final tokenKey = displayData.token?.toString();
+                      // Available width
+                      final availableWidth = constraints.maxWidth;
 
-                  if (tokenKey != null && socketDatas.containsKey(tokenKey)) {
-                    final socketData = socketDatas[tokenKey];
-
-                    // Try multiple possible keys for LTP
-                    final lp = socketData['lp']?.toString() ??
-                        socketData['ltp']?.toString() ??
-                        socketData['last_price']?.toString();
-                    if (lp != null &&
-                        lp != "null" &&
-                        lp != "0" &&
-                        lp != "0.00" &&
-                        lp.isNotEmpty) {
-                      try {
-                        final ltpValue = double.parse(lp);
-                        if (ltpValue > 0) {
-                          updatedData.ltp = lp;
-                        }
-                      } catch (e) {
-                        // Keep original value if parsing fails
+                      // Start with minimum widths
+                      final columnWidths = <int, double>{};
+                      for (int i = 0; i < 3; i++) {
+                        columnWidths[i] = minWidths[i] ?? 100.0;
                       }
-                    }
 
-                    // Try multiple possible keys for change
-                    final chng = socketData['chng']?.toString() ??
-                        socketData['change']?.toString() ??
-                        socketData['net_change']?.toString();
-                    if (chng != null && chng != "null" && chng.isNotEmpty) {
-                      try {
-                        updatedData.change = chng;
-                      } catch (e) {
-                        // Property might be read-only, ignore
-                      }
-                    }
+                      // Calculate total minimum width needed
+                      final totalMinWidth = columnWidths.values
+                          .fold<double>(0.0, (sum, width) => sum + width);
 
-                    // Try multiple possible keys for percentage change
-                    final pc = socketData['pc']?.toString() ??
-                        socketData['per_change']?.toString() ??
-                        socketData['percentage_change']?.toString() ??
-                        socketData['pchange']?.toString();
-                    if (pc != null && pc != "null" && pc.isNotEmpty) {
-                      try {
-                        updatedData.perChange = pc;
-                      } catch (e) {
-                        // Property might be read-only, ignore
-                      }
-                    }
-                  }
+                      // If there's extra space, distribute it proportionally
+                      if (totalMinWidth < availableWidth) {
+                        final extraSpace = availableWidth - totalMinWidth;
 
-                      final token = updatedData.token?.toString() ?? '';
-                      final uniqueId = '$token$index';
+                        const symbolGrowthFactor = 2.0;
+                        const numericGrowthFactor = 1.0;
 
-                      return DataRow2(
-                        onTap: () {
-                          // Row tap handler if needed
-                        },
-                        color: WidgetStateProperty.resolveWith<Color>((states) {
-                          if (states.contains(WidgetState.hovered) || _hoveredToken.value == uniqueId) {
-                            return theme.isDarkMode
-                                ? WebDarkColors.primary.withOpacity(0.06)
-                                : WebColors.primary.withOpacity(0.10);
+                        final growthFactors = <int, double>{};
+                        double totalGrowthFactor = 0.0;
+
+                        for (int i = 0; i < 3; i++) {
+                          if (i == 0) {
+                            growthFactors[i] = symbolGrowthFactor;
+                            totalGrowthFactor += symbolGrowthFactor;
+                          } else {
+                            growthFactors[i] = numericGrowthFactor;
+                            totalGrowthFactor += numericGrowthFactor;
                           }
-                          return Colors.transparent;
-                        }),
-                        cells: [
-                          // Symbol cell with hover actions
-                          DataCell(
-                            MouseRegion(
-                              onEnter: (_) => _hoveredToken.value = uniqueId,
-                              onExit: (_) => _hoveredToken.value = null,
-                              child: SizedBox.expand(
-                                child: Container(
-                                  alignment: Alignment.centerLeft,
-                                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
-                                  child: _buildSymbolCellContent(updatedData, theme, future, uniqueId),
+                        }
+
+                        if (totalGrowthFactor > 0) {
+                          for (int i = 0; i < 3; i++) {
+                            if (growthFactors[i]! > 0) {
+                              final extraForThisColumn =
+                                  (extraSpace * growthFactors[i]!) /
+                                      totalGrowthFactor;
+                              columnWidths[i] =
+                                  columnWidths[i]! + extraForThisColumn;
+                            }
+                          }
+                        }
+                      }
+
+                      // Calculate total required width
+                      final totalRequiredWidth = columnWidths.values
+                          .fold<double>(0.0, (sum, width) => sum + width);
+
+                      // If total width exceeds available width, enable horizontal scrolling
+                      final needsHorizontalScroll =
+                          totalRequiredWidth > availableWidth;
+
+                      // Build table content
+                      Widget buildTableContent() {
+                        return Column(
+                          children: [
+                            // Fixed Header
+                            shadcn.Table(
+                              columnWidths: {
+                                0: shadcn.FixedTableSize(columnWidths[0]!),
+                                1: shadcn.FixedTableSize(columnWidths[1]!),
+                                2: shadcn.FixedTableSize(columnWidths[2]!),
+                              },
+                              defaultRowHeight: const shadcn.FixedTableSize(40),
+                              rows: [
+                                shadcn.TableHeader(
+                                  cells: [
+                                    buildHeaderCell('Symbol', 0),
+                                    buildHeaderCell('LTP', 1, true),
+                                    buildHeaderCell('%Change', 2, true),
+                                  ],
                                 ),
-                              ),
+                              ],
                             ),
-                          ),
-                          // LTP cell
-                          DataCell(
-                            MouseRegion(
-                              onEnter: (_) => _hoveredToken.value = uniqueId,
-                              onExit: (_) => _hoveredToken.value = null,
-                              child: SizedBox.expand(
-                                child: Container(
-                                  alignment: Alignment.centerRight,
-                                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
-                                  child: Text(
-                                    updatedData.ltp != null &&
-                                            updatedData.ltp != "null"
-                                        ? "${updatedData.ltp}"
-                                        : updatedData.close != null &&
-                                                updatedData.close != "null"
-                                            ? "${updatedData.close}"
-                                            : '0.00',
-                                    style: WebTextStyles.custom(
-                                      fontSize: 13,
-                                      isDarkTheme: theme.isDarkMode,
-                                      color: _getPriceColor(updatedData, theme),
-                                      fontWeight: WebFonts.medium,
-                                    ),
+                            // Scrollable Body
+                            Expanded(
+                              child: Scrollbar(
+                                controller: _verticalScrollController,
+                                thumbVisibility: true,
+                                trackVisibility: true,
+                                interactive: true,
+                                child: SingleChildScrollView(
+                                  controller: _verticalScrollController,
+                                  scrollDirection: Axis.vertical,
+                                  child: shadcn.Table(
+                                    key: ValueKey(
+                                        'futures_table_${_sortColumnIndex}_$_sortAscending'),
+                                    columnWidths: {
+                                      0: shadcn.FixedTableSize(
+                                          columnWidths[0]!),
+                                      1: shadcn.FixedTableSize(
+                                          columnWidths[1]!),
+                                      2: shadcn.FixedTableSize(
+                                          columnWidths[2]!),
+                                    },
+                                    defaultRowHeight:
+                                        const shadcn.FixedTableSize(40),
+                                    rows: [
+                                      // Data Rows
+                                      ...sortedFutures
+                                          .asMap()
+                                          .entries
+                                          .map((entry) {
+                                        final index = entry.key;
+                                        var displayData = entry.value;
+                                        final tokenKey =
+                                            displayData.token?.toString();
+
+                                        // Update with socket data if available
+                                        if (tokenKey != null &&
+                                            socketDatas.containsKey(tokenKey)) {
+                                          final socketData =
+                                              socketDatas[tokenKey];
+
+                                          final lp = socketData['lp']
+                                                  ?.toString() ??
+                                              socketData['ltp']?.toString() ??
+                                              socketData['last_price']
+                                                  ?.toString();
+                                          if (lp != null &&
+                                              lp != "null" &&
+                                              lp != "0" &&
+                                              lp != "0.00" &&
+                                              lp.isNotEmpty) {
+                                            try {
+                                              final ltpValue = double.parse(lp);
+                                              if (ltpValue > 0) {
+                                                displayData.ltp = lp;
+                                              }
+                                            } catch (e) {
+                                              // Keep original value
+                                            }
+                                          }
+
+                                          final chng = socketData['chng']
+                                                  ?.toString() ??
+                                              socketData['change']?.toString();
+                                          if (chng != null &&
+                                              chng != "null" &&
+                                              chng.isNotEmpty) {
+                                            try {
+                                              displayData.change = chng;
+                                            } catch (e) {}
+                                          }
+
+                                          final pc =
+                                              socketData['pc']?.toString() ??
+                                                  socketData['per_change']
+                                                      ?.toString();
+                                          if (pc != null &&
+                                              pc != "null" &&
+                                              pc.isNotEmpty) {
+                                            try {
+                                              displayData.perChange = pc;
+                                            } catch (e) {}
+                                          }
+                                        }
+
+                                        final isRowHovered =
+                                            _hoveredRowIndex == index;
+                                        final displayText =
+                                            displayData.tsym?.toString() ?? '';
+
+                                        return shadcn.TableRow(
+                                          cells: [
+                                            // Symbol cell with action buttons on hover
+                                            buildCellWithHover(
+                                              rowIndex: index,
+                                              columnIndex: 0,
+                                              child: SizedBox(
+                                                width: double.infinity,
+                                                height: double.infinity,
+                                                child: Stack(
+                                                  clipBehavior: Clip.hardEdge,
+                                                  children: [
+                                                    // Symbol name
+                                                    Align(
+                                                      alignment:
+                                                          Alignment.centerLeft,
+                                                      child: Tooltip(
+                                                        message: displayText,
+                                                        child: Padding(
+                                                          padding: EdgeInsets.only(
+                                                              right:
+                                                                  isRowHovered
+                                                                      ? 8.0
+                                                                      : 0.0),
+                                                          child: Text(
+                                                            displayText,
+                                                            style: MyntWebTextStyles
+                                                                .para(
+                                                                    context,
+                                                                color :resolveThemeColor(
+                                                                      context,
+                                                                      dark: MyntColors.WebColors
+                                                                          .textPrimaryDark,
+                                                                      light: MyntColors.WebColors
+                                                                          .textPrimary,
+                                                                    )),
+                                                            overflow: isRowHovered
+                                                                ? TextOverflow
+                                                                    .ellipsis
+                                                                : TextOverflow
+                                                                    .visible,
+                                                            maxLines: 1,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    // Action buttons on hover
+                                                    Visibility(
+                                                      visible: isRowHovered,
+                                                      maintainSize: false,
+                                                      maintainAnimation: false,
+                                                      maintainState: false,
+                                                      child: Align(
+                                                        alignment: Alignment
+                                                            .centerRight,
+                                                        child: LayoutBuilder(
+                                                            builder: (context,
+                                                                constraints) {
+                                                          // Responsive max width based on screen size
+                                                          final screenWidth =
+                                                              MediaQuery.of(
+                                                                      context)
+                                                                  .size
+                                                                  .width;
+                                                          final isSmallScreen =
+                                                              screenWidth < 768;
+                                                          final isVerySmallScreen =
+                                                              screenWidth < 480;
+                                                          final responsiveMaxWidth =
+                                                              isVerySmallScreen
+                                                                  ? 120.0
+                                                                  : (isSmallScreen
+                                                                      ? 160.0
+                                                                      : 200.0);
+
+                                                          // Use available width, but cap at responsive max to prevent overflow
+                                                          final maxButtonWidth =
+                                                              constraints
+                                                                  .maxWidth
+                                                                  .clamp(0.0,
+                                                                      responsiveMaxWidth);
+
+                                                          return AnimatedOpacity(
+                                                            opacity:
+                                                                isRowHovered
+                                                                    ? 1
+                                                                    : 0,
+                                                            duration:
+                                                                const Duration(
+                                                                    milliseconds:
+                                                                        140),
+                                                            child: Container(
+                                                              constraints:
+                                                                  BoxConstraints(
+                                                                      maxWidth:
+                                                                          maxButtonWidth),
+                                                              decoration:
+                                                                  BoxDecoration(
+                                                                gradient:
+                                                                    LinearGradient(
+                                                                  begin: Alignment
+                                                                      .centerLeft,
+                                                                  end: Alignment
+                                                                      .centerRight,
+                                                                  colors: [
+                                                                    resolveThemeColor(
+                                                                      context,
+                                                                      dark: MyntColors
+                                                                          .WebColors
+                                                                          .listItemBgDark,
+                                                                      light: Colors
+                                                                          .white,
+                                                                    ).withOpacity(
+                                                                        0.0),
+                                                                    resolveThemeColor(
+                                                                      context,
+                                                                      dark: MyntColors
+                                                                          .WebColors
+                                                                          .listItemBgDark,
+                                                                      light: Colors
+                                                                          .white,
+                                                                    ).withOpacity(
+                                                                        0.95),
+                                                                  ],
+                                                                ),
+                                                              ),
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .only(
+                                                                      left: 8),
+                                                              child: _buildActionButtons(
+                                                                  context,
+                                                                  displayData,
+                                                                  future,
+                                                                  theme,
+                                                                  isRowHovered),
+                                                            ),
+                                                          );
+                                                        }),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                            // LTP cell
+                                            buildCellWithHover(
+                                              rowIndex: index,
+                                              columnIndex: 1,
+                                              alignRight: true,
+                                              child: Align(
+                                                alignment:
+                                                    Alignment.centerRight,
+                                                child: Text(
+                                                  displayData.ltp != null &&
+                                                          displayData.ltp !=
+                                                              "null"
+                                                      ? "${displayData.ltp}"
+                                                      : displayData.close !=
+                                                                  null &&
+                                                              displayData
+                                                                      .close !=
+                                                                  "null"
+                                                          ? "${displayData.close}"
+                                                          : '0.00',
+                                                  style: MyntWebTextStyles
+                                                      .para(
+                                                    context,
+                                                    color: _getPriceColor(
+                                                        displayData, theme),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            // %Change cell
+                                            buildCellWithHover(
+                                              rowIndex: index,
+                                              columnIndex: 2,
+                                              alignRight: true,
+                                              child: Align(
+                                                alignment:
+                                                    Alignment.centerRight,
+                                                child: Text(
+                                                  "${_getChangeValue(displayData)} (${_getPerChangeValue(displayData)}%)",
+                                                  style: MyntWebTextStyles
+                                                      .para(
+                                                    context,
+                                                    color: _getChangeColor(
+                                                        displayData, theme),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        );
+                                      }),
+                                    ],
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                          // Change cell
-                          DataCell(
-                            MouseRegion(
-                              onEnter: (_) => _hoveredToken.value = uniqueId,
-                              onExit: (_) => _hoveredToken.value = null,
-                              child: SizedBox.expand(
-                                child: Container(
-                                  alignment: Alignment.centerRight,
-                                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
-                                  child: Text(
-                                    "${(_getChangeValue(updatedData))} "
-                                    "(${_getPerChangeValue(updatedData)}%)",
-                                    style: WebTextStyles.custom(
-                                      fontSize: 13,
-                                      isDarkTheme: theme.isDarkMode,
-                                      color: _getChangeColor(updatedData, theme),
-                                      fontWeight: WebFonts.medium,
-                                    ),
-                                  ),
-                                ),
-                              ),
+                          ],
+                        );
+                      }
+
+                      // Wrap in horizontal scroll if needed
+                      if (needsHorizontalScroll) {
+                        return Scrollbar(
+                          controller: _horizontalScrollController,
+                          thumbVisibility: true,
+                          trackVisibility: true,
+                          interactive: true,
+                          child: SingleChildScrollView(
+                            controller: _horizontalScrollController,
+                            scrollDirection: Axis.horizontal,
+                            child: SizedBox(
+                              width: totalRequiredWidth,
+                              child: buildTableContent(),
                             ),
                           ),
-                        ],
-                      );
-                    }).toList(),
+                        );
+                      } else {
+                        return buildTableContent();
+                      }
+                    },
                   ),
                 ),
               ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  Widget _buildSymbolCellContent(
-      dynamic displayData, ThemesProvider theme, MarketWatchProvider future, String uniqueId) {
-    final displayText = displayData.tsym?.toString() ?? '';
-
-    // PERFORMANCE FIX: Use ValueListenableBuilder to only rebuild hover-dependent parts
-    return ValueListenableBuilder<String?>(
-      valueListenable: _hoveredToken,
-      builder: (context, hoveredToken, _) {
-        final isHovered = hoveredToken == uniqueId;
-        return Row(
-          children: [
-            Expanded(
-              flex: isHovered ? 1 : 2,
-              child: Tooltip(
-                message: displayText,
-                child: Text(
-                  displayText,
-                  style: WebTextStyles.custom(
-                    fontSize: 13,
-                    isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode
-                        ? WebDarkColors.textPrimary
-                        : WebColors.textPrimary,
-                    fontWeight: WebFonts.medium,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
             ),
-            // Action buttons fade in on hover
-            IgnorePointer(
-              ignoring: !isHovered,
-              child: AnimatedOpacity(
-                opacity: isHovered ? 1 : 0,
-                duration: const Duration(milliseconds: 140),
-                child: _buildActionButtons(
-                  context,
-                  displayData,
-                  future,
-                  theme,
-                  isHovered,
-                ),
-              ),
-            ),
-          ],
+          ),
         );
       },
     );
@@ -415,159 +939,110 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
         .scrips
         .any((e) => "${e['exch']}|${e['token']}" == key);
 
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // Buy Button
-        _buildHoverButton(
-          label: 'B',
-          color: Colors.white,
-          backgroundColor:
-              theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
-          onPressed: () async {
-            try {
-              await _placeOrderInput(context, displayData, true, future);
-            } catch (e) {
-              print('Buy button error: $e');
-            }
-          },
-          theme: theme,
-        ),
-        const SizedBox(width: 6),
-        // Sell Button
-        _buildHoverButton(
-          label: 'S',
-          color: Colors.white,
-          backgroundColor:
-              theme.isDarkMode ? WebDarkColors.tertiary : WebColors.tertiary,
-          onPressed: () async {
-            try {
-              await _placeOrderInput(context, displayData, false, future);
-            } catch (e) {
-              print('Sell button error: $e');
-            }
-          },
-          theme: theme,
-        ),
-        const SizedBox(width: 6),
-        // Chart Button
-        _buildHoverButton(
-          icon: Icons.bar_chart,
-          color: Colors.black,
-          backgroundColor: Colors.white,
-          borderRadius: 5.0,
-          onPressed: () {
-            // Navigate to chart screen - same logic as watchlist_card_web
-            Navigator.pop(context);
-            ref
-                .read(marketWatchProvider)
-                .calldepthApis(context, displayData, "");
-          },
-          theme: theme,
-        ),
-        const SizedBox(width: 6),
-        // Save Button (Add to watchlist)
-        _buildHoverButton(
-          svgIcon: isInWatchlist ? assets.bookmarkIcon : assets.bookmarkedIcon,
-          color: isInWatchlist
-              ? (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary)
-              : (theme.isDarkMode
-                  ? WebDarkColors.textSecondary
-                  : WebColors.textSecondary),
-          backgroundColor: Colors.white,
-          borderRadius: 5.0,
-          onPressed: () async {
-            final bool add = !isInWatchlist;
-            final success = await future.addDelMarketScrip(
-              future.wlName,
-              key,
-              context,
-              add,
-              true,
-              false,
-              false, // Set isOptionStike to false to prevent provider's Fluttertoast
-            );
-            if (success && mounted) {
-              // Show toast message (provider only shows Fluttertoast for add case)
-              if (add) {
-                ResponsiveSnackBar.showSuccess(
-                    context, 'Added to ${future.wlName}');
-              } else {
-                ResponsiveSnackBar.showInfo(
-                    context, 'Removed from ${future.wlName}');
-              }
-              // Force rebuild to refresh icon state
-              setState(() {});
-            }
-          },
-          theme: theme,
-        ),
-      ],
-    );
-  }
+    return Builder(
+      builder: (buttonContext) {
+        final screenWidth = MediaQuery.of(buttonContext).size.width;
+        final isSmallScreen = screenWidth < 768;
+        final buttonSpacing = isSmallScreen ? 4.0 : 6.0;
 
-  Widget _buildHoverButton({
-    String? label,
-    IconData? icon,
-    String? svgIcon,
-    required Color color,
-    Color? backgroundColor,
-    Color? borderColor,
-    double? borderRadius,
-    required VoidCallback? onPressed,
-    required ThemesProvider theme,
-  }) {
-    final isLongLabel = label != null && label.length > 1;
-    final borderRadiusValue = borderRadius ?? 5.0;
-    return SizedBox(
-      width: isLongLabel ? null : 25,
-      height: 25,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(borderRadiusValue),
-          splashColor: color.withOpacity(0.15),
-          highlightColor: color.withOpacity(0.08),
-          onTap: onPressed,
-          child: Container(
-            padding:
-                isLongLabel ? const EdgeInsets.symmetric(horizontal: 8) : null,
-            decoration: BoxDecoration(
-              color: backgroundColor ?? Colors.transparent,
-              borderRadius: BorderRadius.circular(borderRadiusValue),
-              border: borderColor != null
-                  ? Border.all(
-                      color: borderColor,
-                      width: 1.3,
-                    )
-                  : null,
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Buy Button
+            _buildHoverButton(
+              label: 'B',
+              color: Colors.white,
+              backgroundColor: resolveThemeColor(
+                context,
+                dark: MyntColors.WebColors.primaryDark,
+                light: MyntColors.WebColors.primary,
+              ),
+              onPressed: () async {
+                try {
+                  await _placeOrderInput(context, displayData, true, future);
+                } catch (e) {
+                  print('Buy button error: $e');
+                }
+              },
             ),
-            child: Center(
-              child: svgIcon != null
-                  ? SvgPicture.asset(
-                      svgIcon,
-                      height: 16,
-                      width: 16,
-                      color: color,
-                    )
-                  : icon != null
-                      ? Icon(
-                          icon,
-                          size: 16,
-                          color: color,
-                          weight: 400,
-                        )
-                      : Text(
-                          label ?? "",
-                          style: WebTextStyles.buttonXs(
-                            isDarkTheme: theme.isDarkMode,
-                            color: color,
-                          ),
-                        ),
+            SizedBox(width: buttonSpacing),
+            // Sell Button
+            _buildHoverButton(
+              label: 'S',
+              color: Colors.white,
+              backgroundColor: resolveThemeColor(
+                context,
+                dark: MyntColors.WebColors.errorDark,
+                light: MyntColors.WebColors.error,
+              ),
+              onPressed: () async {
+                try {
+                  await _placeOrderInput(context, displayData, false, future);
+                } catch (e) {
+                  print('Sell button error: $e');
+                }
+              },
             ),
-          ),
-        ),
-      ),
+            SizedBox(width: buttonSpacing),
+            // Chart Button
+            _buildHoverButton(
+              icon: Icons.bar_chart,
+              color: Colors.white,
+              backgroundColor: resolveThemeColor(
+                context,
+                dark: MyntColors.WebColors.profitDark,
+                light: MyntColors.WebColors.profit,
+              ),
+              onPressed: () {
+                Navigator.pop(context);
+                ref
+                    .read(marketWatchProvider)
+                    .calldepthApis(context, displayData, "");
+              },
+            ),
+            SizedBox(width: buttonSpacing),
+            // Save Button (Add to watchlist)
+            _buildHoverButton(
+              icon: isInWatchlist ? Icons.bookmark : Icons.bookmark_border,
+              color: isInWatchlist
+                  ? resolveThemeColor(
+                      context,
+                      dark: MyntColors.WebColors.primaryDark,
+                      light: MyntColors.WebColors.primary,
+                    )
+                  : resolveThemeColor(
+                      context,
+                      dark: MyntColors.WebColors.textSecondaryDark,
+                      light: MyntColors.WebColors.textSecondary,
+                    ),
+              backgroundColor: Colors.white,
+              borderColor: shadcn.Theme.of(context).colorScheme.border,
+              onPressed: () async {
+                final bool add = !isInWatchlist;
+                final success = await future.addDelMarketScrip(
+                  future.wlName,
+                  key,
+                  context,
+                  add,
+                  true,
+                  false,
+                  false,
+                );
+                if (success && mounted) {
+                  if (add) {
+                    ResponsiveSnackBar.showSuccess(
+                        context, 'Added to ${future.wlName}');
+                  } else {
+                    ResponsiveSnackBar.showInfo(
+                        context, 'Removed from ${future.wlName}');
+                  }
+                  setState(() {});
+                }
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -592,16 +1067,26 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
     final perChange = displayData.perChange?.toString() ?? "0.00";
 
     if (change.startsWith("-") || perChange.startsWith('-')) {
-      return theme.isDarkMode ? WebDarkColors.loss : WebColors.loss;
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.WebColors.lossDark,
+        light: MyntColors.WebColors.loss,
+      );
     } else if (change == "null" ||
         perChange == "null" ||
         change == "0.00" ||
         perChange == "0.00") {
-      return theme.isDarkMode
-          ? WebDarkColors.textPrimary
-          : WebColors.textPrimary;
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.WebColors.textPrimaryDark,
+        light: MyntColors.WebColors.textPrimary,
+      );
     } else {
-      return theme.isDarkMode ? WebDarkColors.profit : WebColors.profit;
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.WebColors.profitDark,
+        light: MyntColors.WebColors.profit,
+      );
     }
   }
 
@@ -610,16 +1095,26 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
     final perChange = displayData.perChange?.toString() ?? "0.00";
 
     if (change.startsWith("-") || perChange.startsWith('-')) {
-      return theme.isDarkMode ? WebDarkColors.loss : WebColors.loss;
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.WebColors.lossDark,
+        light: MyntColors.WebColors.loss,
+      );
     } else if (change == "null" ||
         perChange == "null" ||
         change == "0.00" ||
         perChange == "0.00") {
-      return theme.isDarkMode
-          ? WebDarkColors.textSecondary
-          : WebColors.textSecondary;
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.WebColors.textSecondaryDark,
+        light: MyntColors.WebColors.textSecondary,
+      );
     } else {
-      return theme.isDarkMode ? WebDarkColors.profit : WebColors.profit;
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.WebColors.profitDark,
+        light: MyntColors.WebColors.profit,
+      );
     }
   }
 
@@ -629,7 +1124,6 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
 
     String stringValue = value.toString().trim();
 
-    // Handle common invalid values
     if (stringValue.isEmpty ||
         stringValue == 'null' ||
         stringValue == '0.0' ||
@@ -639,7 +1133,6 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
       return defaultValue;
     }
 
-    // Try to parse as double first, then int
     try {
       double.parse(stringValue);
       return stringValue;
@@ -656,13 +1149,11 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
   // Helper method to safely parse lot size
   String _safeParseLotSize(
       dynamic scripInfoLs, dynamic depthDataLs, String defaultValue) {
-    // Try scripInfo first
     String scripInfoValue = _safeParseNumeric(scripInfoLs, "");
     if (scripInfoValue.isNotEmpty && scripInfoValue != defaultValue) {
       return scripInfoValue;
     }
 
-    // Try depthData
     String depthDataValue = _safeParseNumeric(depthDataLs, "");
     if (depthDataValue.isNotEmpty && depthDataValue != defaultValue) {
       return depthDataValue;
@@ -674,33 +1165,27 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
   Future<void> _placeOrderInput(BuildContext ctx, dynamic displayData,
       bool transType, MarketWatchProvider future) async {
     try {
-      // Prevent multiple simultaneous calls
       if (_isNavigating) return;
 
       setState(() {
         _isNavigating = true;
       });
 
-      // Fetch scrip info first, exactly like reference implementation
       await ref.read(marketWatchProvider).fetchScripInfo(
           displayData.token?.toString() ?? "",
           displayData.exch?.toString() ?? "",
           context,
           true);
 
-      // Ensure scripInfo is loaded before proceeding
       final scripInfo = ref.read(marketWatchProvider).scripInfoModel;
       if (scripInfo == null) {
         throw Exception('Failed to load scrip information');
       }
 
-      // Get depth data
       final depthData = ref.read(marketWatchProvider).getQuotes ?? GetQuotes();
 
-      // Use exact lot size logic from reference implementation
       final lotSize = _safeParseLotSize(depthData.ls, scripInfo.ls, "1");
 
-      // Use safe parsing for price values
       final safeLtp = _safeParseNumeric(
           displayData.ltp ?? displayData.close ?? depthData.lp, "0.00");
       final safePerChange =
@@ -721,7 +1206,6 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
         raw: {},
       );
 
-      // Add small delay to ensure state is properly set
       await Future.delayed(const Duration(milliseconds: 150));
 
       ResponsiveNavigation.toPlaceOrderScreen(
@@ -735,7 +1219,6 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
     } catch (e) {
       print('Place order error: $e');
       print('Display data: ${displayData.toJson()}');
-      // Show error to user
       if (mounted) {
         ResponsiveSnackBar.showError(
           context,
@@ -743,7 +1226,6 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
         );
       }
     } finally {
-      // Reset navigation state after a delay
       if (mounted) {
         Future.delayed(const Duration(milliseconds: 500), () {
           if (mounted) {

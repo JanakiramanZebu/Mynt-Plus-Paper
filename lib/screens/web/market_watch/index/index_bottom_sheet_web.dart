@@ -2,15 +2,16 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import '../../../../models/marketwatch_model/get_quotes.dart';
 import '../../../../provider/index_list_provider.dart';
 import '../../../../provider/market_watch_provider.dart';
-import '../../../../provider/thems.dart';
 import '../../../../provider/websocket_provider.dart';
 import '../../../../res/res.dart';
-import '../../../../res/web_colors.dart';
-import '../../../../res/global_font_web.dart';
+import '../../../../res/mynt_web_text_styles.dart';
+import '../../../../res/mynt_web_color_styles.dart';
 import '../../../../sharedWidget/list_divider.dart';
+import '../../../../sharedWidget/common_buttons_web.dart';
 import '../../../../utils/responsive_snackbar.dart';
 
 class IndexBottomSheetWeb extends ConsumerStatefulWidget {
@@ -20,7 +21,8 @@ class IndexBottomSheetWeb extends ConsumerStatefulWidget {
       {super.key, required this.defaultIndex, required this.indexPosition});
 
   @override
-  ConsumerState<IndexBottomSheetWeb> createState() => _IndexBottomSheetWebState();
+  ConsumerState<IndexBottomSheetWeb> createState() =>
+      _IndexBottomSheetWebState();
 }
 
 class _IndexBottomSheetWebState extends ConsumerState<IndexBottomSheetWeb> {
@@ -39,7 +41,7 @@ class _IndexBottomSheetWebState extends ConsumerState<IndexBottomSheetWeb> {
     if (_currentPageIndex == -1) _currentPageIndex = 0;
 
     _pageController = PageController(initialPage: _currentPageIndex);
-    
+
     // Initialize scroll controllers for each exchange/page
     for (int i = 0; i < _exchanges.length; i++) {
       _scrollControllers[i] = ScrollController();
@@ -57,292 +59,271 @@ class _IndexBottomSheetWebState extends ConsumerState<IndexBottomSheetWeb> {
     super.dispose();
   }
 
-  Widget _buildExchangeTab(
-    String exchange,
-    int index,
-    bool isSelected,
-    ThemesProvider theme,
+  Widget _buildExchangeTabs(
+    BuildContext context,
     dynamic indexProvide,
   ) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: InkWell(
-        onTap: () async {
-          setState(() {
-            _currentPageIndex = index;
-          });
-          // Use jumpToPage to avoid animation through intermediate tabs
-          _pageController.jumpToPage(index);
-          // Call the existing function to update the list
-          await indexProvide.fetchIndexList(exchange, context);
-        },
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-          decoration: BoxDecoration(
-            color: isSelected
-                ? (theme.isDarkMode
-                    ? WebDarkColors.backgroundTertiary
-                    : WebColors.backgroundTertiary)
-                : (theme.isDarkMode
-                    ? WebDarkColors.surface
-                    : WebColors.surface),
-            border: Border.all(
-              color: isSelected
-                  ? (theme.isDarkMode
-                      ? WebDarkColors.primary
-                      : WebColors.primary)
-                  : (theme.isDarkMode
-                      ? WebDarkColors.textSecondary
-                      : WebColors.textSecondary),
-              width: isSelected ? 1.5 : 1,
-            ),
-            borderRadius: BorderRadius.circular(50),
+    return Builder(
+      builder: (context) {
+        final currentTheme = shadcn.Theme.of(context);
+        final isDark = isDarkMode(context);
+        // Create a new ColorScheme based on the default, but with custom primary color
+        final baseColorScheme = isDark
+            ? shadcn.ColorSchemes.darkDefaultColor
+            : shadcn.ColorSchemes.lightDefaultColor;
+
+        // Create custom ColorScheme with theme-appropriate primary color
+        final primaryColor = resolveThemeColor(
+          context,
+          dark: WebColors.primaryDark,
+          light: WebColors.primary,
+        );
+        final customColorScheme = baseColorScheme.copyWith(
+          primary: () => primaryColor,
+        );
+
+        return shadcn.Theme(
+          data: shadcn.ThemeData(
+            colorScheme: customColorScheme,
+            radius: currentTheme.radius,
           ),
-          child: Text(
-            exchange,
-            overflow: TextOverflow.ellipsis,
-            style: WebTextStyles.tab(
-              isDarkTheme: theme.isDarkMode,
-              color: isSelected
-                  ? (theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary)
-                  : (theme.isDarkMode
-                      ? WebDarkColors.navItem
-                      : WebColors.navItem),
-              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-            ),
+          child: shadcn.TabList(
+            index: _currentPageIndex,
+            onChanged: (value) async {
+              if (_currentPageIndex != value) {
+                setState(() {
+                  _currentPageIndex = value;
+                });
+                _pageController.jumpToPage(value);
+                await indexProvide.fetchIndexList(_exchanges[value], context);
+              }
+            },
+            children: [
+              for (int index = 0; index < _exchanges.length; index++)
+                shadcn.TabItem(
+                  child: Builder(
+                    builder: (context) {
+                      final isActive = index == _currentPageIndex;
+                      return Text(
+                        _exchanges[index],
+                        style: MyntWebTextStyles.body(
+                          context,
+                          fontWeight:
+                              isActive ? FontWeight.w700 : FontWeight.w500,
+                          color: isActive
+                              ? resolveThemeColor(
+                                  context,
+                                  dark: WebColors.primaryDark,
+                                  light: WebColors.primary,
+                                )
+                              : resolveThemeColor(
+                                  context,
+                                  dark: WebColors.textSecondaryDark,
+                                  light: WebColors.textSecondary,
+                                ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+            ],
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = ref.read(themeProvider);
     final indexProvide = ref.watch(indexListProvider);
     final marketWatch = ref.watch(marketWatchProvider);
 
-    return Container(
-      width: 400,
-      height: 600,
-      decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(5),
-          color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header with close button
-            Container(
-               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+    return Center(
+      child: shadcn.Card(
+        borderRadius: BorderRadius.circular(8),
+        padding: EdgeInsets.zero,
+        child: Container(
+          width: 400,
+          constraints: const BoxConstraints(maxHeight: 600),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header with title and close button
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(
-                        color: theme.isDarkMode
-                            ? WebDarkColors.divider
-                            : WebColors.divider,
-                      ),
+                  border: Border(
+                    bottom: BorderSide(
+                      color: shadcn.Theme.of(context).colorScheme.border,
                     ),
-                  ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    "Indices",
-                    style: WebTextStyles.dialogTitle(
-                          isDarkTheme: theme.isDarkMode,
-                          color: theme.isDarkMode
-                              ? WebDarkColors.textPrimary
-                              : WebColors.textPrimary,
-                        ),
-                  ),
-                 Material(
-                        color: Colors.transparent,
-                        shape: const CircleBorder(),
-                        child: InkWell(
-                          customBorder: const CircleBorder(),
-                          splashColor: theme.isDarkMode
-                              ? Colors.white.withOpacity(.15)
-                              : Colors.black.withOpacity(.15),
-                          highlightColor: theme.isDarkMode
-                              ? Colors.white.withOpacity(.08)
-                              : Colors.black.withOpacity(.08),
-                          onTap: () => Navigator.of(context).pop(),
-                          child: Padding(
-                            padding: const EdgeInsets.all(5),
-                            child: Icon(
-                              Icons.close,
-                              size: 18,
-                              color: theme.isDarkMode
-                                  ? WebDarkColors.iconSecondary
-                                  : WebColors.iconSecondary,
-                            ),
-                          ),
-                        ),
-                      ),
-                ],
-              ),
-            ),
-
-            // Tabs section - full width
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-              decoration: BoxDecoration(
-                color: theme.isDarkMode
-                    ? WebDarkColors.surface
-                    : WebColors.surface,
-                border: Border(
-                  bottom: BorderSide(
-                    color: theme.isDarkMode
-                        ? WebDarkColors.inputBorder
-                        : WebColors.inputBorder,
-                    width: 1,
                   ),
                 ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  for (int index = 0; index < _exchanges.length; index++)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 6),
-                      child: _buildExchangeTab(
-                        _exchanges[index],
-                        index,
-                        _currentPageIndex == index,
-                        theme,
-                        indexProvide,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "Indices",
+                      style: MyntWebTextStyles.title(
+                        context,
+                        color: resolveThemeColor(
+                          context,
+                          dark: WebColors.textPrimaryDark,
+                          light: WebColors.textPrimary,
+                        ),
                       ),
                     ),
-                ],
-              ),
-            ),
-
-            // Divider(
-            //     color: theme.isDarkMode
-            //         ? WebDarkColors.divider
-            //         : WebColors.divider),
-
-            // Info text
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SvgPicture.asset(
-                    assets.dInfo,
-                    color: theme.isDarkMode
-                        ? WebDarkColors.primary
-                        : WebColors.primary,
-                    width: 16,
-                    height: 16,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    widget.indexPosition < 2
-                        ? "Click icon to replace symbol in Slot ${widget.indexPosition + 1}"
-                        : "Click icon to replace symbol",
-                    style: WebTextStyles.caption(
-                      isDarkTheme: theme.isDarkMode,
-                      color: theme.isDarkMode
-                          ? WebDarkColors.primary
-                          : WebColors.primary,
-                          fontWeight: FontWeight.w500,
+                    MyntCloseButton(
+                      onPressed: () => Navigator.of(context).pop(),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
+              const SizedBox(height: 10),
 
-            // Scrollable list content
-            Expanded(
-              child: PageView.builder(
-                controller: _pageController,
-                itemCount: _exchanges.length,
-                onPageChanged: (index) async {
-                  setState(() {
-                    _currentPageIndex = index;
-                  });
-                  // Call the existing function to update the list
-                  await indexProvide.fetchIndexList(
-                      _exchanges[index], context);
-                },
-                itemBuilder: (context, pageIndex) {
-                  final scrollController = _scrollControllers[pageIndex]!;
-                  
-                  return indexProvide.isLoad
-                      ? const Center(child: CircularProgressIndicator())
-                      : indexProvide.indValuesList.isNotEmpty
-                          ? ScrollConfiguration(
-                              behavior: const MaterialScrollBehavior()
-                                  .copyWith(scrollbars: false),
-                              child: RawScrollbar(
-                                controller: scrollController,
-                                thumbVisibility: true,
-                                thickness: 6,
-                                radius: const Radius.circular(0),
-                                thumbColor: theme.isDarkMode
-                                    ? WebDarkColors.textSecondary
-                                        .withOpacity(0.5)
-                                    : WebColors.textSecondary.withOpacity(0.5),
-                                child: ListView.builder(
+              // Tabs section
+              _buildExchangeTabs(context, indexProvide),
+
+              // Info text
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SvgPicture.asset(
+                      assets.dInfo,
+                      colorFilter: ColorFilter.mode(
+                        resolveThemeColor(
+                          context,
+                          dark: WebColors.primaryDark,
+                          light: WebColors.primary,
+                        ),
+                        BlendMode.srcIn,
+                      ),
+                      width: 16,
+                      height: 16,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      widget.indexPosition < 2
+                          ? "Click icon to replace symbol in Slot ${widget.indexPosition + 1}"
+                          : "Click icon to replace symbol",
+                      style: MyntWebTextStyles.para(
+                        context,
+                        color: resolveThemeColor(
+                          context,
+                          dark: WebColors.primaryDark,
+                          light: WebColors.primary,
+                        ),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Scrollable list content
+              Expanded(
+                child: PageView.builder(
+                  controller: _pageController,
+                  itemCount: _exchanges.length,
+                  onPageChanged: (index) async {
+                    setState(() {
+                      _currentPageIndex = index;
+                    });
+                    // Call the existing function to update the list
+                    await indexProvide.fetchIndexList(
+                        _exchanges[index], context);
+                  },
+                  itemBuilder: (context, pageIndex) {
+                    final scrollController = _scrollControllers[pageIndex]!;
+
+                    return indexProvide.isLoad
+                        ? const Center(child: CircularProgressIndicator())
+                        : indexProvide.indValuesList.isNotEmpty
+                            ? ScrollConfiguration(
+                                behavior: const MaterialScrollBehavior()
+                                    .copyWith(scrollbars: false),
+                                child: RawScrollbar(
                                   controller: scrollController,
-                                  shrinkWrap: false,
-                                  physics: const BouncingScrollPhysics(
-                                      parent: AlwaysScrollableScrollPhysics()),
-                                  itemCount: indexProvide.indValuesList.length * 2 - 1,
-                                  itemBuilder: (BuildContext context, idx) {
-                                    // For odd indices, show divider
-                                    if (idx.isOdd) {
-                                      return const ListDivider();
-                                    }
+                                  thumbVisibility: true,
+                                  thickness: 6,
+                                  radius: const Radius.circular(0),
+                                  thumbColor: shadcn.Theme.of(context)
+                                      .colorScheme
+                                      .mutedForeground
+                                      .withValues(alpha: 0.5),
+                                  child: ListView.builder(
+                                      controller: scrollController,
+                                      shrinkWrap: false,
+                                      physics: const BouncingScrollPhysics(
+                                          parent:
+                                              AlwaysScrollableScrollPhysics()),
+                                      itemCount:
+                                          indexProvide.indValuesList.length *
+                                                  2 -
+                                              1,
+                                      itemBuilder: (BuildContext context, idx) {
+                                        // For odd indices, show divider
+                                        if (idx.isOdd) {
+                                          return const ListDivider();
+                                        }
 
-                                    int index = idx ~/ 2;
-                                    // Get the current index data
-                                    var itemData = indexProvide.indValuesList[index];
+                                        int index = idx ~/ 2;
+                                        // Get the current index data
+                                        var itemData =
+                                            indexProvide.indValuesList[index];
 
-                                    // Determine if the index is checked
-                                    // Only check first 2 indices (slots) for watchlist
-                                    final defaultIndices = indexProvide.defaultIndexList?.indValues ?? [];
-                                    final watchlistSlots = defaultIndices.length >= 2 
-                                        ? defaultIndices.take(2).toList() 
-                                        : defaultIndices;
-                                    bool ischeck = watchlistSlots
-                                        .any((element) =>
-                                            element.token == itemData.token);
+                                        // Determine if the index is checked
+                                        // Only check first 2 indices (slots) for watchlist
+                                        final defaultIndices = indexProvide
+                                                .defaultIndexList?.indValues ??
+                                            [];
+                                        final watchlistSlots =
+                                            defaultIndices.length >= 2
+                                                ? defaultIndices
+                                                    .take(2)
+                                                    .toList()
+                                                : defaultIndices;
+                                        bool ischeck = watchlistSlots.any(
+                                            (element) =>
+                                                element.token ==
+                                                itemData.token);
 
-                                    return IndexListItemWithStreamWeb(
-                                      key: ValueKey('index-item-${itemData.token}'),
-                                      itemData: itemData,
-                                      indexProvider: indexProvide,
-                                      marketWatch: marketWatch,
-                                      ischeck: ischeck,
-                                      isDarkMode: theme.isDarkMode,
-                                      indexPosition: widget.indexPosition,
-                                    );
-                                  }),
-                              ),
-                            )
-                          : Center(
-                              child: Text(
-                                "No Data found",
-                                style: WebTextStyles.sub(
-                                  isDarkTheme: theme.isDarkMode,
-                                  color: theme.isDarkMode
-                                      ? WebDarkColors.textSecondary
-                                      : WebColors.textSecondary,
-                                  fontWeight: WebFonts.regular,
+                                        return IndexListItemWithStreamWeb(
+                                          key: ValueKey(
+                                              'index-item-${itemData.token}'),
+                                          itemData: itemData,
+                                          indexProvider: indexProvide,
+                                          marketWatch: marketWatch,
+                                          ischeck: ischeck,
+                                          isDarkMode: isDarkMode(context),
+                                          indexPosition: widget.indexPosition,
+                                        );
+                                      }),
                                 ),
-                              ),
-                            );
-                },
-              ),
-            )
-          ],
+                              )
+                            : Center(
+                                child: Text(
+                                  "No Data found",
+                                  style: MyntWebTextStyles.body(
+                                    context,
+                                    color: resolveThemeColor(
+                                      context,
+                                      dark: WebColors.textSecondaryDark,
+                                      light: WebColors.textSecondary,
+                                    ),
+                                  ),
+                                ),
+                              );
+                  },
+                ),
+              )
+            ],
+          ),
         ),
+      ),
     );
   }
 }
@@ -566,19 +547,18 @@ class _IndexListItemWithStreamWebState
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        splashColor: widget.isDarkMode
-            ? Colors.white.withOpacity(0.15)
-            : Colors.black.withOpacity(0.15),
-        highlightColor: widget.isDarkMode
-            ? Colors.white.withOpacity(0.08)
-            : Colors.black.withOpacity(0.08),
+        splashColor:
+            shadcn.Theme.of(context).colorScheme.accent.withValues(alpha: 0.15),
+        highlightColor:
+            shadcn.Theme.of(context).colorScheme.accent.withValues(alpha: 0.08),
         onTap: () => _handleTap(context),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
           color: widget.ischeck
-              ? (widget.isDarkMode
-                  ? WebDarkColors.surfaceVariant
-                  : WebColors.surfaceVariant)
+              ? shadcn.Theme.of(context)
+                  .colorScheme
+                  .accent
+                  .withValues(alpha: 0.1)
               : Colors.transparent,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -640,7 +620,8 @@ class _IndexListItemWithStreamWebState
       // Make sure we have valid quote data before proceeding
       if (quots == null) {
         Navigator.pop(context);
-        ResponsiveSnackBar.showError(context, "Could not fetch details for this index");
+        ResponsiveSnackBar.showError(
+            context, "Could not fetch details for this index");
         return;
       }
 
@@ -696,11 +677,13 @@ class _StaticIndexContentWeb extends StatelessWidget {
               itemData.idxname!.toUpperCase(),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: WebTextStyles.symbolList(
-                isDarkTheme: isDarkMode,
-                color: isDarkMode
-                    ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary,
+              style: MyntWebTextStyles.symbol(
+                context,
+                color: resolveThemeColor(
+                  context,
+                  dark: WebColors.textPrimaryDark,
+                  light: WebColors.textPrimary,
+                ),
               ),
             ),
           ],
@@ -712,9 +695,13 @@ class _StaticIndexContentWeb extends StatelessWidget {
           children: [
             Text(
               exch ?? "",
-              style: WebTextStyles.exchText(
-                isDarkTheme: isDarkMode,
-                color: WebColors.textSecondary,
+              style: MyntWebTextStyles.symbol(
+                context,
+                color: resolveThemeColor(
+                  context,
+                  dark: WebColors.textSecondaryDark,
+                  light: WebColors.textSecondary,
+                ),
               ),
             ),
           ],
@@ -757,21 +744,19 @@ class _DynamicPriceContentWeb extends StatelessWidget {
     final displayChange = _safeFormatPrice(ch);
     final displayPerChange = _safeFormatPrice(chp);
 
-    // Calculate change color based on watchlist_card_web.dart logic
+    // Calculate change color
     final changeColor =
         displayChange.startsWith("-") || displayPerChange.startsWith('-')
-            ? isDarkMode
-                ? WebDarkColors.loss
-                : WebColors.loss
+            ? WebColors.loss
             : (displayChange == "0.00" || displayPerChange == "0.00")
-                ? isDarkMode
-                    ? WebDarkColors.textSecondary
-                    : WebColors.textSecondary
-                : isDarkMode
-                    ? WebDarkColors.profit
-                    : WebColors.profit;
+                ? resolveThemeColor(
+                    context,
+                    dark: WebColors.textSecondaryDark,
+                    light: WebColors.textSecondary,
+                  )
+                : WebColors.profit;
 
-    // Build the UI with web-optimized text styles matching watchlist_card_web.dart
+    // Build the UI with web-optimized text styles
     return RepaintBoundary(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -779,19 +764,18 @@ class _DynamicPriceContentWeb extends StatelessWidget {
         children: [
           Text(
             displayLtp,
-            style: WebTextStyles.priceWatch(
-              isDarkTheme: isDarkMode,
-              color: isDarkMode
-                  ? WebDarkColors.textPrimary
-                  : WebColors.textPrimary,
-            ),
+            style: MyntWebTextStyles.price(context, color: changeColor),
           ),
-          const SizedBox(height: 8), // Adjusted spacing to match watchlist
+          const SizedBox(height: 8),
           Text(
             "$displayChange ($displayPerChange%)",
-            style: WebTextStyles.pricePercent(
-              isDarkTheme: isDarkMode,
-              color: changeColor,
+            style: MyntWebTextStyles.body(
+              context,
+              color: resolveThemeColor(
+                context,
+                dark: WebColors.textPrimaryDark,
+                light: WebColors.textPrimary,
+              ),
             ),
           ),
         ],
@@ -817,27 +801,26 @@ class _ActionButtonWeb extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final primaryColor = resolveThemeColor(
+      context,
+      dark: WebColors.primaryDark,
+      light: WebColors.primary,
+    );
+
     return Padding(
-      padding: const EdgeInsets.only(left: 8.0), // or any custom margin
+      padding: const EdgeInsets.only(left: 8.0),
       child: Material(
         color: Colors.transparent,
         shape: const CircleBorder(),
         child: InkWell(
           customBorder: const CircleBorder(),
-          splashColor: (isDarkMode
-                  ? WebDarkColors.primary
-                  : WebColors.primary)
-              .withOpacity(0.3),
-          highlightColor: (isDarkMode
-                  ? WebDarkColors.primary
-                  : WebColors.primary)
-              .withOpacity(0.2),
+          splashColor: primaryColor.withValues(alpha: 0.3),
+          highlightColor: primaryColor.withValues(alpha: 0.2),
           onTap: () async {
             if (ischeck) {
               ResponsiveSnackBar.showWarning(context, "Scrip Already Exist!!");
             } else {
-              await indexProvider.changeIndex(
-                  itemData, context, indexPosition);
+              await indexProvider.changeIndex(itemData, context, indexPosition);
               Navigator.of(context).pop();
             }
           },
@@ -845,13 +828,16 @@ class _ActionButtonWeb extends StatelessWidget {
             padding: const EdgeInsets.all(8),
             child: SvgPicture.asset(
               ischeck ? assets.bookmarkIcon : assets.bookmarkedIcon,
-              color: isDarkMode && ischeck
-                  ? WebDarkColors.primary
-                  : ischeck
-                      ? WebColors.primary
-                      : (isDarkMode
-                          ? WebDarkColors.icon
-                          : WebColors.icon),
+              colorFilter: ColorFilter.mode(
+                ischeck
+                    ? primaryColor
+                    : resolveThemeColor(
+                        context,
+                        dark: WebColors.textSecondaryDark,
+                        light: WebColors.textSecondary,
+                      ),
+                BlendMode.srcIn,
+              ),
               width: 18,
               height: 18,
             ),
@@ -861,4 +847,3 @@ class _ActionButtonWeb extends StatelessWidget {
     );
   }
 }
-

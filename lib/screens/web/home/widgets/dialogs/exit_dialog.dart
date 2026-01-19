@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:mynt_plus/res/web_colors.dart';
 import 'package:mynt_plus/res/global_font_web.dart';
+import 'package:mynt_plus/res/web_colors.dart';
+import 'package:mynt_plus/res/global_font_web.dart' hide WebTextStyles;
 
 class ExitDialog {
   static Future<bool> show(BuildContext context, bool isDarkMode) async {

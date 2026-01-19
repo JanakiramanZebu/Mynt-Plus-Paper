@@ -3,23 +3,25 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import '../../../../models/order_book_model/trade_book_model.dart';
 import '../../../../provider/thems.dart';
-import '../../../../res/web_colors.dart';
-import '../../../../res/global_font_web.dart';
+import '../../../../res/mynt_web_text_styles.dart';
+import '../../../../res/mynt_web_color_styles.dart';
 import '../../../../sharedWidget/functions.dart';
 import '../refactored/utils/cell_formatters.dart';
+import '../../../../sharedWidget/common_buttons_web.dart';
 
 class TradeDetailScreenWeb extends ConsumerStatefulWidget {
   final TradeBookModel trade;
   final BuildContext? parentContext;
-  
+
   const TradeDetailScreenWeb({
-    super.key, 
+    super.key,
     required this.trade,
     this.parentContext,
   });
 
   @override
-  ConsumerState<TradeDetailScreenWeb> createState() => _TradeDetailScreenWebState();
+  ConsumerState<TradeDetailScreenWeb> createState() =>
+      _TradeDetailScreenWebState();
 }
 
 class _TradeDetailScreenWebState extends ConsumerState<TradeDetailScreenWeb> {
@@ -32,7 +34,8 @@ class _TradeDetailScreenWebState extends ConsumerState<TradeDetailScreenWeb> {
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(
-            color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
+            color: resolveThemeColor(context,
+                dark: MyntColors.dividerDark, light: MyntColors.divider),
             width: 1,
           ),
         ),
@@ -44,7 +47,8 @@ class _TradeDetailScreenWebState extends ConsumerState<TradeDetailScreenWeb> {
             children: [
               // Header with close button (fixed)
               Container(
-                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 10),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 16, horizontal: 10),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -52,11 +56,7 @@ class _TradeDetailScreenWebState extends ConsumerState<TradeDetailScreenWeb> {
                     Expanded(
                       child: _buildSymbolSection(theme),
                     ),
-                    shadcn.TextButton(
-                      density: shadcn.ButtonDensity.icon,
-                      shape: shadcn.ButtonShape.circle,
-                      size: shadcn.ButtonSize.normal,
-                      child: const Icon(Icons.close),
+                    MyntCloseButton(
                       onPressed: () {
                         shadcn.closeSheet(context);
                       },
@@ -67,7 +67,8 @@ class _TradeDetailScreenWebState extends ConsumerState<TradeDetailScreenWeb> {
               // Border divider
               Container(
                 height: 1,
-                color: shadcn.Theme.of(context).colorScheme.border,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.dividerDark, light: MyntColors.divider),
               ),
               // Scrollable Content
               Expanded(
@@ -92,12 +93,13 @@ class _TradeDetailScreenWebState extends ConsumerState<TradeDetailScreenWeb> {
   }
 
   Widget _buildSymbolSection(ThemesProvider theme) {
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
-    final symbol = widget.trade.symbol?.replaceAll("-EQ", "") ?? widget.trade.tsym?.replaceAll("-EQ", "") ?? '';
+    final symbol = widget.trade.symbol?.replaceAll("-EQ", "") ??
+        widget.trade.tsym?.replaceAll("-EQ", "") ??
+        '';
     final expDate = widget.trade.expDate ?? '';
     final option = widget.trade.option ?? '';
     final displayText = '$symbol $expDate $option'.trim();
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -106,10 +108,14 @@ class _TradeDetailScreenWebState extends ConsumerState<TradeDetailScreenWeb> {
           children: [
             Flexible(
               child: Text(
-                displayText.isNotEmpty ? displayText : (widget.trade.tsym ?? 'N/A'),
-                style: WebTextStyles.dialogTitle(
-                  isDarkTheme: theme.isDarkMode,
-                  color: colorScheme.foreground,
+                displayText.isNotEmpty
+                    ? displayText
+                    : (widget.trade.tsym ?? 'N/A'),
+                style: MyntWebTextStyles.title(
+                  context,
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.textPrimaryDark,
+                      light: MyntColors.textPrimary),
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
@@ -117,16 +123,18 @@ class _TradeDetailScreenWebState extends ConsumerState<TradeDetailScreenWeb> {
           ],
         ),
         const SizedBox(height: 8),
-        
+
         // Price (using avgprc as trade price)
         Row(
           children: [
             Text(
               widget.trade.avgprc?.toString() ?? '0.00',
-              style: WebTextStyles.title(
-                isDarkTheme: theme.isDarkMode,
-                color: colorScheme.mutedForeground,
-                fontWeight: WebFonts.medium,
+              style: MyntWebTextStyles.title(
+                context,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.textSecondaryDark,
+                    light: MyntColors.textSecondary),
+                fontWeight: MyntFonts.medium,
               ),
             ),
           ],
@@ -136,11 +144,14 @@ class _TradeDetailScreenWebState extends ConsumerState<TradeDetailScreenWeb> {
   }
 
   Widget _buildDetailsSection(ThemesProvider theme) {
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
     final buySell = widget.trade.trantype == "S" ? "Sell" : "Buy";
     final isSell = widget.trade.trantype == "S";
-    final typeColor = isSell ? colorScheme.destructive : colorScheme.chart2;
-    
+    final typeColor = isSell
+        ? resolveThemeColor(context,
+            dark: MyntColors.lossDark, light: MyntColors.loss)
+        : resolveThemeColor(context,
+            dark: MyntColors.profitDark, light: MyntColors.profit);
+
     return Padding(
       padding: const EdgeInsets.only(top: 12),
       child: Column(
@@ -149,12 +160,16 @@ class _TradeDetailScreenWebState extends ConsumerState<TradeDetailScreenWeb> {
           _rowOfInfoDataWithColor("Type", buySell, theme, typeColor),
           _rowOfInfoData(
             "Qty",
-            widget.trade.flqty?.toString() ?? widget.trade.qty?.toString() ?? '0',
+            widget.trade.flqty?.toString() ??
+                widget.trade.qty?.toString() ??
+                '0',
             theme,
           ),
           _rowOfInfoData(
             "Price",
-            widget.trade.flprc?.toString() ?? widget.trade.avgprc?.toString() ?? '0.00',
+            widget.trade.flprc?.toString() ??
+                widget.trade.avgprc?.toString() ??
+                '0.00',
             theme,
           ),
           _rowOfInfoData(
@@ -193,7 +208,6 @@ class _TradeDetailScreenWebState extends ConsumerState<TradeDetailScreenWeb> {
   }
 
   Widget _rowOfInfoData(String title1, String value1, ThemesProvider theme) {
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -202,18 +216,22 @@ class _TradeDetailScreenWebState extends ConsumerState<TradeDetailScreenWeb> {
           children: [
             Text(
               title1,
-              style: WebTextStyles.sub(
-                isDarkTheme: theme.isDarkMode,
-                color: colorScheme.mutedForeground,
-                fontWeight: WebFonts.regular,
+              style: MyntWebTextStyles.bodySmall(
+                context,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.textSecondaryDark,
+                    light: MyntColors.textSecondary),
+                fontWeight: MyntFonts.regular,
               ),
             ),
             Text(
               value1,
-              style: WebTextStyles.sub(
-                isDarkTheme: theme.isDarkMode,
-                color: colorScheme.mutedForeground,
-                fontWeight: WebFonts.medium,
+              style: MyntWebTextStyles.bodySmall(
+                context,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.textPrimaryDark,
+                    light: MyntColors.textPrimary),
+                fontWeight: MyntFonts.medium,
               ),
             ),
           ],
@@ -223,8 +241,8 @@ class _TradeDetailScreenWebState extends ConsumerState<TradeDetailScreenWeb> {
     );
   }
 
-  Widget _rowOfInfoDataWithColor(String title, String value, ThemesProvider theme, Color valueColor) {
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
+  Widget _rowOfInfoDataWithColor(
+      String title, String value, ThemesProvider theme, Color valueColor) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -233,18 +251,20 @@ class _TradeDetailScreenWebState extends ConsumerState<TradeDetailScreenWeb> {
           children: [
             Text(
               title,
-              style: WebTextStyles.sub(
-                isDarkTheme: theme.isDarkMode,
-                color: colorScheme.mutedForeground,
-                fontWeight: WebFonts.regular,
+              style: MyntWebTextStyles.bodySmall(
+                context,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.textSecondaryDark,
+                    light: MyntColors.textSecondary),
+                fontWeight: MyntFonts.regular,
               ),
             ),
             Text(
               value,
-              style: WebTextStyles.sub(
-                isDarkTheme: theme.isDarkMode,
+              style: MyntWebTextStyles.bodySmall(
+                context,
                 color: valueColor,
-                fontWeight: WebFonts.medium,
+                fontWeight: MyntFonts.medium,
               ),
             ),
           ],
@@ -254,4 +274,3 @@ class _TradeDetailScreenWebState extends ConsumerState<TradeDetailScreenWeb> {
     );
   }
 }
-

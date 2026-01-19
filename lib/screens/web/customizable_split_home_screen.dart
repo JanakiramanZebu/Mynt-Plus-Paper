@@ -8,7 +8,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/models/marketwatch_model/market_watch_scrip_model.dart';
 import 'package:mynt_plus/provider/auth_provider.dart';
 import 'package:mynt_plus/provider/bonds_provider.dart';
-import 'package:mynt_plus/screens/web/holdings/holddeetsshadcn.dart';
+
 import 'package:mynt_plus/screens/web/market_watch/tv_chart/webview_chart.dart';
 import 'package:mynt_plus/screens/web/ordersbook/order_book_screen_web.dart';
 import 'package:mynt_plus/screens/web/funds/secure_fund_web.dart';
@@ -31,9 +31,8 @@ import '../../../provider/stocks_provider.dart';
 import '../../../provider/web_subscription_manager.dart';
 import '../Mobile/desk_reports/ca_action/ca_action_buyback.dart';
 import '../../../res/res.dart';
-import '../../../res/global_font_web.dart';
-import '../../../res/web_colors.dart';
-import '../../../sharedWidget/functions.dart';
+import '../../../res/mynt_web_color_styles.dart';
+
 import '../../../sharedWidget/internet_widget.dart';
 import '../../../sharedWidget/splash_loader.dart';
 import 'profile/Reports/reports_screen_web.dart';
@@ -58,7 +57,10 @@ import '../../../routes/route_names.dart';
 import '../../models/marketwatch_model/get_quotes.dart';
 import 'market_watch/chart_with_depth_web.dart';
 // import 'market_watch/scrip_tabs_manager.dart';
-import 'window_based_home_screen.dart';
+
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import '../../../res/mynt_web_text_styles.dart';
+import 'market_watch/index/index_bottom_sheet_web.dart';
 
 class CustomizableSplitHomeScreen extends ConsumerStatefulWidget {
   const CustomizableSplitHomeScreen({super.key});
@@ -142,7 +144,8 @@ class _CustomizableSplitHomeScreenState
       WebNavigationHelper.initialize(
         navigatorKey: GlobalKey<NavigatorState>(),
         navigateToScreen: (routeName, {arguments}) {
-          debugPrint("WebNavigationHelper.navigateToScreen called with: $routeName");
+          debugPrint(
+              "WebNavigationHelper.navigateToScreen called with: $routeName");
           if (routeName == "orderBook") {
             showOrderBookInPanel();
           } else if (routeName == "optionChain") {
@@ -157,27 +160,36 @@ class _CustomizableSplitHomeScreenState
             _handleReportsTap();
           } else if (routeName == "settings") {
             _handleSettingsTap();
-          } else if (routeName == Routes.tradeActionScreen || routeName == "tradeActionScreen") {
-            debugPrint("Trade action screen navigation triggered with arguments: $arguments");
+          } else if (routeName == Routes.tradeActionScreen ||
+              routeName == "tradeActionScreen") {
+            debugPrint(
+                "Trade action screen navigation triggered with arguments: $arguments");
             final tabIndex = arguments is int ? arguments : null;
             showTradeActionInPanel(tabIndex: tabIndex);
             // caEvent and cpAction removed from panel navigation
-          } else if (routeName == Routes.holdingscreen || routeName == "HoldingScreen") {
+          } else if (routeName == Routes.holdingscreen ||
+              routeName == "HoldingScreen") {
             _handleHoldingsTap();
-          } else if (routeName == Routes.positionscreen || routeName == "PositionScreen") {
+          } else if (routeName == Routes.positionscreen ||
+              routeName == "PositionScreen") {
             _handlePositionsTap();
-          } else if (routeName == Routes.orderBook || routeName == "orderBook") {
+          } else if (routeName == Routes.orderBook ||
+              routeName == "orderBook") {
             showOrderBookInPanel();
-          } else if (routeName == Routes.fundscreen || routeName == "fundscreen") {
+          } else if (routeName == Routes.fundscreen ||
+              routeName == "fundscreen") {
             _handleFundsTap();
-          } else if (routeName == Routes.ipo || routeName == "Ipo" || routeName == "ipo") {
+          } else if (routeName == Routes.ipo ||
+              routeName == "Ipo" ||
+              routeName == "ipo") {
             _handleIPOTap();
           } else {
             debugPrint("Unknown route: $routeName");
           }
         },
         replaceScreen: (routeName, {arguments}) {
-          debugPrint("WebNavigationHelper.replaceScreen called with: $routeName");
+          debugPrint(
+              "WebNavigationHelper.replaceScreen called with: $routeName");
           if (routeName == "orderBook") {
             showOrderBookInPanel();
           } else if (routeName == "optionChain") {
@@ -192,20 +204,28 @@ class _CustomizableSplitHomeScreenState
             _handleReportsTap();
           } else if (routeName == "settings") {
             _handleSettingsTap();
-          } else if (routeName == Routes.tradeActionScreen || routeName == "tradeActionScreen") {
-            debugPrint("Trade action screen replacement triggered with arguments: $arguments");
+          } else if (routeName == Routes.tradeActionScreen ||
+              routeName == "tradeActionScreen") {
+            debugPrint(
+                "Trade action screen replacement triggered with arguments: $arguments");
             final tabIndex = arguments is int ? arguments : null;
             showTradeActionInPanel(tabIndex: tabIndex);
             // caEvent and cpAction removed from panel navigation
-          } else if (routeName == Routes.holdingscreen || routeName == "HoldingScreen") {
+          } else if (routeName == Routes.holdingscreen ||
+              routeName == "HoldingScreen") {
             _handleHoldingsTap();
-          } else if (routeName == Routes.positionscreen || routeName == "PositionScreen") {
+          } else if (routeName == Routes.positionscreen ||
+              routeName == "PositionScreen") {
             _handlePositionsTap();
-          } else if (routeName == Routes.orderBook || routeName == "orderBook") {
+          } else if (routeName == Routes.orderBook ||
+              routeName == "orderBook") {
             showOrderBookInPanel();
-          } else if (routeName == Routes.fundscreen || routeName == "fundscreen") {
+          } else if (routeName == Routes.fundscreen ||
+              routeName == "fundscreen") {
             _handleFundsTap();
-          } else if (routeName == Routes.ipo || routeName == "Ipo" || routeName == "ipo") {
+          } else if (routeName == Routes.ipo ||
+              routeName == "Ipo" ||
+              routeName == "ipo") {
             _handleIPOTap();
           } else {
             debugPrint("Unknown route: $routeName");
@@ -229,7 +249,7 @@ class _CustomizableSplitHomeScreenState
         _handleWebSocketConnections();
       }
     });
-    
+
     // Update subscription manager context
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -242,7 +262,7 @@ class _CustomizableSplitHomeScreenState
   void didChangeDependencies() {
     super.didChangeDependencies();
     socketProvider = ref.read(websocketProvider);
-    
+
     // Update subscription manager context whenever dependencies change
     ref.read(webSubscriptionManagerProvider).updateContext(context);
   }
@@ -351,7 +371,8 @@ class _CustomizableSplitHomeScreenState
                 ref.read(indexListProvider).checkSess?.stat == "Ok" &&
                 shouldFetchPortfolio) {
               // Only fetch data for ACTIVE screens (smart fetching)
-              debugPrint('Fetching data for active portfolio screens after cooldown');
+              debugPrint(
+                  'Fetching data for active portfolio screens after cooldown');
               _lastPortfolioFetch = now;
 
               final futures = <Future>[];
@@ -359,21 +380,27 @@ class _CustomizableSplitHomeScreenState
               // Check each panel and only fetch data for active screens
               for (var panel in _panels) {
                 if (panel.screenType == ScreenType.positions) {
-                  futures.add(ref.read(portfolioProvider).fetchPositionBook(context, false));
+                  futures.add(ref
+                      .read(portfolioProvider)
+                      .fetchPositionBook(context, false));
                 } else if (panel.screenType == ScreenType.holdings) {
-                  futures.add(ref.read(portfolioProvider).fetchHoldings(context, ""));
+                  futures.add(
+                      ref.read(portfolioProvider).fetchHoldings(context, ""));
                 } else if (panel.screenType == ScreenType.orderBook) {
-                  futures.add(ref.read(orderProvider).fetchOrderBook(context, false));
+                  futures.add(
+                      ref.read(orderProvider).fetchOrderBook(context, false));
                   // Note: Trade Book and SIP are lazy loaded, only fetch if already loaded
                   if (ref.read(orderProvider).tradeBook != null &&
                       ref.read(orderProvider).tradeBook!.isNotEmpty) {
-                    futures.add(ref.read(orderProvider).fetchTradeBook(context));
+                    futures
+                        .add(ref.read(orderProvider).fetchTradeBook(context));
                   }
                 }
               }
 
               if (futures.isNotEmpty) {
-                debugPrint('Fetching ${futures.length} API(s) for ${_panels.where((p) => p.screenType == ScreenType.positions || p.screenType == ScreenType.holdings || p.screenType == ScreenType.orderBook).length} active portfolio screen(s)');
+                debugPrint(
+                    'Fetching ${futures.length} API(s) for ${_panels.where((p) => p.screenType == ScreenType.positions || p.screenType == ScreenType.holdings || p.screenType == ScreenType.orderBook).length} active portfolio screen(s)');
                 await Future.wait(futures);
               } else {
                 debugPrint('No portfolio screens active, skipping data fetch');
@@ -383,7 +410,8 @@ class _CustomizableSplitHomeScreenState
                 setState(() {});
               }
             } else if (!shouldFetchPortfolio) {
-              debugPrint('Skipping portfolio fetch - cooldown active or no portfolio screens');
+              debugPrint(
+                  'Skipping portfolio fetch - cooldown active or no portfolio screens');
             }
             _handleWebSocketConnections();
           } catch (e) {
@@ -542,32 +570,282 @@ class _CustomizableSplitHomeScreenState
 
         final theme = ref.watch(themeProvider);
         return Scaffold(
-          appBar: _buildAppBar(theme.isDarkMode),
-          body: Stack(
-            children: [
-              _buildCustomizableBody(theme),
-            ],
+          body: _buildNewLayout(theme),
+        );
+      },
+    );
+  }
+
+  /// New layout: Watchlist full height on one side, AppBar + Content on other side
+  /// Respects panel swap - checks which panel has watchlist
+  Widget _buildNewLayout(ThemesProvider theme) {
+    // Calculate watchlist width (25% of screen)
+    final screenWidth = MediaQuery.of(context).size.width;
+    const double watchlistRatio = 0.25;
+    final watchlistWidth = screenWidth * watchlistRatio;
+
+    // Check if watchlist is in first panel (left) or second panel (right)
+    bool watchlistOnLeft = _isWatchlistInPanel(0);
+    bool watchlistOnRight = _isWatchlistInPanel(1);
+
+    // Default: watchlist on left if not found in any panel
+    if (!watchlistOnLeft && !watchlistOnRight) {
+      watchlistOnLeft = true;
+    }
+
+    if (watchlistOnLeft) {
+      // Watchlist on LEFT, Content on RIGHT
+      return Row(
+        children: [
+          // Left side: Watchlist (full height)
+          SizedBox(
+            width: watchlistWidth,
+            child: _buildWatchlistPanel(theme, panelIndex: 0),
+          ),
+          // Divider
+          Container(
+            width: 1,
+            color:shadcn.Theme.of(context).colorScheme.border
+          ),
+          // Right side: AppBar + Content
+          Expanded(
+            child: Column(
+              children: [
+                _buildRightSideAppBar(theme.isDarkMode),
+                Expanded(
+                  child: _buildContentPanel(theme, panelIndex: 1),
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+    } else {
+      // Watchlist on RIGHT, Content on LEFT
+      return Row(
+        children: [
+          // Left side: AppBar + Content
+          Expanded(
+            child: Column(
+              children: [
+                _buildRightSideAppBar(theme.isDarkMode),
+                Expanded(
+                  child: _buildContentPanel(theme, panelIndex: 0),
+                ),
+              ],
+            ),
+          ),
+          // Divider
+          Container(
+              width: 1, color: shadcn.Theme.of(context).colorScheme.border),
+          // Right side: Watchlist (full height)
+          SizedBox(
+            width: watchlistWidth,
+            child: _buildWatchlistPanel(theme, panelIndex: 1),
+          ),
+        ],
+      );
+    }
+  }
+
+  /// Check if watchlist is in the specified panel
+  bool _isWatchlistInPanel(int panelIndex) {
+    if (panelIndex >= _panels.length) return false;
+    final panel = _panels[panelIndex];
+
+    // Check screenType
+    if (panel.screenType == ScreenType.watchlist) return true;
+
+    // Check active screen in screens list
+    if (panel.screens.isNotEmpty &&
+        panel.activeScreenIndex >= 0 &&
+        panel.activeScreenIndex < panel.screens.length &&
+        panel.screens[panel.activeScreenIndex] == ScreenType.watchlist) {
+      return true;
+    }
+
+    // Check if any screen in the list is watchlist
+    return panel.screens.contains(ScreenType.watchlist);
+  }
+
+  /// Build watchlist panel (full height) with index slots on top
+  Widget _buildWatchlistPanel(ThemesProvider theme, {required int panelIndex}) {
+    return Container(
+      color: shadcn.Theme.of(context).colorScheme.background,
+      child: Column(
+        children: [
+          // Index slots at top of watchlist
+          _buildWatchlistIndexSlots(theme.isDarkMode),
+          // Watchlist content
+          Expanded(
+            child: _getScreenForType(ScreenType.watchlist),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Build index slots for watchlist panel (above search)
+  Widget _buildWatchlistIndexSlots(bool isDarkMode) {
+    return Consumer(
+      builder: (context, ref, _) {
+        final indexProvider = ref.watch(indexListProvider);
+        final marketWatch = ref.read(marketWatchProvider);
+        final theme = ref.watch(themeProvider);
+        final indexValues = indexProvider.defaultIndexList?.indValues;
+
+        if (indexValues == null || indexValues.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        // Show only first 2 indices
+        final displayIndices = indexValues.length >= 2
+            ? indexValues.take(2).toList()
+            : indexValues;
+
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: shadcn.Theme.of(context).colorScheme.background,
+            // border: Border(
+            //   bottom: BorderSide(
+            //     color: isDarkMode
+            //         ? WebDarkColors.divider.withOpacity(0.3)
+            //         : WebColors.divider.withOpacity(0.2),
+            //     width: 1,
+            //   ),
+            // ),
+          ),
+          child: Row(
+            children: List.generate(
+              displayIndices.length,
+              (index) {
+                if (index >= displayIndices.length) {
+                  return const SizedBox.shrink();
+                }
+                final item = displayIndices[index];
+                return Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      right: index < displayIndices.length - 1 ? 8 : 0,
+                    ),
+                    child: _AppBarIndexSlot(
+                      indexItem: item,
+                      indexPosition: index,
+                      theme: theme,
+                      marketWatch: marketWatch,
+                      indexProvider: indexProvider,
+                    ),
+                  ),
+                );
+              },
+            ),
           ),
         );
       },
     );
   }
 
+  /// Build content panel (below app bar)
+  Widget _buildContentPanel(ThemesProvider theme, {required int panelIndex}) {
+    if (panelIndex < _panels.length) {
+      final panel = _panels[panelIndex];
+      return Container(
+        color: shadcn.Theme.of(context).colorScheme.background,
+        child: panel.screens.isNotEmpty
+            ? IndexedStack(
+                index: panel.activeScreenIndex >= 0 &&
+                        panel.activeScreenIndex < panel.screens.length
+                    ? panel.activeScreenIndex
+                    : 0,
+                children: panel.screens.map((screenType) {
+                  return _getScreenForType(screenType);
+                }).toList(),
+              )
+            : (panel.screenType != null
+                ? _getScreenForType(panel.screenType!)
+                : _getScreenForType(ScreenType.dashboard)),
+      );
+    }
+    // Default to dashboard if no panel configured
+    return Container(
+      color: shadcn.Theme.of(context).colorScheme.background,
+      child: _getScreenForType(ScreenType.dashboard),
+    );
+  }
+
+  /// Build app bar for right side only
+  Widget _buildRightSideAppBar(bool isDarkMode) {
+    return Container(
+      height: 65,
+      decoration: BoxDecoration(
+        color: shadcn.Theme.of(context).colorScheme.background,
+        border: Border(
+          bottom: BorderSide(
+            color: shadcn.Theme.of(context).colorScheme.border,
+            width: 1,
+          ),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+            spreadRadius: 0,
+          ),
+        ],
+      ),
+      child: Container(
+        padding: const EdgeInsets.only(left: 20, right: 16, top: 6, bottom: 6),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            // Logo section
+            RepaintBoundary(
+              child: SvgPicture.asset(
+                assets.appLogoIcon,
+                width: 100,
+                height: 38,
+                fit: BoxFit.contain,
+              ),
+            ),
+            const Spacer(),
+            // Navigation screens
+            _buildNavigationScreens(isDarkMode),
+            const SizedBox(width: 20),
+            // Swap button
+            RepaintBoundary(
+              child: _buildSwapButton(isDarkMode),
+            ),
+            const SizedBox(width: 12),
+            // Theme toggle button
+            RepaintBoundary(
+              child: _buildThemeToggleButton(isDarkMode),
+            ),
+            const SizedBox(width: 12),
+            // Profile section
+            RepaintBoundary(
+              child: _buildProfileSection(isDarkMode),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   _buildAppBar(bool isDarkMode) {
     return PreferredSize(
       preferredSize:
-          const Size.fromHeight(58), // Reduced height for compact design
+          const Size.fromHeight(65), // Reduced height for compact design
       child: RepaintBoundary(
         child: Container(
           decoration: BoxDecoration(
             // Clean minimal - white background
-            color: isDarkMode ? WebDarkColors.surface : Colors.white,
+            color: shadcn.Theme.of(context).colorScheme.background,
             // Subtle border at bottom
             border: Border(
               bottom: BorderSide(
-                color: isDarkMode
-                    ? WebDarkColors.divider.withOpacity(0.3)
-                    : WebColors.divider.withOpacity(0.2),
+                color: shadcn.Theme.of(context).colorScheme.border,
                 width: 1,
               ),
             ),
@@ -582,7 +860,8 @@ class _CustomizableSplitHomeScreenState
             ],
           ),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+            padding:
+                const EdgeInsets.only(left: 20, right: 16, top: 6, bottom: 6),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -595,43 +874,29 @@ class _CustomizableSplitHomeScreenState
                     fit: BoxFit.contain,
                   ),
                 ),
-                // const SizedBox(width: 20),
-                // Top indices section
-                // Expanded(
-                //   child: Container(
-                //     height: 48, // Fixed height to prevent overflow
-                //     color: isDarkMode
-                //         ? WebDarkColors.surface
-                //         : Colors
-                //             .white, // White background for indices in light mode
-                //     child: const SingleChildScrollView(
-                //       scrollDirection: Axis.horizontal,
-                //       child: DefaultIndexListWeb(src: true),
-                //     ),
-                //   ),
-                // ),
-                // const SizedBox(width: 20),
-                // Navigation screens
-                Row(
-                  children: [
-                    _buildNavigationScreens(isDarkMode),
-                    const SizedBox(width: 12),
-                    RepaintBoundary(
-                      child: _buildSwapButton(isDarkMode),
-                    ),
-                    const SizedBox(width: 12),
-                    // Theme toggle button
-                    RepaintBoundary(
-                      child: _buildThemeToggleButton(isDarkMode),
-                    ),
-                    const SizedBox(width: 12),
-                    // Profile section
-                    RepaintBoundary(
-                      child: _buildProfileSection(isDarkMode),
-                    ),
-                  ],
+                const Spacer(),
+                // Right side items in order: Navigation (3) → Index slots (5) → Swap (6) → Theme (7) → Profile (4)
+                _buildNavigationScreens(isDarkMode),
+                const SizedBox(width: 20),
+
+                RepaintBoundary(
+                  child: _buildSwapButton(isDarkMode),
                 ),
+                const SizedBox(width: 12),
+                // Theme toggle button
+                RepaintBoundary(
+                  child: _buildThemeToggleButton(isDarkMode),
+                ),
+                const SizedBox(width: 12),
+                // Profile section
+                RepaintBoundary(
+                  child: _buildProfileSection(isDarkMode),
+                ),
+                const SizedBox(width: 12),
+
                 // Swap button
+                // Index slots section
+                _buildAppBarIndexSlots(isDarkMode),
               ],
             ),
           ),
@@ -661,56 +926,19 @@ class _CustomizableSplitHomeScreenState
   Widget _buildSplitView(ThemesProvider theme) {
     return _buildGridContent(theme);
   }
-  
-  /// Calculate responsive split ratio for watchlist based on screen width
-  /// Uses Bootstrap-inspired breakpoints for optimal layout at different screen sizes
-  ///
-  /// Breakpoints:
-  /// - XL (>= 1600px): 20% watchlist width
-  /// - LG (>= 1200px): 25% watchlist width (default)
-  /// - MD (>= 992px): 28% watchlist width
-  /// - SM (>= 768px): 30% watchlist width
-  /// - XS (< 768px): 35% watchlist width
+
+  /// Calculate split ratio for watchlist - Fixed 75-25 split
+  /// Watchlist always takes 25% of screen width for consistent UX
   ///
   /// [isLeftPanel] - true if watchlist is in left panel, false if in right panel
-  double _getResponsiveWatchlistRatio(BuildContext context, {required bool isLeftPanel}) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    double watchlistRatio;
-
-    // Calculate watchlist width percentage based on screen size
-    if (screenWidth >= 1600) {
-      // Extra Large screens (>= 1600px): 20% watchlist
-      watchlistRatio = 0.20;
-    } else if (screenWidth >= 1200) {
-      // Large screens (>= 1200px): 25% watchlist (default)
-      watchlistRatio = 0.25;
-    } else if (screenWidth >= 992) {
-      // Medium screens (>= 992px): 28% watchlist
-      watchlistRatio = 0.28;
-    } else if (screenWidth >= 768) {
-      // Small screens (>= 768px): 30% watchlist
-      watchlistRatio = 0.30;
-    } else {
-      // Extra Small screens (< 768px): 35% watchlist
-      watchlistRatio = 0.35;
-    }
-
-    // Apply min/max constraints to prevent extreme widths
-    const double minWatchlistWidth = 280.0;  // Minimum 280px for readability
-    const double maxWatchlistWidth = 450.0;  // Maximum 450px to prevent oversized
-
-    // Calculate actual pixel width
-    double actualWidth = screenWidth * watchlistRatio;
-
-    // Clamp to min/max bounds
-    actualWidth = actualWidth.clamp(minWatchlistWidth, maxWatchlistWidth);
-
-    // Recalculate ratio based on clamped width
-    watchlistRatio = actualWidth / screenWidth;
+  double _getResponsiveWatchlistRatio(BuildContext context,
+      {required bool isLeftPanel}) {
+    // Fixed 25% for watchlist, 75% for main content
+    const double watchlistRatio = 0.25;
 
     // Return appropriate ratio based on panel position
-    // If watchlist is on left: return the ratio directly (left panel = ratio, right panel = 1-ratio)
-    // If watchlist is on right: return 1-ratio (left panel = 1-ratio, right panel = ratio)
+    // If watchlist is on left: return 0.25 (left panel = 25%, right panel = 75%)
+    // If watchlist is on right: return 0.75 (left panel = 75%, right panel = 25%)
     return isLeftPanel ? watchlistRatio : (1.0 - watchlistRatio);
   }
 
@@ -817,7 +1045,7 @@ class _CustomizableSplitHomeScreenState
 
     return Container(
       // margin: const EdgeInsets.all(0),
-      color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
+      color: shadcn.Theme.of(context).colorScheme.background,
       child: DragTarget<Object>(
         onAcceptWithDetails: (details) {
           final draggedData = details.data;
@@ -867,18 +1095,14 @@ class _CustomizableSplitHomeScreenState
               border: Border(
                 right: index == 0
                     ? BorderSide(
-                        color: theme.isDarkMode
-                            ? WebDarkColors.divider.withOpacity(0.5)
-                            : WebColors.divider,
+                        color: shadcn.Theme.of(context).colorScheme.border,
                         width: 1,
                         // width: 1,
                       )
                     : BorderSide.none,
                 left: index == 1
                     ? BorderSide(
-                        color: theme.isDarkMode
-                            ? WebDarkColors.divider.withOpacity(0.5)
-                            : WebColors.divider,
+                        color: shadcn.Theme.of(context).colorScheme.border,
                         width: 1,
                         // width: 1,
                       )
@@ -905,10 +1129,11 @@ class _CustomizableSplitHomeScreenState
                   Positioned.fill(
                     child: Container(
                       decoration: BoxDecoration(
-                        color: (theme.isDarkMode
-                                ? WebDarkColors.primary
-                                : WebColors.primary)
-                            .withOpacity(0.1),
+                        color: resolveThemeColor(
+                          context,
+                          dark: MyntColors.primaryDark,
+                          light: MyntColors.primary,
+                        ).withOpacity(0.1),
                       ),
                       child: Center(
                         child: Column(
@@ -916,20 +1141,24 @@ class _CustomizableSplitHomeScreenState
                           children: [
                             Icon(
                               Icons.add_circle_outline,
-                              color: theme.isDarkMode
-                                  ? WebDarkColors.primary
-                                  : WebColors.primary,
+                              color: resolveThemeColor(
+                                context,
+                                dark: MyntColors.primaryDark,
+                                light: MyntColors.primary,
+                              ),
                               size: 32,
                             ),
                             const SizedBox(height: 4),
                             Text(
                               'Drop to add',
-                              style: WebTextStyles.caption(
-                                isDarkTheme: theme.isDarkMode,
-                                color: theme.isDarkMode
-                                    ? WebDarkColors.primary
-                                    : WebColors.primary,
-                                fontWeight: WebFonts.semiBold,
+                              style: MyntWebTextStyles.caption(
+                                context,
+                                fontWeight: MyntFonts.semiBold,
+                                color: resolveThemeColor(
+                                  context,
+                                  dark: MyntColors.primaryDark,
+                                  light: MyntColors.primary,
+                                ),
                               ),
                             ),
                           ],
@@ -948,39 +1177,6 @@ class _CustomizableSplitHomeScreenState
   // Build empty slot
   Widget _buildEmptySlot(ThemesProvider theme) {
     return Container();
-
-    //  InkWell(
-    //   onTap: () {
-    //     _showAddScreenDialog();
-    //   },
-    //   child: Container(
-    //     decoration: BoxDecoration(
-    //       color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
-    //       // Removed border to eliminate thick border between layouts
-    //     ),
-    //     child: Center(
-    //       child: Column(
-    //         mainAxisAlignment: MainAxisAlignment.center,
-    //         children: [
-    //           Icon(
-    //             Icons.add_circle_outline,
-    //             color: theme.isDarkMode ? WebDarkColors.iconSecondary : WebColors.iconSecondary,
-    //             size: 32,
-    //           ),
-    //           const SizedBox(height: 8),
-    //           Text(
-    //             'Tap to add screen',
-    //             style: WebTextStyles.caption(
-    //               isDarkTheme: theme.isDarkMode,
-    //               color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
-    //               fontWeight: WebFonts.regular,
-    //             ),
-    //           ),
-    //         ],
-    //       ),
-    //     ),
-    //   ),
-    // );
   }
 
   // Build filled slot with screen content
@@ -1004,10 +1200,6 @@ class _CustomizableSplitHomeScreenState
           right: 0,
           bottom: 0,
           child: ClipRRect(
-            // borderRadius: const BorderRadius.only(
-            //   bottomLeft: Radius.circular(12),
-            //   bottomRight: Radius.circular(12),
-            // ),
             child: panel.screens.isNotEmpty
                 ? IndexedStack(
                     index: panel.activeScreenIndex >= 0 &&
@@ -1023,239 +1215,6 @@ class _CustomizableSplitHomeScreenState
                     : const SizedBox.shrink()),
           ),
         ),
-
-       
-        // Tab header for non-watchlist panels (Layout 1) - COMMENTED OUT
-        // if (activeScreen != ScreenType.watchlist)
-        //   Positioned(
-        //     top: 0,
-        //     left: 0,
-        //     right: 0,
-        //     child: Container(
-        //       height: 45,
-        //       decoration: BoxDecoration(
-        //         // Window top bar - slight grey to indicate it's a window top bar
-        //         color: theme.isDarkMode
-        //             ? WebDarkColors.surface
-        //             : WebColors.surface, // Subtle grey for window top bar
-        //         // Window borders - all sides to make it look like a distinct window
-        //         border: Border(
-        //           top: BorderSide(
-        //             color: theme.isDarkMode
-        //                 ? WebDarkColors.divider.withOpacity(0.5)
-        //                 : WebColors.divider,
-        //             width: 1,
-        //           ),
-        //           bottom: BorderSide(
-        //             color: theme.isDarkMode
-        //                 ? WebDarkColors.divider.withOpacity(0.5)
-        //                 : WebColors.divider,
-        //             width: 1,
-        //           ),
-        //           left: BorderSide(
-        //             color: theme.isDarkMode
-        //                 ? WebDarkColors.divider.withOpacity(0.5)
-        //                 : WebColors.divider,
-        //             width: 1,
-        //           ),
-        //           right: BorderSide(
-        //             color: theme.isDarkMode
-        //                 ? WebDarkColors.divider.withOpacity(0.5)
-        //                 : WebColors.divider,
-        //             width: 1,
-        //           ),
-        //         ),
-        //         // Shadow to make it look elevated like a window
-        //         // boxShadow: [
-        //         //   BoxShadow(
-        //         //     color: Colors.black.withOpacity(0.05),
-        //         //     blurRadius: 4,
-        //         //     offset: const Offset(0, 2),
-        //         //     spreadRadius: 0,
-        //         //   ),
-        //         // ],
-        //       ),
-        //       child: Row(
-        //         children: [
-        //           const SizedBox(width: 8),
-        //           // Tabs for multiple screens
-        //           if (panel.screens.length > 1) ...[
-        //             Expanded(
-        //               child: SingleChildScrollView(
-        //                 scrollDirection: Axis.horizontal,
-        //                 physics: const BouncingScrollPhysics(),
-        //                 child: IntrinsicWidth(
-        //                   child: Row(
-        //                     children:
-        //                         panel.screens.asMap().entries.map((entry) {
-        //                       int index = entry.key;
-        //                       ScreenType screenType = entry.value;
-        //                       bool isActive = index == panel.activeScreenIndex;
-
-        //                       return Container(
-        //                         constraints: const BoxConstraints(minWidth: 80),
-        //                         child: GestureDetector(
-        //                           onTap: () {
-        //                             setState(() {
-        //                               panel.activeScreenIndex = index;
-        //                               panel.screenType = screenType;
-        //                             });
-        //                             _saveLayout();
-        //                             _updateSubscriptionManagerForPanels();
-        //                             _handleScreenTypeChange(screenType);
-        //                           },
-        //                           child: Container(
-        //                             margin: const EdgeInsets.symmetric(
-        //                                 horizontal: 2),
-        //                             padding: const EdgeInsets.symmetric(
-        //                                 horizontal: 8, vertical: 4),
-        //                             decoration: BoxDecoration(
-        //                               color: isActive
-        //                                   ? Colors.white.withOpacity(0.2)
-        //                                   : Colors.transparent,
-        //                               borderRadius: BorderRadius.circular(4),
-        //                             ),
-        //                             child: Row(
-        //                               mainAxisSize: MainAxisSize.min,
-        //                               children: [
-        //                                 Icon(
-        //                                   _getIconForScreenType(screenType),
-        //                                   color: WebDarkColors.textPrimary,
-        //                                   size: 12,
-        //                                 ),
-        //                                 const SizedBox(width: 4),
-        //                                 Text(
-        //                                   _getScreenTitle(screenType),
-        //                                   style: WebTextStyles.para(
-        //                                     isDarkTheme: true,
-        //                                     color: theme.isDarkMode
-        //                                         ? WebDarkColors.textPrimary
-        //                                         : WebColors.textPrimary,
-        //                                     fontWeight: isActive
-        //                                         ? WebFonts.bold
-        //                                         : WebFonts.medium,
-        //                                   ),
-        //                                   overflow: TextOverflow.ellipsis,
-        //                                 ),
-        //                                 if (panel.screens.length > 1) ...[
-        //                                   const SizedBox(width: 8),
-        //                                   GestureDetector(
-        //                                     onTap: () => _removeScreenFromPanel(
-        //                                         panel, index),
-        //                                     child: const Icon(
-        //                                       Icons.close,
-        //                                       color:
-        //                                           WebDarkColors.textSecondary,
-        //                                       size: 14,
-        //                                     ),
-        //                                   ),
-        //                                 ],
-        //                               ],
-        //                             ),
-        //                           ),
-        //                         ),
-        //                       );
-        //                     }).toList(),
-        //                   ),
-        //                 ),
-        //               ),
-        //             ),
-        //           ] else ...[
-        //             // Single screen title
-        //             Expanded(
-        //               child: Row(
-        //                 children: [
-        //                   Text(
-        //                     _getScreenTitleNullable(activeScreen),
-        //                     style: WebTextStyles.title(
-        //                       isDarkTheme: true,
-        //                       color: theme.isDarkMode
-        //                           ? WebDarkColors.textPrimary
-        //                           : WebColors.textPrimary,
-        //                       fontWeight: WebFonts.bold,
-        //                     ),
-        //                     overflow: TextOverflow.ellipsis,
-        //                   ),
-        //                 ],
-        //               ),
-        //             ),
-        //           ],
-        //           // Add screen button (only show if there are screens available to add)
-        //           // if (activeScreen != ScreenType.watchlist && _hasAvailableScreensToAdd(panel))
-        //           //   IconButton(
-        //           //     icon: Icon(Icons.add, color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary, size: 18),
-        //           //     tooltip: 'Add Screen Tab',
-        //           //     onPressed: () {
-        //           //       _showAddScreenToPanelDialog(panel);
-        //           //     },
-        //           //   ),
-        //           // Screen selector
-        //           // PopupMenuButton<ScreenType>(
-        //           //   icon: Icon(Icons.swap_horiz, color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary, size: 18),
-        //           //   tooltip: 'Replace Screen',
-        //           //   onSelected: (ScreenType newType) {
-        //           //     setState(() {
-        //           //       if (panel.screens.isNotEmpty) {
-        //           //         panel.screens[panel.activeScreenIndex] = newType;
-        //           //         panel.screenType = newType;
-        //           //       } else {
-        //           //         panel.screenType = newType;
-        //           //         panel.screens = [newType];
-        //           //       }
-        //           //     });
-        //           //     _saveLayout();
-        //           //     _handleScreenTypeChange(newType);
-        //           //   },
-        //           //   itemBuilder: (context) => ScreenType.values
-        //           //       .where((type) => _shouldShowScreenOption(type, panel))
-        //           //       .map((type) {
-        //           //     return PopupMenuItem(
-        //           //       value: type,
-        //           //       child: Row(
-        //           //         children: [
-        //           //           Icon(
-        //           //             _getIconForScreenType(type),
-        //           //             size: 16,
-        //           //           ),
-        //           //           const SizedBox(width: 8),
-        //           //           Text(_getScreenTitle(type)),
-        //           //         ],
-        //           //       ),
-        //           //     );
-        //           //   }).toList(),
-        //           // ),
-        //           // Remove button
-        //           // Material(
-        //           //   color: Colors.transparent,
-        //           //   child: InkWell(
-        //           //     onTap: () {
-        //           //       setState(() {
-        //           //         panel.screenType = null;
-        //           //         panel.screens.clear();
-        //           //         panel.activeScreenIndex = 0;
-        //           //       });
-        //           //       if (activeScreen != null) {
-        //           //         _cleanupScreenResources(activeScreen);
-        //           //       }
-        //           //       _saveLayout();
-        //           //     },
-        //           //     borderRadius: BorderRadius.circular(18),
-        //           //     child: Padding(
-        //           //       padding: const EdgeInsets.all(8.0),
-        //           //       child: Icon(
-        //           //         Icons.close,
-        //           //         color: theme.isDarkMode
-        //           //             ? WebDarkColors.textPrimary
-        //           //             : WebColors.textPrimary,
-        //           //         size: 18,
-        //           //       ),
-        //           //     ),
-        //           //   ),
-        //           // ),
-        //         ],
-        //       ),
-        //     ),
-        //   ),
       ],
     );
   }
@@ -1282,8 +1241,7 @@ class _CustomizableSplitHomeScreenState
         _buildNavItem(
             'Fund', isDarkMode, ScreenType.funds, () => _handleFundsTap()),
         const SizedBox(width: 8),
-        _buildNavItem(
-            'IPO', isDarkMode, ScreenType.ipo, () => _handleIPOTap()),
+        _buildNavItem('IPO', isDarkMode, ScreenType.ipo, () => _handleIPOTap()),
       ],
     );
   }
@@ -1320,13 +1278,25 @@ class _CustomizableSplitHomeScreenState
       child: InkWell(
         onTap: _handleSwapPanels,
         borderRadius: BorderRadius.circular(10),
-        splashColor: (isDarkMode ? WebDarkColors.primary : WebColors.primary)
-            .withOpacity(0.2),
-        highlightColor: (isDarkMode ? WebDarkColors.primary : WebColors.primary)
-            .withOpacity(0.1),
+      splashColor: resolveThemeColor(
+  context,
+  dark: MyntColors.rippleDark,
+  light: MyntColors.rippleLight,
+),
+highlightColor: resolveThemeColor(
+  context,
+  dark: MyntColors.highlightDark,
+  light: MyntColors.highlightLight,
+),
+
+
         child: Icon(
           Icons.swap_horiz,
-          color: isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          color: resolveThemeColor(
+            context,
+            dark: MyntColors.iconDark,
+            light: MyntColors.icon,
+          ),
           size: 22,
         ),
       ),
@@ -1346,21 +1316,25 @@ class _CustomizableSplitHomeScreenState
           );
         },
         borderRadius: BorderRadius.circular(10),
-        splashColor: (isDarkMode ? WebDarkColors.primary : WebColors.primary)
-            .withOpacity(0.2),
-        highlightColor: (isDarkMode ? WebDarkColors.primary : WebColors.primary)
-            .withOpacity(0.1),
+      splashColor: resolveThemeColor(
+  context,
+  dark: MyntColors.rippleDark,
+  light: MyntColors.rippleLight,
+),
+highlightColor: resolveThemeColor(
+  context,
+  dark: MyntColors.highlightDark,
+  light: MyntColors.highlightLight,
+),
+
+
         child: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: isDarkMode
-                ? WebDarkColors.surfaceVariant.withOpacity(0.3)
-                : WebColors.surfaceVariant.withOpacity(0.5),
+            color: shadcn.Theme.of(context).colorScheme.muted,
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: isDarkMode
-                  ? WebDarkColors.border.withOpacity(0.3)
-                  : WebColors.border.withOpacity(0.3),
+              color: shadcn.Theme.of(context).colorScheme.border,
               width: 1,
             ),
           ),
@@ -1368,8 +1342,8 @@ class _CustomizableSplitHomeScreenState
             isDarkMode ? Icons.light_mode : Icons.dark_mode,
             size: 18,
             color: isDarkMode
-                ? WebDarkColors.textSecondary
-                : WebColors.textSecondary,
+                ? MyntColors.textSecondaryDark
+                : MyntColors.textSecondary,
           ),
         ),
       ),
@@ -1395,20 +1369,77 @@ class _CustomizableSplitHomeScreenState
     );
   }
 
+  // Build index slots for app bar
+  Widget _buildAppBarIndexSlots(bool isDarkMode) {
+    return Consumer(
+      builder: (context, ref, _) {
+        final indexProvider = ref.watch(indexListProvider);
+        final marketWatch = ref.read(marketWatchProvider);
+        final theme = ref.watch(themeProvider);
+        final indexValues = indexProvider.defaultIndexList?.indValues;
+
+        if (indexValues == null || indexValues.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        // Calculate watchlist width (same as watchlist panel)
+        final screenWidth = MediaQuery.of(context).size.width;
+        const double watchlistRatio = 0.24; // 25% - same as watchlist panel
+        final watchlistWidth = screenWidth * watchlistRatio;
+
+        // Show only first 2 indices
+        final displayIndices = indexValues.length >= 2
+            ? indexValues.take(2).toList()
+            : indexValues;
+
+        return SizedBox(
+          width: watchlistWidth, // Same width as watchlist panel
+          child: Row(
+            children: List.generate(
+              displayIndices.length,
+              (index) {
+                if (index >= displayIndices.length) {
+                  return const SizedBox.shrink();
+                }
+                final item = displayIndices[index];
+                return Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      right: index < displayIndices.length - 1 ? 8 : 0,
+                    ),
+                    child: _AppBarIndexSlot(
+                      indexItem: item,
+                      indexPosition: index,
+                      theme: theme,
+                      marketWatch: marketWatch,
+                      indexProvider: indexProvider,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Widget _getScreenForType(ScreenType type) {
     switch (type) {
       case ScreenType.dashboard:
-        return const PopoverExample1 ();
+        return const DashboardScreenWeb();
       case ScreenType.watchlist:
         return const WatchListScreenWeb();
       case ScreenType.holdings:
         return Consumer(
           builder: (context, ref, _) {
             // ✅ Optimize: Only watch specific properties instead of entire provider
-            final isLoading = _screenLoadingStates[ScreenType.holdings] ?? false;
-            final holdloader = ref.watch(portfolioProvider.select((p) => p.holdloader));
-            final holdingsModel = ref.watch(portfolioProvider.select((p) => p.holdingsModel));
-            final theme = ref.read(themeProvider); // Use read() since theme doesn't change often
+            final isLoading =
+                _screenLoadingStates[ScreenType.holdings] ?? false;
+            final holdloader =
+                ref.watch(portfolioProvider.select((p) => p.holdloader));
+            final holdingsModel =
+                ref.watch(portfolioProvider.select((p) => p.holdingsModel));
             final hasData = holdingsModel != null && holdingsModel.isNotEmpty;
 
             // Show loader if local loading state is true, provider loading is true, or no data yet
@@ -1416,31 +1447,30 @@ class _CustomizableSplitHomeScreenState
               return Container(
                 width: double.infinity,
                 height: double.infinity,
-                color:
-                    theme.isDarkMode ? WebDarkColors.background : Colors.white,
+                color: shadcn.Theme.of(context).colorScheme.background,
                 child: const CircularLoaderImage(),
               );
             }
-            return HoldingScreenWeb(
-                listofHolding: holdingsModel ?? []);
+            return HoldingScreenWeb(listofHolding: holdingsModel ?? []);
           },
         );
       case ScreenType.positions:
         return Consumer(
           builder: (context, ref, _) {
             // ✅ Optimize: Only watch specific properties instead of entire provider
-            final isLoading = _screenLoadingStates[ScreenType.positions] ?? false;
-            final posloader = ref.watch(portfolioProvider.select((p) => p.posloader));
-            final allPostionList = ref.watch(portfolioProvider.select((p) => p.allPostionList));
-            final theme = ref.read(themeProvider); // Use read() since theme doesn't change often
+            final isLoading =
+                _screenLoadingStates[ScreenType.positions] ?? false;
+            final posloader =
+                ref.watch(portfolioProvider.select((p) => p.posloader));
+            final allPostionList =
+                ref.watch(portfolioProvider.select((p) => p.allPostionList));
 
             // Show loader only when actively loading, not when no data exists
             if (isLoading || posloader) {
               return Container(
                 width: double.infinity,
                 height: double.infinity,
-                color:
-                    theme.isDarkMode ? WebDarkColors.background : Colors.white,
+                color: shadcn.Theme.of(context).colorScheme.background,
                 child: const CircularLoaderImage(),
               );
             }
@@ -1730,8 +1760,7 @@ class _CustomizableSplitHomeScreenState
           builder: (context, ref, child) {
             final theme = ref.watch(themeProvider);
             return AlertDialog(
-              backgroundColor:
-                  theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
+              backgroundColor: shadcn.Theme.of(context).colorScheme.background,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
@@ -1742,20 +1771,24 @@ class _CustomizableSplitHomeScreenState
                     children: [
                       Icon(
                         Icons.add_circle_outline,
-                        color: theme.isDarkMode
-                            ? WebDarkColors.primary
-                            : WebColors.primary,
+                        color: resolveThemeColor(
+                          context,
+                          dark: MyntColors.iconDark,
+                          light: MyntColors.icon,
+                        ),
                         size: 24,
                       ),
                       const SizedBox(width: 8),
                       Text(
                         'Add Screen',
-                        style: WebTextStyles.head(
-                          isDarkTheme: theme.isDarkMode,
-                          color: theme.isDarkMode
-                              ? WebDarkColors.textPrimary
-                              : WebColors.textPrimary,
-                          fontWeight: WebFonts.bold,
+                        style: MyntWebTextStyles.head(
+                          context,
+                          fontWeight: MyntFonts.bold,
+                          color: resolveThemeColor(
+                            context,
+                            dark: MyntColors.textPrimaryDark,
+                            light: MyntColors.textPrimary,
+                          ),
                         ),
                       ),
                     ],
@@ -1780,8 +1813,7 @@ class _CustomizableSplitHomeScreenState
                           .where((screenType) =>
                               screenType != ScreenType.watchlist)
                           .map((screenType) =>
-                              _buildScreenOption(screenType, theme))
-                          ,
+                              _buildScreenOption(screenType, theme)),
                     ],
                   ),
                 ),
@@ -1830,17 +1862,20 @@ class _CustomizableSplitHomeScreenState
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: (theme.isDarkMode
-                          ? WebDarkColors.primary
-                          : WebColors.primary)
-                      .withOpacity(0.1),
+                  color: resolveThemeColor(
+                    context,
+                    dark: MyntColors.primaryDark,
+                    light: MyntColors.primary,
+                  ).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
                   _getIconForScreenType(screenType),
-                  color: theme.isDarkMode
-                      ? WebDarkColors.primary
-                      : WebColors.primary,
+                  color: resolveThemeColor(
+                    context,
+                    dark: MyntColors.primaryDark,
+                    light: MyntColors.primary,
+                  ),
                   size: 20,
                 ),
               ),
@@ -1848,18 +1883,23 @@ class _CustomizableSplitHomeScreenState
               Expanded(
                 child: Text(
                   _getScreenTitle(screenType),
-                  style: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    14,
-                    1,
+                  style: MyntWebTextStyles.body(
+                    context,
+                    color: resolveThemeColor(
+                      context,
+                      dark: MyntColors.textPrimaryDark,
+                      light: MyntColors.textPrimary,
+                    ),
                   ),
                 ),
               ),
               Icon(
                 Icons.arrow_forward_ios,
-                color: theme.isDarkMode
-                    ? WebDarkColors.iconSecondary
-                    : WebColors.iconSecondary,
+                color: resolveThemeColor(
+                  context,
+                  dark: MyntColors.iconDark,
+                  light: MyntColors.icon,
+                ),
                 size: 16,
               ),
             ],
@@ -1883,7 +1923,7 @@ class _CustomizableSplitHomeScreenState
   void _handleScreenTypeChange(ScreenType screenType) {
     // Update subscription manager with active screen
     _updateSubscriptionManagerForPanels();
-    
+
     // Only call handlers if this is not the initial load
     if (_isInitialLoad) {
       return;
@@ -1989,9 +2029,7 @@ class _CustomizableSplitHomeScreenState
         case ScreenType.orderBook:
           if (mounted) {
             // Unsubscribe from current active tab when leaving order book screen
-            ref
-                .read(orderProvider)
-                .unsubscribeFromCurrentTab(context);
+            ref.read(orderProvider).unsubscribeFromCurrentTab(context);
           }
           _clearScreenCache(screenType);
           break;
@@ -2133,7 +2171,7 @@ class _CustomizableSplitHomeScreenState
         _cleanupScreenResources(previousScreenType);
       }
     });
-    
+
     // Update subscription manager
     _updateSubscriptionManagerForPanels();
 
@@ -2192,7 +2230,7 @@ class _CustomizableSplitHomeScreenState
       _panels[targetPanelIndex].screens = [ScreenType.orderBook];
       _panels[targetPanelIndex].activeScreenIndex = 0;
     });
-    
+
     // Update subscription manager
     _updateSubscriptionManagerForPanels();
 
@@ -2259,7 +2297,7 @@ class _CustomizableSplitHomeScreenState
       // Store the tab index for the screen
       _tradeActionTabIndex = tabIndex;
     });
-    
+
     // Update subscription manager
     _updateSubscriptionManagerForPanels();
 
@@ -2308,10 +2346,10 @@ class _CustomizableSplitHomeScreenState
       _panels[targetPanelIndex].screens = [ScreenType.optionChain];
       _panels[targetPanelIndex].activeScreenIndex = 0;
     });
-    
+
     // Update subscription manager
     _updateSubscriptionManagerForPanels();
-    
+
     _saveLayout();
   }
 
@@ -2370,31 +2408,33 @@ class _CustomizableSplitHomeScreenState
 
   // Debounce timer to prevent rapid subscription manager updates
   Timer? _subscriptionUpdateDebounceTimer;
-  static const Duration _subscriptionUpdateDebounceDelay = Duration(milliseconds: 200);
-  
+  static const Duration _subscriptionUpdateDebounceDelay =
+      Duration(milliseconds: 200);
+
   // Track last update to prevent duplicate calls
   Map<int, ScreenType?> _lastSubscriptionUpdate = {};
-  
+
   // Update subscription manager based on current active panels (with debouncing)
   void _updateSubscriptionManagerForPanels() {
     // Cancel any pending debounce timer
     _subscriptionUpdateDebounceTimer?.cancel();
-    
+
     // Debounce the update to prevent rapid calls
-    _subscriptionUpdateDebounceTimer = Timer(_subscriptionUpdateDebounceDelay, () {
+    _subscriptionUpdateDebounceTimer =
+        Timer(_subscriptionUpdateDebounceDelay, () {
       _performSubscriptionManagerUpdate();
     });
   }
-  
+
   /// Actually perform the subscription manager update (called after debounce)
   void _performSubscriptionManagerUpdate() {
     final subscriptionManager = ref.read(webSubscriptionManagerProvider);
-    
+
     // Update subscription manager for each panel
     for (int i = 0; i < _panels.length; i++) {
       final panel = _panels[i];
       ScreenType? activeScreen;
-      
+
       if (panel.screens.isNotEmpty &&
           panel.activeScreenIndex >= 0 &&
           panel.activeScreenIndex < panel.screens.length) {
@@ -2402,7 +2442,7 @@ class _CustomizableSplitHomeScreenState
       } else {
         activeScreen = panel.screenType;
       }
-      
+
       // Only update if the screen actually changed
       final lastScreen = _lastSubscriptionUpdate[i];
       if (lastScreen != activeScreen) {
@@ -2424,7 +2464,7 @@ class _CustomizableSplitHomeScreenState
       final indexProvider = ref.read(indexListProvider);
       final stocksProvider = ref.read(stocksProvide);
       final portfolio = ref.read(portfolioProvider);
-      
+
       portfolio.cancelTimer();
 
       // Ensure top indices are fetched before WebSubscriptionManager subscribes
@@ -2432,16 +2472,19 @@ class _CustomizableSplitHomeScreenState
       if (indexProvider.topIndicesForDashboard == null) {
         await indexProvider.getTopIndicesForDashboard(context);
       }
-      
+
       // Fetch trade action data only if not already available
       // This prevents duplicate TopList API calls when clicking dashboard multiple times
-      if (stocksProvider.topGainers.isEmpty && stocksProvider.topLosers.isEmpty) {
-        await stocksProvider.fetchTradeAction("NSE", "NSEALL", "topG_L", "topG_L");
+      if (stocksProvider.topGainers.isEmpty &&
+          stocksProvider.topLosers.isEmpty) {
+        await stocksProvider.fetchTradeAction(
+            "NSE", "NSEALL", "topG_L", "topG_L");
       }
       if (stocksProvider.byValue.isEmpty && stocksProvider.byVolume.isEmpty) {
-        await stocksProvider.fetchTradeAction("NSE", "NSEALL", "mostActive", "mostActive");
+        await stocksProvider.fetchTradeAction(
+            "NSE", "NSEALL", "mostActive", "mostActive");
       }
-      
+
       // Update subscription manager AFTER data is fetched
       // This ensures tokens are available for subscription
       if (mounted) {
@@ -2453,8 +2496,6 @@ class _CustomizableSplitHomeScreenState
   void _handleWatchlistTap() async {
     // Update subscription manager
     _updateSubscriptionManagerForPanels();
-    
-   
 
     final portfolio = ref.read(portfolioProvider);
     portfolio.cancelTimer();
@@ -2496,7 +2537,7 @@ class _CustomizableSplitHomeScreenState
       _panels[targetPanelIndex].screens = [screenType];
       _panels[targetPanelIndex].activeScreenIndex = 0;
     });
-    
+
     // Update subscription manager
     _updateSubscriptionManagerForPanels();
 
@@ -2552,7 +2593,8 @@ class _CustomizableSplitHomeScreenState
 
       // Check if request is already in progress (prevents duplicate calls on rapid clicks)
       if (_isRequestInProgress('order_book')) {
-        debugPrint('⏭️ Skipping Order Book fetch - request already in progress');
+        debugPrint(
+            '⏭️ Skipping Order Book fetch - request already in progress');
         return;
       }
 
@@ -2572,7 +2614,8 @@ class _CustomizableSplitHomeScreenState
         if (mounted) {
           // Reset to Open Orders tab (index 0) and subscribe
           orderProviderRef.changeTabIndex(0, context);
-          debugPrint("📥 [Order Book] Initial subscription to Open Orders tab (Tab 0)");
+          debugPrint(
+              "📥 [Order Book] Initial subscription to Open Orders tab (Tab 0)");
         }
 
         // Update subscription manager (order book is now SubscriptionType.none, so it won't subscribe)
@@ -2609,7 +2652,9 @@ class _CustomizableSplitHomeScreenState
         // Unsubscribe from other real-time data (non-blocking)
         portfolio.requestWSHoldings(context: context, isSubscribe: false);
         portfolio.requestWSPosition(context: context, isSubscribe: false);
-        ref.read(orderProvider).requestWSOrderBook(context: context, isSubscribe: false);
+        ref
+            .read(orderProvider)
+            .requestWSOrderBook(context: context, isSubscribe: false);
 
         // Fetch IPO data in the background (non-blocking)
         if (mounted) {
@@ -2880,8 +2925,8 @@ class _CustomizableSplitHomeScreenState
     // Fetch reports data
     if (reportsprovider.ledgerAllData == null) {
       await reportsprovider.getCurrentDate('else');
-      reportsprovider.fetchLegerData(
-          context, reportsprovider.startDate, reportsprovider.endDate, reportsprovider.includeBillMargin);
+      reportsprovider.fetchLegerData(context, reportsprovider.startDate,
+          reportsprovider.endDate, reportsprovider.includeBillMargin);
     }
     if (reportsprovider.holdingsAllData == null) {
       await reportsprovider.getCurrentDate('else');
@@ -2949,7 +2994,8 @@ class _CustomizableSplitHomeScreenState
 
     // Check if request is already in progress (prevents duplicate calls on rapid clicks)
     if (_isRequestInProgress('trade_action')) {
-      debugPrint('⏭️ Skipping Trade Action fetch - request already in progress');
+      debugPrint(
+          '⏭️ Skipping Trade Action fetch - request already in progress');
       return;
     }
 
@@ -2960,8 +3006,10 @@ class _CustomizableSplitHomeScreenState
       // Fetch trade action data before WebSubscriptionManager subscribes
       // This ensures tokens are available for subscription
       // Always fetch fresh data when switching to Trade Action
-      await stocksProvider.fetchTradeAction("NSE", "NSEALL", "topG_L", "topG_L");
-      await stocksProvider.fetchTradeAction("NSE", "NSEALL", "mostActive", "mostActive");
+      await stocksProvider.fetchTradeAction(
+          "NSE", "NSEALL", "topG_L", "topG_L");
+      await stocksProvider.fetchTradeAction(
+          "NSE", "NSEALL", "mostActive", "mostActive");
 
       // WebSubscriptionManager will handle subscription after data is fetched
       // via _updateSubscriptionManagerForPanels() which is called when screen is added
@@ -3034,78 +3082,6 @@ class _CustomizableSplitHomeScreenState
     _saveLayout();
   }
 
-  // Show dialog to add screen to specific panel
-  void _showAddScreenToPanelDialog(PanelConfig panel) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return Consumer(
-          builder: (context, ref, child) {
-            final theme = ref.watch(themeProvider);
-            return AlertDialog(
-              backgroundColor:
-                  theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              title: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.add_circle_outline,
-                        color: theme.isDarkMode
-                            ? WebDarkColors.primary
-                            : WebColors.primary,
-                        size: 24,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Add Screen Tab',
-                        style: textStyle(
-                          theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack,
-                          18,
-                          2,
-                        ),
-                      ),
-                    ],
-                  ),
-                  IconButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    icon: Icon(
-                      Icons.close,
-                      color: colors.colorGrey,
-                      size: 24,
-                    ),
-                  ),
-                ],
-              ),
-              content: SizedBox(
-                width: 300,
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      ...ScreenType.values
-                          .where((screenType) =>
-                              _shouldShowScreenOption(screenType, panel))
-                          .map((screenType) => _buildScreenOptionForPanel(
-                              screenType, theme, panel))
-                          ,
-                    ],
-                  ),
-                ),
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
   // Check if screen option should be shown (hide duplicates only)
   bool _shouldShowScreenOption(ScreenType screenType, PanelConfig panel) {
     // Allow all screen types including app bar screens to be added as tabs
@@ -3154,96 +3130,6 @@ class _CustomizableSplitHomeScreenState
     return !alreadyExistsInPanel && !alreadyExistsInOtherPanel;
   }
 
-  // Build screen option for panel dialog
-  Widget _buildScreenOptionForPanel(
-      ScreenType screenType, ThemesProvider theme, PanelConfig panel) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: InkWell(
-        onTap: () {
-          // Add as a regular screen to the panel
-          setState(() {
-            if (screenType != ScreenType.watchlist) {
-              // Check if screen already exists in this panel
-              if (!panel.screens.contains(screenType)) {
-                panel.screens.add(screenType);
-                panel.activeScreenIndex = panel.screens.length - 1;
-              } else {
-                // Switch to existing screen
-                panel.activeScreenIndex = panel.screens.indexOf(screenType);
-              }
-              // Update screenType for backward compatibility
-              panel.screenType = screenType;
-            } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Watchlist cannot be added'),
-                ),
-              );
-            }
-          });
-          _saveLayout();
-          // Call the appropriate handler function for the new screen type
-          _handleScreenTypeChange(screenType);
-          Navigator.of(context).pop();
-        },
-        child: Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: theme.isDarkMode
-                ? colors.colorGrey.withOpacity(0.1)
-                : colors.colorGrey.withOpacity(0.05),
-            border: Border.all(
-              color: theme.isDarkMode
-                  ? colors.colorGrey.withOpacity(0.2)
-                  : colors.colorGrey.withOpacity(0.1),
-              width: 1,
-            ),
-          ),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: (theme.isDarkMode
-                          ? WebDarkColors.primary
-                          : WebColors.primary)
-                      .withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  _getIconForScreenType(screenType),
-                  color: theme.isDarkMode
-                      ? WebDarkColors.primary
-                      : WebColors.primary,
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  _getScreenTitle(screenType),
-                  style: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    14,
-                    1,
-                  ),
-                ),
-              ),
-              Icon(
-                Icons.arrow_forward_ios,
-                color: theme.isDarkMode
-                    ? WebDarkColors.iconSecondary
-                    : WebColors.iconSecondary,
-                size: 16,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   // Add default screens to empty panels
   void _addDefaultScreens() {
     // Always set up default panels: dashboard screen on left panel, watchlist on right panel
@@ -3268,47 +3154,6 @@ class _CustomizableSplitHomeScreenState
     }
   }
 
-  // Remove screen from panel
-  void _removeScreenFromPanel(PanelConfig panel, int index) {
-    // Prevent removing watchlist screens
-    if (index >= 0 &&
-        index < panel.screens.length &&
-        panel.screens[index] == ScreenType.watchlist) {
-      return; // Don't remove watchlist screens
-    }
-
-    // Get the screen type being removed
-    ScreenType? screenTypeToRemove;
-    if (index >= 0 && index < panel.screens.length) {
-      screenTypeToRemove = panel.screens[index];
-    }
-
-    setState(() {
-      panel.screens.removeAt(index);
-      if (panel.activeScreenIndex >= panel.screens.length) {
-        panel.activeScreenIndex = panel.screens.length - 1;
-      }
-      if (panel.activeScreenIndex < 0) {
-        panel.activeScreenIndex = 0;
-      }
-      // Update screenType for backward compatibility
-      if (panel.screens.isNotEmpty &&
-          panel.activeScreenIndex >= 0 &&
-          panel.activeScreenIndex < panel.screens.length) {
-        panel.screenType = panel.screens[panel.activeScreenIndex];
-      } else {
-        panel.screenType = null;
-      }
-    });
-
-    // Clean up resources for the removed screen
-    if (screenTypeToRemove != null) {
-      _cleanupScreenResources(screenTypeToRemove);
-    }
-
-    _saveLayout();
-  }
-
   Widget _buildChartOverlay() {
     return Consumer(
       builder: (context, ref, _) {
@@ -3316,8 +3161,6 @@ class _CustomizableSplitHomeScreenState
             .select((userProfile) => userProfile.showchartof));
         final webViewKey = ref.watch(userProfileProvider
             .select((userProfile) => userProfile.webViewKey));
-        final theme = ref.watch(themeProvider);
-
         return Positioned(
           key: webViewKey,
           bottom: showChart ? 0 : (MediaQuery.of(context).size.height + 100),
@@ -3326,8 +3169,7 @@ class _CustomizableSplitHomeScreenState
             duration: const Duration(milliseconds: 100),
             curve: Curves.fastLinearToSlowEaseIn,
             decoration: BoxDecoration(
-              color:
-                  theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
+              color: shadcn.Theme.of(context).colorScheme.background,
             ),
             height: MediaQuery.of(context).size.height,
             width: MediaQuery.of(context).size.width,
@@ -3373,9 +3215,8 @@ class _CustomizableSplitHomeScreenState
               builder: (BuildContext context) {
                 final theme = ref.read(themeProvider);
                 return AlertDialog(
-                    backgroundColor: theme.isDarkMode
-                        ? WebDarkColors.surface
-                        : WebColors.backgroundTertiary,
+                    backgroundColor:
+                        shadcn.Theme.of(context).colorScheme.background,
                     titlePadding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                     shape: const RoundedRectangleBorder(
@@ -3404,20 +3245,28 @@ class _CustomizableSplitHomeScreenState
                                   Navigator.of(context).pop(false);
                                 },
                                 borderRadius: BorderRadius.circular(20),
-                                splashColor: theme.isDarkMode
-                                    ? WebDarkColors.primary.withOpacity(0.1)
-                                    : WebColors.primary.withOpacity(0.1),
-                                highlightColor: theme.isDarkMode
-                                    ? WebDarkColors.primary.withOpacity(0.05)
-                                    : WebColors.primary.withOpacity(0.05),
+                              splashColor: resolveThemeColor(
+  context,
+  dark: MyntColors.rippleDark,
+  light: MyntColors.rippleLight,
+),
+highlightColor: resolveThemeColor(
+  context,
+  dark: MyntColors.highlightDark,
+  light: MyntColors.highlightLight,
+),
+
+
                                 child: Padding(
                                   padding: const EdgeInsets.all(6.0),
                                   child: Icon(
                                     Icons.close_rounded,
                                     size: 22,
-                                    color: theme.isDarkMode
-                                        ? WebDarkColors.iconSecondary
-                                        : WebColors.iconSecondary,
+                                    color: resolveThemeColor(
+                                      context,
+                                      dark: MyntColors.iconDark,
+                                      light: MyntColors.icon,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -3430,12 +3279,13 @@ class _CustomizableSplitHomeScreenState
                           child: Center(
                             child: Text(
                               "Do you want to Exit the App?",
-                              style: WebTextStyles.sub(
-                                isDarkTheme: theme.isDarkMode,
-                                color: theme.isDarkMode
-                                    ? WebDarkColors.textSecondary
-                                    : WebColors.textPrimary,
-                                fontWeight: WebFonts.regular,
+                              style: MyntWebTextStyles.body(
+                                context,
+                                color: resolveThemeColor(
+                                  context,
+                                  dark: MyntColors.textPrimaryDark,
+                                  light: MyntColors.textPrimary,
+                                ),
                               ),
                             ),
                           ),
@@ -3450,22 +3300,28 @@ class _CustomizableSplitHomeScreenState
                           style: OutlinedButton.styleFrom(
                             minimumSize: const Size(0, 45),
                             side: BorderSide(
-                                color: theme.isDarkMode
-                                    ? WebDarkColors.border
-                                    : WebColors.border),
+                                color: shadcn.Theme.of(context)
+                                    .colorScheme
+                                    .border),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(5),
                             ),
-                            backgroundColor: theme.isDarkMode
-                                ? WebDarkColors.primary
-                                : WebColors.primary,
+                            backgroundColor: resolveThemeColor(
+                              context,
+                              dark: MyntColors.primaryDark,
+                              light: MyntColors.primary,
+                            ),
                           ),
                           child: Text(
                             "Exit",
-                            style: WebTextStyles.title(
-                              isDarkTheme: theme.isDarkMode,
-                              color: WebDarkColors.textPrimary,
-                              fontWeight: WebFonts.bold,
+                            style: MyntWebTextStyles.title(
+                              context,
+                              fontWeight: MyntFonts.bold,
+                              color: resolveThemeColor(
+                                context,
+                                dark: MyntColors.textPrimaryDark,
+                                light: MyntColors.textPrimary,
+                              ),
                             ),
                           ),
                         ),
@@ -3543,23 +3399,31 @@ class _ProfileDropdownState extends State<_ProfileDropdown> {
       child: InkWell(
         onTap: _toggleDropdown,
         borderRadius: BorderRadius.circular(10),
-        splashColor:
-            (widget.isDarkMode ? WebDarkColors.primary : WebColors.primary)
-                .withOpacity(0.2),
-        highlightColor:
-            (widget.isDarkMode ? WebDarkColors.primary : WebColors.primary)
-                .withOpacity(0.1),
+      splashColor: resolveThemeColor(
+  context,
+  dark: MyntColors.rippleDark,
+  light: MyntColors.rippleLight,
+),
+highlightColor: resolveThemeColor(
+  context,
+  dark: MyntColors.highlightDark,
+  light: MyntColors.highlightLight,
+),
+
+
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               widget.clientId,
-              style: WebTextStyles.sub(
-                isDarkTheme: widget.isDarkMode,
-                color: widget.isDarkMode
-                    ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary,
-                fontWeight: WebFonts.semiBold,
+              style: MyntWebTextStyles.body(
+                context,
+                fontWeight: MyntFonts.semiBold,
+                color: resolveThemeColor(
+                  context,
+                  dark: MyntColors.textPrimaryDark,
+                  light: MyntColors.textPrimary,
+                ),
               ),
             ),
             const SizedBox(width: 8),
@@ -3568,14 +3432,31 @@ class _ProfileDropdownState extends State<_ProfileDropdown> {
                   ? Icons.keyboard_arrow_up
                   : Icons.keyboard_arrow_down,
               size: 20,
-              color: widget.isDarkMode
-                  ? WebDarkColors.textPrimary
-                  : WebColors.textPrimary,
+              color: resolveThemeColor(
+                context,
+                dark: MyntColors.textPrimaryDark,
+                light: MyntColors.textPrimary,
+              ),
             ),
           ],
         ),
       ),
     );
+  }
+}
+
+// InheritedWidget to provide close callback to UserAccountScreen
+class _ProfileCloseCallback extends InheritedWidget {
+  final VoidCallback onClose;
+
+  const _ProfileCloseCallback({
+    required this.onClose,
+    required super.child,
+  });
+
+  @override
+  bool updateShouldNotify(_ProfileCloseCallback oldWidget) {
+    return onClose != oldWidget.onClose;
   }
 }
 
@@ -3597,25 +3478,6 @@ class ProfileMenuContentWrapper extends StatelessWidget {
   }
 }
 
-// InheritedWidget to provide close callback to UserAccountScreen
-class _ProfileCloseCallback extends InheritedWidget {
-  final VoidCallback onClose;
-
-  const _ProfileCloseCallback({
-    required this.onClose,
-    required super.child,
-  });
-
-  static _ProfileCloseCallback? maybeOf(BuildContext context) {
-    return context.dependOnInheritedWidgetOfExactType<_ProfileCloseCallback>();
-  }
-
-  @override
-  bool updateShouldNotify(_ProfileCloseCallback oldWidget) {
-    return onClose != oldWidget.onClose;
-  }
-}
-
 // Profile dropdown overlay widget
 class _ProfileDropdownOverlay extends StatelessWidget {
   final bool isDarkMode;
@@ -3630,7 +3492,7 @@ class _ProfileDropdownOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = isDarkMode ? WebColorScheme.dark() : WebColorScheme.light();
+    final colorScheme = shadcn.Theme.of(context).colorScheme;
 
     return GestureDetector(
       onTap: onClose,
@@ -3649,7 +3511,7 @@ class _ProfileDropdownOverlay extends StatelessWidget {
                   width: 350,
                   height: MediaQuery.of(context).size.height * 0.7,
                   decoration: BoxDecoration(
-                    color: colorScheme.surface,
+                    color: colorScheme.background,
                     border: Border.all(
                       color: colorScheme.border,
                       width: 1,
@@ -3666,7 +3528,8 @@ class _ProfileDropdownOverlay extends StatelessWidget {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(8),
                     child: ProfileMenuContentWrapper(
-                      onNavigate: onClose, // Pass callback to close on any navigation
+                      onNavigate:
+                          onClose, // Pass callback to close on any navigation
                     ),
                   ),
                 ),
@@ -3868,34 +3731,27 @@ class _HoverableNavItemState extends State<_HoverableNavItem> {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           child: Text(
             widget.title,
-            style: WebTextStyles.sub(
-              isDarkTheme: theme,
+            style: MyntWebTextStyles.body(
+              context,
+              fontWeight: widget.isActive ? MyntFonts.bold : MyntFonts.semiBold,
               color: widget.isActive
-                  ? (theme ? WebDarkColors.primary : WebColors.primary)
+                  ? resolveThemeColor(
+                      context,
+                      dark: WebColors.primaryDark,
+                      light: WebColors.primary,
+                    )
                   : (_isHovered
-                      ? (theme ? WebDarkColors.primary : WebColors.primary)
-                          .withOpacity(0.8)
-                      : (theme
-                          ? WebDarkColors.textPrimary
-                          : WebColors.textPrimary)),
-              fontWeight: widget.isActive ? WebFonts.bold : WebFonts.semiBold,
+                      ? resolveThemeColor(
+                          context,
+                          dark: WebColors.primaryDark,
+                          light: WebColors.primary,
+                        ).withOpacity(0.8)
+                      : resolveThemeColor(
+                          context,
+                          dark: MyntColors.textPrimaryDark,
+                          light: MyntColors.textPrimary,
+                        )),
             ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  // Loading indicator widget (static helper)
-  static Widget _buildLoadingIndicatorWidget(bool isDarkMode) {
-    return Container(
-      width: double.infinity,
-      height: double.infinity,
-      color: isDarkMode ? WebDarkColors.background : Colors.white,
-      child: Center(
-        child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(
-            isDarkMode ? WebDarkColors.primary : WebColors.primary,
           ),
         ),
       ),
@@ -3945,9 +3801,362 @@ class _LazyOrderBookScreenState extends ConsumerState<_LazyOrderBookScreen> {
     return Container(
       width: double.infinity,
       height: double.infinity,
-      color: isDarkMode ? WebDarkColors.background : Colors.white,
+      color: shadcn.Theme.of(context).colorScheme.background,
       child: const CircularLoaderImage(),
     );
+  }
+}
+
+// AppBar Index Slot Widget
+class _AppBarIndexSlot extends ConsumerStatefulWidget {
+  final dynamic indexItem;
+  final int indexPosition;
+  final ThemesProvider theme;
+  final dynamic marketWatch;
+  final dynamic indexProvider;
+
+  const _AppBarIndexSlot({
+    required this.indexItem,
+    required this.indexPosition,
+    required this.theme,
+    required this.marketWatch,
+    required this.indexProvider,
+  });
+
+  @override
+  ConsumerState<_AppBarIndexSlot> createState() => _AppBarIndexSlotState();
+}
+
+class _AppBarIndexSlotState extends ConsumerState<_AppBarIndexSlot> {
+  bool _isHovered = false;
+
+  Future<void> _handleTap(BuildContext context) async {
+    try {
+      await widget.indexProvider.fetchIndexList("NSE", context);
+      showDialog(
+        context: context,
+        barrierDismissible: true,
+        builder: (BuildContext context) {
+          return Dialog(
+            backgroundColor: Colors.transparent,
+            child: IndexBottomSheetWeb(
+              defaultIndex: widget.indexItem,
+              indexPosition: widget.indexPosition,
+            ),
+          );
+        },
+      );
+      await widget.indexProvider.fetchIndexList("exit", context);
+      await widget.marketWatch
+          .requestMWScrip(context: context, isSubscribe: true);
+    } catch (e) {
+      debugPrint("Error in index slot tap: $e");
+    }
+  }
+
+  Future<void> _handleIndexClick(BuildContext context) async {
+    try {
+      await widget.marketWatch.fetchScripQuoteIndex(
+          widget.indexItem.token?.toString() ?? "",
+          widget.indexItem.exch?.toString() ?? "",
+          context);
+      final quots = widget.marketWatch.getQuotes;
+      if (quots == null) return;
+      final depthArgs = DepthInputArgs(
+          exch: quots.exch?.toString() ?? "",
+          token: quots.token?.toString() ?? "",
+          tsym: quots.tsym?.toString() ?? "",
+          instname: quots.instname?.toString() ?? "",
+          symbol: quots.symbol?.toString() ?? "",
+          expDate: quots.expDate?.toString() ?? "",
+          option: quots.option?.toString() ?? "");
+      if (depthArgs.token.isNotEmpty && depthArgs.exch.isNotEmpty) {
+        await widget.marketWatch.calldepthApis(context, depthArgs, "");
+      }
+    } catch (e) {
+      debugPrint("Error in index click: $e");
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: GestureDetector(
+        onTap: () => _handleIndexClick(context),
+        child: shadcn.Card(
+          borderColor: Colors.transparent,
+          padding: const EdgeInsets.all(0),
+          child: Stack(
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    widget.indexItem.idxname ?? "",
+                    style: MyntWebTextStyles.symbol(
+                      context,
+                      color: resolveThemeColor(
+                        context,
+                        dark: MyntColors.textPrimaryDark,
+                        light: MyntColors.textPrimary,
+                      ),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  _AppBarLivePriceWidget(
+                    key: ValueKey('price_${widget.indexItem.token ?? ""}'),
+                    token: widget.indexItem.token?.toString() ?? "",
+                    initialLtp: (widget.indexItem.ltp == null ||
+                            widget.indexItem.ltp == "null")
+                        ? "0.00"
+                        : widget.indexItem.ltp?.toString() ?? "0.00",
+                    initialChange: (widget.indexItem.change == null ||
+                            widget.indexItem.change == "null")
+                        ? "0.00"
+                        : widget.indexItem.change?.toString() ?? "0.00",
+                    initialPerChange: (widget.indexItem.perChange == null ||
+                            widget.indexItem.perChange == "null")
+                        ? "0.00"
+                        : widget.indexItem.perChange?.toString() ?? "0.00",
+                  ),
+                ],
+              ),
+              if (_isHovered)
+                Positioned(
+                  right: 0,
+                  top: 0,
+                  child: Material(
+                    color: Colors.transparent,
+                    shape: const CircleBorder(),
+                    child: InkWell(
+                      customBorder: const CircleBorder(),
+                   splashColor: resolveThemeColor(
+  context,
+  dark: MyntColors.rippleDark,
+  light: MyntColors.rippleLight,
+),
+highlightColor: resolveThemeColor(
+  context,
+  dark: MyntColors.highlightDark,
+  light: MyntColors.highlightLight,
+),
+
+
+                      onTap: () => _handleTap(context),
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: shadcn.Theme.of(context).colorScheme.card,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.edit_outlined,
+                          size: 16,
+                          color: shadcn.Theme.of(context)
+                              .colorScheme
+                              .mutedForeground,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// Live price widget for appbar index slots
+class _AppBarLivePriceWidget extends ConsumerStatefulWidget {
+  final String token;
+  final String initialLtp;
+  final String initialChange;
+  final String initialPerChange;
+
+  const _AppBarLivePriceWidget({
+    super.key,
+    required this.token,
+    required this.initialLtp,
+    required this.initialChange,
+    required this.initialPerChange,
+  });
+
+  @override
+  ConsumerState<_AppBarLivePriceWidget> createState() =>
+      _AppBarLivePriceWidgetState();
+}
+
+class _AppBarLivePriceWidgetState
+    extends ConsumerState<_AppBarLivePriceWidget> {
+  late String _ltp;
+  late String _change;
+  late String _perChange;
+  StreamSubscription? _subscription;
+  bool _isUpdatePending = false;
+  final _debouncer = _Debouncer(milliseconds: 300);
+  bool _isInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _ltp = widget.initialLtp == "null" ? "0.00" : widget.initialLtp;
+    _change = widget.initialChange == "null" ? "0.00" : widget.initialChange;
+    _perChange =
+        widget.initialPerChange == "null" ? "0.00" : widget.initialPerChange;
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_isInitialized) {
+      _setupSocketListener();
+      _isInitialized = true;
+    }
+  }
+
+  @override
+  void didUpdateWidget(_AppBarLivePriceWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.token != widget.token) {
+      _ltp = widget.initialLtp == "null" ? "0.00" : widget.initialLtp;
+      _change = widget.initialChange == "null" ? "0.00" : widget.initialChange;
+      _perChange =
+          widget.initialPerChange == "null" ? "0.00" : widget.initialPerChange;
+      _subscription?.cancel();
+      _isInitialized = false;
+      _setupSocketListener();
+      _isInitialized = true;
+      if (mounted) setState(() {});
+    }
+  }
+
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    _debouncer.cancel();
+    super.dispose();
+  }
+
+  void _setupSocketListener() {
+    if (widget.token.isEmpty) return;
+    final websocket =
+        ProviderScope.containerOf(context).read(websocketProvider);
+    final existingData = websocket.socketDatas[widget.token];
+    if (existingData != null) {
+      _updateFromSocketData(existingData);
+    }
+    _subscription = websocket.socketDataStream.listen((data) {
+      if (data.containsKey(widget.token)) {
+        final socketData = data[widget.token];
+        if (socketData != null) {
+          final hasChanged = _updateFromSocketData(socketData);
+          if (hasChanged && mounted && !_isUpdatePending) {
+            _isUpdatePending = true;
+            _debouncer.run(() {
+              if (mounted) {
+                setState(() {});
+                _isUpdatePending = false;
+              }
+            });
+          }
+        }
+      }
+    });
+  }
+
+  bool _updateFromSocketData(dynamic data) {
+    bool hasChanged = false;
+    final newLtp = data['lp']?.toString() ?? "0.00";
+    if (newLtp != "null" && newLtp != _ltp) {
+      _ltp = newLtp;
+      hasChanged = true;
+    }
+    final newChange = data['chng']?.toString() ?? "0.00";
+    if (newChange != "null" && newChange != _change) {
+      _change = newChange;
+      hasChanged = true;
+    }
+    final newPerChange = data['pc']?.toString() ?? "0.00";
+    if (newPerChange != "null" && newPerChange != _perChange) {
+      _perChange = newPerChange;
+      hasChanged = true;
+    }
+    return hasChanged;
+  }
+
+  Color _getChangeColor(String change, String perChange) {
+    if (change.startsWith("-") || perChange.startsWith('-')) {
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.lossDark,
+        light: MyntColors.loss,
+      );
+    } else if ((change == "null" || perChange == "null") ||
+        (change == "0.00" || perChange == "0.00")) {
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.profitDark,
+        light: MyntColors.profit,
+      );
+    } else {
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.textSecondaryDark,
+        light: MyntColors.textSecondary,
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final changeColor = _getChangeColor(_change, _perChange);
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          "$_ltp  ",
+          style: MyntWebTextStyles.price(
+            context,
+            color: changeColor,
+          ),
+        ),
+        Text(
+          "$_change ($_perChange%)",
+          style: MyntWebTextStyles.exch(
+            context,
+            color: resolveThemeColor(
+              context,
+              dark: MyntColors.textSecondaryDark,
+              light: MyntColors.textSecondary,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _Debouncer {
+  final int milliseconds;
+  Timer? _timer;
+
+  _Debouncer({required this.milliseconds});
+
+  void run(VoidCallback action) {
+    _timer?.cancel();
+    _timer = Timer(Duration(milliseconds: milliseconds), action);
+  }
+
+  void cancel() {
+    _timer?.cancel();
   }
 }
 
@@ -3991,7 +4200,7 @@ class _LazyFundScreenState extends ConsumerState<_LazyFundScreen> {
     return Container(
       width: double.infinity,
       height: double.infinity,
-      color: isDarkMode ? WebDarkColors.background : Colors.white,
+      color: shadcn.Theme.of(context).colorScheme.background,
       child: const CircularLoaderImage(),
     );
   }

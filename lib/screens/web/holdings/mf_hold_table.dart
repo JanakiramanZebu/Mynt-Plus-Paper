@@ -1,12 +1,62 @@
 import 'dart:async';
-import 'package:flutter/material.dart' show InkWell, Icons, VoidCallback, BorderRadius, Icon, BoxDecoration, TextPainter, TextSpan, TextStyle, TextDirection, GestureDetector, HitTestBehavior, Row, SizedBox, Text, Align, TextOverflow, Alignment, FontWeight, Container, SingleChildScrollView, Axis, Colors, LayoutBuilder, Center, BuildContext, Widget, ValueKey, Scrollbar, EdgeInsets, Color, IconData, MainAxisAlignment, MouseRegion, showDialog, ScrollController, Expanded, Column, WidgetsBinding, CircularProgressIndicator, Padding, Stack, LinearGradient, BoxConstraints, Clip, MediaQuery, Builder, Tooltip, Visibility, AnimatedOpacity;
+import 'package:flutter/material.dart'
+    show
+        InkWell,
+        Icons,
+        VoidCallback,
+        BorderRadius,
+        Icon,
+        BoxDecoration,
+        TextPainter,
+        TextSpan,
+        TextStyle,
+        TextDirection,
+        GestureDetector,
+        HitTestBehavior,
+        Row,
+        SizedBox,
+        Text,
+        Align,
+        TextOverflow,
+        Alignment,
+        Container,
+        SingleChildScrollView,
+        Axis,
+        Colors,
+        LayoutBuilder,
+        Center,
+        BuildContext,
+        Widget,
+        ValueKey,
+        Scrollbar,
+        EdgeInsets,
+        Color,
+        IconData,
+        MainAxisAlignment,
+        MouseRegion,
+        showDialog,
+        ScrollController,
+        Expanded,
+        Column,
+        WidgetsBinding,
+        CircularProgressIndicator,
+        Padding,
+        Stack,
+        LinearGradient,
+        BoxConstraints,
+        Clip,
+        MediaQuery,
+        Builder,
+        Tooltip,
+        Visibility,
+        AnimatedOpacity;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../../../provider/mf_provider.dart';
 import '../../../provider/thems.dart';
-import '../../../res/web_colors.dart';
-import '../../../res/global_font_web.dart';
+import '../../../res/mynt_web_text_styles.dart';
+import '../../../res/mynt_web_color_styles.dart';
 import '../../../sharedWidget/no_data_found.dart';
 import 'mf_holding_detail_screen_web.dart';
 import '../ordersbook/mf/redeem_bottom_sheet_web.dart';
@@ -14,7 +64,7 @@ import '../ordersbook/mf/redeem_bottom_sheet_web.dart';
 // Shadcn Table for Mutual Funds Holdings
 class MfTableExample extends ConsumerStatefulWidget {
   final String? searchQuery;
-  
+
   const MfTableExample({super.key, this.searchQuery});
 
   @override
@@ -26,13 +76,25 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
   bool _sortAscending = true;
   int? _hoveredRowIndex;
 
-  // Helper method to ensure Geist font is always applied
-  TextStyle _geistTextStyle({Color? color, double? fontSize, FontWeight? fontWeight}) {
-    return TextStyle(
-      fontFamily: 'Geist',
+  // Helper method to get appropriate text style for table cells
+  TextStyle _getTextStyle(BuildContext context, {Color? color}) {
+    return MyntWebTextStyles.tableCell(
+      context,
       color: color,
-      fontSize: fontSize,
-      fontWeight: fontWeight,
+      darkColor: color ?? MyntColors.textPrimaryDark,
+      lightColor: color ?? MyntColors.textPrimary,
+      fontWeight: MyntFonts.medium,
+    );
+  }
+
+  // Helper method for header text style
+  TextStyle _getHeaderStyle(BuildContext context, {Color? color}) {
+    return MyntWebTextStyles.tableHeader(
+      context,
+      color: color,
+      darkColor: color ?? MyntColors.textSecondaryDark,
+      lightColor: color ?? MyntColors.textSecondary,
+      fontWeight: MyntFonts.semiBold,
     );
   }
 
@@ -54,7 +116,7 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
   }) {
     final isFirstColumn = columnIndex == 0; // Fund Name column
     final isLastColumn = columnIndex == 7; // P&L % column
-    
+
     // Match the cell padding logic - Fund Name column has more left, minimal right
     // Last column mirrors this - minimal left, more right
     EdgeInsets cellPadding;
@@ -68,7 +130,7 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
       // Other columns - symmetric padding
       cellPadding = const EdgeInsets.symmetric(horizontal: 8, vertical: 8);
     }
-    
+
     return shadcn.TableCell(
       theme: const shadcn.TableCellTheme(
         border: shadcn.WidgetStatePropertyAll(
@@ -93,23 +155,25 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
   }
 
   // Helper method to get theme-aware colors for positive/negative/neutral values
-  Color _getValueColor(double value) {
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
-
+  Color _getCellColor(double value, BuildContext context) {
     if (value > 0) {
-      return colorScheme.chart2;
+      return resolveThemeColor(context,
+          dark: MyntColors.profitDark, light: MyntColors.profit);
     }
     if (value < 0) {
-      return colorScheme.destructive;
+      return resolveThemeColor(context,
+          dark: MyntColors.lossDark, light: MyntColors.loss);
     }
-    return colorScheme.mutedForeground;
+    return resolveThemeColor(context,
+        dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary);
   }
 
   // Builds a sortable header cell with sort indicator
-  shadcn.TableCell buildHeaderCell(String label, int columnIndex, [bool alignRight = false]) {
+  shadcn.TableCell buildHeaderCell(String label, int columnIndex,
+      [bool alignRight = false]) {
     final isFirstColumn = columnIndex == 0; // Fund Name column
     final isLastColumn = columnIndex == 7; // P&L % column
-    
+
     // Match the cell padding logic - Fund Name column has more left, minimal right
     // Last column mirrors this - minimal left, more right
     EdgeInsets headerPadding;
@@ -123,7 +187,7 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
       // Other columns - symmetric padding
       headerPadding = const EdgeInsets.symmetric(horizontal: 8, vertical: 8);
     }
-    
+
     return shadcn.TableCell(
       theme: const shadcn.TableCellTheme(
         border: shadcn.WidgetStatePropertyAll(
@@ -141,27 +205,32 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
           padding: headerPadding,
           alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
           child: Row(
-            mainAxisAlignment: alignRight ? MainAxisAlignment.end : MainAxisAlignment.start,
+            mainAxisAlignment:
+                alignRight ? MainAxisAlignment.end : MainAxisAlignment.start,
             children: [
               if (alignRight && _sortColumnIndex == columnIndex)
                 Icon(
                   _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
                   size: 16,
-                  color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.textSecondaryDark,
+                      light: MyntColors.textSecondary),
                 ),
-              if (alignRight && _sortColumnIndex == columnIndex) const SizedBox(width: 4),
+              if (alignRight && _sortColumnIndex == columnIndex)
+                const SizedBox(width: 4),
               Text(
                 label,
-                style: _geistTextStyle(
-                  color: shadcn.Theme.of(context).colorScheme.foreground,
-                ),
+                style: _getHeaderStyle(context),
               ),
-              if (!alignRight && _sortColumnIndex == columnIndex) const SizedBox(width: 4),
+              if (!alignRight && _sortColumnIndex == columnIndex)
+                const SizedBox(width: 4),
               if (!alignRight && _sortColumnIndex == columnIndex)
                 Icon(
                   _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
                   size: 16,
-                  color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.textSecondaryDark,
+                      light: MyntColors.textSecondary),
                 ),
             ],
           ),
@@ -193,10 +262,12 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
   }
 
   // Calculate minimum column widths dynamically based on header and data
-  Map<int, double> _calculateMinWidths(List<dynamic> holdings, BuildContext context) {
+  Map<int, double> _calculateMinWidths(
+      List<dynamic> holdings, BuildContext context) {
     final textStyle = const TextStyle(fontSize: 14);
     const padding = 24.0;
-    const sortIconWidth = 24.0; // Extra space for sort indicator icon (16px icon + 4px gap + buffer)
+    const sortIconWidth =
+        24.0; // Extra space for sort indicator icon (16px icon + 4px gap + buffer)
 
     // Header texts
     final headers = [
@@ -218,7 +289,8 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
 
       // Measure header width and add space for sort icon
       final headerWidth = _measureTextWidth(headers[col], textStyle);
-      maxWidth = headerWidth + sortIconWidth; // Add extra space for sort indicator
+      maxWidth =
+          headerWidth + sortIconWidth; // Add extra space for sort indicator
 
       // Measure widest value in this column
       for (final holding in holdings) {
@@ -238,11 +310,13 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
             cellText = holding.curNav ?? '0.00';
             break;
           case 4: // Invested
-            final invested = double.tryParse(holding.investedValue ?? '0') ?? 0.0;
+            final invested =
+                double.tryParse(holding.investedValue ?? '0') ?? 0.0;
             cellText = invested.toStringAsFixed(2);
             break;
           case 5: // Current Value
-            final currentValue = double.tryParse(holding.currentValue ?? '0') ?? 0.0;
+            final currentValue =
+                double.tryParse(holding.currentValue ?? '0') ?? 0.0;
             cellText = currentValue.toStringAsFixed(2);
             break;
           case 6: // P&L
@@ -277,7 +351,7 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
     final numValue = double.tryParse(value.replaceAll('%', '')) ?? 0.0;
     return Text(
       value,
-      style: _geistTextStyle(color: _getValueColor(numValue)),
+      style: _getTextStyle(context, color: _getCellColor(numValue, context)),
     );
   }
 
@@ -318,21 +392,21 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
     required BuildContext context,
   }) {
     final borderRadiusValue = 5.0;
-    
+
     // Detect screen size for responsive design
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmallScreen = screenWidth < 768; // Tablet breakpoint
     final isVerySmallScreen = screenWidth < 480; // Mobile breakpoint
-    
+
     // Responsive sizes
-    final buttonPadding = isVerySmallScreen 
+    final buttonPadding = isVerySmallScreen
         ? const EdgeInsets.symmetric(horizontal: 4, vertical: 4)
-        : (isSmallScreen 
+        : (isSmallScreen
             ? const EdgeInsets.symmetric(horizontal: 6, vertical: 4)
             : const EdgeInsets.symmetric(horizontal: 8));
     final fontSize = isVerySmallScreen ? 10.0 : (isSmallScreen ? 11.0 : 12.0);
     final iconSize = isVerySmallScreen ? 14.0 : (isSmallScreen ? 16.0 : 18.0);
-    
+
     // Use Container only for background color, shadcn handles size/shape
     return Container(
       decoration: backgroundColor != null
@@ -363,11 +437,13 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
                 padding: buttonPadding,
                 child: Text(
                   label ?? "",
-                  style: WebTextStyles.buttonSm(
-                    isDarkTheme: theme.isDarkMode,
+                  style: MyntWebTextStyles.buttonSm(
+                    context,
                     color: textColor ?? Colors.white,
-                    fontWeight: WebFonts.bold,
-                  ).copyWith(fontSize: fontSize),
+                  ).copyWith(
+                    fontSize: fontSize,
+                    fontWeight: MyntFonts.bold,
+                  ),
                 ),
               ),
             ),
@@ -378,12 +454,12 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
   Widget build(BuildContext context) {
     final mfData = ref.watch(mfProvider);
     final theme = ref.watch(themeProvider);
-    
+
     // Show loading indicator while fetching data
     if (mfData.holdstatload ?? false) {
       return const Center(child: CircularProgressIndicator());
     }
-    
+
     final holdings = mfData.mfholdingnew?.data ?? [];
 
     // Apply search filter if search query is provided
@@ -450,8 +526,8 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
     if (displayHoldings.isEmpty) {
       return shadcn.OutlinedContainer(
         child: NoDataFound(
-          title: searchQuery.isNotEmpty 
-              ? "No Mutual Funds Found" 
+          title: searchQuery.isNotEmpty
+              ? "No Mutual Funds Found"
               : "No Mutual Funds",
           subtitle: searchQuery.isNotEmpty
               ? "No mutual funds match your search \"$searchQuery\"."
@@ -470,7 +546,7 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
 
           // Available width
           final availableWidth = constraints.maxWidth;
-          
+
           // Step 1: Start with minimum widths (content-based, no wasted space)
           final columnWidths = <int, double>{};
           for (int i = 0; i < 8; i++) {
@@ -478,22 +554,24 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
           }
 
           // Step 2: Calculate total minimum width needed
-          final totalMinWidth = columnWidths.values.fold<double>(0.0, (sum, width) => sum + width);
-          
+          final totalMinWidth = columnWidths.values
+              .fold<double>(0.0, (sum, width) => sum + width);
+
           // Step 3: If there's extra space, distribute it proportionally
           // This prevents unnecessary horizontal scroll while using available space efficiently
           if (totalMinWidth < availableWidth) {
             final extraSpace = availableWidth - totalMinWidth;
-            
+
             // Define which columns can grow and their growth priorities
             // Fund Name gets more growth, numeric columns get less
-            const fundNameGrowthFactor = 2.0; // Fund Name can grow 2x more than numeric
+            const fundNameGrowthFactor =
+                2.0; // Fund Name can grow 2x more than numeric
             const numericGrowthFactor = 1.0;
-            
+
             // Calculate growth factors for each column
             final growthFactors = <int, double>{};
             double totalGrowthFactor = 0.0;
-            
+
             for (int i = 0; i < 8; i++) {
               if (i == 0) {
                 // Column 0 is Fund Name
@@ -505,12 +583,13 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
                 totalGrowthFactor += numericGrowthFactor;
               }
             }
-            
+
             // Distribute extra space proportionally
             if (totalGrowthFactor > 0) {
               for (int i = 0; i < 8; i++) {
                 if (growthFactors[i]! > 0) {
-                  final extraForThisColumn = (extraSpace * growthFactors[i]!) / totalGrowthFactor;
+                  final extraForThisColumn =
+                      (extraSpace * growthFactors[i]!) / totalGrowthFactor;
                   columnWidths[i] = columnWidths[i]! + extraForThisColumn;
                 }
               }
@@ -518,8 +597,9 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
           }
 
           // Calculate total required width
-          final totalRequiredWidth = columnWidths.values.fold<double>(0.0, (sum, width) => sum + width);
-          
+          final totalRequiredWidth = columnWidths.values
+              .fold<double>(0.0, (sum, width) => sum + width);
+
           // Create scroll controllers for synchronized scrolling
           final horizontalScrollController = ScrollController();
           final verticalScrollController = ScrollController();
@@ -565,7 +645,8 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
                       controller: verticalScrollController,
                       scrollDirection: Axis.vertical,
                       child: shadcn.Table(
-                        key: ValueKey('table_${_sortColumnIndex}_$_sortAscending'),
+                        key: ValueKey(
+                            'table_${_sortColumnIndex}_$_sortAscending'),
                         columnWidths: {
                           0: shadcn.FixedTableSize(columnWidths[0]!),
                           1: shadcn.FixedTableSize(columnWidths[1]!),
@@ -582,7 +663,8 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
                           ...displayHoldings.asMap().entries.map((entry) {
                             final index = entry.key;
                             final holding = entry.value;
-                            final avgQty = double.tryParse(holding.avgQty ?? '0') ?? 0.0;
+                            final avgQty =
+                                double.tryParse(holding.avgQty ?? '0') ?? 0.0;
                             final isRowHovered = _hoveredRowIndex == index;
 
                             return shadcn.TableRow(
@@ -607,16 +689,18 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
                                             child: Tooltip(
                                               message: holding.name ?? 'N/A',
                                               child: Padding(
-                                                padding: EdgeInsets.only(right: isRowHovered ? 8.0 : 0.0),
+                                                padding: EdgeInsets.only(
+                                                    right: isRowHovered
+                                                        ? 8.0
+                                                        : 0.0),
                                                 child: Text(
                                                   holding.name ?? 'N/A',
-                                                  overflow: isRowHovered ? TextOverflow.ellipsis : TextOverflow.visible,
+                                                  overflow: isRowHovered
+                                                      ? TextOverflow.ellipsis
+                                                      : TextOverflow.visible,
                                                   maxLines: 1,
                                                   softWrap: false,
-                                                  style: _geistTextStyle(
-                                                    color: shadcn.Theme.of(context).colorScheme.foreground,
-                                                    fontSize: 14.0,
-                                                  ),
+                                                  style: _getTextStyle(context),
                                                 ),
                                               ),
                                             ),
@@ -631,50 +715,98 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
                                             child: Align(
                                               alignment: Alignment.centerRight,
                                               child: LayoutBuilder(
-                                                builder: (context, constraints) {
+                                                builder:
+                                                    (context, constraints) {
                                                   // Responsive max width based on screen size
-                                                  final screenWidth = MediaQuery.of(context).size.width;
-                                                  final isSmallScreen = screenWidth < 768;
-                                                  final isVerySmallScreen = screenWidth < 480;
-                                                  final responsiveMaxWidth = isVerySmallScreen ? 100.0 : (isSmallScreen ? 120.0 : 150.0);
-                                                  
+                                                  final screenWidth =
+                                                      MediaQuery.of(context)
+                                                          .size
+                                                          .width;
+                                                  final isSmallScreen =
+                                                      screenWidth < 768;
+                                                  final isVerySmallScreen =
+                                                      screenWidth < 480;
+                                                  final responsiveMaxWidth =
+                                                      isVerySmallScreen
+                                                          ? 100.0
+                                                          : (isSmallScreen
+                                                              ? 120.0
+                                                              : 150.0);
+
                                                   // Use available width, but cap at responsive max to prevent overflow
-                                                  final maxButtonWidth = constraints.maxWidth.clamp(0.0, responsiveMaxWidth);
+                                                  final maxButtonWidth =
+                                                      constraints.maxWidth.clamp(
+                                                          0.0,
+                                                          responsiveMaxWidth);
                                                   return GestureDetector(
-                                                    onTap: () {}, // Empty handler to stop propagation
-                                                    behavior: HitTestBehavior.opaque,
+                                                    onTap:
+                                                        () {}, // Empty handler to stop propagation
+                                                    behavior:
+                                                        HitTestBehavior.opaque,
                                                     child: AnimatedOpacity(
-                                                      opacity: isRowHovered ? 1 : 0,
-                                                      duration: const Duration(milliseconds: 140),
+                                                      opacity:
+                                                          isRowHovered ? 1 : 0,
+                                                      duration: const Duration(
+                                                          milliseconds: 140),
                                                       child: Container(
-                                                        constraints: BoxConstraints(maxWidth: maxButtonWidth),
-                                                        decoration: BoxDecoration(
+                                                        constraints: BoxConstraints(
+                                                            maxWidth:
+                                                                maxButtonWidth),
+                                                        decoration:
+                                                            BoxDecoration(
                                                           // Subtle background gradient for better button visibility
-                                                          gradient: LinearGradient(
-                                                            begin: Alignment.centerLeft,
-                                                            end: Alignment.centerRight,
+                                                          gradient:
+                                                              LinearGradient(
+                                                            begin: Alignment
+                                                                .centerLeft,
+                                                            end: Alignment
+                                                                .centerRight,
                                                             colors: [
-                                                              shadcn.Theme.of(context).colorScheme.background.withOpacity(0.0),
-                                                              shadcn.Theme.of(context).colorScheme.background.withOpacity(0.95),
+                                                              shadcn.Theme.of(
+                                                                      context)
+                                                                  .colorScheme
+                                                                  .background
+                                                                  .withOpacity(
+                                                                      0.0),
+                                                              shadcn.Theme.of(
+                                                                      context)
+                                                                  .colorScheme
+                                                                  .background
+                                                                  .withOpacity(
+                                                                      0.95),
                                                             ],
                                                           ),
                                                         ),
-                                                        padding: const EdgeInsets.only(left: 8),
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .only(left: 8),
                                                         child: Builder(
-                                                          builder: (buttonContext) {
+                                                          builder:
+                                                              (buttonContext) {
                                                             if (avgQty > 0) {
                                                               return _buildHoverButton(
                                                                 theme: theme,
                                                                 label: 'Redeem',
-                                                                onPressed: () => _handleRedeem(holding),
-                                                                backgroundColor: theme.isDarkMode
-                                                                    ? WebDarkColors.tertiary
-                                                                    : WebColors.tertiary,
-                                                                textColor: Colors.white,
-                                                                context: buttonContext,
+                                                                onPressed: () =>
+                                                                    _handleRedeem(
+                                                                        holding),
+                                                                backgroundColor:
+                                                                    resolveThemeColor(
+                                                                  buttonContext,
+                                                                  dark: MyntColors
+                                                                      .tertiary,
+                                                                  light: MyntColors
+                                                                      .tertiary,
+                                                                ),
+                                                                textColor:
+                                                                    Colors
+                                                                        .white,
+                                                                context:
+                                                                    buttonContext,
                                                               );
                                                             }
-                                                            return const SizedBox.shrink();
+                                                            return const SizedBox
+                                                                .shrink();
                                                           },
                                                         ),
                                                       ),
@@ -701,9 +833,7 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
                                       alignment: Alignment.centerRight,
                                       child: Text(
                                         holding.avgQty ?? '0',
-                                        style: _geistTextStyle(
-                                          color: shadcn.Theme.of(context).colorScheme.foreground,
-                                        ),
+                                        style: _getTextStyle(context),
                                       ),
                                     ),
                                   ),
@@ -720,9 +850,7 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
                                       alignment: Alignment.centerRight,
                                       child: Text(
                                         holding.avgNav ?? '0.00',
-                                        style: _geistTextStyle(
-                                          color: shadcn.Theme.of(context).colorScheme.foreground,
-                                        ),
+                                        style: _getTextStyle(context),
                                       ),
                                     ),
                                   ),
@@ -739,9 +867,7 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
                                       alignment: Alignment.centerRight,
                                       child: Text(
                                         holding.curNav ?? '0.00',
-                                        style: _geistTextStyle(
-                                          color: shadcn.Theme.of(context).colorScheme.foreground,
-                                        ),
+                                        style: _getTextStyle(context),
                                       ),
                                     ),
                                   ),
@@ -757,10 +883,12 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
                                     child: Align(
                                       alignment: Alignment.centerRight,
                                       child: Text(
-                                        (double.tryParse(holding.investedValue ?? '0') ?? 0.0).toStringAsFixed(2),
-                                        style: _geistTextStyle(
-                                          color: shadcn.Theme.of(context).colorScheme.foreground,
-                                        ),
+                                        (double.tryParse(
+                                                    holding.investedValue ??
+                                                        '0') ??
+                                                0.0)
+                                            .toStringAsFixed(2),
+                                        style: _getTextStyle(context),
                                       ),
                                     ),
                                   ),
@@ -776,10 +904,11 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
                                     child: Align(
                                       alignment: Alignment.centerRight,
                                       child: Text(
-                                        (double.tryParse(holding.currentValue ?? '0') ?? 0.0).toStringAsFixed(2),
-                                        style: _geistTextStyle(
-                                          color: shadcn.Theme.of(context).colorScheme.foreground,
-                                        ),
+                                        (double.tryParse(holding.currentValue ??
+                                                    '0') ??
+                                                0.0)
+                                            .toStringAsFixed(2),
+                                        style: _getTextStyle(context),
                                       ),
                                     ),
                                   ),
@@ -794,7 +923,8 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
                                     behavior: HitTestBehavior.opaque,
                                     child: Align(
                                       alignment: Alignment.centerRight,
-                                      child: _buildColoredText(holding.profitLoss ?? '0.00'),
+                                      child: _buildColoredText(
+                                          holding.profitLoss ?? '0.00'),
                                     ),
                                   ),
                                 ),
@@ -808,7 +938,8 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
                                     behavior: HitTestBehavior.opaque,
                                     child: Align(
                                       alignment: Alignment.centerRight,
-                                      child: _buildColoredText('${holding.changeprofitLoss ?? '0.00'}%'),
+                                      child: _buildColoredText(
+                                          '${holding.changeprofitLoss ?? '0.00'}%'),
                                     ),
                                   ),
                                 ),
@@ -842,4 +973,3 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
     );
   }
 }
-

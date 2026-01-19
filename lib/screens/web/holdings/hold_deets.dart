@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mynt_plus/res/global_font_web.dart';
 import '../../../models/portfolio_model/holdings_model.dart';
 import '../../../models/marketwatch_model/get_quotes.dart';
 import '../../../provider/market_watch_provider.dart';
@@ -10,7 +11,7 @@ import '../../../provider/ledger_provider.dart';
 import '../../../res/res.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/web_colors.dart';
-import '../../../res/global_font_web.dart';
+import '../../../res/global_font_web.dart' hide WebTextStyles;
 import '../../../utils/responsive_navigation.dart';
 import '../../../models/order_book_model/order_book_model.dart';
 import '../../../routes/route_names.dart';

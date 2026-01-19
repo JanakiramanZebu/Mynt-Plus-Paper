@@ -1,5 +1,54 @@
 import 'dart:async';
-import 'package:flutter/material.dart' show InkWell, Icons, VoidCallback, BorderRadius, Icon, BoxDecoration, TextPainter, TextSpan, TextStyle, TextDirection, GestureDetector, HitTestBehavior, Row, MainAxisSize, SizedBox, Colors, Widget, BuildContext, Color, EdgeInsets, Alignment, MainAxisAlignment, TextOverflow, Axis, FontWeight, Container, MouseRegion, Expanded, Align, Text, AnimatedOpacity, ScrollController, SingleChildScrollView, Scrollbar, Column, ValueKey, IconData, Padding, LayoutBuilder, showDialog, RichText, Stack, LinearGradient, BoxConstraints, Clip, MediaQuery, Builder, Tooltip, Visibility, ValueNotifier, ValueListenableBuilder;
+import 'package:flutter/material.dart'
+    show
+        InkWell,
+        Icons,
+        VoidCallback,
+        BorderRadius,
+        Icon,
+        BoxDecoration,
+        TextPainter,
+        TextSpan,
+        TextStyle,
+        TextDirection,
+        GestureDetector,
+        HitTestBehavior,
+        Row,
+        MainAxisSize,
+        SizedBox,
+        Colors,
+        Widget,
+        BuildContext,
+        Color,
+        EdgeInsets,
+        Alignment,
+        MainAxisAlignment,
+        TextOverflow,
+        Axis,
+        Container,
+        MouseRegion,
+        Expanded,
+        Align,
+        Text,
+        AnimatedOpacity,
+        ScrollController,
+        SingleChildScrollView,
+        Scrollbar,
+        Column,
+        ValueKey,
+        IconData,
+        Padding,
+        LayoutBuilder,
+        showDialog,
+        RichText,
+        Stack,
+        LinearGradient,
+        BoxConstraints,
+        Clip,
+        MediaQuery,
+        Builder,
+        Tooltip, ValueNotifier, ValueListenableBuilder,
+        Visibility;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
 
@@ -8,8 +57,8 @@ import '../../../provider/portfolio_provider.dart';
 import '../../../provider/websocket_provider.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/thems.dart';
-import '../../../res/web_colors.dart';
-import '../../../res/global_font_web.dart';
+import '../../../res/mynt_web_text_styles.dart';
+import '../../../res/mynt_web_color_styles.dart';
 import '../../../sharedWidget/snack_bar.dart';
 import '../../../sharedWidget/no_data_found.dart';
 import '../../../utils/responsive_navigation.dart';
@@ -21,7 +70,7 @@ import 'convert_position_dialogue_web.dart';
 // Shadcn Table for Positions with WebSocket updates
 class PositionTable extends ConsumerStatefulWidget {
   final String? searchQuery;
-  
+
   const PositionTable({super.key, this.searchQuery});
 
   @override
@@ -54,13 +103,25 @@ class _PositionTableState extends ConsumerState<PositionTable> {
     super.dispose();
   }
 
-  // Helper method to ensure Geist font is always applied
-  TextStyle _geistTextStyle({Color? color, double? fontSize, FontWeight? fontWeight}) {
-    return TextStyle(
-      fontFamily: 'Geist',
+  // Helper method to get appropriate text style for table cells
+  TextStyle _getTextStyle(BuildContext context, {Color? color}) {
+    return MyntWebTextStyles.tableCell(
+      context,
       color: color,
-      fontSize: fontSize,
-      fontWeight: fontWeight,
+      darkColor: color ?? MyntColors.textPrimaryDark,
+      lightColor: color ?? MyntColors.textPrimary,
+      fontWeight: MyntFonts.medium,
+    );
+  }
+
+  // Helper method for header text style
+  TextStyle _getHeaderStyle(BuildContext context, {Color? color}) {
+    return MyntWebTextStyles.tableHeader(
+      context,
+      color: color,
+      darkColor: color ?? MyntColors.textSecondaryDark,
+      lightColor: color ?? MyntColors.textSecondary,
+      fontWeight: MyntFonts.semiBold,
     );
   }
 
@@ -70,12 +131,12 @@ class _PositionTableState extends ConsumerState<PositionTable> {
     if (position.tsym != null && position.tsym!.isNotEmpty) {
       return position.tsym!.replaceAll("-EQ", "").trim();
     }
-    
+
     // Fallback: build from components if tsym is not available
     final symbol = (position.symbol ?? '').replaceAll("-EQ", "").trim();
     final expDate = position.expDate ?? '';
     final option = position.option ?? '';
-    
+
     // Build display text: symbol + expDate + option (no exchange - shown separately in UI)
     String displayText = symbol;
     if (expDate.isNotEmpty) {
@@ -97,7 +158,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
     final isFirstColumn = columnIndex == 0; // Select checkbox column
     final isInstrumentColumn = columnIndex == 1; // Instrument column
     final isLastColumn = columnIndex == 12;
-    
+
     // Match the cell padding logic - Instrument column has more left, minimal right
     // Last column mirrors this - minimal left, more right
     // Select column (checkbox) uses symmetric padding
@@ -115,7 +176,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
       // Other columns - symmetric padding
       cellPadding = const EdgeInsets.symmetric(horizontal: 8, vertical: 8);
     }
-    
+
     return shadcn.TableCell(
       theme: const shadcn.TableCellTheme(
         border: shadcn.WidgetStatePropertyAll(
@@ -140,24 +201,27 @@ class _PositionTableState extends ConsumerState<PositionTable> {
   }
 
   // Helper method to get theme-aware colors for positive/negative/neutral values
-  Color _getValueColor(double value, BuildContext context) {
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
-    
+  Color _getCellColor(double value, BuildContext context) {
     if (value > 0) {
-      return colorScheme.chart2;
+      return resolveThemeColor(context,
+          dark: MyntColors.profitDark, light: MyntColors.profit);
     }
     if (value < 0) {
-      return colorScheme.destructive;
+      return resolveThemeColor(context,
+          dark: MyntColors.lossDark, light: MyntColors.loss);
     }
-    return colorScheme.mutedForeground;
+    return resolveThemeColor(context,
+        dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary);
   }
 
   // Builds a sortable header cell with sort indicator
-  shadcn.TableCell buildHeaderCell(String label, int columnIndex, ThemesProvider theme, [bool alignRight = false]) {
+  shadcn.TableCell buildHeaderCell(
+      String label, int columnIndex, ThemesProvider theme,
+      [bool alignRight = false]) {
     final isFirstColumn = columnIndex == 0; // Select checkbox column
     final isInstrumentColumn = columnIndex == 1; // Instrument column
     final isLastColumn = columnIndex == 12;
-    
+
     // Match the cell padding logic - Instrument column has more left, minimal right
     // Last column mirrors this - minimal left, more right
     // Select column (checkbox) uses symmetric padding
@@ -175,7 +239,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
       // Other columns - symmetric padding
       headerPadding = const EdgeInsets.symmetric(horizontal: 6, vertical: 6);
     }
-    
+
     return shadcn.TableCell(
       theme: const shadcn.TableCellTheme(
         border: shadcn.WidgetStatePropertyAll(
@@ -193,26 +257,32 @@ class _PositionTableState extends ConsumerState<PositionTable> {
           padding: headerPadding,
           alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
           child: Row(
-            mainAxisAlignment: alignRight ? MainAxisAlignment.end : MainAxisAlignment.start,
+            mainAxisAlignment:
+                alignRight ? MainAxisAlignment.end : MainAxisAlignment.start,
             children: [
               if (alignRight && _sortColumnIndex == columnIndex)
                 Icon(
                   _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
                   size: 16,
-                  color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.textSecondaryDark,
+                      light: MyntColors.textSecondary),
                 ),
-              if (alignRight && _sortColumnIndex == columnIndex) const SizedBox(width: 4),
+              if (alignRight && _sortColumnIndex == columnIndex)
+                const SizedBox(width: 4),
               Text(
                 label,
-                style: _geistTextStyle(),
+                style: _getHeaderStyle(context),
               ),
-              if (!alignRight && _sortColumnIndex == columnIndex) const SizedBox(width: 4),
+              if (!alignRight && _sortColumnIndex == columnIndex)
+                const SizedBox(width: 4),
               if (!alignRight && _sortColumnIndex == columnIndex)
                 Icon(
                   _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
                   size: 16,
-                              color: shadcn.Theme.of(context).colorScheme.mutedForeground,
-
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.textSecondaryDark,
+                      light: MyntColors.textSecondary),
                 ),
             ],
           ),
@@ -232,24 +302,37 @@ class _PositionTableState extends ConsumerState<PositionTable> {
     });
   }
 
-
   // Get column index for header
   int _getColumnIndexForHeader(String header) {
     switch (header) {
-      case 'Select': return 0;
-      case 'Instrument': return 1;
-      case 'Product': return 2;
-      case 'Qty': return 3;
-      case 'Act Avg Price': return 4;
-      case 'LTP': return 5;
-      case 'P&L': return 6;
-      case 'MTM': return 7;
-      case 'Avg Price': return 8;
-      case 'Buy Qty': return 9;
-      case 'Sell Qty': return 10;
-      case 'Buy Avg': return 11;
-      case 'Sell Avg': return 12;
-      default: return -1;
+      case 'Select':
+        return 0;
+      case 'Instrument':
+        return 1;
+      case 'Product':
+        return 2;
+      case 'Qty':
+        return 3;
+      case 'Act Avg Price':
+        return 4;
+      case 'LTP':
+        return 5;
+      case 'P&L':
+        return 6;
+      case 'MTM':
+        return 7;
+      case 'Avg Price':
+        return 8;
+      case 'Buy Qty':
+        return 9;
+      case 'Sell Qty':
+        return 10;
+      case 'Buy Avg':
+        return 11;
+      case 'Sell Avg':
+        return 12;
+      default:
+        return -1;
     }
   }
 
@@ -274,18 +357,21 @@ class _PositionTableState extends ConsumerState<PositionTable> {
   // Get quantity color
   Color _getQtyColor(String qty, BuildContext context) {
     final numQty = int.tryParse(qty) ?? 0;
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
     if (numQty > 0) {
-      return colorScheme.chart2;
+      return resolveThemeColor(context,
+          dark: MyntColors.profitDark, light: MyntColors.profit);
     } else if (numQty < 0) {
-      return colorScheme.destructive;
+      return resolveThemeColor(context,
+          dark: MyntColors.lossDark, light: MyntColors.loss);
     } else {
-      return colorScheme.mutedForeground;
+      return resolveThemeColor(context,
+          dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary);
     }
   }
 
   // Filter and sort positions
-  List<PositionBookModel> _getFilteredPositions(List<PositionBookModel> positions) {
+  List<PositionBookModel> _getFilteredPositions(
+      List<PositionBookModel> positions) {
     List<PositionBookModel> filtered = positions.toList();
 
     // Apply search filter
@@ -370,7 +456,8 @@ class _PositionTableState extends ConsumerState<PositionTable> {
   }
 
   // Calculate minimum column widths dynamically based on header and data
-  Map<int, double> _calculateMinWidths(List<PositionBookModel> positions, BuildContext context) {
+  Map<int, double> _calculateMinWidths(
+      List<PositionBookModel> positions, BuildContext context) {
     // Use fixed font size for measurement (table text is not responsive, only buttons are)
     final textStyle = const TextStyle(fontSize: 14, fontFamily: 'Geist');
     const padding = 24.0;
@@ -398,14 +485,14 @@ class _PositionTableState extends ConsumerState<PositionTable> {
     for (int col = 0; col < headers.length; col++) {
       double maxWidth = 0.0;
       final header = headers[col];
-      
+
       // Special handling for Select column (checkbox)
       if (header == 'Select') {
         // Checkbox size (18px) + padding on both sides (12px each) + safety margin = 70px minimum
         minWidths[col] = 70.0;
         continue;
       }
-      
+
       // Measure header width and add space for sort icon
       final headerWidth = _measureTextWidth(header, textStyle);
       maxWidth = headerWidth + sortIconWidth;
@@ -413,28 +500,32 @@ class _PositionTableState extends ConsumerState<PositionTable> {
       // Measure widest value in this column
       for (final position in positions) {
         String cellText = '';
-        
+
         switch (header) {
           case 'Instrument':
             // For Instrument column, measure symbol + exchange separately
             // since exchange uses smaller font
             final symbolText = _formatInstrumentText(position);
-            final exchangeText = (position.exch != null && position.exch!.isNotEmpty && 
-                (position.expDate == null || position.expDate!.isEmpty)) 
-                ? ' ${position.exch}' 
+            final exchangeText = (position.exch != null &&
+                    position.exch!.isNotEmpty &&
+                    (position.expDate == null || position.expDate!.isEmpty))
+                ? ' ${position.exch}'
                 : '';
-            
+
             // Measure symbol with normal font
             final symbolWidth = _measureTextWidth(symbolText, textStyle);
-            
+
             // Measure exchange with smaller font (fixed 12px, matches rendering)
-            final exchangeStyle = const TextStyle(fontSize: 12, fontFamily: 'Geist');
-            final exchangeWidth = exchangeText.isNotEmpty 
-                ? _measureTextWidth(exchangeText, exchangeStyle) 
+            final exchangeStyle =
+                const TextStyle(fontSize: 12, fontFamily: 'Geist');
+            final exchangeWidth = exchangeText.isNotEmpty
+                ? _measureTextWidth(exchangeText, exchangeStyle)
                 : 0.0;
-            
+
             // Total width = symbol + exchange + 4px gap
-            final totalWidth = symbolWidth + exchangeWidth + (exchangeText.isNotEmpty ? 4.0 : 0.0);
+            final totalWidth = symbolWidth +
+                exchangeWidth +
+                (exchangeText.isNotEmpty ? 4.0 : 0.0);
             if (totalWidth > maxWidth) {
               maxWidth = totalWidth;
             }
@@ -487,7 +578,8 @@ class _PositionTableState extends ConsumerState<PositionTable> {
       // Ensure minimum width to prevent excessive truncation
       if (header == 'Instrument') {
         const minInstrumentWidth = 150.0;
-        maxWidth = maxWidth < minInstrumentWidth ? minInstrumentWidth : maxWidth;
+        maxWidth =
+            maxWidth < minInstrumentWidth ? minInstrumentWidth : maxWidth;
       }
 
       minWidths[col] = maxWidth + padding;
@@ -499,8 +591,8 @@ class _PositionTableState extends ConsumerState<PositionTable> {
   @override
   Widget build(BuildContext context) {
     final portfolioData = ref.watch(portfolioProvider);
-    final positions = portfolioData.allPostionList.isNotEmpty 
-        ? portfolioData.allPostionList 
+    final positions = portfolioData.allPostionList.isNotEmpty
+        ? portfolioData.allPostionList
         : portfolioData.openPosition ?? [];
     final theme = ref.read(themeProvider);
     final positionBook = ref.read(portfolioProvider);
@@ -511,8 +603,8 @@ class _PositionTableState extends ConsumerState<PositionTable> {
     if (filteredPositions.isEmpty) {
       return shadcn.OutlinedContainer(
         child: NoDataFound(
-          title: widget.searchQuery?.isNotEmpty == true 
-              ? "No Positions Found" 
+          title: widget.searchQuery?.isNotEmpty == true
+              ? "No Positions Found"
               : "No Positions",
           subtitle: widget.searchQuery?.isNotEmpty == true
               ? "No positions match your search \"${widget.searchQuery}\"."
@@ -548,7 +640,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
 
           // Available width
           final availableWidth = constraints.maxWidth;
-          
+
           // Step 1: Start with minimum widths (content-based, no wasted space)
           final columnWidths = <int, double>{};
           for (int i = 0; i < headers.length; i++) {
@@ -556,22 +648,24 @@ class _PositionTableState extends ConsumerState<PositionTable> {
           }
 
           // Step 2: Calculate total minimum width needed
-          final totalMinWidth = columnWidths.values.fold<double>(0.0, (sum, width) => sum + width);
-          
+          final totalMinWidth = columnWidths.values
+              .fold<double>(0.0, (sum, width) => sum + width);
+
           // Step 3: If there's extra space, distribute it proportionally
           // This prevents unnecessary horizontal scroll while using available space efficiently
           if (totalMinWidth < availableWidth) {
             final extraSpace = availableWidth - totalMinWidth;
-            
+
             // Define which columns can grow and their growth priorities
             // Instrument gets more growth, numeric columns get less
-            const instrumentGrowthFactor = 2.0; // Instrument can grow 2x more than numeric
+            const instrumentGrowthFactor =
+                2.0; // Instrument can grow 2x more than numeric
             const numericGrowthFactor = 1.0;
-            
+
             // Calculate growth factors for each column
             final growthFactors = <int, double>{};
             double totalGrowthFactor = 0.0;
-            
+
             for (int i = 0; i < headers.length; i++) {
               final header = headers[i];
               if (header == 'Select') {
@@ -585,12 +679,13 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                 totalGrowthFactor += numericGrowthFactor;
               }
             }
-            
+
             // Distribute extra space proportionally
             if (totalGrowthFactor > 0) {
               for (int i = 0; i < headers.length; i++) {
                 if (growthFactors[i]! > 0) {
-                  final extraForThisColumn = (extraSpace * growthFactors[i]!) / totalGrowthFactor;
+                  final extraForThisColumn =
+                      (extraSpace * growthFactors[i]!) / totalGrowthFactor;
                   columnWidths[i] = columnWidths[i]! + extraForThisColumn;
                 }
               }
@@ -598,8 +693,9 @@ class _PositionTableState extends ConsumerState<PositionTable> {
           }
 
           // Calculate total required width
-          final totalRequiredWidth = columnWidths.values.fold<double>(0.0, (sum, width) => sum + width);
-          
+          final totalRequiredWidth = columnWidths.values
+              .fold<double>(0.0, (sum, width) => sum + width);
+
           // If total width exceeds available width, enable horizontal scrolling
           final needsHorizontalScroll = totalRequiredWidth > availableWidth;
 
@@ -618,13 +714,15 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                       cells: headers.map((header) {
                         final columnIndex = _getColumnIndexForHeader(header);
                         final isNumeric = _isNumericColumn(header);
-                        
+
                         // Special handling for Select column
                         if (header == 'Select') {
-                          return _buildSelectHeaderCell(theme, positionBook, filteredPositions);
+                          return _buildSelectHeaderCell(
+                              theme, positionBook, filteredPositions);
                         }
-                        
-                        return buildHeaderCell(header, columnIndex, theme, isNumeric);
+
+                        return buildHeaderCell(
+                            header, columnIndex, theme, isNumeric);
                       }).toList(),
                     ),
                   ],
@@ -640,7 +738,8 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                       controller: _verticalScrollController,
                       scrollDirection: Axis.vertical,
                       child: shadcn.Table(
-                        key: ValueKey('table_${_sortColumnIndex}_$_sortAscending'),
+                        key: ValueKey(
+                            'table_${_sortColumnIndex}_$_sortAscending'),
                         columnWidths: columnWidths.map((index, width) {
                           return MapEntry(index, shadcn.FixedTableSize(width));
                         }),
@@ -652,7 +751,8 @@ class _PositionTableState extends ConsumerState<PositionTable> {
 
                           return shadcn.TableRow(
                             cells: headers.map((header) {
-                              final columnIndex = _getColumnIndexForHeader(header);
+                              final columnIndex =
+                                  _getColumnIndexForHeader(header);
                               final isNumeric = _isNumericColumn(header);
 
                               // Make cells clickable except Select (checkbox) and Instrument (has buttons)
@@ -751,7 +851,8 @@ class _PositionTableState extends ConsumerState<PositionTable> {
       ),
       child: Consumer(
         builder: (context, ref, child) {
-          final isExitAllPosition = ref.watch(portfolioProvider.select((p) => p.isExitAllPosition));
+          final isExitAllPosition =
+              ref.watch(portfolioProvider.select((p) => p.isExitAllPosition));
           return Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             alignment: Alignment.centerLeft,
@@ -766,9 +867,11 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                     }
                   : null,
               enabled: filteredPositions.isNotEmpty,
-              activeColor: theme.isDarkMode
-                  ? WebDarkColors.primary
-                  : WebColors.primary,
+              activeColor: resolveThemeColor(
+                context,
+                dark: MyntColors.primaryDark,
+                light: MyntColors.primary,
+              ),
               borderRadius: BorderRadius.circular(4),
               size: 18,
             ),
@@ -790,24 +893,23 @@ class _PositionTableState extends ConsumerState<PositionTable> {
   ) {
     final isNumeric = _isNumericColumn(header);
     final alignment = isNumeric ? Alignment.centerRight : Alignment.centerLeft;
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
-    final textColor = isClosed 
-        ? colorScheme.mutedForeground 
-        : colorScheme.foreground;
+    final textColor = isClosed
+        ? resolveThemeColor(context,
+            dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary)
+        : null;
 
     switch (header) {
       case 'Select':
         return _buildCheckboxCell(position, theme, isClosed, positionBook);
       case 'Instrument':
-        return _buildInstrumentCell(context, position, theme, isClosed, isRowHovered, positionBook);
+        return _buildInstrumentCell(
+            context, position, theme, isClosed, isRowHovered, positionBook);
       case 'Product':
         return Align(
           alignment: alignment,
           child: Text(
             position.sPrdtAli ?? 'N/A',
-            style: _geistTextStyle(
-              color: textColor,
-            ),
+            style: _getTextStyle(context, color: textColor),
           ),
         );
       case 'Qty':
@@ -815,9 +917,10 @@ class _PositionTableState extends ConsumerState<PositionTable> {
           alignment: alignment,
           child: Text(
             _formatQty(position.qty ?? '0'),
-            style: _geistTextStyle(
-              color: isClosed ? colorScheme.mutedForeground : _getQtyColor(position.qty ?? '0', context),
-            ),
+            style: _getTextStyle(context,
+                color: isClosed
+                    ? textColor
+                    : _getQtyColor(position.qty ?? '0', context)),
           ),
         );
       case 'Act Avg Price':
@@ -825,9 +928,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
           alignment: alignment,
           child: Text(
             position.avgPrc ?? '0.00',
-            style: _geistTextStyle(
-              color: textColor,
-            ),
+            style: _getTextStyle(context, color: textColor),
           ),
         );
       case 'LTP':
@@ -836,9 +937,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
             alignment: alignment,
             child: Text(
               position.lp ?? '0.00',
-              style: _geistTextStyle(
-                color: textColor,
-              ),
+              style: _getTextStyle(context, color: textColor),
             ),
           );
         } else {
@@ -856,11 +955,12 @@ class _PositionTableState extends ConsumerState<PositionTable> {
             alignment: alignment,
             child: Text(
               position.profitNloss ?? '0.00',
-              style: _geistTextStyle(
-                color: isClosed
-                    ? colorScheme.mutedForeground
-                    : _getValueColor(double.tryParse(position.profitNloss ?? '0') ?? 0.0, context),
-              ),
+              style: _getTextStyle(context,
+                  color: isClosed
+                      ? textColor
+                      : _getCellColor(
+                          double.tryParse(position.profitNloss ?? '0') ?? 0.0,
+                          context)),
             ),
           );
         } else {
@@ -883,11 +983,12 @@ class _PositionTableState extends ConsumerState<PositionTable> {
             alignment: alignment,
             child: Text(
               position.mTm ?? '0.00',
-              style: _geistTextStyle(
-                color: isClosed
-                    ? colorScheme.mutedForeground
-                    : _getValueColor(double.tryParse(position.mTm ?? '0') ?? 0.0, context),
-              ),
+              style: _getTextStyle(context,
+                  color: isClosed
+                      ? textColor
+                      : _getCellColor(
+                          double.tryParse(position.mTm ?? '0') ?? 0.0,
+                          context)),
             ),
           );
         } else {
@@ -909,9 +1010,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
           alignment: alignment,
           child: Text(
             position.avgPrc ?? '0.00',
-            style: _geistTextStyle(
-              color: textColor,
-            ),
+            style: _getTextStyle(context, color: textColor),
           ),
         );
       case 'Buy Qty':
@@ -919,9 +1018,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
           alignment: alignment,
           child: Text(
             position.daybuyqty ?? '0',
-            style: _geistTextStyle(
-              color: textColor,
-            ),
+            style: _getTextStyle(context, color: textColor),
           ),
         );
       case 'Sell Qty':
@@ -929,9 +1026,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
           alignment: alignment,
           child: Text(
             position.daysellqty ?? '0',
-            style: _geistTextStyle(
-              color: textColor,
-            ),
+            style: _getTextStyle(context, color: textColor),
           ),
         );
       case 'Buy Avg':
@@ -939,9 +1034,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
           alignment: alignment,
           child: Text(
             position.daybuyavgprc ?? '0.00',
-            style: _geistTextStyle(
-              color: textColor,
-            ),
+            style: _getTextStyle(context, color: textColor),
           ),
         );
       case 'Sell Avg':
@@ -949,9 +1042,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
           alignment: alignment,
           child: Text(
             position.daysellavgprc ?? '0.00',
-            style: _geistTextStyle(
-              color: textColor,
-            ),
+            style: _getTextStyle(context, color: textColor),
           ),
         );
       default:
@@ -968,12 +1059,14 @@ class _PositionTableState extends ConsumerState<PositionTable> {
   ) {
     return Consumer(
       builder: (context, ref, child) {
-        final openPositions = ref.watch(portfolioProvider.select((p) => p.openPosition ?? []));
-        final positionIndex = openPositions.indexWhere((p) => p.token == position.token);
-        final isSelected = positionIndex >= 0 
+        final openPositions =
+            ref.watch(portfolioProvider.select((p) => p.openPosition ?? []));
+        final positionIndex =
+            openPositions.indexWhere((p) => p.token == position.token);
+        final isSelected = positionIndex >= 0
             ? (openPositions[positionIndex].isExitSelection ?? false)
             : (position.isExitSelection ?? false);
-        
+
         return Align(
           alignment: Alignment.centerLeft,
           child: shadcn.Checkbox(
@@ -988,9 +1081,11 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                     }
                   },
             enabled: !isClosed,
-            activeColor: theme.isDarkMode
-                ? WebDarkColors.primary
-                : WebColors.primary,
+            activeColor: resolveThemeColor(
+              context,
+              dark: MyntColors.primaryDark,
+              light: MyntColors.primary,
+            ),
             borderRadius: BorderRadius.circular(4),
             size: 18,
           ),
@@ -1009,9 +1104,8 @@ class _PositionTableState extends ConsumerState<PositionTable> {
     PortfolioProvider positionBook,
   ) {
     final colorScheme = shadcn.Theme.of(context).colorScheme;
-    final textColor = isClosed 
-        ? colorScheme.mutedForeground 
-        : colorScheme.foreground;
+    final textColor =
+        isClosed ? colorScheme.mutedForeground : colorScheme.foreground;
 
     return GestureDetector(
       onTap: () => _showPositionDetail(position),
@@ -1027,31 +1121,34 @@ class _PositionTableState extends ConsumerState<PositionTable> {
             Align(
               alignment: Alignment.centerLeft,
               child: Tooltip(
-                message: '${_formatInstrumentText(position)}${position.exch != null && position.exch!.isNotEmpty && (position.expDate == null || position.expDate!.isEmpty) ? ' ${position.exch}' : ''}',
+                message:
+                    '${_formatInstrumentText(position)}${position.exch != null && position.exch!.isNotEmpty && (position.expDate == null || position.expDate!.isEmpty) ? ' ${position.exch}' : ''}',
                 child: Padding(
                   padding: EdgeInsets.only(right: isRowHovered ? 8.0 : 0.0),
                   child: RichText(
-                    overflow: isRowHovered ? TextOverflow.ellipsis : TextOverflow.visible,
+                    overflow: isRowHovered
+                        ? TextOverflow.ellipsis
+                        : TextOverflow.visible,
                     maxLines: 1,
                     softWrap: false,
                     text: TextSpan(
                       children: [
-                        // Symbol/Instrument (from tsym or built from components, fixed 14px)
                         TextSpan(
                           text: _formatInstrumentText(position),
-                          style: _geistTextStyle(
-                            color: textColor,
-                            fontSize: 14.0,
-                          ),
+                          style: _getTextStyle(context, color: textColor),
                         ),
                         // Exchange (mutedForeground color, smaller font, fixed 12px) - show for equity stocks
-                        if (position.exch != null && position.exch!.isNotEmpty && 
-                            (position.expDate == null || position.expDate!.isEmpty))
+                        if (position.exch != null &&
+                            position.exch!.isNotEmpty &&
+                            (position.expDate == null ||
+                                position.expDate!.isEmpty))
                           TextSpan(
                             text: ' ${position.exch}',
-                            style: _geistTextStyle(
-                              color: colorScheme.mutedForeground,
-                              fontSize: 12.0,
+                            style: MyntWebTextStyles.para(
+                              context,
+                              darkColor: MyntColors.textSecondaryDark,
+                              lightColor: MyntColors.textSecondary,
+                              fontWeight: MyntFonts.medium,
                             ),
                           ),
                       ],
@@ -1075,10 +1172,13 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                     final screenWidth = MediaQuery.of(context).size.width;
                     final isSmallScreen = screenWidth < 768;
                     final isVerySmallScreen = screenWidth < 480;
-                    final responsiveMaxWidth = isVerySmallScreen ? 120.0 : (isSmallScreen ? 160.0 : 200.0);
-                    
+                    final responsiveMaxWidth = isVerySmallScreen
+                        ? 120.0
+                        : (isSmallScreen ? 160.0 : 200.0);
+
                     // Use available width, but cap at responsive max to prevent overflow
-                    final maxButtonWidth = constraints.maxWidth.clamp(0.0, responsiveMaxWidth);
+                    final maxButtonWidth =
+                        constraints.maxWidth.clamp(0.0, responsiveMaxWidth);
                     return GestureDetector(
                       onTap: () {}, // Empty handler to stop propagation
                       behavior: HitTestBehavior.opaque,
@@ -1093,18 +1193,25 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                               begin: Alignment.centerLeft,
                               end: Alignment.centerRight,
                               colors: [
-                                colorScheme.background.withOpacity(0.0),
-                                colorScheme.background.withOpacity(0.95),
+                                shadcn.Theme.of(context)
+                                    .colorScheme
+                                    .background
+                                    .withOpacity(0.0),
+                                shadcn.Theme.of(context)
+                                    .colorScheme
+                                    .background
+                                    .withOpacity(0.95),
                               ],
                             ),
                           ),
                           padding: const EdgeInsets.only(left: 8),
                           child: Builder(
                             builder: (buttonContext) {
-                              final screenWidth = MediaQuery.of(buttonContext).size.width;
+                              final screenWidth =
+                                  MediaQuery.of(buttonContext).size.width;
                               final isSmallScreen = screenWidth < 768;
                               final buttonSpacing = isSmallScreen ? 4.0 : 6.0;
-                              
+
                               return Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
@@ -1117,10 +1224,13 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                                       context: buttonContext,
                                       theme: theme,
                                       label: 'Add',
-                                      onPressed: () => _handleAddPosition(position),
-                                      backgroundColor: theme.isDarkMode
-                                          ? WebDarkColors.primary
-                                          : WebColors.primary,
+                                      onPressed: () =>
+                                          _handleAddPosition(position),
+                                      backgroundColor: resolveThemeColor(
+                                        buttonContext,
+                                        dark: MyntColors.primaryDark,
+                                        light: MyntColors.primary,
+                                      ),
                                       textColor: Colors.white,
                                     ),
                                     SizedBox(width: buttonSpacing),
@@ -1128,10 +1238,13 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                                       context: buttonContext,
                                       theme: theme,
                                       label: 'Exit',
-                                      onPressed: () => _handleExitPosition(position),
-                                      backgroundColor: theme.isDarkMode
-                                          ? WebDarkColors.tertiary
-                                          : WebColors.tertiary,
+                                      onPressed: () =>
+                                          _handleExitPosition(position),
+                                      backgroundColor: resolveThemeColor(
+                                        buttonContext,
+                                        dark: MyntColors.tertiary,
+                                        light: MyntColors.tertiary,
+                                      ),
                                       textColor: Colors.white,
                                     ),
                                     SizedBox(width: buttonSpacing),
@@ -1150,7 +1263,8 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                                       context: buttonContext,
                                       theme: theme,
                                       icon: Icons.swap_horiz,
-                                      onPressed: () => _handleConvertPosition(position),
+                                      onPressed: () =>
+                                          _handleConvertPosition(position),
                                       backgroundColor: Colors.white,
                                       iconColor: Colors.black,
                                     ),
@@ -1185,21 +1299,21 @@ class _PositionTableState extends ConsumerState<PositionTable> {
   }) {
     final borderRadiusValue = 5.0;
     final isDark = theme.isDarkMode;
-    
+
     // Detect screen size for responsive design
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmallScreen = screenWidth < 768; // Tablet breakpoint
     final isVerySmallScreen = screenWidth < 480; // Mobile breakpoint
-    
+
     // Responsive sizes
     final iconSize = isVerySmallScreen ? 14.0 : (isSmallScreen ? 16.0 : 18.0);
-    final buttonPadding = isVerySmallScreen 
+    final buttonPadding = isVerySmallScreen
         ? const EdgeInsets.symmetric(horizontal: 4, vertical: 4)
-        : (isSmallScreen 
+        : (isSmallScreen
             ? const EdgeInsets.symmetric(horizontal: 6, vertical: 4)
             : const EdgeInsets.symmetric(horizontal: 8));
     final fontSize = isVerySmallScreen ? 10.0 : (isSmallScreen ? 11.0 : 12.0);
-    
+
     // Use Container only for background color, shadcn handles size/shape
     return Container(
       decoration: backgroundColor != null
@@ -1218,9 +1332,10 @@ class _PositionTableState extends ConsumerState<PositionTable> {
               icon: Icon(
                 icon,
                 size: iconSize,
-                color: iconColor ?? (isDark 
-                    ? shadcn.Theme.of(context).colorScheme.foreground
-                    : shadcn.Theme.of(context).colorScheme.foreground),
+                color: iconColor ??
+                    (isDark
+                        ? shadcn.Theme.of(context).colorScheme.foreground
+                        : shadcn.Theme.of(context).colorScheme.foreground),
               ),
             )
           : shadcn.TextButton(
@@ -1232,13 +1347,13 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                 padding: buttonPadding,
                 child: Text(
                   label ?? "",
-                  style: WebTextStyles.buttonSm(
-                    isDarkTheme: theme.isDarkMode,
-                    color: textColor ?? (isDark
-                        ? shadcn.Theme.of(context).colorScheme.foreground
-                        : shadcn.Theme.of(context).colorScheme.foreground),
-                        fontWeight: WebFonts.bold,
-                  ).copyWith(fontSize: fontSize),
+                  style: MyntWebTextStyles.buttonSm(
+                    context,
+                    color: textColor ?? Colors.white,
+                  ).copyWith(
+                    fontSize: fontSize,
+                    fontWeight: MyntFonts.bold,
+                  ),
                 ),
               ),
             ),
@@ -1249,7 +1364,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
   void _showPositionDetail(PositionBookModel position) {
     // Save parent context to pass to sheet
     final parentCtx = context;
-    
+
     shadcn.openSheet(
       context: context,
       builder: (sheetContext) => PositionDetailScreenWeb(
@@ -1438,7 +1553,7 @@ class _LTPCellState extends ConsumerState<_LTPCell> {
   Widget build(BuildContext context) {
     return Text(
       ltp,
-      style: const TextStyle(fontFamily: 'Geist'),
+      style: MyntWebTextStyles.tableCell(context),
     );
   }
 }
@@ -1478,7 +1593,8 @@ class _PnLCellState extends ConsumerState<_PnLCell> {
       final newLtp = data[widget.token]['lp']?.toString();
       if (newLtp != null && newLtp != '0.00' && newLtp != 'null') {
         final ltp = double.tryParse(newLtp) ?? 0.0;
-        final newPnL = ((ltp - widget.avgPrice) * widget.qty).toStringAsFixed(2);
+        final newPnL =
+            ((ltp - widget.avgPrice) * widget.qty).toStringAsFixed(2);
         if (newPnL != pnl) {
           setState(() => pnl = newPnL);
         }
@@ -1492,16 +1608,17 @@ class _PnLCellState extends ConsumerState<_PnLCell> {
     super.dispose();
   }
 
-  Color _getValueColor(String value, BuildContext context) {
+  Color _getCellColor(String value, BuildContext context) {
     final numValue = double.tryParse(value) ?? 0.0;
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
-    
     if (numValue > 0) {
-      return colorScheme.chart2;
+      return resolveThemeColor(context,
+          dark: MyntColors.profitDark, light: MyntColors.profit);
     } else if (numValue < 0) {
-      return colorScheme.destructive;
+      return resolveThemeColor(context,
+          dark: MyntColors.lossDark, light: MyntColors.loss);
     } else {
-      return colorScheme.mutedForeground;
+      return resolveThemeColor(context,
+          dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary);
     }
   }
 
@@ -1509,11 +1626,13 @@ class _PnLCellState extends ConsumerState<_PnLCell> {
   Widget build(BuildContext context) {
     return Text(
       pnl,
-      style: TextStyle(
-        fontFamily: 'Geist',
+      style: MyntWebTextStyles.tableCell(
+        context,
         color: widget.isClosed
-            ? Colors.grey
-            : _getValueColor(pnl, context),
+            ? resolveThemeColor(context,
+                dark: MyntColors.textSecondaryDark,
+                light: MyntColors.textSecondary)
+            : _getCellColor(pnl, context),
       ),
     );
   }
@@ -1554,7 +1673,8 @@ class _MTMCellState extends ConsumerState<_MTMCell> {
       final newLtp = data[widget.token]['lp']?.toString();
       if (newLtp != null && newLtp != '0.00' && newLtp != 'null') {
         final ltp = double.tryParse(newLtp) ?? 0.0;
-        final newMtm = ((ltp - widget.avgPrice) * widget.qty).toStringAsFixed(2);
+        final newMtm =
+            ((ltp - widget.avgPrice) * widget.qty).toStringAsFixed(2);
         if (newMtm != mtm) {
           setState(() => mtm = newMtm);
         }
@@ -1568,16 +1688,17 @@ class _MTMCellState extends ConsumerState<_MTMCell> {
     super.dispose();
   }
 
-  Color _getValueColor(String value, BuildContext context) {
+  Color _getCellColor(String value, BuildContext context) {
     final numValue = double.tryParse(value) ?? 0.0;
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
-    
     if (numValue > 0) {
-      return colorScheme.chart2;
+      return resolveThemeColor(context,
+          dark: MyntColors.profitDark, light: MyntColors.profit);
     } else if (numValue < 0) {
-      return colorScheme.destructive;
+      return resolveThemeColor(context,
+          dark: MyntColors.lossDark, light: MyntColors.loss);
     } else {
-      return colorScheme.mutedForeground;
+      return resolveThemeColor(context,
+          dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary);
     }
   }
 
@@ -1585,13 +1706,14 @@ class _MTMCellState extends ConsumerState<_MTMCell> {
   Widget build(BuildContext context) {
     return Text(
       mtm,
-      style: TextStyle(
-        fontFamily: 'Geist',
+      style: MyntWebTextStyles.tableCell(
+        context,
         color: widget.isClosed
-            ? Colors.grey
-            : _getValueColor(mtm, context),
+            ? resolveThemeColor(context,
+                dark: MyntColors.textSecondaryDark,
+                light: MyntColors.textSecondary)
+            : _getCellColor(mtm, context),
       ),
     );
   }
 }
-

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:mynt_plus/res/web_colors.dart';
 import 'package:mynt_plus/res/global_font_web.dart';
+import 'package:mynt_plus/res/web_colors.dart';
+import 'package:mynt_plus/res/global_font_web.dart' hide WebTextStyles;
 
 // Hoverable navigation item widget
 class HoverableNavItem extends StatefulWidget {

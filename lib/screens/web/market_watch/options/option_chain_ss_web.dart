@@ -19,10 +19,9 @@ import '../../../../provider/portfolio_provider.dart';
 import '../../../../provider/thems.dart';
 import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
-import '../../../../res/web_colors.dart';
+import '../../../../res/mynt_web_text_styles.dart';
+import '../../../../res/mynt_web_color_styles.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
-import '../../../../res/global_font_web.dart';
-import '../../../../res/shadcn_text_styles.dart';
 import '../../../../sharedWidget/custom_drag_handler.dart';
 import '../../../../utils/responsive_navigation.dart';
 import '../../../../sharedWidget/list_divider.dart';
@@ -553,24 +552,15 @@ void _showStrikeCountSelector(
                     topLeft: Radius.circular(16),
                     topRight: Radius.circular(16),
                   ),
-                  color: theme.isDarkMode
-                      ? WebDarkColors.surface
-                      : WebColors.surface,
+                  color: shadcn.Theme.of(context).colorScheme.background,
                   border: Border(
                     top: BorderSide(
-                      color: theme.isDarkMode
-                          ? WebDarkColors.divider.withOpacity(0.5)
-                          : WebColors.surface,
-                    ),
+                        color: shadcn.Theme.of(context).colorScheme.border),
                     left: BorderSide(
-                      color: theme.isDarkMode
-                          ? WebDarkColors.divider.withOpacity(0.5)
-                          : WebColors.surface,
+                      color: shadcn.Theme.of(context).colorScheme.border,
                     ),
                     right: BorderSide(
-                      color: theme.isDarkMode
-                          ? WebDarkColors.divider.withOpacity(0.5)
-                          : WebColors.surface,
+                      color: shadcn.Theme.of(context).colorScheme.border,
                     ),
                   ),
                 ),
@@ -586,14 +576,8 @@ void _showStrikeCountSelector(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text("Select Number of Strike",
-                                style: TextStyle(
-                                  fontFamily: 'Geist',
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  color: shadcn.Theme.of(context)
-                                      .colorScheme
-                                      .foreground,
-                                )),
+                                style: MyntWebTextStyles.title(context,
+                                    fontWeight: MyntFonts.semiBold)),
                             Material(
                               color: Colors.transparent,
                               shape: const CircleBorder(),
@@ -671,9 +655,8 @@ void _showStrikeCountSelector(
                                         horizontal: 0),
                                     dense: true,
                                     title: Text(scripInfo.numStrikes[index],
-                                        style: TextStyle(
-                                          fontFamily: 'Geist',
-                                          fontSize: 13,
+                                        style: MyntWebTextStyles.body(
+                                          context,
                                           color: scripInfo.numStrike ==
                                                   scripInfo.numStrikes[index]
                                               ? shadcn.Theme.of(context)
@@ -684,8 +667,8 @@ void _showStrikeCountSelector(
                                                   .mutedForeground,
                                           fontWeight: scripInfo.numStrike ==
                                                   scripInfo.numStrikes[index]
-                                              ? FontWeight.w600
-                                              : FontWeight.w400,
+                                              ? MyntFonts.semiBold
+                                              : MyntFonts.regular,
                                         )),
                                     trailing: SvgPicture.asset(theme.isDarkMode
                                         ? scripInfo.numStrike ==
@@ -725,7 +708,7 @@ void _showStrikesDropdown(BuildContext context, List<String> numStrikes, String 
   showMenu<String>(
     context: context,
     position: position,
-    color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
+    color: shadcn.Theme.of(context).colorScheme.background,
     elevation: 8,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.zero,
@@ -741,10 +724,9 @@ void _showStrikesDropdown(BuildContext context, List<String> numStrikes, String 
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Text(
               value,
-              style: TextStyle(
-                fontFamily: 'Geist',
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
+              style: MyntWebTextStyles.body(
+                context,
+                fontWeight: MyntFonts.medium,
                 color: isSelected
                     ? shadcn.Theme.of(context).colorScheme.primary
                     : shadcn.Theme.of(context).colorScheme.foreground,
@@ -799,8 +781,7 @@ class _ColumnHeaders extends ConsumerWidget {
     return RepaintBoundary(
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        color:
-            theme.isDarkMode ? WebDarkColors.background : WebColors.background,
+        color: shadcn.Theme.of(context).colorScheme.background,
         child: Column(
           children: [
             // Main header row
@@ -814,13 +795,12 @@ class _ColumnHeaders extends ConsumerWidget {
                     children: [
                       Text(
                         "CALLS",
-                        style: TextStyle(
-                          fontFamily: 'Geist',
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          color:
-                              shadcn.Theme.of(context).colorScheme.foreground,
-                        ),
+                        style: MyntWebTextStyles.body(context,
+                            fontWeight: MyntFonts.medium , color :  resolveThemeColor(
+        context,
+        dark: MyntColors.textPrimaryDark,
+        light: MyntColors.textPrimary,
+      )),
                       ),
                     ],
                   ),
@@ -842,14 +822,8 @@ class _ColumnHeaders extends ConsumerWidget {
                             children: [
                               Text(
                                 "STRIKES",
-                                style: TextStyle(
-                                  fontFamily: 'Geist',
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w500,
-                                  color: shadcn.Theme.of(context)
-                                      .colorScheme
-                                      .foreground,
-                                ),
+                                style: MyntWebTextStyles.body(context,
+                                    fontWeight: MyntFonts.medium),
                               ),
                               const SizedBox(width: 6),
                               Icon(
@@ -874,13 +848,13 @@ class _ColumnHeaders extends ConsumerWidget {
                     children: [
                       Text(
                         "PUTS",
-                        style: TextStyle(
-                          fontFamily: 'Geist',
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          color:
-                              shadcn.Theme.of(context).colorScheme.foreground,
-                        ),
+                        style: MyntWebTextStyles.body(context,
+                            fontWeight: MyntFonts.medium ,
+                             color :  resolveThemeColor(
+        context,
+        dark: MyntColors.textPrimaryDark,
+        light: MyntColors.textPrimary,
+      )),
                       ),
                     ],
                   ),
@@ -999,12 +973,8 @@ class _ColumnHeaders extends ConsumerWidget {
     return Center(
       child: Text(
         text,
-        style: TextStyle(
-          fontFamily: 'Geist',
-          fontSize: 11,
-          fontWeight: FontWeight.w500,
-          color: shadcn.Theme.of(context).colorScheme.mutedForeground,
-        ),
+        style:
+            MyntWebTextStyles.bodySmall(context, fontWeight: MyntFonts.medium),
         textAlign: TextAlign.center,
       ),
     );
@@ -1029,20 +999,20 @@ class _PreDefinedWatchlistBanner extends ConsumerWidget {
       child: Container(
           padding: const EdgeInsets.symmetric(vertical: 6),
           decoration: BoxDecoration(
-            color: theme.isDarkMode
-                ? WebDarkColors.primary.withOpacity(0.3)
-                : WebColors.primary.withOpacity(0.3),
+            color: resolveThemeColor(context,
+                    dark: MyntColors.primaryDark, light: MyntColors.primary)
+                .withValues(alpha: 0.1),
           ),
           child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-            SvgPicture.asset(assets.dInfo, color: WebColors.primary),
+            SvgPicture.asset(assets.dInfo, color: MyntColors.primary),
             Text(
               " Long press to add Watchlist / Swipe to Trade",
-              style: TextStyle(
-                fontFamily: 'Geist',
-                fontSize: 11,
-                fontWeight: FontWeight.w400,
-                color: shadcn.Theme.of(context).colorScheme.mutedForeground,
-              ),
+              style: MyntWebTextStyles.bodySmall(context,
+                  color:  resolveThemeColor(
+        context,
+        dark: MyntColors.textSecondaryDark,
+        light: MyntColors.textSecondary,
+      )),
             ),
           ])),
     );
@@ -1330,9 +1300,7 @@ class _ActionButtons extends ConsumerWidget {
           decoration: BoxDecoration(
               border: Border(
                   top: BorderSide(
-                      color: theme.isDarkMode
-                          ? WebDarkColors.divider
-                          : WebColors.divider))),
+                      color: shadcn.Theme.of(context).colorScheme.border))),
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
           child:
               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
@@ -1344,18 +1312,17 @@ class _ActionButtons extends ConsumerWidget {
               child: Container(
                   height: 40,
                   decoration: BoxDecoration(
-                      color: theme.isDarkMode
-                          ? WebDarkColors.primary
-                          : WebColors.primary,
+                      color: resolveThemeColor(
+                        context,
+                        dark: MyntColors.primaryDark,
+                        light: MyntColors.primary,
+                      ),
                       borderRadius: BorderRadius.circular(5)),
                   child: Center(
                     child: Text("BUY",
-                        style: TextStyle(
-                          fontFamily: 'Geist',
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        )),
+                        style: MyntWebTextStyles.body(context,
+                            fontWeight: MyntFonts.semiBold,
+                            color: Colors.white)),
                   )),
             )),
             const SizedBox(width: 18),
@@ -1368,18 +1335,17 @@ class _ActionButtons extends ConsumerWidget {
                     child: Container(
                         height: 40,
                         decoration: BoxDecoration(
-                            color: theme.isDarkMode
-                                ? WebDarkColors.error
-                                : WebColors.error,
+                            color: resolveThemeColor(
+                              context,
+                              dark: MyntColors.lossDark,
+                              light: MyntColors.loss,
+                            ),
                             borderRadius: BorderRadius.circular(5)),
                         child: Center(
                           child: Text("SELL",
-                              style: TextStyle(
-                                fontFamily: 'Geist',
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
-                              )),
+                              style: MyntWebTextStyles.body(context,
+                                  fontWeight: MyntFonts.semiBold,
+                                  color: Colors.white)),
                         ))))
           ])),
     );
@@ -1521,28 +1487,20 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
         duration: const Duration(milliseconds: 200),
         height: _sheetHeight,
         decoration: BoxDecoration(
-          color: theme.isDarkMode
-              ? WebDarkColors.background
-              : WebColors.background,
+          color: shadcn.Theme.of(context).colorScheme.background,
           borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(16),
             topRight: Radius.circular(16),
           ),
           border: Border(
             top: BorderSide(
-              color: theme.isDarkMode
-                  ? WebDarkColors.divider.withOpacity(0.5)
-                  : WebColors.surface,
+              color: shadcn.Theme.of(context).colorScheme.border,
             ),
             left: BorderSide(
-              color: theme.isDarkMode
-                  ? WebDarkColors.divider.withOpacity(0.5)
-                  : WebColors.surface,
+              color: shadcn.Theme.of(context).colorScheme.border,
             ),
             right: BorderSide(
-              color: theme.isDarkMode
-                  ? WebDarkColors.divider.withOpacity(0.5)
-                  : WebColors.surface,
+              color: shadcn.Theme.of(context).colorScheme.border,
             ),
           ),
         ),
@@ -1595,24 +1553,25 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                   orderProv.selectedBsktName.isNotEmpty
                       ? orderProv.selectedBsktName
                       : "No Basket Selected",
-                  style: TextStyle(
-                    fontFamily: 'Geist',
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: shadcn.Theme.of(context).colorScheme.foreground,
-                  ),
+                  style: MyntWebTextStyles.title(context,
+                    fontWeight: MyntFonts.semiBold, color :  resolveThemeColor(
+        context,
+        dark: MyntColors.textPrimaryDark,
+        light: MyntColors.textPrimary,
+      )),
+
                 ),
                 const SizedBox(height: 4),
                 if (orderProv.selectedBsktName.isNotEmpty)
                   Text(
                     "${orderProv.bsktScripList.length} items",
-                    style: TextStyle(
-                      fontFamily: 'Geist',
-                      fontSize: 13,
-                      fontWeight: FontWeight.w400,
-                      color:
-                          shadcn.Theme.of(context).colorScheme.mutedForeground,
-                    ),
+                    style: MyntWebTextStyles.body(context,
+                      color:  resolveThemeColor(
+        context,
+        dark: MyntColors.textSecondaryDark,
+        light: MyntColors.textSecondary,
+      ), ),
+
                   ),
               ],
             ),
@@ -1641,9 +1600,8 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                       child: Icon(
                         Icons.swap_horiz,
                         size: 24,
-                        color: theme.isDarkMode
-                            ? WebDarkColors.iconSecondary
-                            : WebColors.iconSecondary,
+                        color: resolveThemeColor(context,
+                            dark: MyntColors.iconDark, light: MyntColors.icon),
                       ),
                     ),
                   ),
@@ -1661,20 +1619,26 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                       await orderProv.fetchBasketMargin();
                     },
                     borderRadius: BorderRadius.circular(20),
-                    splashColor: theme.isDarkMode
-                        ? colors.splashColorDark
-                        : colors.splashColorLight,
-                    highlightColor: theme.isDarkMode
-                        ? colors.splashColorDark
-                        : colors.splashColorLight,
+                    splashColor: resolveThemeColor(
+                      context,
+                      dark: MyntColors.rippleDark,
+                      light: MyntColors.rippleLight,
+                    ),
+                    highlightColor: resolveThemeColor(
+                      context,
+                      dark: MyntColors.highlightDark,
+                      light: MyntColors.highlightLight,
+                    ),
                     child: Padding(
                       padding: const EdgeInsets.all(6.0),
                       child: Icon(
                         Icons.refresh,
                         size: 22,
-                        color: theme.isDarkMode
-                            ? colors.textSecondaryDark
-                            : colors.textSecondaryLight,
+                        color: resolveThemeColor(
+                          context,
+                          dark: MyntColors.textSecondaryDark,
+                          light: MyntColors.textSecondary,
+                        ),
                       ),
                     ),
                   ),
@@ -1691,20 +1655,26 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                     _showCreateBasket(context);
                   },
                   borderRadius: BorderRadius.circular(20),
-                  splashColor: theme.isDarkMode
-                      ? colors.splashColorDark
-                      : colors.splashColorLight,
-                  highlightColor: theme.isDarkMode
-                      ? colors.splashColorDark
-                      : colors.splashColorLight,
+                  splashColor: resolveThemeColor(
+                    context,
+                    dark: MyntColors.rippleDark,
+                    light: MyntColors.rippleLight,
+                  ),
+                  highlightColor: resolveThemeColor(
+                    context,
+                    dark: MyntColors.highlightDark,
+                    light: MyntColors.highlightLight,
+                  ),
                   child: Padding(
                     padding: const EdgeInsets.all(6.0),
                     child: Icon(
                       Icons.add_circle_outline,
                       size: 22,
-                      color: theme.isDarkMode
-                          ? colors.textSecondaryDark
-                          : colors.textSecondaryLight,
+                      color: resolveThemeColor(
+                        context,
+                        dark: MyntColors.textSecondaryDark,
+                        light: MyntColors.textSecondary,
+                      ),
                     ),
                   ),
                 ),
@@ -1786,7 +1756,11 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
       decoration: BoxDecoration(
-        color: theme.isDarkMode ? WebDarkColors.error : WebColors.error,
+        color: resolveThemeColor(
+          context,
+          dark: MyntColors.lossDark,
+          light: MyntColors.loss,
+        ),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -1833,9 +1807,11 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
               ElevatedButton(
                 onPressed: () => _showCreateBasket(context),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: theme.isDarkMode
-                      ? WebDarkColors.primary
-                      : WebColors.primary,
+                  backgroundColor: resolveThemeColor(
+                    context,
+                    dark: MyntColors.primaryDark,
+                    light: MyntColors.primary,
+                  ),
                   padding:
                       const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 ),
@@ -1868,18 +1844,22 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
               const SizedBox(height: 2),
               TextWidget.subText(
                   text: "No Basket Selected",
-                  color: theme.isDarkMode
-                      ? colors.textSecondaryDark
-                      : colors.textSecondaryLight,
+                  color: resolveThemeColor(
+                    context,
+                    dark: MyntColors.textSecondaryDark,
+                    light: MyntColors.textSecondary,
+                  ),
                   fw: 0,
                   theme: theme.isDarkMode),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () => _showBasketSelector(context),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: theme.isDarkMode
-                      ? WebDarkColors.primary
-                      : WebColors.primary,
+                  backgroundColor: resolveThemeColor(
+                    context,
+                    dark: MyntColors.primary,
+                    light: MyntColors.primary,
+                  ),
                   minimumSize: const Size(0, 45),
                   padding:
                       const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
@@ -1912,17 +1892,21 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
               TextWidget.subText(
                 text: "Basket is empty",
                 theme: theme.isDarkMode,
-                color: theme.isDarkMode
-                    ? colors.textSecondaryDark
-                    : colors.textSecondaryLight,
+                color: resolveThemeColor(
+                  context,
+                  dark: MyntColors.textSecondaryDark,
+                  light: MyntColors.textSecondary,
+                ),
                 fw: 0,
               ),
               const SizedBox(height: 8),
               TextWidget.subText(
                 text: "Tap on options above to add them to basket",
-                color: theme.isDarkMode
-                    ? colors.textSecondaryDark
-                    : colors.textSecondaryLight,
+                color: resolveThemeColor(
+                  context,
+                  dark: MyntColors.textSecondaryDark,
+                  light: MyntColors.textSecondary,
+                ),
                 fw: 0,
                 theme: theme.isDarkMode,
               ),
@@ -1988,25 +1972,31 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                     text: script['symbol'].toString().replaceAll("-EQ", ""),
                     theme: theme.isDarkMode,
                     textOverflow: TextOverflow.ellipsis,
-                    color: theme.isDarkMode
-                        ? colors.textPrimaryDark
-                        : colors.textPrimaryLight,
+                    color: resolveThemeColor(
+                      context,
+                      dark: MyntColors.textPrimaryDark,
+                      light: MyntColors.textPrimary,
+                    ),
                   ),
                   TextWidget.subText(
                     text: " ${script['expDate']} ",
                     theme: theme.isDarkMode,
                     textOverflow: TextOverflow.ellipsis,
-                    color: theme.isDarkMode
-                        ? colors.textPrimaryDark
-                        : colors.textPrimaryLight,
+                    color: resolveThemeColor(
+                      context,
+                      dark: MyntColors.textPrimaryDark,
+                      light: MyntColors.textPrimary,
+                    ),
                   ),
                   TextWidget.subText(
                     text: " ${script['option']} ",
                     theme: theme.isDarkMode,
                     textOverflow: TextOverflow.ellipsis,
-                    color: theme.isDarkMode
-                        ? colors.textPrimaryDark
-                        : colors.textPrimaryLight,
+                    color: resolveThemeColor(
+                      context,
+                      dark: MyntColors.textPrimaryDark,
+                      light: MyntColors.textPrimary,
+                    ),
                   ),
                 ],
               ),
@@ -2062,9 +2052,11 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                     text:
                         "${script["exch"]} - ${script["ordType"]} - ${script["prctype"]} - ${formatToTimeOnly(script["date"])}",
                     theme: false,
-                    color: theme.isDarkMode
-                        ? colors.textSecondaryDark
-                        : colors.textSecondaryLight,
+                    color: resolveThemeColor(
+                      context,
+                      dark: MyntColors.textSecondaryDark,
+                      light: MyntColors.textSecondary,
+                    ),
                   ),
                 ],
               ),
@@ -2073,9 +2065,11 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                   TextWidget.paraText(
                     text: " LTP ${script['lp']?.toString() ?? "0.00"}",
                     theme: false,
-                    color: theme.isDarkMode
-                        ? colors.textSecondaryDark
-                        : colors.textSecondaryLight,
+                    color: resolveThemeColor(
+                      context,
+                      dark: MyntColors.textSecondaryDark,
+                      light: MyntColors.textSecondary,
+                    ),
                   ),
                 ],
               ),
@@ -2102,17 +2096,27 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                     text: script["trantype"] == "S" ? "SELL" : "BUY",
                     theme: false,
                     color: script["trantype"] == "S"
-                        ? colors.lossLight
-                        : colors.primaryLight,
+                        ? resolveThemeColor(
+                            context,
+                            dark: MyntColors.lossDark,
+                            light: MyntColors.loss,
+                          )
+                        : resolveThemeColor(
+                            context,
+                            dark: MyntColors.primaryDark,
+                            light: MyntColors.primary,
+                          ),
                     fw: 0,
                   ),
                   const SizedBox(width: 8),
                   TextWidget.paraText(
                     text: "${script["dscqty"]}/${script["qty"]}",
                     theme: theme.isDarkMode,
-                    color: theme.isDarkMode
-                        ? colors.textSecondaryDark
-                        : colors.textSecondaryLight,
+                    color: resolveThemeColor(
+                      context,
+                      dark: MyntColors.textSecondaryDark,
+                      light: MyntColors.textSecondary,
+                    ),
                   ),
                 ],
               ),
@@ -2122,9 +2126,11 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                     TextWidget.paraText(
                       text: "${script['prc'] ?? 0.00}",
                       theme: false,
-                      color: theme.isDarkMode
-                          ? colors.textSecondaryDark
-                          : colors.textSecondaryLight,
+                      color: resolveThemeColor(
+                        context,
+                        dark: MyntColors.textSecondaryDark,
+                        light: MyntColors.textSecondary,
+                      ),
                     ),
                   ],
                 ),
@@ -2139,15 +2145,29 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
               margin: const EdgeInsets.only(top: 4),
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: colors.darkred.withOpacity(0.1),
+                color: resolveThemeColor(
+                  context,
+                  dark: MyntColors.lossDark,
+                  light: MyntColors.loss,
+                ).withOpacity(0.1),
                 borderRadius: BorderRadius.circular(4),
-                border: Border.all(color: colors.darkred),
+                border: Border.all(
+                  color: resolveThemeColor(
+                    context,
+                    dark: MyntColors.lossDark,
+                    light: MyntColors.loss,
+                  ),
+                ),
               ),
               child: Row(
                 children: [
                   Icon(
                     Icons.error_outline,
-                    color: colors.darkred,
+                    color: resolveThemeColor(
+                      context,
+                      dark: MyntColors.lossDark,
+                      light: MyntColors.loss,
+                    ),
                     size: 12,
                   ),
                   const SizedBox(width: 4),
@@ -2155,7 +2175,11 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                     child: TextWidget.captionText(
                       text: script['rejectionReason'],
                       theme: theme.isDarkMode,
-                      color: colors.darkred,
+                      color: resolveThemeColor(
+                        context,
+                        dark: MyntColors.lossDark,
+                        light: MyntColors.loss,
+                      ),
                       textOverflow: TextOverflow.ellipsis,
                     ),
                   ),
@@ -2233,15 +2257,21 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                   label: TextWidget.subText(
                     text: "Reset Orders",
                     theme: false,
-                    color: colors.primary,
+                    color: resolveThemeColor(
+                      context,
+                      dark: MyntColors.primaryDark,
+                      light: MyntColors.primary,
+                    ),
                     fw: 2,
                   ),
                   style: OutlinedButton.styleFrom(
                       minimumSize: const Size(0, 45),
                       side: BorderSide(
-                        color: theme.isDarkMode
-                            ? colors.primaryDark
-                            : colors.primaryLight,
+                        color: resolveThemeColor(
+                          context,
+                          dark: MyntColors.primaryDark,
+                          light: MyntColors.primary,
+                        ),
                       ),
                       shape: const RoundedRectangleBorder(
                           borderRadius: BorderRadius.all(Radius.circular(5)))),
@@ -2259,7 +2289,11 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
         decoration: BoxDecoration(
           color: hasMultipleExchanges
               ? Colors.grey
-              : (theme.isDarkMode ? colors.primaryDark : colors.primaryLight),
+              : resolveThemeColor(
+                  context,
+                  dark: MyntColors.primaryDark,
+                  light: MyntColors.primary,
+                ),
           borderRadius: BorderRadius.circular(5),
         ),
         child: InkWell(
@@ -2290,7 +2324,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                         width: 16,
                         height: 16,
                         child: CircularProgressIndicator(
-                            strokeWidth: 2, color: colors.colorWhite),
+                            strokeWidth: 2, color: Colors.white),
                       ),
                       const SizedBox(width: 8),
                       TextWidget.subText(
@@ -2304,9 +2338,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                 : TextWidget.subText(
                     text: "Place Order",
                     theme: false,
-                    color: hasMultipleExchanges
-                        ? Colors.white
-                        : (colors.colorWhite),
+                    color: Colors.white,
                     fw: 2,
                   ),
           ),
@@ -2319,20 +2351,23 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
     final theme = ref.read(themeProvider);
     switch (status) {
       case 'placing':
-        return theme.isDarkMode ? WebDarkColors.primary : WebColors.primary;
+        return resolveThemeColor(context,
+            dark: MyntColors.primaryDark, light: MyntColors.primary);
       case 'placed':
       case 'completed':
-        return theme.isDarkMode ? WebDarkColors.success : WebColors.success;
+        return resolveThemeColor(context,
+            dark: MyntColors.profitDark, light: MyntColors.profit);
       case 'partially_placed':
       case 'partially_completed':
       case 'partially_filled':
-        return theme.isDarkMode ? WebDarkColors.warning : WebColors.warning;
+        return resolveThemeColor(context,
+            dark: MyntColors.warning, light: MyntColors.warning);
       case 'failed':
-        return theme.isDarkMode ? WebDarkColors.error : WebColors.error;
+        return resolveThemeColor(context,
+            dark: MyntColors.lossDark, light: MyntColors.loss);
       default:
-        return theme.isDarkMode
-            ? WebDarkColors.iconSecondary
-            : WebColors.iconSecondary;
+        return resolveThemeColor(context,
+            dark: MyntColors.iconDark, light: MyntColors.icon);
     }
   }
 
@@ -2391,21 +2426,24 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
     final theme = ref.read(themeProvider);
     switch (status.toLowerCase()) {
       case 'placed':
-        return theme.isDarkMode ? WebDarkColors.primary : WebColors.primary;
+        return resolveThemeColor(context,
+            dark: MyntColors.primaryDark, light: MyntColors.primary);
       case 'complete':
-        return theme.isDarkMode ? WebDarkColors.success : WebColors.success;
+        return resolveThemeColor(context,
+            dark: MyntColors.profitDark, light: MyntColors.profit);
       case 'rejected':
       case 'canceled':
       case 'failed':
-        return theme.isDarkMode ? WebDarkColors.error : WebColors.error;
+        return resolveThemeColor(context,
+            dark: MyntColors.lossDark, light: MyntColors.loss);
       case 'open':
       case 'partial':
       case 'trigger_pending':
-        return theme.isDarkMode ? WebDarkColors.warning : WebColors.warning;
+        return resolveThemeColor(context,
+            dark: MyntColors.warning, light: MyntColors.warning);
       default:
-        return theme.isDarkMode
-            ? WebDarkColors.iconSecondary
-            : WebColors.iconSecondary;
+        return resolveThemeColor(context,
+            dark: MyntColors.iconDark, light: MyntColors.icon);
     }
   }
 
@@ -2583,20 +2621,26 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                         Navigator.pop(context);
                       },
                       borderRadius: BorderRadius.circular(20),
-                      splashColor: theme.isDarkMode
-                          ? colors.splashColorDark
-                          : colors.splashColorLight,
-                      highlightColor: theme.isDarkMode
-                          ? colors.splashColorDark
-                          : colors.splashColorLight,
+                      splashColor: resolveThemeColor(
+                        context,
+                        dark: MyntColors.rippleDark,
+                        light: MyntColors.rippleLight,
+                      ),
+                      highlightColor: resolveThemeColor(
+                        context,
+                        dark: MyntColors.highlightDark,
+                        light: MyntColors.highlightLight,
+                      ),
                       child: Padding(
                         padding: const EdgeInsets.all(6.0),
                         child: Icon(
                           Icons.close_rounded,
                           size: 22,
-                          color: theme.isDarkMode
-                              ? colors.textSecondaryDark
-                              : colors.textSecondaryLight,
+                          color: resolveThemeColor(
+                            context,
+                            dark: MyntColors.textSecondaryDark,
+                            light: MyntColors.textSecondary,
+                          ),
                         ),
                       ),
                     ),
@@ -2613,9 +2657,11 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                             text:
                                 "Are you sure you want to delete this basket Scrip ${script['symbol']?.toString().replaceAll("-EQ", "")}",
                             theme: theme.isDarkMode,
-                            color: theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : colors.textPrimaryLight,
+                            color: resolveThemeColor(
+                              context,
+                              dark: MyntColors.textSecondaryDark,
+                              light: MyntColors.textPrimary,
+                            ),
                             align: TextAlign.center),
                       ]))
             ],
@@ -2632,11 +2678,21 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                 },
                 style: OutlinedButton.styleFrom(
                   minimumSize: const Size(0, 45),
-                  side: BorderSide(color: colors.btnOutlinedBorder),
+                  side: BorderSide(
+                    color: resolveThemeColor(
+                      context,
+                      dark: MyntColors.outlinedBorderDark,
+                      light: MyntColors.outlinedBorder,
+                    ),
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(5),
                   ),
-                  backgroundColor: colors.primaryDark,
+                  backgroundColor: resolveThemeColor(
+                    context,
+                    dark: MyntColors.primaryDark,
+                    light: MyntColors.primary,
+                  ),
                 ),
                 child: TextWidget.titleText(
                   text: "Yes",
@@ -2693,24 +2749,16 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
             topLeft: Radius.circular(16),
             topRight: Radius.circular(16),
           ),
-          color: theme.isDarkMode
-              ? WebDarkColors.background
-              : WebColors.background,
+          color: shadcn.Theme.of(context).colorScheme.background,
           border: Border(
             top: BorderSide(
-              color: theme.isDarkMode
-                  ? WebDarkColors.divider.withOpacity(0.5)
-                  : WebColors.surface,
+              color: shadcn.Theme.of(context).colorScheme.border,
             ),
             left: BorderSide(
-              color: theme.isDarkMode
-                  ? WebDarkColors.divider.withOpacity(0.5)
-                  : WebColors.surface,
+              color: shadcn.Theme.of(context).colorScheme.border,
             ),
             right: BorderSide(
-              color: theme.isDarkMode
-                  ? WebDarkColors.divider.withOpacity(0.5)
-                  : WebColors.surface,
+              color: shadcn.Theme.of(context).colorScheme.border,
             ),
           ),
         ),
@@ -2730,9 +2778,11 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                     TextWidget.titleText(
                       text: "Select Basket",
                       theme: ref.read(themeProvider).isDarkMode,
-                      color: ref.read(themeProvider).isDarkMode
-                          ? colors.textPrimaryDark
-                          : colors.textPrimaryLight,
+                      color: resolveThemeColor(
+                        context,
+                        dark: MyntColors.textPrimaryDark,
+                        light: MyntColors.textPrimary,
+                      ),
                       fw: 1,
                     ),
                     const ListDivider(),
@@ -2746,18 +2796,26 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                           Navigator.pop(context);
                         },
                         borderRadius: BorderRadius.circular(20),
-                        splashColor: ref.read(themeProvider).isDarkMode
-                            ? colors.splashColorDark
-                            : colors.splashColorLight,
-                        highlightColor: ref.read(themeProvider).isDarkMode
-                            ? colors.splashColorDark
-                            : colors.splashColorLight,
+                        splashColor: resolveThemeColor(
+                          context,
+                          dark: MyntColors.rippleDark,
+                          light: MyntColors.rippleLight,
+                        ),
+                        highlightColor: resolveThemeColor(
+                          context,
+                          dark: MyntColors.highlightDark,
+                          light: MyntColors.highlightLight,
+                        ),
                         child: Padding(
                           padding: const EdgeInsets.all(6.0),
                           child: Icon(
                             Icons.close_rounded,
                             size: 22,
-                            color: colors.colorGrey,
+                            color: resolveThemeColor(
+                              context,
+                              dark: MyntColors.textSecondaryDark,
+                              light: MyntColors.textSecondary,
+                            ),
                           ),
                         ),
                       ),
@@ -2766,9 +2824,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                 ),
               ),
               Divider(
-                color: ref.read(themeProvider).isDarkMode
-                    ? colors.darkColorDivider
-                    : colors.colorDivider,
+                color: shadcn.Theme.of(context).colorScheme.border,
                 height: 0,
               ),
               Expanded(
@@ -2800,9 +2856,11 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                         child: TextWidget.subText(
                           text: basketName,
                           theme: isDark,
-                          color: isDark
-                              ? colors.textPrimaryDark
-                              : colors.textPrimaryLight,
+                          color: resolveThemeColor(
+                            context,
+                            dark: MyntColors.textPrimaryDark,
+                            light: MyntColors.textPrimary,
+                          ),
                           textOverflow: TextOverflow.ellipsis,
                           maxLines: 2,
                         ),
@@ -2815,13 +2873,22 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                           theme: isDark,
                           textOverflow: TextOverflow.ellipsis,
                           maxLines: 1,
-                          color: ref.read(themeProvider).isDarkMode
-                              ? colors.textSecondaryDark
-                              : colors.textSecondaryLight,
+                          color: resolveThemeColor(
+                            context,
+                            dark: MyntColors.textSecondaryDark,
+                            light: MyntColors.textSecondary,
+                          ),
                         ),
                       ),
                       trailing: basketName == orderProv.selectedBsktName
-                          ? Icon(Icons.check, color: colors.ltpgreen)
+                          ? Icon(
+                              Icons.check,
+                              color: resolveThemeColor(
+                                context,
+                                dark: MyntColors.profitDark,
+                                light: MyntColors.profit,
+                              ),
+                            )
                           : null,
                       onTap: () async {
                         await orderProv.chngBsktName(basketName, context, true);

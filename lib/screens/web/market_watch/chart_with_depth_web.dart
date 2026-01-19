@@ -4,30 +4,33 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/models/marketwatch_model/get_quotes.dart';
 import 'package:mynt_plus/models/marketwatch_model/market_watch_scrip_model.dart';
 import 'package:mynt_plus/provider/market_watch_provider.dart';
-import 'package:mynt_plus/provider/thems.dart';
-import 'package:mynt_plus/res/web_colors.dart';
-import 'package:mynt_plus/res/global_font_web.dart';
 import 'package:mynt_plus/screens/web/market_watch/scrip_depth_info_web.dart';
 import 'package:mynt_plus/screens/web/market_watch/tv_chart/webview_chart.dart';
 import 'package:mynt_plus/screens/web/market_watch/options/option_chain_ss_web.dart';
 import 'package:mynt_plus/screens/web/market_watch/search_dialog_web.dart';
 import 'package:mynt_plus/res/res.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import '../../../res/mynt_web_text_styles.dart';
+import '../../../res/mynt_web_color_styles.dart';
 import '../../../../provider/websocket_provider.dart';
 
 class ChartWithDepthWeb extends ConsumerStatefulWidget {
   final DepthInputArgs wlValue;
   final String isBasket;
 
-  const ChartWithDepthWeb({super.key, required this.wlValue, this.isBasket = ""});
+  const ChartWithDepthWeb(
+      {super.key, required this.wlValue, this.isBasket = ""});
 
   @override
   ConsumerState<ChartWithDepthWeb> createState() => _ChartWithDepthWebState();
 }
 
-class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with TickerProviderStateMixin {
+class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
+    with TickerProviderStateMixin {
   String? _loadedToken;
   TabController? _tabController;
-  VoidCallback? _tabControllerListener; // Store listener reference for proper cleanup
+  VoidCallback?
+      _tabControllerListener; // Store listener reference for proper cleanup
   int _selectedTabIndex = 0; // 0 for Chart, 1 for Options
   bool _isBasketMode = false; // Track basket mode from OptionChainSSWeb
   VoidCallback? _toggleBasketModeCallback; // Callback to toggle basket mode
@@ -47,7 +50,9 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
         } catch (e) {
           // Container might not be available yet
         }
-        ref.read(marketWatchProvider).setIsDepthVisibleWeb(ref.read(marketWatchProvider).isDepthVisible);
+        ref
+            .read(marketWatchProvider)
+            .setIsDepthVisibleWeb(ref.read(marketWatchProvider).isDepthVisible);
       }
     });
   }
@@ -60,17 +65,21 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
       // Reset depth visibility based on incoming args when scrip changes
       // Delay provider modification until after build phase completes
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        ref.read(marketWatchProvider).setIsDepthVisibleWeb(ref.read(marketWatchProvider).isDepthVisible);
+        ref
+            .read(marketWatchProvider)
+            .setIsDepthVisibleWeb(ref.read(marketWatchProvider).isDepthVisible);
       });
-      
+
       Future.microtask(() async {
         // await _ensureDataLoaded(force: true);
 
         // If Options tab is active when scrip changes, prepare options for new scrip
         final mw = ref.read(marketWatchProvider);
-        final hasOptions = mw.getOptionawait(widget.wlValue.exch, widget.wlValue.token);
+        final hasOptions =
+            mw.getOptionawait(widget.wlValue.exch, widget.wlValue.token);
         if (hasOptions && (_tabController?.index ?? 0) == 1) {
-          mw.setOptionScript(context, widget.wlValue.exch, widget.wlValue.token, widget.wlValue.tsym);
+          mw.setOptionScript(context, widget.wlValue.exch, widget.wlValue.token,
+              widget.wlValue.tsym);
         }
       });
     }
@@ -85,7 +94,7 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
     }
     _tabController?.dispose();
     _tabController = null;
-    
+
     // Unsubscribe from depth data using stored container (ref is not available in dispose)
     if (_storedContainer != null) {
       try {
@@ -98,10 +107,11 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
         }
       } catch (e) {
         // Depth will be cleaned up when scrip changes anyway
-        print('⚠️ [ChartWithDepthWeb] Error unsubscribing from depth in dispose: $e');
+        print(
+            '⚠️ [ChartWithDepthWeb] Error unsubscribing from depth in dispose: $e');
       }
     }
-    
+
     super.dispose();
   }
 
@@ -115,7 +125,8 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
       mw.scripdepthsize(false);
       await mw.calldepthApis(context, widget.wlValue, "");
       // Keep chart in sync with the same scrip
-      mw.setChartScript(widget.wlValue.exch, widget.wlValue.token, widget.wlValue.tsym);
+      mw.setChartScript(
+          widget.wlValue.exch, widget.wlValue.token, widget.wlValue.tsym);
       _loadedToken = targetToken;
     }
   }
@@ -147,10 +158,12 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
             _selectedTabIndex = _tabController!.index;
           });
         }
-        if (_tabController!.index == 1 && _tabController!.indexIsChanging == false) {
+        if (_tabController!.index == 1 &&
+            _tabController!.indexIsChanging == false) {
           // Prepare option chain data when switching to Options tab
           final mw = ref.read(marketWatchProvider);
-          mw.setOptionScript(context, widget.wlValue.exch, widget.wlValue.token, widget.wlValue.tsym);
+          mw.setOptionScript(context, widget.wlValue.exch, widget.wlValue.token,
+              widget.wlValue.tsym);
         }
       };
       _tabController!.addListener(_tabControllerListener!);
@@ -159,14 +172,14 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
 
   @override
   Widget build(BuildContext context) {
-    final theme = ref.watch(themeProvider);
     final mw = ref.watch(marketWatchProvider);
-    final hasOptions = mw.getOptionawait(widget.wlValue.exch, widget.wlValue.token);
+    final hasOptions =
+        mw.getOptionawait(widget.wlValue.exch, widget.wlValue.token);
     final depthData = mw.getQuotes;
     _setupTabControllerIfNeeded(hasOptions: hasOptions);
 
     return Container(
-      color: theme.isDarkMode ? WebDarkColors.background : WebColors.background,
+      color: shadcn.Theme.of(context).colorScheme.background,
       child: Stack(
         children: [
           Row(
@@ -180,12 +193,17 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
                   children: [
                     // Header: Left 50% scrip title, Right 50% tabs (when available)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 10),
                       decoration: BoxDecoration(
-                        color: theme.isDarkMode ? WebDarkColors.navBackground : WebColors.navBackground,
+                        color: shadcn.Theme.of(context).colorScheme.card,
                         border: Border(
                           bottom: BorderSide(
-                            color: theme.isDarkMode ? WebDarkColors.navDivider : WebColors.navDivider,
+                            color: resolveThemeColor(
+                              context,
+                              dark: MyntColors.dividerDark,
+                              light: MyntColors.divider,
+                            ),
                             width: 1,
                           ),
                         ),
@@ -197,13 +215,15 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisSize: MainAxisSize.min,
                               children: [
+                                // ${depthData?.exch ?? widget.wlValue.exch}
                                 Text(
-                                  "${(depthData?.symname ?? depthData?.symbol ?? depthData?.tsym ?? widget.wlValue.symbol).replaceAll('-EQ', '').toUpperCase()}${depthData?.expDate ?? widget.wlValue.expDate} ${depthData?.option ?? widget.wlValue.option} ${depthData?.exch ?? widget.wlValue.exch}",
+                                  "${(depthData?.symname ?? depthData?.symbol ?? depthData?.tsym ?? widget.wlValue.symbol).replaceAll('-EQ', '').toUpperCase()}${depthData?.expDate ?? widget.wlValue.expDate} ${depthData?.option ?? widget.wlValue.option} ",
                                   overflow: TextOverflow.ellipsis,
-                                  style: WebTextStyles.sub(
-                                    isDarkTheme: theme.isDarkMode,
-                                    color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
-                                    fontWeight: WebFonts.medium,
+                                  style: MyntWebTextStyles.symbol(
+                                    context,
+                                    fontWeight: MyntFonts.medium,
+                                    darkColor: MyntColors.textPrimaryDark,
+                                    lightColor: MyntColors.textPrimary,
                                   ),
                                 ),
                                 const SizedBox(height: 4),
@@ -212,8 +232,11 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
                                   stream: ref.read(websocketProvider).socketDataStream,
                                   builder: (context, snapshot) {
                                     final socketDatas = snapshot.data ?? {};
-                                    final currentToken = depthData?.token?.toString() ?? widget.wlValue.token;
-                                    String ltp = depthData?.lp ?? depthData?.c ?? '0.00';
+                                    final currentToken =
+                                        depthData?.token?.toString() ??
+                                            widget.wlValue.token;
+                                    String ltp =
+                                        depthData?.lp ?? depthData?.c ?? '0.00';
                                     String ch = depthData?.chng ?? '0.00';
                                     String pc = depthData?.pc ?? '0.00';
                                     if (socketDatas.containsKey(currentToken)) {
@@ -222,32 +245,41 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
                                       ch = "${s['chng'] ?? ch}";
                                       pc = "${s['pc'] ?? pc}";
                                     }
-                                    final ltpStr = (double.tryParse(ltp) ?? 0).toStringAsFixed(2);
+                                    final ltpStr = (double.tryParse(ltp) ?? 0)
+                                        .toStringAsFixed(2);
                                     final chVal = double.tryParse(ch) ?? 0;
                                     final pcVal = double.tryParse(pc) ?? 0;
                                     final chStr = chVal.toStringAsFixed(2);
                                     final pcStr = pcVal.toStringAsFixed(2);
                                     final isUp = pcVal >= 0;
-          
+
                                     return Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
                                       children: [
                                         Text(
                                           ltpStr,
-                                          style: WebTextStyles.sub(
-                                            isDarkTheme: theme.isDarkMode,
-                                            color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
-                                            fontWeight: WebFonts.medium,
+                                          style: MyntWebTextStyles.price(
+                                            context,
+                                            fontWeight: MyntFonts.medium,
+                                            color: isUp
+                                                ? resolveThemeColor(context,
+                                                    dark: MyntColors.profitDark,
+                                                    light: MyntColors.profit)
+                                                : resolveThemeColor(context,
+                                                    dark: MyntColors.lossDark,
+                                                    light: MyntColors.loss),
                                           ),
                                         ),
                                         const SizedBox(width: 8),
                                         Text(
                                           "$chStr ($pcStr%)",
-                                          style: WebTextStyles.sub(
-                                            isDarkTheme: theme.isDarkMode,
-                                            color: isUp
-                                                ? (theme.isDarkMode ? WebDarkColors.success : WebColors.success)
-                                                : (theme.isDarkMode ? WebDarkColors.error : WebColors.error),
-                                            fontWeight: WebFonts.medium,
+                                          style: MyntWebTextStyles.priceChange(
+                                            context,
+                                            fontWeight: MyntFonts.medium,
+                                            darkColor:
+                                                MyntColors.textPrimaryDark,
+                                            lightColor: MyntColors.textPrimary,
                                           ),
                                         ),
                                       ],
@@ -258,20 +290,26 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
                             ),
                           ),
                           // Search icon - only show for Chart tab (when no tabs or Chart tab is active)
-                          if (_tabController == null || _tabController!.index == 0) ...[
+                          if (_tabController == null ||
+                              _tabController!.index == 0) ...[
                             const SizedBox(width: 12),
                             Material(
                               color: Colors.transparent,
                               child: InkWell(
                                 customBorder: const CircleBorder(),
-                                splashColor: theme.isDarkMode
-                                    ? Colors.white.withOpacity(0.15)
-                                    : Colors.black.withOpacity(0.15),
-                                highlightColor: theme.isDarkMode
-                                    ? Colors.white.withOpacity(0.08)
-                                    : Colors.black.withOpacity(0.08),
+                                splashColor: resolveThemeColor(
+                                  context,
+                                  dark: MyntColors.rippleDark,
+                                  light: MyntColors.rippleLight,
+                                ),
+                                highlightColor: resolveThemeColor(
+                                  context,
+                                  dark: MyntColors.highlightDark,
+                                  light: MyntColors.highlightLight,
+                                ),
                                 onTap: () {
-                                  mw.requestMWScrip(context: context, isSubscribe: false);
+                                  mw.requestMWScrip(
+                                      context: context, isSubscribe: false);
                                   showDialog(
                                     context: context,
                                     barrierColor: Colors.transparent,
@@ -289,68 +327,71 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
                                     assets.searchIcon1,
                                     width: 16,
                                     height: 16,
-                                    color: theme.isDarkMode
-                                        ? WebDarkColors.iconSecondary
-                                        : WebColors.iconSecondary,
+                                    color: resolveThemeColor(
+                                      context,
+                                      dark: MyntColors.iconDark,
+                                      light: MyntColors.icon,
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
                           ],
                           // Options header row - only show for Options tab (symbol + dropdown + basket + search)
-                          if (hasOptions && _tabController != null && _selectedTabIndex == 1) ...[
+                          if (hasOptions &&
+                              _tabController != null &&
+                              _selectedTabIndex == 1) ...[
                             // const SizedBox(width: 12),
                             // Symbol Name and Expiry Dropdown
                             Row(
                               children: [
-                                // Text(
-                                //   (depthData?.tsym ?? widget.wlValue.tsym).toUpperCase(),
-                                //   style: WebTextStyles.sub(
-                                //     isDarkTheme: theme.isDarkMode,
-                                //     color: theme.isDarkMode
-                                //         ? WebDarkColors.textPrimary
-                                //         : WebColors.textPrimary,
-                                //     fontWeight: WebFonts.medium,
-                                //   ),
-                                // ),
-                                // const SizedBox(width: 8),
                                 Builder(
                                   builder: (context) => Material(
                                     color: Colors.transparent,
                                     child: InkWell(
-                                      onTap: () => _showExpiryDropdown(context, mw, theme),
+                                      onTap: () =>
+                                          _showExpiryDropdown(context, mw),
                                       borderRadius: BorderRadius.circular(5),
                                       child: Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 12, vertical: 8),
                                         decoration: BoxDecoration(
                                           border: Border.all(
-                                            color: theme.isDarkMode
-                                                ? WebDarkColors.divider
-                                                : WebColors.divider,
-                                            // width: 1,
+                                            color: resolveThemeColor(
+                                              context,
+                                              dark: MyntColors.dividerDark,
+                                              light: MyntColors.divider,
+                                            ),
                                           ),
-                                          borderRadius: BorderRadius.circular(5),
+                                          borderRadius:
+                                              BorderRadius.circular(5),
                                         ),
                                         child: Row(
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
                                             Text(
-                                              mw.selectedExpDate?.replaceAll("-", " ") ?? '',
-                                              style: WebTextStyles.bodySmall(
-                                                isDarkTheme: theme.isDarkMode,
-                                                color: theme.isDarkMode
-                                                    ? WebDarkColors.textPrimary
-                                                    : WebColors.textPrimary,
-                                                fontWeight: WebFonts.medium,
+                                              mw.selectedExpDate
+                                                      ?.replaceAll("-", " ") ??
+                                                  '',
+                                              style:
+                                                  MyntWebTextStyles.bodySmall(
+                                                context,
+                                                fontWeight: MyntFonts.medium,
+                                                darkColor:
+                                                    MyntColors.textPrimaryDark,
+                                                lightColor:
+                                                    MyntColors.textPrimary,
                                               ),
                                             ),
                                             const SizedBox(width: 8),
                                             Icon(
                                               Icons.arrow_drop_down,
                                               size: 20,
-                                              color: theme.isDarkMode
-                                                  ? WebDarkColors.iconSecondary
-                                                  : WebColors.iconSecondary,
+                                              color: resolveThemeColor(
+                                                context,
+                                                dark: MyntColors.iconDark,
+                                                light: MyntColors.icon,
+                                              ),
                                             ),
                                           ],
                                         ),
@@ -367,12 +408,16 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
                               color: Colors.transparent,
                               child: InkWell(
                                 customBorder: const CircleBorder(),
-                                splashColor: theme.isDarkMode
-                                    ? Colors.white.withOpacity(0.1)
-                                    : Colors.black.withOpacity(0.1),
-                                highlightColor: theme.isDarkMode
-                                    ? Colors.white.withOpacity(0.05)
-                                    : Colors.black.withOpacity(0.05),
+                                splashColor: resolveThemeColor(
+                                  context,
+                                  dark: MyntColors.rippleDark,
+                                  light: MyntColors.rippleLight,
+                                ),
+                                highlightColor: resolveThemeColor(
+                                  context,
+                                  dark: MyntColors.highlightDark,
+                                  light: MyntColors.highlightLight,
+                                ),
                                 onTap: () {
                                   _toggleBasketModeCallback?.call();
                                 },
@@ -384,10 +429,12 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
                                         : Icons.shopping_basket_outlined,
                                     size: 18,
                                     color: _isBasketMode
-                                        ? WebColors.primary
-                                        : (theme.isDarkMode 
-                                            ? WebDarkColors.iconSecondary 
-                                            : WebColors.iconSecondary),
+                                        ? MyntColors.primary
+                                        : resolveThemeColor(
+                                            context,
+                                            dark: MyntColors.iconDark,
+                                            light: MyntColors.icon,
+                                          ),
                                   ),
                                 ),
                               ),
@@ -398,14 +445,19 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
                               color: Colors.transparent,
                               child: InkWell(
                                 customBorder: const CircleBorder(),
-                                splashColor: theme.isDarkMode
-                                    ? Colors.white.withOpacity(0.1)
-                                    : Colors.black.withOpacity(0.1),
-                                highlightColor: theme.isDarkMode
-                                    ? Colors.white.withOpacity(0.05)
-                                    : Colors.black.withOpacity(0.05),
+                                splashColor: resolveThemeColor(
+                                  context,
+                                  dark: MyntColors.rippleDark,
+                                  light: MyntColors.rippleLight,
+                                ),
+                                highlightColor: resolveThemeColor(
+                                  context,
+                                  dark: MyntColors.highlightDark,
+                                  light: MyntColors.highlightLight,
+                                ),
                                 onTap: () {
-                                  mw.requestMWScrip(context: context, isSubscribe: false);
+                                  mw.requestMWScrip(
+                                      context: context, isSubscribe: false);
                                   showDialog(
                                     context: context,
                                     barrierColor: Colors.transparent,
@@ -423,9 +475,11 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
                                     assets.searchIcon1,
                                     width: 16,
                                     height: 16,
-                                    color: theme.isDarkMode
-                                        ? WebDarkColors.iconSecondary
-                                        : WebColors.iconSecondary,
+                                    color: resolveThemeColor(
+                                      context,
+                                      dark: MyntColors.iconDark,
+                                      light: MyntColors.icon,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -434,7 +488,7 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
                           // Chart/Options toggle - only show if options available
                           if (hasOptions) ...[
                             const SizedBox(width: 12),
-                            _buildSegmentedControl(theme),
+                            _buildSegmentedControl(context),
                           ],
                           // Depth toggle icon - ALWAYS show (not conditional on hasOptions)
                           const SizedBox(width: 12),
@@ -442,26 +496,38 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
                             color: Colors.transparent,
                             child: InkWell(
                               customBorder: const CircleBorder(),
-                              splashColor: theme.isDarkMode
-                                  ? Colors.white.withOpacity(0.15)
-                                  : Colors.black.withOpacity(0.15),
-                              highlightColor: theme.isDarkMode
-                                  ? Colors.white.withOpacity(0.08)
-                                  : Colors.black.withOpacity(0.08),
+                              splashColor: resolveThemeColor(
+                                context,
+                                dark: MyntColors.rippleDark,
+                                light: MyntColors.rippleLight,
+                              ),
+                              highlightColor: resolveThemeColor(
+                                context,
+                                dark: MyntColors.highlightDark,
+                                light: MyntColors.highlightLight,
+                              ),
                               onTap: () {
-                                ref.read(marketWatchProvider).setIsDepthVisibleWeb(
-                                  !mw.isDepthVisible,
-                                  context: context,
-                                );
+                                ref
+                                    .read(marketWatchProvider)
+                                    .setIsDepthVisibleWeb(
+                                      !mw.isDepthVisible,
+                                      context: context,
+                                    );
                               },
                               child: Padding(
                                 padding: const EdgeInsets.all(8.0),
                                 child: Icon(
-                                  mw.isDepthVisible ? Icons.view_sidebar : Icons.view_sidebar_outlined,
+                                  mw.isDepthVisible
+                                      ? Icons.view_sidebar
+                                      : Icons.view_sidebar_outlined,
                                   size: 20,
                                   color: mw.isDepthVisible
-                                      ? (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary)
-                                      : (theme.isDarkMode ? WebDarkColors.iconSecondary : WebColors.iconSecondary),
+                                      ? resolveThemeColor(context,
+                                          dark: MyntColors.primaryDark,
+                                          light: MyntColors.primary)
+                                      : resolveThemeColor(context,
+                                          dark: MyntColors.iconDark,
+                                          light: MyntColors.icon),
                                 ),
                               ),
                             ),
@@ -487,9 +553,11 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
                                       _isBasketMode = isBasketMode;
                                     });
                                   },
-                                  onToggleCallbackReady: (VoidCallback toggleCallback) {
+                                  onToggleCallbackReady:
+                                      (VoidCallback toggleCallback) {
                                     setState(() {
-                                      _toggleBasketModeCallback = toggleCallback;
+                                      _toggleBasketModeCallback =
+                                          toggleCallback;
                                     });
                                   },
                                 )
@@ -508,7 +576,11 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
               if (mw.isDepthVisible)
                 Container(
                   width: 1,
-                  color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
+                  color: resolveThemeColor(
+                    context,
+                    dark: MyntColors.dividerDark,
+                    light: MyntColors.divider,
+                  ),
                 ),
               // Depth/Overview area - 30% (only when visible)
               if (mw.isDepthVisible)
@@ -529,22 +601,72 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
     );
   }
 
-  Widget _buildSegmentedControl(ThemesProvider theme) {
+  Widget _buildSegmentedControl(BuildContext context) {
     final tabs = ['Chart', 'Options'];
+    final currentTheme = shadcn.Theme.of(context);
+    final isDark = isDarkMode(context);
 
-    return SizedBox(
-      height: 45,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
+    // Create a new ColorScheme based on the default, but with custom primary color
+    final baseColorScheme = isDark
+        ? shadcn.ColorSchemes.darkDefaultColor
+        : shadcn.ColorSchemes.lightDefaultColor;
+
+    // Create custom ColorScheme with theme-appropriate primary color
+    final primaryColor = resolveThemeColor(
+      context,
+      dark: MyntColors.primaryDark,
+      light: MyntColors.primary,
+    );
+    final customColorScheme = baseColorScheme.copyWith(
+      primary: () => primaryColor,
+    );
+
+    return shadcn.Theme(
+      data: shadcn.ThemeData(
+        colorScheme: customColorScheme,
+        radius: currentTheme.radius,
+      ),
+      child: shadcn.TabList(
+        index: _selectedTabIndex,
+        onChanged: (value) {
+          if (_tabController != null) {
+            _tabController!.animateTo(value);
+          }
+          setState(() {
+            _selectedTabIndex = value;
+          });
+          // Prepare option chain data when switching to Options tab
+          if (value == 1) {
+            final mw = ref.read(marketWatchProvider);
+            mw.setOptionScript(context, widget.wlValue.exch,
+                widget.wlValue.token, widget.wlValue.tsym);
+          }
+        },
         children: [
           for (int index = 0; index < tabs.length; index++)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 6),
-              child: _buildSegmentedTab(
-                tabs[index],
-                index,
-                _selectedTabIndex == index,
-                theme,
+            shadcn.TabItem(
+              child: Builder(
+                builder: (context) {
+                  final isActive = index == _selectedTabIndex;
+                  return Text(
+                    tabs[index],
+                    style: MyntWebTextStyles.body(
+                      context,
+                      fontWeight: isActive ? MyntFonts.bold : MyntFonts.medium,
+                      color: isActive
+                          ? resolveThemeColor(
+                              context,
+                              dark: MyntColors.primaryDark,
+                              light: MyntColors.primary,
+                            )
+                          : resolveThemeColor(
+                              context,
+                              dark: MyntColors.textSecondaryDark,
+                              light: MyntColors.textSecondary,
+                            ),
+                    ),
+                  );
+                },
               ),
             ),
         ],
@@ -552,69 +674,7 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
     );
   }
 
-  Widget _buildSegmentedTab(
-    String title,
-    int index,
-    bool isSelected,
-    ThemesProvider theme,
-  ) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: InkWell(
-        onTap: () {
-          if (_tabController != null) {
-            _tabController!.animateTo(index);
-          }
-          setState(() {
-            _selectedTabIndex = index;
-          });
-          // Prepare option chain data when switching to Options tab
-          if (index == 1) {
-            final mw = ref.read(marketWatchProvider);
-            mw.setOptionScript(context, widget.wlValue.exch, widget.wlValue.token, widget.wlValue.tsym);
-          }
-        },
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-          decoration: BoxDecoration(
-            color: isSelected
-                ? (theme.isDarkMode
-                    ? WebDarkColors.backgroundTertiary
-                    : WebColors.backgroundTertiary)
-                : Colors.white,
-            border: Border.all(
-              color: isSelected
-                  ? (theme.isDarkMode
-                      ? WebDarkColors.primary
-                      : WebColors.primary)
-                  : (theme.isDarkMode
-                      ? WebDarkColors.textSecondary
-                      : WebColors.textSecondary),
-              width: isSelected ? 1.5 : 1,
-            ),
-            borderRadius: BorderRadius.circular(50),
-          ),
-          child: Text(
-            title,
-            overflow: TextOverflow.ellipsis,
-            style: WebTextStyles.tab(
-              isDarkTheme: theme.isDarkMode,
-              color: isSelected
-                  ? (theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary)
-                  : (theme.isDarkMode
-                      ? WebDarkColors.navItem
-                      : WebColors.navItem),
-              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _showExpiryDropdown(BuildContext context, MarketWatchProvider mw, ThemesProvider theme) {
+  void _showExpiryDropdown(BuildContext context, MarketWatchProvider mw) {
     final RenderBox button = context.findRenderObject() as RenderBox;
     final RenderBox overlay =
         Overlay.of(context).context.findRenderObject() as RenderBox;
@@ -631,7 +691,7 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
     showMenu<String>(
       context: context,
       position: position,
-      color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
+      color: shadcn.Theme.of(context).colorScheme.card,
       elevation: 8,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.zero,
@@ -647,16 +707,20 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Text(
                 date.replaceAll("-", " "),
-                style: WebTextStyles.bodySmall(
-                  isDarkTheme: theme.isDarkMode,
+                style: MyntWebTextStyles.bodySmall(
+                  context,
+                  fontWeight: MyntFonts.medium,
                   color: isSelected
-                      ? (theme.isDarkMode
-                          ? WebDarkColors.primary
-                          : WebColors.primary)
-                      : (theme.isDarkMode
-                          ? WebDarkColors.textPrimary
-                          : WebColors.textPrimary),
-                  fontWeight: FontWeight.w500,
+                      ? resolveThemeColor(
+                          context,
+                          dark: MyntColors.primaryDark,
+                          light: MyntColors.primary,
+                        )
+                      : resolveThemeColor(
+                          context,
+                          dark: MyntColors.textPrimaryDark,
+                          light: MyntColors.textPrimary,
+                        ),
                 ),
               ),
             ),
@@ -684,5 +748,3 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
     });
   }
 }
-
-

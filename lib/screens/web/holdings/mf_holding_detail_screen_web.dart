@@ -4,29 +4,31 @@ import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../../../../provider/thems.dart';
 import '../../../../provider/mf_provider.dart';
-import '../../../res/web_colors.dart';
-import '../../../res/global_font_web.dart';
+import '../../../res/mynt_web_text_styles.dart';
+import '../../../res/mynt_web_color_styles.dart';
 import '../ordersbook/mf/redeem_bottom_sheet_web.dart';
+import '../../../sharedWidget/common_buttons_web.dart';
 import '../../../../main.dart';
 
 class MfHoldingDetailScreenWeb extends ConsumerStatefulWidget {
   final dynamic holding;
-  
+
   const MfHoldingDetailScreenWeb({
     super.key,
     required this.holding,
   });
 
   @override
-  ConsumerState<MfHoldingDetailScreenWeb> createState() => _MfHoldingDetailScreenWebState();
+  ConsumerState<MfHoldingDetailScreenWeb> createState() =>
+      _MfHoldingDetailScreenWebState();
 }
 
-class _MfHoldingDetailScreenWebState extends ConsumerState<MfHoldingDetailScreenWeb> {
+class _MfHoldingDetailScreenWebState
+    extends ConsumerState<MfHoldingDetailScreenWeb> {
   @override
   Widget build(BuildContext context) {
     // Use read instead of watch to avoid rebuilds - theme won't change while sheet is open
     final theme = ref.read(themeProvider);
-    final isDarkMode = theme.isDarkMode;
 
     return Container(
       constraints: const BoxConstraints(maxWidth: 400),
@@ -43,15 +45,15 @@ class _MfHoldingDetailScreenWebState extends ConsumerState<MfHoldingDetailScreen
                 Expanded(
                   child: Text(
                     widget.holding.name ?? 'N/A',
-                    style: WebTextStyles.dialogTitle(
-                      isDarkTheme: isDarkMode,
-                      color: shadcn.Theme.of(context).colorScheme.foreground,
+                    style: MyntWebTextStyles.title(
+                      context,
+                      color: resolveThemeColor(context,
+                          dark: MyntColors.textPrimaryDark,
+                          light: MyntColors.textPrimary),
                     ),
                   ),
                 ),
-                shadcn.TextButton(
-                  density: shadcn.ButtonDensity.icon,
-                  child: const Icon(Icons.close),
+                MyntCloseButton(
                   onPressed: () {
                     shadcn.closeSheet(context);
                   },
@@ -62,7 +64,8 @@ class _MfHoldingDetailScreenWebState extends ConsumerState<MfHoldingDetailScreen
           // Border after header
           Container(
             height: 1,
-            color: shadcn.Theme.of(context).colorScheme.border,
+            color: resolveThemeColor(context,
+                dark: MyntColors.dividerDark, light: MyntColors.divider),
           ),
           // Content
           Container(
@@ -76,10 +79,10 @@ class _MfHoldingDetailScreenWebState extends ConsumerState<MfHoldingDetailScreen
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     child: _buildReturnsSection(theme),
                   ),
-                  
+
                   // Action Buttons
                   _buildActionButtons(theme),
-                  
+
                   // Details Section
                   _buildDetailsSection(theme),
                 ],
@@ -90,8 +93,6 @@ class _MfHoldingDetailScreenWebState extends ConsumerState<MfHoldingDetailScreen
       ),
     );
   }
-
-
 
   Widget _buildActionButtons(ThemesProvider theme) {
     final avgQty = double.tryParse(widget.holding.avgQty ?? '0') ?? 0.0;
@@ -128,46 +129,27 @@ class _MfHoldingDetailScreenWebState extends ConsumerState<MfHoldingDetailScreen
     ThemesProvider theme,
     VoidCallback onPressed,
   ) {
-    // Redeem button uses tertiary color to match table styling
-    final isRedeem = text == 'Redeem';
-    final backgroundColor = isRedeem
-        ? (theme.isDarkMode ? WebDarkColors.tertiary : WebColors.tertiary)
-        : (isPrimary
-            ? (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary)
-            : (theme.isDarkMode
-                ? WebDarkColors.buttonSecondary
-                : WebColors.buttonSecondary));
-    final textColor = isRedeem || isPrimary
-        ? Colors.white
-        : (theme.isDarkMode ? Colors.white : (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary));
-    
-    return Container(
-      height: 40,
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        border: isRedeem || isPrimary
-            ? null
-            : Border.all(
-                color: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
-                width: 1,
-              ),
-        borderRadius: BorderRadius.circular(5),
-      ),
-      child: shadcn.TextButton(
-        size: shadcn.ButtonSize.large,
-        density: shadcn.ButtonDensity.dense,
+    if (text == 'Redeem') {
+      return MyntTertiaryButton(
+        label: text,
         onPressed: onPressed,
-        shape: shadcn.ButtonShape.rectangle,
-        child: Text(
-          text,
-          style: WebTextStyles.buttonMd(
-            isDarkTheme: theme.isDarkMode,
-            color: textColor,
-            fontWeight: WebFonts.bold,
-          ),
-        ),
-      ),
-    );
+        isFullWidth: true,
+      );
+    }
+
+    if (isPrimary) {
+      return MyntPrimaryButton(
+        label: text,
+        onPressed: onPressed,
+        isFullWidth: true,
+      );
+    } else {
+      return MyntOutlinedButton(
+        label: text,
+        onPressed: onPressed,
+        isFullWidth: true,
+      );
+    }
   }
 
   void _handleRedeem() {
@@ -176,13 +158,13 @@ class _MfHoldingDetailScreenWebState extends ConsumerState<MfHoldingDetailScreen
     mfData.fetchmfholdsingpage(widget.holding.iSIN ?? '');
     // Call the redeem evaluation function
     mfData.recdemevalu();
-    
+
     // Get root context before closing sheet
     final rootContext = rootNavigatorKey.currentContext ?? context;
-    
+
     // Close the sheet
     shadcn.closeSheet(context);
-    
+
     // Show web redeem dialog using root context to ensure it shows even after sheet closes
     Future.delayed(const Duration(milliseconds: 150), () {
       if (rootContext.mounted) {
@@ -202,19 +184,22 @@ class _MfHoldingDetailScreenWebState extends ConsumerState<MfHoldingDetailScreen
           children: [
             Text(
               "Returns",
-              style: WebTextStyles.title(
-                isDarkTheme: theme.isDarkMode,
-                color: shadcn.Theme.of(context).colorScheme.mutedForeground,
-                fontWeight: WebFonts.medium,
+              style: MyntWebTextStyles.title(
+                context,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.textSecondaryDark,
+                    light: MyntColors.textSecondary),
+                fontWeight: MyntFonts.medium,
               ),
             ),
             const SizedBox(height: 6),
             Text(
               "${widget.holding.profitLoss ?? "0.00"}",
-              style: WebTextStyles.head(
-                isDarkTheme: theme.isDarkMode,
-                color: _getValueColor(widget.holding.profitLoss ?? '0.00', context),
-                fontWeight: WebFonts.medium,
+              style: MyntWebTextStyles.head(
+                context,
+                color: _getValueColor(
+                    widget.holding.profitLoss ?? '0.00', context),
+                fontWeight: MyntFonts.medium,
               ),
             ),
           ],
@@ -237,54 +222,59 @@ class _MfHoldingDetailScreenWebState extends ConsumerState<MfHoldingDetailScreen
           const SizedBox(height: 8),
           _rowOfInfoData("Pledged Units", "0", theme),
           const SizedBox(height: 8),
-          _rowOfInfoData("Current Value", widget.holding.currentValue ?? '0.00', theme),
+          _rowOfInfoData(
+              "Current Value", widget.holding.currentValue ?? '0.00', theme),
           const SizedBox(height: 8),
-          _rowOfInfoData("Invested", widget.holding.investedValue ?? '0.00', theme),
+          _rowOfInfoData(
+              "Invested", widget.holding.investedValue ?? '0.00', theme),
         ],
       ),
     );
   }
 
   Widget _rowOfInfoData(String title1, String value1, ThemesProvider theme) {
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
-    
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             title1,
-            style: WebTextStyles.sub(
-              isDarkTheme: theme.isDarkMode,
-              color: colorScheme.mutedForeground,
-              fontWeight: WebFonts.medium,
+            style: MyntWebTextStyles.bodySmall(
+              context,
+              color: resolveThemeColor(context,
+                  dark: MyntColors.textSecondaryDark,
+                  light: MyntColors.textSecondary),
+              fontWeight: MyntFonts.medium,
             ),
           ),
           Text(
             value1,
-            style: WebTextStyles.sub(
-              isDarkTheme: theme.isDarkMode,
-              color: colorScheme.foreground,
-              fontWeight: WebFonts.medium,
+            style: MyntWebTextStyles.bodySmall(
+              context,
+              color: resolveThemeColor(context,
+                  dark: MyntColors.textPrimaryDark,
+                  light: MyntColors.textPrimary),
+              fontWeight: MyntFonts.medium,
             ),
           ),
         ],
       ),
       const SizedBox(height: 10),
-      
     ]);
   }
 
   Color _getValueColor(String value, BuildContext context) {
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
     final numValue = double.tryParse(value) ?? 0.0;
-    
+
     if (numValue > 0) {
-      return colorScheme.chart2;
+      return resolveThemeColor(context,
+          dark: MyntColors.profitDark, light: MyntColors.profit);
     } else if (numValue < 0) {
-      return colorScheme.destructive;
+      return resolveThemeColor(context,
+          dark: MyntColors.lossDark, light: MyntColors.loss);
     } else {
-      return colorScheme.mutedForeground;
+      return resolveThemeColor(context,
+          dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary);
     }
   }
 }

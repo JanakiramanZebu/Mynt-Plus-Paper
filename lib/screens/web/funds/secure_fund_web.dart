@@ -2,6 +2,7 @@ import 'dart:html' as html;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mynt_plus/res/global_font_web.dart';
 // COMMENTED OUT: No longer using dialog screens, redirecting to external URLs instead
 // import 'fund_screen_web.dart';
 // import 'withdraw_screen_web.dart';
@@ -12,7 +13,7 @@ import '../../../provider/fund_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/transcation_provider.dart';
 import '../../../res/web_colors.dart';
-import '../../../res/global_font_web.dart';
+import '../../../res/global_font_web.dart' hide WebTextStyles;
 import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/snack_bar.dart';
 

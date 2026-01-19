@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/provider/index_list_provider.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:mynt_plus/res/mynt_web_text_styles.dart';
+import 'package:mynt_plus/res/mynt_web_color_styles.dart';
+import 'common_buttons_web.dart';
 
 import '../../res/res.dart';
 
@@ -63,7 +65,11 @@ class NoDataFound extends ConsumerWidget {
                 iconAsset,
                 width: 100,
                 height: 100,
-                color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+                color: resolveThemeColor(
+                  context,
+                  dark: MyntColors.textSecondaryDark,
+                  light: MyntColors.textSecondary,
+                ),
               ),
             ),
 
@@ -72,11 +78,14 @@ class NoDataFound extends ConsumerWidget {
             // Title
             Text(
               title,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: shadcn.Theme.of(context).colorScheme.foreground,
-                fontFamily: 'Geist',
+              style: MyntWebTextStyles.head(
+                context,
+                fontWeight: MyntFonts.semiBold,
+                color: resolveThemeColor(
+                  context,
+                  dark: MyntColors.textPrimaryDark,
+                  light: MyntColors.textPrimary,
+                ),
               ),
               textAlign: TextAlign.center,
             ),
@@ -91,11 +100,13 @@ class NoDataFound extends ConsumerWidget {
                 width: MediaQuery.sizeOf(context).width * 0.7,
                 child: Text(
                   subtitle!,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: shadcn.Theme.of(context).colorScheme.mutedForeground,
-                    fontFamily: 'Geist',
-                    height: 1.4,
+                  style: MyntWebTextStyles.body(
+                    context,
+                    color: resolveThemeColor(
+                      context,
+                      dark: MyntColors.textSecondaryDark,
+                      light: MyntColors.textSecondary,
+                    ),
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -108,26 +119,19 @@ class NoDataFound extends ConsumerWidget {
               Column(
                 children: [
                   if (primaryEnabled)
-                    shadcn.PrimaryButton(
+                    MyntPrimaryButton(
                       onPressed: onPrimary,
-                      child: Text(
-                        primaryLabel,
-                        style: const TextStyle(fontFamily: 'Geist'),
-                      ),
+                      label: primaryLabel,
                     ),
-
                   if (primaryEnabled && secondaryEnabled)
                     const SizedBox(height: 12),
-
                   if (secondaryEnabled)
-                    shadcn.SecondaryButton(
-                      onPressed: onSecondary ?? () {
-                        ref.read(indexListProvider).bottomMenu(1, context);
-                      },
-                      child: Text(
-                        secondaryLabel,
-                        style: const TextStyle(fontFamily: 'Geist'),
-                      ),
+                    MyntSecondaryButton(
+                      onPressed: onSecondary ??
+                          () {
+                            ref.read(indexListProvider).bottomMenu(1, context);
+                          },
+                      label: secondaryLabel,
                     ),
                 ],
               ),
@@ -139,10 +143,18 @@ class NoDataFound extends ConsumerWidget {
                 width: 110,
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: shadcn.Theme.of(context).colorScheme.accent.withOpacity(0.05),
+                  color: resolveThemeColor(
+                    context,
+                    dark: MyntColors.primaryDark,
+                    light: MyntColors.primary,
+                  ).withOpacity(0.05),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: shadcn.Theme.of(context).colorScheme.border,
+                    color: resolveThemeColor(
+                      context,
+                      dark: MyntColors.dividerDark,
+                      light: MyntColors.divider,
+                    ),
                     style: BorderStyle.solid,
                   ),
                 ),
@@ -152,20 +164,26 @@ class NoDataFound extends ConsumerWidget {
                     Padding(
                       padding: const EdgeInsets.only(top: 2),
                       child: Icon(
-                        Icons.lightbulb_outline_rounded, 
-                        size: 16, 
-                        color: shadcn.Theme.of(context).colorScheme.primary,
+                        Icons.lightbulb_outline_rounded,
+                        size: 16,
+                        color: resolveThemeColor(
+                          context,
+                          dark: MyntColors.primaryDark,
+                          light: MyntColors.primary,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         tipText,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: shadcn.Theme.of(context).colorScheme.mutedForeground,
-                          fontFamily: 'Geist',
-                          height: 1.3,
+                        style: MyntWebTextStyles.para(
+                          context,
+                          color: resolveThemeColor(
+                            context,
+                            dark: MyntColors.textSecondaryDark,
+                            light: MyntColors.textSecondary,
+                          ),
                         ),
                       ),
                     ),

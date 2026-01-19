@@ -9,12 +9,12 @@ import '../../../provider/market_watch_provider.dart';
 import '../../../provider/order_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/websocket_provider.dart';
-import '../../../res/res.dart';
-import '../../../res/web_colors.dart';
-import '../../../res/global_font_web.dart';
+import '../../../res/mynt_web_text_styles.dart';
+import '../../../res/mynt_web_color_styles.dart';
 import '../../../sharedWidget/functions.dart';
 import '../../../utils/responsive_navigation.dart';
 import '../../../utils/responsive_snackbar.dart';
+import '../../../sharedWidget/common_buttons_web.dart';
 import '../../../main.dart';
 import '../order/modify_place_order_web_screen.dart';
 
@@ -29,10 +29,12 @@ class OrderBookDetailScreenWeb extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<OrderBookDetailScreenWeb> createState() => _OrderBookDetailScreenWebState();
+  ConsumerState<OrderBookDetailScreenWeb> createState() =>
+      _OrderBookDetailScreenWebState();
 }
 
-class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreenWeb> {
+class _OrderBookDetailScreenWebState
+    extends ConsumerState<OrderBookDetailScreenWeb> {
   late OrderBookModel _orderData;
   StreamSubscription? _socketSubscription;
 
@@ -69,13 +71,15 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
   @override
   void dispose() {
     _socketSubscription?.cancel();
-    
+
     try {
-      ProviderScope.containerOf(context).read(websocketProvider).closeSocket(false);
+      ProviderScope.containerOf(context)
+          .read(websocketProvider)
+          .closeSocket(false);
     } catch (e) {
       print('WebSocket close error during disposal: $e');
     }
-    
+
     super.dispose();
   }
 
@@ -92,7 +96,7 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
     copy.perChange = original.perChange;
     copy.change = original.change;
     copy.close = original.close;
-    copy.c = original.c; 
+    copy.c = original.c;
     copy.status = original.status;
     copy.trantype = original.trantype;
     copy.qty = original.qty;
@@ -156,7 +160,7 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
   // Fetch order history
   void _fetchOrderHistory() {
     if (_hasFetchedOrderHistory) return;
-    
+
     _hasFetchedOrderHistory = true;
     final orderNumber = widget.orderBookData.norenordno?.toString() ?? '';
     if (orderNumber.isNotEmpty && mounted) {
@@ -186,7 +190,11 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(
-            color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
+            color: resolveThemeColor(
+              context,
+              dark: MyntColors.dividerDark,
+              light: MyntColors.divider,
+            ),
             width: 1,
           ),
         ),
@@ -198,7 +206,8 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
             children: [
               // Header with close button (fixed)
               Container(
-                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 10),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 16, horizontal: 10),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -206,11 +215,7 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
                     Expanded(
                       child: _buildSymbolSection(theme, scripInfo, depthArgs),
                     ),
-                    shadcn.TextButton(
-                      density: shadcn.ButtonDensity.icon,
-                      shape: shadcn.ButtonShape.circle,
-                      size: shadcn.ButtonSize.normal,
-                      child: const Icon(Icons.close),
+                    MyntCloseButton(
                       onPressed: () {
                         shadcn.closeSheet(context);
                       },
@@ -221,7 +226,8 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
               // Border divider
               Container(
                 height: 1,
-                color: shadcn.Theme.of(context).colorScheme.border,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.dividerDark, light: MyntColors.divider),
               ),
               // Scrollable Content
               Expanded(
@@ -236,7 +242,8 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
                         // Details Section
                         _buildDetailsSection(theme),
                         // Reason Section
-                        if (_orderData.rejreason != null && _orderData.rejreason!.isNotEmpty) ...[
+                        if (_orderData.rejreason != null &&
+                            _orderData.rejreason!.isNotEmpty) ...[
                           // const shadcn.Gap(16),
                           _buildReasonWidget(theme, _orderData.rejreason!),
                         ],
@@ -247,10 +254,12 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
                           // const shadcn.Gap(24),
                           Text(
                             'Order History',
-                            style: WebTextStyles.sub(
-                              isDarkTheme: theme.isDarkMode,
-                              color: shadcn.Theme.of(context).colorScheme.foreground,
-                              fontWeight: WebFonts.semiBold,
+                            style: MyntWebTextStyles.bodySmall(
+                              context,
+                              color: resolveThemeColor(context,
+                                  dark: MyntColors.textPrimaryDark,
+                                  light: MyntColors.textPrimary),
+                              fontWeight: MyntFonts.semiBold,
                             ),
                           ),
                           const shadcn.Gap(12),
@@ -268,8 +277,8 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
     );
   }
 
-  Widget _buildSymbolSection(ThemesProvider theme, MarketWatchProvider scripInfo, DepthInputArgs depthArgs) {
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
+  Widget _buildSymbolSection(ThemesProvider theme,
+      MarketWatchProvider scripInfo, DepthInputArgs depthArgs) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -279,9 +288,11 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
             Flexible(
               child: Text(
                 "${_orderData.symbol?.replaceAll("-EQ", "") ?? ''} ${_orderData.expDate ?? ''} ${_orderData.option ?? ''} ",
-                style: WebTextStyles.dialogTitle(
-                  isDarkTheme: theme.isDarkMode,
-                  color: colorScheme.foreground,
+                style: MyntWebTextStyles.title(
+                  context,
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.textPrimaryDark,
+                      light: MyntColors.textPrimary),
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
@@ -297,30 +308,39 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
           ],
         ),
         const SizedBox(height: 8),
-        
+
         // Price and Change
         Row(
           children: [
             Text(
               _orderData.ltp ?? _orderData.close ?? '0.00',
-              style: WebTextStyles.title(
-                isDarkTheme: theme.isDarkMode,
-                color: (_orderData.change == "null" || _orderData.change == null) ||
+              style: MyntWebTextStyles.title(
+                context,
+                color: (_orderData.change == "null" ||
+                            _orderData.change == null) ||
                         _orderData.change == "0.00"
-                    ? colorScheme.mutedForeground
-                    : (_orderData.change?.startsWith("-") == true || _orderData.perChange?.startsWith("-") == true)
-                        ? colorScheme.destructive
-                        : colorScheme.chart2,
-                fontWeight: WebFonts.medium,
+                    ? resolveThemeColor(context,
+                        dark: MyntColors.textSecondaryDark,
+                        light: MyntColors.textSecondary)
+                    : (_orderData.change?.startsWith("-") == true ||
+                            _orderData.perChange?.startsWith("-") == true)
+                        ? resolveThemeColor(context,
+                            dark: MyntColors.lossDark, light: MyntColors.loss)
+                        : resolveThemeColor(context,
+                            dark: MyntColors.profitDark,
+                            light: MyntColors.profit),
+                fontWeight: MyntFonts.medium,
               ),
             ),
             const SizedBox(width: 4),
             Text(
               "${(double.tryParse(_orderData.change ?? '0.00') ?? 0.00).toStringAsFixed(2)} (${_orderData.perChange ?? '0.00'}%)",
-              style: WebTextStyles.sub(
-                isDarkTheme: theme.isDarkMode,
-                color: colorScheme.mutedForeground,
-                fontWeight: WebFonts.medium,
+              style: MyntWebTextStyles.bodySmall(
+                context,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.textSecondaryDark,
+                    light: MyntColors.textSecondary),
+                fontWeight: MyntFonts.medium,
               ),
             ),
           ],
@@ -329,11 +349,10 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
     );
   }
 
-
   Widget _buildActionButtons(ThemesProvider theme) {
-    final isPending = _orderData.status == "PENDING" || 
-                     _orderData.status == "OPEN" || 
-                     _orderData.status == "TRIGGER_PENDING";
+    final isPending = _orderData.status == "PENDING" ||
+        _orderData.status == "OPEN" ||
+        _orderData.status == "TRIGGER_PENDING";
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12),
@@ -344,7 +363,6 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
             // Cancel and Modify buttons in a row
             Row(
               children: [
-                
                 Expanded(
                   child: _buildActionButton(
                     "Modify",
@@ -355,7 +373,6 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
                   ),
                 ),
                 const SizedBox(width: 12),
-
                 Expanded(
                   child: _buildActionButton(
                     "Cancel",
@@ -411,93 +428,66 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
     VoidCallback onPressed, {
     bool isLoading = false,
   }) {
-    final backgroundColor = isPrimary
-        ? (theme.isDarkMode ? WebDarkColors.primaryLight : WebColors.primaryLight)
-        : (theme.isDarkMode
-            ? WebDarkColors.textSecondary.withOpacity(0.6)
-            : WebColors.buttonSecondary);
-    final textColor = isPrimary
-        ? Colors.white
-        : (theme.isDarkMode ? Colors.white : WebColors.primaryLight);
-    final borderColor = theme.isDarkMode ? WebDarkColors.primaryLight : WebColors.primaryLight;
-    
-    return Container(
-      height: 40,
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        border: isPrimary
-            ? null
-            : Border.all(
-                color: borderColor,
-                width: 1,
-              ),
-        borderRadius: BorderRadius.circular(5),
-      ),
-      child: shadcn.TextButton(
-        size: shadcn.ButtonSize.large,
-        density: shadcn.ButtonDensity.dense,
-        onPressed: isLoading ? null : onPressed,
-        shape: shadcn.ButtonShape.rectangle,
-        child: isLoading
-            ? SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    isPrimary
-                        ? Colors.white
-                        : textColor,
-                  ),
-                ),
-              )
-            : Text(
-                text,
-                style: WebTextStyles.buttonMd(
-                  isDarkTheme: theme.isDarkMode,
-                  color: textColor,
-                  fontWeight: WebFonts.bold,
-                ),
-              ),
-      ),
-    );
+    if (isPrimary) {
+      return MyntPrimaryButton(
+        label: text,
+        onPressed: onPressed,
+        isLoading: isLoading,
+        isFullWidth: true,
+      );
+    } else {
+      return MyntOutlinedButton(
+        label: text,
+        onPressed: onPressed,
+        isLoading: isLoading,
+        isFullWidth: true,
+      );
+    }
   }
 
   Widget _buildDetailsSection(ThemesProvider theme) {
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
     final statusText = _getStatusText(_orderData.status);
     final statusColor = _orderData.status == "COMPLETE"
-        ? colorScheme.chart2
+        ? resolveThemeColor(context,
+            dark: MyntColors.profitDark, light: MyntColors.profit)
         : _orderData.status == "OPEN"
-            ? colorScheme.chart1
-            : (_orderData.status == "CANCELED" || _orderData.status == "REJECTED")
-                ? colorScheme.destructive
-                : colorScheme.mutedForeground;
-    
+            ? resolveThemeColor(context,
+                dark: MyntColors.primaryDark, light: MyntColors.primary)
+            : (_orderData.status == "CANCELED" ||
+                    _orderData.status == "REJECTED")
+                ? resolveThemeColor(context,
+                    dark: MyntColors.lossDark, light: MyntColors.loss)
+                : resolveThemeColor(context,
+                    dark: MyntColors.textSecondaryDark,
+                    light: MyntColors.textSecondary);
+
     return Padding(
       padding: const EdgeInsets.only(top: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _rowOfInfoDataWithColor("Status", statusText, theme, statusColor),
-          _rowOfInfoData("Type", _orderData.trantype == "B" ? "Buy" : "Sell", theme),
+          _rowOfInfoData(
+              "Type", _orderData.trantype == "B" ? "Buy" : "Sell", theme),
           _rowOfInfoData("Qty", _getQuantityDisplay(_orderData), theme),
           _rowOfInfoData("Price", _orderData.prc ?? "-", theme),
           _rowOfInfoData("Avg Price", _orderData.avgprc ?? "0.00", theme),
           _rowOfInfoData("Trigger Price", _orderData.trgprc ?? "0.00", theme),
-          _rowOfInfoData("Product / Type", "${_orderData.sPrdtAli} / ${_orderData.prctyp ?? "-"}", theme),
-          _rowOfInfoData("Market Protection", _orderData.mktProtection ?? "-", theme),
+          _rowOfInfoData("Product / Type",
+              "${_orderData.sPrdtAli} / ${_orderData.prctyp ?? "-"}", theme),
+          _rowOfInfoData(
+              "Market Protection", _orderData.mktProtection ?? "-", theme),
           _rowOfInfoData("AMO", _orderData.amo ?? "-", theme),
           _rowOfInfoData("Order Id", _orderData.norenordno ?? "-", theme),
           _rowOfInfoData("Exchange", _orderData.exchordid ?? "-", theme),
-          _rowOfInfoData("Date & Time", formatDateTime(value: _orderData.norentm ?? "-"), theme),
+          _rowOfInfoData("Date & Time",
+              formatDateTime(value: _orderData.norentm ?? "-"), theme),
         ],
       ),
     );
   }
 
   Widget _rowOfInfoData(String title1, String value1, ThemesProvider theme) {
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -506,18 +496,22 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
           children: [
             Text(
               title1,
-              style: WebTextStyles.sub(
-                isDarkTheme: theme.isDarkMode,
-                color: colorScheme.mutedForeground,
-                fontWeight: WebFonts.regular,
+              style: MyntWebTextStyles.bodySmall(
+                context,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.textSecondaryDark,
+                    light: MyntColors.textSecondary),
+                fontWeight: MyntFonts.regular,
               ),
             ),
             Text(
               value1,
-              style: WebTextStyles.sub(
-                isDarkTheme: theme.isDarkMode,
-                color: colorScheme.mutedForeground,
-                fontWeight: WebFonts.medium,
+              style: MyntWebTextStyles.bodySmall(
+                context,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.textPrimaryDark,
+                    light: MyntColors.textPrimary),
+                fontWeight: MyntFonts.medium,
               ),
             ),
           ],
@@ -527,8 +521,8 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
     );
   }
 
-  Widget _rowOfInfoDataWithColor(String title, String value, ThemesProvider theme, Color valueColor) {
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
+  Widget _rowOfInfoDataWithColor(
+      String title, String value, ThemesProvider theme, Color valueColor) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -537,18 +531,20 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
           children: [
             Text(
               title,
-              style: WebTextStyles.sub(
-                isDarkTheme: theme.isDarkMode,
-                color: colorScheme.mutedForeground,
-                fontWeight: WebFonts.regular,
+              style: MyntWebTextStyles.bodySmall(
+                context,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.textSecondaryDark,
+                    light: MyntColors.textSecondary),
+                fontWeight: MyntFonts.regular,
               ),
             ),
             Text(
               value,
-              style: WebTextStyles.sub(
-                isDarkTheme: theme.isDarkMode,
+              style: MyntWebTextStyles.bodySmall(
+                context,
                 color: valueColor,
-                fontWeight: WebFonts.medium,
+                fontWeight: MyntFonts.medium,
               ),
             ),
           ],
@@ -559,25 +555,28 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
   }
 
   Widget _buildReasonWidget(ThemesProvider theme, String reason) {
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           "Reason:",
-          style: WebTextStyles.sub(
-            isDarkTheme: theme.isDarkMode,
-            color: colorScheme.mutedForeground,
-            fontWeight: WebFonts.regular,
+          style: MyntWebTextStyles.bodySmall(
+            context,
+            color: resolveThemeColor(context,
+                dark: MyntColors.textSecondaryDark,
+                light: MyntColors.textSecondary),
+            fontWeight: MyntFonts.regular,
           ),
         ),
         const SizedBox(height: 8),
         Text(
           reason,
-          style: WebTextStyles.sub(
-            isDarkTheme: theme.isDarkMode,
-           color: colorScheme.mutedForeground,
-            fontWeight: WebFonts.medium,
+          style: MyntWebTextStyles.bodySmall(
+            context,
+            color: resolveThemeColor(context,
+                dark: MyntColors.textSecondaryDark,
+                light: MyntColors.textSecondary),
+            fontWeight: MyntFonts.medium,
           ),
         ),
       ],
@@ -612,14 +611,16 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
     bool isFirst,
     bool isLast,
   ) {
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
     final status = orderHistoryData.status ?? '';
     final lineColor = status == "COMPLETE"
-        ? colorScheme.chart2
+        ? resolveThemeColor(context,
+            dark: MyntColors.profitDark, light: MyntColors.profit)
         : (status == "CANCELED" || status == "REJECTED")
-            ? colorScheme.destructive
-            : colorScheme.chart1;
-    
+            ? resolveThemeColor(context,
+                dark: MyntColors.lossDark, light: MyntColors.loss)
+            : resolveThemeColor(context,
+                dark: MyntColors.primaryDark, light: MyntColors.primary);
+
     final statusText = orderHistoryData.stIntrn != null
         ? "${orderHistoryData.stIntrn![0].toUpperCase()}${orderHistoryData.stIntrn!.substring(1).toLowerCase().replaceAll("_", " ")}"
         : 'Unknown';
@@ -675,19 +676,23 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
                 children: [
                   Text(
                     statusText,
-                    style: WebTextStyles.sub(
-                      isDarkTheme: theme.isDarkMode,
-                      color: colorScheme.foreground,
-                      fontWeight: WebFonts.regular,
+                    style: MyntWebTextStyles.bodySmall(
+                      context,
+                      color: resolveThemeColor(context,
+                          dark: MyntColors.textPrimaryDark,
+                          light: MyntColors.textPrimary),
+                      fontWeight: MyntFonts.regular,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     timeText,
-                    style: WebTextStyles.para(
-                      isDarkTheme: theme.isDarkMode,
-                      color: colorScheme.mutedForeground,
-                      fontWeight: WebFonts.regular,
+                    style: MyntWebTextStyles.para(
+                      context,
+                      color: resolveThemeColor(context,
+                          dark: MyntColors.textSecondaryDark,
+                          light: MyntColors.textSecondary),
+                      fontWeight: MyntFonts.regular,
                     ),
                   ),
                 ],
@@ -707,7 +712,8 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
   String _getQuantityDisplay(OrderBookModel order) {
     try {
       int filledQty = 0;
-      if (order.status != "COMPLETE" && (order.fillshares?.isNotEmpty ?? false)) {
+      if (order.status != "COMPLETE" &&
+          (order.fillshares?.isNotEmpty ?? false)) {
         filledQty = int.tryParse(order.fillshares.toString()) ?? 0;
       } else if (order.status == "COMPLETE") {
         filledQty = int.tryParse(order.rqty.toString()) ?? 0;
@@ -715,10 +721,12 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
         filledQty = int.tryParse(order.dscqty.toString()) ?? 0;
       }
 
-      int lotSize = order.exch == 'MCX' ? (int.tryParse(order.ls.toString()) ?? 1) : 1;
+      int lotSize =
+          order.exch == 'MCX' ? (int.tryParse(order.ls.toString()) ?? 1) : 1;
       int displayFilledQty = filledQty ~/ lotSize;
-      int displayTotalQty = (int.tryParse(order.qty.toString()) ?? 0) ~/ lotSize;
-      
+      int displayTotalQty =
+          (int.tryParse(order.qty.toString()) ?? 0) ~/ lotSize;
+
       return "$displayFilledQty / $displayTotalQty";
     } catch (e) {
       return order.qty?.toString() ?? '0';
@@ -734,13 +742,15 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
         _isProcessingCancel = true;
       });
 
-      final targetContext = widget.parentContext ?? rootNavigatorKey.currentContext;
+      final targetContext =
+          widget.parentContext ?? rootNavigatorKey.currentContext;
       if (targetContext == null) {
         if (mounted) {
           setState(() {
             _isProcessingCancel = false;
           });
-          ResponsiveSnackBar.showError(context, "Unable to access target context");
+          ResponsiveSnackBar.showError(
+              context, "Unable to access target context");
         }
         return;
       }
@@ -773,11 +783,11 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
       }
 
       await ref.read(orderProvider).fetchOrderCancel(
-        "${_orderData.norenordno}",
-        targetContext,
-        false,
-      );
-      
+            "${_orderData.norenordno}",
+            targetContext,
+            false,
+          );
+
       if (targetContext.mounted) {
         ResponsiveSnackBar.showSuccess(targetContext, 'Order Cancelled');
         await ref.read(orderProvider).fetchOrderBook(targetContext, true);
@@ -785,7 +795,8 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
     } catch (e) {
       final rootCtx = rootNavigatorKey.currentContext;
       if (rootCtx != null && rootCtx.mounted) {
-        ResponsiveSnackBar.showError(rootCtx, 'Failed to cancel order: ${e.toString()}');
+        ResponsiveSnackBar.showError(
+            rootCtx, 'Failed to cancel order: ${e.toString()}');
       }
     } finally {
       if (mounted) {
@@ -804,7 +815,8 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
         _isProcessingModify = true;
       });
 
-      print('🟢 [DETAILS SHEET MODIFY] Starting modify order from details sheet');
+      print(
+          '🟢 [DETAILS SHEET MODIFY] Starting modify order from details sheet');
       print('🟢 [DETAILS SHEET MODIFY] Order Data:');
       print('  - token: ${_orderData.token}');
       print('  - exch: ${_orderData.exch}');
@@ -817,18 +829,22 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
       print('  - prd: ${_orderData.prd}');
       print('  - sPrdtAli: ${_orderData.sPrdtAli}');
       print('  - status: ${_orderData.status}');
-      print('🟢 [DETAILS SHEET MODIFY] widget.parentContext: ${widget.parentContext}');
+      print(
+          '🟢 [DETAILS SHEET MODIFY] widget.parentContext: ${widget.parentContext}');
       print('🟢 [DETAILS SHEET MODIFY] mounted: $mounted');
 
       // Use same pattern as repeat order - fallback to rootNavigatorKey if parentContext is null
-      final targetContext = widget.parentContext ?? rootNavigatorKey.currentContext;
+      final targetContext =
+          widget.parentContext ?? rootNavigatorKey.currentContext;
       if (targetContext == null || !targetContext.mounted) {
-        print('🟢 [DETAILS SHEET MODIFY] ERROR: targetContext is null or not mounted');
+        print(
+            '🟢 [DETAILS SHEET MODIFY] ERROR: targetContext is null or not mounted');
         if (mounted) {
           setState(() {
             _isProcessingModify = false;
           });
-          ResponsiveSnackBar.showError(context, "Unable to access target context");
+          ResponsiveSnackBar.showError(
+              context, "Unable to access target context");
         }
         return;
       }
@@ -836,14 +852,15 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
       print('🟢 [DETAILS SHEET MODIFY] targetContext is valid and mounted');
 
       await ref.read(marketWatchProvider).fetchScripInfo(
-        "${_orderData.token}",
-        '${_orderData.exch}',
-        targetContext,
-        true,
-      );
+            "${_orderData.token}",
+            '${_orderData.exch}',
+            targetContext,
+            true,
+          );
 
       if (!mounted) {
-        print('🟢 [DETAILS SHEET MODIFY] Widget not mounted after fetchScripInfo');
+        print(
+            '🟢 [DETAILS SHEET MODIFY] Widget not mounted after fetchScripInfo');
         return;
       }
 
@@ -854,7 +871,8 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
           setState(() {
             _isProcessingModify = false;
           });
-          ResponsiveSnackBar.showError(targetContext, 'Unable to fetch scrip information');
+          ResponsiveSnackBar.showError(
+              targetContext, 'Unable to fetch scrip information');
         }
         return;
       }
@@ -890,7 +908,8 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
       // Use targetContext (parent context from table) - same as hover modify uses
       // The hover modify uses 'context' which is the table context, same as targetContext here
       if (!targetContext.mounted) {
-        print('🟢 [DETAILS SHEET MODIFY] ERROR: targetContext not mounted after sheet close');
+        print(
+            '🟢 [DETAILS SHEET MODIFY] ERROR: targetContext not mounted after sheet close');
         if (mounted) {
           setState(() {
             _isProcessingModify = false;
@@ -899,7 +918,8 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
         return;
       }
 
-      print('🟢 [DETAILS SHEET MODIFY] targetContext still mounted, calling showDraggable');
+      print(
+          '🟢 [DETAILS SHEET MODIFY] targetContext still mounted, calling showDraggable');
 
       // Use targetContext for overlay - same as hover modify button uses 'context'
       // This is the table context which has the overlay
@@ -909,12 +929,13 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
         orderArg: orderArgs,
         scripInfo: scripInfo,
       );
-      
+
       print('🟢 [DETAILS SHEET MODIFY] showDraggable called successfully');
     } catch (e) {
       final rootCtx = rootNavigatorKey.currentContext;
       if (rootCtx != null && rootCtx.mounted) {
-        ResponsiveSnackBar.showError(rootCtx, 'Failed to open modify order: ${e.toString()}');
+        ResponsiveSnackBar.showError(
+            rootCtx, 'Failed to open modify order: ${e.toString()}');
       }
     } finally {
       if (mounted) {
@@ -933,23 +954,25 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
         _isProcessingRepeat = true;
       });
 
-      final targetContext = widget.parentContext ?? rootNavigatorKey.currentContext;
+      final targetContext =
+          widget.parentContext ?? rootNavigatorKey.currentContext;
       if (targetContext == null) {
         if (mounted) {
           setState(() {
             _isProcessingRepeat = false;
           });
-          ResponsiveSnackBar.showError(context, "Unable to access target context");
+          ResponsiveSnackBar.showError(
+              context, "Unable to access target context");
         }
         return;
       }
 
       await ref.read(marketWatchProvider).fetchScripInfo(
-        "${_orderData.token}",
-        "${_orderData.exch}",
-        targetContext,
-        true,
-      );
+            "${_orderData.token}",
+            "${_orderData.exch}",
+            targetContext,
+            true,
+          );
 
       if (!mounted) return;
 
@@ -959,7 +982,8 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
           setState(() {
             _isProcessingRepeat = false;
           });
-          ResponsiveSnackBar.showError(targetContext, 'Unable to fetch scrip information');
+          ResponsiveSnackBar.showError(
+              targetContext, 'Unable to fetch scrip information');
         }
         return;
       }
@@ -984,7 +1008,8 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
       }
     } catch (e) {
       if (mounted) {
-        ResponsiveSnackBar.showError(context, 'Failed to open place order: ${e.toString()}');
+        ResponsiveSnackBar.showError(
+            context, 'Failed to open place order: ${e.toString()}');
       }
     } finally {
       if (mounted) {
@@ -995,7 +1020,8 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
     }
   }
 
-  Future<bool?> _showCancelOrderDialog(ThemesProvider theme, BuildContext targetContext) async {
+  Future<bool?> _showCancelOrderDialog(
+      ThemesProvider theme, BuildContext targetContext) async {
     final symbol = _orderData.tsym?.replaceAll("-EQ", "") ?? 'N/A';
     final exchange = _orderData.exch ?? '';
     final displayText = '$symbol $exchange'.trim();
@@ -1008,7 +1034,11 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
           child: Container(
             width: 400,
             decoration: BoxDecoration(
-              color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+              color: resolveThemeColor(
+                dialogContext,
+                dark: Colors.black,
+                light: Colors.white,
+              ),
               borderRadius: BorderRadius.circular(5),
             ),
             child: Column(
@@ -1016,12 +1046,17 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
               children: [
                 // Header
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   margin: const EdgeInsets.only(bottom: 8),
                   decoration: BoxDecoration(
                     border: Border(
                       bottom: BorderSide(
-                        color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
+                        color: resolveThemeColor(
+                          dialogContext,
+                          dark: MyntColors.dividerDark,
+                          light: MyntColors.divider,
+                        ),
                       ),
                     ),
                   ),
@@ -1030,17 +1065,16 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
                     children: [
                       Text(
                         'Cancel Order',
-                        style: WebTextStyles.dialogTitle(
-                          isDarkTheme: theme.isDarkMode,
-                          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                        style: MyntWebTextStyles.title(
+                          dialogContext,
+                          color: resolveThemeColor(
+                            dialogContext,
+                            dark: MyntColors.textPrimaryDark,
+                            light: MyntColors.textPrimary,
+                          ),
                         ),
                       ),
-                      IconButton(
-                        icon: Icon(
-                          Icons.close,
-                          size: 20,
-                          color: theme.isDarkMode ? WebDarkColors.iconSecondary : WebColors.iconSecondary,
-                        ),
+                      MyntCloseButton(
                         onPressed: () => Navigator.of(dialogContext).pop(false),
                       ),
                     ],
@@ -1054,38 +1088,33 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
                       Text(
                         'Are you sure you want to cancel this order?',
                         textAlign: TextAlign.center,
-                        style: WebTextStyles.dialogContent(
-                          isDarkTheme: theme.isDarkMode,
-                          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                        style: MyntWebTextStyles.bodySmall(
+                          dialogContext,
+                          color: resolveThemeColor(
+                            dialogContext,
+                            dark: MyntColors.textPrimaryDark,
+                            light: MyntColors.textPrimary,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         displayText,
                         textAlign: TextAlign.center,
-                        style: WebTextStyles.dialogContent(
-                          isDarkTheme: theme.isDarkMode,
-                          color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
+                        style: MyntWebTextStyles.bodySmall(
+                          dialogContext,
+                          color: resolveThemeColor(
+                            dialogContext,
+                            dark: MyntColors.textSecondaryDark,
+                            light: MyntColors.textSecondary,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 24),
-                      SizedBox(
-                        width: double.infinity,
-                        height: 40,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: theme.isDarkMode ? WebDarkColors.error : WebColors.error,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
-                          ),
-                          onPressed: () => Navigator.of(dialogContext).pop(true),
-                          child: Text(
-                            'Cancel Order',
-                            style: WebTextStyles.buttonMd(
-                              isDarkTheme: theme.isDarkMode,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
+                      MyntPrimaryButton(
+                        label: 'Cancel Order',
+                        onPressed: () => Navigator.of(dialogContext).pop(true),
+                        isFullWidth: true,
                       ),
                     ],
                   ),

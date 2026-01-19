@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mynt_plus/res/global_font_web.dart';
 
 import '../../../../models/ipo_model/ipo_order_book_model.dart';
 import '../../../../models/ipo_model/ipo_place_order_model.dart';

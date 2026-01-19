@@ -7,12 +7,13 @@ import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import '../../../models/marketwatch_model/alert_model/alert_pending_model.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/thems.dart';
-import '../../../res/res.dart';
-import '../../../res/web_colors.dart';
-import '../../../res/global_font_web.dart';
+import '../../../res/mynt_web_text_styles.dart';
+import '../../../res/mynt_web_color_styles.dart';
 import '../../../sharedWidget/cust_text_formfield.dart';
 import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/snack_bar.dart';
+import '../../../sharedWidget/common_buttons_web.dart';
+import '../../../res/res.dart';
 
 class PendingAlertDetailScreenWeb extends ConsumerStatefulWidget {
   final AlertPendingModel alert;
@@ -94,14 +95,14 @@ class _PendingAlertDetailScreenWebState
   @override
   Widget build(BuildContext context) {
     final theme = ref.read(themeProvider);
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
-    
+
     return Container(
       constraints: const BoxConstraints(maxWidth: 400),
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(
-            color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
+            color: resolveThemeColor(context,
+                dark: MyntColors.dividerDark, light: MyntColors.divider),
             width: 1,
           ),
         ),
@@ -113,7 +114,8 @@ class _PendingAlertDetailScreenWebState
             children: [
               // Header with close button (fixed)
               Container(
-                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 10),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 16, horizontal: 10),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -121,11 +123,7 @@ class _PendingAlertDetailScreenWebState
                     Expanded(
                       child: _buildSymbolSection(theme),
                     ),
-                    shadcn.TextButton(
-                      density: shadcn.ButtonDensity.icon,
-                      shape: shadcn.ButtonShape.circle,
-                      size: shadcn.ButtonSize.normal,
-                      child: const Icon(Icons.close),
+                    MyntCloseButton(
                       onPressed: () {
                         shadcn.closeSheet(context);
                       },
@@ -136,7 +134,8 @@ class _PendingAlertDetailScreenWebState
               // Border divider
               Container(
                 height: 1,
-                color: colorScheme.border,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.dividerDark, light: MyntColors.divider),
               ),
               // Scrollable Content
               Expanded(
@@ -166,7 +165,6 @@ class _PendingAlertDetailScreenWebState
   }
 
   Widget _buildSymbolSection(ThemesProvider theme) {
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -176,9 +174,11 @@ class _PendingAlertDetailScreenWebState
             Flexible(
               child: Text(
                 widget.alert.tsym?.replaceAll("-EQ", "") ?? '',
-                style: WebTextStyles.dialogTitle(
-                  isDarkTheme: theme.isDarkMode,
-                  color: colorScheme.foreground,
+                style: MyntWebTextStyles.title(
+                  context,
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.textPrimaryDark,
+                      light: MyntColors.textPrimary),
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
@@ -186,38 +186,49 @@ class _PendingAlertDetailScreenWebState
             const SizedBox(width: 4),
             Text(
               "${widget.alert.exch}",
-              style: WebTextStyles.dialogTitle(
-                isDarkTheme: theme.isDarkMode,
-                color: colorScheme.mutedForeground,
+              style: MyntWebTextStyles.title(
+                context,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.textSecondaryDark,
+                    light: MyntColors.textSecondary),
               ),
             ),
           ],
         ),
         const SizedBox(height: 8),
-        
+
         // Price and Change
         Row(
           children: [
             Text(
               "${widget.alert.ltp != "null" ? widget.alert.ltp ?? widget.alert.close ?? 0.00 : '0.00'}",
-              style: WebTextStyles.title(
-                isDarkTheme: theme.isDarkMode,
-                color: (widget.alert.change == "null" || widget.alert.change == null) ||
+              style: MyntWebTextStyles.title(
+                context,
+                color: (widget.alert.change == "null" ||
+                            widget.alert.change == null) ||
                         widget.alert.change == "0.00"
-                    ? colorScheme.mutedForeground
-                    : (widget.alert.change?.startsWith("-") == true || widget.alert.perChange?.startsWith("-") == true)
-                        ? colorScheme.destructive
-                        : colorScheme.chart2,
-                fontWeight: WebFonts.medium,
+                    ? resolveThemeColor(context,
+                        dark: MyntColors.textSecondaryDark,
+                        light: MyntColors.textSecondary)
+                    : (widget.alert.change?.startsWith("-") == true ||
+                            widget.alert.perChange?.startsWith("-") == true)
+                        ? resolveThemeColor(context,
+                            dark: MyntColors.lossDark, light: MyntColors.loss)
+                        : resolveThemeColor(context,
+                            dark: MyntColors.profitDark,
+                            light: MyntColors.profit),
+                fontWeight: MyntFonts.medium,
               ),
             ),
             const SizedBox(width: 4),
             Text(
               "${(double.tryParse(widget.alert.change ?? '0.00') ?? 0.00).toStringAsFixed(2)} (${(double.tryParse(widget.alert.perChange ?? '0.00') ?? 0.00).toStringAsFixed(2)}%)",
-              style: WebTextStyles.sub(
-                isDarkTheme: theme.isDarkMode,
-                color: colorScheme.mutedForeground,
-                fontWeight: WebFonts.medium,
+              style: MyntWebTextStyles.bodySmall(
+                context,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.textSecondaryDark,
+                    light: MyntColors.textSecondary),
+                fontWeight: MyntFonts.medium,
               ),
             ),
           ],
@@ -227,16 +238,6 @@ class _PendingAlertDetailScreenWebState
   }
 
   Widget _buildActionButtons(ThemesProvider theme) {
-    final primaryBackgroundColor = theme.isDarkMode
-        ? WebDarkColors.primaryLight
-        : WebColors.primaryLight;
-    final secondaryBackgroundColor = theme.isDarkMode
-        ? WebDarkColors.textSecondary.withOpacity(0.6)
-        : WebColors.buttonSecondary;
-    final primaryTextColor = Colors.white;
-    final secondaryTextColor = theme.isDarkMode ? Colors.white : WebColors.primaryLight;
-    final borderColor = theme.isDarkMode ? WebDarkColors.primaryLight : WebColors.primaryLight;
-    
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12),
       child: Row(
@@ -246,9 +247,6 @@ class _PendingAlertDetailScreenWebState
               "Modify Alert",
               true,
               theme,
-              primaryBackgroundColor,
-              primaryTextColor,
-              null,
               (isModifying ||
                       isCancelling ||
                       errorText.isNotEmpty ||
@@ -261,13 +259,13 @@ class _PendingAlertDetailScreenWebState
 
                       try {
                         await ref.read(marketWatchProvider).fetchmodifyalert(
-                          "${widget.alert.exch}",
-                          "${widget.alert.tsym}",
-                          modifiedValue,
-                          "${widget.alert.aiT}",
-                          "${widget.alert.alId}",
-                          context,
-                        );
+                              "${widget.alert.exch}",
+                              "${widget.alert.tsym}",
+                              modifiedValue,
+                              "${widget.alert.aiT}",
+                              "${widget.alert.alId}",
+                              context,
+                            );
 
                         await ref
                             .read(marketWatchProvider)
@@ -276,8 +274,7 @@ class _PendingAlertDetailScreenWebState
                         if (mounted) shadcn.closeSheet(context);
                       } catch (e) {
                         if (mounted) {
-                          showResponsiveErrorMessage(
-                              context,
+                          showResponsiveErrorMessage(context,
                               "Failed to modify alert: ${e.toString()}");
                         }
                       } finally {
@@ -297,9 +294,6 @@ class _PendingAlertDetailScreenWebState
               "Cancel Alert",
               false,
               theme,
-              secondaryBackgroundColor,
-              secondaryTextColor,
-              borderColor,
               (isModifying || isCancelling)
                   ? null
                   : () async {
@@ -324,8 +318,7 @@ class _PendingAlertDetailScreenWebState
                         if (mounted) shadcn.closeSheet(context);
                       } catch (e) {
                         if (mounted) {
-                          showResponsiveErrorMessage(
-                              context,
+                          showResponsiveErrorMessage(context,
                               "Failed to cancel alert: ${e.toString()}");
                         }
                       } finally {
@@ -348,48 +341,24 @@ class _PendingAlertDetailScreenWebState
     String text,
     bool isPrimary,
     ThemesProvider theme,
-    Color backgroundColor,
-    Color textColor,
-    Color? borderColor,
     VoidCallback? onPressed, {
     bool isLoading = false,
   }) {
-    return Container(
-      height: 40,
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        border: isPrimary
-            ? null
-            : Border.all(
-                color: borderColor ?? Colors.transparent,
-                width: 1,
-              ),
-        borderRadius: BorderRadius.circular(5),
-      ),
-      child: shadcn.TextButton(
-        size: shadcn.ButtonSize.large,
-        density: shadcn.ButtonDensity.dense,
+    if (isPrimary) {
+      return MyntPrimaryButton(
+        label: text,
         onPressed: onPressed,
-        shape: shadcn.ButtonShape.rectangle,
-        child: isLoading
-            ? SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(textColor),
-                ),
-              )
-            : Text(
-                text,
-                style: WebTextStyles.sub(
-                  isDarkTheme: theme.isDarkMode,
-                  color: textColor,
-                  fontWeight: WebFonts.bold,
-                ),
-              ),
-      ),
-    );
+        isLoading: isLoading,
+        isFullWidth: true,
+      );
+    } else {
+      return MyntOutlinedButton(
+        label: text,
+        onPressed: onPressed,
+        isLoading: isLoading,
+        isFullWidth: true,
+      );
+    }
   }
 
   Widget _buildAlertDetailsSection(ThemesProvider theme) {
@@ -437,7 +406,6 @@ class _PendingAlertDetailScreenWebState
   }
 
   Widget _rowOfInfoData(String label, dynamic value, ThemesProvider theme) {
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -446,20 +414,24 @@ class _PendingAlertDetailScreenWebState
           children: [
             Text(
               label,
-              style: WebTextStyles.sub(
-                isDarkTheme: theme.isDarkMode,
-                color: colorScheme.mutedForeground,
-                fontWeight: WebFonts.regular,
+              style: MyntWebTextStyles.bodySmall(
+                context,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.textSecondaryDark,
+                    light: MyntColors.textSecondary),
+                fontWeight: MyntFonts.regular,
               ),
             ),
             value is Widget
                 ? value
                 : Text(
                     value.toString(),
-                    style: WebTextStyles.sub(
-                      isDarkTheme: theme.isDarkMode,
-                      color: colorScheme.mutedForeground,
-                      fontWeight: WebFonts.medium,
+                    style: MyntWebTextStyles.bodySmall(
+                      context,
+                      color: resolveThemeColor(context,
+                          dark: MyntColors.textPrimaryDark,
+                          light: MyntColors.textPrimary),
+                      fontWeight: MyntFonts.medium,
                     ),
                   ),
           ],
@@ -470,19 +442,25 @@ class _PendingAlertDetailScreenWebState
   }
 
   Widget _buildConditionWidget(ThemesProvider theme) {
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
-    final isAbove = widget.alert.aiT == "LTP_A" || widget.alert.aiT == "CH_PER_A";
-    final conditionColor = isAbove ? colorScheme.chart2 : colorScheme.destructive;
-    
+    final isAbove =
+        widget.alert.aiT == "LTP_A" || widget.alert.aiT == "CH_PER_A";
+    final conditionColor = isAbove
+        ? resolveThemeColor(context,
+            dark: MyntColors.profitDark, light: MyntColors.profit)
+        : resolveThemeColor(context,
+            dark: MyntColors.lossDark, light: MyntColors.loss);
+
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           isAbove ? "Above" : "Below",
-          style: WebTextStyles.sub(
-            isDarkTheme: theme.isDarkMode,
-            color: colorScheme.foreground,
-            fontWeight: WebFonts.medium,
+          style: MyntWebTextStyles.bodySmall(
+            context,
+            color: resolveThemeColor(context,
+                dark: MyntColors.textPrimaryDark,
+                light: MyntColors.textPrimary),
+            fontWeight: MyntFonts.medium,
           ),
         ),
         const SizedBox(width: 4),
@@ -501,57 +479,56 @@ class _PendingAlertDetailScreenWebState
       children: [
         Text(
           "Modify Alert value",
-          style: WebTextStyles.formLabel(
-            isDarkTheme: theme.isDarkMode,
-            color: theme.isDarkMode
-                ? WebDarkColors.textPrimary
-                : WebColors.textPrimary,
+          style: MyntWebTextStyles.bodySmall(
+            context,
+            color: resolveThemeColor(context,
+                dark: MyntColors.textPrimaryDark,
+                light: MyntColors.textPrimary),
+            fontWeight: MyntFonts.medium,
           ),
         ),
         const SizedBox(height: 10),
         SizedBox(
           height: 40,
           child: CustomTextFormField(
-            fillColor: theme.isDarkMode
-                ? WebDarkColors.backgroundTertiary
-                : WebColors.backgroundTertiary,
+            fillColor: resolveThemeColor(context,
+                dark: MyntColors.searchBgDark, light: MyntColors.searchBg),
             textCtrl: valueCtrl,
             textAlign: TextAlign.start,
             inputFormate: [
               FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
             ],
-            style: WebTextStyles.formInput(
-              isDarkTheme: theme.isDarkMode,
-              color: theme.isDarkMode
-                  ? WebDarkColors.textPrimary
-                  : WebColors.textPrimary,
+            style: MyntWebTextStyles.tableCell(
+              context,
+              color: resolveThemeColor(context,
+                  dark: MyntColors.textPrimaryDark,
+                  light: MyntColors.textPrimary),
             ),
             keyboardType: TextInputType.number,
             hintText: "0",
-            hintStyle: WebTextStyles.helperText(
-              isDarkTheme: theme.isDarkMode,
-              color: theme.isDarkMode
-                  ? WebDarkColors.textSecondary
-                  : WebColors.textSecondary,
+            hintStyle: MyntWebTextStyles.bodySmall(
+              context,
+              color: resolveThemeColor(context,
+                  dark: MyntColors.textSecondaryDark,
+                  light: MyntColors.textSecondary),
             ),
-            prefixIcon: widget.alert.aiT == "CH_PER_A" ||
-                    widget.alert.aiT == "CH_PER_B"
-                ? Icon(
-                      Icons.percent_outlined,
-                      color: theme.isDarkMode
-                          ? WebDarkColors.textSecondary
-                          : WebColors.textSecondary,
-                      size: 18,
-                    )
-                  : SvgPicture.asset(
-                      assets.ruppeIcon,
-                      colorFilter: ColorFilter.mode(
-                        theme.isDarkMode
-                            ? WebDarkColors.textSecondary
-                            : WebColors.textSecondary,
-                        BlendMode.srcIn,
-                      ),
-                      fit: BoxFit.scaleDown),
+            prefixIcon:
+                widget.alert.aiT == "CH_PER_A" || widget.alert.aiT == "CH_PER_B"
+                    ? Icon(
+                        Icons.percent_outlined,
+                        color: resolveThemeColor(context,
+                            dark: MyntColors.textSecondaryDark,
+                            light: MyntColors.textSecondary),
+                        size: 18,
+                      )
+                    : SvgPicture.asset(assets.ruppeIcon,
+                        colorFilter: ColorFilter.mode(
+                          theme.isDarkMode
+                              ? MyntColors.textSecondaryDark
+                              : MyntColors.textSecondary,
+                          BlendMode.srcIn,
+                        ),
+                        fit: BoxFit.scaleDown),
             onChanged: (value) {
               if (mounted) {
                 setState(() {
@@ -565,9 +542,10 @@ class _PendingAlertDetailScreenWebState
           const SizedBox(height: 8),
           Text(
             errorText,
-            style: WebTextStyles.helperText(
-              isDarkTheme: theme.isDarkMode,
-              color: WebDarkColors.error,
+            style: MyntWebTextStyles.bodySmall(
+              context,
+              color: resolveThemeColor(context,
+                  dark: MyntColors.lossDark, light: MyntColors.loss),
             ),
           ),
         ],
@@ -589,7 +567,8 @@ class _PendingAlertDetailScreenWebState
           child: Container(
             width: 400,
             decoration: BoxDecoration(
-              color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+              color: resolveThemeColor(dialogContext,
+                  dark: const Color(0xFF0F172A), light: Colors.white),
               borderRadius: BorderRadius.circular(5),
             ),
             child: Column(
@@ -597,13 +576,14 @@ class _PendingAlertDetailScreenWebState
               children: [
                 // Header
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
                     border: Border(
                       bottom: BorderSide(
-                        color: theme.isDarkMode
-                            ? WebDarkColors.divider
-                            : WebColors.divider,
+                        color: resolveThemeColor(dialogContext,
+                            dark: MyntColors.dividerDark,
+                            light: MyntColors.divider),
                       ),
                     ),
                   ),
@@ -612,36 +592,15 @@ class _PendingAlertDetailScreenWebState
                     children: [
                       Text(
                         'Cancel Alert',
-                        style: WebTextStyles.dialogTitle(
-                          isDarkTheme: theme.isDarkMode,
-                          color: theme.isDarkMode
-                              ? WebDarkColors.textPrimary
-                              : WebColors.textPrimary,
+                        style: MyntWebTextStyles.title(
+                          dialogContext,
+                          color: resolveThemeColor(dialogContext,
+                              dark: MyntColors.textPrimaryDark,
+                              light: MyntColors.textPrimary),
                         ),
                       ),
-                      Material(
-                        color: Colors.transparent,
-                        shape: const CircleBorder(),
-                        child: InkWell(
-                          customBorder: const CircleBorder(),
-                          splashColor: theme.isDarkMode
-                              ? Colors.white.withOpacity(.15)
-                              : Colors.black.withOpacity(.15),
-                          highlightColor: theme.isDarkMode
-                              ? Colors.white.withOpacity(.08)
-                              : Colors.black.withOpacity(.08),
-                          onTap: () => Navigator.of(dialogContext).pop(false),
-                          child: Padding(
-                            padding: const EdgeInsets.all(4),
-                            child: Icon(
-                              Icons.close,
-                              size: 20,
-                              color: theme.isDarkMode
-                                  ? WebDarkColors.textSecondary
-                                  : WebColors.textSecondary,
-                            ),
-                          ),
-                        ),
+                      MyntCloseButton(
+                        onPressed: () => Navigator.of(dialogContext).pop(false),
                       ),
                     ],
                   ),
@@ -661,11 +620,11 @@ class _PendingAlertDetailScreenWebState
                             child: Text(
                               'Are you sure you want to cancel this alert?',
                               textAlign: TextAlign.center,
-                              style: WebTextStyles.dialogContent(
-                                isDarkTheme: theme.isDarkMode,
-                                color: theme.isDarkMode
-                                    ? WebDarkColors.textPrimary
-                                    : WebColors.textPrimary,
+                              style: MyntWebTextStyles.head(
+                                dialogContext,
+                                color: resolveThemeColor(dialogContext,
+                                    dark: MyntColors.textPrimaryDark,
+                                    light: MyntColors.textPrimary),
                               ),
                             ),
                           ),
@@ -675,41 +634,21 @@ class _PendingAlertDetailScreenWebState
                           child: Text(
                             displayText,
                             textAlign: TextAlign.center,
-                            style: WebTextStyles.dialogContent(
-                              isDarkTheme: theme.isDarkMode,
-                              color: theme.isDarkMode
-                                  ? WebDarkColors.textSecondary
-                                  : WebColors.textSecondary,
+                            style: MyntWebTextStyles.bodySmall(
+                              dialogContext,
+                              color: resolveThemeColor(dialogContext,
+                                  dark: MyntColors.textSecondaryDark,
+                                  light: MyntColors.textSecondary),
                             ),
                           ),
                         ),
                         const SizedBox(height: 24),
                         SizedBox(
                           width: double.infinity,
-                          height: 40,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: theme.isDarkMode
-                                  ? WebDarkColors.primary
-                                  : WebColors.primary,
-                              borderRadius: BorderRadius.circular(5),
-                            ),
-                            child: TextButton(
-                              onPressed: () =>
-                                  Navigator.of(dialogContext).pop(true),
-                              style: TextButton.styleFrom(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(5),
-                                ),
-                              ),
-                              child: Text(
-                                'Yes, Cancel',
-                                style: WebTextStyles.buttonMd(
-                                  isDarkTheme: theme.isDarkMode,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
+                          child: MyntPrimaryButton(
+                            label: 'Yes, Cancel',
+                            onPressed: () =>
+                                Navigator.of(dialogContext).pop(true),
                           ),
                         ),
                       ],
@@ -723,6 +662,4 @@ class _PendingAlertDetailScreenWebState
       },
     );
   }
-
 }
-
