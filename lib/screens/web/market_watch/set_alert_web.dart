@@ -163,7 +163,9 @@ class _SetAlertWebState extends State<SetAlertWeb> {
               _disableAllChartIframes();
             },
             child: Dialog(
-              backgroundColor: shadcn.Theme.of(context).colorScheme.background,
+              backgroundColor: resolveThemeColor(context,
+                  dark: MyntColors.backgroundColorDark,
+                  light: MyntColors.backgroundColor),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
@@ -181,8 +183,8 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                       decoration: BoxDecoration(
                         border: Border(
                           bottom: BorderSide(
-                             color:shadcn.Theme.of(context).colorScheme.border
-                          ),
+                              color:
+                                  shadcn.Theme.of(context).colorScheme.border),
                         ),
                       ),
                       child: Row(
@@ -208,7 +210,7 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                                     "${widget.wlvalue.symbol.toUpperCase()} ${widget.wlvalue.option}",
                                     style: MyntWebTextStyles.title(
                                       context,
-                                      fontWeight: MyntFonts.bold,
+                                      fontWeight: MyntFonts.medium,
                                       color: resolveThemeColor(
                                         context,
                                         dark: MyntColors.textPrimaryDark,
@@ -224,20 +226,7 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                                         "${depthdata.lp != "null" ? depthdata.lp ?? depthdata.c ?? 0.00 : '0.00'}",
                                         style: MyntWebTextStyles.price(
                                           context,
-                                          fontWeight: MyntFonts.semiBold,
-                                          color: resolveThemeColor(
-                                            context,
-                                            dark: MyntColors.textPrimaryDark,
-                                            light: MyntColors.textPrimary,
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        "${(double.tryParse(depthdata.chng ?? '0.00') ?? 0.00).toStringAsFixed(2)} (${(double.tryParse(depthdata.pc ?? '0.00') ?? 0.00).toStringAsFixed(2)}%)",
-                                        style: MyntWebTextStyles.priceChange(
-                                          context,
-                                          fontWeight: MyntFonts.semiBold,
+                                          fontWeight: MyntFonts.medium,
                                           color: (depthdata.chng == "null" ||
                                                       depthdata.chng == null) ||
                                                   depthdata.chng == "0.00"
@@ -263,6 +252,19 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                                                           MyntColors.profitDark,
                                                       light: MyntColors.profit,
                                                     ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        "${(double.tryParse(depthdata.chng ?? '0.00') ?? 0.00).toStringAsFixed(2)} (${(double.tryParse(depthdata.pc ?? '0.00') ?? 0.00).toStringAsFixed(2)}%)",
+                                        style: MyntWebTextStyles.priceChange(
+                                          context,
+                                          fontWeight: MyntFonts.medium,
+                                          color: resolveThemeColor(
+                                            context,
+                                            dark: MyntColors.textPrimaryDark,
+                                            light: MyntColors.textPrimary,
+                                          ),
                                         ),
                                       ),
                                     ],
@@ -295,7 +297,7 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                                     'Type',
                                     style: MyntWebTextStyles.body(
                                       context,
-                                      fontWeight: MyntFonts.medium,
+                                      fontWeight: MyntFonts.semiBold,
                                       color: resolveThemeColor(
                                         context,
                                         dark: MyntColors.textPrimaryDark,
@@ -316,8 +318,9 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                                               .colorScheme
                                               .background,
                                           border: Border.all(
-                                             color:shadcn.Theme.of(context).colorScheme.border
-                                          ),
+                                              color: shadcn.Theme.of(context)
+                                                  .colorScheme
+                                                  .border),
                                         )),
                                         buttonStyleData: ButtonStyleData(
                                             height: 40,
@@ -415,7 +418,7 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                                     'Alert me',
                                     style: MyntWebTextStyles.body(
                                       context,
-                                      fontWeight: MyntFonts.medium,
+                                      fontWeight: MyntFonts.semiBold,
                                       color: resolveThemeColor(
                                         context,
                                         dark: MyntColors.textPrimaryDark,
@@ -518,7 +521,7 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                                 'Enter Value',
                                 style: MyntWebTextStyles.body(
                                   context,
-                                  fontWeight: MyntFonts.medium,
+                                  fontWeight: MyntFonts.semiBold,
                                   color: resolveThemeColor(
                                     context,
                                     dark: MyntColors.textPrimaryDark,
@@ -593,7 +596,7 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                                 'Remarks',
                                 style: MyntWebTextStyles.body(
                                   context,
-                                  fontWeight: MyntFonts.medium,
+                                  fontWeight: MyntFonts.semiBold,
                                   color: resolveThemeColor(
                                     context,
                                     dark: MyntColors.textPrimaryDark,

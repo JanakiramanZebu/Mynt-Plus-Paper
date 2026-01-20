@@ -552,7 +552,9 @@ void _showStrikeCountSelector(
                     topLeft: Radius.circular(16),
                     topRight: Radius.circular(16),
                   ),
-                  color: shadcn.Theme.of(context).colorScheme.background,
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.backgroundColorDark,
+                      light: MyntColors.backgroundColor),
                   border: Border(
                     top: BorderSide(
                         color: shadcn.Theme.of(context).colorScheme.border),
@@ -690,8 +692,11 @@ void _showStrikeCountSelector(
 }
 
 // Helper function to show strikes dropdown using showMenu (matching expiry dropdown style)
-void _showStrikesDropdown(BuildContext context, List<String> numStrikes, String numStrike,
+void _showStrikesDropdown(BuildContext context, WidgetRef ref,
     MarketWatchProvider scripInfo, ThemesProvider theme, VoidCallback scrollToStrikePrice) {
+  final numStrikes = scripInfo.numStrikes;
+  final numStrike = scripInfo.numStrike;
+
   final RenderBox button = context.findRenderObject() as RenderBox;
   final RenderBox overlay =
       Overlay.of(context).context.findRenderObject() as RenderBox;
@@ -719,18 +724,30 @@ void _showStrikesDropdown(BuildContext context, List<String> numStrikes, String 
         value: value,
         padding: EdgeInsets.zero,
         child: SizedBox(
-          width: 150, // Fixed width
+          width: 150,
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Text(
-              value,
-              style: MyntWebTextStyles.body(
-                context,
-                fontWeight: MyntFonts.medium,
-                color: isSelected
-                    ? shadcn.Theme.of(context).colorScheme.primary
-                    : shadcn.Theme.of(context).colorScheme.foreground,
-              ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    value,
+                    style: MyntWebTextStyles.body(
+                      context,
+                      fontWeight: isSelected ? MyntFonts.semiBold : MyntFonts.medium,
+                      color: isSelected
+                          ? shadcn.Theme.of(context).colorScheme.primary
+                          : shadcn.Theme.of(context).colorScheme.foreground,
+                    ),
+                  ),
+                ),
+                if (isSelected)
+                  Icon(
+                    Icons.check,
+                    size: 18,
+                    color: shadcn.Theme.of(context).colorScheme.primary,
+                  ),
+              ],
             ),
           ),
         ),
@@ -781,7 +798,9 @@ class _ColumnHeaders extends ConsumerWidget {
     return RepaintBoundary(
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        color: shadcn.Theme.of(context).colorScheme.background,
+        color: resolveThemeColor(context,
+            dark: MyntColors.backgroundColorDark,
+            light: MyntColors.backgroundColor),
         child: Column(
           children: [
             // Main header row
@@ -796,11 +815,12 @@ class _ColumnHeaders extends ConsumerWidget {
                       Text(
                         "CALLS",
                         style: MyntWebTextStyles.body(context,
-                            fontWeight: MyntFonts.medium , color :  resolveThemeColor(
-        context,
-        dark: MyntColors.textPrimaryDark,
-        light: MyntColors.textPrimary,
-      )),
+                            fontWeight: MyntFonts.medium,
+                            color: resolveThemeColor(
+                              context,
+                              dark: MyntColors.textPrimaryDark,
+                              light: MyntColors.textPrimary,
+                            )),
                       ),
                     ],
                   ),
@@ -812,8 +832,8 @@ class _ColumnHeaders extends ConsumerWidget {
                     builder: (context) => Material(
                       color: Colors.transparent,
                       child: InkWell(
-                        onTap: () => _showStrikesDropdown(
-                            context, numStrikes, numStrike, scripInfo, theme, scrollToStrikePrice),
+                        onTap: () => _showStrikesDropdown(context, ref,
+                            scripInfo, theme, scrollToStrikePrice),
                         borderRadius: BorderRadius.circular(5),
                         child: Padding(
                           padding: const EdgeInsets.all(6.0),
@@ -849,12 +869,12 @@ class _ColumnHeaders extends ConsumerWidget {
                       Text(
                         "PUTS",
                         style: MyntWebTextStyles.body(context,
-                            fontWeight: MyntFonts.medium ,
-                             color :  resolveThemeColor(
-        context,
-        dark: MyntColors.textPrimaryDark,
-        light: MyntColors.textPrimary,
-      )),
+                            fontWeight: MyntFonts.medium,
+                            color: resolveThemeColor(
+                              context,
+                              dark: MyntColors.textPrimaryDark,
+                              light: MyntColors.textPrimary,
+                            )),
                       ),
                     ],
                   ),
@@ -973,8 +993,7 @@ class _ColumnHeaders extends ConsumerWidget {
     return Center(
       child: Text(
         text,
-        style:
-            MyntWebTextStyles.bodySmall(context, fontWeight: MyntFonts.medium),
+        style: MyntWebTextStyles.para(context, fontWeight: MyntFonts.medium),
         textAlign: TextAlign.center,
       ),
     );
@@ -1008,11 +1027,11 @@ class _PreDefinedWatchlistBanner extends ConsumerWidget {
             Text(
               " Long press to add Watchlist / Swipe to Trade",
               style: MyntWebTextStyles.bodySmall(context,
-                  color:  resolveThemeColor(
-        context,
-        dark: MyntColors.textSecondaryDark,
-        light: MyntColors.textSecondary,
-      )),
+                  color: resolveThemeColor(
+                    context,
+                    dark: MyntColors.textSecondaryDark,
+                    light: MyntColors.textSecondary,
+                  )),
             ),
           ])),
     );
@@ -1487,7 +1506,9 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
         duration: const Duration(milliseconds: 200),
         height: _sheetHeight,
         decoration: BoxDecoration(
-          color: shadcn.Theme.of(context).colorScheme.background,
+          color: resolveThemeColor(context,
+              dark: MyntColors.backgroundColorDark,
+              light: MyntColors.backgroundColor),
           borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(16),
             topRight: Radius.circular(16),
@@ -1554,24 +1575,25 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                       ? orderProv.selectedBsktName
                       : "No Basket Selected",
                   style: MyntWebTextStyles.title(context,
-                    fontWeight: MyntFonts.semiBold, color :  resolveThemeColor(
-        context,
-        dark: MyntColors.textPrimaryDark,
-        light: MyntColors.textPrimary,
-      )),
-
+                      fontWeight: MyntFonts.semiBold,
+                      color: resolveThemeColor(
+                        context,
+                        dark: MyntColors.textPrimaryDark,
+                        light: MyntColors.textPrimary,
+                      )),
                 ),
                 const SizedBox(height: 4),
                 if (orderProv.selectedBsktName.isNotEmpty)
                   Text(
                     "${orderProv.bsktScripList.length} items",
-                    style: MyntWebTextStyles.body(context,
-                      color:  resolveThemeColor(
-        context,
-        dark: MyntColors.textSecondaryDark,
-        light: MyntColors.textSecondary,
-      ), ),
-
+                    style: MyntWebTextStyles.body(
+                      context,
+                      color: resolveThemeColor(
+                        context,
+                        dark: MyntColors.textSecondaryDark,
+                        light: MyntColors.textSecondary,
+                      ),
+                    ),
                   ),
               ],
             ),
@@ -2749,7 +2771,9 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
             topLeft: Radius.circular(16),
             topRight: Radius.circular(16),
           ),
-          color: shadcn.Theme.of(context).colorScheme.background,
+          color: resolveThemeColor(context,
+              dark: MyntColors.backgroundColorDark,
+              light: MyntColors.backgroundColor),
           border: Border(
             top: BorderSide(
               color: shadcn.Theme.of(context).colorScheme.border,

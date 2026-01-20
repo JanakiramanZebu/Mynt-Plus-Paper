@@ -1,95 +1,54 @@
-import 'package:flutter/foundation.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 
-// Shows how to open a contextual popover anchored to a button, with a custom
-// overlay barrier and a simple form inside. The popover closes via
-// closeOverlay(context) or when the user taps outside the barrier.
-
-class PopoverExample1 extends StatelessWidget {
-  const PopoverExample1({super.key});
+class SelectExample1 extends StatefulWidget {
+  const SelectExample1({super.key});
 
   @override
+  State<SelectExample1> createState() => _SelectExample1State();
+}
+
+class _SelectExample1State extends State<SelectExample1> {
+  String? selectedValue;
+  @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return PrimaryButton(
-      onPressed: () {
-        showPopover(
-          context: context,
-          // Position the popover above the button, shifted by 8px.
-          alignment: Alignment.topCenter,
-          offset: const Offset(0, 8),
-          // Unless you have full opacity surface,
-          // you should explicitly set the overlay barrier.
-          overlayBarrier: OverlayBarrier(
-            borderRadius: theme.borderRadiusLg,
-          ),
-          builder: (context) {
-            return ModalContainer(
-              child: SizedBox(
-                width: 300,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const Text('Dimensions').large().medium(),
-                    const Text('Set the dimensions for the layer.').muted(),
-                    Form(
-                      controller: FormController(),
-                      // Compact grid layout for label/field rows.
-                      child: const FormTableLayout(
-                        rows: [
-                          FormField<double>(
-                            key: FormKey(#width),
-                            label: Text('Width'),
-                            child: TextField(
-                              initialValue: '100%',
-                            ),
-                          ),
-                          FormField<double>(
-                            key: FormKey(#maxWidth),
-                            label: Text('Max. Width'),
-                            child: TextField(
-                              initialValue: '300px',
-                            ),
-                          ),
-                          FormField<double>(
-                            key: FormKey(#height),
-                            label: Text('Height'),
-                            child: TextField(
-                              initialValue: '25px',
-                            ),
-                          ),
-                          FormField<double>(
-                            key: FormKey(#maxHeight),
-                            label: Text('Max. Height'),
-                            child: TextField(
-                              initialValue: 'none',
-                            ),
-                          ),
-                        ],
-                        spacing: 8,
-                      ),
-                    ).withPadding(vertical: 16),
-                    PrimaryButton(
-                      onPressed: () {
-                        // Close the popover and resolve the returned future.
-                        closeOverlay(context);
-                      },
-                      child: const Text('Submit'),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        ).future.then((_) {
-          // Optional completion hook after the popover is dismissed.
-          if (kDebugMode) {
-            print('Popover closed');
-          }
+    return Select<String>(
+      // How to render each selected item as text in the field.
+      itemBuilder: (context, item) {
+        return Text(item);
+      },
+      // Limit the popup size so it doesn't grow too large in the docs view.
+      popupConstraints: const BoxConstraints(
+        maxHeight: 300,
+        maxWidth: 200,
+      ),
+      onChanged: (value) {
+        setState(() {
+          // Save the currently selected value (or null to clear).
+          selectedValue = value;
         });
       },
-      child: const Text('Open popover'),
+      // The current selection bound to this field.
+      value: selectedValue,
+      placeholder: const Text('Select a fruit'),
+      popup: const SelectPopup(
+        items: SelectItemList(
+          children: [
+            // A simple static list of options.
+            SelectItemButton(
+              value: 'Apple',
+              child: Text('Apple'),
+            ),
+            SelectItemButton(
+              value: 'Banana',
+              child: Text('Banana'),
+            ),
+            SelectItemButton(
+              value: 'Cherry',
+              child: Text('Cherry'),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

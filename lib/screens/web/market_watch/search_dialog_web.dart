@@ -193,15 +193,15 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
                         },
                       ),
                     ),
-                    // SizedBox(width: 10),
-                    // // Close dialog icon (always visible, outside search bar)
+                    SizedBox(width: 10),
+                    // Close dialog icon (always visible, outside search bar)
 
-                    // MyntCloseButton(
-                    //   onPressed: () {
-                    //     ref.read(marketWatchProvider).searchClear();
-                    //     Navigator.of(context).pop();
-                    //   },
-                    // )
+                    MyntCloseButton(
+                      onPressed: () {
+                        ref.read(marketWatchProvider).searchClear();
+                        Navigator.of(context).pop();
+                      },
+                    )
                   ],
                 ),
               ),
@@ -324,12 +324,11 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
         thumbVisibility: false,
         thickness: 6,
         radius: const Radius.circular(0),
-        thumbColor:resolveThemeColor(
-        context,
-        dark: WebColors.scrollbarThumbDark,
-        light: WebColors.scrollbarThumbLight,
-      )
-,
+        thumbColor: resolveThemeColor(
+          context,
+          dark: WebColors.scrollbarThumbDark,
+          light: WebColors.scrollbarThumbLight,
+        ),
         child: ListView.separated(
           controller: _scrollController,
           physics: const BouncingScrollPhysics(),
@@ -347,18 +346,16 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
               child: Material(
                 color: Colors.transparent,
                 child: InkWell(
-                splashColor: resolveThemeColor(
-  context,
-  dark: MyntColors.rippleDark,
-  light: MyntColors.rippleLight,
-),
-highlightColor: resolveThemeColor(
-  context,
-  dark: MyntColors.highlightDark,
-  light: MyntColors.highlightLight,
-),
-
-
+                  splashColor: resolveThemeColor(
+                    context,
+                    dark: MyntColors.rippleDark,
+                    light: MyntColors.rippleLight,
+                  ),
+                  highlightColor: resolveThemeColor(
+                    context,
+                    dark: MyntColors.highlightDark,
+                    light: MyntColors.highlightLight,
+                  ),
                   onTap: () async {
                     if (widget.isBasket == "Chart||Is") {
                       // Create DepthInputArgs from selected scrip to update header and scrip info
@@ -406,6 +403,13 @@ highlightColor: resolveThemeColor(
                   child: Container(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 10, vertical: 10),
+                    color: (_hoveredItems[index] ?? false)
+                        ? resolveThemeColor(
+                            context,
+                            dark: WebColors.primaryDark,
+                            light: WebColors.primary,
+                          ).withValues(alpha: 0.1)
+                        : Colors.transparent,
                     child: Row(
                       children: [
                         // Scrip Info

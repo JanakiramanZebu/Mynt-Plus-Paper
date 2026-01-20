@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_swipe_action_cell/flutter_swipe_action_cell.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:mynt_plus/res/mynt_web_color_styles.dart';
+import 'package:mynt_plus/res/mynt_web_text_styles.dart';
 import '../../../../models/marketwatch_model/get_quotes.dart';
 import '../../../../models/marketwatch_model/opt_chain_model.dart';
 import '../../../../models/order_book_model/order_book_model.dart';
@@ -155,7 +157,13 @@ class _OptionChainPutRowState extends ConsumerState<_OptionChainPutRow> {
             performsFirstActionWithFullSwipe: true,
             title: "BUY",
             color: Color(theme.isDarkMode ? 0xffcaedc4 : 0xffedf9eb),
-            style: _getActionStyle(colors.ltpgreen),
+            style: _getActionStyle(
+                context,
+                resolveThemeColor(
+                  context,
+                  dark: MyntColors.profitDark,
+                  light: MyntColors.profit,
+                )),
             onTap: (handler) async {
               await placeOrderInput(context, widget.option, true);
               handler(false);
@@ -167,7 +175,13 @@ class _OptionChainPutRowState extends ConsumerState<_OptionChainPutRow> {
             performsFirstActionWithFullSwipe: true,
             title: "SELL",
             color: Color(theme.isDarkMode ? 0xfffbbbb6 : 0xfffee8e7),
-            style: _getActionStyle(colors.darkred),
+            style: _getActionStyle(
+                context,
+                resolveThemeColor(
+                  context,
+                  dark: MyntColors.lossDark,
+                  light: MyntColors.loss,
+                )),
             onTap: (handler) async {
               await placeOrderInput(context, widget.option, false);
               handler(false);
@@ -195,8 +209,8 @@ class _OptionChainPutRowState extends ConsumerState<_OptionChainPutRow> {
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
                   color: isHovered
                       ? (theme.isDarkMode
-                          ? WebDarkColors.primary
-                          : WebColors.primary)
+                          ? MyntColors.primary
+                          : MyntColors.primary)
                           .withOpacity(0.15)
                       : Colors.transparent,
                   child: _buildCompleteDataRow(theme, lp, perChange, oiLack, oiPerChng, currentOI, isInWatchlist, isHovered),
@@ -211,10 +225,10 @@ class _OptionChainPutRowState extends ConsumerState<_OptionChainPutRow> {
 
   Widget _buildCompleteDataRow(ThemesProvider theme, String lp, String perChange, String oiLack, String oiPerChng, double currentOI, bool isInWatchlist, bool isHovered) {
     final changeColor = perChange.startsWith("-")
-        ? (theme.isDarkMode ? WebDarkColors.loss : WebColors.loss)
+        ? (theme.isDarkMode ? MyntColors.loss : MyntColors.loss)
         : (perChange == "0.00" || perChange == "0.0"
-            ? (theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary)
-            : (theme.isDarkMode ? WebDarkColors.profit : WebColors.profit));
+            ? (theme.isDarkMode ? MyntColors.textSecondary : MyntColors.textSecondary)
+            : (theme.isDarkMode ? MyntColors.profit : MyntColors.profit));
 
     return Stack(
       clipBehavior: Clip.none,
@@ -230,19 +244,25 @@ class _OptionChainPutRowState extends ConsumerState<_OptionChainPutRow> {
                     children: [
                       Expanded(
                         child: Text(
-                              lp,
-                              style: WebTextStyles.tableDataCompact(
-                                isDarkTheme: theme.isDarkMode,
-                                color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
-                              ),
-                              textAlign: TextAlign.end,
+                          lp,
+                          style: MyntWebTextStyles.body(
+                            context,
+                            fontWeight: MyntFonts.medium,
+                            color: resolveThemeColor(
+                              context,
+                              dark: MyntColors.textPrimaryDark,
+                              light: MyntColors.textPrimary,
                             ),
+                          ),
+                          textAlign: TextAlign.end,
+                        ),
                       ),
                       Expanded(
                         child: Text(
                           "$perChange%",
-                          style: WebTextStyles.tableDataCompact(
-                            isDarkTheme: theme.isDarkMode,
+                          style: MyntWebTextStyles.body(
+                            context,
+                            fontWeight: MyntFonts.medium,
                             color: changeColor,
                           ),
                           textAlign: TextAlign.end,
@@ -253,7 +273,7 @@ class _OptionChainPutRowState extends ConsumerState<_OptionChainPutRow> {
                 ],
               ),
             ),
-                  const SizedBox(width: 6),
+            const SizedBox(width: 6),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
@@ -264,10 +284,14 @@ class _OptionChainPutRowState extends ConsumerState<_OptionChainPutRow> {
                       Expanded(
                         child: Text(
                           oiLack,
-                          style: WebTextStyles.tableDataCompact(
-                            isDarkTheme: theme.isDarkMode,
-                            color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
-
+                          style: MyntWebTextStyles.body(
+                            context,
+                            fontWeight: MyntFonts.medium,
+                            color: resolveThemeColor(
+                              context,
+                              dark: MyntColors.textPrimaryDark,
+                              light: MyntColors.textPrimary,
+                            ),
                           ),
                           textAlign: TextAlign.end,
                         ),
@@ -275,12 +299,20 @@ class _OptionChainPutRowState extends ConsumerState<_OptionChainPutRow> {
                       Expanded(
                         child: Text(
                           "${oiPerChng == "NaN" ? "0.00" : oiPerChng}%",
-                          style: WebTextStyles.tableDataCompact(
-                            isDarkTheme: theme.isDarkMode,
+                          style: MyntWebTextStyles.body(
+                            context,
+                            fontWeight: MyntFonts.medium,
                             color: (oiPerChng.startsWith("-"))
-                                ? (theme.isDarkMode ? WebDarkColors.loss : WebColors.loss)
-                                : (theme.isDarkMode ? WebDarkColors.profit : WebColors.profit),
-
+                                ? resolveThemeColor(
+                                    context,
+                                    dark: MyntColors.lossDark,
+                                    light: MyntColors.loss,
+                                  )
+                                : resolveThemeColor(
+                                    context,
+                                    dark: MyntColors.profitDark,
+                                    light: MyntColors.profit,
+                                  ),
                           ),
                           textAlign: TextAlign.end,
                         ),
@@ -293,12 +325,12 @@ class _OptionChainPutRowState extends ConsumerState<_OptionChainPutRow> {
                   //   alignment: Alignment.centerRight,
                   //   child: Container(
                   //     height: 2,
-                  //     width: MediaQuery.of(context).size.width * 0.12 * 
-                  //         (_currentOI > 0 && _globalMaxOI > 0 
-                  //             ? (_currentOI / _globalMaxOI).clamp(0.0, 1.0) 
+                  //     width: MediaQuery.of(context).size.width * 0.12 *
+                  //         (_currentOI > 0 && _globalMaxOI > 0
+                  //             ? (_currentOI / _globalMaxOI).clamp(0.0, 1.0)
                   //             : 0.0),
                   //     decoration: BoxDecoration(
-                  //       color: theme.isDarkMode ? WebDarkColors.loss : WebColors.loss,
+                  //       color: theme.isDarkMode ? MyntColors.loss : MyntColors.loss,
                   //       borderRadius: BorderRadius.circular(1),
                   //     ),
                   //   ),
@@ -314,63 +346,91 @@ class _OptionChainPutRowState extends ConsumerState<_OptionChainPutRow> {
             top: 0,
             left: 8,
             child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _buildHoverButton(
-                    label: 'S',
-                    color: Colors.white,
-                    backgroundColor: theme.isDarkMode ? WebDarkColors.tertiary : WebColors.tertiary,
-                    onPressed: () async {
-                      await placeOrderInput(context, widget.option, false);
-                    },
-                    theme: theme,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildHoverButton(
+                  label: 'S',
+                  color: Colors.white,
+                  backgroundColor: resolveThemeColor(
+                    context,
+                    dark: MyntColors.tertiary,
+                    light: MyntColors.tertiary,
                   ),
-                  const SizedBox(width: 6),
-                  _buildHoverButton(
-                    label: 'B',
-                    color: Colors.white,
-                    backgroundColor: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
-                    onPressed: () async {
-                      await placeOrderInput(context, widget.option, true);
-                    },
-                    theme: theme,
+                  onPressed: () async {
+                    await placeOrderInput(context, widget.option, false);
+                  },
+                  theme: theme,
+                ),
+                const SizedBox(width: 6),
+                _buildHoverButton(
+                  label: 'B',
+                  color: Colors.white,
+                  backgroundColor: resolveThemeColor(
+                    context,
+                    dark: MyntColors.primaryDark,
+                    light: MyntColors.primary,
                   ),
-                  const SizedBox(width: 6),
-                  _buildHoverButton(
-                    icon: Icons.bar_chart,
-                    color: Colors.black,
-                    backgroundColor: Colors.white,
-                    borderRadius: 5.0,
-                    onPressed: () async {
-                      await _handleChartTap(context, widget.option);
-                    },
-                    theme: theme,
-                  ),
-                  const SizedBox(width: 6),
-                  _buildHoverButton(
-                    svgIcon: isInWatchlist ? assets.bookmarkIcon : assets.bookmarkedIcon,
-                    color: isInWatchlist
-                        ? (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary)
-                        : (theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary),
-                    backgroundColor: Colors.white,
-                    borderRadius: 5.0,
-                    onPressed: () async {
-                      await _handleSaveToWatchlist(context, widget.option);
-                    },
-                    theme: theme,
-                  ),
-                ],
-              ),
+                  onPressed: () async {
+                    await placeOrderInput(context, widget.option, true);
+                  },
+                  theme: theme,
+                ),
+                const SizedBox(width: 6),
+                _buildHoverButton(
+                  icon: Icons.bar_chart,
+                  color: Colors.black,
+                  backgroundColor: Colors.white,
+                  borderRadius: 5.0,
+                  onPressed: () async {
+                    await _handleChartTap(context, widget.option);
+                  },
+                  theme: theme,
+                ),
+                const SizedBox(width: 6),
+                _buildHoverButton(
+                  svgIcon: isInWatchlist
+                      ? assets.bookmarkIcon
+                      : assets.bookmarkedIcon,
+                  color: isInWatchlist
+                      ? resolveThemeColor(
+                          context,
+                          dark: MyntColors.primaryDark,
+                          light: MyntColors.primary,
+                        )
+                      : resolveThemeColor(
+                          context,
+                          dark: MyntColors.textSecondaryDark,
+                          light: MyntColors.textSecondary,
+                        ),
+                  backgroundColor: Colors.white,
+                  borderRadius: 5.0,
+                  onPressed: () async {
+                    await _handleSaveToWatchlist(context, widget.option);
+                  },
+                  theme: theme,
+                ),
+              ],
+            ),
           ),
       ],
     );
   }
 
-  Widget _buildDataCell(String value, ThemesProvider theme, {bool isPrimary = false, Color? color, bool alignEnd = false}) {
+  Widget _buildDataCell(String value, ThemesProvider theme,
+      {bool isPrimary = false, Color? color, bool alignEnd = false}) {
     final displayValue = value == "0.00" || value == "0" ? "0.00" : value;
-    final textColor = color ?? (isPrimary 
-        ? (theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary)
-        : (theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary));
+    final textColor = color ??
+        (isPrimary
+            ? resolveThemeColor(
+                context,
+                dark: MyntColors.textPrimaryDark,
+                light: MyntColors.textPrimary,
+              )
+            : resolveThemeColor(
+                context,
+                dark: MyntColors.textSecondaryDark,
+                light: MyntColors.textSecondary,
+              ));
 
     return Text(
       displayValue,
@@ -413,7 +473,8 @@ class _OptionChainPutRowState extends ConsumerState<_OptionChainPutRow> {
           highlightColor: color.withOpacity(0.08),
           onTap: onPressed,
           child: Container(
-            padding: isLongLabel ? const EdgeInsets.symmetric(horizontal: 8) : null,
+            padding:
+                isLongLabel ? const EdgeInsets.symmetric(horizontal: 8) : null,
             decoration: BoxDecoration(
               color: backgroundColor ?? Colors.transparent,
               borderRadius: BorderRadius.circular(borderRadiusValue),
@@ -453,9 +514,11 @@ class _OptionChainPutRowState extends ConsumerState<_OptionChainPutRow> {
     );
   }
 
-  Future<void> _handleChartTap(BuildContext context, OptionValues option) async {
-    final scripData = ProviderScope.containerOf(context).read(marketWatchProvider);
-    
+  Future<void> _handleChartTap(
+      BuildContext context, OptionValues option) async {
+    final scripData =
+        ProviderScope.containerOf(context).read(marketWatchProvider);
+
     await scripData.fetchScripQuoteIndex(
       "${option.token}",
       "${option.exch}",
@@ -478,19 +541,20 @@ class _OptionChainPutRowState extends ConsumerState<_OptionChainPutRow> {
   }
 
 
-  Future<void> _handleSaveToWatchlist(BuildContext context, OptionValues option) async {
+  Future<void> _handleSaveToWatchlist(
+      BuildContext context, OptionValues option) async {
     final provider = ProviderScope.containerOf(context);
     final scripData = provider.read(marketWatchProvider);
 
     if (scripData.isPreDefWLs == "Yes") {
-      showResponsiveWarningMessage(context, "This is a pre-defined watchlist that cannot be edited!");
+      showResponsiveWarningMessage(
+          context, "This is a pre-defined watchlist that cannot be edited!");
       return;
     }
 
     final scripToken = "${option.exch}|${option.token}";
-    final isCurrentlyInWatchlist = scripData.scrips.any((scrip) => 
-      "${scrip['exch']}|${scrip['token']}" == scripToken
-    );
+    final isCurrentlyInWatchlist = scripData.scrips
+        .any((scrip) => "${scrip['exch']}|${scrip['token']}" == scripToken);
 
     if (isCurrentlyInWatchlist) {
       // Delete from watchlist
@@ -504,17 +568,18 @@ class _OptionChainPutRowState extends ConsumerState<_OptionChainPutRow> {
         false, // Set isOptionStike to false to prevent provider's Fluttertoast
       );
       if (success && mounted) {
-        ResponsiveSnackBar.showInfo(context, 'Removed from ${scripData.wlName}');
+        ResponsiveSnackBar.showInfo(
+            context, 'Removed from ${scripData.wlName}');
         setState(() {});
       }
     } else {
       // Add to watchlist
       provider.read(websocketProvider).establishConnection(
-        channelInput: scripToken,
-        task: "t",
-        context: context,
-      );
-      
+            channelInput: scripToken,
+            task: "t",
+            context: context,
+          );
+
       final success = await scripData.addDelMarketScrip(
         scripData.wlName,
         scripToken,
@@ -540,40 +605,53 @@ Widget _buildPriceData(ThemesProvider theme, String lp, String perChange, double
     lineWidthPercentage = (currentOI / _globalMaxOI).clamp(0.0, 1.0);
   }
 
-  return Container(
-    height: 55,
-    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.end,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text(
-          lp,
-          style: _getTextStyle(
-              theme.isDarkMode ? colors.colorWhite : colors.colorBlack, perChange, theme),
-        ),
-        const SizedBox(height: 3),
-        Text(
-          "($perChange%)",
-          style: _getPercentageStyle(perChange, theme),
-        ),
-        const SizedBox(height: 2),
-        // Dynamic width line based on OI (right-aligned for puts)
-        Align(
-          alignment: Alignment.centerRight,
-          child: Container(
-            height: 1.5,
-            width: MediaQuery.of(context).size.width * 0.25 * lineWidthPercentage,
-            decoration: BoxDecoration(
-              color: colors.error,
-              borderRadius: BorderRadius.circular(1),
+    return Container(
+      height: 55,
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            lp,
+            style: _getTextStyle(
+                context,
+                resolveThemeColor(
+                  context,
+                  dark: MyntColors.textPrimaryDark,
+                  light: MyntColors.textPrimary,
+                ),
+                perChange,
+                theme),
+          ),
+          const SizedBox(height: 3),
+          Text(
+            "($perChange%)",
+            style: _getPercentageStyle(context, perChange, theme),
+          ),
+          const SizedBox(height: 2),
+          // Dynamic width line based on OI (right-aligned for puts)
+          Align(
+            alignment: Alignment.centerRight,
+            child: Container(
+              height: 1.5,
+              width: MediaQuery.of(context).size.width *
+                  0.25 *
+                  lineWidthPercentage,
+              decoration: BoxDecoration(
+                color: resolveThemeColor(
+                  context,
+                  dark: MyntColors.errorDark,
+                  light: MyntColors.error,
+                ),
+                borderRadius: BorderRadius.circular(1),
+              ),
             ),
           ),
-        ),
-      ],
-    ),
-  );
-}
+        ],
+      ),
+    );
+  }
 
 Widget _buildOIData(ThemesProvider theme, String oiLack, String oiPerChng, double currentOI) {
   // Calculate line width percentage based on current OI relative to GLOBAL max OI
@@ -584,40 +662,53 @@ Widget _buildOIData(ThemesProvider theme, String oiLack, String oiPerChng, doubl
     lineWidthPercentage = (currentOI / _globalMaxOI).clamp(0.0, 1.0);
   }
 
-  return Container(
-    height: 60,
-    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.end,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text(
-          oiLack,
-          style: _getTextStyle(
-              theme.isDarkMode ? colors.colorWhite : colors.colorBlack, oiPerChng, theme),
-        ),
-        const SizedBox(height: 3),
-        Text(
-          "(${oiPerChng == "NaN" ? "0.00" : oiPerChng}%)",
-          style: _getPercentageStyle(oiPerChng, theme),
-        ),
-        const SizedBox(height: 2),
-        // Dynamic width line based on OI (right-aligned for puts)
-        Align(
-          alignment: Alignment.centerRight,
-          child: Container(
-            height: 1.5,
-            width: MediaQuery.of(context).size.width * 0.25 * lineWidthPercentage,
-            decoration: BoxDecoration(
-              color: theme.isDarkMode ? WebDarkColors.loss : WebColors.loss,
-              borderRadius: BorderRadius.circular(1),
+    return Container(
+      height: 60,
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            oiLack,
+            style: _getTextStyle(
+                context,
+                resolveThemeColor(
+                  context,
+                  dark: MyntColors.textPrimaryDark,
+                  light: MyntColors.textPrimary,
+                ),
+                oiPerChng,
+                theme),
+          ),
+          const SizedBox(height: 3),
+          Text(
+            "(${oiPerChng == "NaN" ? "0.00" : oiPerChng}%)",
+            style: _getPercentageStyle(context, oiPerChng, theme),
+          ),
+          const SizedBox(height: 2),
+          // Dynamic width line based on OI (right-aligned for puts)
+          Align(
+            alignment: Alignment.centerRight,
+            child: Container(
+              height: 1.5,
+              width: MediaQuery.of(context).size.width *
+                  0.25 *
+                  lineWidthPercentage,
+              decoration: BoxDecoration(
+                color: resolveThemeColor(
+                  context,
+                  dark: MyntColors.lossDark,
+                  light: MyntColors.loss,
+                ),
+                borderRadius: BorderRadius.circular(1),
+              ),
             ),
           ),
-        ),
-      ],
-    ),
-  );
-}
+        ],
+      ),
+    );
+  }
 
   void _symbolenotFound(BuildContext context) {
     showResponsiveWarningMessage(context, "Scrip Not founded");
@@ -676,7 +767,8 @@ Widget _buildOIData(ThemesProvider theme, String oiLack, String oiPerChng, doubl
     await scripData.calldepthApis(context, depthArgs, "");
   }
 
-  Future<void> _handleBasketModeTap(BuildContext context, OptionValues option) async {
+  Future<void> _handleBasketModeTap(
+      BuildContext context, OptionValues option) async {
     final provider = ProviderScope.containerOf(context);
     final scripData = provider.read(marketWatchProvider);
     final orderProv = provider.read(orderProvider);
@@ -696,7 +788,7 @@ Widget _buildOIData(ThemesProvider theme, String oiLack, String oiPerChng, doubl
       context,
     );
     final quots = scripData.getQuotes;
-    
+
     if (quots != null) {
       DepthInputArgs depthArgs = DepthInputArgs(
         exch: quots.exch.toString(),
@@ -707,7 +799,7 @@ Widget _buildOIData(ThemesProvider theme, String oiLack, String oiPerChng, doubl
         expDate: quots.expDate.toString(),
         option: quots.option.toString(),
       );
-      
+
       await scripData.calldepthApis(context, depthArgs, "BasketMode");
 
       // Restore original symbol context after basket operations
@@ -715,25 +807,33 @@ Widget _buildOIData(ThemesProvider theme, String oiLack, String oiPerChng, doubl
     }
   }
 
-  static final Map<Color, TextStyle> _actionStyleCache = {};
-
-  static TextStyle _getActionStyle(Color color) {
-    return _actionStyleCache.putIfAbsent(
-      color,
-      () => WebTextStyles.head(
-        isDarkTheme: false,
-        color: color,
-        fontWeight: WebFonts.regular,
-      ),
+  static TextStyle _getActionStyle(BuildContext context, Color color) {
+    return MyntWebTextStyles.head(
+      context,
+      color: color,
+      fontWeight: MyntFonts.regular,
     );
   }
 
-  static TextStyle _getTextStyle(Color color, String perChange, ThemesProvider theme) {
-    Color textColor = theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary;
+  static TextStyle _getTextStyle(BuildContext context, Color color,
+      String perChange, ThemesProvider theme) {
+    Color textColor = resolveThemeColor(
+      context,
+      dark: MyntColors.textSecondaryDark,
+      light: MyntColors.textSecondary,
+    );
     if (perChange != "0.00" && perChange.isNotEmpty) {
-      textColor = perChange.startsWith("-") 
-          ? (theme.isDarkMode ? WebDarkColors.loss : WebColors.loss) 
-          : (theme.isDarkMode ? WebDarkColors.profit : WebColors.profit);
+      textColor = perChange.startsWith("-")
+          ? resolveThemeColor(
+              context,
+              dark: MyntColors.lossDark,
+              light: MyntColors.loss,
+            )
+          : resolveThemeColor(
+              context,
+              dark: MyntColors.profitDark,
+              light: MyntColors.profit,
+            );
     }
     return WebTextStyles.sub(
       isDarkTheme: theme.isDarkMode,
@@ -741,15 +841,17 @@ Widget _buildOIData(ThemesProvider theme, String oiLack, String oiPerChng, doubl
     );
   }
 
-  static TextStyle _getPercentageStyle(String? value, ThemesProvider theme) {
-        Color color = theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary;
-        // if (value != null && value != "0.00") {
-        //   color = value.startsWith("-") ? colors.darkred : colors.ltpgreen;
-        // }
-        return WebTextStyles.para(
-            isDarkTheme: theme.isDarkMode, 
-            color: color,
-        );
+  static TextStyle _getPercentageStyle(
+      BuildContext context, String? value, ThemesProvider theme) {
+    Color color = resolveThemeColor(
+      context,
+      dark: MyntColors.textSecondaryDark,
+      light: MyntColors.textSecondary,
+    );
+    return MyntWebTextStyles.para(
+      context,
+      color: color,
+    );
   }
 }
 
@@ -767,12 +869,12 @@ Future<void> placeOrderInput(
         context,
         true,
       );
-  
+
   // **FIX: Use lot size from scripInfoModel if option data doesn't have it**
-  final lotSize = depthData.ls?.isNotEmpty == true 
-      ? depthData.ls 
+  final lotSize = depthData.ls?.isNotEmpty == true
+      ? depthData.ls
       : container.read(marketWatchProvider).scripInfoModel?.ls.toString();
-  
+
   OrderScreenArgs orderArgs = OrderScreenArgs(
     exchange: depthData.exch.toString(),
     tSym: depthData.tsym.toString(),

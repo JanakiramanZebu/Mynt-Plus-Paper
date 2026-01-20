@@ -143,7 +143,7 @@ class _IndexBottomSheetWebState extends ConsumerState<IndexBottomSheetWeb> {
         borderRadius: BorderRadius.circular(8),
         padding: EdgeInsets.zero,
         child: Container(
-          width: 400,
+          width: 500,
           constraints: const BoxConstraints(maxHeight: 600),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -365,6 +365,7 @@ class _IndexListItemWithStreamWebState
 
   // Track when this widget was created
   final DateTime _creationTime = DateTime.now();
+  bool _isHovered = false;
 
   @override
   void initState() {
@@ -546,61 +547,75 @@ class _IndexListItemWithStreamWebState
   Widget build(BuildContext context) {
     return Material(
       color: Colors.transparent,
-      child: InkWell(
-        splashColor:
-            shadcn.Theme.of(context).colorScheme.accent.withValues(alpha: 0.15),
-        highlightColor:
-            shadcn.Theme.of(context).colorScheme.accent.withValues(alpha: 0.08),
-        onTap: () => _handleTap(context),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-          color: widget.ischeck
-              ? shadcn.Theme.of(context)
-                  .colorScheme
-                  .accent
-                  .withValues(alpha: 0.1)
-              : Colors.transparent,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // Left side - Index info
-              Expanded(
-                flex: 3,
-                child: RepaintBoundary(
-                  child: _StaticIndexContentWeb(
-                    itemData: widget.itemData,
-                    exch: widget.indexProvider.slectedExch,
-                    isDarkMode: widget.isDarkMode,
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _isHovered = true),
+        onExit: (_) => setState(() => _isHovered = false),
+        child: InkWell(
+          splashColor: shadcn.Theme.of(context)
+              .colorScheme
+              .accent
+              .withValues(alpha: 0.15),
+          highlightColor: shadcn.Theme.of(context)
+              .colorScheme
+              .accent
+              .withValues(alpha: 0.08),
+          onTap: () => _handleTap(context),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+            color: widget.ischeck
+                ? shadcn.Theme.of(context)
+                    .colorScheme
+                    .accent
+                    .withValues(alpha: 0.1)
+                : _isHovered
+                    ? resolveThemeColor(
+                        context,
+                        dark: WebColors.primaryDark,
+                        light: WebColors.primary,
+                      ).withValues(alpha: 0.1)
+                    : Colors.transparent,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Left side - Index info
+                Expanded(
+                  flex: 3,
+                  child: RepaintBoundary(
+                    child: _StaticIndexContentWeb(
+                      itemData: widget.itemData,
+                      exch: widget.indexProvider.slectedExch,
+                      isDarkMode: widget.isDarkMode,
+                    ),
                   ),
                 ),
-              ),
 
-              // Right side - Price data and action button
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Dynamic content that needs to update
-                  RepaintBoundary(
-                    child: _DynamicPriceContentWeb(
-                      ltp: _ltp,
-                      ch: _ch,
-                      chp: _chp,
-                      isDarkMode: widget.isDarkMode,
+                // Right side - Price data and action button
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Dynamic content that needs to update
+                    RepaintBoundary(
+                      child: _DynamicPriceContentWeb(
+                        ltp: _ltp,
+                        ch: _ch,
+                        chp: _chp,
+                        isDarkMode: widget.isDarkMode,
+                      ),
                     ),
-                  ),
-                  // Action button to replace the symbol
-                  RepaintBoundary(
-                    child: _ActionButtonWeb(
-                      ischeck: widget.ischeck,
-                      itemData: widget.itemData,
-                      indexProvider: widget.indexProvider,
-                      isDarkMode: widget.isDarkMode,
-                      indexPosition: widget.indexPosition,
+                    // Action button to replace the symbol
+                    RepaintBoundary(
+                      child: _ActionButtonWeb(
+                        ischeck: widget.ischeck,
+                        itemData: widget.itemData,
+                        indexProvider: widget.indexProvider,
+                        isDarkMode: widget.isDarkMode,
+                        indexPosition: widget.indexPosition,
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -695,7 +710,7 @@ class _StaticIndexContentWeb extends StatelessWidget {
           children: [
             Text(
               exch ?? "",
-              style: MyntWebTextStyles.symbol(
+              style: MyntWebTextStyles.exch(
                 context,
                 color: resolveThemeColor(
                   context,
@@ -769,7 +784,7 @@ class _DynamicPriceContentWeb extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             "$displayChange ($displayPerChange%)",
-            style: MyntWebTextStyles.body(
+            style: MyntWebTextStyles.priceChange(
               context,
               color: resolveThemeColor(
                 context,

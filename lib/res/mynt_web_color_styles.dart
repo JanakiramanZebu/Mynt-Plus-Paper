@@ -56,6 +56,10 @@ class WebColors {
   static const Color listItemBg = Color(0xFFF1F3F8);
   static const Color listItemBgDark = Color(0xFF1E1E1E);
 
+  static const Color backgroundColor = Color(0xFFffffff);
+static const Color backgroundColorDark  = Color(0xFF000000);
+
+
   // ---------------- BORDER / DIVIDER (Custom only) ----------------
 
   static const Color divider = Color(0xFFDDE2E7);

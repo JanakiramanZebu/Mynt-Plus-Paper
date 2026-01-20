@@ -179,7 +179,9 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
     _setupTabControllerIfNeeded(hasOptions: hasOptions);
 
     return Container(
-      color: shadcn.Theme.of(context).colorScheme.background,
+      color: resolveThemeColor(context,
+          dark: MyntColors.backgroundColorDark,
+          light: MyntColors.backgroundColor),
       child: Stack(
         children: [
           Row(
@@ -342,64 +344,57 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
                               _tabController != null &&
                               _selectedTabIndex == 1) ...[
                             // const SizedBox(width: 12),
-                            // Symbol Name and Expiry Dropdown
-                            Row(
-                              children: [
-                                Builder(
-                                  builder: (context) => Material(
-                                    color: Colors.transparent,
-                                    child: InkWell(
-                                      onTap: () =>
-                                          _showExpiryDropdown(context, mw),
-                                      borderRadius: BorderRadius.circular(5),
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 12, vertical: 8),
-                                        decoration: BoxDecoration(
-                                          border: Border.all(
-                                            color: resolveThemeColor(
+                            // Symbol Name and Expiry Selection
+                            Builder(
+                              builder: (buttonContext) {
+                                return Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    borderRadius: BorderRadius.circular(4),
+                                    splashColor: resolveThemeColor(
+                                      context,
+                                      dark: MyntColors.rippleDark,
+                                      light: MyntColors.rippleLight,
+                                    ),
+                                    highlightColor: resolveThemeColor(
+                                      context,
+                                      dark: MyntColors.highlightDark,
+                                      light: MyntColors.highlightLight,
+                                    ),
+                                    onTap: () {
+                                      _showExpiryDatePopup(buttonContext, mw);
+                                    },
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 8, vertical: 6),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            mw.selectedExpDate
+                                                    ?.replaceAll("-", " ") ??
+                                                '',
+                                            style: MyntWebTextStyles.body(
                                               context,
-                                              dark: MyntColors.dividerDark,
-                                              light: MyntColors.divider,
+                                              fontWeight: MyntFonts.medium,
                                             ),
                                           ),
-                                          borderRadius:
-                                              BorderRadius.circular(5),
-                                        ),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Text(
-                                              mw.selectedExpDate
-                                                      ?.replaceAll("-", " ") ??
-                                                  '',
-                                              style:
-                                                  MyntWebTextStyles.bodySmall(
-                                                context,
-                                                fontWeight: MyntFonts.medium,
-                                                darkColor:
-                                                    MyntColors.textPrimaryDark,
-                                                lightColor:
-                                                    MyntColors.textPrimary,
-                                              ),
+                                          const SizedBox(width: 4),
+                                          Icon(
+                                            Icons.keyboard_arrow_down,
+                                            size: 18,
+                                            color: resolveThemeColor(
+                                              context,
+                                              dark: MyntColors.iconDark,
+                                              light: MyntColors.icon,
                                             ),
-                                            const SizedBox(width: 8),
-                                            Icon(
-                                              Icons.arrow_drop_down,
-                                              size: 20,
-                                              color: resolveThemeColor(
-                                                context,
-                                                dark: MyntColors.iconDark,
-                                                light: MyntColors.icon,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ),
-                                ),
-                              ],
+                                );
+                              },
                             ),
                             const SizedBox(width: 4),
                             // const Spacer(),
@@ -601,6 +596,144 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
     );
   }
 
+  void _showExpiryDatePopup(BuildContext context, MarketWatchProvider mw) {
+    shadcn.showPopover(
+      context: context,
+      alignment: Alignment.bottomLeft,
+      offset: const Offset(0, 4),
+      overlayBarrier: shadcn.OverlayBarrier(
+        borderRadius: shadcn.Theme.of(context).borderRadiusLg,
+      ),
+      builder: (popoverContext) {
+        return Container(
+          decoration: BoxDecoration(
+            borderRadius: shadcn.Theme.of(context).borderRadiusLg,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.15),
+                blurRadius: 12,
+                spreadRadius: 2,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: shadcn.ModalContainer(
+            padding: const EdgeInsets.all(8),
+            child: SizedBox(
+              width: 200,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxHeight: 400),
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: mw.sortDate.map((date) {
+                      return _buildExpiryMenuItem(
+                        popoverContext,
+                        date,
+                        mw,
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildExpiryMenuItem(
+    BuildContext context,
+    String date,
+    MarketWatchProvider mw,
+  ) {
+    final isSelected = date == mw.selectedExpDate;
+    final primaryColor = resolveThemeColor(
+      context,
+      dark: MyntColors.primaryDark,
+      light: MyntColors.primary,
+    );
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () async {
+          shadcn.closeOverlay(context);
+          if (date != mw.selectedExpDate) {
+            for (var i = 0; i < (mw.optExp?.length ?? 0); i++) {
+              if (date == mw.optExp![i].exd) {
+                mw.selecTradSym("${mw.optExp![i].tsym}");
+                mw.optExch("${mw.optExp![i].exch}");
+              }
+            }
+            mw.selecexpDate(date);
+
+            await mw.fetchOPtionChain(
+              context: this.context,
+              exchange: mw.optionExch!,
+              numofStrike: mw.numStrike,
+              strPrc: mw.optionStrPrc,
+              tradeSym: mw.selectedTradeSym!,
+            );
+          }
+        },
+        splashColor: resolveThemeColor(
+          context,
+          dark: MyntColors.rippleDark,
+          light: MyntColors.rippleLight,
+        ),
+        highlightColor: resolveThemeColor(
+          context,
+          dark: MyntColors.highlightDark,
+          light: MyntColors.highlightLight,
+        ),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  date.replaceAll("-", " "),
+                  style: MyntWebTextStyles.body(
+                    context,
+                    fontWeight:
+                        isSelected ? MyntFonts.semiBold : MyntFonts.medium,
+                    color: isSelected
+                        ? primaryColor
+                        : resolveThemeColor(
+                            context,
+                            dark: MyntColors.textPrimaryDark,
+                            light: MyntColors.textPrimary,
+                          ),
+                  ),
+                ),
+              ),
+              SizedBox(
+                width: 26,
+                child: isSelected
+                    ? Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          const SizedBox(width: 8),
+                          Icon(
+                            Icons.check,
+                            size: 18,
+                            color: primaryColor,
+                          ),
+                        ],
+                      )
+                    : const SizedBox.shrink(),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildSegmentedControl(BuildContext context) {
     final tabs = ['Chart', 'Options'];
     final currentTheme = shadcn.Theme.of(context);
@@ -672,79 +805,5 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
         ],
       ),
     );
-  }
-
-  void _showExpiryDropdown(BuildContext context, MarketWatchProvider mw) {
-    final RenderBox button = context.findRenderObject() as RenderBox;
-    final RenderBox overlay =
-        Overlay.of(context).context.findRenderObject() as RenderBox;
-
-    final RelativeRect position = RelativeRect.fromRect(
-      Rect.fromPoints(
-        button.localToGlobal(Offset.zero, ancestor: overlay),
-        button.localToGlobal(button.size.bottomRight(Offset.zero),
-            ancestor: overlay),
-      ),
-      Offset.zero & overlay.size,
-    );
-
-    showMenu<String>(
-      context: context,
-      position: position,
-      color: shadcn.Theme.of(context).colorScheme.card,
-      elevation: 8,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.zero,
-      ),
-      items: mw.sortDate.map((String date) {
-        final isSelected = date == mw.selectedExpDate;
-        return PopupMenuItem<String>(
-          value: date,
-          padding: EdgeInsets.zero,
-          child: SizedBox(
-            width: 200, // Fixed width
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Text(
-                date.replaceAll("-", " "),
-                style: MyntWebTextStyles.bodySmall(
-                  context,
-                  fontWeight: MyntFonts.medium,
-                  color: isSelected
-                      ? resolveThemeColor(
-                          context,
-                          dark: MyntColors.primaryDark,
-                          light: MyntColors.primary,
-                        )
-                      : resolveThemeColor(
-                          context,
-                          dark: MyntColors.textPrimaryDark,
-                          light: MyntColors.textPrimary,
-                        ),
-                ),
-              ),
-            ),
-          ),
-        );
-      }).toList(),
-    ).then((value) async {
-      if (value != null) {
-        for (var i = 0; i < (mw.optExp?.length ?? 0); i++) {
-          if (value == mw.optExp![i].exd) {
-            mw.selecTradSym("${mw.optExp![i].tsym}");
-            mw.optExch("${mw.optExp![i].exch}");
-          }
-        }
-        mw.selecexpDate(value);
-
-        await mw.fetchOPtionChain(
-          context: context,
-          exchange: mw.optionExch!,
-          numofStrike: mw.numStrike,
-          strPrc: mw.optionStrPrc,
-          tradeSym: mw.selectedTradeSym!,
-        );
-      }
-    });
   }
 }

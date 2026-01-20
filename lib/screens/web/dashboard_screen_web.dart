@@ -68,7 +68,9 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
     final indexProvider = ref.watch(indexListProvider);
 
     return Scaffold(
-      backgroundColor: shadcn.Theme.of(context).colorScheme.background,
+      backgroundColor: resolveThemeColor(context,
+          dark: MyntColors.backgroundColorDark,
+          light: MyntColors.backgroundColor),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(20.0),

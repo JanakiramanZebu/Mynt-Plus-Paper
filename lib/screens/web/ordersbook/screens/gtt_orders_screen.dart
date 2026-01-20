@@ -799,7 +799,9 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
                             .colorScheme
                             .background
                             .withOpacity(0.95),
-                        shadcn.Theme.of(context).colorScheme.background,
+                        resolveThemeColor(context,
+                            dark: MyntColors.backgroundColorDark,
+                            light: MyntColors.backgroundColor),
                       ],
                       stops: const [0.0, 0.3, 0.5],
                     ),

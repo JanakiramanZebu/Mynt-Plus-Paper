@@ -487,6 +487,10 @@ class MyntPrimaryButton extends MyntButton {
     super.isLoading = false,
     super.isFullWidth = false,
     super.iconAlignment,
+    super.backgroundColor,
+    super.textColor,
+    super.borderColor,
+    super.borderRadius,
   }) : super(type: MyntButtonType.primary);
 }
 
@@ -613,7 +617,7 @@ class MyntIconButton extends StatelessWidget {
     }
 
     return Material(
-      color: Colors.transparent,
+      color: backgroundColor ?? Colors.transparent,
       shape: const CircleBorder(),
       child: InkWell(
         customBorder: const CircleBorder(),
@@ -639,7 +643,7 @@ class MyntIconButton extends StatelessWidget {
   EdgeInsets _getDefaultPadding() {
     switch (size) {
       case MyntButtonSize.small:
-        return const EdgeInsets.all(6);
+        return const EdgeInsets.all(8);
       case MyntButtonSize.medium:
         return const EdgeInsets.all(8);
       case MyntButtonSize.large:

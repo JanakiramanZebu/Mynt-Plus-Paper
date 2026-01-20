@@ -542,8 +542,9 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                     return Scaffold(
                       body: Container(
                         decoration: BoxDecoration(
-                          color:
-                              shadcn.Theme.of(context).colorScheme.background,
+                          color: resolveThemeColor(context,
+                              dark: MyntColors.backgroundColorDark,
+                              light: MyntColors.backgroundColor),
                         ),
                         child: Column(
                           children: [
@@ -1344,10 +1345,12 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                     CrossAxisAlignment.stretch,
                                                 children: [
                                                   Padding(
-                                                    padding: const EdgeInsets
-                                                        .symmetric(
-                                                        horizontal: 10,
-                                                        vertical: 10),
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            left: 15,
+                                                            right: 20,
+                                                            top: 10,
+                                                            bottom: 10),
                                                     child: Column(children: [
                                                       // Old 2-column layout - commented out
                                                       // _buildInfoRow(
@@ -1625,7 +1628,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                             context,
                                                                             fontWeight:
                                                                                 MyntFonts.medium,
-                                                                            color: MyntColors.loss),
+                                                                            color: MyntColors.tertiary),
                                                                       ),
                                                                       Text(
                                                                         "Quantity",

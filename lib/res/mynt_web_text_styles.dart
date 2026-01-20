@@ -369,7 +369,7 @@ class MyntWebTextStyles {
       _text(
         c,
         size: MyntFonts.para,
-        weight: fontWeight ?? MyntFonts.regular,
+        weight: fontWeight ?? MyntFonts.medium,
         color: color,
         darkColor: darkColor,
         lightColor: lightColor,

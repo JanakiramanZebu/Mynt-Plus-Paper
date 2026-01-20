@@ -44,7 +44,9 @@ class _StocksScreenWebState extends ConsumerState<StocksScreenWeb> {
 
       if (holdingProvide == null || holdingProvide.isEmpty) {
         return Container(
-          color: shadcn.Theme.of(context).colorScheme.background,
+          color: resolveThemeColor(context,
+              dark: MyntColors.backgroundColorDark,
+              light: MyntColors.backgroundColor),
           child: Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -80,7 +82,9 @@ class _StocksScreenWebState extends ConsumerState<StocksScreenWeb> {
       }
 
       return Container(
-        color: shadcn.Theme.of(context).colorScheme.background,
+        color: resolveThemeColor(context,
+            dark: MyntColors.backgroundColorDark,
+            light: MyntColors.backgroundColor),
         child: ListView.separated(
           physics: const AlwaysScrollableScrollPhysics(),
           itemCount: holdingProvide.length,
@@ -215,7 +219,9 @@ class _HoldingsCardWebState extends ConsumerState<_HoldingsCardWeb> {
               child: Container(
                 color: isHovered
                     ? MyntColors.primary.withOpacity(0.10)
-                    : shadcn.Theme.of(context).colorScheme.background,
+                    : resolveThemeColor(context,
+                        dark: MyntColors.backgroundColorDark,
+                        light: MyntColors.backgroundColor),
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                 child: Column(

@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter/foundation.dart';
+import 'package:mynt_plus/res/mynt_web_color_styles.dart';
+import 'package:mynt_plus/res/mynt_web_text_styles.dart';
 import 'package:mynt_plus/screens/web/market_watch/future_screen_web.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
@@ -148,175 +150,210 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                   }
                 }
               },
-          child: Container(
-            color: isHovered
-                ? (theme.isDarkMode
-                    ? WebDarkColors.primary
-                    : WebColors.primary)
-                    .withOpacity(0.15)
-                : (theme.isDarkMode ? Colors.black : Colors.white),
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // First row: Symbol name | LTP
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
+              child: Container(
+                color: isHovered
+                    ? MyntColors.primary.withOpacity(0.10)
+                    : resolveThemeColor(context,
+                        dark: MyntColors.backgroundColorDark,
+                        light: MyntColors.backgroundColor),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Left: Symbol name and option
-                    Expanded(
+                    // First row: Symbol name | LTP
+                    SizedBox(
+                      height:
+                          24, // Fixed height matching row 2 (accommodates 24px buttons)
                       child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.end,
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          Text(
-                            widget.watchListData["symbol"]
-                                .toString()
-                                .replaceAll("-EQ", "")
-                                .toUpperCase(),
-                            style: TextStyle(
-                              color: shadcn.Theme.of(context).colorScheme.foreground,
-                              fontFamily: 'Geist',
-                              fontWeight: FontWeight.w500,
-                              fontSize: 14,
+                          // Left: Symbol name and option
+                          Expanded(
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text(
+                                  widget.watchListData["symbol"]
+                                      .toString()
+                                      .replaceAll("-EQ", "")
+                                      .toUpperCase(),
+                                  style: MyntWebTextStyles.symbol(
+                                    context,
+                                    color: resolveThemeColor(
+                                      context,
+                                      dark: MyntColors.textPrimaryDark,
+                                      light: MyntColors.textPrimary,
+                                    ),
+                                  ),
+                                ),
+                                if (widget.watchListData["option"]
+                                    .toString()
+                                    .isNotEmpty)
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 4),
+                                    child: Text(
+                                      "${widget.watchListData["option"]}",
+                                      style: MyntWebTextStyles.symbol(
+                                        context,
+                                        color: resolveThemeColor(
+                                          context,
+                                          dark: MyntColors.textPrimaryDark,
+                                          light: MyntColors.textPrimary,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                              ],
                             ),
                           ),
-                          if (widget.watchListData["option"].toString().isNotEmpty)
-                            Padding(
-                              padding: const EdgeInsets.only(left: 4),
-                              child: Text(
-                                "${widget.watchListData["option"]}",
-                                style: TextStyle(
-                                  color: shadcn.Theme.of(context).colorScheme.foreground,
-                                  fontFamily: 'Geist',
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ),
+                          // Right: LTP only
+                          RepaintBoundary(
+                            child: _LTPWidgetWeb(
+                                token: widget.watchListData['token'],
+                                initialData: widget.watchListData),
+                          ),
                         ],
                       ),
                     ),
-                    // Right: LTP only
-                    RepaintBoundary(
-                      child: _LTPWidgetWeb(
-                          token: widget.watchListData['token'],
-                          initialData: widget.watchListData),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                // Second row: Exchange | Action buttons | Price Change
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    // Left: Exchange info
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          '${widget.watchListData["exch"]} ',
-                          style: TextStyle(
-                            color: shadcn.Theme.of(context).colorScheme.mutedForeground,
-                            fontFamily: 'Geist',
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        if (widget.watchListData['expDate'].toString().isNotEmpty)
-                          Text(
-                            "${widget.watchListData['expDate']}",
-                            style: TextStyle(
-                              color: shadcn.Theme.of(context).colorScheme.foreground,
-                              fontFamily: 'Geist',
-                              fontWeight: FontWeight.w500,
-                              fontSize: 14,
-                            ),
-                          ),
-                        if (widget.watchListData['holdingQty'] != null &&
-                            widget.watchListData['holdingQty']
-                                .toString()
-                                .isNotEmpty &&
-                            widget.watchListData['holdingQty'] != "null") ...[
-                          SvgPicture.asset(assets.suitcase,
-                              height: 14,
-                              width: 18,
-                              color: shadcn.Theme.of(context).colorScheme.mutedForeground),
-                          const SizedBox(width: 4),
-                          Text(
-                            "${widget.watchListData['holdingQty']}",
-                            style: TextStyle(
-                              color: shadcn.Theme.of(context).colorScheme.mutedForeground,
-                              fontFamily: 'Geist',
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ]
-                      ],
-                    ),
-                    // Left spacer to push buttons toward center
-                    Expanded(
-                      child: Container(),
-                    ),
-                    // Fixed-width container for action buttons (centered in available space)
-                    Builder(
-                      builder: (context) {
-                        // Check if this is an index or commodity
-                        final instname = widget.watchListData["instname"]?.toString() ?? "";
-                        final isIndexOrCommodity = instname == "UNDIND" || instname == "COM";
-                        final bool isPredefined = marketWatch.isPreDefWLs == "Yes";
-                        
-                        return AnimatedOpacity(
-                          opacity: (isHovered || _isMenuOpen) ? 1.0 : 0.0,
-                          duration: const Duration(milliseconds: 150),
-                          child: IgnorePointer(
-                            ignoring: !isHovered && !_isMenuOpen,
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                // Only show Buy/Sell buttons if not index or commodity
-                                if (!isIndexOrCommodity) ...[
-                                  _buildHoverButton(
-                                    label: 'B',
-                                    color: Colors.white,
-                                    backgroundColor: theme.isDarkMode
-                                        ? WebDarkColors.primary
-                                        : WebColors.primary,
-                                    onPressed: () async {
-                                      try {
-                                        await _placeOrderInput(context, depthData, true);
-                                      } catch (e) {
-                                        print('Buy button error: $e');
-                                      }
-                                    },
+                    SizedBox(
+                      height: 24,
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                '${widget.watchListData["exch"]} ',
+                                style: MyntWebTextStyles.exch(
+                                  context,
+                                  fontWeight: FontWeight.w500,
+                                  color: resolveThemeColor(
+                                    context,
+                                    dark: MyntColors.textSecondaryDark,
+                                    light: MyntColors.textSecondary,
                                   ),
-                                  const SizedBox(width: 4),
-                                  _buildHoverButton(
-                                    label: 'S',
-                                    color: Colors.white,
-                                    backgroundColor: theme.isDarkMode
-                                        ? WebDarkColors.tertiary
-                                        : WebColors.tertiary,
-                                    onPressed: () async {
-                                      try {
-                                        await _placeOrderInput(context, depthData, false);
-                                      } catch (e) {
-                                        print('Sell button error: $e');
-                                      }
-                                    },
+                                ),
+                              ),
+                              if (widget.watchListData['expDate']
+                                  .toString()
+                                  .isNotEmpty)
+                                Text(
+                                  "${widget.watchListData['expDate']}",
+                                  style: MyntWebTextStyles.exch(
+                                    context,
+                                    fontWeight: FontWeight.w500,
+                                    color: resolveThemeColor(
+                                      context,
+                                      dark: MyntColors.textSecondaryDark,
+                                      light: MyntColors.textSecondary,
+                                    ),
                                   ),
-                                  const SizedBox(width: 4),
-                                ],
-                                _buildHoverButton(
-                                  iconAsset: assets.depthIcon,
-                                  color: Colors.black,
-                                  backgroundColor: Colors.white,
-                                  borderColor: theme.isDarkMode
-                                      ? WebDarkColors.border
-                                      : WebColors.border,
-                                  borderRadius: 5.0,
-                                  onPressed: () async {
-                                    if (_isNavigating) return;
+                                ),
+                              if (widget.watchListData['holdingQty'] != null &&
+                                  widget.watchListData['holdingQty']
+                                      .toString()
+                                      .isNotEmpty &&
+                                  widget.watchListData['holdingQty'] !=
+                                      "null") ...[
+                                SvgPicture.asset(assets.suitcase,
+                                    height: 14,
+                                    width: 18,
+                                    color: resolveThemeColor(
+                                      context,
+                                      dark: MyntColors.iconDark,
+                                      light: MyntColors.icon,
+                                    )),
+                                const SizedBox(width: 4),
+                                Text(
+                                  "${widget.watchListData['holdingQty']}",
+                                  style: MyntWebTextStyles.exch(
+                                    context,
+                                    fontWeight: FontWeight.w500,
+                                    color: resolveThemeColor(
+                                      context,
+                                      dark: MyntColors.textSecondaryDark,
+                                      light: MyntColors.textSecondary,
+                                    ),
+                                  ),
+                                ),
+                              ]
+                            ],
+                          ),
+                          // Left spacer to push buttons toward center
+                          Expanded(
+                            child: Container(),
+                          ),
+                          // Fixed-width container for action buttons (centered in available space)
+                          Builder(
+                            builder: (context) {
+                              // Check if this is an index or commodity
+                              final instname = widget.watchListData["instname"]
+                                      ?.toString() ??
+                                  "";
+                              final isIndexOrCommodity =
+                                  instname == "UNDIND" || instname == "COM";
+                              final bool isPredefined =
+                                  marketWatch.isPreDefWLs == "Yes";
+
+                              return AnimatedOpacity(
+                                opacity:
+                                    (isHovered || _isMenuOpen) ? 1.0 : 0.0,
+                                duration: const Duration(milliseconds: 150),
+                                child: IgnorePointer(
+                                  ignoring: !isHovered && !_isMenuOpen,
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      // Only show Buy/Sell buttons if not index or commodity
+                                      if (!isIndexOrCommodity) ...[
+                                        _buildHoverButton(
+                                          label: 'B',
+                                          color: Colors.white,
+                                          backgroundColor: resolveThemeColor(
+                                            context,
+                                            dark: MyntColors.primaryDark,
+                                            light: MyntColors.primary,
+                                          ),
+                                          onPressed: () async {
+                                            try {
+                                              await _placeOrderInput(
+                                                  context, depthData, true);
+                                            } catch (e) {
+                                              print('Buy button error: $e');
+                                            }
+                                          },
+                                        ),
+                                        const SizedBox(width: 4),
+                                        _buildHoverButton(
+                                          label: 'S',
+                                          color: Colors.white,
+                                          backgroundColor: resolveThemeColor(
+                                            context,
+                                            dark: MyntColors.errorDark,
+                                            light: MyntColors.tertiary,
+                                          ),
+                                          onPressed: () async {
+                                            try {
+                                              await _placeOrderInput(
+                                                  context, depthData, false);
+                                            } catch (e) {
+                                              print('Sell button error: $e');
+                                            }
+                                          },
+                                        ),
+                                        const SizedBox(width: 4),
+                                      ],
+                                      _buildHoverButton(
+                                        iconAsset: assets.depthIcon,
+                                        color: Colors.black,
+                                        backgroundColor: Colors.white,
+                                        borderColor: shadcn.Theme.of(context)
+                                            .colorScheme
+                                            .border,
+                                        borderRadius: 5.0,
+                                        onPressed: () async {
+                                          if (_isNavigating) return;
 
                                     ref
                                         .read(expandedWatchlistItemProvider.notifier)
@@ -378,18 +415,18 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                                     color: Colors.black,
                                     backgroundColor: Colors.white,
                                     borderColor: theme.isDarkMode
-                                        ? WebDarkColors.border
-                                        : WebColors.border,
+                                        ? MyntColors.textSecondaryDark
+                                        : MyntColors.textSecondary,
                                     borderRadius: 5.0,
                                     onPressed: () async {
                                       try {
                                         final String exch = widget.watchListData["exch"]?.toString() ?? "";
                                         final String token = widget.watchListData["token"]?.toString() ?? "";
                                         final String input = "$exch|$token#";
-                                        
+
                                         if (_isNavigating) return;
                                         setState(() { _isNavigating = true; });
-                                        
+
                                         await ref
                                             .read(marketWatchProvider)
                                             .addDelMarketScrip(marketWatch.wlName, input, context, false, false, false, false);
@@ -417,41 +454,42 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                         );
                       },
                     ),
-                    // Right spacer to push price change to right
-                    Expanded(
-                      child: Container(),
-                    ),
-                    // Right: Price change only
-                    RepaintBoundary(
-                      child: _PriceChangeWidgetWeb(
-                          token: widget.watchListData['token'],
-                          initialData: widget.watchListData),
+                          // Right spacer to push price change to right
+                          Expanded(
+                            child: Container(),
+                          ),
+                          // Right: Price change only
+                          RepaintBoundary(
+                            child: _PriceChangeWidgetWeb(
+                                token: widget.watchListData['token'],
+                                initialData: widget.watchListData),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
-              ],
+              ),
             ),
           ),
         ),
-          ),  // ValueListenableBuilder
-          ),  // MouseRegion
-          // Expandable content section
-          // if (_isExpanded)
-          //   AnimatedSize(
-          //     duration: const Duration(milliseconds: 300),
-          //     curve: Curves.easeInOut,
-          //     child: Container(
-          //       width: double.infinity,
-          //       // color: theme.isDarkMode ? WebDarkColors.surfaceVariant : WebColors.surfaceVariant,
-          //       padding: const EdgeInsets.fromLTRB(16, 16, 28,
-          //           16), // Extra right padding to prevent scrollbar overlap
-          //       child: _buildExpandedContent(depthData, theme),
-          //     ),
-          //   ),
-        ],
-      ),
-    );
-  }
+        // Expandable content section
+        // if (_isExpanded)
+        //   AnimatedSize(
+        //     duration: const Duration(milliseconds: 300),
+        //     curve: Curves.easeInOut,
+        //     child: Container(
+        //       width: double.infinity,
+        //       // color: theme.isDarkMode ? MyntColors.surfaceVariant : MyntColors.surfaceVariant,
+        //       padding: const EdgeInsets.fromLTRB(16, 16, 28,
+        //           16), // Extra right padding to prevent scrollbar overlap
+        //       child: _buildExpandedContent(depthData, theme),
+        //     ),
+        //   ),
+      ],
+    ),
+  );
+}
 
   Widget _buildExpandedContent(GetQuotes depthData, ThemesProvider theme) {
     // Get current token for this specific card
@@ -610,7 +648,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
         //   "Market Depth",
         //   style: WebTextStyles.title(
         //     isDarkTheme: theme.isDarkMode,
-        //     color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+        //     color: theme.isDarkMode ? MyntColors.textPrimary : MyntColors.textPrimary,
         //     fontWeight: WebFonts.medium,
         //   ),
         // ),
@@ -631,8 +669,8 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                           style: WebTextStyles.para(
                             isDarkTheme: theme.isDarkMode,
                             color: theme.isDarkMode
-                                ? WebDarkColors.textSecondary
-                                : WebColors.textSecondary,
+                                ? MyntColors.textSecondary
+                                : MyntColors.textSecondary,
                             fontWeight: WebFonts.regular,
                           ),
                         ),
@@ -640,7 +678,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                           "Bid",
                           style: WebTextStyles.para(
                             isDarkTheme: theme.isDarkMode,
-                            color: WebDarkColors.secondary,
+                            color: MyntColors.secondary,
                             fontWeight: WebFonts.regular,
                           ),
                         )
@@ -674,8 +712,8 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                           style: WebTextStyles.para(
                             isDarkTheme: theme.isDarkMode,
                             color: theme.isDarkMode
-                                ? WebDarkColors.loss
-                                : WebColors.loss,
+                                ? MyntColors.loss
+                                : MyntColors.loss,
                             fontWeight: WebFonts.regular,
                           ),
                         ),
@@ -684,8 +722,8 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                           style: WebTextStyles.para(
                             isDarkTheme: theme.isDarkMode,
                             color: theme.isDarkMode
-                                ? WebDarkColors.textSecondary
-                                : WebColors.textSecondary,
+                                ? MyntColors.textSecondary
+                                : MyntColors.textSecondary,
                             fontWeight: WebFonts.regular,
                           ),
                         )
@@ -736,7 +774,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                   tbq,
                   style: WebTextStyles.sub(
                     isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
+                    color: theme.isDarkMode ? MyntColors.textSecondary : MyntColors.textSecondary,
                     fontWeight: WebFonts.regular,
                     letterSpacing: 0.0,
                   ),
@@ -746,7 +784,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                   "(${scripInfo.totBuyQtyPer.toStringAsFixed(2)}%)",
                   style: WebTextStyles.para(
                     isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
+                    color: theme.isDarkMode ? MyntColors.textSecondary : MyntColors.textSecondary,
                     fontWeight: WebFonts.regular,
                     letterSpacing: 0.0,
                   ),
@@ -759,7 +797,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                   "(${scripInfo.totSellQtyPer.toStringAsFixed(2)}%)",
                   style: WebTextStyles.para(
                     isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
+                    color: theme.isDarkMode ? MyntColors.textSecondary : MyntColors.textSecondary,
                     fontWeight: WebFonts.regular,
                     letterSpacing: 0.0,
                   ),
@@ -769,7 +807,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                   tsq,
                   style: WebTextStyles.sub(
                     isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
+                    color: theme.isDarkMode ? MyntColors.textSecondary : MyntColors.textSecondary,
                     fontWeight: WebFonts.regular,
                     letterSpacing: 0.0,
                   ),
@@ -787,13 +825,13 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                 lineHeight: 5.0,
                 barRadius: const Radius.circular(4.0),
                 backgroundColor: theme.isDarkMode 
-                    ? WebDarkColors.error 
-                    : WebColors.error,
+                    ? MyntColors.error 
+                    : MyntColors.error,
                 percent: scripInfo.totBuyQtyPerChng,
                 padding: const EdgeInsets.symmetric(horizontal: 0),
                 progressColor: theme.isDarkMode 
-                    ? WebDarkColors.primary 
-                    : WebColors.primary,
+                    ? MyntColors.primary 
+                    : MyntColors.primary,
               ),
             ],
           ),
@@ -814,10 +852,10 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
             style: WebTextStyles.para(
               isDarkTheme: theme.isDarkMode,
               color: isAsk
-                  ? (theme.isDarkMode ? WebDarkColors.loss : WebColors.loss)
+                  ? (theme.isDarkMode ? MyntColors.loss : MyntColors.loss)
                   : (theme.isDarkMode
-                      ? WebDarkColors.textSecondary
-                      : WebColors.textSecondary),
+                      ? MyntColors.textSecondary
+                      : MyntColors.textSecondary),
               fontWeight: WebFonts.regular,
             ),
           ),
@@ -827,11 +865,11 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
               isDarkTheme: theme.isDarkMode,
               color: isAsk
                   ? (theme.isDarkMode
-                      ? WebDarkColors.textSecondary
-                      : WebColors.textSecondary)
+                      ? MyntColors.textSecondary
+                      : MyntColors.textSecondary)
                   : (theme.isDarkMode
-                      ? WebDarkColors.secondary
-                      : WebColors.secondary),
+                      ? MyntColors.secondary
+                      : MyntColors.secondary),
               fontWeight: WebFonts.regular,
             ),
           ),
@@ -861,8 +899,8 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                           style: WebTextStyles.para(
                             isDarkTheme: theme.isDarkMode,
                             color: theme.isDarkMode
-                                ? WebDarkColors.textSecondary
-                                : WebColors.textSecondary,
+                                ? MyntColors.textSecondary
+                                : MyntColors.textSecondary,
                             fontWeight: WebFonts.regular,
                           ),
                         ),
@@ -870,7 +908,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                           "Bid",
                           style: WebTextStyles.para(
                             isDarkTheme: theme.isDarkMode,
-                            color: WebDarkColors.secondary,
+                            color: MyntColors.secondary,
                             fontWeight: WebFonts.regular,
                           ),
                         )
@@ -907,8 +945,8 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                           style: WebTextStyles.para(
                             isDarkTheme: theme.isDarkMode,
                             color: theme.isDarkMode
-                                ? WebDarkColors.error
-                                : WebColors.error,
+                                ? MyntColors.error
+                                : MyntColors.error,
                             fontWeight: WebFonts.regular,
                             letterSpacing: 0.0,
                           ),
@@ -918,8 +956,8 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                           style: WebTextStyles.para(
                             isDarkTheme: theme.isDarkMode,
                             color: theme.isDarkMode
-                                ? WebDarkColors.textSecondary
-                                : WebColors.textSecondary,
+                                ? MyntColors.textSecondary
+                                : MyntColors.textSecondary,
                             fontWeight: WebFonts.regular,
                             letterSpacing: 0.0,
                           ),
@@ -954,8 +992,8 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                 style: WebTextStyles.para(
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
-                      ? WebDarkColors.textSecondary
-                      : WebColors.textSecondary,
+                      ? MyntColors.textSecondary
+                      : MyntColors.textSecondary,
                   fontWeight: WebFonts.regular,
                 ),
               ),
@@ -967,8 +1005,8 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                 style: WebTextStyles.para(
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
-                      ? WebDarkColors.textSecondary
-                      : WebColors.textSecondary,
+                      ? MyntColors.textSecondary
+                      : MyntColors.textSecondary,
                   fontWeight: WebFonts.regular,
                 ),
               ),
@@ -981,8 +1019,8 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                 style: WebTextStyles.para(
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
-                      ? WebDarkColors.textSecondary
-                      : WebColors.textSecondary,
+                      ? MyntColors.textSecondary
+                      : MyntColors.textSecondary,
                   fontWeight: WebFonts.regular,
                   letterSpacing: 0.0,
                 ),
@@ -995,8 +1033,8 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                 style: WebTextStyles.para(
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
-                      ? WebDarkColors.textSecondary
-                      : WebColors.textSecondary,
+                      ? MyntColors.textSecondary
+                      : MyntColors.textSecondary,
                   fontWeight: WebFonts.regular,
                   letterSpacing: 0.0,
                 ),
@@ -1043,16 +1081,16 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                                   scripInfo.totSellQtyPer.toStringAsFixed(2) ==
                                       "0.00")
                               ? theme.isDarkMode
-                                  ? WebDarkColors.textSecondary
-                                  : WebColors.textSecondary
+                                  ? MyntColors.textSecondary
+                                  : MyntColors.textSecondary
                               : theme.isDarkMode
-                                  ? WebDarkColors.error
-                                  : WebColors.error,
+                                  ? MyntColors.error
+                                  : MyntColors.error,
                       percent: scripInfo.totBuyQtyPerChng,
                       padding: const EdgeInsets.symmetric(horizontal: 0),
                       progressColor: theme.isDarkMode
-                          ? WebDarkColors.primary
-                          : WebColors.primary),
+                          ? MyntColors.primary
+                          : MyntColors.primary),
                   const SizedBox(height: 16),
                 ],
               ),
@@ -1069,8 +1107,8 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
           style: WebTextStyles.para(
             isDarkTheme: theme.isDarkMode,
             color: theme.isDarkMode
-                ? WebDarkColors.textSecondary
-                : WebColors.textSecondary,
+                ? MyntColors.textSecondary
+                : MyntColors.textSecondary,
           ),
         ),
         Text(
@@ -1078,8 +1116,8 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
           style: WebTextStyles.para(
             isDarkTheme: theme.isDarkMode,
             color: theme.isDarkMode
-                ? WebDarkColors.secondary
-                : WebColors.secondary,
+                ? MyntColors.secondary
+                : MyntColors.secondary,
           ),
         ),
       ],
@@ -1094,7 +1132,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
           " ${price != "null" ? price : '0.00'} ",
           style: WebTextStyles.para(
             isDarkTheme: theme.isDarkMode,
-            color: theme.isDarkMode ? WebDarkColors.error : WebColors.error,
+            color: theme.isDarkMode ? MyntColors.error : MyntColors.error,
           ),
         ),
         Text(
@@ -1102,8 +1140,8 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
           style: WebTextStyles.para(
             isDarkTheme: theme.isDarkMode,
             color: theme.isDarkMode
-                ? WebDarkColors.textSecondary
-                : WebColors.textSecondary,
+                ? MyntColors.textSecondary
+                : MyntColors.textSecondary,
           ),
         ),
       ],
@@ -1121,8 +1159,8 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
             style: WebTextStyles.para(
               isDarkTheme: theme.isDarkMode,
               color: theme.isDarkMode
-                  ? WebDarkColors.textSecondary
-                  : WebColors.textSecondary,
+                  ? MyntColors.textSecondary
+                  : MyntColors.textSecondary,
               fontWeight: WebFonts.regular,
               letterSpacing: 0.0,
             ),
@@ -1133,8 +1171,8 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
             style: WebTextStyles.sub(
               isDarkTheme: theme.isDarkMode,
               color: theme.isDarkMode
-                  ? WebDarkColors.textPrimary
-                  : WebColors.textPrimary,
+                  ? MyntColors.textPrimary
+                  : MyntColors.textPrimary,
               fontWeight: WebFonts.regular,
               letterSpacing: 0.0,
             ),
@@ -1142,8 +1180,8 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
           const SizedBox(height: 4),
           Divider(
             color: theme.isDarkMode
-                ? WebDarkColors.divider
-                : WebColors.divider,
+                ? MyntColors.divider
+                : MyntColors.divider,
           ),
         ],
       ),
@@ -1162,53 +1200,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
   }) {
     final theme = ref.read(themeProvider);
     final borderRadiusValue = borderRadius ?? 5.0;
-    
-    // Use shadcn IconButton for icon buttons, keep custom colors
-    if (icon != null || iconAsset != null) {
-      return SizedBox(
-        width: 24,
-        height: 24,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(borderRadiusValue),
-          child: Container(
-            decoration: BoxDecoration(
-              color: backgroundColor ?? Colors.transparent,
-              borderRadius: BorderRadius.circular(borderRadiusValue),
-              border: borderColor != null
-                  ? Border.all(
-                      color: borderColor,
-                      width: 1,
-                    )
-                  : null,
-            ),
-            child: shadcn.IconButton(
-              size: shadcn.ButtonSize.small,
-              density: shadcn.ButtonDensity.dense,
-              variance: shadcn.ButtonVariance.ghost,
-              onPressed: onPressed,
-              shape: shadcn.ButtonShape.rectangle,
-              icon: iconAsset != null
-                  ? SvgPicture.asset(
-                      iconAsset,
-                      width: 13,
-                      height: 13,
-                      colorFilter: ColorFilter.mode(
-                        color,
-                        BlendMode.srcIn,
-                      ),
-                    )
-                  : Icon(
-                      icon,
-                      size: 13,
-                      color: color,
-                    ),
-            ),
-          ),
-        ),
-      );
-    }
-    
-    // Keep original implementation for label buttons
+
     return SizedBox(
       width: 24,
       height: 24,
@@ -1216,8 +1208,8 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(borderRadiusValue),
-          splashColor: color.withOpacity(0.15),
-          highlightColor: color.withOpacity(0.08),
+          splashColor: color.withValues(alpha: 0.15),
+          highlightColor: color.withValues(alpha: 0.08),
           onTap: onPressed,
           child: Container(
             decoration: BoxDecoration(
@@ -1231,13 +1223,30 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                   : null,
             ),
             child: Center(
-              child: Text(
-                label ?? "",
-                style: WebTextStyles.buttonXs(
-                  isDarkTheme: theme.isDarkMode,
-                  color: color,
-                ),
-              ),
+              child: iconAsset != null
+                  ? SvgPicture.asset(
+                      iconAsset,
+                      width: 13,
+                      height: 13,
+                      colorFilter: ColorFilter.mode(
+                        color,
+                        BlendMode.srcIn,
+                      ),
+                    )
+                  : icon != null
+                      ? Icon(
+                          icon,
+                          size: 13,
+                          color: color,
+                        )
+                      : Text(
+                          label ?? "",
+                          style: MyntWebTextStyles.para(
+                            context,
+                            fontWeight: FontWeight.bold,
+                            color: color,
+                          ),
+                        ),
             ),
           ),
         ),
@@ -1303,8 +1312,9 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
             showMenu<String>(
               context: context,
               position: position,
-              color:
-                  theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
+              color: resolveThemeColor(context,
+                  dark: MyntColors.backgroundColorDark,
+                  light: MyntColors.backgroundColor),
               elevation: 8,
               shape: const RoundedRectangleBorder(
                 // borderRadius: BorderRadius.circular(),
@@ -1320,8 +1330,8 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                           style: WebTextStyles.bodySmall(
                             isDarkTheme: theme.isDarkMode,
                             color: theme.isDarkMode
-                                ? WebDarkColors.textPrimary
-                                : WebColors.textPrimary,
+                                ? MyntColors.textPrimary
+                                : MyntColors.textPrimary,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
@@ -1335,7 +1345,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                       'Fundamentals',
                       style: WebTextStyles.bodySmall(
                         isDarkTheme: false,
-                        color: WebColors.textPrimary,
+                        color: MyntColors.textPrimary,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -1347,7 +1357,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                       'Options Chain',
                       style: WebTextStyles.bodySmall(
                         isDarkTheme: false,
-                        color: WebColors.textPrimary,
+                        color: MyntColors.textPrimary,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -1359,8 +1369,8 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                     style: WebTextStyles.bodySmall(
                       isDarkTheme: theme.isDarkMode,
                       color: theme.isDarkMode
-                          ? WebDarkColors.textPrimary
-                          : WebColors.textPrimary,
+                          ? MyntColors.textPrimary
+                          : MyntColors.textPrimary,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -1372,8 +1382,8 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                     style: WebTextStyles.bodySmall(
                       isDarkTheme: theme.isDarkMode,
                       color: theme.isDarkMode
-                          ? WebDarkColors.textPrimary
-                          : WebColors.textPrimary,
+                          ? MyntColors.textPrimary
+                          : MyntColors.textPrimary,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -1390,12 +1400,12 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
           },
           child: Container(
             decoration: BoxDecoration(
-              border: Border.all(
-                color: theme.isDarkMode
-                    ? WebDarkColors.border
-                    : WebColors.border,
-                width: 1,
-              ),
+              // border: Border.all(
+              //   color: theme.isDarkMode
+              //       ? MyntColors.border
+              //       : MyntColors.border,
+              //   width: 1,
+              // ),
               borderRadius: BorderRadius.circular(5),
             ),
             child: Center(
@@ -1407,8 +1417,8 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                   height: 14,
                   colorFilter: ColorFilter.mode(
                     theme.isDarkMode
-                        ? WebDarkColors.iconSecondary
-                        : WebColors.iconSecondary,
+                        ? MyntColors.textSecondaryDark
+                        : MyntColors.textSecondary,
                     BlendMode.srcIn,
                   ),
                 ),
@@ -1455,9 +1465,9 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
             barrierDismissible: true,
             builder: (BuildContext dialogContext) {
               return Dialog(
-                backgroundColor: theme.isDarkMode
-                    ? WebDarkColors.surface
-                    : WebColors.surface,
+                backgroundColor: resolveThemeColor(context,
+                    dark: MyntColors.backgroundColorDark,
+                    light: MyntColors.backgroundColor),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -1480,8 +1490,8 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                               style: WebTextStyles.title(
                                 isDarkTheme: theme.isDarkMode,
                                 color: theme.isDarkMode
-                                    ? WebDarkColors.textPrimary
-                                    : WebColors.textPrimary,
+                                    ? MyntColors.textPrimary
+                                    : MyntColors.textPrimary,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
@@ -1508,8 +1518,8 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                                     Icons.close,
                                     size: 18,
                                     color: theme.isDarkMode
-                                        ? WebDarkColors.iconSecondary
-                                        : WebColors.iconSecondary,
+                                        ? MyntColors.textSecondaryDark
+                                        : MyntColors.textSecondary,
                                   ),
                                 ),
                               ),
@@ -1522,8 +1532,8 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                       //   padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                       //   decoration: BoxDecoration(
                       //     color: theme.isDarkMode
-                      //         ? WebDarkColors.primary.withOpacity(0.1)
-                      //         : WebColors.primary.withOpacity(0.1),
+                      //         ? MyntColors.primary.withOpacity(0.1)
+                      //         : MyntColors.primary.withOpacity(0.1),
                       //     borderRadius: BorderRadius.circular(6),
                       //   ),
                       //   child: Row(
@@ -1533,8 +1543,8 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                       //         Icons.info_outline,
                       //         size: 16,
                       //         color: theme.isDarkMode
-                      //             ? WebDarkColors.primary
-                      //             : WebColors.primary,
+                      //             ? MyntColors.primary
+                      //             : MyntColors.primary,
                       //       ),
                       //       const SizedBox(width: 8),
                       //       Text(
@@ -1542,8 +1552,8 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                       //         style: WebTextStyles.para(
                       //           isDarkTheme: theme.isDarkMode,
                       //           color: theme.isDarkMode
-                      //               ? WebDarkColors.primary
-                      //               : WebColors.primary,
+                      //               ? MyntColors.primary
+                      //               : MyntColors.primary,
                       //           fontWeight: FontWeight.w500,
                       //         ),
                       //       ),
@@ -1593,9 +1603,9 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                 barrierDismissible: true,
                 builder: (BuildContext dialogContext) {
                   return Dialog(
-                    backgroundColor: theme.isDarkMode
-                        ? WebDarkColors.surface
-                        : WebColors.surface,
+                    backgroundColor: resolveThemeColor(context,
+                        dark: MyntColors.backgroundColorDark,
+                        light: MyntColors.backgroundColor),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -1617,8 +1627,8 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                                   style: WebTextStyles.title(
                                     isDarkTheme: theme.isDarkMode,
                                     color: theme.isDarkMode
-                                        ? WebDarkColors.textPrimary
-                                        : WebColors.textPrimary,
+                                        ? MyntColors.textPrimary
+                                        : MyntColors.textPrimary,
                                     fontWeight: FontWeight.w700,
                                   ),
                                 ),
@@ -1640,8 +1650,8 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                                         Icons.close,
                                         size: 20,
                                         color: theme.isDarkMode
-                                            ? WebDarkColors.iconSecondary
-                                            : WebColors.iconSecondary,
+                                            ? MyntColors.textSecondaryDark
+                                            : MyntColors.textSecondary,
                                       ),
                                     ),
                                   ),
@@ -2077,15 +2087,15 @@ class _PriceDataWidgetWebState extends ConsumerState<_PriceDataWidgetWeb> {
     final changeColor =
         displayChange.startsWith("-") || displayPerChange.startsWith('-')
             ? theme.isDarkMode
-                ? WebDarkColors.loss
-                : WebColors.loss
+                ? MyntColors.loss
+                : MyntColors.loss
             : (displayChange == "0.00" || displayPerChange == "0.00")
                 ? theme.isDarkMode
-                    ? WebDarkColors.textSecondary
-                    : WebColors.textSecondary
+                    ? MyntColors.textSecondary
+                    : MyntColors.textSecondary
                 : theme.isDarkMode
-                    ? WebDarkColors.profit
-                    : WebColors.profit;
+                    ? MyntColors.profit
+                    : MyntColors.profit;
 
     // Build the UI with web-optimized text styles
     return Column(
@@ -2097,8 +2107,8 @@ class _PriceDataWidgetWebState extends ConsumerState<_PriceDataWidgetWeb> {
             style: WebTextStyles.priceWatch(
               isDarkTheme: theme.isDarkMode,
               color: theme.isDarkMode
-                  ? WebDarkColors.textPrimary
-                  : WebColors.textPrimary,
+                  ? MyntColors.textPrimary
+                  : MyntColors.textPrimary,
             ),
           ),
           const SizedBox(height: 8), // Adjusted spacing to match Vue project

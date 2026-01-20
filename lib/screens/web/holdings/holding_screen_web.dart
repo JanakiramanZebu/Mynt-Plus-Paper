@@ -35,12 +35,12 @@ class _HoldingScreenContent extends ConsumerStatefulWidget {
   const _HoldingScreenContent({required this.listofHolding});
 
   @override
-  ConsumerState<_HoldingScreenContent> createState() => _HoldingScreenContentState();
+  ConsumerState<_HoldingScreenContent> createState() =>
+      _HoldingScreenContentState();
 }
 
-
 class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
-  int _selectedTabIndex = 0; 
+  int _selectedTabIndex = 0;
   final ValueNotifier<String> _searchQuery = ValueNotifier<String>('');
   final ValueNotifier<String> _mfSearchQuery = ValueNotifier<String>('');
   final TextEditingController _stocksSearchController = TextEditingController();
@@ -52,14 +52,14 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
   @override
   void initState() {
     super.initState();
-    
+
     // Sync controllers with ValueNotifiers
     _stocksSearchController.addListener(() {
       if (_stocksSearchController.text != _searchQuery.value) {
         _searchQuery.value = _stocksSearchController.text;
       }
     });
-    
+
     _mfSearchController.addListener(() {
       if (_mfSearchController.text != _mfSearchQuery.value) {
         _mfSearchQuery.value = _mfSearchController.text;
@@ -71,10 +71,10 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
   void dispose() {
     _hoveredRowToken.dispose();
     _hoveredColumnIndex.dispose();
-    _searchQuery.dispose(); 
-    _mfSearchQuery.dispose(); 
-    _stocksSearchController.dispose(); 
-    _mfSearchController.dispose(); 
+    _searchQuery.dispose();
+    _mfSearchQuery.dispose();
+    _stocksSearchController.dispose();
+    _mfSearchController.dispose();
 
     super.dispose();
   }
@@ -94,7 +94,9 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
       child: Container(
         width: double.infinity,
         height: double.infinity,
-        color: shadcn.Theme.of(context).colorScheme.background,
+        color: resolveThemeColor(context,
+            dark: MyntColors.backgroundColorDark,
+            light: MyntColors.backgroundColor),
         child: GestureDetector(
           onTap: () => FocusScope.of(context).unfocus(),
           child: RefreshIndicator(
@@ -124,8 +126,8 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
     );
   }
 
-  Widget _buildSummaryCards(
-      BuildContext context, ThemesProvider theme, PortfolioProvider portfolioData, int selectedTab) {
+  Widget _buildSummaryCards(BuildContext context, ThemesProvider theme,
+      PortfolioProvider portfolioData, int selectedTab) {
     if (selectedTab == 0) {
       // Stocks tab - show stocks summary
       return _buildStocksSummaryCards(context, theme, portfolioData);
@@ -135,8 +137,8 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
     }
   }
 
-  Widget _buildStocksSummaryCards(
-      BuildContext context, ThemesProvider theme, PortfolioProvider portfolioData) {
+  Widget _buildStocksSummaryCards(BuildContext context, ThemesProvider theme,
+      PortfolioProvider portfolioData) {
     return Row(
       children: [
         Expanded(
@@ -145,7 +147,8 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
             label: 'Profit/Loss',
             value: _calculateProfitLoss(portfolioData),
             percentage: _calculateProfitLossPercent(portfolioData),
-            valueColor: getValueColor(context, _calculateProfitLoss(portfolioData)),
+            valueColor:
+                getValueColor(context, _calculateProfitLoss(portfolioData)),
             theme: theme,
           ),
         ),
@@ -155,7 +158,8 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
             icon: Icons.pie_chart_outline,
             label: 'Stocks Value',
             value: _calculateStocksValue(portfolioData),
-            valueColor: _getStatValueColor(_calculateStocksValue(portfolioData), theme),
+            valueColor:
+                _getStatValueColor(_calculateStocksValue(portfolioData), theme),
             theme: theme,
           ),
         ),
@@ -166,7 +170,8 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
             label: 'Day Change',
             value: _calculateDayChange(portfolioData),
             percentage: _calculateDayChangePercent(portfolioData),
-            valueColor: getValueColor(context, _calculateDayChange(portfolioData)),
+            valueColor:
+                getValueColor(context, _calculateDayChange(portfolioData)),
             theme: theme,
           ),
         ),
@@ -176,7 +181,8 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
             icon: Icons.account_balance_wallet_outlined,
             label: 'Invested',
             value: _calculateInvested(portfolioData),
-            valueColor: _getStatValueColor(_calculateInvested(portfolioData), theme),
+            valueColor:
+                _getStatValueColor(_calculateInvested(portfolioData), theme),
             theme: theme,
           ),
         ),
@@ -326,7 +332,6 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
     );
   }
 
-
   Widget _buildMainContent(
       ThemesProvider theme, PortfolioProvider portfolioData) {
     return Column(
@@ -366,7 +371,8 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
     // Calculate counts without watching providers to avoid rebuilds on tab switch
     final stocksCount = _getStocksCount(portfolioData);
     // Use ref.read instead of ref.watch to prevent rebuilds when switching tabs
-    final mutualFundsCount = ref.read(mfProvider).mfholdingnew?.data?.length ?? 0;
+    final mutualFundsCount =
+        ref.read(mfProvider).mfholdingnew?.data?.length ?? 0;
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
@@ -379,10 +385,10 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
               final currentTheme = shadcn.Theme.of(context);
               final isDark = theme.isDarkMode;
               // Create a new ColorScheme based on the default, but with custom primary color
-              final baseColorScheme = isDark 
+              final baseColorScheme = isDark
                   ? shadcn.ColorSchemes.darkDefaultColor
                   : shadcn.ColorSchemes.lightDefaultColor;
-              
+
               // Create custom ColorScheme with theme-appropriate primary color
               final primaryColor = resolveThemeColor(
                 context,
@@ -392,7 +398,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
               final customColorScheme = baseColorScheme.copyWith(
                 primary: () => primaryColor,
               );
-              
+
               return shadcn.Theme(
                 data: shadcn.ThemeData(
                   colorScheme: customColorScheme,
@@ -527,7 +533,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
                             ),
                           );
                         }
-                        
+
                         return shadcn.TextField(
                           controller: _stocksSearchController,
                           placeholder: Text(
@@ -609,7 +615,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
                             ),
                           );
                         }
-                        
+
                         return shadcn.TextField(
                           controller: _mfSearchController,
                           placeholder: Text(
@@ -662,10 +668,6 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
       ),
     );
   }
-
-
-
-
 
   // Helper methods
   String _calculateStocksValue(PortfolioProvider portfolioData) {
@@ -762,9 +764,6 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
     return widget.listofHolding.length;
   }
 
-
-
-
   Color getValueColor(BuildContext context, String value) {
     final numValue = double.tryParse(value) ?? 0.0;
     final colorScheme = shadcn.Theme.of(context).colorScheme;
@@ -778,13 +777,9 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
     }
   }
 
-
   String _formatValue(String? value) {
     return (value == null || value.isEmpty) ? "0.00" : value;
   }
-
-
-
 
   Color _getStatValueColor(String value, ThemesProvider theme) {
     // Extract numeric value from string (remove any text like percentages)
@@ -792,7 +787,8 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
     final numValue = double.tryParse(cleanValue) ?? 0.0;
     final colorScheme = shadcn.Theme.of(context).colorScheme;
 
-    if (numValue > 0) {  //greater
+    if (numValue > 0) {
+      //greater
       return colorScheme.chart2;
     } else if (numValue < 0) {
       return colorScheme.destructive;
@@ -800,7 +796,6 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
       return colorScheme.mutedForeground;
     }
   }
-
 }
 
 // Isolated widget for LTP - only this rebuilds when LTP changes
@@ -827,7 +822,10 @@ class _LTPCellState extends ConsumerState<_LTPCell> {
       if (!mounted || !data.containsKey(widget.token)) return;
 
       final newLtp = data[widget.token]['lp']?.toString();
-      if (newLtp != null && newLtp != ltp && newLtp != '0.00' && newLtp != 'null') {
+      if (newLtp != null &&
+          newLtp != ltp &&
+          newLtp != '0.00' &&
+          newLtp != 'null') {
         setState(() => ltp = newLtp);
       }
     });
@@ -1087,7 +1085,8 @@ class _OverallPnLCellState extends ConsumerState<_OverallPnLCell> {
       final newLtp = data[widget.token]['lp']?.toString();
       if (newLtp != null && newLtp != '0.00' && newLtp != 'null') {
         final ltp = double.tryParse(newLtp) ?? 0.0;
-        final newPnL = ((ltp - widget.avgPrice) * widget.qty).toStringAsFixed(2);
+        final newPnL =
+            ((ltp - widget.avgPrice) * widget.qty).toStringAsFixed(2);
         if (newPnL != overallPnL) {
           setState(() => overallPnL = newPnL);
         }
@@ -1153,7 +1152,8 @@ class _OverallPercentCell extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<_OverallPercentCell> createState() => _OverallPercentCellState();
+  ConsumerState<_OverallPercentCell> createState() =>
+      _OverallPercentCellState();
 }
 
 class _OverallPercentCellState extends ConsumerState<_OverallPercentCell> {
@@ -1172,7 +1172,8 @@ class _OverallPercentCellState extends ConsumerState<_OverallPercentCell> {
       if (newLtp != null && newLtp != '0.00' && newLtp != 'null') {
         final ltp = double.tryParse(newLtp) ?? 0.0;
         final newPercent = widget.avgPrice > 0
-            ? (((ltp - widget.avgPrice) / widget.avgPrice) * 100).toStringAsFixed(2)
+            ? (((ltp - widget.avgPrice) / widget.avgPrice) * 100)
+                .toStringAsFixed(2)
             : '0.00';
         if (newPercent != overallPercent) {
           setState(() => overallPercent = newPercent);
