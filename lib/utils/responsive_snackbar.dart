@@ -4,12 +4,10 @@ import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/res/global_font_web.dart';
 import 'package:mynt_plus/provider/thems.dart';
 
-
 /// Responsive SnackBar utility that adapts to screen size
 /// Shows toast-style notification in bottom-right corner on desktop
 /// Uses standard SnackBar behavior on mobile
 class ResponsiveSnackBar {
-  
   /// Shows a responsive snackbar/toast notification
   /// On desktop (width >= 600): Shows as toast in bottom-right corner
   /// On mobile (width < 600): Uses standard SnackBar
@@ -22,7 +20,7 @@ class ResponsiveSnackBar {
     VoidCallback? onActionPressed,
   }) {
     final screenWidth = MediaQuery.of(context).size.width;
-    
+
     if (screenWidth >= 600) {
       // Desktop: Show as custom toast in bottom-right corner
       _showDesktopToast(
@@ -45,7 +43,7 @@ class ResponsiveSnackBar {
       );
     }
   }
-  
+
   /// Shows desktop toast notification in bottom-right corner
   static void _showDesktopToast({
     required BuildContext context,
@@ -56,9 +54,9 @@ class ResponsiveSnackBar {
     VoidCallback? onActionPressed,
   }) {
     final overlay = Overlay.of(context);
-    
+
     late OverlayEntry overlayEntry;
-    
+
     overlayEntry = OverlayEntry(
       builder: (context) => ProviderScope(
         child: _DesktopToastWidget(
@@ -70,9 +68,9 @@ class ResponsiveSnackBar {
         ),
       ),
     );
-    
+
     overlay.insert(overlayEntry);
-    
+
     // Auto dismiss after duration
     Future.delayed(duration, () {
       if (overlayEntry.mounted) {
@@ -80,7 +78,7 @@ class ResponsiveSnackBar {
       }
     });
   }
-  
+
   /// Shows standard mobile SnackBar
   static void _showMobileSnackBar({
     required BuildContext context,
@@ -91,7 +89,7 @@ class ResponsiveSnackBar {
     VoidCallback? onActionPressed,
   }) {
     final colorScheme = _getColorScheme(type);
-    
+
     final snackBar = SnackBar(
       content: Text(
         message,
@@ -116,11 +114,11 @@ class ResponsiveSnackBar {
             )
           : null,
     );
-    
+
     ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
-  
+
   /// Gets color scheme based on SnackBar type
   static _ColorScheme _getColorScheme(SnackBarType type) {
     switch (type) {
@@ -150,22 +148,42 @@ class ResponsiveSnackBar {
         );
     }
   }
-  
+
   /// Convenience methods for different types
-  static void showSuccess(BuildContext context, String message, {Duration? duration}) {
-    show(context: context, message: message, type: SnackBarType.success, duration: duration ?? const Duration(seconds: 3));
+  static void showSuccess(BuildContext context, String message,
+      {Duration? duration}) {
+    show(
+        context: context,
+        message: message,
+        type: SnackBarType.success,
+        duration: duration ?? const Duration(seconds: 3));
   }
-  
-  static void showError(BuildContext context, String message, {Duration? duration}) {
-    show(context: context, message: message, type: SnackBarType.error, duration: duration ?? const Duration(seconds: 4));
+
+  static void showError(BuildContext context, String message,
+      {Duration? duration}) {
+    show(
+        context: context,
+        message: message,
+        type: SnackBarType.error,
+        duration: duration ?? const Duration(seconds: 4));
   }
-  
-  static void showWarning(BuildContext context, String message, {Duration? duration}) {
-    show(context: context, message: message, type: SnackBarType.warning, duration: duration ?? const Duration(seconds: 3));
+
+  static void showWarning(BuildContext context, String message,
+      {Duration? duration}) {
+    show(
+        context: context,
+        message: message,
+        type: SnackBarType.warning,
+        duration: duration ?? const Duration(seconds: 3));
   }
-  
-  static void showInfo(BuildContext context, String message, {Duration? duration}) {
-    show(context: context, message: message, type: SnackBarType.info, duration: duration ?? const Duration(seconds: 3));
+
+  static void showInfo(BuildContext context, String message,
+      {Duration? duration}) {
+    show(
+        context: context,
+        message: message,
+        type: SnackBarType.info,
+        duration: duration ?? const Duration(seconds: 3));
   }
 }
 
@@ -184,7 +202,7 @@ class _DesktopToastWidget extends ConsumerStatefulWidget {
   final VoidCallback onDismiss;
   final String? actionLabel;
   final VoidCallback? onActionPressed;
-  
+
   const _DesktopToastWidget({
     required this.message,
     required this.type,
@@ -192,9 +210,10 @@ class _DesktopToastWidget extends ConsumerStatefulWidget {
     this.actionLabel,
     this.onActionPressed,
   });
-  
+
   @override
-  ConsumerState<_DesktopToastWidget> createState() => _DesktopToastWidgetState();
+  ConsumerState<_DesktopToastWidget> createState() =>
+      _DesktopToastWidgetState();
 }
 
 class _DesktopToastWidgetState extends ConsumerState<_DesktopToastWidget>
@@ -202,7 +221,7 @@ class _DesktopToastWidgetState extends ConsumerState<_DesktopToastWidget>
   late AnimationController _controller;
   late Animation<Offset> _slideAnimation;
   late Animation<double> _fadeAnimation;
-  
+
   @override
   void initState() {
     super.initState();
@@ -210,7 +229,7 @@ class _DesktopToastWidgetState extends ConsumerState<_DesktopToastWidget>
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-    
+
     _slideAnimation = Tween<Offset>(
       begin: const Offset(1.0, 0.0),
       end: Offset.zero,
@@ -218,7 +237,7 @@ class _DesktopToastWidgetState extends ConsumerState<_DesktopToastWidget>
       parent: _controller,
       curve: Curves.easeOutCubic,
     ));
-    
+
     _fadeAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
@@ -226,29 +245,29 @@ class _DesktopToastWidgetState extends ConsumerState<_DesktopToastWidget>
       parent: _controller,
       curve: Curves.easeOut,
     ));
-    
+
     _controller.forward();
   }
-  
+
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
   }
-  
+
   void _dismiss() async {
     await _controller.reverse();
     widget.onDismiss();
   }
-  
+
   @override
   Widget build(BuildContext context) {
     final theme = ref.watch(themeProvider);
     final screenSize = MediaQuery.of(context).size;
-    
+
     // Get theme-aware colors based on type
     final toastColors = _getToastColors(widget.type, theme.isDarkMode);
-    
+
     return Positioned(
       right: 16,
       bottom: 16,
@@ -265,9 +284,9 @@ class _DesktopToastWidgetState extends ConsumerState<_DesktopToastWidget>
                 borderRadius: BorderRadius.circular(8),
                 color: Colors.transparent,
                 child: Container(
-                  constraints: BoxConstraints(
-                    maxWidth: screenSize.width * 0.3,
-                    minWidth: 320,
+                  constraints: const BoxConstraints(
+                    maxWidth: 400,
+                    minWidth: 350,
                   ),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
@@ -311,7 +330,7 @@ class _DesktopToastWidgetState extends ConsumerState<_DesktopToastWidget>
                                 widget.message,
                                 style: WebTextStyles.bodySmall(
                                   isDarkTheme: theme.isDarkMode,
-                                  color:  const Color(0xFF000000),
+                                  color: const Color(0xFF000000),
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -330,7 +349,8 @@ class _DesktopToastWidgetState extends ConsumerState<_DesktopToastWidget>
                               child: Icon(
                                 Icons.close,
                                 size: 18,
-                                color: toastColors.textColor.withValues(alpha: 0.7),
+                                color: toastColors.textColor
+                                    .withValues(alpha: 0.7),
                               ),
                             ),
                           ),
@@ -346,7 +366,7 @@ class _DesktopToastWidgetState extends ConsumerState<_DesktopToastWidget>
       ),
     );
   }
-  
+
   String _getTypeLabel(SnackBarType type) {
     switch (type) {
       case SnackBarType.success:
@@ -359,10 +379,10 @@ class _DesktopToastWidgetState extends ConsumerState<_DesktopToastWidget>
         return 'INFO';
     }
   }
-  
+
   Widget _buildTypeIcon(SnackBarType type, Color iconBgColor) {
     IconData icon;
-    
+
     switch (type) {
       case SnackBarType.success:
         icon = Icons.check;
@@ -377,7 +397,7 @@ class _DesktopToastWidgetState extends ConsumerState<_DesktopToastWidget>
         icon = Icons.info;
         break;
     }
-    
+
     return Container(
       width: 32,
       height: 32,
@@ -392,13 +412,14 @@ class _DesktopToastWidgetState extends ConsumerState<_DesktopToastWidget>
       ),
     );
   }
-  
+
   _ToastColors _getToastColors(SnackBarType type, bool isDarkMode) {
     switch (type) {
       case SnackBarType.success:
         return const _ToastColors(
           backgroundColor: Color(0xFFE8F5E9), // Light green background
-          borderColor: Color(0xFF4CAF50), // Green border (not used but kept for consistency)
+          borderColor: Color(
+              0xFF4CAF50), // Green border (not used but kept for consistency)
           headerColor: Color(0xFF2E7D32), // Dark green text
           iconColor: Color(0xFF4CAF50), // Green icon background
           textColor: Color(0xFF1B5E20), // Dark green text color
@@ -438,7 +459,7 @@ class _ToastColors {
   final Color headerColor;
   final Color iconColor;
   final Color textColor;
-  
+
   const _ToastColors({
     required this.backgroundColor,
     required this.borderColor,
@@ -453,7 +474,7 @@ class _ColorScheme {
   final Color surface;
   final Color onSurface;
   final Color primary;
-  
+
   const _ColorScheme({
     required this.surface,
     required this.onSurface,

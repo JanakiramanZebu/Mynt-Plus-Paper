@@ -72,6 +72,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
     // PERFORMANCE FIX: Use .select() to watch only getQuotes, not entire provider
     final depthData =
         ref.watch(marketWatchProvider.select((p) => p.getQuotes))!;
+
     // final expandedToken = ref.watch(expandedWatchlistItemProvider);
 
     // Check if this card is expanded
@@ -112,6 +113,29 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                 onTap: () async {
                   // Clicking the list item opens the chart
                   if (_isNavigating) return;
+                  // // Increased border radius for web
+                  // splashColor: theme.isDarkMode
+                  //     ? Colors.white.withOpacity(0.15)
+                  //     : Colors.black.withOpacity(0.15),
+                  // highlightColor: theme.isDarkMode
+                  //     ? Colors.white.withOpacity(0.08)
+                  //     : Colors.black.withOpacity(0.08),
+                  // onLongPress: () {
+                  //   if (marketWatch.isPreDefWLs == "Yes") {
+                  //     showResponsiveWarningMessage(context,
+                  //         "This is a pre-defined watchlist that cannot be edited!");
+                  //   } else {
+                  //     ref
+                  //         .read(marketWatchProvider)
+                  //         .requestMWScrip(context: context, isSubscribe: false);
+                  //     Navigator.push(
+                  //         context,
+                  //         MaterialPageRoute(
+                  //             builder: (context) =>
+                  //                 EditScrip(wlName: marketWatch.wlName)));
+                  //   }
+                  // },
+                  // Clicking the list item opens the chart
 
                   try {
                     setState(() {
@@ -133,6 +157,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                             widget.watchListData["expDate"]?.toString() ?? "",
                         option:
                             widget.watchListData["option"]?.toString() ?? "");
+                    // Create proper DepthInputArgs object
 
                     // Call depth APIs which handles everything including tab management
                     marketWatch.scripdepthsize(false);
@@ -1285,6 +1310,8 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
   }) {
     final theme = ref.read(themeProvider);
     final borderRadiusValue = borderRadius ?? 5.0;
+
+    // Use same Material + InkWell pattern for icon buttons for consistent height
 
     // Use same Material + InkWell pattern for icon buttons for consistent height
     if (icon != null || iconAsset != null) {

@@ -228,59 +228,63 @@ class _HoldingDetailScreenWebState
 
     return Container(
       constraints: const BoxConstraints(maxWidth: 400),
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color: resolveThemeColor(context,
-                dark: MyntColors.dividerDark, light: MyntColors.divider),
-            width: 1,
-          ),
-        ),
-      ),
+      color: resolveThemeColor(context,
+          dark: MyntColors.listItemBgDark, light: MyntColors.textWhite),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header with close button
+          // Header: Close icon and "Holding Details" title
           Container(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Expanded(
-                  child: _buildSymbolSection(theme, scripInfo, depthArgs),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.dividerDark, light: MyntColors.divider),
+                  width: 1,
                 ),
-                MyntCloseButton(
-                  onPressed: () {
-                    shadcn.closeSheet(context);
-                  },
+              ),
+            ),
+            child: Row(
+              children: [
+                shadcn.IconButton(
+                  icon: const Icon(Icons.close, size: 20),
+                  onPressed: () => shadcn.closeSheet(context),
+                  variance: shadcn.ButtonVariance.ghost,
+                  size: shadcn.ButtonSize.small,
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  "Holding Details",
+                  style: MyntWebTextStyles.title(
+                    context,
+                    color: resolveThemeColor(context,
+                        dark: MyntColors.textPrimaryDark,
+                        light: MyntColors.textPrimary),
+                    fontWeight: MyntFonts.medium,
+                  ),
                 ),
               ],
             ),
           ),
-          // Border divider
-          Container(
-            height: 1,
-            color: resolveThemeColor(context,
-                dark: MyntColors.dividerDark, light: MyntColors.divider),
-          ),
+
           // Content
-          Container(
-            padding: const EdgeInsets.all(16),
+          Flexible(
             child: SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // P&L Section
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    child: _buildPnLSection(theme),
-                  ),
+                  // Symbol and Price Section
+                  _buildSymbolSection(theme, scripInfo, depthArgs),
+                  const SizedBox(height: 24),
 
-                  // Action Buttons
+                  // Action Buttons: Exit and Add
                   _buildActionButtons(theme, scripInfo),
+                  const SizedBox(height: 24),
 
-                  // Details Section
+                  // Details Section with Dividers
                   _buildDetailsSection(theme),
                 ],
               ),
@@ -298,32 +302,32 @@ class _HoldingDetailScreenWebState
       children: [
         // Symbol and Exchange
         Row(
+          crossAxisAlignment: CrossAxisAlignment.baseline,
+          textBaseline: TextBaseline.alphabetic,
           children: [
-            Flexible(
-              child: Text(
-                "${_exchTsym.tsym?.replaceAll("-EQ", "") ?? ''} ${_exchTsym.expDate ?? ''} ${_exchTsym.option ?? ''} ",
-                style: MyntWebTextStyles.title(
-                  context,
-                  color: resolveThemeColor(context,
-                      dark: MyntColors.textPrimaryDark,
-                      light: MyntColors.textPrimary),
-                ),
-                overflow: TextOverflow.ellipsis,
+            Text(
+              "${_exchTsym.tsym?.replaceAll("-EQ", "") ?? ''}-EQ",
+              style: MyntWebTextStyles.head(
+                context,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.textPrimaryDark,
+                    light: MyntColors.textPrimary),
+                fontWeight: MyntFonts.semiBold,
               ),
             ),
-            // const SizedBox(width: 4),
-            // Text(
-            //   "${_exchTsym.exch}",
-            //   style: MyntWebTextStyles.title(
-            //     context,
-            //     color: resolveThemeColor(context,
-            //         dark: MyntColors.textSecondaryDark,
-            //         light: MyntColors.textSecondary),
-            //   ),
-            // ),
+            const SizedBox(width: 8),
+            Text(
+              _exchTsym.exch ?? "NSE",
+              style: MyntWebTextStyles.para(
+                context,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.textSecondaryDark,
+                    light: MyntColors.textSecondary),
+              ),
+            ),
           ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 1),
 
         // Price and Change
         Row(
@@ -332,31 +336,23 @@ class _HoldingDetailScreenWebState
               "${_exchTsym.lp != "null" ? _exchTsym.lp ?? _exchTsym.close ?? 0.00 : '0.00'}",
               style: MyntWebTextStyles.body(
                 context,
-                color:
-                    (_exchTsym.change == "null" || _exchTsym.change == null) ||
-                            _exchTsym.change == "0.00"
-                        ? resolveThemeColor(context,
-                            dark: MyntColors.textSecondaryDark,
-                            light: MyntColors.textSecondary)
-                        : (_exchTsym.change?.startsWith("-") == true ||
-                                _exchTsym.perChange?.startsWith("-") == true)
-                            ? resolveThemeColor(context,
-                                dark: MyntColors.lossDark,
-                                light: MyntColors.loss)
-                            : resolveThemeColor(context,
-                                dark: MyntColors.profitDark,
-                                light: MyntColors.profit),
+                color: resolveThemeColor(context,
+                    dark: MyntColors.textPrimaryDark,
+                    light: MyntColors.textPrimary),
                 fontWeight: MyntFonts.medium,
               ),
             ),
-            const SizedBox(width: 4),
+            const SizedBox(width: 8),
             Text(
               "${(double.tryParse(_exchTsym.change ?? '0.00') ?? 0.00).toStringAsFixed(2)} (${(double.tryParse(_exchTsym.perChange ?? '0.00') ?? 0.00).toStringAsFixed(2)}%)",
-              style: MyntWebTextStyles.para(
+              style: MyntWebTextStyles.body(
                 context,
-                color: resolveThemeColor(context,
-                    dark: MyntColors.textSecondaryDark,
-                    light: MyntColors.textSecondary),
+                color: (_exchTsym.change?.startsWith("-") == true ||
+                        _exchTsym.perChange?.startsWith("-") == true)
+                    ? resolveThemeColor(context,
+                        dark: MyntColors.lossDark, light: MyntColors.loss)
+                    : resolveThemeColor(context,
+                        dark: MyntColors.profitDark, light: MyntColors.profit),
                 fontWeight: MyntFonts.medium,
               ),
             ),
@@ -368,56 +364,39 @@ class _HoldingDetailScreenWebState
 
   Widget _buildActionButtons(
       ThemesProvider theme, MarketWatchProvider scripInfo) {
-    final qty = _holdingData.currentQty ?? 0;
-    final hasQty = qty > 0;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Add and Exit buttons in a row
-          if (hasQty) ...[
-            Row(
-              children: [
-                Expanded(
-                  child: _buildActionButton(
-                    "Add",
-                    true,
-                    theme,
-                    _isProcessingBuy ? () {} : _handleBuy,
-                    isLoading: _isProcessingBuy,
-                  ),
+    return Row(
+      children: [
+        // Exit button (left) - Styled as secondary/outlined
+        Expanded(
+          child: SizedBox(
+            height: 44,
+            child: shadcn.OutlineButton(
+              onPressed: _isProcessingSell ? () {} : _handleSell,
+              child: Text(
+                "Exit",
+                style: MyntWebTextStyles.buttonMd(
+                  context,
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.primaryDark, light: MyntColors.primary),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildActionButton(
-                    "Exit",
-                    false,
-                    theme,
-                    _isProcessingSell ? () {} : _handleSell,
-                    isLoading: _isProcessingSell,
-                  ),
-                ),
-              ],
+              ),
             ),
-            const SizedBox(height: 12),
-          ],
-          // Chart button
-          // Row(
-          //   children: [
-          //     Expanded(
-          //       child: _buildActionButton(
-          //         "Chart",
-          //         false,
-          //         theme,
-          //         _handleChartTap,
-          //       ),
-          //     ),
-          //   ],
-          // ),
-        ],
-      ),
+          ),
+        ),
+        const SizedBox(width: 16),
+        // Add button (right) - Styled as primary filled
+        Expanded(
+          child: SizedBox(
+            height: 44,
+            child: MyntPrimaryButton(
+              label: "Add",
+              onPressed: _isProcessingBuy ? () {} : _handleBuy,
+              isLoading: _isProcessingBuy,
+              isFullWidth: true,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -482,10 +461,12 @@ class _HoldingDetailScreenWebState
             const SizedBox(height: 6),
             Text(
               displayValue,
-              style: MyntWebTextStyles.head(
+              style: MyntWebTextStyles.hero(
                 context,
                 color: _getPnLColor(displayValue),
-                fontWeight: MyntFonts.medium,
+              ).copyWith(
+                fontSize: 24, // High emphasis for P&L
+                fontWeight: MyntFonts.semiBold,
               ),
             ),
           ],
@@ -510,105 +491,133 @@ class _HoldingDetailScreenWebState
   }
 
   Widget _buildDetailsSection(ThemesProvider theme) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _rowOfInfoData(
-            "Net Qty",
-            "${_holdingData.currentQty ?? 0}",
-            theme,
+    final pnlValue = _exchTsym.profitNloss ?? "0.00";
+    final pnlPercent = _exchTsym.pNlChng ?? "0.00";
+    final pnlColor = _getPnLColor(pnlValue);
+
+    return Column(
+      children: [
+        // P&L item
+        _rowOfInfoData(
+          "P&L",
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                pnlValue,
+                style: MyntWebTextStyles.body(context,
+                    color: pnlColor, fontWeight: MyntFonts.medium),
+              ),
+              Text(
+                "($pnlPercent%)",
+                style: MyntWebTextStyles.para(context,
+                    color: pnlColor, fontWeight: MyntFonts.medium),
+              ),
+            ],
           ),
-          const SizedBox(height: 8),
-          _rowOfInfoData(
-            "Avg Price",
+          theme,
+        ),
+        _rowOfInfoData(
+          "Non POA / Sell",
+          Text(
+            "${_holdingData.saleableQty ?? 0}.00",
+            style:
+                MyntWebTextStyles.body(context, fontWeight: MyntFonts.medium),
+          ),
+          theme,
+        ),
+        _rowOfInfoData(
+          "Avg price",
+          Text(
             "${_holdingData.upldprc ?? 0}",
-            theme,
+            style:
+                MyntWebTextStyles.body(context, fontWeight: MyntFonts.medium),
           ),
-          const SizedBox(height: 8),
-          _rowOfInfoData(
-            "Product",
+          theme,
+        ),
+        _rowOfInfoData(
+          "Product",
+          Text(
             _holdingData.sPrdtAli != "null" ? "${_holdingData.sPrdtAli}" : "--",
-            theme,
+            style:
+                MyntWebTextStyles.body(context, fontWeight: MyntFonts.medium),
           ),
-          const SizedBox(height: 8),
-          _rowOfInfoData(
-            "Non POA / Sell",
-            "${_holdingData.saleableQty ?? 0}/${_holdingData.npoadqty ?? 0}",
-            theme,
-          ),
-          const SizedBox(height: 8),
-          _rowOfInfoData(
-            "Invested",
+          theme,
+        ),
+        _rowOfInfoData(
+          "Invested",
+          Text(
             "${_holdingData.invested == "0.00" ? _exchTsym.close ?? 0.00 : _holdingData.invested ?? 0.00}",
-            theme,
+            style:
+                MyntWebTextStyles.body(context, fontWeight: MyntFonts.medium),
           ),
-          const SizedBox(height: 8),
-          _rowOfInfoData(
-            "Current Value",
+          theme,
+        ),
+        _rowOfInfoData(
+          "Current",
+          Text(
             (int.parse("${_holdingData.currentQty ?? 0}") *
                     double.parse(_exchTsym.lp?.toString() ?? "0.0"))
                 .toStringAsFixed(2),
-            theme,
+            style:
+                MyntWebTextStyles.body(context, fontWeight: MyntFonts.medium),
           ),
-          if (_holdingData.btstqty != "0") ...[
-            const SizedBox(height: 8),
-            _rowOfInfoData(
-              "T1 Qty",
-              "${_holdingData.btstqty ?? 0}",
-              theme,
-            ),
-          ],
-          if (_holdingData.rpnl != null && _holdingData.rpnl != "0") ...[
-            const SizedBox(height: 8),
-            _rowOfInfoData(
-              "Realised P&L",
-              "${_holdingData.rpnl ?? 0}",
-              theme,
-            ),
-          ],
-          const SizedBox(height: 8),
-          _rowOfInfoData(
-            "Pledged Qty",
+          theme,
+        ),
+        _rowOfInfoData(
+          "Pledged Qty",
+          Text(
             "${_holdingData.brkcolqty ?? 0}",
-            theme,
+            style:
+                MyntWebTextStyles.body(context, fontWeight: MyntFonts.medium),
           ),
-        ],
-      ),
+          theme,
+        ),
+        _rowOfInfoData(
+          "Buy / Sell Value",
+          Text(
+            "-",
+            style:
+                MyntWebTextStyles.body(context, fontWeight: MyntFonts.medium),
+          ),
+          theme,
+          showDivider: false,
+        ),
+      ],
     );
   }
 
-  Widget _rowOfInfoData(String title1, String value1, ThemesProvider theme) {
+  Widget _rowOfInfoData(String title1, Widget valueWidget, ThemesProvider theme,
+      {bool showDivider = true}) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              title1,
-              style: MyntWebTextStyles.body(
-                context,
-                color: resolveThemeColor(context,
-                    dark: MyntColors.textSecondaryDark,
-                    light: MyntColors.textSecondary),
-                fontWeight: MyntFonts.medium,
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                title1,
+                style: MyntWebTextStyles.body(
+                  context,
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.textPrimaryDark,
+                      light: MyntColors.textPrimary),
+                  fontWeight: MyntFonts.medium,
+                ),
               ),
-            ),
-            Text(
-              value1,
-              style: MyntWebTextStyles.body(
-                context,
-                color: resolveThemeColor(context,
-                    dark: MyntColors.textSecondaryDark,
-                    light: MyntColors.textSecondary),
-                fontWeight: MyntFonts.medium,
-              ),
-            ),
-          ],
+              valueWidget,
+            ],
+          ),
         ),
-        const SizedBox(height: 16),
+        if (showDivider)
+          Divider(
+            height: 1,
+            thickness: 1,
+            color: resolveThemeColor(context,
+                dark: MyntColors.dividerDark, light: MyntColors.divider),
+          ),
       ],
     );
   }

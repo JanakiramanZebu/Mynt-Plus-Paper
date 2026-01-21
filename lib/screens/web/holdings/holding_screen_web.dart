@@ -41,6 +41,8 @@ class _HoldingScreenContent extends ConsumerStatefulWidget {
 
 class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
   int _selectedTabIndex = 0;
+  final ValueNotifier<String> _selectedFilter =
+      ValueNotifier<String>('All'); // Filter options: All, Stocks, Bonds
   final ValueNotifier<String> _searchQuery = ValueNotifier<String>('');
   final ValueNotifier<String> _mfSearchQuery = ValueNotifier<String>('');
   final TextEditingController _stocksSearchController = TextEditingController();
@@ -75,6 +77,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
     _mfSearchQuery.dispose();
     _stocksSearchController.dispose();
     _mfSearchController.dispose();
+    _selectedFilter.dispose();
 
     super.dispose();
   }
@@ -110,8 +113,9 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   // Summary Cards Section
-                  // _buildSummaryCards(context, theme, portfolioData, _selectedTabIndex),
-                  // const SizedBox(height: 24),
+                  _buildSummaryCards(
+                      context, theme, portfolioData, _selectedTabIndex),
+                  const SizedBox(height: 20),
 
                   // Main Content Area - Expanded to fill remaining space
                   Expanded(
@@ -143,7 +147,32 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
       children: [
         Expanded(
           child: _buildStatCard(
-            icon: Icons.trending_up,
+            label: 'Invested',
+            value: _calculateInvested(portfolioData),
+            valueColor: resolveThemeColor(
+              context,
+              dark: MyntColors.textPrimaryDark,
+              light: MyntColors.textPrimary,
+            ),
+            theme: theme,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildStatCard(
+            label: 'Current Value',
+            value: _calculateStocksValue(portfolioData),
+            valueColor: resolveThemeColor(
+              context,
+              dark: MyntColors.textPrimaryDark,
+              light: MyntColors.textPrimary,
+            ),
+            theme: theme,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildStatCard(
             label: 'Profit/Loss',
             value: _calculateProfitLoss(portfolioData),
             percentage: _calculateProfitLossPercent(portfolioData),
@@ -155,18 +184,6 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
         const SizedBox(width: 12),
         Expanded(
           child: _buildStatCard(
-            icon: Icons.pie_chart_outline,
-            label: 'Stocks Value',
-            value: _calculateStocksValue(portfolioData),
-            valueColor:
-                _getStatValueColor(_calculateStocksValue(portfolioData), theme),
-            theme: theme,
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _buildStatCard(
-            icon: Icons.calendar_today_outlined,
             label: 'Day Change',
             value: _calculateDayChange(portfolioData),
             percentage: _calculateDayChangePercent(portfolioData),
@@ -175,112 +192,104 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
             theme: theme,
           ),
         ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _buildStatCard(
-            icon: Icons.account_balance_wallet_outlined,
-            label: 'Invested',
-            value: _calculateInvested(portfolioData),
-            valueColor:
-                _getStatValueColor(_calculateInvested(portfolioData), theme),
-            theme: theme,
-          ),
-        ),
       ],
     );
   }
 
   Widget _buildStatCard({
-    required IconData icon,
+    // IconData? icon,
     required String label,
     required String value,
     String? percentage,
     required Color valueColor,
     required ThemesProvider theme,
   }) {
-    return shadcn.Card(
-      child: Container(
-        padding: const EdgeInsets.all(10),
-        child: Row(
-          children: [
-            // Icon in circle
-            Container(
-              width: 45,
-              height: 45,
-              decoration: BoxDecoration(
-                color: resolveThemeColor(
-                  context,
-                  dark: MyntColors.primaryDark,
-                  light: MyntColors.primary,
-                ).withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: Icon(
-                  icon,
-                  size: 20,
-                  color: resolveThemeColor(
-                    context,
-                    dark: MyntColors.primaryDark,
-                    light: MyntColors.primary,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            // Label and value
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    label,
-                    style: MyntWebTextStyles.bodySmall(
-                      context,
-                      color: resolveThemeColor(
-                        context,
-                        dark: MyntColors.textSecondaryDark,
-                        light: MyntColors.textSecondary,
-                      ),
-                      fontWeight: MyntFonts.medium,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
+    return shadcn.Theme(
+        data: shadcn.Theme.of(context).copyWith(radius: () => 0.3),
+        child: shadcn.Card(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: Row(
+              children: [
+                // Icon in circle
+                // if (icon != null)
+                //   Container(
+                //     width: 45,
+                //     height: 45,
+                //     decoration: BoxDecoration(
+                //       color: resolveThemeColor(
+                //         context,
+                //         dark: MyntColors.primaryDark,
+                //         light: MyntColors.primary,
+                //       ).withOpacity(0.1),
+                //       shape: BoxShape.circle,
+                //     ),
+                //     child: Center(
+                //       child: Icon(
+                //         icon,
+                //         size: 20,
+                //         color: resolveThemeColor(
+                //           context,
+                //           dark: MyntColors.primaryDark,
+                //           light: MyntColors.primary,
+                //         ),
+                //       ),
+                //     ),
+                //   ),
+                const SizedBox(width: 1),
+                // Label and value
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Flexible(
-                        child: Text(
-                          value,
-                          style: MyntWebTextStyles.head(
+                      Text(
+                        label,
+                        style: MyntWebTextStyles.bodySmall(
+                          context,
+                          color: resolveThemeColor(
                             context,
-                            color: valueColor,
-                            fontWeight: MyntFonts.bold,
+                            dark: MyntColors.textPrimaryDark,
+                            light: MyntColors.textPrimary,
                           ),
-                          overflow: TextOverflow.ellipsis,
+                          fontWeight: MyntFonts.medium,
                         ),
                       ),
-                      if (percentage != null) ...[
-                        const SizedBox(width: 4),
-                        Text(
-                          '($percentage%)',
-                          style: MyntWebTextStyles.bodySmall(
-                            context,
-                            color: valueColor,
-                            fontWeight: MyntFonts.medium,
+                      const SizedBox(height: 1),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Flexible(
+                            child: Text(
+                              value,
+                              style: MyntWebTextStyles.head(
+                                context,
+                                color: valueColor,
+                                fontWeight: MyntFonts.medium,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
-                        ),
-                      ],
+                          if (percentage != null) ...[
+                            const SizedBox(width: 6),
+                            Text(
+                              '($percentage%)',
+                              style: MyntWebTextStyles.bodySmall(
+                                context,
+                                color: valueColor,
+                                fontWeight: MyntFonts.medium,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
                     ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
-    );
+          ),
+        ));
   }
 
   Widget _buildMutualFundsSummaryCards(ThemesProvider theme) {
@@ -298,31 +307,39 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
           children: [
             Expanded(
               child: _buildStatCard(
-                icon: Icons.trending_up,
+                // icon: Icons.account_balance_wallet_outlined,
+                label: 'Invested',
+                value: investedValue,
+                valueColor: resolveThemeColor(
+                  context,
+                  dark: MyntColors.textPrimaryDark,
+                  light: MyntColors.textPrimary,
+                ),
+                theme: theme,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildStatCard(
+                // icon: Icons.pie_chart_outline,
+                label: 'Current Value',
+                value: currentValue,
+                valueColor: resolveThemeColor(
+                  context,
+                  dark: MyntColors.textPrimaryDark,
+                  light: MyntColors.textPrimary,
+                ),
+                theme: theme,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildStatCard(
+                // icon: Icons.trending_up,
                 label: 'Returns',
                 value: absReturnValue,
                 percentage: absReturnPercent,
                 valueColor: getValueColor(context, absReturnValue),
-                theme: theme,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildStatCard(
-                icon: Icons.pie_chart_outline,
-                label: 'Current Value',
-                value: currentValue,
-                valueColor: _getStatValueColor(currentValue, theme),
-                theme: theme,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildStatCard(
-                icon: Icons.account_balance_wallet_outlined,
-                label: 'Invested',
-                value: investedValue,
-                valueColor: _getStatValueColor(investedValue, theme),
                 theme: theme,
               ),
             ),
@@ -349,7 +366,15 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
               ValueListenableBuilder<String>(
                 valueListenable: _searchQuery,
                 builder: (context, searchQuery, child) {
-                  return TableExample1(searchQuery: searchQuery);
+                  return ValueListenableBuilder<String>(
+                    valueListenable: _selectedFilter,
+                    builder: (context, filterType, child) {
+                      return TableExample1(
+                        searchQuery: searchQuery,
+                        filterType: filterType,
+                      );
+                    },
+                  );
                 },
               ),
               // Mutual Funds tab - Using MfTableExample from mf_hold_table.dart with search
@@ -368,9 +393,8 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
 
   Widget _buildTabsAndActionBar(
       ThemesProvider theme, PortfolioProvider portfolioData) {
-    // Calculate counts without watching providers to avoid rebuilds on tab switch
-    final stocksCount = _getStocksCount(portfolioData);
-    // Use ref.read instead of ref.watch to prevent rebuilds when switching tabs
+    // Calculate counts for tabs
+    final stocksCount = widget.listofHolding.length;
     final mutualFundsCount =
         ref.read(mfProvider).mfholdingnew?.data?.length ?? 0;
 
@@ -378,91 +402,98 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
       padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
       child: Row(
         children: [
-          // Shadcn TabList on the left - Direct implementation for better responsiveness
-          // Wrap with shadcn.Theme to use custom primary color for active tab
-          Builder(
-            builder: (context) {
-              final currentTheme = shadcn.Theme.of(context);
-              final isDark = theme.isDarkMode;
-              // Create a new ColorScheme based on the default, but with custom primary color
-              final baseColorScheme = isDark
-                  ? shadcn.ColorSchemes.darkDefaultColor
-                  : shadcn.ColorSchemes.lightDefaultColor;
-
-              // Create custom ColorScheme with theme-appropriate primary color
-              final primaryColor = resolveThemeColor(
-                context,
-                dark: MyntColors.primaryDark,
-                light: MyntColors.primary,
-              );
-              final customColorScheme = baseColorScheme.copyWith(
-                primary: () => primaryColor,
-              );
-
-              return shadcn.Theme(
-                data: shadcn.ThemeData(
-                  colorScheme: customColorScheme,
-                  radius: currentTheme.radius,
-                ),
-                child: shadcn.TabList(
-                  index: _selectedTabIndex,
-                  onChanged: (value) {
-                    // Update state immediately without any delays or async operations
-                    if (mounted && _selectedTabIndex != value) {
+          // Custom chip-style tabs matching the design
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Equity tab
+              MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: GestureDetector(
+                  onTap: () {
+                    if (mounted && _selectedTabIndex != 0) {
                       setState(() {
-                        _selectedTabIndex = value;
-                        // Clear the search query when switching tabs
-                        if (value == 0) {
-                          _mfSearchController.clear();
-                          _mfSearchQuery.value = '';
-                        } else {
-                          _stocksSearchController.clear();
-                          _searchQuery.value = '';
-                        }
+                        _selectedTabIndex = 0;
+                        _mfSearchController.clear();
+                        _mfSearchQuery.value = '';
                       });
                     }
                   },
-                  children: [
-                    shadcn.TabItem(
-                      child: DefaultTextStyle(
-                        style: TextStyle(
-                          fontFamily: 'Geist',
-                          color: _selectedTabIndex == 0
-                              ? resolveThemeColor(
-                                  context,
-                                  dark: MyntColors.primaryDark,
-                                  light: MyntColors.primary,
-                                )
-                              : customColorScheme.mutedForeground,
-                          fontWeight: MyntFonts.bold,
-                        ),
-                        child: Text(
-                          'Stocks ($stocksCount)',
-                        ),
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: _selectedTabIndex == 0
+                          ? (theme.isDarkMode
+                              ? Colors.white.withOpacity(0.1)
+                              : Colors.black.withOpacity(0.05))
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(6),
+                      border: null, // ✅ no border
+                    ),
+                    child: Text(
+                      'Equity ($stocksCount)',
+                      style: MyntWebTextStyles.body(
+                        context,
+                        fontWeight: _selectedTabIndex == 0
+                            ? MyntFonts.semiBold
+                            : MyntFonts.medium,
+                      ).copyWith(
+                        color: _selectedTabIndex == 0
+                            ? shadcn.Theme.of(context).colorScheme.foreground
+                            : shadcn.Theme.of(context)
+                                .colorScheme
+                                .mutedForeground,
                       ),
                     ),
-                    shadcn.TabItem(
-                      child: DefaultTextStyle(
-                        style: TextStyle(
-                          fontFamily: 'Geist',
-                          color: _selectedTabIndex == 1
-                              ? resolveThemeColor(
-                                  context,
-                                  dark: MyntColors.primaryDark,
-                                  light: MyntColors.primary,
-                                )
-                              : customColorScheme.mutedForeground,
-                          fontWeight: MyntFonts.bold,
-                        ),
-                        child: Text(
-                          'Mutual Funds ($mutualFundsCount)',
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              );
-            },
+              ),
+              const SizedBox(width: 8),
+              // Mutual Fund tab
+              MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: GestureDetector(
+                  onTap: () {
+                    if (mounted && _selectedTabIndex != 1) {
+                      setState(() {
+                        _selectedTabIndex = 1;
+                        _stocksSearchController.clear();
+                        _searchQuery.value = '';
+                      });
+                    }
+                  },
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: _selectedTabIndex == 1
+                          ? (theme.isDarkMode
+                              ? Colors.white.withOpacity(0.1)
+                              : Colors.black.withOpacity(0.05))
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(6),
+                      border: null,
+                    ),
+                    child: Text(
+                      'Mutual Fund ($mutualFundsCount)',
+                      style: MyntWebTextStyles.body(
+                        context,
+                        fontWeight: _selectedTabIndex == 1
+                            ? MyntFonts.semiBold
+                            : MyntFonts.medium,
+                      ).copyWith(
+                        color: _selectedTabIndex == 1
+                            ? shadcn.Theme.of(context).colorScheme.foreground
+                            : shadcn.Theme.of(context)
+                                .colorScheme
+                                .mutedForeground,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
           // Spacer to push action items to the right
           const Spacer(),
@@ -486,7 +517,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
                   height: 40,
                   width: searchWidth,
                   child: DefaultTextStyle(
-                    style: const TextStyle(fontFamily: 'Geist'),
+                    style: MyntWebTextStyles.body(context),
                     child: ValueListenableBuilder<String>(
                       valueListenable: _searchQuery,
                       builder: (context, searchValue, child) {
@@ -534,13 +565,23 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
                           );
                         }
 
-                        return shadcn.TextField(
-                          controller: _stocksSearchController,
-                          placeholder: Text(
-                            'Search holdings',
-                            style: const TextStyle(fontFamily: 'Geist'),
+                        return shadcn.Theme(
+                          data: shadcn.Theme.of(context).copyWith(
+                            radius: () => 0.2,
+                            colorScheme: () =>
+                                shadcn.Theme.of(context).colorScheme.copyWith(
+                                      border: () => Colors.transparent,
+                                      ring: () => Colors.transparent,
+                                    ),
                           ),
-                          features: features,
+                          child: shadcn.TextField(
+                            controller: _stocksSearchController,
+                            placeholder: Text(
+                              'Search on holdings',
+                              style: MyntWebTextStyles.placeholder(context),
+                            ),
+                            features: features,
+                          ),
                         );
                       },
                     ),
@@ -568,7 +609,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
                   height: 40,
                   width: searchWidth,
                   child: DefaultTextStyle(
-                    style: const TextStyle(fontFamily: 'Geist'),
+                    style: MyntWebTextStyles.body(context),
                     child: ValueListenableBuilder<String>(
                       valueListenable: _mfSearchQuery,
                       builder: (context, searchValue, child) {
@@ -616,13 +657,22 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
                           );
                         }
 
-                        return shadcn.TextField(
-                          controller: _mfSearchController,
-                          placeholder: Text(
-                            'Search mutual funds',
-                            style: const TextStyle(fontFamily: 'Geist'),
+                        return shadcn.Theme(
+                          data: shadcn.Theme.of(context).copyWith(
+                            colorScheme: () =>
+                                shadcn.Theme.of(context).colorScheme.copyWith(
+                                      border: () => Colors.transparent,
+                                      ring: () => Colors.transparent,
+                                    ),
                           ),
-                          features: features,
+                          child: shadcn.TextField(
+                            controller: _mfSearchController,
+                            placeholder: Text(
+                              'Search on mutual funds',
+                              style: MyntWebTextStyles.placeholder(context),
+                            ),
+                            features: features,
+                          ),
                         );
                       },
                     ),
@@ -632,40 +682,243 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
             ),
             // const SizedBox(width: 16),
           ],
-          // Refresh Button
-          // Material(
-          //   color: Colors.transparent,
-          //   shape: const CircleBorder(),
-          //   child: InkWell(
-          //     customBorder: const CircleBorder(),
-          //     splashColor: theme.isDarkMode
-          //         ? Colors.white.withOpacity(.15)
-          //         : Colors.black.withOpacity(.15),
-          //     highlightColor: theme.isDarkMode
-          //         ? Colors.white.withOpacity(.08)
-          //         : Colors.black.withOpacity(.08),
-          //     onTap: () async {
-          //       if (_selectedTabIndex == 0) {
-          //         await portfolioData.fetchHoldings(context, "Refresh");
-          //       } else {
-          //         await ref.read(mfProvider).fetchmfholdingnew();
-          //       }
-          //     },
-          //     child: Padding(
-          //       padding: const EdgeInsets.all(6),
-          //       child: Icon(
-          //         Icons.refresh,
-          //         size: 20,
-          //         color: theme.isDarkMode
-          //             ? WebDarkColors.iconSecondary
-          //             : WebColors.iconSecondary,
-          //       ),
-          //     ),
-          //   ),
-          // ),
-          // const SizedBox(width: 8),
+          // Filter dropdown button
+          const SizedBox(width: 12),
+          _buildFilterButton(theme),
+          // E-DIS button (only for Stocks tab)
+          if (_selectedTabIndex == 0) ...[
+            const SizedBox(width: 12),
+            _buildEdisButton(theme, portfolioData),
+          ],
+          // Reload button
+          const SizedBox(width: 12),
+          _buildIconButton(
+            icon: Icons.refresh,
+            onPressed: () async {
+              if (_selectedTabIndex == 0) {
+                await portfolioData.fetchHoldings(context, "Refresh");
+              } else {
+                await ref.read(mfProvider).fetchmfholdingnew();
+              }
+            },
+            theme: theme,
+          ),
         ],
       ),
+    );
+  }
+
+  // Icon button helper (for filter and reload buttons)
+  Widget _buildIconButton({
+    required IconData icon,
+    required VoidCallback onPressed,
+    required ThemesProvider theme,
+  }) {
+    return SizedBox(
+      width: 40,
+      height: 40,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(8),
+          splashColor: theme.isDarkMode
+              ? Colors.white.withOpacity(0.15)
+              : Colors.black.withOpacity(0.15),
+          highlightColor: theme.isDarkMode
+              ? Colors.white.withOpacity(0.08)
+              : Colors.black.withOpacity(0.08),
+          onTap: onPressed,
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Center(
+              child: Icon(
+                icon,
+                size: 28,
+                color: theme.isDarkMode
+                    ? MyntColors.textWhite
+                    : MyntColors.textPrimary,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // E-DIS button
+  Widget _buildEdisButton(
+      ThemesProvider theme, PortfolioProvider portfolioData) {
+    return SizedBox(
+      height: 35,
+      child: ElevatedButton(
+        onPressed: () {
+          // TODO: Implement E-DIS functionality
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: resolveThemeColor(
+            context,
+            dark: MyntColors.primaryDark,
+            light: MyntColors.primary,
+          ),
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(4),
+          ),
+          elevation: 0,
+        ),
+        child: Text(
+          'E-DIS',
+          style: MyntWebTextStyles.body(
+            context,
+            fontWeight: MyntFonts.semiBold,
+            color: Colors.white,
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Filter dropdown button
+  Widget _buildFilterButton(ThemesProvider theme) {
+    return Builder(
+      builder: (buttonContext) {
+        return MouseRegion(
+          cursor: SystemMouseCursors.click,
+          child: GestureDetector(
+            onTap: () => _showFilterPopup(buttonContext, theme),
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Center(
+                child: SvgPicture.asset(
+                  assets.searchFilter,
+                  width: 20,
+                  color: resolveThemeColor(
+                    context,
+                    dark: MyntColors.iconDark,
+                    light: MyntColors.icon,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showFilterPopup(BuildContext context, ThemesProvider theme) {
+    shadcn.showPopover(
+      context: context,
+      alignment: Alignment.topCenter,
+      offset: const Offset(0, 8),
+      overlayBarrier: shadcn.OverlayBarrier(
+        borderRadius: shadcn.Theme.of(context).borderRadiusLg,
+      ),
+      builder: (context) {
+        return Container(
+          decoration: BoxDecoration(
+            borderRadius: shadcn.Theme.of(context).borderRadiusLg,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.15),
+                blurRadius: 12,
+                spreadRadius: 2,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: shadcn.ModalContainer(
+            padding: const EdgeInsets.all(8),
+            child: SizedBox(
+              width: 160, // Adjusted width
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _buildFilterMenuItem('All', theme),
+                  _buildFilterMenuItem('Stocks', theme),
+                  _buildFilterMenuItem('Bonds', theme),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // Filter menu item helper
+  Widget _buildFilterMenuItem(String value, ThemesProvider theme) {
+    return ValueListenableBuilder<String>(
+      valueListenable: _selectedFilter,
+      builder: (context, currentFilter, child) {
+        final isSelected = currentFilter == value;
+        return Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () {
+              _selectedFilter.value = value;
+              shadcn.closeOverlay(context);
+            },
+            splashColor: resolveThemeColor(
+              context,
+              dark: MyntColors.rippleDark,
+              light: MyntColors.rippleLight,
+            ),
+            highlightColor: resolveThemeColor(
+              context,
+              dark: MyntColors.highlightDark,
+              light: MyntColors.highlightLight,
+            ),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(4),
+                color: isSelected
+                    ? resolveThemeColor(
+                        context,
+                        dark: MyntColors.primaryDark.withOpacity(0.12),
+                        light:
+                            const Color(0xFFE8F0FE), // Light blue like in image
+                      )
+                    : Colors.transparent,
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      value,
+                      style: MyntWebTextStyles.body(
+                        context,
+                        fontWeight:
+                            isSelected ? MyntFonts.semiBold : MyntFonts.medium,
+                        color: isSelected
+                            ? resolveThemeColor(
+                                context,
+                                dark: MyntColors.primaryDark,
+                                light: MyntColors.primary,
+                              )
+                            : resolveThemeColor(
+                                context,
+                                dark: MyntColors.textPrimaryDark,
+                                light: MyntColors.textPrimary,
+                              ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -760,20 +1013,27 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
     return '0.00';
   }
 
-  int _getStocksCount(PortfolioProvider portfolioData) {
-    return widget.listofHolding.length;
-  }
-
   Color getValueColor(BuildContext context, String value) {
     final numValue = double.tryParse(value) ?? 0.0;
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
 
     if (numValue > 0) {
-      return colorScheme.chart2;
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.profitDark,
+        light: MyntColors.profit,
+      );
     } else if (numValue < 0) {
-      return colorScheme.destructive;
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.lossDark,
+        light: MyntColors.loss,
+      );
     } else {
-      return colorScheme.mutedForeground;
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.textPrimaryDark,
+        light: MyntColors.textPrimary,
+      );
     }
   }
 
@@ -785,15 +1045,25 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
     // Extract numeric value from string (remove any text like percentages)
     final cleanValue = value.replaceAll(RegExp(r'[^\d.-]'), '');
     final numValue = double.tryParse(cleanValue) ?? 0.0;
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
 
     if (numValue > 0) {
-      //greater
-      return colorScheme.chart2;
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.profitDark,
+        light: MyntColors.profit,
+      );
     } else if (numValue < 0) {
-      return colorScheme.destructive;
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.lossDark,
+        light: MyntColors.loss,
+      );
     } else {
-      return colorScheme.mutedForeground;
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.textPrimaryDark,
+        light: MyntColors.textPrimary,
+      );
     }
   }
 }

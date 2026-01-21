@@ -1452,10 +1452,10 @@ class _CustomizableSplitHomeScreenState
                 ref.watch(portfolioProvider.select((p) => p.holdloader));
             final holdingsModel =
                 ref.watch(portfolioProvider.select((p) => p.holdingsModel));
-            final hasData = holdingsModel != null && holdingsModel.isNotEmpty;
+            // final hasData = holdingsModel != null && holdingsModel.isNotEmpty;
 
             // Show loader if local loading state is true, provider loading is true, or no data yet
-            if (isLoading || holdloader || !hasData) {
+            if (isLoading || holdloader) {
               return Container(
                 width: double.infinity,
                 height: double.infinity,
