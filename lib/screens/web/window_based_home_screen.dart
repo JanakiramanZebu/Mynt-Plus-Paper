@@ -11,6 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mynt_plus/models/marketwatch_model/market_watch_scrip_model.dart';
 import 'package:mynt_plus/provider/auth_provider.dart';
 import 'package:mynt_plus/screens/web/market_watch/tv_chart/webview_chart.dart';
+import 'package:mynt_plus/screens/web/chart/web_chart_overlay.dart';
 import 'package:mynt_plus/screens/web/ordersbook/order_book_screen_web.dart';
 import 'package:mynt_plus/screens/web/funds/secure_fund_web.dart';
 import '../../../locator/constant.dart';
@@ -382,10 +383,8 @@ class _WindowBasedHomeScreenState extends ConsumerState<WindowBasedHomeScreen>
             final args = _currentDepthArgs;
             if (args == null) {
               // PERFORMANCE FIX: Use .select() to only watch getQuotes
-              final quotes =
-                  ref.watch(marketWatchProvider.select((p) => p.getQuotes));
-              final fallback =
-                  ChartArgs(exch: 'ABC', tsym: 'ABCD', token: '0123');
+              final quotes = ref.watch(marketWatchProvider.select((p) => p.getQuotes));
+              final fallback = ChartArgs(exch: 'NSE', tsym: 'Nifty 50', token: '26000');
               return ChartWithDepthWeb(
                 wlValue: DepthInputArgs(
                   exch: quotes?.exch ?? fallback.exch,
@@ -824,7 +823,7 @@ class _WindowBasedHomeScreenState extends ConsumerState<WindowBasedHomeScreen>
         body: Stack(
           children: [
             _buildMainScaffold(),
-            _buildChartOverlay(),
+            const WebChartOverlay(), // New simplified chart overlay
           ],
         ),
       ),
@@ -1038,46 +1037,6 @@ class _WindowBasedHomeScreenState extends ConsumerState<WindowBasedHomeScreen>
       },
     );
   }
-
-  Widget _buildChartOverlay() {
-    return Consumer(
-      builder: (context, ref, _) {
-        final showChart = ref.watch(userProfileProvider
-            .select((userProfile) => userProfile.showchartof));
-        final webViewKey = ref.watch(userProfileProvider
-            .select((userProfile) => userProfile.webViewKey));
-        final theme = ref.watch(themeProvider);
-
-        return Positioned(
-          key: webViewKey,
-          bottom: showChart ? 0 : (MediaQuery.of(context).size.height + 100),
-          child: AnimatedContainer(
-            alignment: Alignment.center,
-            duration: const Duration(milliseconds: 100),
-            curve: Curves.fastLinearToSlowEaseIn,
-            decoration: BoxDecoration(
-              color:
-                  theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
-            ),
-            height: MediaQuery.of(context).size.height,
-            width: MediaQuery.of(context).size.width,
-            child: SafeArea(
-              bottom: false,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  ChartScreenWebViews(
-                      chartArgs:
-                          ChartArgs(exch: 'ABC', tsym: 'ABCD', token: '0123')),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
   Future<bool> showExitPopup() async {
     if (ref.read(userProfileProvider).showchartof) {
       ref.read(userProfileProvider).setChartdialog(false);
@@ -1090,7 +1049,7 @@ class _WindowBasedHomeScreenState extends ConsumerState<WindowBasedHomeScreen>
       mktwth.singlePageloader(false);
 
       if (mounted) setState(() {});
-      ref.read(marketWatchProvider).setChartScript('ABC', '0123', 'ABCD');
+      ref.read(marketWatchProvider).setChartScript('NSE', '26000', 'Nifty 50');
       return false;
     } else {
       return await material.showDialog<bool>(

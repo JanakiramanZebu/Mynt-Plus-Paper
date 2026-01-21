@@ -3,60 +3,54 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/provider/user_profile_provider.dart';
 import 'package:mynt_plus/res/web_colors.dart';
-import 'package:mynt_plus/screens/web/chart/web_chart_manager.dart';
 
-/// Chart overlay that renders the persistent TradingView iframe.
-///
-/// Symbol changes are handled by [WebChartManager] via [setChartScript] in
-/// MarketWatchProvider. This widget only manages visibility and rendering.
-class ChartOverlay extends ConsumerStatefulWidget {
-  const ChartOverlay({super.key});
+import 'web_chart_manager.dart';
+
+/// The chart overlay widget that renders the persistent iframe.
+/// Place this ONCE in your app's main layout Stack.
+class WebChartOverlay extends ConsumerStatefulWidget {
+  const WebChartOverlay({super.key});
 
   @override
-  ConsumerState<ChartOverlay> createState() => _ChartOverlayState();
+  ConsumerState<WebChartOverlay> createState() => _WebChartOverlayState();
 }
 
-class _ChartOverlayState extends ConsumerState<ChartOverlay> {
+class _WebChartOverlayState extends ConsumerState<WebChartOverlay> {
   @override
   void initState() {
     super.initState();
-    // Initialize the chart manager (registers iframe factory if not already)
+    // Initialize the chart manager (registers iframe)
     webChartManager.initialize();
   }
 
   @override
   Widget build(BuildContext context) {
-    final showChart = ref.watch(
-        userProfileProvider.select((userProfile) => userProfile.showchartof));
-    final webViewKey = ref.watch(
-        userProfileProvider.select((userProfile) => userProfile.webViewKey));
     final theme = ref.watch(themeProvider);
-
-    // Note: Symbol changes are handled by setChartScript() in MarketWatchProvider
-    // which calls webChartManager.changeSymbol() directly with the correct params.
-    // This widget only renders the iframe - it does NOT manage symbol changes.
+    // Use existing showchartof state from userProfileProvider
+    final isVisible = ref.watch(
+        userProfileProvider.select((profile) => profile.showchartof));
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
 
     return Positioned(
-      key: webViewKey,
-      bottom: showChart ? 0 : -(MediaQuery.of(context).size.height + 100),
+      // When hidden, position off-screen (below the viewport)
+      bottom: isVisible ? 0 : -(screenHeight + 100),
       left: 0,
       child: AnimatedContainer(
-        alignment: Alignment.center,
-        duration: const Duration(milliseconds: 100),
-        curve: Curves.fastLinearToSlowEaseIn,
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeInOut,
+        height: screenHeight,
+        width: screenWidth,
         decoration: BoxDecoration(
           color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
         ),
-        height: MediaQuery.of(context).size.height,
-        width: MediaQuery.of(context).size.width,
         child: SafeArea(
           bottom: false,
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              // Header with close button
-              _buildHeader(context, theme),
-              // Chart iframe - use the shared WebChartManager
+              // Close button header
+              _buildHeader(theme),
+              // Chart iframe
               Expanded(
                 child: HtmlElementView(
                   key: const ValueKey(WebChartManager.viewType),
@@ -70,7 +64,7 @@ class _ChartOverlayState extends ConsumerState<ChartOverlay> {
     );
   }
 
-  Widget _buildHeader(BuildContext context, ThemesProvider theme) {
+  Widget _buildHeader(ThemesProvider theme) {
     return Container(
       height: 50,
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -101,6 +95,7 @@ class _ChartOverlayState extends ConsumerState<ChartOverlay> {
               color: theme.isDarkMode ? Colors.white : Colors.black,
             ),
             onPressed: () {
+              // Use existing provider method to hide chart
               ref.read(userProfileProvider).setChartdialog(false);
             },
           ),
