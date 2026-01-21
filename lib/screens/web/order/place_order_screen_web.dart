@@ -117,6 +117,68 @@ class PlaceOrderScreenWeb extends ConsumerStatefulWidget {
   // Static variable to track the current overlay entry
   static OverlayEntry? _currentOverlayEntry;
 
+  // Static variable to track inner dialog overlay entries
+  static OverlayEntry? _currentDialogOverlayEntry;
+
+  /// Static method to show a dialog on top of the place order overlay
+  /// This ensures dialogs appear above the draggable order screen
+  /// Dialog only closes when user explicitly clicks close (not on outside tap)
+  static void showDialogOverlay({
+    required BuildContext context,
+    required Widget Function(BuildContext context, VoidCallback closeDialog) builder,
+    Color barrierColor = const Color(0x80000000),
+  }) {
+    // Prevent multiple dialogs from opening
+    if (_currentDialogOverlayEntry != null) {
+      return;
+    }
+
+    // Check if context is still mounted/valid
+    if (!context.mounted) {
+      return;
+    }
+
+    OverlayState? overlay;
+    try {
+      overlay = Overlay.of(context, rootOverlay: true);
+    } catch (e) {
+      // Context is no longer valid
+      return;
+    }
+
+    late OverlayEntry dialogOverlayEntry;
+
+    void closeDialog() {
+      try {
+        dialogOverlayEntry.remove();
+      } catch (e) {
+        // Entry might already be removed
+      }
+      _currentDialogOverlayEntry = null;
+    }
+
+    dialogOverlayEntry = OverlayEntry(
+      builder: (overlayContext) => Material(
+        color: Colors.transparent,
+        child: Stack(
+          children: [
+            // Barrier - does not dismiss on tap
+            Positioned.fill(
+              child: Container(color: barrierColor),
+            ),
+            // Dialog content
+            Center(
+              child: builder(overlayContext, closeDialog),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    _currentDialogOverlayEntry = dialogOverlayEntry;
+    overlay.insert(dialogOverlayEntry);
+  }
+
   /// Static method to show PlaceOrderScreenWeb as a draggable dialog
   static void showDraggable({
     required BuildContext context,
@@ -209,6 +271,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
 
   String mktProtErrorText = "";
   TextEditingController mktProtDialogCtrl = TextEditingController();
+
+  // Debounce timer for validation warnings
+  Timer? _warningDebounceTimer;
 
   int frezQty = 0;
   int reminder = 0;
@@ -663,8 +728,24 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
     // );
   }
 
+  /// Shows a warning message with debounce to avoid aggressive popups while typing
+  void _showDebouncedWarning(String message, {int delayMs = 800}) {
+    _warningDebounceTimer?.cancel();
+    _warningDebounceTimer = Timer(Duration(milliseconds: delayMs), () {
+      if (mounted) {
+        ResponsiveSnackBar.showWarning(context, message);
+      }
+    });
+  }
+
+  /// Cancels any pending warning - call this when input becomes valid
+  void _cancelPendingWarning() {
+    _warningDebounceTimer?.cancel();
+  }
+
   @override
   void dispose() {
+    _warningDebounceTimer?.cancel();
     anibuildctrl.dispose();
     super.dispose();
   }
@@ -954,6 +1035,14 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                 onTap: () {
                                                   setState(() {
                                                     isBuy = true;
+                                                    // Reset OCO when switching to BUY for EQT
+                                                    if (widget.scripInfo.seg ==
+                                                            "EQT" &&
+                                                        isOco) {
+                                                      isOco = false;
+                                                      orderInput
+                                                          .disableCondGTT(false);
+                                                    }
                                                   });
                                                   marginUpdate();
                                                 },
@@ -992,6 +1081,15 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                 onTap: () {
                                                   setState(() {
                                                     isBuy = !(isBuy ?? true);
+                                                    // Reset OCO when switching to BUY for EQT
+                                                    if (isBuy! &&
+                                                        widget.scripInfo.seg ==
+                                                            "EQT" &&
+                                                        isOco) {
+                                                      isOco = false;
+                                                      orderInput
+                                                          .disableCondGTT(false);
+                                                    }
                                                   });
                                                   marginUpdate();
                                                 },
@@ -1497,11 +1595,10 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                         onChanged: (value) {
                                                           if (value.isEmpty ||
                                                               value == "0") {
-                                                            ResponsiveSnackBar
-                                                                .showWarning(
-                                                                    context,
-                                                                    "The minimum quantity of this stock is one.");
+                                                            _showDebouncedWarning(
+                                                                "The minimum quantity of this stock is one.");
                                                           } else {
+                                                            _cancelPendingWarning();
                                                             setState(() {
                                                               int inputValue =
                                                                   int.tryParse(
@@ -1646,10 +1743,10 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                       .isEmpty ||
                                                                   inputValue <
                                                                       1) {
-                                                                ResponsiveSnackBar
-                                                                    .showWarning(
-                                                                        context,
-                                                                        "The minimum number of this SIP is one.");
+                                                                _showDebouncedWarning(
+                                                                    "The minimum number of this SIP is one.");
+                                                              } else {
+                                                                _cancelPendingWarning();
                                                               }
                                                               //  if (value.isEmpty) {
                                                               //   ScaffoldMessenger
@@ -1751,16 +1848,14 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                         }
                                                       }
                                                       if (value.isEmpty) {
-                                                        ResponsiveSnackBar
-                                                            .showWarning(
-                                                                context,
-                                                                "Target trigger price cannot be empty");
+                                                        _showDebouncedWarning(
+                                                            "Target trigger price cannot be empty");
                                                       } else if (inputPrice <=
                                                           0) {
-                                                        ResponsiveSnackBar
-                                                            .showWarning(
-                                                                context,
-                                                                "Target trigger price cannot be 0");
+                                                        _showDebouncedWarning(
+                                                            "Target trigger price cannot be 0");
+                                                      } else {
+                                                        _cancelPendingWarning();
                                                       }
                                                     },
                                                     hintText:
@@ -1769,11 +1864,11 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                         WebTextStyles.formInput(
                                                       isDarkTheme:
                                                           theme.isDarkMode,
-                                                      color: theme.isDarkMode
+                                                      color: (theme.isDarkMode
                                                           ? WebDarkColors
                                                               .textSecondary
                                                           : WebColors
-                                                              .textSecondary,
+                                                              .textSecondary).withValues(alpha: 0.5),
                                                     ),
                                                     keyboardType:
                                                         const TextInputType
@@ -1842,12 +1937,12 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                             hintStyle: WebTextStyles.formInput(
                                                               isDarkTheme: theme
                                                                   .isDarkMode,
-                                                              color: theme
+                                                              color: (theme
                                                                       .isDarkMode
                                                                   ? WebDarkColors
                                                                       .textSecondary
                                                                   : WebColors
-                                                                      .textSecondary,
+                                                                      .textSecondary).withValues(alpha: 0.5),
                                                             ),
                                                             inputFormate: [FilteringTextInputFormatter.digitsOnly],
                                                             keyboardType: TextInputType.number,
@@ -1988,10 +2083,8 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                       .isEmpty ||
                                                                   value ==
                                                                       "0") {
-                                                                ResponsiveSnackBar
-                                                                    .showWarning(
-                                                                        context,
-                                                                        "Quantity cannot be ${value == "0" ? '0' : 'empty'}");
+                                                                _showDebouncedWarning(
+                                                                    "Quantity cannot be ${value == "0" ? '0' : 'empty'}");
                                                               } else {
                                                                 String
                                                                     newValue =
@@ -2016,10 +2109,10 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                       orderInput
                                                                           .qtyCtrl
                                                                           .text;
-                                                                  ResponsiveSnackBar
-                                                                      .showWarning(
-                                                                          context,
-                                                                          "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}");
+                                                                  _showDebouncedWarning(
+                                                                      "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}");
+                                                                } else {
+                                                                  _cancelPendingWarning();
                                                                 }
 
                                                                 if (newValue !=
@@ -2131,15 +2224,14 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                   }
                                                                   if (value
                                                                       .isEmpty) {
-                                                                    ResponsiveSnackBar.showWarning(
-                                                                        context,
+                                                                    _showDebouncedWarning(
                                                                         "Price cannot be empty");
                                                                   } else if (inputPrice <=
                                                                       0) {
-                                                                    ResponsiveSnackBar.showWarning(
-                                                                        context,
+                                                                    _showDebouncedWarning(
                                                                         "Price cannot be 0");
                                                                   } else {
+                                                                    _cancelPendingWarning();
                                                                     setState(
                                                                         () {
                                                                       ordPrice =
@@ -2153,12 +2245,12 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                     .formInput(
                                                                   isDarkTheme: theme
                                                                       .isDarkMode,
-                                                                  color: theme
+                                                                  color: (theme
                                                                           .isDarkMode
                                                                       ? WebDarkColors
                                                                           .textSecondary
                                                                       : WebColors
-                                                                          .textSecondary,
+                                                                          .textSecondary).withValues(alpha: 0.5),
                                                                 ),
                                                                 keyboardType:
                                                                     const TextInputType
@@ -2365,50 +2457,40 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                               identifier: 'GTT OCO button',
                                               child: Checkbox(
                                                 value: isOco,
-                                                onChanged: (isBuy! &&
-                                                        widget.scripInfo.seg ==
-                                                            "EQT")
-                                                    ? null
-                                                    : (bool? value) {
-                                                        if (isBuy! &&
-                                                            widget.scripInfo
-                                                                    .seg ==
-                                                                "EQT") {
-                                                          ResponsiveSnackBar
-                                                              .showWarning(
-                                                                  context,
-                                                                  "OCO Order cannot be placed for Buy order");
-                                                          return;
-                                                        }
+                                                onChanged: (bool? value) {
+                                                  ScaffoldMessenger.of(context)
+                                                      .removeCurrentSnackBar();
+                                                  if (isBuy! &&
+                                                      widget.scripInfo.seg ==
+                                                          "EQT") {
+                                                    ResponsiveSnackBar
+                                                        .showWarning(context,
+                                                            "OCO Order cannot be placed for Buy order");
+                                                    return;
+                                                  }
 
-                                                        setState(() {
-                                                          isOco =
-                                                              value ?? false;
-                                                          orderInput
-                                                              .disableCondGTT(
-                                                                  isOco);
-                                                          //  orderInput.setGTTPriceTypeOrderIsMarket(isOco);
-                                                        });
-                                                        if (orderInput
-                                                                .ocoPrcType !=
-                                                            "MKT") {
-                                                          orderInput
-                                                              .chngOCOPriceType(
-                                                                  "Limit");
+                                                  setState(() {
+                                                    isOco = value ?? false;
+                                                    orderInput
+                                                        .disableCondGTT(isOco);
+                                                  });
+                                                  if (orderInput.ocoPrcType !=
+                                                      "MKT") {
+                                                    orderInput
+                                                        .chngOCOPriceType(
+                                                            "Limit");
 
-                                                          ref
-                                                              .read(
-                                                                  ordInputProvider)
-                                                              .updateOcoPrcQtyCtrl(
-                                                                "${widget.orderArg.ltp}",
-                                                                widget.orderArg
-                                                                    .lotSize!
-                                                                    .replaceAll(
-                                                                        "-",
-                                                                        ""),
-                                                              );
-                                                        }
-                                                      },
+                                                    ref
+                                                        .read(ordInputProvider)
+                                                        .updateOcoPrcQtyCtrl(
+                                                          "${widget.orderArg.ltp}",
+                                                          widget
+                                                              .orderArg.lotSize!
+                                                              .replaceAll(
+                                                                  "-", ""),
+                                                        );
+                                                  }
+                                                },
                                                 activeColor: theme.isDarkMode
                                                     ? WebDarkColors.primary
                                                     : WebColors.primary,
@@ -2508,16 +2590,14 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                           }
                                                         }
                                                         if (value.isEmpty) {
-                                                          ResponsiveSnackBar
-                                                              .showWarning(
-                                                                  context,
-                                                                  "Stoploss trigger price cannot be empty");
+                                                          _showDebouncedWarning(
+                                                              "Stoploss trigger price cannot be empty");
                                                         } else if (inputPrice <=
                                                             0) {
-                                                          ResponsiveSnackBar
-                                                              .showWarning(
-                                                                  context,
-                                                                  "Stoploss trigger price cannot be 0");
+                                                          _showDebouncedWarning(
+                                                              "Stoploss trigger price cannot be 0");
+                                                        } else {
+                                                          _cancelPendingWarning();
                                                         }
                                                       },
                                                       hintText:
@@ -2526,11 +2606,11 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                           .formInput(
                                                         isDarkTheme:
                                                             theme.isDarkMode,
-                                                        color: theme.isDarkMode
+                                                        color: (theme.isDarkMode
                                                             ? WebDarkColors
                                                                 .textSecondary
                                                             : WebColors
-                                                                .textSecondary,
+                                                                .textSecondary).withValues(alpha: 0.5),
                                                       ),
                                                       keyboardType:
                                                           const TextInputType
@@ -2583,12 +2663,12 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                               hintStyle: WebTextStyles.formInput(
                                                                 isDarkTheme: theme
                                                                     .isDarkMode,
-                                                                color: theme
+                                                                color: (theme
                                                                         .isDarkMode
                                                                     ? WebDarkColors
                                                                         .textSecondary
                                                                     : WebColors
-                                                                        .textSecondary,
+                                                                        .textSecondary).withValues(alpha: 0.5),
                                                               ),
                                                               inputFormate: [FilteringTextInputFormatter.digitsOnly],
                                                               keyboardType: TextInputType.number,
@@ -2733,10 +2813,8 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                         .isEmpty ||
                                                                     value ==
                                                                         "0") {
-                                                                  ResponsiveSnackBar
-                                                                      .showWarning(
-                                                                          context,
-                                                                          "OCO quantity cannot be ${value == "0" ? '0' : 'empty'}");
+                                                                  _showDebouncedWarning(
+                                                                      "OCO quantity cannot be ${value == "0" ? '0' : 'empty'}");
                                                                 } else {
                                                                   String
                                                                       newValue =
@@ -2763,9 +2841,10 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                         orderInput
                                                                             .qtyCtrl
                                                                             .text;
-                                                                    ResponsiveSnackBar.showWarning(
-                                                                        context,
+                                                                    _showDebouncedWarning(
                                                                         "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}");
+                                                                  } else {
+                                                                    _cancelPendingWarning();
                                                                   }
 
                                                                   if (newValue !=
@@ -2869,15 +2948,14 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                     }
                                                                     if (value
                                                                         .isEmpty) {
-                                                                      ResponsiveSnackBar.showWarning(
-                                                                          context,
+                                                                      _showDebouncedWarning(
                                                                           "OCO price cannot be empty");
                                                                     } else if (inputPrice <=
                                                                         0) {
-                                                                      ResponsiveSnackBar.showWarning(
-                                                                          context,
+                                                                      _showDebouncedWarning(
                                                                           "OCO price cannot be 0");
                                                                     } else {
+                                                                      _cancelPendingWarning();
                                                                       setState(
                                                                           () {
                                                                         ordPrice =
@@ -2893,11 +2971,11 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                     isDarkTheme:
                                                                         theme
                                                                             .isDarkMode,
-                                                                    color: theme.isDarkMode
+                                                                    color: (theme.isDarkMode
                                                                         ? WebDarkColors
                                                                             .textSecondary
                                                                         : WebColors
-                                                                            .textSecondary,
+                                                                            .textSecondary).withValues(alpha: 0.5),
                                                                   ),
                                                                   keyboardType: const TextInputType
                                                                       .numberWithOptions(
@@ -3749,12 +3827,12 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                             .formInput(
                                                           isDarkTheme:
                                                               theme.isDarkMode,
-                                                          color: theme
+                                                          color: (theme
                                                                   .isDarkMode
                                                               ? WebDarkColors
                                                                   .textSecondary
                                                               : WebColors
-                                                                  .textSecondary,
+                                                                  .textSecondary).withValues(alpha: 0.5),
                                                         ),
                                                         inputFormate: [
                                                           FilteringTextInputFormatter
@@ -3975,10 +4053,8 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                 : (_isLotToQty
                                                                     ? 'Quantity'
                                                                     : 'Lot');
-                                                            ResponsiveSnackBar
-                                                                .showWarning(
-                                                                    context,
-                                                                    "$fieldName cannot be ${value == "0" ? '0' : 'empty'}");
+                                                            _showDebouncedWarning(
+                                                                "$fieldName cannot be ${value == "0" ? '0' : 'empty'}");
                                                           } else {
                                                             String newValue =
                                                                 value.replaceAll(
@@ -4010,10 +4086,8 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                             if (_isQtyToAmount &&
                                                                 number < 1 &&
                                                                 (_isStock)) {
-                                                              ResponsiveSnackBar
-                                                                  .showWarning(
-                                                                      context,
-                                                                      "Minimum Allowed Amount should be greater than $ltp");
+                                                              _showDebouncedWarning(
+                                                                  "Minimum Allowed Amount should be greater than $ltp");
                                                             } else {
                                                               bool
                                                                   hasNoFreezeLimit =
@@ -4026,10 +4100,10 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                 qtyCtrl.text =
                                                                     qtyCtrl
                                                                         .text;
-                                                                ResponsiveSnackBar
-                                                                    .showWarning(
-                                                                        context,
-                                                                        "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}");
+                                                                _showDebouncedWarning(
+                                                                    "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}");
+                                                              } else {
+                                                                _cancelPendingWarning();
                                                               }
                                                             }
 
@@ -4194,15 +4268,14 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                   }
                                                                   if (value
                                                                       .isEmpty) {
-                                                                    ResponsiveSnackBar.showWarning(
-                                                                        context,
+                                                                    _showDebouncedWarning(
                                                                         "Price cannot be empty");
                                                                   } else if (inputPrice <=
                                                                       0) {
-                                                                    ResponsiveSnackBar.showWarning(
-                                                                        context,
+                                                                    _showDebouncedWarning(
                                                                         "Price cannot be 0");
                                                                   } else {
+                                                                    _cancelPendingWarning();
                                                                     setState(
                                                                         () {
                                                                       ordPrice =
@@ -4217,12 +4290,12 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                     .formInput(
                                                                   isDarkTheme: theme
                                                                       .isDarkMode,
-                                                                  color: theme
+                                                                  color: (theme
                                                                           .isDarkMode
                                                                       ? WebDarkColors
                                                                           .textSecondary
                                                                       : WebColors
-                                                                          .textSecondary,
+                                                                          .textSecondary).withValues(alpha: 0.5),
                                                                 ),
                                                                 keyboardType:
                                                                     const TextInputType
@@ -4275,6 +4348,17 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                         : colors
                                                                             .highlightLight,
                                                                     onTap: () {
+                                                                      // Check if trying to switch to SL MKT for CO-BO stoploss order
+                                                                      if (orderType ==
+                                                                              "CO - BO" &&
+                                                                          _isStoplossOrder &&
+                                                                          !_isMarketOrder) {
+                                                                        ResponsiveSnackBar
+                                                                            .showWarning(
+                                                                                context,
+                                                                                "SL Market order is not allowed for CO-BO orders");
+                                                                        return;
+                                                                      }
                                                                       setState(
                                                                           () {
                                                                         _isMarketOrder =
@@ -6405,7 +6489,12 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                 ? colors.primary
                                                                 : colors
                                                                     .tertiary,
-                                                        // shape: const StadiumBorder()
+                                                        shape:
+                                                            RoundedRectangleBorder(
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(5),
+                                                        ),
                                                       ),
                                                       child: orderProvide
                                                               .orderloader
@@ -6557,9 +6646,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                   hintText: "0",
                   hintStyle: WebTextStyles.formInput(
                     isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode
+                    color: (theme.isDarkMode
                         ? WebDarkColors.textSecondary
-                        : WebColors.textSecondary,
+                        : WebColors.textSecondary).withValues(alpha: 0.5),
                   ),
                   inputFormate: [FilteringTextInputFormatter.digitsOnly],
                   keyboardType: TextInputType.number,
@@ -6673,9 +6762,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                         hintText: "0.00",
                         hintStyle: WebTextStyles.formInput(
                           isDarkTheme: theme.isDarkMode,
-                          color: theme.isDarkMode
+                          color: (theme.isDarkMode
                               ? WebDarkColors.textSecondary
-                              : WebColors.textSecondary,
+                              : WebColors.textSecondary).withValues(alpha: 0.5),
                         ),
                         onChanged: (value) {
                           if (value.isNotEmpty && double.parse(value) > 0) {
@@ -6774,9 +6863,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                     },
                     hintStyle: WebTextStyles.formInput(
                       isDarkTheme: theme.isDarkMode,
-                      color: theme.isDarkMode
+                      color: (theme.isDarkMode
                           ? WebDarkColors.textSecondary
-                          : WebColors.textSecondary,
+                          : WebColors.textSecondary).withValues(alpha: 0.5),
                     ),
                     keyboardType:
                         const TextInputType.numberWithOptions(decimal: true),
@@ -6847,9 +6936,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                     hintText: "0.00",
                     hintStyle: WebTextStyles.formInput(
                       isDarkTheme: theme.isDarkMode,
-                      color: theme.isDarkMode
+                      color: (theme.isDarkMode
                           ? WebDarkColors.textSecondary
-                          : WebColors.textSecondary,
+                          : WebColors.textSecondary).withValues(alpha: 0.5),
                     ),
                     keyboardType:
                         const TextInputType.numberWithOptions(decimal: true),
@@ -6924,9 +7013,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                     },
                     hintStyle: WebTextStyles.formInput(
                       isDarkTheme: theme.isDarkMode,
-                      color: theme.isDarkMode
+                      color: (theme.isDarkMode
                           ? WebDarkColors.textSecondary
-                          : WebColors.textSecondary,
+                          : WebColors.textSecondary).withValues(alpha: 0.5),
                     ),
                     keyboardType:
                         const TextInputType.numberWithOptions(decimal: true),
@@ -6969,9 +7058,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                       mktProtDialogCtrl.text = mktProtCtrl.text;
                       mktProtErrorText = "";
                     });
-                    showDialog(
+                    PlaceOrderScreenWeb.showDialogOverlay(
                       context: context,
-                      builder: (BuildContext context) {
+                      builder: (BuildContext dialogContext, VoidCallback closeDialog) {
                         return StatefulBuilder(
                           builder: (BuildContext context,
                               StateSetter dialogSetState) {
@@ -7009,7 +7098,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                     onPressed: () async {
                                       await Future.delayed(
                                           const Duration(milliseconds: 150));
-                                      Navigator.pop(context);
+                                      closeDialog();
                                     },
                                     // borderRadius: BorderRadius.circular(20),
                                     // splashColor: theme.isDarkMode ? colors.splashColorDark : colors.splashColorLight,
@@ -7105,7 +7194,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                         color: (theme.isDarkMode
                                                 ? WebDarkColors.textSecondary
                                                 : WebColors.textSecondary)
-                                            .withOpacity(0.4),
+                                            .withValues(alpha: 0.5),
                                       ),
                                     ),
                                   ),
@@ -7161,7 +7250,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                             mktProtDialogCtrl.text;
                                         mktProtErrorText = "";
                                       });
-                                      Navigator.of(context).pop();
+                                      closeDialog();
                                     },
                                     style: OutlinedButton.styleFrom(
                                       minimumSize:
@@ -7752,10 +7841,12 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
     final placeResult = ref.read(orderProvider).placeGttOrderModel;
     final wasSuccessful = placeResult?.stat == "OI created";
 
-    // Close the draggable dialog immediately if placement was successful
-    if (wasSuccessful && closeNotifier != null && mounted) {
-      // Close immediately - don't wait
-      closeNotifier.onClose();
+    // Close the draggable dialog and show success message
+    if (wasSuccessful && mounted) {
+      ResponsiveSnackBar.showSuccess(context, "GTT Order Placed Successfully");
+      if (closeNotifier != null) {
+        closeNotifier.onClose();
+      }
     }
   }
 
@@ -7802,10 +7893,12 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
     final placeResult = ref.read(orderProvider).placeGttOrderModel;
     final wasSuccessful = placeResult?.stat == "OI created";
 
-    // Close the draggable dialog immediately if placement was successful
-    if (wasSuccessful && closeNotifier != null && mounted) {
-      // Close immediately - don't wait
-      closeNotifier.onClose();
+    // Close the draggable dialog and show success message
+    if (wasSuccessful && mounted) {
+      ResponsiveSnackBar.showSuccess(context, "OCO Order Placed Successfully");
+      if (closeNotifier != null) {
+        closeNotifier.onClose();
+      }
     }
   }
 

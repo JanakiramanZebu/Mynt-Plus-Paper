@@ -717,7 +717,7 @@ class _WindowBasedHomeScreenState extends ConsumerState<WindowBasedHomeScreen>
   }
   
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) async {
+  void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
       case AppLifecycleState.resumed:
         ref.read(webSubscriptionManagerProvider).updateContext(context);

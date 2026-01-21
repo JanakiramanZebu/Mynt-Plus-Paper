@@ -339,7 +339,7 @@ class _CustomizableSplitHomeScreenState
   }
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) async {
+  void didChangeAppLifecycleState(AppLifecycleState state) {
     // Helper function to check if portfolio screens are active
     bool hasPortfolioScreen() {
       for (var panel in _panels) {
