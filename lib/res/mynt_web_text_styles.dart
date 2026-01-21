@@ -165,6 +165,20 @@ class MyntWebTextStyles {
         lightColor: lightColor,
       );
 
+       static TextStyle titlesub(BuildContext c,
+          {Color? color,
+          Color? darkColor,
+          Color? lightColor,
+          FontWeight? fontWeight}) =>
+      _text(
+        c,
+        size: MyntFonts.titleMedium,
+          weight: FontWeight.w600,
+        color: color,
+        darkColor: darkColor,
+        lightColor: lightColor,
+      );
+
   // ---------------- BODY ----------------
   static TextStyle body(
     BuildContext c, {

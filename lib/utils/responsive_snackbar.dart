@@ -2,27 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/res/global_font_web.dart';
-import 'package:mynt_plus/provider/thems.dart';
+import 'dart:async';
 
 /// Responsive SnackBar utility that adapts to screen size
-/// Shows toast-style notification in bottom-right corner on desktop
+/// Shows toast-style notification in bottom-right corner on desktop with Stacking effect
 /// Uses standard SnackBar behavior on mobile
 class ResponsiveSnackBar {
+  
   /// Shows a responsive snackbar/toast notification
-  /// On desktop (width >= 600): Shows as toast in bottom-right corner
-  /// On mobile (width < 600): Uses standard SnackBar
   static void show({
     required BuildContext context,
     required String message,
     SnackBarType type = SnackBarType.info,
-    Duration duration = const Duration(seconds: 3),
+    Duration duration = const Duration(seconds: 4),
     String? actionLabel,
     VoidCallback? onActionPressed,
   }) {
     final screenWidth = MediaQuery.of(context).size.width;
-
+    
     if (screenWidth >= 600) {
-      // Desktop: Show as custom toast in bottom-right corner
+      // Desktop: Show as stacked toast in bottom-right corner
       _showDesktopToast(
         context: context,
         message: message,
@@ -43,8 +42,12 @@ class ResponsiveSnackBar {
       );
     }
   }
+  
+  // -- Desktop Logic (Stacking Toasts) --
 
-  /// Shows desktop toast notification in bottom-right corner
+  static OverlayEntry? _overlayEntry;
+
+  /// Adds a new toast to the manager and ensures overlay is active
   static void _showDesktopToast({
     required BuildContext context,
     required String message,
@@ -53,33 +56,31 @@ class ResponsiveSnackBar {
     String? actionLabel,
     VoidCallback? onActionPressed,
   }) {
-    final overlay = Overlay.of(context);
-
-    late OverlayEntry overlayEntry;
-
-    overlayEntry = OverlayEntry(
-      builder: (context) => ProviderScope(
-        child: _DesktopToastWidget(
-          message: message,
-          type: type,
-          onDismiss: () => overlayEntry.remove(),
-          actionLabel: actionLabel,
-          onActionPressed: onActionPressed,
-        ),
-      ),
+    // 1. Add toast to manager
+    _ToastManager.instance.addToast(
+      _ToastData(
+        id: DateTime.now().microsecondsSinceEpoch.toString(),
+        message: message,
+        type: type,
+        duration: duration,
+        actionLabel: actionLabel,
+        onActionPressed: onActionPressed,
+      )
     );
 
-    overlay.insert(overlayEntry);
-
-    // Auto dismiss after duration
-    Future.delayed(duration, () {
-      if (overlayEntry.mounted) {
-        overlayEntry.remove();
-      }
-    });
+    // 2. Ensure Overlay is present
+    if (_overlayEntry == null) {
+      _overlayEntry = OverlayEntry(
+        builder: (context) => const ProviderScope(
+          child: _ToastStackWidget(),
+        ),
+      );
+      Overlay.of(context).insert(_overlayEntry!);
+    }
   }
+  
+  // -- Mobile Logic (Standard SnackBar) --
 
-  /// Shows standard mobile SnackBar
   static void _showMobileSnackBar({
     required BuildContext context,
     required String message,
@@ -89,7 +90,7 @@ class ResponsiveSnackBar {
     VoidCallback? onActionPressed,
   }) {
     final colorScheme = _getColorScheme(type);
-
+    
     final snackBar = SnackBar(
       content: Text(
         message,
@@ -114,11 +115,11 @@ class ResponsiveSnackBar {
             )
           : null,
     );
-
+    
     ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
-
+  
   /// Gets color scheme based on SnackBar type
   static _ColorScheme _getColorScheme(SnackBarType type) {
     switch (type) {
@@ -148,325 +149,367 @@ class ResponsiveSnackBar {
         );
     }
   }
-
-  /// Convenience methods for different types
-  static void showSuccess(BuildContext context, String message,
-      {Duration? duration}) {
-    show(
-        context: context,
-        message: message,
-        type: SnackBarType.success,
-        duration: duration ?? const Duration(seconds: 3));
+  
+  /// Convenience methods
+  static void showSuccess(BuildContext context, String message, {Duration? duration}) {
+    show(context: context, message: message, type: SnackBarType.success, duration: duration ?? const Duration(seconds: 4));
   }
-
-  static void showError(BuildContext context, String message,
-      {Duration? duration}) {
-    show(
-        context: context,
-        message: message,
-        type: SnackBarType.error,
-        duration: duration ?? const Duration(seconds: 4));
+  
+  static void showError(BuildContext context, String message, {Duration? duration}) {
+    show(context: context, message: message, type: SnackBarType.error, duration: duration ?? const Duration(seconds: 4));
   }
-
-  static void showWarning(BuildContext context, String message,
-      {Duration? duration}) {
-    show(
-        context: context,
-        message: message,
-        type: SnackBarType.warning,
-        duration: duration ?? const Duration(seconds: 3));
+  
+  static void showWarning(BuildContext context, String message, {Duration? duration}) {
+    show(context: context, message: message, type: SnackBarType.warning, duration: duration ?? const Duration(seconds: 3));
   }
-
-  static void showInfo(BuildContext context, String message,
-      {Duration? duration}) {
-    show(
-        context: context,
-        message: message,
-        type: SnackBarType.info,
-        duration: duration ?? const Duration(seconds: 3));
+  
+  static void showInfo(BuildContext context, String message, {Duration? duration}) {
+    show(context: context, message: message, type: SnackBarType.info, duration: duration ?? const Duration(seconds: 3));
   }
 }
 
-/// SnackBar types for different message categories
-enum SnackBarType {
-  info,
-  success,
-  warning,
-  error,
-}
+enum SnackBarType { info, success, warning, error }
 
-/// Desktop toast widget that appears in bottom-right corner
-class _DesktopToastWidget extends ConsumerStatefulWidget {
+/// Data model for a single toast
+class _ToastData {
+  final String id;
   final String message;
   final SnackBarType type;
-  final VoidCallback onDismiss;
+  final Duration duration;
   final String? actionLabel;
   final VoidCallback? onActionPressed;
 
-  const _DesktopToastWidget({
+  _ToastData({
+    required this.id,
     required this.message,
     required this.type,
-    required this.onDismiss,
+    required this.duration,
     this.actionLabel,
     this.onActionPressed,
   });
-
-  @override
-  ConsumerState<_DesktopToastWidget> createState() =>
-      _DesktopToastWidgetState();
 }
 
-class _DesktopToastWidgetState extends ConsumerState<_DesktopToastWidget>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<Offset> _slideAnimation;
-  late Animation<double> _fadeAnimation;
+/// Manager for active toasts
+class _ToastManager extends ChangeNotifier {
+  static final _ToastManager instance = _ToastManager();
+  
+  final List<_ToastData> _toasts = [];
+  List<_ToastData> get toasts => List.unmodifiable(_toasts);
+  
+  // Maximum number of toasts visible in the stack
+  static const int maxVisible = 3;
+
+  void addToast(_ToastData toast) {
+    // Add to beginning of list (top of stack conceptually, but rendered differently)
+    // We insert at 0 so the "newest" is index 0
+    _toasts.insert(0, toast);
+    notifyListeners();
+    
+    // Auto dismiss
+    Future.delayed(toast.duration, () {
+      removeToast(toast.id);
+    });
+  }
+
+  void removeToast(String id) {
+    _toasts.removeWhere((t) => t.id == id);
+    notifyListeners();
+  }
+}
+
+/// Widget that displays the stack of active toasts
+class _ToastStackWidget extends ConsumerStatefulWidget {
+  const _ToastStackWidget();
+
+  @override
+  ConsumerState<_ToastStackWidget> createState() => _ToastStackWidgetState();
+}
+
+class _ToastStackWidgetState extends ConsumerState<_ToastStackWidget> {
+  bool _isHovering = false;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
-    );
-
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(1.0, 0.0),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOutCubic,
-    ));
-
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOut,
-    ));
-
-    _controller.forward();
+    _ToastManager.instance.addListener(_onMeasureChanged);
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _ToastManager.instance.removeListener(_onMeasureChanged);
     super.dispose();
   }
 
-  void _dismiss() async {
-    await _controller.reverse();
-    widget.onDismiss();
+  void _onMeasureChanged() {
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = ref.watch(themeProvider);
-    final screenSize = MediaQuery.of(context).size;
+    final toasts = _ToastManager.instance.toasts;
+    // If no toasts, return SizedBox (OverlayEntry still exists but is invisible)
+    // Logic could be improved to remove OverlayEntry but keeping it simple for now.
+    if (toasts.isEmpty) return const SizedBox.shrink();
 
-    // Get theme-aware colors based on type
-    final toastColors = _getToastColors(widget.type, theme.isDarkMode);
+    // We only render the top N toasts to avoid performance issues
+    final visibleToasts = toasts.take(_ToastManager.maxVisible + 1).toList().asMap().entries.toList().reversed.toList();
+    
+    // Calculate dynamic height for the container based on hovering
+    // Collapsed: ~150px
+    // Expanded: Estimate based on content. Since height is dynamic, we give it plenty of room.
+    final double itemsHeight = _isHovering ? ((visibleToasts.length * 120.0) + 50) : 150;
 
     return Positioned(
-      right: 16,
-      bottom: 16,
-      child: AnimatedBuilder(
-        animation: _controller,
-        builder: (context, child) {
-          return SlideTransition(
-            position: _slideAnimation,
-            child: FadeTransition(
-              opacity: _fadeAnimation,
-              child: Material(
-                elevation: 4,
-                shadowColor: Colors.black.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(8),
-                color: Colors.transparent,
-                child: Container(
-                  constraints: const BoxConstraints(
-                    maxWidth: 400,
-                    minWidth: 350,
-                  ),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        toastColors.backgroundColor,
-                        toastColors.backgroundColor.withValues(alpha: 0.9),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Circular icon on the left
-                        _buildTypeIcon(widget.type, toastColors.iconColor),
-                        const SizedBox(width: 12),
-                        // Text content on the right
-                        Expanded(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Type label (SUCCESS, ERROR, INFO, WARNING)
-                              Text(
-                                _getTypeLabel(widget.type),
-                                style: WebTextStyles.custom(
-                                  fontSize: 13,
-                                  isDarkTheme: theme.isDarkMode,
-                                  color: toastColors.textColor,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: 0.5,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              // Message text
-                              Text(
-                                widget.message,
-                                style: WebTextStyles.bodySmall(
-                                  isDarkTheme: theme.isDarkMode,
-                                  color: const Color(0xFF000000),
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        // Close button
-                        const SizedBox(width: 8),
-                        Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: _dismiss,
-                            borderRadius: BorderRadius.circular(4),
-                            child: Padding(
-                              padding: const EdgeInsets.all(4),
-                              child: Icon(
-                                Icons.close,
-                                size: 18,
-                                color: toastColors.textColor
-                                    .withValues(alpha: 0.7),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          );
-        },
+      bottom: 24,
+      right: 24,
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _isHovering = true),
+        onExit: (_) => setState(() => _isHovering = false),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOutCubic,
+          width: 360, 
+          height: itemsHeight,
+          child: Stack(
+            alignment: Alignment.bottomCenter,
+            clipBehavior: Clip.none,
+            children: visibleToasts.map((entry) {
+              final index = entry.key; // 0 is newest
+              final toast = entry.value;
+              
+              return _ToastItemWidget(
+                key: ValueKey(toast.id),
+                toast: toast,
+                index: index,
+                isHovering: _isHovering,
+                isDarkMode: true, 
+                onDismiss: () => _ToastManager.instance.removeToast(toast.id),
+              );
+            }).toList(),
+          ),
+        ),
       ),
     );
-  }
-
-  String _getTypeLabel(SnackBarType type) {
-    switch (type) {
-      case SnackBarType.success:
-        return 'SUCCESS';
-      case SnackBarType.error:
-        return 'ERROR';
-      case SnackBarType.warning:
-        return 'WARNING';
-      case SnackBarType.info:
-        return 'INFO';
-    }
-  }
-
-  Widget _buildTypeIcon(SnackBarType type, Color iconBgColor) {
-    IconData icon;
-
-    switch (type) {
-      case SnackBarType.success:
-        icon = Icons.check;
-        break;
-      case SnackBarType.error:
-        icon = Icons.error;
-        break;
-      case SnackBarType.warning:
-        icon = Icons.warning;
-        break;
-      case SnackBarType.info:
-        icon = Icons.info;
-        break;
-    }
-
-    return Container(
-      width: 32,
-      height: 32,
-      decoration: BoxDecoration(
-        color: iconBgColor,
-        shape: BoxShape.circle,
-      ),
-      child: Icon(
-        icon,
-        size: 18,
-        color: Colors.white,
-      ),
-    );
-  }
-
-  _ToastColors _getToastColors(SnackBarType type, bool isDarkMode) {
-    switch (type) {
-      case SnackBarType.success:
-        return const _ToastColors(
-          backgroundColor: Color(0xFFE8F5E9), // Light green background
-          borderColor: Color(
-              0xFF4CAF50), // Green border (not used but kept for consistency)
-          headerColor: Color(0xFF2E7D32), // Dark green text
-          iconColor: Color(0xFF4CAF50), // Green icon background
-          textColor: Color(0xFF1B5E20), // Dark green text color
-        );
-      case SnackBarType.error:
-        return const _ToastColors(
-          backgroundColor: Color(0xFFFFEBEE), // Light red background
-          borderColor: Color(0xFFF44336), // Red border
-          headerColor: Color(0xFFC62828), // Dark red text
-          iconColor: Color(0xFFF44336), // Red icon background
-          textColor: Color(0xFFB71C1C), // Dark red text color
-        );
-      case SnackBarType.warning:
-        return const _ToastColors(
-          backgroundColor: Color(0xFFFFF3E0), // Light orange background
-          borderColor: Color(0xFFFF9800), // Orange border
-          headerColor: Color(0xFFE65100), // Dark orange text
-          iconColor: Color(0xFFFF9800), // Orange icon background
-          textColor: Color(0xFFBF360C), // Dark orange text color
-        );
-      case SnackBarType.info:
-        return const _ToastColors(
-          backgroundColor: Color(0xFFE3F2FD), // Light blue background
-          borderColor: Color(0xFF2196F3), // Blue border
-          headerColor: Color(0xFF1565C0), // Dark blue text
-          iconColor: Color(0xFF2196F3), // Blue icon background
-          textColor: Color(0xFF0D47A1), // Dark blue text color
-        );
-    }
   }
 }
 
-/// Toast color scheme
-class _ToastColors {
-  final Color backgroundColor;
-  final Color borderColor;
-  final Color headerColor;
-  final Color iconColor;
-  final Color textColor;
+/// Individual Toast Card with animation based on index
+class _ToastItemWidget extends StatefulWidget {
+  final _ToastData toast;
+  final int index; // 0 = front, 1 = behind, etc.
+  final bool isHovering;
+  final bool isDarkMode;
+  final VoidCallback onDismiss;
 
-  const _ToastColors({
-    required this.backgroundColor,
-    required this.borderColor,
-    required this.headerColor,
-    required this.iconColor,
-    required this.textColor,
+  const _ToastItemWidget({
+    super.key,
+    required this.toast,
+    required this.index,
+    required this.isHovering,
+    required this.isDarkMode,
+    required this.onDismiss,
   });
+
+  @override
+  State<_ToastItemWidget> createState() => _ToastItemWidgetState();
+}
+
+class _ToastItemWidgetState extends State<_ToastItemWidget> {
+  // Using implicit animations via AnimatedPositioned/AnimatedScale
+
+  @override
+  Widget build(BuildContext context) {
+    // If index > maxVisible, hide it (opacity 0)
+    final isVisible = widget.index < _ToastManager.maxVisible;
+    
+    // Layout Logic
+    // Expanded: Vertical list with gaps. Taking ~120px per item to fit potential 10 lines of text + padding
+    // Collapsed: Stacked with larger offset for better visibility
+    
+    // Base spacing for expanded items (Height + Margin)
+    const double expandedSpacing = 130.0;
+    // Spacing for collapsed stack effect
+    const double collapsedSpacing = 20.0;
+    
+    final double bottomOffset = widget.isHovering 
+        ? widget.index * expandedSpacing 
+        : widget.index * collapsedSpacing;
+        
+    final double scale = widget.isHovering 
+        ? 1.0 
+        : (1.0 - (widget.index * 0.05));
+        
+    final double opacity = (isVisible || widget.isHovering) 
+        ? (widget.isHovering ? 1.0 : (1.0 - (widget.index * 0.1)).clamp(0.0, 1.0))
+        : 0.0;
+    
+    // Use Global Colors
+    // Filled Style: Text is always white on colored background
+    Color subTextColor = Colors.white.withOpacity(0.9);
+    
+    Color bgColor;
+    Color contentColor = Colors.white; // Text and Icon always white for filled style
+    IconData statusIcon;
+    
+    switch (widget.toast.type) {
+      case SnackBarType.success:
+        bgColor = ToastGlobals.success;
+        statusIcon = Icons.check_circle_rounded;
+        break;
+      case SnackBarType.error:
+        bgColor = ToastGlobals.error;
+        statusIcon = Icons.error_rounded;
+        break;
+      case SnackBarType.warning:
+        bgColor = ToastGlobals.warning;
+        statusIcon = Icons.warning_rounded;
+        break;
+      case SnackBarType.info:
+        bgColor = ToastGlobals.info; // This is white in globals, might need check
+        contentColor = Colors.black87; // Dark text for white background
+        subTextColor = Colors.black54;
+        statusIcon = Icons.info_rounded;
+        break;
+    }
+
+    return AnimatedPositioned(
+      duration: const Duration(milliseconds: 400),
+      curve: Curves.easeOutCubic,
+      bottom: bottomOffset,
+      left: 0,
+      right: 0,
+      // Removed fixed height to allow text expansion
+      child: AnimatedScale(
+        scale: scale,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeOutCubic,
+        alignment: Alignment.bottomCenter,
+        child: AnimatedOpacity(
+          opacity: opacity,
+          duration: const Duration(milliseconds: 300),
+          child: Dismissible(
+            key: ValueKey(widget.toast.id),
+            direction: DismissDirection.horizontal,
+            onDismissed: (_) => widget.onDismiss(),
+            child: Material(
+              elevation: 4,
+              shadowColor: Colors.black.withOpacity(0.3),
+              color: bgColor,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                // Removed border for clean filled look
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start, // Align top for multi-line
+                  children: [
+                    // Status Icon
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2),
+                      child: Icon(
+                        statusIcon,
+                        color: contentColor,
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    // Content
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Title (Type)
+                          Text(
+                            _getTypeLabel(widget.toast.type),
+                            style: WebTextStyles.custom(
+                              fontSize: 14,
+                              isDarkTheme: widget.toast.type != SnackBarType.info,
+                              color: contentColor, 
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          // Message
+                          Text(
+                            widget.toast.message,
+                            style: WebTextStyles.bodySmall(
+                              isDarkTheme: widget.toast.type != SnackBarType.info,
+                              color: subTextColor,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            maxLines: 10, // Increased maxLines to show full text
+                            overflow: TextOverflow.visible,
+                          ),
+                        ],
+                      ),
+                    ),
+                    
+                    const SizedBox(width: 12),
+                    
+                    // Action Button or Close
+                    if (widget.toast.actionLabel != null)
+                      SizedBox(
+                        height: 32,
+                        child: ElevatedButton(
+                          onPressed: widget.toast.onActionPressed ?? widget.onDismiss,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: Colors.black,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                          ),
+                          child: Text(
+                            widget.toast.actionLabel!,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13,
+                              color: Colors.black,
+                            ),
+                          ),
+                        ),
+                      )
+                    else
+                      Padding(
+                        padding: const EdgeInsets.only(top: 2),
+                        child: InkWell(
+                          onTap: widget.onDismiss,
+                          child: Icon(Icons.close, size: 18, color: contentColor.withOpacity(0.7)),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+  
+  String _getTypeLabel(SnackBarType type) {
+    // If user specifically wants "Event has been created" as title, they need to pass it differently.
+    // Assuming they use message for subtitle and type for title, or message is title?
+    // In screenshot: Title = "Event has been created", Subtitle = "Sunday..."
+    // Current API: show(message: "...")
+    // The previous prompt code snippet had: title: Text('Event has been created'), subtitle: Text(...)
+    // Just using mapped labels for now.
+    
+    switch (type) {
+      case SnackBarType.success:
+        return 'Success';
+      case SnackBarType.error:
+        return 'Error';
+      case SnackBarType.warning:
+        return 'Warning';
+      case SnackBarType.info:
+        return 'Info';
+    }
+  }
 }
 
 /// Simple color scheme class for SnackBar theming
@@ -474,10 +517,33 @@ class _ColorScheme {
   final Color surface;
   final Color onSurface;
   final Color primary;
-
+  
   const _ColorScheme({
     required this.surface,
     required this.onSurface,
     required this.primary,
   });
+}
+
+/// Global Toast Colors configuration
+/// Change these values to update the toast styling across the app
+class ToastGlobals {
+  // Status Colors (Icon, Title, Border)
+  static const Color success = Color(0xFF4CAF50);
+  static const Color error = Color(0xFFEF5350);
+  static const Color warning = Color(0xFFFF9800);
+  static const Color info = Colors.white;
+
+// Base Background (Unused in Filled style, but kept for reference)
+  static const Color baseBackground = Color(0xFF161616);
+  static const double tintStrength = 0.15;
+  
+  // Message Text
+  static const Color subText = Color(0xFFA1A1AA);
+
+  // Background Getters (For Filled style, returns solid colors)
+  static Color get successBg => success;
+  static Color get errorBg => error;
+  static Color get warningBg => warning;
+  static Color get infoBg => info;
 }
