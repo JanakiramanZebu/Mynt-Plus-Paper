@@ -6,9 +6,10 @@ import 'package:flutter_svg/svg.dart';
 import 'package:flutter/foundation.dart';
 import 'package:mynt_plus/res/mynt_web_color_styles.dart';
 import 'package:mynt_plus/res/mynt_web_text_styles.dart';
+import 'package:mynt_plus/sharedWidget/hover_actions_web.dart';
 import 'package:mynt_plus/screens/web/market_watch/future_screen_web.dart';
 import 'package:percent_indicator/percent_indicator.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+
 import '../../../routes/route_names.dart';
 import '../../../utils/custom_navigator.dart';
 import '../../../models/marketwatch_model/get_quotes.dart';
@@ -247,7 +248,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                         ),
                       ),
                       SizedBox(
-                        height: 24,
+                        height: 36,
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
@@ -328,219 +329,199 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                                 final bool isPredefined =
                                     marketWatch.isPreDefWLs == "Yes";
 
-                                return AnimatedOpacity(
-                                  opacity:
-                                      (isHovered || _isMenuOpen) ? 1.0 : 0.0,
-                                  duration: const Duration(milliseconds: 150),
-                                  child: IgnorePointer(
-                                    ignoring: !isHovered && !_isMenuOpen,
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        // Only show Buy/Sell buttons if not index or commodity
-                                        if (!isIndexOrCommodity) ...[
-                                          _buildHoverButton(
-                                            label: 'B',
-                                            color: Colors.white,
-                                            backgroundColor: resolveThemeColor(
-                                              context,
-                                              dark: MyntColors.primaryDark,
-                                              light: MyntColors.primary,
-                                            ),
-                                            borderColor: resolveThemeColor(
-                                              context,
-                                              dark: MyntColors.primaryDark,
-                                              light: MyntColors.primary,
-                                            ),
-                                            onPressed: () async {
-                                              try {
-                                                await _placeOrderInput(
-                                                    context, depthData, true);
-                                              } catch (e) {
-                                                print('Buy button error: $e');
-                                              }
-                                            },
-                                          ),
-                                          const SizedBox(width: 4),
-                                          _buildHoverButton(
-                                            label: 'S',
-                                            color: Colors.white,
-                                            backgroundColor: resolveThemeColor(
-                                              context,
-                                              dark: MyntColors.errorDark,
-                                              light: MyntColors.tertiary,
-                                            ),
-                                            borderColor: resolveThemeColor(
-                                              context,
-                                              dark: MyntColors.errorDark,
-                                              light: MyntColors.tertiary,
-                                            ),
-                                            onPressed: () async {
-                                              try {
-                                                await _placeOrderInput(
-                                                    context, depthData, false);
-                                              } catch (e) {
-                                                print('Sell button error: $e');
-                                              }
-                                            },
-                                          ),
-                                          const SizedBox(width: 4),
-                                        ],
-                                        _buildHoverButton(
-                                          iconAsset: assets.depthIcon,
-                                          color: Colors.black,
-                                          backgroundColor: Colors.white,
-                                          borderColor: shadcn.Theme.of(context)
-                                              .colorScheme
-                                              .border,
-                                          borderRadius: 5.0,
-                                          onPressed: () async {
-                                            if (_isNavigating) return;
-
-                                            ref
-                                                .read(
-                                                    expandedWatchlistItemProvider
-                                                        .notifier)
-                                                .setExpandedToken(null);
-
-                                            try {
-                                              setState(() {
-                                                _isNavigating = true;
-                                              });
-
-                                              DepthInputArgs depthArgs =
-                                                  DepthInputArgs(
-                                                exch: widget
-                                                    .watchListData["exch"]
-                                                    .toString(),
-                                                token: widget
-                                                    .watchListData["token"]
-                                                    .toString(),
-                                                tsym: widget
-                                                    .watchListData["tsym"]
-                                                    .toString(),
-                                                instname: widget.watchListData[
-                                                            "instname"]
-                                                        ?.toString() ??
-                                                    widget
-                                                        .watchListData["symbol"]
-                                                        .toString(),
-                                                symbol: widget
-                                                    .watchListData["symbol"]
-                                                    .toString(),
-                                                expDate: widget.watchListData[
-                                                            "expDate"]
-                                                        ?.toString() ??
-                                                    "",
-                                                option: widget
-                                                        .watchListData["option"]
-                                                        ?.toString() ??
-                                                    "",
-                                              );
-
-                                              marketWatch.scripdepthsize(false);
-                                              // Call depth APIs first to set active tab
-                                              await marketWatch.calldepthApis(
-                                                  context, depthArgs, "");
-
-                                              // Set depth visible AFTER calldepthApis completes
-                                              // Pass depth args directly to ensure correct token/exch/tsym are used
-                                              // This triggers lazy load of depth data with proper context
-                                              await ref
-                                                  .read(marketWatchProvider)
-                                                  .setIsDepthVisibleWeb(
-                                                    true,
-                                                    context: context,
-                                                    exch: depthArgs.exch,
-                                                    token: depthArgs.token,
-                                                    tsym: depthArgs.tsym,
-                                                  );
-                                            } catch (e) {
-                                              debugPrint(
-                                                  'Error opening chart: $e');
-                                            } finally {
-                                              if (mounted) {
-                                                Future.delayed(
-                                                    const Duration(
-                                                        milliseconds: 500), () {
-                                                  if (mounted) {
-                                                    setState(() {
-                                                      _isNavigating = false;
-                                                    });
-                                                  }
-                                                });
-                                              }
-                                            }
-                                          },
+                                return HoverActionsContainer(
+                                  isVisible: isHovered || _isMenuOpen,
+                                  actions: [
+                                    // Only show Buy/Sell buttons if not index or commodity
+                                    if (!isIndexOrCommodity) ...[
+                                      HoverActionButton(
+                                        label: 'B',
+                                        color: Colors.white,
+                                        backgroundColor: resolveThemeColor(
+                                          context,
+                                          dark: MyntColors.primaryDark,
+                                          light: MyntColors.primary,
                                         ),
-                                        const SizedBox(width: 4),
-                                        // Delete button (only for non-predefined watchlists)
-                                        if (!isPredefined)
-                                          _buildHoverButton(
-                                            iconAsset: assets.trash,
-                                            color: Colors.black,
-                                            backgroundColor: Colors.white,
-                                            borderColor:
-                                                shadcn.Theme.of(context)
-                                                    .colorScheme
-                                                    .border,
-                                            borderRadius: 5.0,
-                                            onPressed: () async {
-                                              try {
-                                                final String exch = widget
-                                                        .watchListData["exch"]
-                                                        ?.toString() ??
-                                                    "";
-                                                final String token = widget
-                                                        .watchListData["token"]
-                                                        ?.toString() ??
-                                                    "";
-                                                final String input =
-                                                    "$exch|$token#";
+                                        borderColor: resolveThemeColor(
+                                          context,
+                                          dark: MyntColors.primaryDark,
+                                          light: MyntColors.primary,
+                                        ),
+                                        onPressed: () async {
+                                          try {
+                                            await _placeOrderInput(
+                                                context, depthData, true);
+                                          } catch (e) {
+                                            print('Buy button error: $e');
+                                          }
+                                        },
+                                      ),
+                                      HoverActionButton(
+                                        label: 'S',
+                                        color: Colors.white,
+                                        backgroundColor: resolveThemeColor(
+                                          context,
+                                          dark: MyntColors.errorDark,
+                                          light: MyntColors.tertiary,
+                                        ),
+                                        borderColor: resolveThemeColor(
+                                          context,
+                                          dark: MyntColors.errorDark,
+                                          light: MyntColors.tertiary,
+                                        ),
+                                        onPressed: () async {
+                                          try {
+                                            await _placeOrderInput(
+                                                context, depthData, false);
+                                          } catch (e) {
+                                            print('Sell button error: $e');
+                                          }
+                                        },
+                                      ),
+                                    ],
+                                    HoverActionButton(
+                                      iconAsset: assets.depthIcon,
+                                      color: resolveThemeColor(
+                                        context,
+                                        dark: MyntColors.textSecondaryDark,
+                                        light: Colors.black,
+                                      ),
+                                      backgroundColor: Colors.transparent,
+                                      onPressed: () async {
+                                        if (_isNavigating) return;
 
-                                                if (_isNavigating) return;
+                                        ref
+                                            .read(expandedWatchlistItemProvider
+                                                .notifier)
+                                            .setExpandedToken(null);
+
+                                        try {
+                                          setState(() {
+                                            _isNavigating = true;
+                                          });
+
+                                          DepthInputArgs depthArgs =
+                                              DepthInputArgs(
+                                            exch: widget.watchListData["exch"]
+                                                .toString(),
+                                            token: widget.watchListData["token"]
+                                                .toString(),
+                                            tsym: widget.watchListData["tsym"]
+                                                .toString(),
+                                            instname: widget.watchListData[
+                                                        "instname"]
+                                                    ?.toString() ??
+                                                widget.watchListData["symbol"]
+                                                    .toString(),
+                                            symbol: widget.watchListData["symbol"]
+                                                .toString(),
+                                            expDate: widget
+                                                    .watchListData["expDate"]
+                                                    ?.toString() ??
+                                                "",
+                                            option: widget
+                                                    .watchListData["option"]
+                                                    ?.toString() ??
+                                                "",
+                                          );
+
+                                          marketWatch.scripdepthsize(false);
+                                          // Call depth APIs first to set active tab
+                                          await marketWatch.calldepthApis(
+                                              context, depthArgs, "");
+
+                                          // Set depth visible AFTER calldepthApis completes
+                                          // Pass depth args directly to ensure correct token/exch/tsym are used
+                                          // This triggers lazy load of depth data with proper context
+                                          await ref
+                                              .read(marketWatchProvider)
+                                              .setIsDepthVisibleWeb(
+                                                true,
+                                                context: context,
+                                                exch: depthArgs.exch,
+                                                token: depthArgs.token,
+                                                tsym: depthArgs.tsym,
+                                              );
+                                        } catch (e) {
+                                          debugPrint('Error opening chart: $e');
+                                        } finally {
+                                          if (mounted) {
+                                            Future.delayed(
+                                                const Duration(
+                                                    milliseconds: 500), () {
+                                              if (mounted) {
                                                 setState(() {
-                                                  _isNavigating = true;
+                                                  _isNavigating = false;
                                                 });
+                                              }
+                                            });
+                                          }
+                                        }
+                                      },
+                                    ),
+                                    // Delete button (only for non-predefined watchlists)
+                                    if (!isPredefined)
+                                      HoverActionButton(
+                                        iconAsset: assets.trash,
+                                        color: resolveThemeColor(
+                                          context,
+                                          dark: MyntColors.textSecondaryDark,
+                                          light: Colors.black,
+                                        ),
+                                        backgroundColor: Colors.transparent,
+                                        onPressed: () async {
+                                          try {
+                                            final String exch = widget
+                                                    .watchListData["exch"]
+                                                    ?.toString() ??
+                                                "";
+                                            final String token = widget
+                                                    .watchListData["token"]
+                                                    ?.toString() ??
+                                                "";
+                                            final String input =
+                                                "$exch|$token#";
 
-                                                await ref
-                                                    .read(marketWatchProvider)
-                                                    .addDelMarketScrip(
-                                                        marketWatch.wlName,
-                                                        input,
-                                                        context,
-                                                        false,
-                                                        false,
-                                                        false,
-                                                        false);
+                                            if (_isNavigating) return;
+                                            setState(() {
+                                              _isNavigating = true;
+                                            });
+
+                                            await ref
+                                                .read(marketWatchProvider)
+                                                .addDelMarketScrip(
+                                                    marketWatch.wlName,
+                                                    input,
+                                                    context,
+                                                    false,
+                                                    false,
+                                                    false,
+                                                    false);
+                                            if (mounted) {
+                                              showResponsiveSuccess(context,
+                                                  'Scrip removed from watchlist');
+                                            }
+                                          } catch (e) {
+                                            if (mounted) {
+                                              showResponsiveError(context,
+                                                  'Failed to delete scrip');
+                                            }
+                                          } finally {
+                                            if (mounted) {
+                                              Future.delayed(
+                                                  const Duration(
+                                                      milliseconds: 400), () {
                                                 if (mounted) {
-                                                  showResponsiveSuccess(context,
-                                                      'Scrip removed from watchlist');
-                                                }
-                                              } catch (e) {
-                                                if (mounted) {
-                                                  showResponsiveError(context,
-                                                      'Failed to delete scrip');
-                                                }
-                                              } finally {
-                                                if (mounted) {
-                                                  Future.delayed(
-                                                      const Duration(
-                                                          milliseconds: 400),
-                                                      () {
-                                                    if (mounted) {
-                                                      setState(() {
-                                                        _isNavigating = false;
-                                                      });
-                                                    }
+                                                  setState(() {
+                                                    _isNavigating = false;
                                                   });
                                                 }
-                                              }
-                                            },
-                                          ),
-                                      ],
-                                    ),
-                                  ),
+                                              });
+                                            }
+                                          }
+                                        },
+                                      ),
+                                  ],
                                 );
                               },
                             ),
@@ -1298,105 +1279,6 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
     );
   }
 
-  Widget _buildHoverButton({
-    String? label,
-    IconData? icon,
-    String? iconAsset,
-    required Color color,
-    Color? backgroundColor,
-    Color? borderColor,
-    double? borderRadius,
-    required VoidCallback? onPressed,
-  }) {
-    final theme = ref.read(themeProvider);
-    final borderRadiusValue = borderRadius ?? 5.0;
-
-    // Use same Material + InkWell pattern for icon buttons for consistent height
-
-    // Use same Material + InkWell pattern for icon buttons for consistent height
-    if (icon != null || iconAsset != null) {
-      return SizedBox(
-        width: 26,
-        height: 26,
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(borderRadiusValue),
-            splashColor: color.withOpacity(0.15),
-            highlightColor: color.withOpacity(0.08),
-            onTap: onPressed,
-            child: Container(
-              decoration: BoxDecoration(
-                color: backgroundColor ?? Colors.transparent,
-                borderRadius: BorderRadius.circular(borderRadiusValue),
-                border: borderColor != null
-                    ? Border.all(
-                        color: borderColor,
-                        width: 1,
-                      )
-                    : null,
-              ),
-              child: Center(
-                child: iconAsset != null
-                    ? SvgPicture.asset(
-                        iconAsset,
-                        width: 13,
-                        height: 13,
-                        color: color,
-                        // colorFilter: ColorFilter.mode(
-                        //   color,
-                        //   BlendMode.srcIn,
-                        // ),
-                      )
-                    : Icon(
-                        icon,
-                        size: 13,
-                        color: color,
-                      ),
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-
-    // Keep original implementation for label buttons
-    return SizedBox(
-      width: 24,
-      height: 24,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(borderRadiusValue),
-          splashColor: color.withOpacity(0.15),
-          highlightColor: color.withOpacity(0.08),
-          onTap: onPressed,
-          child: Container(
-            decoration: BoxDecoration(
-              color: backgroundColor ?? Colors.transparent,
-              borderRadius: BorderRadius.circular(borderRadiusValue),
-              border: borderColor != null
-                  ? Border.all(
-                      color: borderColor,
-                      width: 1,
-                    )
-                  : null,
-            ),
-            child: Center(
-              child: Text(
-                label ?? "",
-                style: WebTextStyles.buttonXs(
-                  isDarkTheme: theme.isDarkMode,
-                  color: color,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildThreeDotsMenu({
     required ThemesProvider theme,
     required bool hasFutures,
@@ -2014,22 +1896,13 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
       print('Transaction Type: ${transType ? "BUY" : "SELL"}');
       print('Watchlist: ${ref.read(marketWatchProvider).wlName}');
 
-      // Create DepthInputArgs exactly like reference implementation
-      final depthArgs = DepthInputArgs(
-          exch: currentExch,
-          token: currentToken,
-          tsym: currentTsym,
-          instname: widget.watchListData["instname"]?.toString() ??
-              widget.watchListData["symbol"].toString(),
-          symbol: widget.watchListData["symbol"].toString(),
-          expDate: widget.watchListData["expDate"]?.toString() ?? "",
-          option: widget.watchListData["option"]?.toString() ?? "");
-
-      // Use calldepthApis to fetch data and update background views (Chart/Depth)
-      // This is the correct way to ensure background UI stays in sync with order entry
+      // Fetch scrip info first, exactly like reference implementation
       await ref
           .read(marketWatchProvider)
-          .calldepthApis(context, depthArgs, "Basket");
+          .fetchScripInfo(currentToken, currentExch, context, true);
+      await ref
+          .read(marketWatchProvider)
+          .fetchScripQuote(currentToken, currentExch, context);
 
       // Ensure scripInfo is loaded before proceeding
       final scripInfo = ref.read(marketWatchProvider).scripInfoModel;
