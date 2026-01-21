@@ -103,8 +103,8 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Summary Cards Section (includes Trade Positions)
-                // _buildSummaryCards(theme, positionBook),
-                // const SizedBox(height: 24),
+                _buildSummaryCards(theme, positionBook),
+                const SizedBox(height: 24),
 
                 // Main Content Area - Expanded to take remaining space
                 Expanded(
@@ -124,17 +124,6 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
       children: [
         Expanded(
           child: _buildStatCard(
-            icon: Icons.trending_up,
-            label: 'Profit/Loss',
-            value: positionBook.totPnL,
-            valueColor: _getValueColor(positionBook.totPnL, theme),
-            theme: theme,
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _buildStatCard(
-            icon: Icons.pie_chart_outline,
             label: 'MTM',
             value: positionBook.totMtM,
             valueColor: _getValueColor(positionBook.totMtM, theme),
@@ -144,11 +133,31 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
         const SizedBox(width: 12),
         Expanded(
           child: _buildStatCard(
-            icon: Icons.account_balance_wallet_outlined,
+            label: 'Profit/Loss',
+            value: positionBook.totPnL,
+            valueColor: _getValueColor(positionBook.totPnL, theme),
+            theme: theme,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildStatCard(
             label: 'Trade Value',
             value: _calculateTradeValue(positionBook),
-            valueColor:
-                _getStatValueColor(_calculateTradeValue(positionBook), theme),
+            valueColor: resolveThemeColor(
+              context,
+              dark: MyntColors.textPrimaryDark,
+              light: MyntColors.textPrimary,
+            ),
+            theme: theme,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildStatCard(
+            label: 'Open Position',
+            value: _calculateOpenPositionValue(positionBook),
+            valueColor: _getValueColor(_calculateOpenPositionValue(positionBook), theme),
             theme: theme,
           ),
         ),
@@ -157,93 +166,71 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
   }
 
   Widget _buildStatCard({
-    required IconData icon,
     required String label,
     required String value,
     String? percentage,
     required Color valueColor,
     required ThemesProvider theme,
   }) {
-    return shadcn.Card(
-      child: Container(
-        padding: const EdgeInsets.all(10),
-        child: Row(
-          children: [
-            // Icon in circle
-            Container(
-              width: 45,
-              height: 45,
-              decoration: BoxDecoration(
-                color: resolveThemeColor(
-                  context,
-                  dark: MyntColors.primaryDark,
-                  light: MyntColors.primary,
-                ).withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: Icon(
-                  icon,
-                  size: 20,
-                  color: resolveThemeColor(
-                    context,
-                    dark: MyntColors.primaryDark,
-                    light: MyntColors.primary,
-                  ),
+    return shadcn.Theme(
+      data: shadcn.Theme.of(context).copyWith(radius: () => 0.3),
+      child: shadcn.Card(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: Row(
+            children: [
+              const SizedBox(width: 1),
+              // Label and value
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      label,
+                      style: MyntWebTextStyles.bodySmall(
+                        context,
+                        color: resolveThemeColor(
+                          context,
+                          dark: MyntColors.textPrimaryDark,
+                          light: MyntColors.textPrimary,
+                        ),
+                        fontWeight: MyntFonts.medium,
+                      ),
+                    ),
+                    const SizedBox(height: 1),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            value,
+                            style: MyntWebTextStyles.head(
+                              context,
+                              color: valueColor,
+                              fontWeight: MyntFonts.medium,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (percentage != null) ...[
+                          const SizedBox(width: 6),
+                          Text(
+                            '($percentage%)',
+                            style: MyntWebTextStyles.bodySmall(
+                              context,
+                              color: valueColor,
+                              fontWeight: MyntFonts.medium,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ],
                 ),
               ),
-            ),
-            const SizedBox(width: 12),
-            // Label and value
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    label,
-                    style: MyntWebTextStyles.bodySmall(
-                      context,
-                      color: resolveThemeColor(
-                        context,
-                        dark: MyntColors.textSecondaryDark,
-                        light: MyntColors.textSecondary,
-                      ),
-                      fontWeight: MyntFonts.medium,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Flexible(
-                        child: Text(
-                          value,
-                          style: MyntWebTextStyles.head(
-                            context,
-                            color: valueColor,
-                            fontWeight: MyntFonts.bold,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      if (percentage != null) ...[
-                        const SizedBox(width: 4),
-                        Text(
-                          '($percentage%)',
-                          style: MyntWebTextStyles.bodySmall(
-                            context,
-                            color: valueColor,
-                            fontWeight: MyntFonts.medium,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -373,9 +360,14 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
             },
           ),
           // Exit All Button - only show if there are open positions
-          Builder(
-            builder: (context) {
-              final openPositions = positionBook.openPosition ?? [];
+          // Use Consumer to watch exitPositionQty which changes when selections change
+          Consumer(
+            builder: (context, ref, _) {
+              // Watch exitPositionQty - this primitive value changes when selections change
+              // (watching openPosition list doesn't work because list reference stays same)
+              final selectedCount = ref.watch(
+                  portfolioProvider.select((p) => p.exitPositionQty));
+              final openPositions = ref.read(portfolioProvider).openPosition ?? [];
               final nonZeroPositions =
                   openPositions.where((p) => p.qty != "0").toList();
 
@@ -383,12 +375,6 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
               if (nonZeroPositions.isEmpty) {
                 return const SizedBox.shrink();
               }
-
-              // Count only selected positions
-              final selectedPositions = nonZeroPositions
-                  .where((p) => p.isExitSelection == true)
-                  .toList();
-              final selectedCount = selectedPositions.length;
 
               return MyntTextButton(
                 onPressed: () => _exitAllPositions(),
@@ -503,9 +489,14 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
             ),
           ),
           // Exit All Button - only show if there are open positions
-          Builder(
-            builder: (context) {
-              final openPositions = positionBook.openPosition ?? [];
+          // Use Consumer to watch exitPositionQty which changes when selections change
+          Consumer(
+            builder: (context, ref, _) {
+              // Watch exitPositionQty - this primitive value changes when selections change
+              // (watching openPosition list doesn't work because list reference stays same)
+              final selectedCount = ref.watch(
+                  portfolioProvider.select((p) => p.exitPositionQty));
+              final openPositions = ref.read(portfolioProvider).openPosition ?? [];
               final nonZeroPositions =
                   openPositions.where((p) => p.qty != "0").toList();
 
@@ -513,12 +504,6 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
               if (nonZeroPositions.isEmpty) {
                 return const SizedBox.shrink();
               }
-
-              // Count only selected positions
-              final selectedPositions = nonZeroPositions
-                  .where((p) => p.isExitSelection == true)
-                  .toList();
-              final selectedCount = selectedPositions.length;
 
               return MyntTextButton(
                 onPressed: () => _exitAllPositions(),
@@ -1559,6 +1544,19 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
     return totalValue.toStringAsFixed(2);
   }
 
+  String _calculateOpenPositionValue(PortfolioProvider positionBook) {
+    double totalPnL = 0.0;
+    for (var position in widget.listofPosition) {
+      final qty = double.tryParse(position.qty ?? '0') ?? 0;
+      // Only sum P&L of open positions (qty != 0)
+      if (qty != 0) {
+        final pnl = double.tryParse(position.profitNloss ?? '0') ?? 0;
+        totalPnL += pnl;
+      }
+    }
+    return totalPnL.toStringAsFixed(2);
+  }
+
   String _calculateOpenPosition(PortfolioProvider positionBook) {
     int openCount = 0;
     for (var position in widget.listofPosition) {
@@ -1698,6 +1696,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
         builder: (context) => ExitAllPositionsDialogWeb(
           selectedPositions: allPositions,
           selectedIndices: List.generate(allPositions.length, (index) => index),
+          isExitAll: true, // Exit ALL positions
         ),
       );
     } else {
@@ -1708,6 +1707,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
           selectedPositions: selectedPositions,
           selectedIndices:
               selectedPositions.map((p) => openPositions.indexOf(p)).toList(),
+          isExitAll: false, // Exit only SELECTED positions
         ),
       );
     }

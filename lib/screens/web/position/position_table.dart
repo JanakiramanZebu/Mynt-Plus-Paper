@@ -1002,11 +1002,10 @@ class _PositionTableState extends ConsumerState<PositionTable> {
             child: Text(
               position.mTm ?? '0.00',
               style: _getTextStyle(context,
-                  color: isClosed
-                      ? textColor
-                      : _getCellColor(
-                          double.tryParse(position.mTm ?? '0') ?? 0.0,
-                          context)),
+                  // Show profit/loss colors for both open and closed positions
+                  color: _getCellColor(
+                      double.tryParse(position.mTm ?? '0') ?? 0.0,
+                      context)),
             ),
           );
         } else {
@@ -1700,6 +1699,12 @@ class _MTMCellState extends ConsumerState<_MTMCell> {
     super.initState();
     mtm = widget.initialValue;
 
+    // For closed positions (qty = 0), don't subscribe to updates
+    // Just show the realized MTM from initialValue
+    if (widget.isClosed || widget.qty == 0) {
+      return;
+    }
+
     _subscription = ref.read(websocketProvider).socketDataStream.listen((data) {
       if (!mounted || !data.containsKey(widget.token)) return;
 
@@ -1741,11 +1746,8 @@ class _MTMCellState extends ConsumerState<_MTMCell> {
       mtm,
       style: MyntWebTextStyles.tableCell(
         context,
-        color: widget.isClosed
-            ? resolveThemeColor(context,
-                dark: MyntColors.textSecondaryDark,
-                light: MyntColors.textSecondary)
-            : _getCellColor(mtm, context),
+        // Show profit/loss colors for both open and closed positions
+        color: _getCellColor(mtm, context),
       ),
     );
   }

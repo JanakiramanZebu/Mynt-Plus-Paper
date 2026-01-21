@@ -12,11 +12,14 @@ import '../../../sharedWidget/common_buttons_web.dart';
 class ExitAllPositionsDialogWeb extends ConsumerStatefulWidget {
   final List<PositionBookModel> selectedPositions;
   final List<int> selectedIndices;
+  /// When true, exits ALL open positions. When false, exits only selected positions.
+  final bool isExitAll;
 
   const ExitAllPositionsDialogWeb({
     super.key,
     required this.selectedPositions,
     required this.selectedIndices,
+    required this.isExitAll,
   });
 
   @override
@@ -140,10 +143,10 @@ class _ExitAllPositionsDialogWebState
 
                       return shadcn.TableRow(
                         cells: [
-                          // Instrument
+                          // Instrument - use tsym for full symbol name (e.g., SENSEX261227800PE)
                           _buildDataCell(
                             context,
-                            '${position.symbol ?? ''} ${position.exch ?? ''}',
+                            '${position.tsym ?? position.symbol ?? ''} ${position.exch ?? ''}',
                             color: _getPositionTextColor(context, position),
                           ),
                           // Product
@@ -309,9 +312,12 @@ class _ExitAllPositionsDialogWebState
                 child: MyntPrimaryButton(
                   onPressed: _isLoading || widget.selectedPositions.isEmpty
                       ? null
-                      : () => positionBook.exitPosition(context, true),
+                      : () {
+                          positionBook.exitPosition(context, widget.isExitAll);
+                          Navigator.of(context).pop(); // Close dialog after exit
+                        },
                   label: widget.selectedPositions.length > 1
-                      ? 'Exit All Positions'
+                      ? (widget.isExitAll ? 'Exit All Positions' : 'Exit Selected')
                       : 'Exit Position',
                   isLoading: _isLoading,
                   backgroundColor: resolveThemeColor(

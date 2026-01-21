@@ -1983,6 +1983,9 @@ changeHoldingsTabIndex(int index) {
       _totBookedPnL = "0.00";
       _totUnRealMtm = '0.00';
       _openPosition = [];
+      // Reset selection state when position data is refreshed
+      _exitPositionQty = 0;
+      _isExitAllPosition = false;
 
       for (var element in _postionBookModel!) {
         element.isExitSelection = false;

@@ -28,6 +28,7 @@ import 'package:flutter/material.dart'
         Container,
         MouseRegion,
         Expanded,
+        Flexible,
         Align,
         Text,
         AnimatedOpacity,
@@ -705,53 +706,96 @@ class _TableExample1State extends ConsumerState<TableExample1> {
                                                           right: isRowHovered
                                                               ? 8.0
                                                               : 0.0),
-                                                      child: RichText(
-                                                        overflow: isRowHovered
-                                                            ? TextOverflow
-                                                                .ellipsis
-                                                            : TextOverflow
-                                                                .visible,
-                                                        maxLines: 1,
-                                                        softWrap: false,
-                                                        text: TextSpan(
-                                                          children: [
-                                                            // Symbol (normal color, without -EQ, fixed 14px)
-                                                            TextSpan(
-                                                              text: (exchTsym
-                                                                          ?.tsym ??
-                                                                      'N/A')
-                                                                  .replaceAll(
-                                                                      "-EQ", "")
-                                                                  .trim(),
-                                                              style:
-                                                                  _getTextStyle(
-                                                                      context),
-                                                            ),
-                                                            // Exchange (mutedForeground color, smaller font, fixed 12px)
-                                                            if (exchTsym?.exch !=
-                                                                    null &&
-                                                                exchTsym!.exch!
-                                                                    .isNotEmpty)
-                                                              TextSpan(
-                                                                text:
-                                                                    ' ${exchTsym.exch}',
-                                                                style:
-                                                                    MyntWebTextStyles
-                                                                        .para(
-                                                                  context,
-                                                                  darkColor:
-                                                                      MyntColors
-                                                                          .textSecondaryDark,
-                                                                  lightColor:
-                                                                      MyntColors
-                                                                          .textSecondary,
-                                                                  fontWeight:
-                                                                      MyntFonts
-                                                                          .medium,
-                                                                ),
+                                                      child: Row(
+                                                        mainAxisSize: MainAxisSize.min,
+                                                        children: [
+                                                          Flexible(
+                                                            child: RichText(
+                                                              overflow: isRowHovered
+                                                                  ? TextOverflow
+                                                                      .ellipsis
+                                                                  : TextOverflow
+                                                                      .visible,
+                                                              maxLines: 1,
+                                                              softWrap: false,
+                                                              text: TextSpan(
+                                                                children: [
+                                                                  // Symbol (normal color, without -EQ, fixed 14px)
+                                                                  TextSpan(
+                                                                    text: (exchTsym
+                                                                                ?.tsym ??
+                                                                            'N/A')
+                                                                        .replaceAll(
+                                                                            "-EQ", "")
+                                                                        .trim(),
+                                                                    style:
+                                                                        _getTextStyle(
+                                                                            context),
+                                                                  ),
+                                                                  // Exchange (mutedForeground color, smaller font, fixed 12px)
+                                                                  if (exchTsym?.exch !=
+                                                                          null &&
+                                                                      exchTsym!.exch!
+                                                                          .isNotEmpty)
+                                                                    TextSpan(
+                                                                      text:
+                                                                          ' ${exchTsym.exch}',
+                                                                      style:
+                                                                          MyntWebTextStyles
+                                                                              .para(
+                                                                        context,
+                                                                        darkColor:
+                                                                            MyntColors
+                                                                                .textSecondaryDark,
+                                                                        lightColor:
+                                                                            MyntColors
+                                                                                .textSecondary,
+                                                                        fontWeight:
+                                                                            MyntFonts
+                                                                                .medium,
+                                                                      ),
+                                                                    ),
+                                                                ],
                                                               ),
-                                                          ],
-                                                        ),
+                                                            ),
+                                                          ),
+                                                          // Show lock icon with pledged qty if brkcolqty > 0
+                                                          Builder(
+                                                            builder: (ctx) {
+                                                              final pledgedQty = int.tryParse(holding.brkcolqty ?? '0') ?? 0;
+                                                              if (pledgedQty > 0) {
+                                                                return Padding(
+                                                                  padding: const EdgeInsets.only(left: 6),
+                                                                  child: Tooltip(
+                                                                    message: 'Pledged Qty: $pledgedQty',
+                                                                    child: Row(
+                                                                      mainAxisSize: MainAxisSize.min,
+                                                                      children: [
+                                                                        const Icon(
+                                                                          Icons.lock,
+                                                                          size: 12,
+                                                                          color: Color(0xFFFF6161),
+                                                                        ),
+                                                                        const SizedBox(width: 2),
+                                                                        Text(
+                                                                          '$pledgedQty',
+                                                                          style: MyntWebTextStyles.para(
+                                                                            ctx,
+                                                                            color: const Color(0xFFFF6161),
+                                                                            darkColor: const Color(0xFFFF6161),
+                                                                            lightColor: const Color(0xFFFF6161),
+                                                                            fontWeight: MyntFonts.medium,
+                                                                          ),
+                                                                        ),
+                                                                      ],
+                                                                    ),
+                                                                  ),
+                                                                );
+                                                              }
+                                                              return const SizedBox.shrink();
+                                                            },
+                                                          ),
+                                                        ],
                                                       ),
                                                     ),
                                                   ),
