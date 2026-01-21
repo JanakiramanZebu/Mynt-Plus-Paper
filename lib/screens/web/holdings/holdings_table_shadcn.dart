@@ -41,7 +41,8 @@ class HoldingsTableShadcn extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<HoldingsTableShadcn> createState() => _HoldingsTableShadcnState();
+  ConsumerState<HoldingsTableShadcn> createState() =>
+      _HoldingsTableShadcnState();
 }
 
 class _HoldingsTableShadcnState extends ConsumerState<HoldingsTableShadcn> {
@@ -73,7 +74,8 @@ class _HoldingsTableShadcnState extends ConsumerState<HoldingsTableShadcn> {
     // Get responsive column configuration
     final responsiveConfig = _getResponsiveHoldingColumns(screenWidth);
     final headers = List<String>.from(responsiveConfig['headers'] as List);
-    final columnMinWidth = Map<String, double>.from(responsiveConfig['columnMinWidth'] as Map);
+    final columnMinWidth =
+        Map<String, double>.from(responsiveConfig['columnMinWidth'] as Map);
 
     // Calculate table height
     const padding = 32.0;
@@ -81,7 +83,12 @@ class _HoldingsTableShadcnState extends ConsumerState<HoldingsTableShadcn> {
     const tabsAndSearchHeight = 100.0;
     const spacing = 24.0 + 16.0;
     const bottomMargin = 20.0;
-    final tableHeight = screenHeight - padding - headerHeight - tabsAndSearchHeight - spacing - bottomMargin;
+    final tableHeight = screenHeight -
+        padding -
+        headerHeight -
+        tabsAndSearchHeight -
+        spacing -
+        bottomMargin;
     final maxHeight = screenHeight * 0.75;
     final calculatedHeight = tableHeight > maxHeight
         ? maxHeight
@@ -128,9 +135,11 @@ class _HoldingsTableShadcnState extends ConsumerState<HoldingsTableShadcn> {
                         Expanded(
                           child: SingleChildScrollView(
                             child: Column(
-                              children: filteredHoldings.asMap().entries.map((entry) {
+                              children:
+                                  filteredHoldings.asMap().entries.map((entry) {
                                 final holding = entry.value;
-                                return _buildDataRow(holding, entry.key, headers, columnMinWidth, screenWidth);
+                                return _buildDataRow(holding, entry.key,
+                                    headers, columnMinWidth, screenWidth);
                               }).toList(),
                             ),
                           ),
@@ -148,7 +157,8 @@ class _HoldingsTableShadcnState extends ConsumerState<HoldingsTableShadcn> {
   }
 
   /// Build table header row with sortable columns
-  Widget _buildHeaderRow(List<String> headers, Map<String, double> columnMinWidth, double screenWidth) {
+  Widget _buildHeaderRow(List<String> headers,
+      Map<String, double> columnMinWidth, double screenWidth) {
     return Container(
       height: 48,
       decoration: BoxDecoration(
@@ -189,9 +199,12 @@ class _HoldingsTableShadcnState extends ConsumerState<HoldingsTableShadcn> {
                             : Colors.transparent,
                         borderRadius: BorderRadius.circular(4),
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
                       child: Row(
-                        mainAxisAlignment: isNumeric ? MainAxisAlignment.end : MainAxisAlignment.start,
+                        mainAxisAlignment: isNumeric
+                            ? MainAxisAlignment.end
+                            : MainAxisAlignment.start,
                         children: [
                           Flexible(
                             child: Text(
@@ -200,14 +213,17 @@ class _HoldingsTableShadcnState extends ConsumerState<HoldingsTableShadcn> {
                                 isDarkTheme: true,
                                 color: ShadcnDarkColors.neutral,
                               ),
-                              textAlign: isNumeric ? TextAlign.right : TextAlign.left,
+                              textAlign:
+                                  isNumeric ? TextAlign.right : TextAlign.left,
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
                           const SizedBox(width: 4),
                           Icon(
                             _sortColumnIndex == columnIndex
-                                ? (_sortAscending ? Icons.arrow_upward : Icons.arrow_downward)
+                                ? (_sortAscending
+                                    ? Icons.arrow_upward
+                                    : Icons.arrow_downward)
                                 : Icons.unfold_more,
                             size: 16,
                             color: _sortColumnIndex == columnIndex
@@ -254,7 +270,8 @@ class _HoldingsTableShadcnState extends ConsumerState<HoldingsTableShadcn> {
             child: Container(
               height: 56,
               decoration: BoxDecoration(
-                color: isHovered ? ShadcnDarkColors.popover : Colors.transparent,
+                color:
+                    isHovered ? ShadcnDarkColors.popover : Colors.transparent,
                 border: Border(
                   bottom: BorderSide(
                     color: ShadcnDarkColors.border,
@@ -269,8 +286,11 @@ class _HoldingsTableShadcnState extends ConsumerState<HoldingsTableShadcn> {
 
                   return Container(
                     width: minWidth,
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    alignment: isNumeric ? Alignment.centerRight : Alignment.centerLeft,
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    alignment: isNumeric
+                        ? Alignment.centerRight
+                        : Alignment.centerLeft,
                     child: _buildCellContent(
                       header,
                       holding,
@@ -298,7 +318,6 @@ class _HoldingsTableShadcnState extends ConsumerState<HoldingsTableShadcn> {
     String token,
     bool isRowHovered,
   ) {
-
     switch (column) {
       case 'Instrument':
         return _buildInstrumentCell(holding, exchTsym, uniqueId, isRowHovered);
@@ -338,7 +357,8 @@ class _HoldingsTableShadcnState extends ConsumerState<HoldingsTableShadcn> {
 
       case 'Current Value':
         if (token.isEmpty) {
-          return Text(holding.currentValue ?? '0.00', textAlign: TextAlign.right);
+          return Text(holding.currentValue ?? '0.00',
+              textAlign: TextAlign.right);
         }
         return _CurrentValueCell(
           token: token,
@@ -494,7 +514,8 @@ class _HoldingsTableShadcnState extends ConsumerState<HoldingsTableShadcn> {
           highlightColor: color.withOpacity(0.08),
           onTap: onPressed,
           child: Container(
-            padding: isLongLabel ? const EdgeInsets.symmetric(horizontal: 8) : null,
+            padding:
+                isLongLabel ? const EdgeInsets.symmetric(horizontal: 8) : null,
             decoration: BoxDecoration(
               color: backgroundColor,
               borderRadius: BorderRadius.circular(5),
@@ -546,7 +567,15 @@ class _HoldingsTableShadcnState extends ConsumerState<HoldingsTableShadcn> {
       };
     } else if (screenWidth < _tabletBreakpoint) {
       return {
-        'headers': ['Instrument', 'Net Qty', 'Avg Price', 'LTP', 'Current Value', 'Day P&L', 'Overall P&L'],
+        'headers': [
+          'Instrument',
+          'Net Qty',
+          'Avg Price',
+          'LTP',
+          'Current Value',
+          'Day P&L',
+          'Overall P&L'
+        ],
         'columnMinWidth': {
           'Instrument': 280.0,
           'Net Qty': 110.0,
@@ -559,7 +588,17 @@ class _HoldingsTableShadcnState extends ConsumerState<HoldingsTableShadcn> {
       };
     } else if (screenWidth < _desktopBreakpoint) {
       return {
-        'headers': ['Instrument', 'Net Qty', 'Avg Price', 'LTP', 'Invested', 'Current Value', 'Day P&L', 'Overall P&L', 'Overall %'],
+        'headers': [
+          'Instrument',
+          'Net Qty',
+          'Avg Price',
+          'LTP',
+          'Invested',
+          'Current Value',
+          'Day P&L',
+          'Overall P&L',
+          'Overall %'
+        ],
         'columnMinWidth': {
           'Instrument': 280.0,
           'Net Qty': 110.0,
@@ -574,7 +613,18 @@ class _HoldingsTableShadcnState extends ConsumerState<HoldingsTableShadcn> {
       };
     } else {
       return {
-        'headers': ['Instrument', 'Net Qty', 'Avg Price', 'LTP', 'Invested', 'Current Value', 'Day P&L', 'Day %', 'Overall P&L', 'Overall %'],
+        'headers': [
+          'Instrument',
+          'Net Qty',
+          'Avg Price',
+          'LTP',
+          'Invested',
+          'Current Value',
+          'Day P&L',
+          'Day %',
+          'Overall P&L',
+          'Overall %'
+        ],
         'columnMinWidth': {
           'Instrument': 300.0,
           'Net Qty': 120.0,
@@ -624,8 +674,10 @@ class _HoldingsTableShadcnState extends ConsumerState<HoldingsTableShadcn> {
   int _compareHoldings(dynamic a, dynamic b, int columnIndex) {
     switch (columnIndex) {
       case 0: // Instrument
-        final aExchTsym = a.exchTsym?.isNotEmpty == true ? a.exchTsym![0] : null;
-        final bExchTsym = b.exchTsym?.isNotEmpty == true ? b.exchTsym![0] : null;
+        final aExchTsym =
+            a.exchTsym?.isNotEmpty == true ? a.exchTsym![0] : null;
+        final bExchTsym =
+            b.exchTsym?.isNotEmpty == true ? b.exchTsym![0] : null;
         return (aExchTsym?.tsym ?? '').compareTo(bExchTsym?.tsym ?? '');
 
       case 1: // Net Qty
@@ -634,15 +686,19 @@ class _HoldingsTableShadcnState extends ConsumerState<HoldingsTableShadcn> {
         return aQty.compareTo(bQty);
 
       case 2: // Avg Price
-        final aExchTsym = a.exchTsym?.isNotEmpty == true ? a.exchTsym![0] : null;
-        final bExchTsym = b.exchTsym?.isNotEmpty == true ? b.exchTsym![0] : null;
+        final aExchTsym =
+            a.exchTsym?.isNotEmpty == true ? a.exchTsym![0] : null;
+        final bExchTsym =
+            b.exchTsym?.isNotEmpty == true ? b.exchTsym![0] : null;
         final aPrice = double.tryParse(aExchTsym?.close ?? '0') ?? 0;
         final bPrice = double.tryParse(bExchTsym?.close ?? '0') ?? 0;
         return aPrice.compareTo(bPrice);
 
       case 3: // LTP
-        final aExchTsym = a.exchTsym?.isNotEmpty == true ? a.exchTsym![0] : null;
-        final bExchTsym = b.exchTsym?.isNotEmpty == true ? b.exchTsym![0] : null;
+        final aExchTsym =
+            a.exchTsym?.isNotEmpty == true ? a.exchTsym![0] : null;
+        final bExchTsym =
+            b.exchTsym?.isNotEmpty == true ? b.exchTsym![0] : null;
         final aLtp = double.tryParse(aExchTsym?.lp ?? '0') ?? 0;
         final bLtp = double.tryParse(bExchTsym?.lp ?? '0') ?? 0;
         return aLtp.compareTo(bLtp);
@@ -658,29 +714,37 @@ class _HoldingsTableShadcnState extends ConsumerState<HoldingsTableShadcn> {
         return aValue.compareTo(bValue);
 
       case 6: // Day P&L
-        final aExchTsym = a.exchTsym?.isNotEmpty == true ? a.exchTsym![0] : null;
-        final bExchTsym = b.exchTsym?.isNotEmpty == true ? b.exchTsym![0] : null;
+        final aExchTsym =
+            a.exchTsym?.isNotEmpty == true ? a.exchTsym![0] : null;
+        final bExchTsym =
+            b.exchTsym?.isNotEmpty == true ? b.exchTsym![0] : null;
         final aDayPnL = double.tryParse(aExchTsym?.oneDayChg ?? '0') ?? 0;
         final bDayPnL = double.tryParse(bExchTsym?.oneDayChg ?? '0') ?? 0;
         return aDayPnL.compareTo(bDayPnL);
 
       case 7: // Day %
-        final aExchTsym = a.exchTsym?.isNotEmpty == true ? a.exchTsym![0] : null;
-        final bExchTsym = b.exchTsym?.isNotEmpty == true ? b.exchTsym![0] : null;
+        final aExchTsym =
+            a.exchTsym?.isNotEmpty == true ? a.exchTsym![0] : null;
+        final bExchTsym =
+            b.exchTsym?.isNotEmpty == true ? b.exchTsym![0] : null;
         final aDayPercent = double.tryParse(aExchTsym?.perChange ?? '0') ?? 0;
         final bDayPercent = double.tryParse(bExchTsym?.perChange ?? '0') ?? 0;
         return aDayPercent.compareTo(bDayPercent);
 
       case 8: // Overall P&L
-        final aExchTsym = a.exchTsym?.isNotEmpty == true ? a.exchTsym![0] : null;
-        final bExchTsym = b.exchTsym?.isNotEmpty == true ? b.exchTsym![0] : null;
+        final aExchTsym =
+            a.exchTsym?.isNotEmpty == true ? a.exchTsym![0] : null;
+        final bExchTsym =
+            b.exchTsym?.isNotEmpty == true ? b.exchTsym![0] : null;
         final aOverallPnL = double.tryParse(aExchTsym?.profitNloss ?? '0') ?? 0;
         final bOverallPnL = double.tryParse(bExchTsym?.profitNloss ?? '0') ?? 0;
         return aOverallPnL.compareTo(bOverallPnL);
 
       case 9: // Overall %
-        final aExchTsym = a.exchTsym?.isNotEmpty == true ? a.exchTsym![0] : null;
-        final bExchTsym = b.exchTsym?.isNotEmpty == true ? b.exchTsym![0] : null;
+        final aExchTsym =
+            a.exchTsym?.isNotEmpty == true ? a.exchTsym![0] : null;
+        final bExchTsym =
+            b.exchTsym?.isNotEmpty == true ? b.exchTsym![0] : null;
         final aOverallPercent = double.tryParse(aExchTsym?.pNlChng ?? '0') ?? 0;
         final bOverallPercent = double.tryParse(bExchTsym?.pNlChng ?? '0') ?? 0;
         return aOverallPercent.compareTo(bOverallPercent);
@@ -705,17 +769,28 @@ class _HoldingsTableShadcnState extends ConsumerState<HoldingsTableShadcn> {
 
   int _getColumnIndexForHeader(String header) {
     switch (header) {
-      case 'Instrument': return 0;
-      case 'Net Qty': return 1;
-      case 'Avg Price': return 2;
-      case 'LTP': return 3;
-      case 'Invested': return 4;
-      case 'Current Value': return 5;
-      case 'Day P&L': return 6;
-      case 'Day %': return 7;
-      case 'Overall P&L': return 8;
-      case 'Overall %': return 9;
-      default: return -1;
+      case 'Instrument':
+        return 0;
+      case 'Net Qty':
+        return 1;
+      case 'Avg Price':
+        return 2;
+      case 'LTP':
+        return 3;
+      case 'Invested':
+        return 4;
+      case 'Current Value':
+        return 5;
+      case 'Day P&L':
+        return 6;
+      case 'Day %':
+        return 7;
+      case 'Overall P&L':
+        return 8;
+      case 'Overall %':
+        return 9;
+      default:
+        return -1;
     }
   }
 
@@ -797,12 +872,14 @@ class _HoldingsTableShadcnState extends ConsumerState<HoldingsTableShadcn> {
       );
 
       if (scripData.scripInfoModel == null) {
-        showResponsiveWarningMessage(context, "Unable to fetch scrip information");
+        showResponsiveWarningMessage(
+            context, "Unable to fetch scrip information");
         return;
       }
 
       final scripInfo = scripData.scripInfoModel!;
-      final lotSize = exchTsym.ls?.toString() ?? scripInfo.ls?.toString() ?? "1";
+      final lotSize =
+          exchTsym.ls?.toString() ?? scripInfo.ls?.toString() ?? "1";
 
       OrderScreenArgs orderArgs = OrderScreenArgs(
         exchange: exchTsym.exch ?? "",
@@ -829,7 +906,8 @@ class _HoldingsTableShadcnState extends ConsumerState<HoldingsTableShadcn> {
         },
       );
     } catch (e) {
-      showResponsiveWarningMessage(context, "Error exiting holding: ${e.toString()}");
+      showResponsiveWarningMessage(
+          context, "Error exiting holding: ${e.toString()}");
     }
   }
 
@@ -844,7 +922,8 @@ class _HoldingsTableShadcnState extends ConsumerState<HoldingsTableShadcn> {
       );
 
       if (scripData.scripInfoModel == null) {
-        showResponsiveWarningMessage(context, "Unable to fetch scrip information");
+        showResponsiveWarningMessage(
+            context, "Unable to fetch scrip information");
         return;
       }
 
@@ -875,7 +954,8 @@ class _HoldingsTableShadcnState extends ConsumerState<HoldingsTableShadcn> {
         },
       );
     } catch (e) {
-      showResponsiveWarningMessage(context, "Error adding holding: ${e.toString()}");
+      showResponsiveWarningMessage(
+          context, "Error adding holding: ${e.toString()}");
     }
   }
 
@@ -915,7 +995,10 @@ class _LTPCellState extends ConsumerState<_LTPCell> {
       if (!mounted || !data.containsKey(widget.token)) return;
 
       final newLtp = data[widget.token]['lp']?.toString();
-      if (newLtp != null && newLtp != ltp && newLtp != '0.00' && newLtp != 'null') {
+      if (newLtp != null &&
+          newLtp != ltp &&
+          newLtp != '0.00' &&
+          newLtp != 'null') {
         setState(() => ltp = newLtp);
       }
     });
@@ -1139,7 +1222,8 @@ class _OverallPnLCellState extends ConsumerState<_OverallPnLCell> {
       final newLtp = data[widget.token]['lp']?.toString();
       if (newLtp != null && newLtp != '0.00' && newLtp != 'null') {
         final ltp = double.tryParse(newLtp) ?? 0.0;
-        final newPnL = ((ltp - widget.avgPrice) * widget.qty).toStringAsFixed(2);
+        final newPnL =
+            ((ltp - widget.avgPrice) * widget.qty).toStringAsFixed(2);
         if (newPnL != overallPnL) {
           setState(() => overallPnL = newPnL);
         }
@@ -1188,7 +1272,8 @@ class _OverallPercentCell extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<_OverallPercentCell> createState() => _OverallPercentCellState();
+  ConsumerState<_OverallPercentCell> createState() =>
+      _OverallPercentCellState();
 }
 
 class _OverallPercentCellState extends ConsumerState<_OverallPercentCell> {
@@ -1207,7 +1292,8 @@ class _OverallPercentCellState extends ConsumerState<_OverallPercentCell> {
       if (newLtp != null && newLtp != '0.00' && newLtp != 'null') {
         final ltp = double.tryParse(newLtp) ?? 0.0;
         final newPercent = widget.avgPrice > 0
-            ? (((ltp - widget.avgPrice) / widget.avgPrice) * 100).toStringAsFixed(2)
+            ? (((ltp - widget.avgPrice) / widget.avgPrice) * 100)
+                .toStringAsFixed(2)
             : '0.00';
         if (newPercent != overallPercent) {
           setState(() => overallPercent = newPercent);

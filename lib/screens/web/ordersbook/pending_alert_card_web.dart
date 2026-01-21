@@ -1,7 +1,64 @@
 import 'dart:async';
-import 'package:flutter/material.dart' show RefreshIndicator, SizedBox, Align, Padding, LayoutBuilder, MediaQuery, Column, Expanded, Scrollbar, SingleChildScrollView, ScrollController, Axis, ValueKey, Row, MainAxisSize, MainAxisAlignment, CrossAxisAlignment, Text, TextStyle, TextDirection, TextPainter, TextSpan, FontWeight, Color, EdgeInsets, Alignment, TextOverflow, Curves, AnimatedContainer, IgnorePointer, AnimatedOpacity, GestureDetector, HitTestBehavior, MouseRegion, InkWell, Icons, VoidCallback, Icon, Container, BoxDecoration, BorderRadius, Border, BorderSide, CircularProgressIndicator, Center, Widget, BuildContext, IconData, Colors, WidgetsBinding, Material, BoxConstraints, IntrinsicWidth;
+import 'package:flutter/material.dart'
+    show
+        RefreshIndicator,
+        SizedBox,
+        Align,
+        Padding,
+        LayoutBuilder,
+        MediaQuery,
+        Column,
+        Expanded,
+        SingleChildScrollView,
+        ScrollController,
+        Axis,
+        ValueKey,
+        Row,
+        MainAxisSize,
+        MainAxisAlignment,
+        Text,
+        TextStyle,
+        TextDirection,
+        TextPainter,
+        TextSpan,
+        FontWeight,
+        Color,
+        EdgeInsets,
+        Alignment,
+        TextOverflow,
+        Curves,
+        AnimatedContainer,
+        IgnorePointer,
+        AnimatedOpacity,
+        GestureDetector,
+        HitTestBehavior,
+        MouseRegion,
+        InkWell,
+        Icons,
+        VoidCallback,
+        Icon,
+        Container,
+        BoxDecoration,
+        BorderRadius,
+        Border,
+        Center,
+        Widget,
+        BuildContext,
+        IconData,
+        Colors,
+        WidgetsBinding,
+        Material,
+        BoxConstraints,
+        IntrinsicWidth,
+        BoxShadow,
+        RawScrollbar,
+        Radius,
+        Offset;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
+
+import '../../../res/mynt_web_color_styles.dart' as styles;
+import '../../../res/mynt_web_text_styles.dart';
 
 import '../../../models/notification_model/broker_message_model.dart';
 import '../../../models/marketwatch_model/alert_model/alert_pending_model.dart';
@@ -25,30 +82,30 @@ class PendingAlertWeb extends ConsumerStatefulWidget {
 
 class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
   List<BrokerMessage>? triggeredAlerts;
-  
+
   // Sorting variables
   int? _alertSortColumnIndex;
   bool _alertSortAscending = true;
-  
+
   // WebSocket subscription for real-time updates
   StreamSubscription? _socketSubscription;
-  
+
   // Throttling properties
   DateTime _lastSocketUpdateTime = DateTime.now();
   static const Duration _minUpdateInterval = Duration(milliseconds: 50);
-  
+
   // Hover state
   String? _hoveredRowToken;
-  
+
   // Processing state for actions
   bool _isProcessingCancel = false;
   bool _isProcessingModify = false;
   String? _processingAlertToken;
-  
+
   // Scroll controllers
   final ScrollController _horizontalScrollController = ScrollController();
   final ScrollController _verticalScrollController = ScrollController();
-  
+
   // Track if data has been initialized
   bool _hasInitialized = false;
 
@@ -83,7 +140,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
     // Fetch both types of data
     await ref.read(marketWatchProvider).fetchPendingAlert(context);
     await _fetchTriggeredAlerts();
-    
+
     // Subscribe to WebSocket for real-time updates
     _subscribeToAlertTokens();
   }
@@ -93,7 +150,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
     try {
       final manage = ref.read(marketWatchProvider);
       final pendingAlerts = manage.alertPendingModel ?? [];
-      
+
       if (pendingAlerts.isEmpty) return;
 
       // Create input string for WebSocket subscription
@@ -106,14 +163,25 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
       if (tokens.isNotEmpty) {
         print("Subscribing to alert tokens: $tokens");
         ref.read(websocketProvider).establishConnection(
-          channelInput: tokens,
-          task: "t", // Subscribe
-          context: context,
-        );
+              channelInput: tokens,
+              task: "t", // Subscribe
+              context: context,
+            );
       }
     } catch (e) {
       print("Error subscribing to alert tokens: $e");
     }
+  }
+
+  // Helper method to determine font size based on screen width
+  double _getResponsiveFontSize(BuildContext context) {
+    double width = MediaQuery.of(context).size.width;
+    if (width < 1000) {
+      return 11.0;
+    } else if (width < 1300) {
+      return 12.0;
+    }
+    return 14.0;
   }
 
   // Fetch triggered alerts from broker messages
@@ -152,7 +220,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
   void _processSocketUpdates(Map socketDatas) {
     // Check if widget is still mounted before accessing providers
     if (!mounted) return;
-    
+
     bool hasUpdates = false;
     final manage = ref.read(marketWatchProvider);
     final pendingAlerts = manage.alertPendingModel ?? [];
@@ -203,7 +271,6 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
       setState(() {});
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -259,22 +326,26 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
     final sorted = [...alerts];
     int c = _alertSortColumnIndex!;
     bool asc = _alertSortAscending;
-    
+
     int cmp<T extends Comparable>(T? a, T? b) {
       if (a == null && b == null) return 0;
       if (a == null) return -1;
       if (b == null) return 1;
       return a.compareTo(b);
     }
-    
+
     num parseNum(String? v) => double.tryParse(v ?? '') ?? 0;
-    
+
     sorted.sort((a, b) {
       int r = 0;
       switch (c) {
         case 0: // Instrument
-          String aInstrument = a is BrokerMessage ? 'N/A' : (a.tsym?.replaceAll("-EQ", "") ?? 'N/A');
-          String bInstrument = b is BrokerMessage ? 'N/A' : (b.tsym?.replaceAll("-EQ", "") ?? 'N/A');
+          String aInstrument = a is BrokerMessage
+              ? 'N/A'
+              : (a.tsym?.replaceAll("-EQ", "") ?? 'N/A');
+          String bInstrument = b is BrokerMessage
+              ? 'N/A'
+              : (b.tsym?.replaceAll("-EQ", "") ?? 'N/A');
           r = cmp<String>(aInstrument, bInstrument);
           break;
         case 1: // Exchange
@@ -289,30 +360,56 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
             aType = 'TRIGGERED';
           } else {
             switch (a.aiT) {
-              case 'LTP_A': aType = 'LTP Above'; break;
-              case 'LTP_B': aType = 'LTP Below'; break;
-              case 'CH_PER_A': aType = 'Perc.Change Above'; break;
-              case 'CH_PER_B': aType = 'Perc.Change Below'; break;
-              default: aType = 'Unknown';
+              case 'LTP_A':
+                aType = 'LTP Above';
+                break;
+              case 'LTP_B':
+                aType = 'LTP Below';
+                break;
+              case 'CH_PER_A':
+                aType = 'Perc.Change Above';
+                break;
+              case 'CH_PER_B':
+                aType = 'Perc.Change Below';
+                break;
+              default:
+                aType = 'Unknown';
             }
           }
           if (b is BrokerMessage) {
             bType = 'TRIGGERED';
           } else {
             switch (b.aiT) {
-              case 'LTP_A': bType = 'LTP Above'; break;
-              case 'LTP_B': bType = 'LTP Below'; break;
-              case 'CH_PER_A': bType = 'Perc.Change Above'; break;
-              case 'CH_PER_B': bType = 'Perc.Change Below'; break;
-              default: bType = 'Unknown';
+              case 'LTP_A':
+                bType = 'LTP Above';
+                break;
+              case 'LTP_B':
+                bType = 'LTP Below';
+                break;
+              case 'CH_PER_A':
+                bType = 'Perc.Change Above';
+                break;
+              case 'CH_PER_B':
+                bType = 'Perc.Change Below';
+                break;
+              default:
+                bType = 'Unknown';
             }
           }
           r = cmp<String>(aType, bType);
           break;
         case 3: // Target
           if (a is BrokerMessage || b is BrokerMessage) {
-            String aTarget = a is BrokerMessage ? 'N/A' : (a.aiT == "CH_PER_A" || a.aiT == "CH_PER_B" ? "%${a.d}" : "${a.d}");
-            String bTarget = b is BrokerMessage ? 'N/A' : (b.aiT == "CH_PER_A" || b.aiT == "CH_PER_B" ? "%${b.d}" : "${b.d}");
+            String aTarget = a is BrokerMessage
+                ? 'N/A'
+                : (a.aiT == "CH_PER_A" || a.aiT == "CH_PER_B"
+                    ? "%${a.d}"
+                    : "${a.d}");
+            String bTarget = b is BrokerMessage
+                ? 'N/A'
+                : (b.aiT == "CH_PER_A" || b.aiT == "CH_PER_B"
+                    ? "%${b.d}"
+                    : "${b.d}");
             r = cmp<String>(aTarget, bTarget);
           } else {
             num aTarget = parseNum("${a.d ?? 0}");
@@ -322,8 +419,10 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
           break;
         case 4: // LTP
           if (a is BrokerMessage || b is BrokerMessage) {
-            String aLtp = a is BrokerMessage ? 'N/A' : "${a.ltp ?? a.close ?? 0.00}";
-            String bLtp = b is BrokerMessage ? 'N/A' : "${b.ltp ?? b.close ?? 0.00}";
+            String aLtp =
+                a is BrokerMessage ? 'N/A' : "${a.ltp ?? a.close ?? 0.00}";
+            String bLtp =
+                b is BrokerMessage ? 'N/A' : "${b.ltp ?? b.close ?? 0.00}";
             r = cmp<String>(aLtp, bLtp);
           } else {
             num aLtp = parseNum("${a.ltp ?? a.close ?? 0.00}");
@@ -353,7 +452,6 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
     });
   }
 
-
   Widget _buildAlertTable(List<dynamic> alerts, ThemesProvider theme) {
     if (alerts.isEmpty) {
       return const SizedBox.expand(
@@ -379,7 +477,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
 
             // Available width
             final availableWidth = constraints.maxWidth;
-            
+
             // Step 1: Start with minimum widths (content-based, no wasted space)
             final columnWidths = <int, double>{};
             for (int i = 0; i < 6; i++) {
@@ -387,19 +485,20 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
             }
 
             // Step 2: Calculate total minimum width needed
-            final totalMinWidth = columnWidths.values.fold<double>(0.0, (sum, width) => sum + width);
-            
+            final totalMinWidth = columnWidths.values
+                .fold<double>(0.0, (sum, width) => sum + width);
+
             // Step 3: If there's extra space, distribute it proportionally
             if (totalMinWidth < availableWidth) {
               final extraSpace = availableWidth - totalMinWidth;
-              
+
               const instrumentGrowthFactor = 2.5;
               const textGrowthFactor = 1.2;
               const numericGrowthFactor = 1.0;
-              
+
               final growthFactors = <int, double>{};
               double totalGrowthFactor = 0.0;
-              
+
               for (int i = 0; i < 6; i++) {
                 if (i == 0) {
                   // Instrument
@@ -415,18 +514,20 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
                   totalGrowthFactor += numericGrowthFactor;
                 }
               }
-              
+
               if (totalGrowthFactor > 0) {
                 for (int i = 0; i < 6; i++) {
                   if (growthFactors[i]! > 0) {
-                    final extraForThisColumn = (extraSpace * growthFactors[i]!) / totalGrowthFactor;
+                    final extraForThisColumn =
+                        (extraSpace * growthFactors[i]!) / totalGrowthFactor;
                     columnWidths[i] = columnWidths[i]! + extraForThisColumn;
                   }
                 }
               }
             }
 
-            final totalRequiredWidth = columnWidths.values.fold<double>(0.0, (sum, width) => sum + width);
+            final totalRequiredWidth = columnWidths.values
+                .fold<double>(0.0, (sum, width) => sum + width);
             final needsHorizontalScroll = totalRequiredWidth > availableWidth;
 
             Widget buildTableContent() {
@@ -458,16 +559,25 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
                   ),
                   // Scrollable Body
                   Expanded(
-                    child: Scrollbar(
+                    child: RawScrollbar(
                       controller: _verticalScrollController,
                       thumbVisibility: true,
                       trackVisibility: true,
+                      trackColor: resolveThemeColor(context,
+                          dark: Colors.grey.withOpacity(0.1),
+                          light: Colors.grey.withOpacity(0.1)),
+                      thumbColor: resolveThemeColor(context,
+                          dark: Colors.grey.withOpacity(0.3),
+                          light: Colors.grey.withOpacity(0.3)),
+                      thickness: 6,
+                      radius: const Radius.circular(3),
                       interactive: true,
                       child: SingleChildScrollView(
                         controller: _verticalScrollController,
                         scrollDirection: Axis.vertical,
                         child: shadcn.Table(
-                          key: ValueKey('table_${_alertSortColumnIndex}_$_alertSortAscending'),
+                          key: ValueKey(
+                              'table_${_alertSortColumnIndex}_$_alertSortAscending'),
                           columnWidths: {
                             0: shadcn.FixedTableSize(columnWidths[0]!),
                             1: shadcn.FixedTableSize(columnWidths[1]!),
@@ -491,7 +601,8 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
                                   rowIndex: index,
                                   columnIndex: 0,
                                   onTap: () => _showAlertDetail(alert),
-                                  child: _buildInstrumentCell(alert, theme, isRowHovered, uniqueId),
+                                  child: _buildInstrumentCell(
+                                      alert, theme, isRowHovered, uniqueId),
                                 ),
                                 buildCellWithHover(
                                   rowIndex: index,
@@ -537,10 +648,18 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
             }
 
             if (needsHorizontalScroll) {
-              return Scrollbar(
+              return RawScrollbar(
                 controller: _horizontalScrollController,
                 thumbVisibility: true,
                 trackVisibility: true,
+                trackColor: resolveThemeColor(context,
+                    dark: Colors.grey.withOpacity(0.1),
+                    light: Colors.grey.withOpacity(0.1)),
+                thumbColor: resolveThemeColor(context,
+                    dark: Colors.grey.withOpacity(0.3),
+                    light: Colors.grey.withOpacity(0.3)),
+                thickness: 6,
+                radius: const Radius.circular(3),
                 interactive: true,
                 child: SingleChildScrollView(
                   controller: _horizontalScrollController,
@@ -561,13 +680,13 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
   }
 
   // Helper method to ensure Geist font is always applied
-  TextStyle _geistTextStyle({Color? color, double? fontSize, FontWeight? fontWeight}) {
-    return TextStyle(
-      fontFamily: 'Geist',
+  TextStyle _geistTextStyle(
+      {Color? color, double? fontSize, FontWeight? fontWeight}) {
+    return MyntWebTextStyles.body(
+      context,
       color: color,
-      fontSize: fontSize,
       fontWeight: fontWeight,
-    );
+    ).copyWith(fontSize: fontSize);
   }
 
   // Builds a cell with hover detection
@@ -606,7 +725,8 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
           onTap: onTap,
           behavior: HitTestBehavior.opaque,
           child: Container(
-            padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 8),
+            padding: EdgeInsets.symmetric(
+                horizontal: horizontalPadding, vertical: 8),
             alignment: alignRight ? Alignment.topRight : null,
             child: child,
           ),
@@ -616,7 +736,8 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
   }
 
   // Builds a sortable header cell
-  shadcn.TableCell buildHeaderCell(String label, int columnIndex, [bool alignRight = false]) {
+  shadcn.TableCell buildHeaderCell(String label, int columnIndex,
+      [bool alignRight = false]) {
     final isFirstColumn = columnIndex == 0;
     final isLastColumn = columnIndex == 5;
     final horizontalPadding = isFirstColumn || isLastColumn ? 16.0 : 6.0;
@@ -635,28 +756,36 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
       child: InkWell(
         onTap: () => _onSortAlertTable(columnIndex),
         child: Container(
-          padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 6),
+          padding:
+              EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 6),
           alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
           child: Row(
-            mainAxisAlignment: alignRight ? MainAxisAlignment.end : MainAxisAlignment.start,
+            mainAxisAlignment:
+                alignRight ? MainAxisAlignment.end : MainAxisAlignment.start,
             children: [
               if (alignRight && _alertSortColumnIndex == columnIndex)
                 Icon(
-                  _alertSortAscending ? Icons.arrow_upward : Icons.arrow_downward,
+                  _alertSortAscending
+                      ? Icons.arrow_upward
+                      : Icons.arrow_downward,
                   size: 16,
                   color: shadcn.Theme.of(context).colorScheme.mutedForeground,
                 ),
-              if (alignRight && _alertSortColumnIndex == columnIndex) const SizedBox(width: 4),
+              if (alignRight && _alertSortColumnIndex == columnIndex)
+                const SizedBox(width: 4),
               Text(
                 label,
                 style: _geistTextStyle(
                   color: shadcn.Theme.of(context).colorScheme.foreground,
                 ),
               ),
-              if (!alignRight && _alertSortColumnIndex == columnIndex) const SizedBox(width: 4),
+              if (!alignRight && _alertSortColumnIndex == columnIndex)
+                const SizedBox(width: 4),
               if (!alignRight && _alertSortColumnIndex == columnIndex)
                 Icon(
-                  _alertSortAscending ? Icons.arrow_upward : Icons.arrow_downward,
+                  _alertSortAscending
+                      ? Icons.arrow_upward
+                      : Icons.arrow_downward,
                   size: 16,
                   color: shadcn.Theme.of(context).colorScheme.mutedForeground,
                 ),
@@ -668,8 +797,22 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
   }
 
   // Calculate minimum column widths dynamically
-  Map<int, double> _calculateMinWidths(List<dynamic> alerts, BuildContext context) {
-    final textStyle = const TextStyle(fontSize: 14, fontFamily: 'Geist');
+  Map<int, double> _calculateMinWidths(
+      List<dynamic> alerts, BuildContext context) {
+    // Use dynamic font size for measurement
+    final fontSize = _getResponsiveFontSize(context);
+
+    final headerStyle = TextStyle(
+      fontSize: fontSize,
+      fontFamily: 'Geist',
+      fontWeight: MyntFonts.semiBold, // w600 for headers
+    );
+    final cellStyle = TextStyle(
+      fontSize: fontSize,
+      fontFamily: 'Geist',
+      fontWeight: MyntFonts.medium, // w500 for data cells
+    );
+
     const padding = 24.0;
     const sortIconWidth = 24.0;
 
@@ -685,10 +828,10 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
 
     for (int col = 0; col < headers.length; col++) {
       double maxWidth = 0.0;
-      final headerWidth = _measureTextWidth(headers[col], textStyle);
+      final headerWidth = _measureTextWidth(headers[col], headerStyle);
       maxWidth = headerWidth + sortIconWidth;
 
-      for (final alert in alerts.take(5)) {
+      for (final alert in alerts.take(20)) {
         String cellText = '';
         switch (col) {
           case 0: // Instrument
@@ -708,11 +851,20 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
               cellText = 'TRIGGERED';
             } else {
               switch (alert.aiT) {
-                case 'LTP_A': cellText = 'LTP Above'; break;
-                case 'LTP_B': cellText = 'LTP Below'; break;
-                case 'CH_PER_A': cellText = 'Perc.Change Above'; break;
-                case 'CH_PER_B': cellText = 'Perc.Change Below'; break;
-                default: cellText = 'Unknown';
+                case 'LTP_A':
+                  cellText = 'LTP Above';
+                  break;
+                case 'LTP_B':
+                  cellText = 'LTP Below';
+                  break;
+                case 'CH_PER_A':
+                  cellText = 'Perc.Change Above';
+                  break;
+                case 'CH_PER_B':
+                  cellText = 'Perc.Change Below';
+                  break;
+                default:
+                  cellText = 'Unknown';
               }
             }
             break;
@@ -728,8 +880,8 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
             }
             break;
           case 4: // LTP
-            cellText = alert is BrokerMessage 
-                ? 'N/A' 
+            cellText = alert is BrokerMessage
+                ? 'N/A'
                 : "${alert.ltp ?? alert.close ?? '0.00'}";
             break;
           case 5: // Status
@@ -737,7 +889,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
             break;
         }
 
-        final cellWidth = _measureTextWidth(cellText, textStyle);
+        final cellWidth = _measureTextWidth(cellText, cellStyle);
         if (cellWidth > maxWidth) {
           maxWidth = cellWidth;
         }
@@ -764,12 +916,12 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
     final manage = ref.read(marketWatchProvider);
     final notification = ref.read(notificationprovider);
     final order = ref.read(orderProvider);
-    
+
     final isSearching = order.orderSearchCtrl.text.isNotEmpty;
     final pendingAlerts = isSearching
         ? manage.alertPendingSearch ?? []
         : manage.alertPendingModel ?? [];
-    
+
     List<BrokerMessage>? triggered;
     if (isSearching) {
       triggered = notification.triggeredAlertSearch ?? [];
@@ -781,11 +933,8 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
               (msg.dmsg!.contains("above") || msg.dmsg!.contains("below")))
           .toList();
     }
-    
-    return [
-      ...pendingAlerts,
-      ...(triggered ?? [])
-    ];
+
+    return [...pendingAlerts, ...(triggered ?? [])];
   }
 
   void _showAlertDetail(dynamic alert) {
@@ -793,8 +942,26 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
     if (alert is! BrokerMessage) {
       shadcn.openSheet(
         context: context,
-        builder: (sheetContext) => PendingAlertDetailScreenWeb(alert: alert),
+        builder: (sheetContext) => Container(
+          width: 480,
+          decoration: BoxDecoration(
+            color: resolveThemeColor(
+              context,
+              dark: styles.MyntColors.backgroundColorDark,
+              light: styles.MyntColors.backgroundColor,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 5,
+                offset: const Offset(-2, 0),
+              ),
+            ],
+          ),
+          child: PendingAlertDetailScreenWeb(alert: alert),
+        ),
         position: shadcn.OverlayPosition.end,
+        barrierColor: Colors.transparent,
       );
     }
   }
@@ -898,7 +1065,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
   Widget _buildExchangeCell(dynamic alert, ThemesProvider theme) {
     final colorScheme = shadcn.Theme.of(context).colorScheme;
     final exchange = alert is BrokerMessage ? 'N/A' : (alert.exch ?? 'N/A');
-    
+
     return Text(
       exchange,
       style: _geistTextStyle(
@@ -913,7 +1080,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
     final colorScheme = shadcn.Theme.of(context).colorScheme;
     String alertType = '';
     Color alertColor = colorScheme.mutedForeground;
-    
+
     if (alert is BrokerMessage) {
       alertType = 'TRIGGERED';
       alertColor = colorScheme.chart2; // Green for triggered
@@ -939,7 +1106,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
           alertType = 'Unknown';
       }
     }
-    
+
     return Text(
       alertType,
       style: _geistTextStyle(
@@ -953,7 +1120,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
   Widget _buildTargetCell(dynamic alert, ThemesProvider theme) {
     final colorScheme = shadcn.Theme.of(context).colorScheme;
     String target = '';
-    
+
     if (alert is BrokerMessage) {
       target = 'N/A';
     } else {
@@ -963,7 +1130,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
         target = "${alert.d ?? '0.00'}";
       }
     }
-    
+
     return Align(
       alignment: Alignment.centerRight,
       child: Text(
@@ -979,10 +1146,10 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
 
   Widget _buildLTPCell(dynamic alert, ThemesProvider theme) {
     final colorScheme = shadcn.Theme.of(context).colorScheme;
-    final ltp = alert is BrokerMessage 
-        ? 'N/A' 
+    final ltp = alert is BrokerMessage
+        ? 'N/A'
         : "${alert.ltp ?? alert.close ?? '0.00'}";
-    
+
     return Align(
       alignment: Alignment.centerRight,
       child: Text(
@@ -1000,7 +1167,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
     final colorScheme = shadcn.Theme.of(context).colorScheme;
     final status = alert is BrokerMessage ? 'TRIGGERED' : 'PENDING';
     final statusColor = _getAlertStatusColor(status, theme);
-    
+
     return Text(
       status,
       style: _geistTextStyle(
@@ -1101,8 +1268,6 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
     }
   }
 
-
-
   // Helper function to parse BrokerMessage dmsg
   Map<String, String> _parseBrokerMessage(BrokerMessage alert) {
     final dmsg = alert.dmsg ?? '';
@@ -1112,14 +1277,16 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
       'target': '',
       'ltp': '',
     };
-    
+
     if (dmsg.isEmpty) return result;
-    
+
     // Try to extract instrument and exchange (e.g., "RELIANCE NSE", "YESBANK NSE")
-    final exchangeMatch = RegExp(r'\b(NSE|BSE|MCX|NCDEX)\b', caseSensitive: false).firstMatch(dmsg);
+    final exchangeMatch =
+        RegExp(r'\b(NSE|BSE|MCX|NCDEX)\b', caseSensitive: false)
+            .firstMatch(dmsg);
     if (exchangeMatch != null) {
       result['exchange'] = exchangeMatch.group(1) ?? '';
-      
+
       // Extract instrument name before exchange
       final exchangeIndex = dmsg.indexOf(exchangeMatch.group(0)!);
       if (exchangeIndex > 0) {
@@ -1130,8 +1297,8 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
           // Take the last meaningful word (skip common words like "for", "at", etc.)
           for (int i = words.length - 1; i >= 0; i--) {
             final word = words[i].trim();
-            if (word.isNotEmpty && 
-                !word.toLowerCase().contains('for') && 
+            if (word.isNotEmpty &&
+                !word.toLowerCase().contains('for') &&
                 !word.toLowerCase().contains('at') &&
                 !word.toLowerCase().contains('above') &&
                 !word.toLowerCase().contains('below')) {
@@ -1142,22 +1309,24 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
         }
       }
     }
-    
+
     // Try to extract target price (numbers after "above" or "below")
-    final priceMatch = RegExp(r'(?:above|below)\s+([\d,]+\.?\d*)', caseSensitive: false).firstMatch(dmsg);
+    final priceMatch =
+        RegExp(r'(?:above|below)\s+([\d,]+\.?\d*)', caseSensitive: false)
+            .firstMatch(dmsg);
     if (priceMatch != null) {
       result['target'] = priceMatch.group(1)?.replaceAll(',', '') ?? '';
     }
-    
+
     // Try to extract LTP if mentioned
-    final ltpMatch = RegExp(r'ltp[:\s]+([\d,]+\.?\d*)', caseSensitive: false).firstMatch(dmsg);
+    final ltpMatch = RegExp(r'ltp[:\s]+([\d,]+\.?\d*)', caseSensitive: false)
+        .firstMatch(dmsg);
     if (ltpMatch != null) {
       result['ltp'] = ltpMatch.group(1)?.replaceAll(',', '') ?? '';
     }
-    
+
     return result;
   }
-
 
   // Action handlers
   Future<void> _handleCancelAlert(AlertPendingModel alert) async {
@@ -1204,12 +1373,31 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
       // Open modify alert sheet
       shadcn.openSheet(
         context: context,
-        builder: (sheetContext) => PendingAlertDetailScreenWeb(alert: alert),
+        builder: (sheetContext) => Container(
+          width: 480,
+          decoration: BoxDecoration(
+            color: resolveThemeColor(
+              context,
+              dark: styles.MyntColors.backgroundColorDark,
+              light: styles.MyntColors.backgroundColor,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 5,
+                offset: const Offset(-2, 0),
+              ),
+            ],
+          ),
+          child: PendingAlertDetailScreenWeb(alert: alert),
+        ),
         position: shadcn.OverlayPosition.end,
+        barrierColor: Colors.transparent,
       );
     } catch (e) {
       if (mounted) {
-        ResponsiveSnackBar.showError(context, 'Failed to open modify alert: ${e.toString()}');
+        ResponsiveSnackBar.showError(
+            context, 'Failed to open modify alert: ${e.toString()}');
       }
     } finally {
       if (mounted) {
@@ -1220,5 +1408,4 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
       }
     }
   }
-
 }

@@ -102,6 +102,7 @@ class NoDataFound extends ConsumerWidget {
                   subtitle!,
                   style: MyntWebTextStyles.body(
                     context,
+                    fontWeight: FontWeight.w500,
                     color: resolveThemeColor(
                       context,
                       dark: MyntColors.textSecondaryDark,
@@ -112,7 +113,7 @@ class NoDataFound extends ConsumerWidget {
                 ),
               ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
 
             // Buttons (Full width style)
             if (primaryEnabled || secondaryEnabled)

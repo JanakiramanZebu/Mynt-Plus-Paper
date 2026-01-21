@@ -31,12 +31,18 @@ class OrderBookScreenWeb extends ConsumerStatefulWidget {
 class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     with TickerProviderStateMixin {
   TabController? _tabController;
-  final ScrollController _openOrdersHorizontalScrollController = ScrollController();
-  final ScrollController _openOrdersVerticalScrollController = ScrollController();
-  final ScrollController _executedOrdersHorizontalScrollController = ScrollController();
-  final ScrollController _executedOrdersVerticalScrollController = ScrollController();
-  final ScrollController _tradeBookHorizontalScrollController = ScrollController();
-  final ScrollController _tradeBookVerticalScrollController = ScrollController();
+  final ScrollController _openOrdersHorizontalScrollController =
+      ScrollController();
+  final ScrollController _openOrdersVerticalScrollController =
+      ScrollController();
+  final ScrollController _executedOrdersHorizontalScrollController =
+      ScrollController();
+  final ScrollController _executedOrdersVerticalScrollController =
+      ScrollController();
+  final ScrollController _tradeBookHorizontalScrollController =
+      ScrollController();
+  final ScrollController _tradeBookVerticalScrollController =
+      ScrollController();
   final ScrollController _gttVerticalScrollController = ScrollController();
   final ScrollController _gttHorizontalScrollController = ScrollController();
   final ScrollController _tabScrollController = ScrollController();
@@ -102,13 +108,13 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
           // Only call when tab change is complete, not during animation
           if (mounted) {
             final orderBook = ref.read(orderProvider);
-            
+
             // Clear search when tab change completes (prevents showing wrong data)
             orderBook.clearOrderSearch();
-            
+
             // Update tab index in provider - this will handle all tab-related logic
             orderBook.changeTabIndex(_tabController!.index, context);
-            
+
             setState(() {
               // Trigger rebuild to update tab selection UI
             });
@@ -146,7 +152,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     } catch (e) {
       // Ignore if provider is not available
     }
-    
+
     _tabController?.dispose();
     _openOrdersHorizontalScrollController.dispose();
     _openOrdersVerticalScrollController.dispose();
@@ -236,18 +242,17 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
               final currentTheme = shadcn.Theme.of(context);
               final isDark = theme.isDarkMode;
               // Create a new ColorScheme based on the default, but with custom primary color
-              final baseColorScheme = isDark 
+              final baseColorScheme = isDark
                   ? shadcn.ColorSchemes.darkDefaultColor
                   : shadcn.ColorSchemes.lightDefaultColor;
-              
+
               // Create custom ColorScheme with theme-appropriate primary color
-              final primaryColor = theme.isDarkMode 
-                  ? WebDarkColors.primary 
-                  : WebColors.primary;
+              final primaryColor =
+                  theme.isDarkMode ? WebDarkColors.primary : WebColors.primary;
               final customColorScheme = baseColorScheme.copyWith(
                 primary: () => primaryColor,
               );
-              
+
               return shadcn.Theme(
                 data: shadcn.ThemeData(
                   colorScheme: customColorScheme,
@@ -256,7 +261,8 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                 child: shadcn.TabList(
                   index: _tabController?.index ?? 0,
                   onChanged: (value) {
-                    if (_tabController != null && _tabController!.index != value) {
+                    if (_tabController != null &&
+                        _tabController!.index != value) {
                       // Just animate the tab - let the listener handle search clearing and provider updates
                       // This prevents multiple state updates from interfering with the tab switch
                       _tabController!.animateTo(value);
@@ -267,17 +273,22 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                     final title = parts.first;
                     final badge = parts.length > 1 ? parts[1] : null;
 
-                    final isActive = (_tabController?.index ?? 0) == orderBook.orderTabName.indexOf(tabString);
+                    final isActive = (_tabController?.index ?? 0) ==
+                        orderBook.orderTabName.indexOf(tabString);
                     return shadcn.TabItem(
                       child: DefaultTextStyle(
                         style: TextStyle(
                           fontFamily: 'Geist',
                           color: isActive
-                              ? (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary)
-                              : shadcn.Theme.of(context).colorScheme.mutedForeground,
+                              ? (theme.isDarkMode
+                                  ? WebDarkColors.primary
+                                  : WebColors.primary)
+                              : shadcn.Theme.of(context)
+                                  .colorScheme
+                                  .mutedForeground,
                           fontWeight: WebFonts.bold,
                         ),
-                        child: badge != null 
+                        child: badge != null
                             ? Text('$title ($badge)')
                             : Text(title),
                       ),
@@ -295,12 +306,14 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
               // Responsive search bar width
               final screenWidth = MediaQuery.of(context).size.width;
               double searchWidth;
-              if (screenWidth >= 1200) {
+              if (screenWidth >= 1400) {
                 searchWidth = 400;
-              } else if (screenWidth >= 800) {
+              } else if (screenWidth >= 1100) {
                 searchWidth = 300;
-              } else {
+              } else if (screenWidth >= 800) {
                 searchWidth = 200;
+              } else {
+                searchWidth = 130;
               }
 
               return SizedBox(
@@ -315,7 +328,9 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                         shadcn.InputFeature.leading(
                           SvgPicture.asset(
                             assets.searchIcon,
-                            color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+                            color: shadcn.Theme.of(context)
+                                .colorScheme
+                                .mutedForeground,
                             fit: BoxFit.scaleDown,
                             width: 18,
                           ),
@@ -342,7 +357,9 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                                     child: Icon(
                                       Icons.close,
                                       size: 16,
-                                      color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+                                      color: shadcn.Theme.of(context)
+                                          .colorScheme
+                                          .mutedForeground,
                                     ),
                                   ),
                                 ),
@@ -370,7 +387,6 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
       ),
     );
   }
-
 
   Widget _buildContentArea(ThemesProvider theme, OrderProvider orderBook) {
     return IndexedStack(
@@ -418,18 +434,17 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
               final currentTheme = shadcn.Theme.of(context);
               final isDark = theme.isDarkMode;
               // Create a new ColorScheme based on the default, but with custom primary color
-              final baseColorScheme = isDark 
+              final baseColorScheme = isDark
                   ? shadcn.ColorSchemes.darkDefaultColor
                   : shadcn.ColorSchemes.lightDefaultColor;
-              
+
               // Create custom ColorScheme with theme-appropriate primary color
-              final primaryColor = theme.isDarkMode 
-                  ? WebDarkColors.primary 
-                  : WebColors.primary;
+              final primaryColor =
+                  theme.isDarkMode ? WebDarkColors.primary : WebColors.primary;
               final customColorScheme = baseColorScheme.copyWith(
                 primary: () => primaryColor,
               );
-              
+
               return shadcn.Theme(
                 data: shadcn.ThemeData(
                   colorScheme: customColorScheme,
@@ -450,8 +465,8 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                         style: TextStyle(
                           fontFamily: 'Geist',
                           color: _mfTabIndex == 0
-                              ? (theme.isDarkMode 
-                                  ? WebDarkColors.primary 
+                              ? (theme.isDarkMode
+                                  ? WebDarkColors.primary
                                   : WebColors.primary)
                               : customColorScheme.mutedForeground,
                           fontWeight: WebFonts.bold,
@@ -464,8 +479,8 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                         style: TextStyle(
                           fontFamily: 'Geist',
                           color: _mfTabIndex == 1
-                              ? (theme.isDarkMode 
-                                  ? WebDarkColors.primary 
+                              ? (theme.isDarkMode
+                                  ? WebDarkColors.primary
                                   : WebColors.primary)
                               : customColorScheme.mutedForeground,
                           fontWeight: WebFonts.bold,

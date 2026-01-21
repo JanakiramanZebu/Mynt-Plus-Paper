@@ -542,8 +542,9 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                     return Scaffold(
                       body: Container(
                         decoration: BoxDecoration(
-                          color:
-                              shadcn.Theme.of(context).colorScheme.background,
+                          color: resolveThemeColor(context,
+                              dark: MyntColors.backgroundColorDark,
+                              light: MyntColors.backgroundColor),
                         ),
                         child: Column(
                           children: [
@@ -1344,10 +1345,12 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                     CrossAxisAlignment.stretch,
                                                 children: [
                                                   Padding(
-                                                    padding: const EdgeInsets
-                                                        .symmetric(
-                                                        horizontal: 10,
-                                                        vertical: 10),
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            left: 15,
+                                                            right: 20,
+                                                            top: 10,
+                                                            bottom: 10),
                                                     child: Column(children: [
                                                       // Old 2-column layout - commented out
                                                       // _buildInfoRow(
@@ -1625,7 +1628,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                             context,
                                                                             fontWeight:
                                                                                 MyntFonts.medium,
-                                                                            color: MyntColors.loss),
+                                                                            color: MyntColors.tertiary),
                                                                       ),
                                                                       Text(
                                                                         "Quantity",
@@ -2160,37 +2163,32 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                       .exch,
                                                                   widget.wlValue
                                                                       .token))
-                                                            const SizedBox(
-                                                                width: 12),
-                                                          Expanded(
-                                                            child:
-                                                                _quickActionButton(
-                                                              theme: theme,
-                                                              label:
-                                                                  "Set Alert",
-                                                              onTap: () {
-                                                                showDialog(
-                                                                  context:
-                                                                      context,
-                                                                  barrierDismissible:
-                                                                      true,
-                                                                  builder:
-                                                                      (BuildContext
-                                                                          dialogContext) {
-                                                                    return SetAlertWeb(
-                                                                      depthdata:
-                                                                          depthData,
-                                                                      wlvalue:
-                                                                          widget
-                                                                              .wlValue,
-                                                                    );
-                                                                  },
-                                                                );
-                                                              },
+                                                            Expanded(
+                                                              child:
+                                                                  _quickActionButton(
+                                                                theme: theme,
+                                                                label:
+                                                                    "Set Alert",
+                                                                onTap: () {
+                                                                  showDialog(
+                                                                    context:
+                                                                        context,
+                                                                    barrierDismissible:
+                                                                        true,
+                                                                    builder:
+                                                                        (BuildContext
+                                                                            dialogContext) {
+                                                                      return SetAlertWeb(
+                                                                        depthdata:
+                                                                            depthData,
+                                                                        wlvalue:
+                                                                            widget.wlValue,
+                                                                      );
+                                                                    },
+                                                                  );
+                                                                },
+                                                              ),
                                                             ),
-                                                          ),
-                                                          const SizedBox(
-                                                              width: 12),
                                                           if (scripInfo
                                                                       .fundamentalData !=
                                                                   null &&
@@ -2203,7 +2201,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                   _quickActionButton(
                                                                 theme: theme,
                                                                 label:
-                                                                    "Fundamentals",
+                                                                    "Stock report",
                                                                 onTap:
                                                                     () async {
                                                                   try {
@@ -2324,7 +2322,6 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                     SizedBox()),
                                                         ],
                                                       ),
-                                                      const SizedBox(height: 8),
                                                     ]),
                                                   )
                                                 ])
@@ -2885,17 +2882,18 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
     );
   }
 
-  // Quick action button used in the three-in-a-row actions row
   Widget _quickActionButton({
     required ThemesProvider theme,
     required String label,
     required VoidCallback onTap,
+    double? fontSize,
   }) {
     return shadcn.GhostButton(
       onPressed: onTap,
       child: Text(
         label,
-        style: MyntWebTextStyles.buttonSm(context, color: MyntColors.primary),
+        style: MyntWebTextStyles.buttonMd(context,
+            color: MyntColors.primary, fontSize: MyntFonts.body),
       ),
     );
   }

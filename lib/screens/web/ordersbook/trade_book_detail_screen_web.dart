@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../../../models/order_book_model/trade_book_model.dart';
 import '../../../models/marketwatch_model/get_quotes.dart';
@@ -138,69 +139,57 @@ class _TradeBookDetailScreenWebState
               }
             }
 
-            return Dialog(
-              backgroundColor: Colors.transparent,
-              child: Container(
-                width: 700,
-                decoration: BoxDecoration(
-                  color: resolveThemeColor(context,
-                      dark: const Color(0xFF0F172A), light: Colors.white),
-                  borderRadius: BorderRadius.circular(5),
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Fixed Header
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 10),
-                      margin: const EdgeInsets.only(bottom: 8),
-                      decoration: BoxDecoration(
-                        border: Border(
-                          bottom: BorderSide(
-                            color: resolveThemeColor(context,
-                                dark: MyntColors.dividerDark,
-                                light: MyntColors.divider),
-                          ),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          _buildSymbolSection(
-                              theme, marketwatch, updatedTradeData),
-                          MyntCloseButton(
-                            onPressed: () => Navigator.of(context).pop(),
-                          ),
-                        ],
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Fixed Header
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  margin: const EdgeInsets.only(bottom: 8),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
+                        color: resolveThemeColor(context,
+                            dark: MyntColors.dividerDark,
+                            light: MyntColors.divider),
                       ),
                     ),
-
-                    // Content
-                    Flexible(
-                      fit: FlexFit.loose,
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.only(
-                            top: 0, bottom: 20, left: 20, right: 20),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Trade Value Section
-                            Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              child: _buildTradeValueSection(
-                                  theme, updatedTradeData),
-                            ),
-
-                            // Trade Details Section
-                            _buildTradeDetailsSection(theme, updatedTradeData),
-                          ],
-                        ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _buildSymbolSection(theme, marketwatch, updatedTradeData),
+                      MyntCloseButton(
+                        onPressed: () => shadcn.closeSheet(context),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
+
+                // Content
+                Flexible(
+                  fit: FlexFit.loose,
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.only(
+                        top: 0, bottom: 20, left: 20, right: 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Trade Value Section
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          child:
+                              _buildTradeValueSection(theme, updatedTradeData),
+                        ),
+
+                        // Trade Details Section
+                        _buildTradeDetailsSection(theme, updatedTradeData),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             );
           },
         );
@@ -413,21 +402,23 @@ class _TradeBookDetailScreenWebState
         children: [
           Text(
             title,
-            style: MyntWebTextStyles.bodySmall(
+            style: MyntWebTextStyles.body(
               context,
               color: resolveThemeColor(context,
                   dark: MyntColors.textPrimaryDark,
                   light: MyntColors.textPrimary),
+              fontWeight: MyntFonts.medium,
             ),
           ),
           Text(
             value,
-            style: MyntWebTextStyles.bodySmall(
+            style: MyntWebTextStyles.body(
               context,
               color: valueColor ??
                   resolveThemeColor(context,
                       dark: MyntColors.textPrimaryDark,
                       light: MyntColors.textPrimary),
+              fontWeight: MyntFonts.medium,
             ),
           ),
         ],

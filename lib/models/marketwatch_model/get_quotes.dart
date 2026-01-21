@@ -76,90 +76,94 @@ class GetQuotes {
   String? poi;
   String? chng;
   String? pc;
-  String? ft;  String? symbol;
+  String? ft;
+  String? symbol;
   String? expDate;
   String? option;
 
-  GetQuotes(
-      {this.requestTime,
-      this.stat,
-      this.exch,
-      this.tsym,
-      this.cname,
-      this.symname,
-      this.seg,
-      this.instname,
-      this.isin,
-      this.pp,
-      this.ls,
-      this.ti,
-      this.mult,
-      this.lut,
-      this.uc,
-      this.lc,
-      this.wk52H,
-      this.wk52L,
-      this.toi,
-      this.issuecap,
-      this.cutofAll,
-      this.prcftrD,
-      this.token,
-      this.lp,
-      this.c,
-      this.h,
-      this.l,
-      this.ap,
-      this.o,
-      this.v,
-      this.ltq,
-      this.ltt,
-      this.ltd,
-      this.tbq,
-      this.tsq,
-      this.bp1,
-      this.sp1,
-      this.bp2,
-      this.sp2,
-      this.bp3,
-      this.sp3,
-      this.bp4,
-      this.sp4,
-      this.bp5,
-      this.sp5,this.ft,
-      this.bq1,
-      this.sq1,
-      this.bq2,
-      this.sq2,
-      this.bq3,
-      this.sq3,
-      this.bq4,
-      this.sq4,
-      this.bq5,
-      this.sq5,
-      this.bo1,
-      this.so1,
-      this.bo2,
-      this.so2,
-      this.bo3,
-      this.so3,
-      this.bo4,
-      this.so4,
-      this.bo5,
-      this.so5,
-      this.ordMsg,
-      this.exd,
-      this.optt,
-      this.oi,
-      this.strprc,
-      this.undExch,
-      this.undTk,
-      this.scripBasePrc,
-      this.emsg,
-      this.poi,
-      this.chng,
-      this.pc, this.expDate,
-      this.option,
-      this.symbol,});
+  GetQuotes({
+    this.requestTime,
+    this.stat,
+    this.exch,
+    this.tsym,
+    this.cname,
+    this.symname,
+    this.seg,
+    this.instname,
+    this.isin,
+    this.pp,
+    this.ls,
+    this.ti,
+    this.mult,
+    this.lut,
+    this.uc,
+    this.lc,
+    this.wk52H,
+    this.wk52L,
+    this.toi,
+    this.issuecap,
+    this.cutofAll,
+    this.prcftrD,
+    this.token,
+    this.lp,
+    this.c,
+    this.h,
+    this.l,
+    this.ap,
+    this.o,
+    this.v,
+    this.ltq,
+    this.ltt,
+    this.ltd,
+    this.tbq,
+    this.tsq,
+    this.bp1,
+    this.sp1,
+    this.bp2,
+    this.sp2,
+    this.bp3,
+    this.sp3,
+    this.bp4,
+    this.sp4,
+    this.bp5,
+    this.sp5,
+    this.ft,
+    this.bq1,
+    this.sq1,
+    this.bq2,
+    this.sq2,
+    this.bq3,
+    this.sq3,
+    this.bq4,
+    this.sq4,
+    this.bq5,
+    this.sq5,
+    this.bo1,
+    this.so1,
+    this.bo2,
+    this.so2,
+    this.bo3,
+    this.so3,
+    this.bo4,
+    this.so4,
+    this.bo5,
+    this.so5,
+    this.ordMsg,
+    this.exd,
+    this.optt,
+    this.oi,
+    this.strprc,
+    this.undExch,
+    this.undTk,
+    this.scripBasePrc,
+    this.emsg,
+    this.poi,
+    this.chng,
+    this.pc,
+    this.expDate,
+    this.option,
+    this.symbol,
+  });
 
   GetQuotes.fromJson(Map<String, dynamic> json) {
     requestTime = json['request_time'];
@@ -190,7 +194,7 @@ class GetQuotes {
     h = json['h'];
     l = json['l'];
     ap = json['ap'];
-    ft=json['ft'];
+    ft = json['ft'];
     o = json['o'];
     v = json['v'];
     ltq = json['ltq'];
@@ -239,11 +243,11 @@ class GetQuotes {
     emsg = json['emsg'];
     poi = json['poi'];
     chng = json['chng'];
-    pc = json['pc'];symbol= json['symbol'].toString().toUpperCase();
-        option= json['option'];
+    pc = json['pc'];
+    symbol = json['symbol'].toString().toUpperCase();
+    option = json['option'];
 
-            expDate  =  json['expDate'] ;
-    
+    expDate = json['expDate'];
   }
 
   Map<String, dynamic> toJson() {
@@ -263,7 +267,7 @@ class GetQuotes {
     data['mult'] = mult;
     data['lut'] = lut;
     data['uc'] = uc;
-    data['ft']=ft;
+    data['ft'] = ft;
     data['lc'] = lc;
     data['wk52_h'] = wk52H;
     data['wk52_l'] = wk52L;
@@ -325,7 +329,8 @@ class GetQuotes {
     data['emsg'] = emsg;
     data['poi'] = poi;
     data['chng'] = chng;
-    data['pc'] = pc;    data['option'] = option;
+    data['pc'] = pc;
+    data['option'] = option;
     data['expDate'] = expDate;
     data['symbol'] = symbol;
     return data;
@@ -340,6 +345,7 @@ class DepthInputArgs {
   String symbol;
   String expDate;
   String option;
+  bool isOption;
 
   DepthInputArgs(
       {required this.exch,
@@ -348,5 +354,6 @@ class DepthInputArgs {
       required this.instname,
       required this.symbol,
       required this.expDate,
-      required this.option});
+      required this.option,
+      this.isOption = false});
 }

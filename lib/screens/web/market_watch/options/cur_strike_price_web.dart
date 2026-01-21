@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../provider/market_watch_provider.dart';
 import '../../../../provider/websocket_provider.dart';
 import '../../../../provider/thems.dart';
-import '../../../../res/web_colors.dart';
-import '../../../../res/global_font_web.dart';
+import '../../../../res/mynt_web_text_styles.dart';
+import '../../../../res/mynt_web_color_styles.dart';
 
 class CurStrkprice extends ConsumerWidget {
   final String token;
@@ -33,31 +33,38 @@ class CurStrkprice extends ConsumerWidget {
     // If this update is needed, it should be done via ref.listen() in a StatefulWidget
     // or handled in the provider itself when socket data changes
 
-    return _buildStrikePriceWidget(price, pc, theme);
+    return _buildStrikePriceWidget(context, price, pc, theme);
   }
 
-  Widget _buildStrikePriceWidget(String price, String pc, ThemesProvider theme) {
+  Widget _buildStrikePriceWidget(
+      BuildContext context, String price, String pc , ThemesProvider theme) {
+    final secondaryColor = resolveThemeColor(
+      context,
+      dark: MyntColors.textSecondaryDark,
+      light: MyntColors.textSecondary,
+    );
+
     return Row(
       children: [
         Expanded(
           child: Divider(
             height: 0,
             thickness: 2.5,
-            color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
+            color: secondaryColor,
           ),
         ),
         Container(
           decoration: BoxDecoration(
-            color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
+            color: secondaryColor,
             borderRadius: BorderRadius.circular(40),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
           child: Text(
             "₹$price (${(double.tryParse(pc) ?? 0).toStringAsFixed(2)}%)",
-            style: WebTextStyles.sub(
-              isDarkTheme: theme.isDarkMode,
+            style: MyntWebTextStyles.body(
+              context,
               color: Colors.white,
-              fontWeight: WebFonts.medium,
+              fontWeight: MyntFonts.medium,
             ),
           ),
         ),
@@ -65,7 +72,7 @@ class CurStrkprice extends ConsumerWidget {
           child: Divider(
             height: 0,
             thickness: 2.5,
-            color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
+            color: secondaryColor,
           ),
         ),
       ],

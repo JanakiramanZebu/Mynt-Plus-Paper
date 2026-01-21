@@ -49,10 +49,9 @@ class PanelContentBuilder {
             final portfolio = ref.watch(portfolioProvider);
             final theme = ref.watch(themeProvider);
             final isLoading = screenLoadingStates[ScreenType.holdings] ?? false;
-            final hasData = portfolio.holdingsModel != null &&
-                portfolio.holdingsModel!.isNotEmpty;
+            // final hasData = portfolio.holdingsModel != null && portfolio.holdingsModel!.isNotEmpty;
 
-            if (isLoading || portfolio.holdloader || !hasData) {
+            if (isLoading || portfolio.holdloader) {
               return Container(
                 width: double.infinity,
                 height: double.infinity,

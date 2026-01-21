@@ -406,38 +406,47 @@ class _PendingAlertDetailScreenWebState
   }
 
   Widget _rowOfInfoData(String label, dynamic value, ThemesProvider theme) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              label,
-              style: MyntWebTextStyles.bodySmall(
-                context,
-                color: resolveThemeColor(context,
-                    dark: MyntColors.textSecondaryDark,
-                    light: MyntColors.textSecondary),
-                fontWeight: MyntFonts.regular,
-              ),
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: resolveThemeColor(
+              context,
+              dark: MyntColors.dividerDark,
+              light: MyntColors.divider,
             ),
-            value is Widget
-                ? value
-                : Text(
-                    value.toString(),
-                    style: MyntWebTextStyles.bodySmall(
-                      context,
-                      color: resolveThemeColor(context,
-                          dark: MyntColors.textPrimaryDark,
-                          light: MyntColors.textPrimary),
-                      fontWeight: MyntFonts.medium,
-                    ),
-                  ),
-          ],
+            width: 1,
+          ),
         ),
-        const SizedBox(height: 16),
-      ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: MyntWebTextStyles.bodySmall(
+              context,
+              color: resolveThemeColor(context,
+                  dark: MyntColors.textSecondaryDark,
+                  light: MyntColors.textSecondary),
+              fontWeight: MyntFonts.regular,
+            ),
+          ),
+          value is Widget
+              ? value
+              : Text(
+                  value.toString(),
+                  style: MyntWebTextStyles.bodySmall(
+                    context,
+                    color: resolveThemeColor(context,
+                        dark: MyntColors.textPrimaryDark,
+                        light: MyntColors.textPrimary),
+                    fontWeight: MyntFonts.medium,
+                  ),
+                ),
+        ],
+      ),
     );
   }
 

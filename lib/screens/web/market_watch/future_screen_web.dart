@@ -52,10 +52,8 @@ import 'package:flutter/material.dart'
         Listener,
         debugPrint,
         Colors,
-        ClipRRect,
         Material,
-        Border,
-        FontWeight;
+        Border;
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
@@ -73,7 +71,7 @@ import '../../../provider/websocket_provider.dart';
 import '../../../utils/responsive_navigation.dart';
 import '../../../utils/responsive_snackbar.dart';
 
-import '../../../res/mynt_web_color_styles.dart' as MyntColors;
+import '../../../res/mynt_web_color_styles.dart';
 import '../../../res/mynt_web_text_styles.dart';
 
 class FutureScreenWeb extends ConsumerStatefulWidget {
@@ -142,6 +140,28 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
     }
   }
 
+  // Helper method to get appropriate text style for table cells (matching position_table.dart)
+  TextStyle _getTextStyle(BuildContext context, {Color? color}) {
+    return MyntWebTextStyles.body(
+      context,
+      color: color,
+      darkColor: color ?? MyntColors.textPrimaryDark,
+      lightColor: color ?? MyntColors.textPrimary,
+      fontWeight: MyntFonts.medium,
+    );
+  }
+
+  // Helper method for header text style (matching position_table.dart)
+  TextStyle _getHeaderStyle(BuildContext context, {Color? color}) {
+    return MyntWebTextStyles.body(
+      context,
+      color: color,
+      darkColor: color ?? MyntColors.textSecondaryDark,
+      lightColor: color ?? MyntColors.textSecondary,
+      fontWeight: MyntFonts.semiBold,
+    );
+  }
+
   // Helper widget to build consistent hover buttons (matching watchlist_card_web.dart)
   Widget _buildHoverButton({
     String? label,
@@ -152,55 +172,22 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
     double? borderRadius,
     required VoidCallback? onPressed,
   }) {
+    final isLongLabel = label != null && label.length > 1;
     final borderRadiusValue = borderRadius ?? 5.0;
 
-    // Use shadcn IconButton for icon buttons, keep custom colors
-    if (icon != null) {
-      return SizedBox(
-        width: 24,
-        height: 24,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(borderRadiusValue),
-          child: Container(
-            decoration: BoxDecoration(
-              color: backgroundColor ?? Colors.transparent,
-              borderRadius: BorderRadius.circular(borderRadiusValue),
-              border: borderColor != null
-                  ? Border.all(
-                      color: borderColor,
-                      width: 1,
-                    )
-                  : null,
-            ),
-            child: shadcn.IconButton(
-              size: shadcn.ButtonSize.small,
-              density: shadcn.ButtonDensity.dense,
-              variance: shadcn.ButtonVariance.ghost,
-              onPressed: onPressed,
-              shape: shadcn.ButtonShape.rectangle,
-              icon: Icon(
-                icon,
-                size: 14,
-                color: color,
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-
-    // Keep original implementation for label buttons (matching watchlist_card_web.dart)
     return SizedBox(
-      width: 24,
-      height: 24,
+      width: isLongLabel ? null : 25,
+      height: 25,
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(borderRadiusValue),
-          splashColor: color.withOpacity(0.15),
-          highlightColor: color.withOpacity(0.08),
+          splashColor: color.withValues(alpha: 0.15),
+          highlightColor: color.withValues(alpha: 0.08),
           onTap: onPressed,
           child: Container(
+            padding:
+                isLongLabel ? const EdgeInsets.symmetric(horizontal: 8) : null,
             decoration: BoxDecoration(
               color: backgroundColor ?? Colors.transparent,
               borderRadius: BorderRadius.circular(borderRadiusValue),
@@ -212,13 +199,19 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
                   : null,
             ),
             child: Center(
-              child: Text(
-                label ?? "",
-                style: MyntWebTextStyles.para(
-                  context,
-                  color: color,
-                ),
-              ),
+              child: icon != null
+                  ? Icon(
+                      icon,
+                      size: 16,
+                      color: color,
+                    )
+                  : Text(
+                      label ?? "",
+                      style: MyntWebTextStyles.buttonSm(
+                        context,
+                        color: color,
+                      ),
+                    ),
             ),
           ),
         ),
@@ -241,7 +234,7 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
       ),
       child: Container(
         padding: const EdgeInsets.all(8),
-        alignment: alignRight ? Alignment.centerRight : null,
+        alignment: alignRight ? Alignment.topRight : null,
         child: child,
       ),
     );
@@ -255,7 +248,7 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
     bool alignRight = false,
   }) {
     final isFirstColumn = columnIndex == 0;
-    final isLastColumn = columnIndex == 2;
+    final isLastColumn = columnIndex == 3;
 
     EdgeInsets cellPadding;
     if (isFirstColumn) {
@@ -282,7 +275,7 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
         onExit: (_) => setState(() => _hoveredRowIndex = null),
         child: Container(
           padding: cellPadding,
-          alignment: alignRight ? Alignment.centerRight : null,
+          alignment: alignRight ? Alignment.topRight : null,
           child: child,
         ),
       ),
@@ -293,7 +286,7 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
   shadcn.TableCell buildHeaderCell(String label, int columnIndex,
       [bool alignRight = false]) {
     final isFirstColumn = columnIndex == 0;
-    final isLastColumn = columnIndex == 2;
+    final isLastColumn = columnIndex == 3;
 
     EdgeInsets headerPadding;
     if (isFirstColumn) {
@@ -328,25 +321,15 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
                 Icon(
                   _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
                   size: 16,
-                  color: resolveThemeColor(
-                    context,
-                    dark: MyntColors.WebColors.textSecondaryDark,
-                    light: MyntColors.WebColors.textSecondary,
-                  ),
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.textSecondaryDark,
+                      light: MyntColors.textSecondary),
                 ),
               if (alignRight && _sortColumnIndex == columnIndex)
                 const SizedBox(width: 4),
               Text(
                 label,
-                style: MyntWebTextStyles.para(
-                  context,
-                  color: resolveThemeColor(
-                    context,
-                    dark: MyntColors.WebColors.textPrimaryDark,
-                    light: MyntColors.WebColors.textPrimary,
-                  ),
-                  fontWeight: MyntFonts.semiBold,
-                ),
+                style: _getHeaderStyle(context),
               ),
               if (!alignRight && _sortColumnIndex == columnIndex)
                 const SizedBox(width: 4),
@@ -354,11 +337,9 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
                 Icon(
                   _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
                   size: 16,
-                  color: resolveThemeColor(
-                    context,
-                    dark: MyntColors.WebColors.textSecondaryDark,
-                    light: MyntColors.WebColors.textSecondary,
-                  ),
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.textSecondaryDark,
+                      light: MyntColors.textSecondary),
                 ),
             ],
           ),
@@ -387,8 +368,8 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
             context,
             color: resolveThemeColor(
               context,
-              dark: MyntColors.WebColors.textPrimaryDark,
-              light: MyntColors.WebColors.textPrimary,
+              dark: MyntColors.textPrimaryDark,
+              light: MyntColors.textPrimary,
             ),
             fontWeight: MyntFonts.semiBold,
           )),
@@ -405,7 +386,7 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
     const padding = 24.0;
     const sortIconWidth = 24.0;
 
-    final headers = ['Symbol', 'LTP', '%Change'];
+    final headers = ['Symbol', 'LTP', 'Change', 'Change %'];
     final minWidths = <int, double>{};
 
     for (int col = 0; col < headers.length; col++) {
@@ -424,9 +405,11 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
           case 1: // LTP
             cellText = future.ltp ?? future.close ?? '0.00';
             break;
-          case 2: // %Change
-            cellText =
-                '${_getChangeValue(future)} (${_getPerChangeValue(future)}%)';
+          case 2: // Change
+            cellText = _getChangeValue(future);
+            break;
+          case 3: // Change %
+            cellText = '${_getPerChangeValue(future)}%';
             break;
         }
 
@@ -456,12 +439,12 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
       return Center(
         child: Text(
           "No futures data available",
-          style: MyntWebTextStyles.para(
+          style: _getTextStyle(
             context,
             color: resolveThemeColor(
               context,
-              dark: MyntColors.WebColors.textSecondaryDark,
-              light: MyntColors.WebColors.textSecondary,
+              dark: MyntColors.textSecondaryDark,
+              light: MyntColors.textSecondary,
             ),
           ),
         ),
@@ -483,10 +466,15 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
             final ltpB = double.tryParse(b.ltp ?? b.close ?? '0') ?? 0.0;
             comparison = ltpA.compareTo(ltpB);
             break;
-          case 2: // %Change
-            final changeA = double.tryParse(a.perChange ?? '0') ?? 0.0;
-            final changeB = double.tryParse(b.perChange ?? '0') ?? 0.0;
+          case 2: // Change
+            final changeA = double.tryParse(a.change ?? '0') ?? 0.0;
+            final changeB = double.tryParse(b.change ?? '0') ?? 0.0;
             comparison = changeA.compareTo(changeB);
+            break;
+          case 3: // Change %
+            final perChangeA = double.tryParse(a.perChange ?? '0') ?? 0.0;
+            final perChangeB = double.tryParse(b.perChange ?? '0') ?? 0.0;
+            comparison = perChangeA.compareTo(perChangeB);
             break;
         }
         return _sortAscending ? comparison : -comparison;
@@ -530,7 +518,7 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
 
                       // Start with minimum widths
                       final columnWidths = <int, double>{};
-                      for (int i = 0; i < 3; i++) {
+                      for (int i = 0; i < 4; i++) {
                         columnWidths[i] = minWidths[i] ?? 100.0;
                       }
 
@@ -548,7 +536,7 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
                         final growthFactors = <int, double>{};
                         double totalGrowthFactor = 0.0;
 
-                        for (int i = 0; i < 3; i++) {
+                        for (int i = 0; i < 4; i++) {
                           if (i == 0) {
                             growthFactors[i] = symbolGrowthFactor;
                             totalGrowthFactor += symbolGrowthFactor;
@@ -559,7 +547,7 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
                         }
 
                         if (totalGrowthFactor > 0) {
-                          for (int i = 0; i < 3; i++) {
+                          for (int i = 0; i < 4; i++) {
                             if (growthFactors[i]! > 0) {
                               final extraForThisColumn =
                                   (extraSpace * growthFactors[i]!) /
@@ -589,6 +577,7 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
                                 0: shadcn.FixedTableSize(columnWidths[0]!),
                                 1: shadcn.FixedTableSize(columnWidths[1]!),
                                 2: shadcn.FixedTableSize(columnWidths[2]!),
+                                3: shadcn.FixedTableSize(columnWidths[3]!),
                               },
                               defaultRowHeight: const shadcn.FixedTableSize(40),
                               rows: [
@@ -596,7 +585,8 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
                                   cells: [
                                     buildHeaderCell('Symbol', 0),
                                     buildHeaderCell('LTP', 1, true),
-                                    buildHeaderCell('%Change', 2, true),
+                                    buildHeaderCell('Change', 2, true),
+                                    buildHeaderCell('Change %', 3, true),
                                   ],
                                 ),
                               ],
@@ -621,6 +611,8 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
                                           columnWidths[1]!),
                                       2: shadcn.FixedTableSize(
                                           columnWidths[2]!),
+                                      3: shadcn.FixedTableSize(
+                                          columnWidths[3]!),
                                     },
                                     defaultRowHeight:
                                         const shadcn.FixedTableSize(40),
@@ -716,16 +708,9 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
                                                                       : 0.0),
                                                           child: Text(
                                                             displayText,
-                                                            style: MyntWebTextStyles
-                                                                .para(
-                                                                    context,
-                                                                color :resolveThemeColor(
-                                                                      context,
-                                                                      dark: MyntColors.WebColors
-                                                                          .textPrimaryDark,
-                                                                      light: MyntColors.WebColors
-                                                                          .textPrimary,
-                                                                    )),
+                                                            style:
+                                                                _getTextStyle(
+                                                                    context),
                                                             overflow: isRowHovered
                                                                 ? TextOverflow
                                                                     .ellipsis
@@ -795,24 +780,20 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
                                                                   end: Alignment
                                                                       .centerRight,
                                                                   colors: [
-                                                                    resolveThemeColor(
-                                                                      context,
-                                                                      dark: MyntColors
-                                                                          .WebColors
-                                                                          .listItemBgDark,
-                                                                      light: Colors
-                                                                          .white,
-                                                                    ).withOpacity(
-                                                                        0.0),
-                                                                    resolveThemeColor(
-                                                                      context,
-                                                                      dark: MyntColors
-                                                                          .WebColors
-                                                                          .listItemBgDark,
-                                                                      light: Colors
-                                                                          .white,
-                                                                    ).withOpacity(
-                                                                        0.95),
+                                                                    shadcn.Theme.of(
+                                                                            context)
+                                                                        .colorScheme
+                                                                        .background
+                                                                        .withValues(
+                                                                            alpha:
+                                                                                0.0),
+                                                                    shadcn.Theme.of(
+                                                                            context)
+                                                                        .colorScheme
+                                                                        .background
+                                                                        .withValues(
+                                                                            alpha:
+                                                                                0.95),
                                                                   ],
                                                                 ),
                                                               ),
@@ -840,46 +821,49 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
                                               rowIndex: index,
                                               columnIndex: 1,
                                               alignRight: true,
-                                              child: Align(
-                                                alignment:
-                                                    Alignment.centerRight,
-                                                child: Text(
-                                                  displayData.ltp != null &&
-                                                          displayData.ltp !=
-                                                              "null"
-                                                      ? "${displayData.ltp}"
-                                                      : displayData.close !=
-                                                                  null &&
-                                                              displayData
-                                                                      .close !=
-                                                                  "null"
-                                                          ? "${displayData.close}"
-                                                          : '0.00',
-                                                  style: MyntWebTextStyles
-                                                      .para(
-                                                    context,
-                                                    color: _getPriceColor(
-                                                        displayData, theme),
-                                                  ),
+                                              child: Text(
+                                                displayData.ltp != null &&
+                                                        displayData.ltp !=
+                                                            "null"
+                                                    ? "${displayData.ltp}"
+                                                    : displayData.close !=
+                                                                null &&
+                                                            displayData.close !=
+                                                                "null"
+                                                        ? "${displayData.close}"
+                                                        : '0.00',
+                                                style: _getTextStyle(
+                                                  context,
+                                                  color: _getPriceColor(
+                                                      displayData, theme),
                                                 ),
                                               ),
                                             ),
-                                            // %Change cell
+                                            // Change cell
                                             buildCellWithHover(
                                               rowIndex: index,
                                               columnIndex: 2,
                                               alignRight: true,
-                                              child: Align(
-                                                alignment:
-                                                    Alignment.centerRight,
-                                                child: Text(
-                                                  "${_getChangeValue(displayData)} (${_getPerChangeValue(displayData)}%)",
-                                                  style: MyntWebTextStyles
-                                                      .para(
-                                                    context,
-                                                    color: _getChangeColor(
-                                                        displayData, theme),
-                                                  ),
+                                              child: Text(
+                                                _getChangeValue(displayData),
+                                                style: _getTextStyle(
+                                                  context,
+                                                  color: _getChangeColor(
+                                                      displayData, theme),
+                                                ),
+                                              ),
+                                            ),
+                                            // Change % cell
+                                            buildCellWithHover(
+                                              rowIndex: index,
+                                              columnIndex: 3,
+                                              alignRight: true,
+                                              child: Text(
+                                                '${_getPerChangeValue(displayData)}%',
+                                                style: _getTextStyle(
+                                                  context,
+                                                  color: _getChangeColor(
+                                                      displayData, theme),
                                                 ),
                                               ),
                                             ),
@@ -954,8 +938,8 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
               color: Colors.white,
               backgroundColor: resolveThemeColor(
                 context,
-                dark: MyntColors.WebColors.primaryDark,
-                light: MyntColors.WebColors.primary,
+                dark: MyntColors.primaryDark,
+                light: MyntColors.primary,
               ),
               onPressed: () async {
                 try {
@@ -972,8 +956,8 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
               color: Colors.white,
               backgroundColor: resolveThemeColor(
                 context,
-                dark: MyntColors.WebColors.errorDark,
-                light: MyntColors.WebColors.error,
+                dark: MyntColors.tertiary,
+                light: MyntColors.tertiary,
               ),
               onPressed: () async {
                 try {
@@ -985,35 +969,32 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
             ),
             SizedBox(width: buttonSpacing),
             // Chart Button
-            _buildHoverButton(
-              icon: Icons.bar_chart,
-              color: Colors.white,
-              backgroundColor: resolveThemeColor(
-                context,
-                dark: MyntColors.WebColors.profitDark,
-                light: MyntColors.WebColors.profit,
-              ),
-              onPressed: () {
-                Navigator.pop(context);
-                ref
-                    .read(marketWatchProvider)
-                    .calldepthApis(context, displayData, "");
-              },
-            ),
-            SizedBox(width: buttonSpacing),
+            // _buildHoverButton(
+            //   icon: Icons.bar_chart,
+            //   color: Colors.black,
+            //   backgroundColor: Colors.white,
+            //   borderColor: shadcn.Theme.of(context).colorScheme.border,
+            //   onPressed: () {
+            //     Navigator.pop(context);
+            //     ref
+            //         .read(marketWatchProvider)
+            //         .calldepthApis(context, displayData, "");
+            //   },
+            // ),
+            // SizedBox(width: buttonSpacing),
             // Save Button (Add to watchlist)
             _buildHoverButton(
               icon: isInWatchlist ? Icons.bookmark : Icons.bookmark_border,
               color: isInWatchlist
                   ? resolveThemeColor(
                       context,
-                      dark: MyntColors.WebColors.primaryDark,
-                      light: MyntColors.WebColors.primary,
+                      dark: MyntColors.primaryDark,
+                      light: MyntColors.primary,
                     )
                   : resolveThemeColor(
                       context,
-                      dark: MyntColors.WebColors.textSecondaryDark,
-                      light: MyntColors.WebColors.textSecondary,
+                      dark: MyntColors.textSecondaryDark,
+                      light: MyntColors.textSecondary,
                     ),
               backgroundColor: Colors.white,
               borderColor: shadcn.Theme.of(context).colorScheme.border,
@@ -1069,8 +1050,8 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
     if (change.startsWith("-") || perChange.startsWith('-')) {
       return resolveThemeColor(
         context,
-        dark: MyntColors.WebColors.lossDark,
-        light: MyntColors.WebColors.loss,
+        dark: MyntColors.lossDark,
+        light: MyntColors.loss,
       );
     } else if (change == "null" ||
         perChange == "null" ||
@@ -1078,14 +1059,14 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
         perChange == "0.00") {
       return resolveThemeColor(
         context,
-        dark: MyntColors.WebColors.textPrimaryDark,
-        light: MyntColors.WebColors.textPrimary,
+        dark: MyntColors.textPrimaryDark,
+        light: MyntColors.textPrimary,
       );
     } else {
       return resolveThemeColor(
         context,
-        dark: MyntColors.WebColors.profitDark,
-        light: MyntColors.WebColors.profit,
+        dark: MyntColors.profitDark,
+        light: MyntColors.profit,
       );
     }
   }
@@ -1094,26 +1075,20 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
     final change = displayData.change?.toString() ?? "0.00";
     final perChange = displayData.perChange?.toString() ?? "0.00";
 
-    if (change.startsWith("-") || perChange.startsWith('-')) {
-      return resolveThemeColor(
-        context,
-        dark: MyntColors.WebColors.lossDark,
-        light: MyntColors.WebColors.loss,
-      );
-    } else if (change == "null" ||
+    if (change == "null" ||
         perChange == "null" ||
         change == "0.00" ||
         perChange == "0.00") {
       return resolveThemeColor(
         context,
-        dark: MyntColors.WebColors.textSecondaryDark,
-        light: MyntColors.WebColors.textSecondary,
+        dark: MyntColors.textSecondaryDark,
+        light: MyntColors.textSecondary,
       );
     } else {
       return resolveThemeColor(
         context,
-        dark: MyntColors.WebColors.profitDark,
-        light: MyntColors.WebColors.profit,
+        dark: MyntColors.textPrimaryDark,
+        light: MyntColors.textPrimary,
       );
     }
   }

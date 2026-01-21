@@ -26,7 +26,6 @@ import 'my_stocks/stocks_screen_web.dart';
 import 'watchlist_card_web.dart';
 import 'search_dialog_web.dart';
 import 'edit_scrip_web.dart';
-import '../../../provider/index_list_provider.dart';
 import '../../../provider/websocket_provider.dart';
 import '../../../models/marketwatch_model/get_quotes.dart';
 import 'index/index_bottom_sheet_web.dart';
@@ -48,132 +47,6 @@ class DeleteModeNotifier extends StateNotifier<bool> {
 class MockMarketWatchlist {
   final List<String> values;
   MockMarketWatchlist({required this.values});
-}
-
-class _SliverTabsDelegate extends SliverPersistentHeaderDelegate {
-  final Widget child;
-  final double height;
-  final String selectedWatchlistName;
-  final List<String>? watchlistNames;
-
-  _SliverTabsDelegate({
-    required this.child,
-    required this.height,
-    required this.selectedWatchlistName,
-    this.watchlistNames,
-  });
-
-  @override
-  Widget build(BuildContext ctx, double shrink, bool overlaps) {
-    // When maxExtent == minExtent, shrink should always be 0 when visible
-    // But handle edge cases during initial layout
-    final visibleHeight = (height - shrink).clamp(0.0, height);
-
-    // If no visible height, return empty widget to prevent layout errors
-    if (visibleHeight <= 0) {
-      return const SizedBox.shrink();
-    }
-
-    // Use LayoutBuilder to check actual constraints and handle edge cases
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        // If constraints are invalid or zero, return empty widget
-        if (constraints.maxHeight <= 0 || constraints.maxWidth <= 0) {
-          return const SizedBox.shrink();
-        }
-
-        // Use ConstrainedBox to respect both sliver constraints and child needs
-        return ConstrainedBox(
-          constraints: BoxConstraints(
-            minHeight: visibleHeight.clamp(0.0, constraints.maxHeight),
-            maxHeight: visibleHeight.clamp(0.0, constraints.maxHeight),
-            minWidth: constraints.maxWidth,
-            maxWidth: constraints.maxWidth,
-          ),
-          child: child,
-        );
-      },
-    );
-  }
-
-  @override
-  double get maxExtent => height;
-
-  @override
-  double get minExtent => height;
-
-  @override
-  bool shouldRebuild(covariant SliverPersistentHeaderDelegate old) {
-    if (old is _SliverTabsDelegate) {
-      final listChanged = !_listsEqual(watchlistNames, old.watchlistNames);
-      final nameChanged = selectedWatchlistName != old.selectedWatchlistName;
-      return listChanged || nameChanged;
-    }
-    return true;
-  }
-
-  bool _listsEqual(List<String>? a, List<String>? b) {
-    if (a == null || b == null) return a == b;
-    if (a.length != b.length) return false;
-    for (var i = 0; i < a.length; i++) {
-      if (a[i] != b[i]) return false;
-    }
-    return true;
-  }
-}
-
-class _SliverIndexSlotsDelegate extends SliverPersistentHeaderDelegate {
-  final Widget child;
-  final double height;
-
-  _SliverIndexSlotsDelegate({
-    required this.child,
-    required this.height,
-  });
-
-  @override
-  Widget build(BuildContext ctx, double shrink, bool overlaps) {
-    // When maxExtent == minExtent, shrink should always be 0 when visible
-    // But handle edge cases during initial layout
-    final visibleHeight = (height - shrink).clamp(0.0, height);
-
-    // If no visible height, return empty widget to prevent layout errors
-    if (visibleHeight <= 0) {
-      return const SizedBox.shrink();
-    }
-
-    // Use LayoutBuilder to check actual constraints and handle edge cases
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        // If constraints are invalid or zero, return empty widget
-        if (constraints.maxHeight <= 0 || constraints.maxWidth <= 0) {
-          return const SizedBox.shrink();
-        }
-
-        // Use ConstrainedBox to respect both sliver constraints and child needs
-        return ConstrainedBox(
-          constraints: BoxConstraints(
-            minHeight: visibleHeight.clamp(0.0, constraints.maxHeight),
-            maxHeight: visibleHeight.clamp(0.0, constraints.maxHeight),
-            minWidth: constraints.maxWidth,
-            maxWidth: constraints.maxWidth,
-          ),
-          child: child,
-        );
-      },
-    );
-  }
-
-  @override
-  double get maxExtent => height;
-
-  @override
-  double get minExtent => height;
-
-  @override
-  bool shouldRebuild(covariant SliverPersistentHeaderDelegate old) {
-    return old is! _SliverIndexSlotsDelegate || old.height != height;
-  }
 }
 
 class WatchListScreenWeb extends StatefulWidget {
@@ -225,6 +98,8 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
   int _currentPageIndex = 0;
   bool _isUserScrolling = false;
   bool _isDisposed = false;
+  bool _canScrollLeft = false;
+  bool _canScrollRight = false;
 
   @override
   bool get wantKeepAlive => true;
@@ -301,7 +176,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
   }
 
   void _handleTabScroll() {
-    if (_isDisposed) return;
+    if (_isDisposed || !_tabScrollController.hasClients) return;
 
     if (_tabScrollController.position.isScrollingNotifier.value) {
       _isUserScrolling = true;
@@ -311,9 +186,37 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
       });
     }
 
+    final canScrollLeft = _tabScrollController.offset > 1.0;
+    final canScrollRight = _tabScrollController.offset <
+        (_tabScrollController.position.maxScrollExtent - 1.0);
+
+    if (canScrollLeft != _canScrollLeft || canScrollRight != _canScrollRight) {
+      _safeSetState(() {
+        _canScrollLeft = canScrollLeft;
+        _canScrollRight = canScrollRight;
+      });
+    }
+
     if (!_tabScrollController.position.isScrollingNotifier.value) {
       _safeSetState(() {});
     }
+  }
+
+  void _scrollTabs({required bool left}) {
+    if (!_tabScrollController.hasClients || _isDisposed) return;
+
+    final scrollAmount = _tabScrollController.position.viewportDimension * 0.8;
+    final target = left
+        ? (_tabScrollController.offset - scrollAmount)
+            .clamp(0.0, _tabScrollController.position.maxScrollExtent)
+        : (_tabScrollController.offset + scrollAmount)
+            .clamp(0.0, _tabScrollController.position.maxScrollExtent);
+
+    _tabScrollController.animateTo(
+      target,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
   }
 
   void _scrollToSelectedTab(int index, {bool force = false}) {
@@ -499,7 +402,10 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
           ..clear()
           ..addAll(names);
         WidgetsBinding.instance.addPostFrameCallback(
-          (_) => _scrollToWatchlistTab(ref, wlName),
+          (_) {
+            _scrollToWatchlistTab(ref, wlName);
+            _handleTabScroll();
+          },
         );
       }
 
@@ -507,7 +413,10 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
         _lastWatchlistName = wlName;
 
         WidgetsBinding.instance.addPostFrameCallback(
-          (_) => _scrollToWatchlistTab(ref, wlName),
+          (_) {
+            _scrollToWatchlistTab(ref, wlName);
+            _handleTabScroll();
+          },
         );
       }
 
@@ -516,28 +425,30 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
 
       return SafeArea(
         child: Container(
-          color: shadcn.Theme.of(context).colorScheme.background,
-          child: NestedScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            headerSliverBuilder: (_, inner) => [
+          color: resolveThemeColor(context,
+              dark: MyntColors.backgroundColorDark,
+              light: MyntColors.backgroundColor),
+          child: Column(
+            children: [
               _buildSearchBar(context, ref, wlName, isPreDef,
                   watchList?.values?.length ?? 0),
-              _buildPinnedTabs(ref, watchList, wlName),
+              _buildWatchlistTabs(ref, wlName, watchList),
+              Expanded(
+                child: showDeleteMode
+                    ? EditScripWeb(
+                        wlName: wlName,
+                        showInDialog: false,
+                      )
+                    : _buildPageView(ref, watchList, sortBy),
+              ),
             ],
-            body: showDeleteMode
-                ? EditScripWeb(
-                    wlName: wlName,
-                    showInDialog: false,
-                  )
-                : _buildPageView(ref, watchList, sortBy),
           ),
         ),
       );
     });
   }
 
-  Widget _buildPageView(
-      WidgetRef ref, dynamic watchList, String sortBy) {
+  Widget _buildPageView(WidgetRef ref, dynamic watchList, String sortBy) {
     // Show immediately even if watchList is null initially
     if (watchList?.values == null) {
       return const SizedBox.shrink(); // No loader, just empty space
@@ -562,14 +473,16 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
               // Before: ref.watch(marketWatchProvider) - ANY change triggers rebuild
               // After: Only rebuild when wlName, scrips, or marketWatchScripData changes
               // This prevents socket data updates from rebuilding the entire watchlist
-              final wlName = ref.watch(marketWatchProvider.select((p) => p.wlName));
-              final scrips = ref.watch(marketWatchProvider.select((p) => p.scrips));
-              final marketWatchScripData = ref.watch(marketWatchProvider.select((p) => p.marketWatchScripData));
+              final wlName =
+                  ref.watch(marketWatchProvider.select((p) => p.wlName));
+              final scrips =
+                  ref.watch(marketWatchProvider.select((p) => p.scrips));
+              final marketWatchScripData = ref.watch(
+                  marketWatchProvider.select((p) => p.marketWatchScripData));
 
               // Get data immediately - no async waiting
               List pageScrips = [];
-              if (index == _currentPageIndex &&
-                  pageName == wlName) {
+              if (index == _currentPageIndex && pageName == wlName) {
                 pageScrips = scrips;
               } else {
                 final cachedData = marketWatchScripData[pageName];
@@ -586,10 +499,11 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
               return RefreshIndicator(
                 onRefresh: () async {
                   // Use ref.read() for method calls - doesn't affect rebuilds
-                  await ref.read(marketWatchProvider).fetchMWScrip(pageName, context);
+                  await ref
+                      .read(marketWatchProvider)
+                      .fetchMWScrip(pageName, context);
                 },
-                child:
-                    _buildPageContent(ref, pageName, pageScrips, sortBy),
+                child: _buildPageContent(ref, pageName, pageScrips, sortBy),
               );
             },
           ),
@@ -598,8 +512,8 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
     );
   }
 
-  Widget _buildPageContent(WidgetRef ref, String pageName,
-      List scrips, String sortBy) {
+  Widget _buildPageContent(
+      WidgetRef ref, String pageName, List scrips, String sortBy) {
     if (pageName == 'My Stocks') {
       return const StocksScreenWeb();
     }
@@ -611,43 +525,45 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
     return _buildWatchlistView(scrips, sortBy);
   }
 
-  SliverToBoxAdapter _buildSearchBar(
+  Widget _buildSearchBar(
     BuildContext context,
     WidgetRef ref,
     String wlName,
     String isPreDef,
     int scripLen,
   ) {
-    return SliverToBoxAdapter(
-      child: Container(
-        color: shadcn.Theme.of(context).colorScheme.background,
-        padding: const EdgeInsets.only(left: 10, right: 10, top: 10, bottom: 0),
-        child: Row(
-          children: [
-            // Menu button
-            Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: MyntIconButton(
-                iconAsset: assets.hamMenu,
-                color: resolveThemeColor(context,
-                    dark: MyntColors.textSecondaryDark,
-                    light: MyntColors.textSecondary),
-                size: MyntButtonSize.medium,
-                onPressed: () => _showWatchlistDialog(context, ref, wlName),
-              ),
+    return Container(
+      color: resolveThemeColor(context,
+          dark: MyntColors.backgroundColorDark,
+          light: MyntColors.backgroundColor),
+      padding: const EdgeInsets.only(left: 10, right: 10, top: 10, bottom: 0),
+      child: Row(
+        children: [
+          // Menu button
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: MyntIconButton(
+              iconAsset: assets.hamMenu,
+              color: resolveThemeColor(context,
+                  dark: MyntColors.iconDark, light: MyntColors.icon),
+              size: MyntButtonSize.medium,
+              onPressed: () => _showWatchlistDialog(context, ref, wlName),
             ),
-            // Search bar
-            Expanded(
-              child: Row(
-                children: [
-                  Expanded(
+          ),
+          // Search bar
+          Expanded(
+            child: Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onTap: () {
+                      _showSearchDialog(context, ref, wlName);
+                    },
                     child: MouseRegion(
                       cursor: SystemMouseCursors.click,
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.translucent,
-                        onTap: () {
-                          _showSearchDialog(context, ref, wlName);
-                        },
+                      child: IgnorePointer(
+                        ignoring: true,
                         child: MyntSearchTextField(
                           controller: TextEditingController(),
                           placeholder: 'Search & add',
@@ -658,188 +574,31 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                       ),
                     ),
                   ),
-                  if (isPreDef != 'Yes' && scripLen > 1)
-                    Padding(
-                      padding: const EdgeInsets.only(left: 8),
-                      child: Builder(
-                        builder: (buttonContext) {
-                          return MyntIconButton(
-                            iconAsset: assets.searchFilter,
-                            color: resolveThemeColor(context,
-                                dark: MyntColors.textSecondaryDark,
-                                light: MyntColors.textSecondary),
-                            size: MyntButtonSize.medium,
-                            onPressed: () async {
-                              await Future.delayed(
-                                  const Duration(milliseconds: 150));
-                              _showFilterPopup(buttonContext, ref);
-                            },
-                          );
-                        },
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // WEB VERSION
-  Widget _buildPinnedTabs(
-    WidgetRef ref,
-    dynamic watchList,
-    String wlName,
-  ) {
-    final tabContent = Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10),
-      child: _buildWatchlistTabs(ref, wlName, watchList),
-    );
-
-    // Calculate total height: content (60) = 60
-    const double tabsHeight = 60.0;
-
-    return SliverPersistentHeader(
-      pinned: true, // This keeps the tabs fixed at the top
-      delegate: _SliverTabsDelegate(
-        child: tabContent,
-        height: tabsHeight,
-        selectedWatchlistName: wlName,
-        watchlistNames: watchList?.values?.cast<String>(),
-      ),
-    );
-  }
-
-  // Build index slots widget - shows 2 index slots below tabs (pinned like tabs)
-  // Responsive: shows 1 slot on narrow watchlist, 2 slots on wide watchlist
-  Widget _buildIndexSlots(WidgetRef ref) {
-    final indexContent = Consumer(
-      builder: (context, ref, _) {
-        final indexProvider = ref.watch(indexListProvider);
-        final marketWatch = ref.read(marketWatchProvider);
-        final indexValues = indexProvider.defaultIndexList?.indValues;
-
-        if (indexValues == null || indexValues.isEmpty) {
-          return const SizedBox.shrink();
-        }
-
-        // Determine layout based on screen width
-        final screenWidth = MediaQuery.of(context).size.width;
-        final watchlistWidth = _getWatchlistWidth(screenWidth);
-        final showSingleSlot =
-            watchlistWidth < 350; // Show 1 slot if watchlist < 350px
-
-        // Show only first 2 indices
-        final displayIndices = indexValues.length >= 2
-            ? indexValues.take(2).toList()
-            : indexValues;
-
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: shadcn.Theme.of(context).colorScheme.background,
-          ),
-          child: showSingleSlot
-              ? _buildSingleIndexSlot(
-                  displayIndices, ref.read(themeProvider), marketWatch, indexProvider)
-              : _buildDoubleIndexSlots(
-                  displayIndices, ref.read(themeProvider), marketWatch, indexProvider),
-        );
-      },
-    );
-
-    // Calculate total height: padding vertical (6*2) + shadcn Card height with potential wrap (~66) = 78
-    const double indexSlotsHeight = 78.0;
-
-    return SliverPersistentHeader(
-      pinned: true, // This keeps the index slots fixed at the top
-      delegate: _SliverIndexSlotsDelegate(
-        child: indexContent,
-        height: indexSlotsHeight,
-      ),
-    );
-  }
-
-  // Helper to calculate watchlist width based on screen width
-  double _getWatchlistWidth(double screenWidth) {
-    if (screenWidth >= 1600) {
-      return screenWidth * 0.20;
-    } else if (screenWidth >= 1200) {
-      return screenWidth * 0.25;
-    } else if (screenWidth >= 992) {
-      return screenWidth * 0.28;
-    } else if (screenWidth >= 768) {
-      return screenWidth * 0.30;
-    } else {
-      return screenWidth * 0.35;
-    }
-  }
-
-  // Build double index slots layout (2 slots side by side with equal width)
-  Widget _buildDoubleIndexSlots(
-    List<dynamic> displayIndices,
-    ThemesProvider theme,
-    dynamic marketWatch,
-    dynamic indexProvider,
-  ) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: List.generate(2, (index) {
-        if (index >= displayIndices.length) {
-          return const Expanded(child: SizedBox.shrink());
-        }
-        final item = displayIndices[index];
-        return Expanded(
-          child: Padding(
-            padding: EdgeInsets.only(
-              right: index < 1 ? 8 : 0,
-            ),
-            child: _WatchlistIndexSlotWeb(
-              indexItem: item,
-              indexPosition: index,
-              theme: theme,
-              marketWatch: marketWatch,
-              indexProvider: indexProvider,
-            ),
-          ),
-        );
-      }),
-    );
-  }
-
-  // Build single index slot layout with horizontal scroll (for narrow watchlist)
-  Widget _buildSingleIndexSlot(
-    List<dynamic> displayIndices,
-    ThemesProvider theme,
-    dynamic marketWatch,
-    dynamic indexProvider,
-  ) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      physics: const ClampingScrollPhysics(),
-      child: IntrinsicHeight(
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: List.generate(
-            displayIndices.length,
-            (index) {
-              final item = displayIndices[index];
-              return Padding(
-                padding: EdgeInsets.only(
-                    right: index < displayIndices.length - 1 ? 8 : 0),
-                child: _WatchlistIndexSlotWeb(
-                  indexItem: item,
-                  indexPosition: index,
-                  theme: theme,
-                  marketWatch: marketWatch,
-                  indexProvider: indexProvider,
                 ),
-              );
-            },
+                if (isPreDef != 'Yes' && scripLen > 1)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8),
+                    child: Builder(
+                      builder: (buttonContext) {
+                        return MyntIconButton(
+                          iconAsset: assets.searchFilter,
+                          color: resolveThemeColor(context,
+                              dark: MyntColors.iconDark,
+                              light: MyntColors.icon),
+                          size: MyntButtonSize.small,
+                          onPressed: () async {
+                            await Future.delayed(
+                                const Duration(milliseconds: 150));
+                            _showFilterPopup(buttonContext, ref);
+                          },
+                        );
+                      },
+                    ),
+                  ),
+              ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -855,88 +614,162 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
     final currentIndex = tabs.indexOf(wlName);
 
     return Container(
-      height: 60,
+      margin: const EdgeInsets.symmetric(horizontal: 5),
+      height: 40,
       alignment: Alignment.bottomCenter,
-      child: ScrollConfiguration(
-        behavior: DragScrollBehavior(),
-        child: SingleChildScrollView(
-          controller: _tabScrollController,
-          scrollDirection: Axis.horizontal,
-          physics: const ClampingScrollPhysics(),
-          child: Builder(
-            builder: (context) {
-              final currentTheme = shadcn.Theme.of(context);
-              final isDark = isDarkMode(context);
-              // Create a new ColorScheme based on the default, but with custom primary color
-              final baseColorScheme = isDark
-                  ? shadcn.ColorSchemes.darkDefaultColor
-                  : shadcn.ColorSchemes.lightDefaultColor;
-
-              // Create custom ColorScheme with theme-appropriate primary color
-              final primaryColor = resolveThemeColor(
-                context,
-                dark: MyntColors.primaryDark,
-                light: MyntColors.primary,
-              );
-              final customColorScheme = baseColorScheme.copyWith(
-                primary: () => primaryColor,
-              );
-
-              return shadcn.Theme(
-                data: shadcn.ThemeData(
-                  colorScheme: customColorScheme,
-                  radius: currentTheme.radius,
-                ),
-                child: shadcn.TabList(
-                  index: currentIndex >= 0 ? currentIndex : 0,
-                  onChanged: (value) {
-                    if (value < tabs.length) {
-                      _handleTabTap(tabs[value], value, ref);
-                      _scrollToSelectedTab(value, force: true);
-                    }
-                  },
-                  children: [
-                    for (var i = 0; i < tabs.length; i++)
-                      shadcn.TabItem(
-                        child: Builder(
-                          builder: (context) {
-                            final isActive = i == currentIndex;
-                            return Text(
-                              _formatTabName(tabs[i]),
-                              style: MyntWebTextStyles.body(
-                                context,
-                                color: isActive
-                                    ? resolveThemeColor(
-                                        context,
-                                        dark: MyntColors.primaryDark,
-                                        light: MyntColors.primary,
-                                      )
-                                    : resolveThemeColor(
-                                        context,
-                                        dark: MyntColors.textSecondaryDark,
-                                        light: MyntColors.textSecondary,
-                                      ),
-                                fontWeight: isActive
-                                    ? MyntFonts.bold
-                                    : MyntFonts.medium,
-                              ),
-                            );
-                          },
-                        ),
+      child: Stack(
+        alignment: Alignment.bottomCenter,
+        children: [
+          Row(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(bottom: 2),
+                child: Material(
+                  color: resolveThemeColor(
+                    context,
+                    dark: Colors.white.withOpacity(0.1),
+                    light: Colors.black.withOpacity(0.05),
+                  ),
+                  shape: const CircleBorder(),
+                  child: InkWell(
+                    onTap:
+                        // _canScrollLeft ? () => _scrollTabs(left: true) : null,
+                        () => _scrollTabs(left: true),
+                    customBorder: const CircleBorder(),
+                    child: Padding(
+                      padding: const EdgeInsets.all(2.0),
+                      child: Icon(
+                        Icons.chevron_left,
+                        size: 20,
+                        color: resolveThemeColor(
+                          context,
+                          dark: MyntColors.iconDark,
+                          light: MyntColors.icon,
+                        ).withValues(alpha: _canScrollLeft ? 1.0 : 0.3),
                       ),
-                  ],
+                    ),
+                  ),
                 ),
-              );
-            },
+              ),
+              Expanded(
+                child: ScrollConfiguration(
+                  behavior: DragScrollBehavior(),
+                  child: SingleChildScrollView(
+                    controller: _tabScrollController,
+                    scrollDirection: Axis.horizontal,
+                    physics: const ClampingScrollPhysics(),
+                    child: Builder(
+                      builder: (context) {
+                        final currentTheme = shadcn.Theme.of(context);
+                        final isDark = isDarkMode(context);
+                        // Create a new ColorScheme based on the default, but with custom primary color
+                        final baseColorScheme = isDark
+                            ? shadcn.ColorSchemes.darkDefaultColor
+                            : shadcn.ColorSchemes.lightDefaultColor;
+
+                        // Create custom ColorScheme with theme-appropriate primary color
+                        final primaryColor = resolveThemeColor(
+                          context,
+                          dark: MyntColors.primaryDark,
+                          light: MyntColors.primary,
+                        );
+                        final customColorScheme = baseColorScheme.copyWith(
+                          primary: () => primaryColor,
+                        );
+
+                        return shadcn.Theme(
+                          data: shadcn.ThemeData(
+                            colorScheme: customColorScheme,
+                            radius: currentTheme.radius,
+                          ),
+                          child: shadcn.TabList(
+                            index: currentIndex >= 0 ? currentIndex : 0,
+                            onChanged: (value) {
+                              if (value < tabs.length) {
+                                _handleTabTap(tabs[value], value, ref);
+                                _scrollToSelectedTab(value, force: true);
+                              }
+                            },
+                            children: [
+                              for (var i = 0; i < tabs.length; i++)
+                                shadcn.TabItem(
+                                  child: Builder(
+                                    builder: (context) {
+                                      final isActive = i == currentIndex;
+                                      return Text(
+                                        _formatTabName(tabs[i]),
+                                        style: MyntWebTextStyles.body(
+                                          context,
+                                          color: isActive
+                                              ? resolveThemeColor(
+                                                  context,
+                                                  dark: MyntColors.primaryDark,
+                                                  light: MyntColors.primary,
+                                                )
+                                              : resolveThemeColor(
+                                                  context,
+                                                  dark: MyntColors
+                                                      .textSecondaryDark,
+                                                  light:
+                                                      MyntColors.textSecondary,
+                                                ),
+                                          fontWeight: isActive
+                                              ? MyntFonts.bold
+                                              : MyntFonts.medium,
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 2),
+                child: Material(
+                  color: resolveThemeColor(
+                    context,
+                    dark: Colors.white.withOpacity(0.1),
+                    light: Colors.black.withOpacity(0.05),
+                  ),
+                  shape: const CircleBorder(),
+                  child: InkWell(
+                    onTap:
+                        // _canScrollRight ? () => _scrollTabs(left: false) : null,
+                        () => _scrollTabs(left: false),
+                    customBorder: const CircleBorder(),
+                    child: Padding(
+                      padding: const EdgeInsets.all(2.0),
+                      child: Icon(
+                        Icons.chevron_right,
+                        size: 20,
+                        color: resolveThemeColor(
+                          context,
+                          dark: MyntColors.iconDark,
+                          light: MyntColors.icon,
+                        ).withValues(alpha: _canScrollRight ? 1.0 : 0.3),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ),
+        ],
       ),
     );
   }
 
   Widget _buildEmptyState(MarketWatchProvider mw) {
     return Container(
-      color: shadcn.Theme.of(context).colorScheme.background,
+      color: resolveThemeColor(context,
+          dark: MyntColors.backgroundColorDark,
+          light: MyntColors.backgroundColor),
       child: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -1065,7 +898,9 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
     return Consumer(
       builder: (context, ref, child) {
         return Container(
-          color: shadcn.Theme.of(context).colorScheme.background,
+          color: resolveThemeColor(context,
+              dark: MyntColors.backgroundColorDark,
+              light: MyntColors.backgroundColor),
           child: ListView.separated(
             key: ValueKey('${scrips.length}_$sortBy'),
             itemCount: scrips.length,
@@ -1119,36 +954,49 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
         borderRadius: shadcn.Theme.of(context).borderRadiusLg,
       ),
       builder: (context) {
-        return shadcn.ModalContainer(
-          padding: const EdgeInsets.all(8),
-          child: SizedBox(
-            width: 200,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _buildFilterMenuItem(
-                  context,
-                  'Scrip Name',
-                  'scrip',
-                  currentSort,
-                  ref,
-                ),
-                _buildFilterMenuItem(
-                  context,
-                  'LTP',
-                  'price',
-                  currentSort,
-                  ref,
-                ),
-                _buildFilterMenuItem(
-                  context,
-                  'Perc.Change',
-                  'perchng',
-                  currentSort,
-                  ref,
-                ),
-              ],
+        return Container(
+          decoration: BoxDecoration(
+            borderRadius: shadcn.Theme.of(context).borderRadiusLg,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.15),
+                blurRadius: 12,
+                spreadRadius: 2,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: shadcn.ModalContainer(
+            padding: const EdgeInsets.all(8),
+            child: SizedBox(
+              width: 200,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _buildFilterMenuItem(
+                    context,
+                    'Scrip Name',
+                    'scrip',
+                    currentSort,
+                    ref,
+                  ),
+                  _buildFilterMenuItem(
+                    context,
+                    'LTP',
+                    'price',
+                    currentSort,
+                    ref,
+                  ),
+                  _buildFilterMenuItem(
+                    context,
+                    'Perc.Change',
+                    'perchng',
+                    currentSort,
+                    ref,
+                  ),
+                ],
+              ),
             ),
           ),
         );
@@ -1305,6 +1153,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
       ),
       transitionDuration: const Duration(milliseconds: 200),
       pageBuilder: (context, animation, secondaryAnimation) {
+        final Map<int, bool> dialogHoveredItems = {};
         return PointerInterceptor(
           child: MouseRegion(
             cursor: SystemMouseCursors.basic,
@@ -1370,7 +1219,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                       Flexible(
                         child: Padding(
                           padding: const EdgeInsets.only(
-                              left: 10, top: 10, bottom: 10),
+                              top: 10, bottom: 10, left: 0, right: 0),
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1378,7 +1227,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                               if (watchlist.length - preDefWl.length < 10)
                                 Padding(
                                   padding: const EdgeInsets.only(
-                                      bottom: 6, right: 10),
+                                      bottom: 6, right: 10, left: 16),
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.end,
                                     children: [
@@ -1407,108 +1256,151 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                                       dark: MyntColors.scrollbarThumbDark,
                                       light: MyntColors.scrollbarThumbLight,
                                     ),
-                                    child: ListView.builder(
-                                      shrinkWrap: true,
-                                      padding: const EdgeInsets.only(right: 4),
-                                      itemCount: watchlist.length,
-                                      itemBuilder: (context, index) {
-                                        final watchlistName = watchlist[index];
-                                        final isPredefined =
-                                            preDefWl.contains(watchlistName);
+                                    child: StatefulBuilder(
+                                        builder: (context, setDialogState) {
+                                      return ListView.builder(
+                                        shrinkWrap: true,
+                                        // padding:
+                                        //     const EdgeInsets.only(right: 4),
+                                        itemCount: watchlist.length,
+                                        itemBuilder: (context, index) {
+                                          final watchlistName =
+                                              watchlist[index];
+                                          final isPredefined =
+                                              preDefWl.contains(watchlistName);
 
-                                        return InkWell(
-                                          onTap: () async {
-                                            Navigator.of(context).pop();
-                                            if (watchlistName !=
-                                                currentWLName) {
-                                              await _handleWatchlistSelection(
-                                                  watchlistName, ref);
-                                            }
-                                          },
-                                          child: Container(
-                                            padding: const EdgeInsets.only(
-                                                top: 8,
-                                                bottom: 8,
-                                                left: 4,
-                                                right: 12),
-                                            child: Row(
-                                              children: [
-                                                Radio<String>(
-                                                  value: watchlistName,
-                                                  groupValue: currentWLName,
-                                                  onChanged: (value) async {
-                                                    Navigator.of(context).pop();
-                                                    if (value != null &&
-                                                        value !=
-                                                            currentWLName) {
-                                                      await _handleWatchlistSelection(
-                                                          value, ref);
-                                                    }
-                                                  },
-                                                  activeColor:
-                                                      resolveThemeColor(
-                                                    context,
-                                                    dark:
-                                                        MyntColors.primaryDark,
-                                                    light: MyntColors.primary,
-                                                  ),
-                                                ),
-                                                const SizedBox(width: 8),
-                                                Expanded(
-                                                  child: Text(
-                                                    _formatWatchlistName(
-                                                        watchlistName),
-                                                    style:
-                                                        MyntWebTextStyles.body(
-                                                      context,
-                                                      color: resolveThemeColor(
+                                          return MouseRegion(
+                                            onEnter: (_) => setDialogState(() =>
+                                                dialogHoveredItems[index] =
+                                                    true),
+                                            onExit: (_) => setDialogState(() =>
+                                                dialogHoveredItems[index] =
+                                                    false),
+                                            child: InkWell(
+                                              onTap: () async {
+                                                Navigator.of(context).pop();
+                                                if (watchlistName !=
+                                                    currentWLName) {
+                                                  await _handleWatchlistSelection(
+                                                      watchlistName, ref);
+                                                }
+                                              },
+                                              child: Container(
+                                                padding: const EdgeInsets.only(
+                                                    top: 8,
+                                                    bottom: 8,
+                                                    left: 14,
+                                                    right: 10),
+                                                color: (dialogHoveredItems[
+                                                            index] ??
+                                                        false)
+                                                    ? resolveThemeColor(
                                                         context,
                                                         dark: MyntColors
-                                                            .textPrimaryDark,
-                                                        light: MyntColors
-                                                            .textPrimary,
+                                                            .primaryDark,
+                                                        light:
+                                                            MyntColors.primary,
+                                                      ).withValues(alpha: 0.08)
+                                                    : Colors.transparent,
+                                                child: Row(
+                                                  children: [
+                                                    Radio<String>(
+                                                      value: watchlistName,
+                                                      groupValue: currentWLName,
+                                                      onChanged: (value) async {
+                                                        Navigator.of(context)
+                                                            .pop();
+                                                        if (value != null &&
+                                                            value !=
+                                                                currentWLName) {
+                                                          await _handleWatchlistSelection(
+                                                              value, ref);
+                                                        }
+                                                      },
+                                                      activeColor:
+                                                          resolveThemeColor(
+                                                        context,
+                                                        dark: MyntColors
+                                                            .primaryDark,
+                                                        light:
+                                                            MyntColors.primary,
                                                       ),
                                                     ),
-                                                  ),
-                                                ),
-                                                if (!isPredefined) ...[
-                                                  MyntIconButton(
-                                                    icon: Icons.edit_outlined,
-                                                    size: MyntButtonSize.medium,
-                                                    onPressed: () {
-                                                      Navigator.of(context)
-                                                          .pop();
-                                                      _showEditWatchlistDialog(
+                                                    const SizedBox(width: 8),
+                                                    Expanded(
+                                                      child: Text(
+                                                        _formatWatchlistName(
+                                                            watchlistName),
+                                                        style: MyntWebTextStyles
+                                                            .body(
                                                           context,
-                                                          ref,
-                                                          watchlistName);
-                                                    },
-                                                  ),
-                                                  MyntIconButton(
-                                                    icon: Icons
-                                                        .delete_outline_outlined,
-                                                    size: MyntButtonSize.medium,
-                                                    color: resolveThemeColor(
-                                                      context,
-                                                      dark: MyntColors.lossDark,
-                                                      light: MyntColors.loss,
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                          color:
+                                                              resolveThemeColor(
+                                                            context,
+                                                            dark: MyntColors
+                                                                .textPrimaryDark,
+                                                            light: MyntColors
+                                                                .textPrimary,
+                                                          ),
+                                                        ),
+                                                      ),
                                                     ),
-                                                    onPressed: () {
-                                                      Navigator.of(context)
-                                                          .pop();
-                                                      _showDeleteWatchlistDialog(
+                                                    if (!isPredefined) ...[
+                                                      MyntIconButton(
+                                                        icon:
+                                                            Icons.edit_outlined,
+                                                        size: MyntButtonSize
+                                                            .medium,
+                                                        color:
+                                                            resolveThemeColor(
                                                           context,
-                                                          ref,
-                                                          watchlistName);
-                                                    },
-                                                  ),
-                                                ],
-                                              ],
+                                                          dark: MyntColors
+                                                              .iconDark,
+                                                          light:
+                                                              MyntColors.icon,
+                                                        ),
+                                                        onPressed: () {
+                                                          Navigator.of(context)
+                                                              .pop();
+                                                          _showEditWatchlistDialog(
+                                                              context,
+                                                              ref,
+                                                              watchlistName);
+                                                        },
+                                                      ),
+                                                      MyntIconButton(
+                                                        icon: Icons
+                                                            .delete_outline_outlined,
+                                                        size: MyntButtonSize
+                                                            .medium,
+                                                        color:
+                                                            resolveThemeColor(
+                                                          context,
+                                                          dark: MyntColors
+                                                              .lossDark,
+                                                          light:
+                                                              MyntColors.loss,
+                                                        ),
+                                                        onPressed: () {
+                                                          Navigator.of(context)
+                                                              .pop();
+                                                          _showDeleteWatchlistDialog(
+                                                              context,
+                                                              ref,
+                                                              watchlistName);
+                                                        },
+                                                      ),
+                                                    ],
+                                                  ],
+                                                ),
+                                              ),
                                             ),
-                                          ),
-                                        );
-                                      },
-                                    ),
+                                          );
+                                        },
+                                      );
+                                    }),
                                   ),
                                 ),
                               ),
@@ -1813,6 +1705,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                                 textAlign: TextAlign.center,
                                 style: MyntWebTextStyles.body(
                                   context,
+                                  fontWeight: FontWeight.w500,
                                   color: resolveThemeColor(
                                     context,
                                     dark: MyntColors.textPrimaryDark,
@@ -2383,21 +2276,21 @@ class _WatchlistLivePriceWidgetState
     if (change.startsWith("-") || perChange.startsWith('-')) {
       return resolveThemeColor(
         context,
-        dark: WebColors.lossDark,
-        light: WebColors.loss,
+        dark: MyntColors.lossDark,
+        light: MyntColors.loss,
       );
     } else if ((change == "null" || perChange == "null") ||
         (change == "0.00" || perChange == "0.00")) {
       return resolveThemeColor(
         context,
-        dark: WebColors.textSecondaryDark,
-        light: WebColors.textSecondary,
+        dark: MyntColors.textSecondaryDark,
+        light: MyntColors.textSecondary,
       );
     } else {
       return resolveThemeColor(
         context,
-        dark: WebColors.profitDark,
-        light: WebColors.profit,
+        dark: MyntColors.profitDark,
+        light: MyntColors.profit,
       );
     }
   }
@@ -2426,8 +2319,8 @@ class _WatchlistLivePriceWidgetState
             style: _getTextStyle(
               resolveThemeColor(
                 context,
-                dark: WebColors.textSecondaryDark,
-                light: WebColors.textSecondary,
+                dark: MyntColors.textSecondaryDark,
+                light: MyntColors.textSecondary,
               ),
               13,
               1,

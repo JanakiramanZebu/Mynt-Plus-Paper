@@ -65,9 +65,17 @@ TextStyle _text(
             )
           : scheme.foreground);
 
+  double width = MediaQuery.of(context).size.width;
+  double scaleFactor = 1.0;
+  if (width < 1000) {
+    scaleFactor = 0.8;
+  } else if (width < 1300) {
+    scaleFactor = 0.9;
+  }
+
   return TextStyle(
     fontFamily: MyntFonts.fontFamily,
-    fontSize: size,
+    fontSize: size * scaleFactor,
     fontWeight: weight,
     color: resolvedColor,
     height: height,
@@ -88,9 +96,17 @@ TextStyle webText(
 }) {
   final scheme = shadcn.Theme.of(context).colorScheme;
 
+  double width = MediaQuery.of(context).size.width;
+  double scaleFactor = 1.0;
+  if (width < 1000) {
+    scaleFactor = 0.8;
+  } else if (width < 1300) {
+    scaleFactor = 0.9;
+  }
+
   return TextStyle(
     fontFamily: MyntFonts.fontFamily,
-    fontSize: size,
+    fontSize: (size ?? MyntFonts.body) * scaleFactor,
     fontWeight: weight,
     height: height,
     color: color ??
@@ -159,7 +175,21 @@ class MyntWebTextStyles {
       _text(
         c,
         size: MyntFonts.title,
-        weight: fontWeight ?? MyntFonts.semiBold,
+        weight: fontWeight ?? MyntFonts.medium,
+        color: color,
+        darkColor: darkColor,
+        lightColor: lightColor,
+      );
+
+       static TextStyle titlesub(BuildContext c,
+          {Color? color,
+          Color? darkColor,
+          Color? lightColor,
+          FontWeight? fontWeight}) =>
+      _text(
+        c,
+        size: MyntFonts.titleMedium,
+          weight: FontWeight.w600,
         color: color,
         darkColor: darkColor,
         lightColor: lightColor,
@@ -206,7 +236,7 @@ class MyntWebTextStyles {
       _text(
         c,
         size: MyntFonts.bodySmall,
-        weight: fontWeight ?? MyntFonts.regular,
+        weight: fontWeight ?? MyntFonts.medium,
         color: color,
         darkColor: darkColor,
         lightColor: lightColor,
@@ -222,7 +252,7 @@ class MyntWebTextStyles {
       _text(
         c,
         size: MyntFonts.para,
-        weight: fontWeight ?? MyntFonts.regular,
+        weight: fontWeight ?? MyntFonts.medium,
         color: color,
         darkColor: darkColor,
         lightColor: lightColor,
@@ -238,7 +268,7 @@ class MyntWebTextStyles {
       _text(
         c,
         size: MyntFonts.caption,
-        weight: fontWeight ?? MyntFonts.regular,
+        weight: fontWeight ?? MyntFonts.medium,
         color: color,
         darkColor: darkColor,
         lightColor: lightColor,
@@ -369,7 +399,7 @@ class MyntWebTextStyles {
       _text(
         c,
         size: MyntFonts.para,
-        weight: fontWeight ?? MyntFonts.regular,
+        weight: fontWeight ?? MyntFonts.medium,
         color: color,
         darkColor: darkColor,
         lightColor: lightColor,
@@ -391,10 +421,10 @@ class MyntWebTextStyles {
       );
 
   static TextStyle buttonMd(BuildContext c,
-          {Color? color, Color? darkColor, Color? lightColor}) =>
+          {Color? color, Color? darkColor, Color? lightColor, double? fontSize}) =>
       _text(
         c,
-        size: MyntFonts.bodySmall, // 13
+        size: fontSize ?? MyntFonts.bodySmall, // 13
         weight: MyntFonts.bold,
         color: color,
         darkColor: darkColor,
@@ -402,10 +432,10 @@ class MyntWebTextStyles {
       );
 
   static TextStyle buttonXl(BuildContext c,
-          {Color? color, Color? darkColor, Color? lightColor}) =>
+          {Color? color, Color? darkColor, Color? lightColor, double? fontSize}) =>
       _text(
         c,
-        size: MyntFonts.body, // 14
+        size: fontSize ?? MyntFonts.body, // 14
         weight: MyntFonts.bold,
         color: color,
         darkColor: darkColor,

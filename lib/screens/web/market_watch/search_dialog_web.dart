@@ -163,8 +163,8 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
             children: [
               // Search Bar Section
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.only(
+                    left: 16, right: 8, top: 16, bottom: 10),
                 child: Row(
                   children: [
                     Expanded(
@@ -193,21 +193,21 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
                         },
                       ),
                     ),
-                    // SizedBox(width: 10),
-                    // // Close dialog icon (always visible, outside search bar)
+                    SizedBox(width: 10),
+                    // Close dialog icon (always visible, outside search bar)
 
-                    // MyntCloseButton(
-                    //   onPressed: () {
-                    //     ref.read(marketWatchProvider).searchClear();
-                    //     Navigator.of(context).pop();
-                    //   },
-                    // )
+                    MyntCloseButton(
+                      onPressed: () {
+                        ref.read(marketWatchProvider).searchClear();
+                        Navigator.of(context).pop();
+                      },
+                    )
                   ],
                 ),
               ),
               // Close dialog icon (always visible, outside search bar)
 
-              const SizedBox(height: 10),
+              // const SizedBox(height: 10),
               // Always show tabs and content area
               _buildSearchTabs(ref, theme),
 
@@ -226,75 +226,78 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
     final searchTabList =
         ref.read(marketWatchProvider).searchTabList.sublist(0, _tabCount);
 
-    return SingleChildScrollView(
-      controller: _tabScrollController,
-      scrollDirection: Axis.horizontal,
-      physics: const ClampingScrollPhysics(),
-      child: Builder(
-        builder: (context) {
-          final currentTheme = shadcn.Theme.of(context);
-          final isDark = isDarkMode(context);
-          // Create a new ColorScheme based on the default, but with custom primary color
-          final baseColorScheme = isDark
-              ? shadcn.ColorSchemes.darkDefaultColor
-              : shadcn.ColorSchemes.lightDefaultColor;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+      child: SingleChildScrollView(
+        controller: _tabScrollController,
+        scrollDirection: Axis.horizontal,
+        physics: const ClampingScrollPhysics(),
+        child: Builder(
+          builder: (context) {
+            final currentTheme = shadcn.Theme.of(context);
+            final isDark = isDarkMode(context);
+            // Create a new ColorScheme based on the default, but with custom primary color
+            final baseColorScheme = isDark
+                ? shadcn.ColorSchemes.darkDefaultColor
+                : shadcn.ColorSchemes.lightDefaultColor;
 
-          // Create custom ColorScheme with theme-appropriate primary color
-          final primaryColor = resolveThemeColor(
-            context,
-            dark: WebColors.primaryDark,
-            light: WebColors.primary,
-          );
-          final customColorScheme = baseColorScheme.copyWith(
-            primary: () => primaryColor,
-          );
+            // Create custom ColorScheme with theme-appropriate primary color
+            final primaryColor = resolveThemeColor(
+              context,
+              dark: WebColors.primaryDark,
+              light: WebColors.primary,
+            );
+            final customColorScheme = baseColorScheme.copyWith(
+              primary: () => primaryColor,
+            );
 
-          return shadcn.Theme(
-            data: shadcn.ThemeData(
-              colorScheme: customColorScheme,
-              radius: currentTheme.radius,
-            ),
-            child: shadcn.TabList(
-              index: _tabController.index,
-              onChanged: (value) {
-                if (_tabController.index != value) {
-                  _tabController.animateTo(value);
-                  _scrollToSelectedTab(value);
-                }
-              },
-              children: [
-                for (int index = 0; index < searchTabList.length; index++)
-                  shadcn.TabItem(
-                    child: Builder(
-                      builder: (context) {
-                        final isActive = index == _tabController.index;
-                        return Text(
-                          searchTabList[index].text ?? '',
-                          style: MyntWebTextStyles.body(
-                            context,
-                            // fontSize: WebFonts.subSize,
-                            fontWeight:
-                                isActive ? MyntFonts.bold : MyntFonts.medium,
-                            color: isActive
-                                ? resolveThemeColor(
-                                    context,
-                                    dark: WebColors.primaryDark,
-                                    light: WebColors.primary,
-                                  )
-                                : resolveThemeColor(
-                                    context,
-                                    dark: WebColors.textSecondaryDark,
-                                    light: WebColors.textSecondary,
-                                  ),
-                          ),
-                        );
-                      },
+            return shadcn.Theme(
+              data: shadcn.ThemeData(
+                colorScheme: customColorScheme,
+                radius: currentTheme.radius,
+              ),
+              child: shadcn.TabList(
+                index: _tabController.index,
+                onChanged: (value) {
+                  if (_tabController.index != value) {
+                    _tabController.animateTo(value);
+                    _scrollToSelectedTab(value);
+                  }
+                },
+                children: [
+                  for (int index = 0; index < searchTabList.length; index++)
+                    shadcn.TabItem(
+                      child: Builder(
+                        builder: (context) {
+                          final isActive = index == _tabController.index;
+                          return Text(
+                            searchTabList[index].text ?? '',
+                            style: MyntWebTextStyles.body(
+                              context,
+                              // fontSize: WebFonts.subSize,
+                              fontWeight:
+                                  isActive ? MyntFonts.bold : MyntFonts.medium,
+                              color: isActive
+                                  ? resolveThemeColor(
+                                      context,
+                                      dark: WebColors.primaryDark,
+                                      light: WebColors.primary,
+                                    )
+                                  : resolveThemeColor(
+                                      context,
+                                      dark: WebColors.textSecondaryDark,
+                                      light: WebColors.textSecondary,
+                                    ),
+                            ),
+                          );
+                        },
+                      ),
                     ),
-                  ),
-              ],
-            ),
-          );
-        },
+                ],
+              ),
+            );
+          },
+        ),
       ),
     );
   }
@@ -324,12 +327,11 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
         thumbVisibility: false,
         thickness: 6,
         radius: const Radius.circular(0),
-        thumbColor:resolveThemeColor(
-        context,
-        dark: WebColors.scrollbarThumbDark,
-        light: WebColors.scrollbarThumbLight,
-      )
-,
+        thumbColor: resolveThemeColor(
+          context,
+          dark: WebColors.scrollbarThumbDark,
+          light: WebColors.scrollbarThumbLight,
+        ),
         child: ListView.separated(
           controller: _scrollController,
           physics: const BouncingScrollPhysics(),
@@ -347,18 +349,16 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
               child: Material(
                 color: Colors.transparent,
                 child: InkWell(
-                splashColor: resolveThemeColor(
-  context,
-  dark: MyntColors.rippleDark,
-  light: MyntColors.rippleLight,
-),
-highlightColor: resolveThemeColor(
-  context,
-  dark: MyntColors.highlightDark,
-  light: MyntColors.highlightLight,
-),
-
-
+                  splashColor: resolveThemeColor(
+                    context,
+                    dark: MyntColors.rippleDark,
+                    light: MyntColors.rippleLight,
+                  ),
+                  highlightColor: resolveThemeColor(
+                    context,
+                    dark: MyntColors.highlightDark,
+                    light: MyntColors.highlightLight,
+                  ),
                   onTap: () async {
                     if (widget.isBasket == "Chart||Is") {
                       // Create DepthInputArgs from selected scrip to update header and scrip info
@@ -385,6 +385,22 @@ highlightColor: resolveThemeColor(
                       await searchScrip.searchClear();
                       Navigator.of(context).pop();
                     } else if (widget.isBasket == "Option||Is") {
+                      // Create DepthInputArgs from selected scrip with isOption = true
+                      final depthArgs = DepthInputArgs(
+                        exch: scrip.exch.toString(),
+                        token: scrip.token.toString(),
+                        tsym: scrip.tsym.toString(),
+                        instname: scrip.instname ?? "",
+                        symbol: scrip.symbol ?? scrip.tsym.toString(),
+                        expDate: scrip.expDate ?? "",
+                        option: scrip.option ?? "",
+                        isOption: true,
+                      );
+
+                      // Update depth/scrip info panel and header
+                      await searchScrip.calldepthApis(
+                          context, depthArgs, "Option||Is");
+
                       searchScrip.setOptionScript(
                         context,
                         scrip.exch.toString(),
@@ -406,6 +422,13 @@ highlightColor: resolveThemeColor(
                   child: Container(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 10, vertical: 10),
+                    color: (_hoveredItems[index] ?? false)
+                        ? resolveThemeColor(
+                            context,
+                            dark: WebColors.primaryDark,
+                            light: WebColors.primary,
+                          ).withValues(alpha: 0.08)
+                        : Colors.transparent,
                     child: Row(
                       children: [
                         // Scrip Info
@@ -467,7 +490,7 @@ highlightColor: resolveThemeColor(
                                     padding: const EdgeInsets.only(left: 4),
                                     child: Text(
                                       '${scrip.exch}',
-                                      style: MyntWebTextStyles.symbol(
+                                      style: MyntWebTextStyles.exch(
                                         context,
                                         color: resolveThemeColor(
                                           context,
@@ -706,9 +729,8 @@ highlightColor: resolveThemeColor(
                                               )
                                             : resolveThemeColor(
                                                 context,
-                                                dark:
-                                                    WebColors.textSecondaryDark,
-                                                light: WebColors.textSecondary,
+                                                dark: WebColors.iconDark,
+                                                light: WebColors.icon,
                                               ),
                                         height: 18,
                                         width: 18,
@@ -760,29 +782,20 @@ highlightColor: resolveThemeColor(
       final rootNavigator = Navigator.of(context, rootNavigator: true);
       final rootContext = rootNavigator.context;
 
-      // Fetch scrip info first
-      await marketWatch.fetchScripInfo(
-        scrip.token.toString(),
-        scrip.exch.toString(),
-        context,
-        true,
+      // Create DepthInputArgs exactly like in normal selection flow
+      final depthArgs = DepthInputArgs(
+        exch: scrip.exch.toString(),
+        token: scrip.token.toString(),
+        tsym: scrip.tsym.toString(),
+        instname: scrip.instname ?? "",
+        symbol: scrip.symbol ?? scrip.tsym.toString(),
+        expDate: scrip.expDate ?? "",
+        option: scrip.option ?? "",
       );
 
-      if (!context.mounted) return;
-
-      // Check if scrip info was fetched
-      if (marketWatch.scripInfoModel == null) {
-        showResponsiveErrorMessage(
-            context, "Failed to fetch scrip information.");
-        return;
-      }
-
-      // Fetch depth data (getQuotes) to get LTP and percentage change
-      await marketWatch.fetchScripQuote(
-        scrip.token.toString(),
-        scrip.exch.toString(),
-        context,
-      );
+      // Use calldepthApis to fetch data and update background views (Chart/Depth)
+      // This ensures background stays in sync with what user is buying/selling
+      await marketWatch.calldepthApis(context, depthArgs, "Basket");
 
       if (!context.mounted) return;
 

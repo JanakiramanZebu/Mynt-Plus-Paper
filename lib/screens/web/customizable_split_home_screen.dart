@@ -536,10 +536,14 @@ class _CustomizableSplitHomeScreenState
         // PERFORMANCE FIX: Use .select() to only watch connection status fields
         // Before: ref.watch(websocketProvider) - ENTIRE provider caused rebuilds every 500ms!
         // After: Only rebuild when connection status actually changes
-        final connectionCount = ref.watch(websocketProvider.select((p) => p.connectioncount));
-        final reconnectionSuccess = ref.watch(websocketProvider.select((p) => p.reconnectionSuccess));
-        final wsConnected = ref.watch(websocketProvider.select((p) => p.wsConnected));
-        final retryscreen = ref.watch(websocketProvider.select((p) => p.retryscreen));
+        final connectionCount =
+            ref.watch(websocketProvider.select((p) => p.connectioncount));
+        final reconnectionSuccess =
+            ref.watch(websocketProvider.select((p) => p.reconnectionSuccess));
+        final wsConnected =
+            ref.watch(websocketProvider.select((p) => p.wsConnected));
+        final retryscreen =
+            ref.watch(websocketProvider.select((p) => p.retryscreen));
 
         if ((internet.connectionStatus == ConnectivityResult.none ||
                 connectionCount >= 5) &&
@@ -605,9 +609,7 @@ class _CustomizableSplitHomeScreenState
           ),
           // Divider
           Container(
-            width: 1,
-            color:shadcn.Theme.of(context).colorScheme.border
-          ),
+              width: 1, color: shadcn.Theme.of(context).colorScheme.border),
           // Right side: AppBar + Content
           Expanded(
             child: Column(
@@ -672,7 +674,9 @@ class _CustomizableSplitHomeScreenState
   /// Build watchlist panel (full height) with index slots on top
   Widget _buildWatchlistPanel(ThemesProvider theme, {required int panelIndex}) {
     return Container(
-      color: shadcn.Theme.of(context).colorScheme.background,
+      color: resolveThemeColor(context,
+          dark: MyntColors.backgroundColorDark,
+          light: MyntColors.backgroundColor),
       child: Column(
         children: [
           // Index slots at top of watchlist
@@ -707,7 +711,9 @@ class _CustomizableSplitHomeScreenState
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            color: shadcn.Theme.of(context).colorScheme.background,
+            color: resolveThemeColor(context,
+                dark: MyntColors.backgroundColorDark,
+                light: MyntColors.backgroundColor),
             // border: Border(
             //   bottom: BorderSide(
             //     color: isDarkMode
@@ -752,7 +758,9 @@ class _CustomizableSplitHomeScreenState
     if (panelIndex < _panels.length) {
       final panel = _panels[panelIndex];
       return Container(
-        color: shadcn.Theme.of(context).colorScheme.background,
+        color: resolveThemeColor(context,
+            dark: MyntColors.backgroundColorDark,
+            light: MyntColors.backgroundColor),
         child: panel.screens.isNotEmpty
             ? IndexedStack(
                 index: panel.activeScreenIndex >= 0 &&
@@ -770,7 +778,9 @@ class _CustomizableSplitHomeScreenState
     }
     // Default to dashboard if no panel configured
     return Container(
-      color: shadcn.Theme.of(context).colorScheme.background,
+      color: resolveThemeColor(context,
+          dark: MyntColors.backgroundColorDark,
+          light: MyntColors.backgroundColor),
       child: _getScreenForType(ScreenType.dashboard),
     );
   }
@@ -780,7 +790,9 @@ class _CustomizableSplitHomeScreenState
     return Container(
       height: 65,
       decoration: BoxDecoration(
-        color: shadcn.Theme.of(context).colorScheme.background,
+        color: resolveThemeColor(context,
+            dark: MyntColors.backgroundColorDark,
+            light: MyntColors.backgroundColor),
         border: Border(
           bottom: BorderSide(
             color: shadcn.Theme.of(context).colorScheme.border,
@@ -842,7 +854,9 @@ class _CustomizableSplitHomeScreenState
         child: Container(
           decoration: BoxDecoration(
             // Clean minimal - white background
-            color: shadcn.Theme.of(context).colorScheme.background,
+            color: resolveThemeColor(context,
+                dark: MyntColors.backgroundColorDark,
+                light: MyntColors.backgroundColor),
             // Subtle border at bottom
             border: Border(
               bottom: BorderSide(
@@ -1046,7 +1060,9 @@ class _CustomizableSplitHomeScreenState
 
     return Container(
       // margin: const EdgeInsets.all(0),
-      color: shadcn.Theme.of(context).colorScheme.background,
+      color: resolveThemeColor(context,
+          dark: MyntColors.backgroundColorDark,
+          light: MyntColors.backgroundColor),
       child: DragTarget<Object>(
         onAcceptWithDetails: (details) {
           final draggedData = details.data;
@@ -1279,18 +1295,16 @@ class _CustomizableSplitHomeScreenState
       child: InkWell(
         onTap: _handleSwapPanels,
         borderRadius: BorderRadius.circular(10),
-      splashColor: resolveThemeColor(
-  context,
-  dark: MyntColors.rippleDark,
-  light: MyntColors.rippleLight,
-),
-highlightColor: resolveThemeColor(
-  context,
-  dark: MyntColors.highlightDark,
-  light: MyntColors.highlightLight,
-),
-
-
+        splashColor: resolveThemeColor(
+          context,
+          dark: MyntColors.rippleDark,
+          light: MyntColors.rippleLight,
+        ),
+        highlightColor: resolveThemeColor(
+          context,
+          dark: MyntColors.highlightDark,
+          light: MyntColors.highlightLight,
+        ),
         child: Icon(
           Icons.swap_horiz,
           color: resolveThemeColor(
@@ -1317,18 +1331,16 @@ highlightColor: resolveThemeColor(
           );
         },
         borderRadius: BorderRadius.circular(10),
-      splashColor: resolveThemeColor(
-  context,
-  dark: MyntColors.rippleDark,
-  light: MyntColors.rippleLight,
-),
-highlightColor: resolveThemeColor(
-  context,
-  dark: MyntColors.highlightDark,
-  light: MyntColors.highlightLight,
-),
-
-
+        splashColor: resolveThemeColor(
+          context,
+          dark: MyntColors.rippleDark,
+          light: MyntColors.rippleLight,
+        ),
+        highlightColor: resolveThemeColor(
+          context,
+          dark: MyntColors.highlightDark,
+          light: MyntColors.highlightLight,
+        ),
         child: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
@@ -1441,14 +1453,16 @@ highlightColor: resolveThemeColor(
                 ref.watch(portfolioProvider.select((p) => p.holdloader));
             final holdingsModel =
                 ref.watch(portfolioProvider.select((p) => p.holdingsModel));
-            final hasData = holdingsModel != null && holdingsModel.isNotEmpty;
+            // final hasData = holdingsModel != null && holdingsModel.isNotEmpty;
 
             // Show loader if local loading state is true, provider loading is true, or no data yet
-            if (isLoading || holdloader || !hasData) {
+            if (isLoading || holdloader) {
               return Container(
                 width: double.infinity,
                 height: double.infinity,
-                color: shadcn.Theme.of(context).colorScheme.background,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.backgroundColorDark,
+                    light: MyntColors.backgroundColor),
                 child: const CircularLoaderImage(),
               );
             }
@@ -1471,7 +1485,9 @@ highlightColor: resolveThemeColor(
               return Container(
                 width: double.infinity,
                 height: double.infinity,
-                color: shadcn.Theme.of(context).colorScheme.background,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.backgroundColorDark,
+                    light: MyntColors.backgroundColor),
                 child: const CircularLoaderImage(),
               );
             }
@@ -1497,7 +1513,8 @@ highlightColor: resolveThemeColor(
             if (args == null) {
               // PERFORMANCE FIX: Use .select() to only watch getQuotes
               // Watching entire marketWatchProvider causes unnecessary rebuilds
-              final quotes = ref.watch(marketWatchProvider.select((p) => p.getQuotes));
+              final quotes =
+                  ref.watch(marketWatchProvider.select((p) => p.getQuotes));
               final fallback =
                   ChartArgs(exch: 'NSE', tsym: 'Nifty 50', token: '26000');
               return ChartWithDepthWeb(
@@ -1761,7 +1778,9 @@ highlightColor: resolveThemeColor(
           builder: (context, ref, child) {
             final theme = ref.watch(themeProvider);
             return AlertDialog(
-              backgroundColor: shadcn.Theme.of(context).colorScheme.background,
+              backgroundColor: resolveThemeColor(context,
+                  dark: MyntColors.backgroundColorDark,
+                  light: MyntColors.backgroundColor),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
@@ -3183,8 +3202,9 @@ highlightColor: resolveThemeColor(
               builder: (BuildContext context) {
                 final theme = ref.read(themeProvider);
                 return AlertDialog(
-                    backgroundColor:
-                        shadcn.Theme.of(context).colorScheme.background,
+                    backgroundColor: resolveThemeColor(context,
+                        dark: MyntColors.backgroundColorDark,
+                        light: MyntColors.backgroundColor),
                     titlePadding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                     shape: const RoundedRectangleBorder(
@@ -3213,18 +3233,16 @@ highlightColor: resolveThemeColor(
                                   Navigator.of(context).pop(false);
                                 },
                                 borderRadius: BorderRadius.circular(20),
-                              splashColor: resolveThemeColor(
-  context,
-  dark: MyntColors.rippleDark,
-  light: MyntColors.rippleLight,
-),
-highlightColor: resolveThemeColor(
-  context,
-  dark: MyntColors.highlightDark,
-  light: MyntColors.highlightLight,
-),
-
-
+                                splashColor: resolveThemeColor(
+                                  context,
+                                  dark: MyntColors.rippleDark,
+                                  light: MyntColors.rippleLight,
+                                ),
+                                highlightColor: resolveThemeColor(
+                                  context,
+                                  dark: MyntColors.highlightDark,
+                                  light: MyntColors.highlightLight,
+                                ),
                                 child: Padding(
                                   padding: const EdgeInsets.all(6.0),
                                   child: Icon(
@@ -3367,18 +3385,16 @@ class _ProfileDropdownState extends State<_ProfileDropdown> {
       child: InkWell(
         onTap: _toggleDropdown,
         borderRadius: BorderRadius.circular(10),
-      splashColor: resolveThemeColor(
-  context,
-  dark: MyntColors.rippleDark,
-  light: MyntColors.rippleLight,
-),
-highlightColor: resolveThemeColor(
-  context,
-  dark: MyntColors.highlightDark,
-  light: MyntColors.highlightLight,
-),
-
-
+        splashColor: resolveThemeColor(
+          context,
+          dark: MyntColors.rippleDark,
+          light: MyntColors.rippleLight,
+        ),
+        highlightColor: resolveThemeColor(
+          context,
+          dark: MyntColors.highlightDark,
+          light: MyntColors.highlightLight,
+        ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -3769,7 +3785,9 @@ class _LazyOrderBookScreenState extends ConsumerState<_LazyOrderBookScreen> {
     return Container(
       width: double.infinity,
       height: double.infinity,
-      color: shadcn.Theme.of(context).colorScheme.background,
+      color: resolveThemeColor(context,
+          dark: MyntColors.backgroundColorDark,
+          light: MyntColors.backgroundColor),
       child: const CircularLoaderImage(),
     );
   }
@@ -3853,9 +3871,18 @@ class _AppBarIndexSlotState extends ConsumerState<_AppBarIndexSlot> {
       onExit: (_) => setState(() => _isHovered = false),
       child: GestureDetector(
         onTap: () => _handleIndexClick(context),
-        child: shadcn.Card(
-          borderColor: Colors.transparent,
-          padding: const EdgeInsets.all(0),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          decoration: BoxDecoration(
+            color: _isHovered
+                ? resolveThemeColor(
+                    context,
+                    dark: WebColors.primaryDark,
+                    light: WebColors.primary,
+                  ).withValues(alpha: 0.08)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(0),
+          ),
           child: Stack(
             children: [
               Column(
@@ -3867,6 +3894,7 @@ class _AppBarIndexSlotState extends ConsumerState<_AppBarIndexSlot> {
                     widget.indexItem.idxname ?? "",
                     style: MyntWebTextStyles.symbol(
                       context,
+                      fontWeight: FontWeight.w500,
                       color: resolveThemeColor(
                         context,
                         dark: MyntColors.textPrimaryDark,
@@ -3900,35 +3928,35 @@ class _AppBarIndexSlotState extends ConsumerState<_AppBarIndexSlot> {
                   right: 0,
                   top: 0,
                   child: Material(
-                    color: Colors.transparent,
+                    color: resolveThemeColor(
+                      context,
+                      dark: Colors.white.withOpacity(0.1),
+                      light: Colors.black.withOpacity(0.05),
+                    ),
                     shape: const CircleBorder(),
                     child: InkWell(
-                      customBorder: const CircleBorder(),
-                   splashColor: resolveThemeColor(
-  context,
-  dark: MyntColors.rippleDark,
-  light: MyntColors.rippleLight,
-),
-highlightColor: resolveThemeColor(
-  context,
-  dark: MyntColors.highlightDark,
-  light: MyntColors.highlightLight,
-),
-
-
                       onTap: () => _handleTap(context),
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: shadcn.Theme.of(context).colorScheme.card,
-                          shape: BoxShape.circle,
-                        ),
+                      customBorder: const CircleBorder(),
+                      splashColor: resolveThemeColor(
+                        context,
+                        dark: MyntColors.rippleDark,
+                        light: MyntColors.rippleLight,
+                      ),
+                      highlightColor: resolveThemeColor(
+                        context,
+                        dark: MyntColors.highlightDark,
+                        light: MyntColors.highlightLight,
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(6.0),
                         child: Icon(
                           Icons.edit_outlined,
-                          size: 16,
-                          color: shadcn.Theme.of(context)
-                              .colorScheme
-                              .mutedForeground,
+                          size: 14,
+                          color: resolveThemeColor(
+                            context,
+                            dark: MyntColors.iconDark,
+                            light: MyntColors.icon,
+                          ),
                         ),
                       ),
                     ),
@@ -4168,7 +4196,9 @@ class _LazyFundScreenState extends ConsumerState<_LazyFundScreen> {
     return Container(
       width: double.infinity,
       height: double.infinity,
-      color: shadcn.Theme.of(context).colorScheme.background,
+      color: resolveThemeColor(context,
+          dark: MyntColors.backgroundColorDark,
+          light: MyntColors.backgroundColor),
       child: const CircularLoaderImage(),
     );
   }

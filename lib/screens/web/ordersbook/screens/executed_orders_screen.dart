@@ -251,10 +251,18 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                       ),
                       // Scrollable Body (vertical scroll)
                       Expanded(
-                        child: Scrollbar(
+                        child: RawScrollbar(
                           controller: widget.verticalScrollController,
                           thumbVisibility: true,
                           trackVisibility: true,
+                          trackColor: resolveThemeColor(context,
+                              dark: Colors.grey.withOpacity(0.1),
+                              light: Colors.grey.withOpacity(0.1)),
+                          thumbColor: resolveThemeColor(context,
+                              dark: Colors.grey.withOpacity(0.3),
+                              light: Colors.grey.withOpacity(0.3)),
+                          thickness: 6,
+                          radius: const Radius.circular(3),
                           interactive: true,
                           child: SingleChildScrollView(
                             controller: widget.verticalScrollController,
@@ -340,7 +348,7 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                                                             EdgeInsets.only(
                                                                 right:
                                                                     isRowHovered
-                                                                        ? 140.0
+                                                                        ? 90.0
                                                                         : 0.0),
                                                         child: RichText(
                                                           overflow: isRowHovered
@@ -670,10 +678,18 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
 
               // Horizontal scroll wrapper (if needed)
               if (needsHorizontalScroll) {
-                return Scrollbar(
+                return RawScrollbar(
                   controller: widget.horizontalScrollController,
                   thumbVisibility: true,
                   trackVisibility: true,
+                  trackColor: resolveThemeColor(context,
+                      dark: Colors.grey.withOpacity(0.1),
+                      light: Colors.grey.withOpacity(0.1)),
+                  thumbColor: resolveThemeColor(context,
+                      dark: Colors.grey.withOpacity(0.3),
+                      light: Colors.grey.withOpacity(0.3)),
+                  thickness: 6,
+                  radius: const Radius.circular(3),
                   interactive: true,
                   child: SingleChildScrollView(
                     controller: widget.horizontalScrollController,
