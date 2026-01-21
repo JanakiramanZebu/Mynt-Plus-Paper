@@ -198,30 +198,52 @@ class _GttOrderBookDetailScreenWebState
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header with close button (fixed)
+              // Header with Order Details title
               Container(
                 padding:
-                    const EdgeInsets.symmetric(vertical: 16, horizontal: 10),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: _buildSymbolSection(theme, marketwatch),
+                    const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
+                      color: resolveThemeColor(
+                        context,
+                        dark: MyntColors.dividerDark,
+                        light: MyntColors.divider,
+                      ),
+                      width: 1,
                     ),
-                    MyntCloseButton(
-                      onPressed: () {
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    InkWell(
+                      onTap: () {
                         shadcn.closeSheet(context);
                       },
+                      child: Icon(
+                        Icons.close,
+                        size: 20,
+                        color: resolveThemeColor(
+                          context,
+                          dark: MyntColors.textPrimaryDark,
+                          light: MyntColors.textPrimary,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Text(
+                      'Order Details',
+                      style: MyntWebTextStyles.title(
+                        context,
+                        color: resolveThemeColor(
+                          context,
+                          dark: MyntColors.textPrimaryDark,
+                          light: MyntColors.textPrimary,
+                        ),
+                      ),
                     ),
                   ],
                 ),
-              ),
-              // Border divider
-              Container(
-                height: 1,
-                color: resolveThemeColor(context,
-                    dark: MyntColors.dividerDark, light: MyntColors.divider),
               ),
               // Scrollable Content
               Expanded(
@@ -231,11 +253,12 @@ class _GttOrderBookDetailScreenWebState
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // Symbol Info Section
+                        _buildSymbolSection(theme, marketwatch),
+                        const SizedBox(height: 16),
                         // Action Buttons
                         _buildActionButtons(theme, marketwatch),
-                        // GTT Type Section
-                        // const SizedBox(height: 16),
-                        // Order Parameters Section
+                        // Details Section
                         _buildOrderParametersSection(theme),
                       ],
                     ),
@@ -348,8 +371,8 @@ class _GttOrderBookDetailScreenWebState
             children: [
               Expanded(
                 child: _buildActionButton(
-                  "Modify Order",
-                  true,
+                  "Modify",
+                  false, // Outlined
                   theme,
                   () => _handleModify(marketwatch),
                 ),
@@ -357,8 +380,8 @@ class _GttOrderBookDetailScreenWebState
               const SizedBox(width: 12),
               Expanded(
                 child: _buildActionButton(
-                  "Cancel Order",
-                  false,
+                  "Cancel",
+                  true, // Primary
                   theme,
                   _handleCancel,
                 ),
@@ -389,24 +412,22 @@ class _GttOrderBookDetailScreenWebState
 
   Widget _buildOrderParametersSection(ThemesProvider theme) {
     return Padding(
-      padding: const EdgeInsets.only(top: 12),
+      padding: const EdgeInsets.only(top: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          _rowOfInfoData("Order Id", _gttOrder.alId ?? "-", theme),
+
           if (_gttOrder.placeOrderParams != null) ...[
-            // Text(
-            //   "${_gttOrder.placeOrderParams?.trantype == 'B' ? 'Buy' : 'Sell'} Trigger",
-            //   style: WebTextStyles.title(
-            //     isDarkTheme: theme.isDarkMode,
-            //     color: shadcn.Theme.of(context).colorScheme.foreground,
-            //     fontWeight: WebFonts.bold,
-            //   ),
-            // ),
-            _rowOfInfoDataWithColor(
-              "Status",
-              _getGttStatusText(),
+            _rowOfInfoData(
+              "Type",
+              _gttOrder.placeOrderParams?.trantype == 'B' ? 'Buy' : 'Sell',
               theme,
-              _getGttStatusColor(theme),
+            ),
+            _rowOfInfoData(
+              "Qty",
+              "${_gttOrder.placeOrderParams?.qty ?? 0}",
+              theme,
             ),
             _rowOfInfoData(
               "Trigger Price",
@@ -415,7 +436,25 @@ class _GttOrderBookDetailScreenWebState
                   : _gttOrder.d ?? "-",
               theme,
             ),
-            // const SizedBox(height: 12),
+            _rowOfInfoData(
+              "Exchange",
+              _gttOrder.exch ?? '-',
+              theme,
+            ),
+            _rowOfInfoData(
+              "Validity",
+              _gttOrder.validity ??
+                  '-', // Assuming validity is available or use what's appropriate
+              theme,
+            ),
+            _rowOfInfoDataWithColor(
+              "Status",
+              _getGttStatusText(),
+              theme,
+              _getGttStatusColor(theme),
+            ),
+            // Older fields kept just in case but hidden if not needed per design
+            /*
             _rowOfInfoData(
               "Product",
               _getProductName(_gttOrder.placeOrderParams?.prd),
@@ -427,22 +466,19 @@ class _GttOrderBookDetailScreenWebState
               theme,
             ),
             _rowOfInfoData(
-              "Quantity",
-              "${_gttOrder.placeOrderParams?.qty ?? 0}",
-              theme,
-            ),
-            _rowOfInfoData(
               "Price",
               _gttOrder.placeOrderParams?.prctyp == "MKT"
                   ? "MKT"
                   : _gttOrder.placeOrderParams?.prc ?? '-',
               theme,
             ),
+            */
           ],
+          // Leg 2 for OCO orders
           if (_gttOrder.placeOrderParamsLeg2 != null) ...[
             const SizedBox(height: 24),
             Text(
-              "${_gttOrder.placeOrderParamsLeg2?.trantype == 'B' ? 'Buy' : 'Sell'} Trigger @ ${_gttOrder.oivariable?.isNotEmpty == true ? _gttOrder.oivariable?.last.d ?? '' : '-'}",
+              "Leg 2: ${_gttOrder.placeOrderParamsLeg2?.trantype == 'B' ? 'Buy' : 'Sell'} Trigger @ ${_gttOrder.oivariable?.isNotEmpty == true ? _gttOrder.oivariable?.last.d ?? '' : '-'}",
               style: MyntWebTextStyles.title(
                 context,
                 color: resolveThemeColor(context,
@@ -453,18 +489,18 @@ class _GttOrderBookDetailScreenWebState
             ),
             const SizedBox(height: 12),
             _rowOfInfoData(
+              "Type",
+              _gttOrder.placeOrderParamsLeg2?.trantype == 'B' ? 'Buy' : 'Sell',
+              theme,
+            ),
+            _rowOfInfoData(
+              "Qty",
+              "${_gttOrder.placeOrderParamsLeg2?.qty ?? 0}",
+              theme,
+            ),
+            _rowOfInfoData(
               "Product",
               _getProductName(_gttOrder.placeOrderParamsLeg2?.prd),
-              theme,
-            ),
-            _rowOfInfoData(
-              "Order Type",
-              _gttOrder.placeOrderParamsLeg2?.prctyp ?? '-',
-              theme,
-            ),
-            _rowOfInfoData(
-              "Quantity",
-              "${_gttOrder.placeOrderParamsLeg2?.qty ?? 0}",
               theme,
             ),
             _rowOfInfoData(
@@ -476,26 +512,50 @@ class _GttOrderBookDetailScreenWebState
             ),
           ],
           if (_gttOrder.remarks != null && _gttOrder.remarks != "") ...[
-            const SizedBox(height: 24),
-            Text(
-              "Remarks",
-              style: MyntWebTextStyles.title(
-                context,
-                color: resolveThemeColor(context,
-                    dark: MyntColors.textPrimaryDark,
-                    light: MyntColors.textPrimary),
-                fontWeight: MyntFonts.bold,
+            // Remarks is usually a reason type field
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(
+                    color: resolveThemeColor(
+                      context,
+                      dark: MyntColors.dividerDark,
+                      light: MyntColors.divider,
+                    ),
+                    width: 1,
+                  ),
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              "${_gttOrder.remarks}",
-              style: MyntWebTextStyles.bodySmall(
-                context,
-                color: resolveThemeColor(context,
-                    dark: MyntColors.textSecondaryDark,
-                    light: MyntColors.textSecondary),
-                fontWeight: MyntFonts.medium,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Remarks",
+                    style: MyntWebTextStyles.bodySmall(
+                      context,
+                      color: resolveThemeColor(context,
+                          dark: MyntColors.textPrimaryDark,
+                          light: MyntColors.textPrimary),
+                      fontWeight: MyntFonts.regular,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Text(
+                      "${_gttOrder.remarks}",
+                      textAlign: TextAlign.end,
+                      style: MyntWebTextStyles.bodySmall(
+                        context,
+                        color: resolveThemeColor(context,
+                            dark: MyntColors.textPrimaryDark,
+                            light: MyntColors.textPrimary),
+                        fontWeight: MyntFonts.medium,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -518,58 +578,84 @@ class _GttOrderBookDetailScreenWebState
   }
 
   Widget _rowOfInfoData(String title1, String value1, ThemesProvider theme) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              title1,
-              style: MyntWebTextStyles.bodySmall(
-                context,
-                color: resolveThemeColor(context,
-                    dark: MyntColors.textSecondaryDark,
-                    light: MyntColors.textSecondary),
-                fontWeight: MyntFonts.regular,
-              ),
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: resolveThemeColor(
+              context,
+              dark: MyntColors.dividerDark,
+              light: MyntColors.divider,
             ),
-            Text(
-              value1,
-              style: MyntWebTextStyles.bodySmall(
-                context,
-                color: resolveThemeColor(context,
-                    dark: MyntColors.textPrimaryDark,
-                    light: MyntColors.textPrimary),
-                fontWeight: MyntFonts.medium,
-              ),
-            ),
-          ],
+            width: 1,
+          ),
         ),
-        const SizedBox(height: 16),
-      ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            title1,
+            style: MyntWebTextStyles.bodyMedium(
+              context,
+              color: resolveThemeColor(context,
+                  dark: MyntColors.textPrimaryDark,
+                  light: MyntColors.textPrimary),
+              fontWeight: MyntFonts.regular,
+            ),
+          ),
+          Text(
+            value1,
+            style: MyntWebTextStyles.bodySmall(
+              context,
+              color: resolveThemeColor(context,
+                  dark: MyntColors.textPrimaryDark,
+                  light: MyntColors.textPrimary),
+              fontWeight: MyntFonts.medium,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _rowOfInfoDataWithColor(
       String title, String value, ThemesProvider theme, Color valueColor) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              title,
-              style: MyntWebTextStyles.bodySmall(
-                context,
-                color: resolveThemeColor(context,
-                    dark: MyntColors.textSecondaryDark,
-                    light: MyntColors.textSecondary),
-                fontWeight: MyntFonts.regular,
-              ),
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: resolveThemeColor(
+              context,
+              dark: MyntColors.dividerDark,
+              light: MyntColors.divider,
             ),
-            Text(
+            width: 1,
+          ),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            title,
+            style: MyntWebTextStyles.bodySmall(
+              context,
+              color: resolveThemeColor(context,
+                  dark: MyntColors.textPrimaryDark,
+                  light: MyntColors.textPrimary),
+              fontWeight: MyntFonts.regular,
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: valueColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(
               value,
               style: MyntWebTextStyles.bodySmall(
                 context,
@@ -577,10 +663,9 @@ class _GttOrderBookDetailScreenWebState
                 fontWeight: MyntFonts.medium,
               ),
             ),
-          ],
-        ),
-        const SizedBox(height: 16),
-      ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -681,10 +766,6 @@ class _GttOrderBookDetailScreenWebState
 
   Future<bool?> _showCancelGttOrderDialog(
       ThemesProvider theme, BuildContext dialogContext) async {
-    final symbol = _gttOrder.tsym?.replaceAll("-EQ", "") ?? 'N/A';
-    final exchange = _gttOrder.exch ?? '';
-    final displayText = '$symbol $exchange'.trim();
-
     return showDialog<bool>(
       context: dialogContext,
       builder: (BuildContext dialogContext) {
@@ -692,93 +773,76 @@ class _GttOrderBookDetailScreenWebState
           backgroundColor: Colors.transparent,
           child: Container(
             width: 400,
+            padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
               color: resolveThemeColor(dialogContext,
                   dark: const Color(0xFF0F172A), light: Colors.white),
-              borderRadius: BorderRadius.circular(5),
+              borderRadius: BorderRadius.circular(10),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Header with close button
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  margin: const EdgeInsets.only(bottom: 8),
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(
-                        color: resolveThemeColor(dialogContext,
-                            dark: MyntColors.dividerDark,
-                            light: MyntColors.divider),
-                      ),
+                // Close Button
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: InkWell(
+                    onTap: () => Navigator.of(dialogContext).pop(false),
+                    child: Icon(
+                      Icons.close,
+                      size: 24,
+                      color: resolveThemeColor(dialogContext,
+                          dark: MyntColors.textSecondaryDark,
+                          light: MyntColors.textSecondary),
                     ),
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                ),
+                const SizedBox(height: 12),
+                // Text Content
+                RichText(
+                  textAlign: TextAlign.center,
+                  text: TextSpan(
+                    text: 'Are you sure you want to \ncancel this ',
+                    style: MyntWebTextStyles.title(
+                      dialogContext,
+                      color: resolveThemeColor(dialogContext,
+                          dark: MyntColors.textPrimaryDark,
+                          light: MyntColors.textPrimary),
+                    ).copyWith(
+                      fontWeight: FontWeight.w400,
+                      fontSize: 18,
+                    ),
                     children: [
-                      Text(
-                        'Cancel GTT Order',
+                      TextSpan(
+                        text: 'GTT order?',
                         style: MyntWebTextStyles.title(
                           dialogContext,
-                          color: resolveThemeColor(dialogContext,
-                              dark: MyntColors.textPrimaryDark,
-                              light: MyntColors.textPrimary),
+                        ).copyWith(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 18,
                         ),
-                      ),
-                      MyntCloseButton(
-                        onPressed: () => Navigator.of(dialogContext).pop(false),
                       ),
                     ],
                   ),
                 ),
-                // Content area
-                Flexible(
-                  fit: FlexFit.loose,
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.only(
-                        top: 0, bottom: 20, left: 20, right: 20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          child: Center(
-                            child: Text(
-                              'Are you sure you want to cancel this GTT order?',
-                              textAlign: TextAlign.center,
-                              style: MyntWebTextStyles.title(
-                                dialogContext,
-                                color: resolveThemeColor(dialogContext,
-                                    dark: MyntColors.textPrimaryDark,
-                                    light: MyntColors.textPrimary),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Center(
-                          child: Text(
-                            displayText,
-                            textAlign: TextAlign.center,
-                            style: MyntWebTextStyles.bodySmall(
-                              dialogContext,
-                              color: resolveThemeColor(dialogContext,
-                                  dark: MyntColors.textSecondaryDark,
-                                  light: MyntColors.textSecondary),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        SizedBox(
-                          width: double.infinity,
-                          child: MyntPrimaryButton(
-                            label: 'Yes, Cancel',
-                            onPressed: () =>
-                                Navigator.of(dialogContext).pop(true),
-                          ),
-                        ),
-                      ],
+                const SizedBox(height: 32),
+                // Delete Button
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: TextButton(
+                    onPressed: () => Navigator.of(dialogContext).pop(true),
+                    style: TextButton.styleFrom(
+                      backgroundColor: const Color(0xFF0037B7),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: Text(
+                      'Delete',
+                      style: MyntWebTextStyles.buttonMd(
+                        dialogContext,
+                        color: Colors.white,
+                      ).copyWith(fontSize: 16),
                     ),
                   ),
                 ),

@@ -941,13 +941,15 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
       builder: (context, constraints) {
         // Use the actual available width inside this layout for responsive rules
         final screenWidth = constraints.maxWidth;
-        
+
         // Get responsive column configuration
         final responsiveConfig = _getResponsiveOrderBookColumns(screenWidth);
         final headers = List<String>.from(responsiveConfig['headers'] as List);
-        final columnFlex = Map<String, int>.from(responsiveConfig['columnFlex'] as Map);
-        final columnMinWidth = Map<String, double>.from(responsiveConfig['columnMinWidth'] as Map);
-        
+        final columnFlex =
+            Map<String, int>.from(responsiveConfig['columnFlex'] as Map);
+        final columnMinWidth =
+            Map<String, double>.from(responsiveConfig['columnMinWidth'] as Map);
+
         // Calculate total minimum width
         final totalMinWidth =
             columnMinWidth.values.fold<double>(0.0, (a, b) => a + b);
@@ -958,15 +960,12 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
         final tableColumn = Container(
           decoration: BoxDecoration(
             border: Border.all(
-              color: theme.isDarkMode
-                  ? WebDarkColors.divider
-                  : WebColors.divider,
+              color:
+                  theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
               width: 1,
             ),
             borderRadius: BorderRadius.circular(4),
-            color: theme.isDarkMode
-                ? WebDarkColors.background
-                : Colors.white,
+            color: theme.isDarkMode ? WebDarkColors.background : Colors.white,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -999,40 +998,42 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                           children: headers.map((label) {
                             final flex = columnFlex[label] ?? 1;
                             final minW = columnMinWidth[label] ?? 80.0;
-                            final columnIndex = _getOrderBookColumnIndexForHeader(label);
+                            final columnIndex =
+                                _getOrderBookColumnIndexForHeader(label);
+
+                            return _buildOrderBookColumnCell(
+                              needHorizontalScroll: needHorizontalScroll,
+                              flex: flex,
+                              minW: minW,
+                              child: _buildOrderBookHeaderWidget(
+                                label,
+                                columnIndex,
+                                theme,
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      )
+                    : Row(
+                        mainAxisSize: MainAxisSize.max,
+                        children: headers.map((label) {
+                          final flex = columnFlex[label] ?? 1;
+                          final minW = columnMinWidth[label] ?? 80.0;
+                          final columnIndex =
+                              _getOrderBookColumnIndexForHeader(label);
 
                           return _buildOrderBookColumnCell(
                             needHorizontalScroll: needHorizontalScroll,
                             flex: flex,
                             minW: minW,
                             child: _buildOrderBookHeaderWidget(
-                              label, 
-                              columnIndex, 
-                              theme, 
+                              label,
+                              columnIndex,
+                              theme,
                             ),
                           );
                         }).toList(),
                       ),
-                    )
-                  : Row(
-                      mainAxisSize: MainAxisSize.max,
-                      children: headers.map((label) {
-                        final flex = columnFlex[label] ?? 1;
-                        final minW = columnMinWidth[label] ?? 80.0;
-                        final columnIndex = _getOrderBookColumnIndexForHeader(label);
-
-                        return _buildOrderBookColumnCell(
-                          needHorizontalScroll: needHorizontalScroll,
-                          flex: flex,
-                          minW: minW,
-                          child: _buildOrderBookHeaderWidget(
-                            label, 
-                            columnIndex, 
-                            theme, 
-                          ),
-                        );
-                      }).toList(),
-                    ),
               ),
 
               // --- Scrollable body (vertical) ---
@@ -1090,18 +1091,30 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
 
   int _getOrderBookColumnIndexForHeader(String header) {
     switch (header) {
-      case 'Instrument': return 0;
-      case 'Product': return 1;
-      case 'Type': return 2;
-      case 'Qty': return 3;
-      case 'Avg price': return 4;
-      case 'LTP': return 5;
-      case 'Price': return 6;
-      case 'Trigger price': return 7;
-      case 'Order value': return 8;
-      case 'Status': return 9;
-      case 'Time': return 10;
-      default: return -1;
+      case 'Instrument':
+        return 0;
+      case 'Product':
+        return 1;
+      case 'Type':
+        return 2;
+      case 'Qty':
+        return 3;
+      case 'Avg price':
+        return 4;
+      case 'LTP':
+        return 5;
+      case 'Price':
+        return 6;
+      case 'Trigger price':
+        return 7;
+      case 'Order value':
+        return 8;
+      case 'Status':
+        return 9;
+      case 'Time':
+        return 10;
+      default:
+        return -1;
     }
   }
 
@@ -1118,7 +1131,8 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
         children: [
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 6),
+              padding:
+                  const EdgeInsets.symmetric(vertical: 12.0, horizontal: 6),
               child: Text(
                 label,
                 style: WebTextStyles.tableHeader(
@@ -1198,9 +1212,8 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
       itemBuilder: (context, index) {
         final order = sorted[index];
         // Use order number as unique identifier for hover
-        final uniqueId = order.norenordno?.toString() ??
-            order.token?.toString() ??
-            '';
+        final uniqueId =
+            order.norenordno?.toString() ?? order.token?.toString() ?? '';
         final isHovered = _hoveredRowToken == uniqueId;
 
         return MouseRegion(
@@ -1341,10 +1354,10 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
           needHorizontalScroll: needHorizontalScroll,
         );
       case 'Trigger price':
-        final triggerPrice = (order.trgprc != null && 
-            order.trgprc != '0' && 
-            order.trgprc != '0.00') 
-            ? order.trgprc! 
+        final triggerPrice = (order.trgprc != null &&
+                order.trgprc != '0' &&
+                order.trgprc != '0.00')
+            ? order.trgprc!
             : '0.00';
         return _buildOrderBookTextCell(
           triggerPrice,
@@ -1573,13 +1586,15 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
       builder: (context, constraints) {
         // Get screen width for responsive design
         final screenWidth = MediaQuery.of(context).size.width;
-        
+
         // Get responsive column configuration
         final responsiveConfig = _getResponsiveTradeBookColumns(screenWidth);
         final headers = List<String>.from(responsiveConfig['headers'] as List);
-        final columnFlex = Map<String, int>.from(responsiveConfig['columnFlex'] as Map);
-        final columnMinWidth = Map<String, double>.from(responsiveConfig['columnMinWidth'] as Map);
-        
+        final columnFlex =
+            Map<String, int>.from(responsiveConfig['columnFlex'] as Map);
+        final columnMinWidth =
+            Map<String, double>.from(responsiveConfig['columnMinWidth'] as Map);
+
         // Calculate total minimum width
         final totalMinWidth =
             columnMinWidth.values.fold<double>(0.0, (a, b) => a + b);
@@ -1590,15 +1605,12 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
         final tableColumn = Container(
           decoration: BoxDecoration(
             border: Border.all(
-              color: theme.isDarkMode
-                  ? WebDarkColors.divider
-                  : WebColors.divider,
+              color:
+                  theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
               width: 1,
             ),
             borderRadius: BorderRadius.circular(4),
-            color: theme.isDarkMode
-                ? WebDarkColors.background
-                : Colors.white,
+            color: theme.isDarkMode ? WebDarkColors.background : Colors.white,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1631,41 +1643,43 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                           children: headers.map((label) {
                             final flex = columnFlex[label] ?? 1;
                             final minW = columnMinWidth[label] ?? 80.0;
-                            final columnIndex = _getTradeBookColumnIndexForHeader(label);
+                            final columnIndex =
+                                _getTradeBookColumnIndexForHeader(label);
+
+                            return _buildTradeBookColumnCell(
+                              needHorizontalScroll: needHorizontalScroll,
+                              flex: flex,
+                              minW: minW,
+                              child: _buildTradeBookHeaderWidget(
+                                label,
+                                columnIndex,
+                                theme,
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      )
+                    : Row(
+                        mainAxisSize: MainAxisSize.max,
+                        children: headers.map((label) {
+                          final flex = columnFlex[label] ?? 1;
+                          final minW = columnMinWidth[label] ?? 80.0;
+                          final columnIndex =
+                              _getTradeBookColumnIndexForHeader(label);
 
                           return _buildTradeBookColumnCell(
                             needHorizontalScroll: needHorizontalScroll,
                             flex: flex,
                             minW: minW,
                             child: _buildTradeBookHeaderWidget(
-                              label, 
-                              columnIndex, 
-                              theme, 
+                              label,
+                              columnIndex,
+                              theme,
                             ),
                           );
                         }).toList(),
                       ),
-                    )
-                  : Row(
-                      mainAxisSize: MainAxisSize.max,
-                      children: headers.map((label) {
-                        final flex = columnFlex[label] ?? 1;
-                        final minW = columnMinWidth[label] ?? 80.0;
-                        final columnIndex = _getTradeBookColumnIndexForHeader(label);
-
-                        return _buildTradeBookColumnCell(
-                          needHorizontalScroll: needHorizontalScroll,
-                          flex: flex,
-                          minW: minW,
-                          child: _buildTradeBookHeaderWidget(
-                            label, 
-                            columnIndex, 
-                            theme, 
-                          ),
-                        );
-                      }).toList(),
-                    ),
-            ),
+              ),
 
               // --- Scrollable body (vertical) ---
               Expanded(
@@ -1722,15 +1736,24 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
 
   int _getTradeBookColumnIndexForHeader(String header) {
     switch (header) {
-      case 'Instrument': return 0;
-      case 'Product': return 1;
-      case 'Type': return 2;
-      case 'Qty': return 3;
-      case 'Price': return 4;
-      case 'Trade value': return 5;
-      case 'Order no': return 6;
-      case 'Time': return 7;
-      default: return -1;
+      case 'Instrument':
+        return 0;
+      case 'Product':
+        return 1;
+      case 'Type':
+        return 2;
+      case 'Qty':
+        return 3;
+      case 'Price':
+        return 4;
+      case 'Trade value':
+        return 5;
+      case 'Order no':
+        return 6;
+      case 'Time':
+        return 7;
+      default:
+        return -1;
     }
   }
 
@@ -1747,7 +1770,8 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
         children: [
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 6),
+              padding:
+                  const EdgeInsets.symmetric(vertical: 12.0, horizontal: 6),
               child: Text(
                 label,
                 style: WebTextStyles.tableHeader(
@@ -1907,7 +1931,8 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
   }) {
     switch (column) {
       case 'Instrument':
-        final symbol = trade.symbol?.replaceAll("-EQ", "") ?? trade.tsym ?? 'N/A';
+        final symbol =
+            trade.symbol?.replaceAll("-EQ", "") ?? trade.tsym ?? 'N/A';
         final expDate = trade.expDate ?? '';
         final option = trade.option ?? '';
         String displayText = symbol;
@@ -1960,8 +1985,9 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
         String tradeValue = "0.00";
         try {
           if (trade.flqty != null && trade.flprc != null) {
-            tradeValue = (double.parse(trade.flqty!) * double.parse(trade.flprc!))
-                .toStringAsFixed(2);
+            tradeValue =
+                (double.parse(trade.flqty!) * double.parse(trade.flprc!))
+                    .toStringAsFixed(2);
           }
         } catch (e) {
           tradeValue = "0.00";
@@ -2051,7 +2077,15 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     } else if (screenWidth < _tabletBreakpoint) {
       // Tablet: Show most columns
       return {
-        'headers': ['Instrument', 'Product', 'Type', 'Qty', 'Price', 'Trade value', 'Time'],
+        'headers': [
+          'Instrument',
+          'Product',
+          'Type',
+          'Qty',
+          'Price',
+          'Trade value',
+          'Time'
+        ],
         'columnFlex': {
           'Instrument': 3,
           'Product': 2,
@@ -2074,7 +2108,16 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     } else {
       // Desktop: Full columns with optimal widths
       return {
-        'headers': ['Instrument', 'Product', 'Type', 'Qty', 'Price', 'Trade value', 'Order no', 'Time'],
+        'headers': [
+          'Instrument',
+          'Product',
+          'Type',
+          'Qty',
+          'Price',
+          'Trade value',
+          'Order no',
+          'Time'
+        ],
         'columnFlex': {
           'Instrument': 3,
           'Product': 2,
@@ -2125,7 +2168,17 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     } else if (screenWidth < _tabletBreakpoint) {
       // Tablet: Show most columns
       return {
-        'headers': ['Instrument', 'Product', 'Type', 'Qty', 'Avg price', 'LTP', 'Price', 'Status', 'Time'],
+        'headers': [
+          'Instrument',
+          'Product',
+          'Type',
+          'Qty',
+          'Avg price',
+          'LTP',
+          'Price',
+          'Status',
+          'Time'
+        ],
         'columnFlex': {
           'Instrument': 3,
           'Product': 2,
@@ -2152,7 +2205,18 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     } else if (screenWidth < _desktopBreakpoint) {
       // Small Desktop: Show all columns except some less important ones
       return {
-        'headers': ['Instrument', 'Product', 'Type', 'Qty', 'Avg price', 'LTP', 'Price', 'Trigger price', 'Status', 'Time'],
+        'headers': [
+          'Instrument',
+          'Product',
+          'Type',
+          'Qty',
+          'Avg price',
+          'LTP',
+          'Price',
+          'Trigger price',
+          'Status',
+          'Time'
+        ],
         'columnFlex': {
           'Instrument': 3,
           'Product': 2,
@@ -2181,7 +2245,19 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     } else {
       // Large Desktop: Full columns with optimal widths
       return {
-        'headers': ['Instrument', 'Product', 'Type', 'Qty', 'Avg price', 'LTP', 'Price', 'Trigger price', 'Order value', 'Status', 'Time'],
+        'headers': [
+          'Instrument',
+          'Product',
+          'Type',
+          'Qty',
+          'Avg price',
+          'LTP',
+          'Price',
+          'Trigger price',
+          'Order value',
+          'Status',
+          'Time'
+        ],
         'columnFlex': {
           'Instrument': 3,
           'Product': 2,
@@ -2236,7 +2312,15 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     } else if (screenWidth < _tabletBreakpoint) {
       // Tablet: Show most columns, hide less important ones
       return {
-        'headers': ['Instrument', 'Product', 'Type', 'Qty', 'LTP', 'Status', 'Time'],
+        'headers': [
+          'Instrument',
+          'Product',
+          'Type',
+          'Qty',
+          'LTP',
+          'Status',
+          'Time'
+        ],
         'columnFlex': {
           'Instrument': 3,
           'Product': 2,
@@ -2259,7 +2343,16 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     } else if (screenWidth < _desktopBreakpoint) {
       // Small Desktop: Show all columns with reduced widths
       return {
-        'headers': ['Instrument', 'Product', 'Type', 'Qty', 'LTP', 'Trigger', 'Status', 'Time'],
+        'headers': [
+          'Instrument',
+          'Product',
+          'Type',
+          'Qty',
+          'LTP',
+          'Trigger',
+          'Status',
+          'Time'
+        ],
         'columnFlex': {
           'Instrument': 3,
           'Product': 2,
@@ -2284,7 +2377,16 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     } else {
       // Large Desktop: Full columns with optimal widths
       return {
-        'headers': ['Instrument', 'Product', 'Type', 'Qty', 'LTP', 'Trigger', 'Status', 'Time'],
+        'headers': [
+          'Instrument',
+          'Product',
+          'Type',
+          'Qty',
+          'LTP',
+          'Trigger',
+          'Status',
+          'Time'
+        ],
         'columnFlex': {
           'Instrument': 3,
           'Product': 2,
@@ -2348,13 +2450,15 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
       builder: (context, constraints) {
         // Get screen width for responsive design
         final screenWidth = MediaQuery.of(context).size.width;
-        
+
         // Get responsive column configuration based on screen width
         final responsiveConfig = _getResponsiveGttColumns(screenWidth);
         final headers = List<String>.from(responsiveConfig['headers'] as List);
-        final columnFlex = Map<String, int>.from(responsiveConfig['columnFlex'] as Map);
-        final columnMinWidth = Map<String, double>.from(responsiveConfig['columnMinWidth'] as Map);
-        
+        final columnFlex =
+            Map<String, int>.from(responsiveConfig['columnFlex'] as Map);
+        final columnMinWidth =
+            Map<String, double>.from(responsiveConfig['columnMinWidth'] as Map);
+
         // Calculate total minimum width: sum of all columnMinWidth values
         // This ensures header and body use the same totalMinWidth calculation
         final totalMinWidth =
@@ -2366,15 +2470,12 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
         final tableColumn = Container(
           decoration: BoxDecoration(
             border: Border.all(
-              color: theme.isDarkMode
-                  ? WebDarkColors.divider
-                  : WebColors.divider,
+              color:
+                  theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
               width: 1,
             ),
             borderRadius: BorderRadius.circular(4),
-            color: theme.isDarkMode
-                ? WebDarkColors.background
-                : Colors.white,
+            color: theme.isDarkMode ? WebDarkColors.background : Colors.white,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -2409,6 +2510,72 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                             final minW = columnMinWidth[label] ?? 80.0;
                             final columnIndex = headers.indexOf(label);
 
+                            return _buildGttColumnCell(
+                              needHorizontalScroll: needHorizontalScroll,
+                              flex: flex,
+                              minW: minW,
+                              child: InkWell(
+                                onTap: () => _onSortGttTable(
+                                    columnIndex, !_gttSortAscending),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 12.0, horizontal: 6),
+                                      child: Text(
+                                        label,
+                                        style: WebTextStyles.tableHeader(
+                                          isDarkTheme: theme.isDarkMode,
+                                          color: theme.isDarkMode
+                                              ? WebDarkColors.textPrimary
+                                              : WebColors.textPrimary,
+                                        ),
+                                        overflow: TextOverflow.visible,
+                                      ),
+                                    ),
+                                    // sort icon
+                                    if (_gttSortColumnIndex == columnIndex)
+                                      Padding(
+                                        padding:
+                                            const EdgeInsets.only(left: 6.0),
+                                        child: Icon(
+                                          _gttSortAscending
+                                              ? Icons.arrow_upward
+                                              : Icons.arrow_downward,
+                                          size: 16,
+                                          color: theme.isDarkMode
+                                              ? WebDarkColors.iconPrimary
+                                              : WebColors.iconPrimary,
+                                        ),
+                                      )
+                                    else
+                                      Padding(
+                                        padding:
+                                            const EdgeInsets.only(right: 6.0),
+                                        child: Icon(
+                                          Icons.unfold_more,
+                                          size: 16,
+                                          color: theme.isDarkMode
+                                              ? WebDarkColors.iconSecondary
+                                              : WebColors.iconSecondary,
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      )
+                    : Row(
+                        mainAxisSize: MainAxisSize.max,
+                        children: headers.map((label) {
+                          final flex = columnFlex[label] ?? 1;
+                          final minW = columnMinWidth[label] ?? 80.0;
+                          final columnIndex = headers.indexOf(label);
+
                           return _buildGttColumnCell(
                             needHorizontalScroll: needHorizontalScroll,
                             flex: flex,
@@ -2420,18 +2587,20 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 12.0, horizontal: 6),
-                                    child: Text(
-                                      label,
-                                      style: WebTextStyles.tableHeader(
-                                        isDarkTheme: theme.isDarkMode,
-                                        color: theme.isDarkMode
-                                            ? WebDarkColors.textPrimary
-                                            : WebColors.textPrimary,
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 12.0, horizontal: 6),
+                                      child: Text(
+                                        label,
+                                        style: WebTextStyles.tableHeader(
+                                          isDarkTheme: theme.isDarkMode,
+                                          color: theme.isDarkMode
+                                              ? WebDarkColors.textPrimary
+                                              : WebColors.textPrimary,
+                                        ),
+                                        overflow: TextOverflow.visible,
                                       ),
-                                      overflow: TextOverflow.visible,
                                     ),
                                   ),
                                   // sort icon
@@ -2466,73 +2635,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                           );
                         }).toList(),
                       ),
-                    )
-                  : Row(
-                      mainAxisSize: MainAxisSize.max,
-                      children: headers.map((label) {
-                        final flex = columnFlex[label] ?? 1;
-                        final minW = columnMinWidth[label] ?? 80.0;
-                        final columnIndex = headers.indexOf(label);
-
-                        return _buildGttColumnCell(
-                          needHorizontalScroll: needHorizontalScroll,
-                          flex: flex,
-                          minW: minW,
-                          child: InkWell(
-                            onTap: () => _onSortGttTable(
-                                columnIndex, !_gttSortAscending),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Expanded(
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 12.0, horizontal: 6),
-                                    child: Text(
-                                      label,
-                                      style: WebTextStyles.tableHeader(
-                                        isDarkTheme: theme.isDarkMode,
-                                        color: theme.isDarkMode
-                                            ? WebDarkColors.textPrimary
-                                            : WebColors.textPrimary,
-                                      ),
-                                      overflow: TextOverflow.visible,
-                                    ),
-                                  ),
-                                ),
-                                // sort icon
-                                if (_gttSortColumnIndex == columnIndex)
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 6.0),
-                                    child: Icon(
-                                      _gttSortAscending
-                                          ? Icons.arrow_upward
-                                          : Icons.arrow_downward,
-                                      size: 16,
-                                      color: theme.isDarkMode
-                                          ? WebDarkColors.iconPrimary
-                                          : WebColors.iconPrimary,
-                                    ),
-                                  )
-                                else
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 6.0),
-                                    child: Icon(
-                                      Icons.unfold_more,
-                                      size: 16,
-                                      color: theme.isDarkMode
-                                          ? WebDarkColors.iconSecondary
-                                          : WebColors.iconSecondary,
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-            ),
+              ),
 
               // --- Scrollable body (vertical) ---
               Expanded(
@@ -2568,7 +2671,8 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                 scrollDirection: Axis.horizontal,
                 controller: _gttHorizontalScrollController,
                 child: SizedBox(
-                  width: totalMinWidth, // THE REAL FIX - forces exact table width
+                  width:
+                      totalMinWidth, // THE REAL FIX - forces exact table width
                   child: tableColumn,
                 ),
               ),
@@ -2730,8 +2834,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
             _getValidLTPForGtt(item), theme, Alignment.centerRight,
             needHorizontalScroll: needHorizontalScroll);
       case 'Trigger':
-        return _buildGttTextCell(
-            item.d ?? '0.00', theme, Alignment.centerRight,
+        return _buildGttTextCell(item.d ?? '0.00', theme, Alignment.centerRight,
             needHorizontalScroll: needHorizontalScroll);
       case 'Status':
         final status = item.gttOrderCurrentStatus?.toUpperCase() ?? '';
@@ -2765,7 +2868,9 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
       children: [
         // Text that takes available space, similar to position screen
         Expanded(
-          flex: isHovered ? 1 : 2, // When hovered, text takes less space but still visible
+          flex: isHovered
+              ? 1
+              : 2, // When hovered, text takes less space but still visible
           child: Align(
             alignment: Alignment.centerLeft,
             child: Tooltip(

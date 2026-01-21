@@ -29,7 +29,6 @@ import 'package:flutter/material.dart'
         Text,
         ScrollController,
         SingleChildScrollView,
-        Scrollbar,
         Column,
         ValueKey,
         Padding,
@@ -41,16 +40,10 @@ import 'package:flutter/material.dart'
         MainAxisSize,
         Dialog,
         Material,
-        CircleBorder,
-        Border,
-        BorderSide,
         Navigator,
-        CrossAxisAlignment,
         TextButton,
         showDialog,
         RoundedRectangleBorder,
-        FlexFit,
-        Flexible,
         TextAlign,
         Stack,
         LinearGradient,
@@ -59,7 +52,10 @@ import 'package:flutter/material.dart'
         RichText,
         Positioned,
         BoxShadow,
-        Offset;
+        Offset,
+        FontWeight,
+        Radius,
+        RawScrollbar;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn
     hide Colors, Tooltip;
@@ -292,10 +288,18 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
                 ),
                 // Scrollable Body
                 Expanded(
-                  child: Scrollbar(
+                  child: RawScrollbar(
                     controller: _verticalScrollController,
                     thumbVisibility: true,
                     trackVisibility: true,
+                    trackColor: resolveThemeColor(context,
+                        dark: Colors.grey.withOpacity(0.1),
+                        light: Colors.grey.withOpacity(0.1)),
+                    thumbColor: resolveThemeColor(context,
+                        dark: Colors.grey.withOpacity(0.3),
+                        light: Colors.grey.withOpacity(0.3)),
+                    thickness: 6,
+                    radius: const Radius.circular(3),
                     interactive: true,
                     child: SingleChildScrollView(
                       controller: _verticalScrollController,
@@ -401,10 +405,18 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
           }
 
           if (needsHorizontalScroll) {
-            return Scrollbar(
+            return RawScrollbar(
               controller: _horizontalScrollController,
               thumbVisibility: true,
               trackVisibility: true,
+              trackColor: resolveThemeColor(context,
+                  dark: Colors.grey.withOpacity(0.1),
+                  light: Colors.grey.withOpacity(0.1)),
+              thumbColor: resolveThemeColor(context,
+                  dark: Colors.grey.withOpacity(0.3),
+                  light: Colors.grey.withOpacity(0.3)),
+              thickness: 6,
+              radius: const Radius.circular(3),
               interactive: true,
               child: SingleChildScrollView(
                 controller: _horizontalScrollController,
@@ -978,11 +990,29 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
   void _showGttOrderDetail(GttOrderBookModel gttOrder) {
     shadcn.openSheet(
       context: context,
-      builder: (sheetContext) => GttOrderBookDetailScreenWeb(
-        gttOrder: gttOrder,
-        parentContext: context,
+      builder: (sheetContext) => Container(
+        width: 480,
+        decoration: BoxDecoration(
+          color: resolveThemeColor(
+            context,
+            dark: MyntColors.backgroundColorDark,
+            light: MyntColors.backgroundColor,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 5,
+              offset: const Offset(-2, 0),
+            ),
+          ],
+        ),
+        child: GttOrderBookDetailScreenWeb(
+          gttOrder: gttOrder,
+          parentContext: context,
+        ),
       ),
       position: shadcn.OverlayPosition.end,
+      barrierColor: Colors.transparent,
     );
   }
 
@@ -1016,10 +1046,6 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
 
   Future<bool?> _showCancelGttOrderDialog(
       GttOrderBookModel gttOrderData) async {
-    final symbol = gttOrderData.tsym?.replaceAll("-EQ", "") ?? 'N/A';
-    final exchange = gttOrderData.exch ?? '';
-    final displayText = '$symbol $exchange'.trim();
-
     return showDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) {
@@ -1030,117 +1056,78 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
             decoration: BoxDecoration(
               color: resolveThemeColor(context,
                   dark: colors.colorBlack, light: colors.colorWhite),
-              borderRadius: BorderRadius.circular(5),
+              borderRadius: BorderRadius.circular(10), // Rounded corners
             ),
+            padding: const EdgeInsets.all(24), // Consistent padding
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Header with close button
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  margin: const EdgeInsets.only(bottom: 8),
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(
+                // Close button (Top Right)
+                Align(
+                  alignment: Alignment.topRight,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () => Navigator.of(dialogContext).pop(false),
+                      child: Icon(
+                        Icons.close,
+                        size: 24,
                         color: resolveThemeColor(context,
-                            dark: MyntColors.dividerDark,
-                            light: MyntColors.divider),
+                            dark: MyntColors.textSecondaryDark,
+                            light: MyntColors.textSecondary),
                       ),
                     ),
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                ),
+
+                // Text Content
+                const SizedBox(height: 12),
+                RichText(
+                  textAlign: TextAlign.center,
+                  text: TextSpan(
+                    text: 'Are you sure you want to \ncancel this ',
+                    style: MyntWebTextStyles.title(
+                      context,
+                      color: resolveThemeColor(context,
+                          dark: MyntColors.textPrimaryDark,
+                          light: MyntColors.textPrimary),
+                    ).copyWith(
+                      fontWeight: FontWeight.w400,
+                      fontSize: 18,
+                    ),
                     children: [
-                      Text(
-                        'Cancel GTT Order',
+                      TextSpan(
+                        text: 'GTT order?',
                         style: MyntWebTextStyles.title(
                           context,
-                        ),
-                      ),
-                      Material(
-                        color: Colors.transparent,
-                        shape: const CircleBorder(),
-                        child: InkWell(
-                          onTap: () => Navigator.of(dialogContext).pop(false),
-                          child: Padding(
-                            padding: const EdgeInsets.all(4),
-                            child: Icon(
-                              Icons.close,
-                              size: 20,
-                              color: resolveThemeColor(context,
-                                  dark: MyntColors.textSecondaryDark,
-                                  light: MyntColors.textSecondary),
-                            ),
-                          ),
+                        ).copyWith(
+                          fontWeight: FontWeight.w700, // Bold
+                          fontSize: 18,
                         ),
                       ),
                     ],
                   ),
                 ),
-                // Content area
-                Flexible(
-                  fit: FlexFit.loose,
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.only(
-                        top: 0, bottom: 20, left: 20, right: 20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          child: Center(
-                            child: Text(
-                              'Are you sure you want to cancel this GTT order?',
-                              textAlign: TextAlign.center,
-                              style: MyntWebTextStyles.bodyMedium(
-                                context,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Center(
-                          child: Text(
-                            displayText,
-                            textAlign: TextAlign.center,
-                            style: MyntWebTextStyles.para(
-                              context,
-                              darkColor: MyntColors.textSecondaryDark,
-                              lightColor: MyntColors.textSecondary,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        SizedBox(
-                          width: double.infinity,
-                          height: 40,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: resolveThemeColor(context,
-                                  dark: MyntColors.primary,
-                                  light: MyntColors.primary),
-                              borderRadius: BorderRadius.circular(5),
-                            ),
-                            child: TextButton(
-                              onPressed: () =>
-                                  Navigator.of(dialogContext).pop(true),
-                              style: TextButton.styleFrom(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(5),
-                                ),
-                              ),
-                              child: Text(
-                                'Yes, Cancel',
-                                style: MyntWebTextStyles.buttonMd(
-                                  context,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
+
+                // Button
+                const SizedBox(height: 32),
+                SizedBox(
+                  width: double.infinity,
+                  height: 48, // Slightly taller button
+                  child: TextButton(
+                    onPressed: () => Navigator.of(dialogContext).pop(true),
+                    style: TextButton.styleFrom(
+                      backgroundColor: const Color(0xFF0037B7), // Primary Blue
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: Text(
+                      'Delete',
+                      style: MyntWebTextStyles.buttonMd(
+                        context,
+                        color: Colors.white,
+                      ).copyWith(fontSize: 16),
                     ),
                   ),
                 ),

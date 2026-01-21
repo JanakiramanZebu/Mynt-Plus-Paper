@@ -2,12 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import '../../../../models/order_book_model/trade_book_model.dart';
+import '../../../../models/order_book_model/order_book_model.dart';
 import '../../../../provider/thems.dart';
 import '../../../../res/mynt_web_text_styles.dart';
 import '../../../../res/mynt_web_color_styles.dart';
 import '../../../../sharedWidget/functions.dart';
 import '../refactored/utils/cell_formatters.dart';
 import '../../../../sharedWidget/common_buttons_web.dart';
+import '../../../../provider/market_watch_provider.dart';
+import '../../../../utils/responsive_navigation.dart';
+import '../../../../utils/responsive_snackbar.dart';
+import '../../../../main.dart';
 
 class TradeDetailScreenWeb extends ConsumerStatefulWidget {
   final TradeBookModel trade;
@@ -25,70 +30,81 @@ class TradeDetailScreenWeb extends ConsumerStatefulWidget {
 }
 
 class _TradeDetailScreenWebState extends ConsumerState<TradeDetailScreenWeb> {
+  bool _isProcessingRepeat = false;
+
   @override
   Widget build(BuildContext context) {
     final theme = ref.read(themeProvider);
 
-    return Container(
-      constraints: const BoxConstraints(maxWidth: 400),
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color: resolveThemeColor(context,
-                dark: MyntColors.dividerDark, light: MyntColors.divider),
-            width: 1,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Header with Trade Details title
+        Container(
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: resolveThemeColor(
+                  context,
+                  dark: MyntColors.dividerDark,
+                  light: MyntColors.divider,
+                ),
+                width: 1,
+              ),
+            ),
           ),
-        ),
-      ),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Row(
             children: [
-              // Header with close button (fixed)
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 16, horizontal: 10),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: _buildSymbolSection(theme),
-                    ),
-                    MyntCloseButton(
-                      onPressed: () {
-                        shadcn.closeSheet(context);
-                      },
-                    ),
-                  ],
+              InkWell(
+                onTap: () {
+                  shadcn.closeSheet(context);
+                },
+                child: Icon(
+                  Icons.close,
+                  size: 20,
+                  color: resolveThemeColor(
+                    context,
+                    dark: MyntColors.textPrimaryDark,
+                    light: MyntColors.textPrimary,
+                  ),
                 ),
               ),
-              // Border divider
-              Container(
-                height: 1,
-                color: resolveThemeColor(context,
-                    dark: MyntColors.dividerDark, light: MyntColors.divider),
-              ),
-              // Scrollable Content
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Details Section
-                        _buildDetailsSection(theme),
-                      ],
-                    ),
+              const SizedBox(width: 16),
+              Text(
+                'Trade Details',
+                style: MyntWebTextStyles.title(
+                  context,
+                  color: resolveThemeColor(
+                    context,
+                    dark: MyntColors.textPrimaryDark,
+                    light: MyntColors.textPrimary,
                   ),
                 ),
               ),
             ],
-          );
-        },
-      ),
+          ),
+        ),
+        // Scrollable Content
+        Expanded(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildSymbolSection(theme),
+                  const SizedBox(height: 16),
+                  // Action Buttons (Repeat Order)
+                  _buildActionButtons(theme),
+                  // Details Section
+                  _buildDetailsSection(theme),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -120,6 +136,16 @@ class _TradeDetailScreenWebState extends ConsumerState<TradeDetailScreenWeb> {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
+            const SizedBox(width: 8),
+            Text(
+              widget.trade.exch ?? '',
+              style: MyntWebTextStyles.bodySmall(
+                context,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.textSecondaryDark,
+                    light: MyntColors.textSecondary),
+              ),
+            )
           ],
         ),
         const SizedBox(height: 8),
@@ -137,27 +163,61 @@ class _TradeDetailScreenWebState extends ConsumerState<TradeDetailScreenWeb> {
                 fontWeight: MyntFonts.medium,
               ),
             ),
+            // Mock change/percentage as it's not directly in TradeBookModel usually, or calculate if avail
+            // Using placeholder to match image style 0.00 (0.00%)
+            const SizedBox(width: 8),
+            Text(
+              "0.00 (0.00%)", // Placeholder/Mock for now as per image often static in history
+              style: MyntWebTextStyles.bodySmall(
+                context,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.textSecondaryDark,
+                    light: MyntColors.textSecondary),
+                fontWeight: MyntFonts.medium,
+              ),
+            ),
           ],
         ),
       ],
     );
   }
 
-  Widget _buildDetailsSection(ThemesProvider theme) {
-    final buySell = widget.trade.trantype == "S" ? "Sell" : "Buy";
-    final isSell = widget.trade.trantype == "S";
-    final typeColor = isSell
-        ? resolveThemeColor(context,
-            dark: MyntColors.lossDark, light: MyntColors.loss)
-        : resolveThemeColor(context,
-            dark: MyntColors.profitDark, light: MyntColors.profit);
+  Widget _buildActionButtons(ThemesProvider theme) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          MyntOutlinedButton(
+            // Assuming Repeat Order is secondary action, or Primary if it's the main one desirable. Image shows light blue bg, which might be primary or custom.
+            label: "Repeat Order",
+            isLoading: _isProcessingRepeat,
+            isFullWidth: true,
+            onPressed: _handleRepeatOrder,
+          ),
+        ],
+      ),
+    );
+  }
 
+  Widget _buildDetailsSection(ThemesProvider theme) {
     return Padding(
       padding: const EdgeInsets.only(top: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _rowOfInfoDataWithColor("Type", buySell, theme, typeColor),
+          _rowOfInfoDataWithColor(
+              "Status",
+              "COMPLETE",
+              theme,
+              resolveThemeColor(context,
+                  dark: MyntColors.profitDark,
+                  light: MyntColors
+                      .profit)), // Trade usually means complete/filled
+
+          _rowOfInfoData(
+              "Type", widget.trade.trantype == "S" ? "Sell" : "Buy", theme),
+
           _rowOfInfoData(
             "Qty",
             widget.trade.flqty?.toString() ??
@@ -183,94 +243,219 @@ class _TradeDetailScreenWebState extends ConsumerState<TradeDetailScreenWeb> {
             theme,
           ),
           _rowOfInfoData(
-            "Order No",
+            "Order Id",
             widget.trade.norenordno?.toString() ?? '-',
             theme,
           ),
+          /*
           _rowOfInfoData(
             "Fill ID",
             widget.trade.flid?.toString() ?? '-',
             theme,
           ),
+          */
           _rowOfInfoData(
             "Date & Time",
             formatDateTime(value: widget.trade.norentm ?? '-'),
             theme,
           ),
+          /*
           _rowOfInfoData(
             "Status",
             widget.trade.stat ?? '-',
             theme,
           ),
+          */
         ],
       ),
     );
   }
 
   Widget _rowOfInfoData(String title1, String value1, ThemesProvider theme) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              title1,
-              style: MyntWebTextStyles.bodySmall(
-                context,
-                color: resolveThemeColor(context,
-                    dark: MyntColors.textSecondaryDark,
-                    light: MyntColors.textSecondary),
-                fontWeight: MyntFonts.regular,
-              ),
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: resolveThemeColor(
+              context,
+              dark: MyntColors.dividerDark,
+              light: MyntColors.divider,
             ),
-            Text(
-              value1,
-              style: MyntWebTextStyles.bodySmall(
-                context,
-                color: resolveThemeColor(context,
-                    dark: MyntColors.textPrimaryDark,
-                    light: MyntColors.textPrimary),
-                fontWeight: MyntFonts.medium,
-              ),
-            ),
-          ],
+            width: 1,
+          ),
         ),
-        const SizedBox(height: 16),
-      ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            title1,
+            style: MyntWebTextStyles.bodySmall(
+              context,
+              color: resolveThemeColor(context,
+                  dark: MyntColors.textPrimaryDark,
+                  light: MyntColors.textPrimary),
+              fontWeight: MyntFonts.regular,
+            ),
+          ),
+          Text(
+            value1,
+            style: MyntWebTextStyles.bodySmall(
+              context,
+              color: resolveThemeColor(context,
+                  dark: MyntColors.textPrimaryDark,
+                  light: MyntColors.textPrimary),
+              fontWeight: MyntFonts.medium,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _rowOfInfoDataWithColor(
       String title, String value, ThemesProvider theme, Color valueColor) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              title,
-              style: MyntWebTextStyles.bodySmall(
-                context,
-                color: resolveThemeColor(context,
-                    dark: MyntColors.textSecondaryDark,
-                    light: MyntColors.textSecondary),
-                fontWeight: MyntFonts.regular,
-              ),
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: resolveThemeColor(
+              context,
+              dark: MyntColors.dividerDark,
+              light: MyntColors.divider,
             ),
-            Text(
+            width: 1,
+          ),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            title,
+            style: MyntWebTextStyles.body(
+              context,
+              color: resolveThemeColor(context,
+                  dark: MyntColors.textPrimaryDark,
+                  light: MyntColors.textPrimary),
+              fontWeight: MyntFonts.medium,
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: valueColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(
               value,
-              style: MyntWebTextStyles.bodySmall(
+              style: MyntWebTextStyles.body(
                 context,
                 color: valueColor,
                 fontWeight: MyntFonts.medium,
               ),
             ),
-          ],
-        ),
-        const SizedBox(height: 16),
-      ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _handleRepeatOrder() async {
+    if (_isProcessingRepeat) return;
+
+    try {
+      setState(() {
+        _isProcessingRepeat = true;
+      });
+
+      final targetContext = widget.parentContext ??
+          rootNavigatorKey
+              .currentContext; // Use widget.parentContext which works in this screen or fallback
+
+      // If widget.parentContext is null (it's optional in widget), we need a valid context.
+      // Usually passed in or we can try 'context' if available, but repeat order often needs root or scaffold context.
+      final safeContext = targetContext ?? context;
+
+      await ref.read(marketWatchProvider).fetchScripInfo(
+            "${widget.trade.token}",
+            "${widget.trade.exch}",
+            safeContext,
+            true,
+          );
+
+      if (!mounted) return;
+
+      final scripInfo = ref.read(marketWatchProvider).scripInfoModel;
+      if (scripInfo == null) {
+        if (mounted) {
+          setState(() {
+            _isProcessingRepeat = false;
+          });
+          ResponsiveSnackBar.showError(
+              safeContext, 'Unable to fetch scrip information');
+        }
+        return;
+      }
+
+      // Close the sheet first
+      if (mounted) {
+        shadcn.closeSheet(context);
+      }
+
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      // Navigate to place order screen
+      if (safeContext.mounted) {
+        ResponsiveNavigation.toPlaceOrderScreen(
+          context: safeContext,
+          arguments: {
+            "orderArg": _createOrderArgs(widget.trade),
+            "scripInfo": scripInfo,
+            "isBskt": '',
+          },
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ResponsiveSnackBar.showError(
+            context, 'Failed to open place order: ${e.toString()}');
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isProcessingRepeat = false;
+        });
+      }
+    }
+  }
+
+  OrderScreenArgs _createOrderArgs(TradeBookModel tradeData) {
+    // Get LTP, fallback to trade info if available or "0.00"
+    String ltpValue = "0.00";
+    if (tradeData.ltp != null && tradeData.ltp.toString() != "null") {
+      ltpValue = tradeData.ltp.toString();
+    } else if (tradeData.avgprc != null &&
+        tradeData.avgprc.toString() != "null") {
+      ltpValue = tradeData.avgprc.toString();
+    }
+
+    return OrderScreenArgs(
+      exchange: tradeData.exch ?? '',
+      tSym: tradeData.tsym ?? '',
+      isExit: false,
+      token: tradeData.token ?? '',
+      transType: tradeData.trantype == 'B' ? true : false,
+      prd: tradeData.prd ?? tradeData.sPrdtAli ?? 'CNC',
+      lotSize: tradeData.ls ?? '1',
+      ltp: ltpValue,
+      perChange: tradeData.change ?? "0.00",
+      orderTpye: '',
+      holdQty: '',
+      isModify: false,
+      raw: tradeData.toJson(),
     );
   }
 }

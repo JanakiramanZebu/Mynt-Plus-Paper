@@ -1,4 +1,42 @@
-import 'package:flutter/material.dart' show InkWell, Icons, Icon, TextPainter, TextSpan, TextStyle, TextDirection, GestureDetector, HitTestBehavior, Row, SizedBox, Widget, BuildContext, Color, EdgeInsets, Alignment, MainAxisAlignment, TextOverflow, Axis, FontWeight, Container, MouseRegion, Expanded, Align, Text, ScrollController, SingleChildScrollView, Scrollbar, Column, LayoutBuilder, ValueKey, Padding, BoxDecoration, BorderRadius, Border;
+import 'package:flutter/material.dart'
+    show
+        BuildContext,
+        Widget,
+        ScrollController,
+        TextStyle,
+        Color,
+        FontWeight,
+        EdgeInsets,
+        MouseRegion,
+        GestureDetector,
+        Container,
+        Alignment,
+        Text,
+        TextOverflow,
+        InkWell,
+        Row,
+        MainAxisAlignment,
+        Icon,
+        Icons,
+        SizedBox,
+        TextPainter,
+        TextSpan,
+        TextDirection,
+        Column,
+        LayoutBuilder,
+        Expanded,
+        SingleChildScrollView,
+        ValueKey,
+        Axis,
+        BoxDecoration,
+        BoxShadow,
+        Offset,
+        Align,
+        Padding,
+        HitTestBehavior,
+        Colors,
+        RawScrollbar,
+        Radius;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
 
@@ -8,6 +46,8 @@ import '../../../../provider/order_provider.dart';
 import '../../../../sharedWidget/no_data_found.dart';
 import '../../../../utils/responsive_snackbar.dart';
 import 'mf_order_detail_screen_web.dart';
+import '../../../../res/mynt_web_color_styles.dart';
+import '../../../../res/mynt_web_text_styles.dart';
 
 class MfOrderBookScreenWeb extends ConsumerStatefulWidget {
   const MfOrderBookScreenWeb({super.key});
@@ -52,13 +92,14 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb> {
   }
 
   // Helper method to ensure Geist font is always applied
-  TextStyle _geistTextStyle({Color? color, double? fontSize, FontWeight? fontWeight}) {
-    return TextStyle(
-      fontFamily: 'Geist',
+  // Helper method to ensure Geist font is always applied
+  TextStyle _geistTextStyle(
+      {Color? color, double? fontSize, FontWeight? fontWeight}) {
+    return MyntWebTextStyles.body(
+      context,
       color: color,
-      fontSize: fontSize,
       fontWeight: fontWeight,
-    );
+    ).copyWith(fontSize: fontSize);
   }
 
   // Builds a cell with hover detection (matches holdings pattern)
@@ -67,6 +108,7 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb> {
     required int rowIndex,
     required int columnIndex,
     bool alignRight = false,
+    bool alignLeft = false,
   }) {
     final isFirstColumn = columnIndex == 0;
     final isLastColumn = columnIndex == 6;
@@ -87,11 +129,15 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb> {
         onEnter: (_) => setState(() => _hoveredRowIndex = rowIndex),
         onExit: (_) => setState(() => _hoveredRowIndex = null),
         child: GestureDetector(
-          onTap: () => _openMfOrderDetail(_sortedMfOrders(_getOrders())[rowIndex]),
+          onTap: () =>
+              _openMfOrderDetail(_sortedMfOrders(_getOrders())[rowIndex]),
           behavior: HitTestBehavior.opaque,
           child: Container(
-            padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 8),
-            alignment: alignRight ? Alignment.topRight : null,
+            padding: EdgeInsets.symmetric(
+                horizontal: horizontalPadding, vertical: 8),
+            alignment: alignRight
+                ? Alignment.topRight
+                : (alignLeft ? Alignment.topLeft : null),
             child: child,
           ),
         ),
@@ -100,7 +146,8 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb> {
   }
 
   // Builds a sortable header cell
-  shadcn.TableCell buildHeaderCell(String label, int columnIndex, [bool alignRight = false]) {
+  shadcn.TableCell buildHeaderCell(String label, int columnIndex,
+      [bool alignRight = false]) {
     final isFirstColumn = columnIndex == 0;
     final isLastColumn = columnIndex == 6;
     final horizontalPadding = isFirstColumn || isLastColumn ? 16.0 : 6.0;
@@ -119,10 +166,12 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb> {
       child: InkWell(
         onTap: () => _onSort(columnIndex),
         child: Container(
-          padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 6),
+          padding:
+              EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 6),
           alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
           child: Row(
-            mainAxisAlignment: alignRight ? MainAxisAlignment.end : MainAxisAlignment.start,
+            mainAxisAlignment:
+                alignRight ? MainAxisAlignment.end : MainAxisAlignment.start,
             children: [
               if (alignRight && _sortColumnIndex == columnIndex)
                 Icon(
@@ -130,14 +179,16 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb> {
                   size: 16,
                   color: shadcn.Theme.of(context).colorScheme.mutedForeground,
                 ),
-              if (alignRight && _sortColumnIndex == columnIndex) const SizedBox(width: 4),
+              if (alignRight && _sortColumnIndex == columnIndex)
+                const SizedBox(width: 4),
               Text(
                 label,
                 style: _geistTextStyle(
                   color: shadcn.Theme.of(context).colorScheme.foreground,
                 ),
               ),
-              if (!alignRight && _sortColumnIndex == columnIndex) const SizedBox(width: 4),
+              if (!alignRight && _sortColumnIndex == columnIndex)
+                const SizedBox(width: 4),
               if (!alignRight && _sortColumnIndex == columnIndex)
                 Icon(
                   _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
@@ -174,12 +225,21 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb> {
   }
 
   // Calculate minimum column widths dynamically based on header and data
-  Map<int, double> _calculateMinWidths(List<dynamic> orders, BuildContext context) {
+  Map<int, double> _calculateMinWidths(
+      List<dynamic> orders, BuildContext context) {
     final textStyle = const TextStyle(fontSize: 14);
     const padding = 24.0; // Padding for cell content
     const sortIconWidth = 24.0; // Extra space for sort indicator icon
 
-    final headers = ['Fund Name', 'Transaction Type', 'Type', 'Folio No', 'Invest.Amt', 'Time', 'Status'];
+    final headers = [
+      'Fund Name',
+      'Transaction Type',
+      'Type',
+      'Folio No',
+      'Invest.Amt',
+      'Time',
+      'Status'
+    ];
     final minWidths = <int, double>{};
 
     // Calculate width for each column
@@ -205,13 +265,17 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb> {
             break;
           case 3: // Folio No
             final folioNo = order.folioNo ?? order.foliono;
-            cellText = (folioNo == null || folioNo.isEmpty || folioNo == 'null' || folioNo == 'Null')
-                ? '---' 
+            cellText = (folioNo == null ||
+                    folioNo.isEmpty ||
+                    folioNo == 'null' ||
+                    folioNo == 'Null')
+                ? '---'
                 : folioNo;
             break;
           case 4: // Amount
             final amount = order.orderVal ?? order.amount ?? '0';
-            cellText = double.tryParse(amount.toString())?.toStringAsFixed(2) ?? amount.toString();
+            cellText = double.tryParse(amount.toString())?.toStringAsFixed(2) ??
+                amount.toString();
             break;
           case 5: // Time
             cellText = order.datetime ?? order.dateTime ?? '';
@@ -266,13 +330,21 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb> {
           r = cmp<String>(a.name ?? a.schemename, b.name ?? b.schemename);
           break;
         case 1: // Transaction Type
-          String aTransType = (a.buySell == 'P' || a.buysell == 'P') ? 'Purchase' : 'Redemption';
-          String bTransType = (b.buySell == 'P' || b.buysell == 'P') ? 'Purchase' : 'Redemption';
+          String aTransType = (a.buySell == 'P' || a.buysell == 'P')
+              ? 'Purchase'
+              : 'Redemption';
+          String bTransType = (b.buySell == 'P' || b.buysell == 'P')
+              ? 'Purchase'
+              : 'Redemption';
           r = cmp<String>(aTransType, bTransType);
           break;
         case 2: // Type
-          String aType = ((a.orderType == 'NRM' || a.ordertype == 'NRM') ? 'ONE-TIME' : 'SIP');
-          String bType = ((b.orderType == 'NRM' || b.ordertype == 'NRM') ? 'ONE-TIME' : 'SIP');
+          String aType = ((a.orderType == 'NRM' || a.ordertype == 'NRM')
+              ? 'ONE-TIME'
+              : 'SIP');
+          String bType = ((b.orderType == 'NRM' || b.ordertype == 'NRM')
+              ? 'ONE-TIME'
+              : 'SIP');
           r = cmp<String>(aType, bType);
           break;
         case 3: // Folio No
@@ -298,18 +370,26 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb> {
 
   String _getFolioDisplay(dynamic order) {
     final folioNo = order.folioNo ?? order.foliono;
-    return (folioNo == null || folioNo.isEmpty || folioNo == 'null' || folioNo == 'Null')
-        ? '---' 
+    return (folioNo == null ||
+            folioNo.isEmpty ||
+            folioNo == 'null' ||
+            folioNo == 'Null')
+        ? '---'
         : folioNo;
   }
 
   Color _getStatusColor(String status) {
     final colorScheme = shadcn.Theme.of(context).colorScheme;
     final statusLower = status.toLowerCase();
-    
-    if (statusLower == 'completed' || statusLower == 'success' || statusLower == 'allocated') {
+
+    if (statusLower == 'completed' ||
+        statusLower == 'success' ||
+        statusLower == 'allocated') {
       return colorScheme.chart2;
-    } else if (statusLower == 'rejected' || statusLower == 'cancelled' || statusLower == 'failed' || statusLower == 'payment declined') {
+    } else if (statusLower == 'rejected' ||
+        statusLower == 'cancelled' ||
+        statusLower == 'failed' ||
+        statusLower == 'payment declined') {
       return colorScheme.destructive;
     } else {
       return colorScheme.chart1;
@@ -363,7 +443,9 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb> {
               rowIndex: i,
               columnIndex: 1,
               child: Text(
-                (order.buySell == 'P' || order.buysell == 'P') ? 'Purchase' : 'Redemption',
+                (order.buySell == 'P' || order.buysell == 'P')
+                    ? 'Purchase'
+                    : 'Redemption',
                 style: _geistTextStyle(
                   color: colorScheme.foreground,
                 ),
@@ -395,7 +477,10 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb> {
               columnIndex: 4,
               alignRight: true,
               child: Text(
-                double.tryParse((order.orderVal ?? order.amount ?? '0').toString())?.toStringAsFixed(2) ?? (order.orderVal ?? order.amount ?? '0').toString(),
+                double.tryParse(
+                            (order.orderVal ?? order.amount ?? '0').toString())
+                        ?.toStringAsFixed(2) ??
+                    (order.orderVal ?? order.amount ?? '0').toString(),
                 style: _geistTextStyle(
                   color: colorScheme.foreground,
                 ),
@@ -405,7 +490,7 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb> {
             buildCellWithHover(
               rowIndex: i,
               columnIndex: 5,
-              alignRight: true,
+              alignLeft: true,
               child: Text(
                 order.datetime ?? order.dateTime ?? '',
                 style: _geistTextStyle(
@@ -420,7 +505,8 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb> {
               child: Text(
                 (order.status ?? order.orderstatus ?? '').toUpperCase(),
                 style: _geistTextStyle(
-                  color: _getStatusColor(order.status ?? order.orderstatus ?? ''),
+                  color:
+                      _getStatusColor(order.status ?? order.orderstatus ?? ''),
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
@@ -447,7 +533,8 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb> {
           }
 
           // Step 2: Calculate total minimum width needed
-          final totalMinWidth = columnWidths.values.fold<double>(0.0, (sum, width) => sum + width);
+          final totalMinWidth = columnWidths.values
+              .fold<double>(0.0, (sum, width) => sum + width);
 
           // Step 3: If there's extra space, distribute it proportionally
           if (totalMinWidth < availableWidth) {
@@ -482,7 +569,8 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb> {
             if (totalGrowthFactor > 0) {
               for (int i = 0; i < 7; i++) {
                 if (growthFactors[i]! > 0) {
-                  final extraForThisColumn = (extraSpace * growthFactors[i]!) / totalGrowthFactor;
+                  final extraForThisColumn =
+                      (extraSpace * growthFactors[i]!) / totalGrowthFactor;
                   columnWidths[i] = columnWidths[i]! + extraForThisColumn;
                 }
               }
@@ -490,7 +578,8 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb> {
           }
 
           // Calculate total required width
-          final totalRequiredWidth = columnWidths.values.fold<double>(0.0, (sum, width) => sum + width);
+          final totalRequiredWidth = columnWidths.values
+              .fold<double>(0.0, (sum, width) => sum + width);
 
           // If total width exceeds available width, enable horizontal scrolling
           final needsHorizontalScroll = totalRequiredWidth > availableWidth;
@@ -519,7 +608,7 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb> {
                         buildHeaderCell('Type', 2),
                         buildHeaderCell('Folio No', 3, true),
                         buildHeaderCell('Amount', 4, true),
-                        buildHeaderCell('Time', 5, true),
+                        buildHeaderCell('Time', 5),
                         buildHeaderCell('Status', 6),
                       ],
                     ),
@@ -527,16 +616,25 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb> {
                 ),
                 // Scrollable Body (vertical scroll)
                 Expanded(
-                  child: Scrollbar(
+                  child: RawScrollbar(
                     controller: _verticalScrollController,
                     thumbVisibility: true,
                     trackVisibility: true,
+                    trackColor: resolveThemeColor(context,
+                        dark: Colors.grey.withOpacity(0.1),
+                        light: Colors.grey.withOpacity(0.1)),
+                    thumbColor: resolveThemeColor(context,
+                        dark: Colors.grey.withOpacity(0.3),
+                        light: Colors.grey.withOpacity(0.3)),
+                    thickness: 6,
+                    radius: const Radius.circular(3),
                     interactive: true,
                     child: SingleChildScrollView(
                       controller: _verticalScrollController,
                       scrollDirection: Axis.vertical,
                       child: shadcn.Table(
-                        key: ValueKey('table_${_sortColumnIndex}_$_sortAscending'),
+                        key: ValueKey(
+                            'table_${_sortColumnIndex}_$_sortAscending'),
                         columnWidths: {
                           0: shadcn.FixedTableSize(columnWidths[0]!),
                           1: shadcn.FixedTableSize(columnWidths[1]!),
@@ -558,10 +656,18 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb> {
 
           // Horizontal scroll wrapper (if needed)
           if (needsHorizontalScroll) {
-            return Scrollbar(
+            return RawScrollbar(
               controller: _horizontalScrollController,
               thumbVisibility: true,
               trackVisibility: true,
+              trackColor: resolveThemeColor(context,
+                  dark: Colors.grey.withOpacity(0.1),
+                  light: Colors.grey.withOpacity(0.1)),
+              thumbColor: resolveThemeColor(context,
+                  dark: Colors.grey.withOpacity(0.3),
+                  light: Colors.grey.withOpacity(0.3)),
+              thickness: 6,
+              radius: const Radius.circular(3),
               interactive: true,
               child: SingleChildScrollView(
                 controller: _horizontalScrollController,
@@ -583,35 +689,16 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb> {
   Widget _buildTypeCell(dynamic order, ThemesProvider theme) {
     final type = (order.orderType == 'NRM' ? 'ONE-TIME' : 'SIP');
 
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(
-          color: type == 'ONE-TIME'
-              ? const Color.fromARGB(255, 88, 69, 147).withOpacity(0.1)
-              : const Color(0xff016B61).withOpacity(0.1),
-          borderRadius: BorderRadius.circular(4),
-          border: Border.all(
-            color: type == 'ONE-TIME'
-                ? const Color.fromARGB(255, 88, 69, 147)
-                : const Color(0xff016B61),
-            width: 1,
-          ),
-        ),
-        child: Text(
-          type,
-          style: _geistTextStyle(
-            color: type == 'ONE-TIME'
-                ? const Color.fromARGB(255, 88, 69, 147)
-                : const Color(0xff016B61),
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-          ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
+    return Text(
+      type,
+      style: _geistTextStyle(
+        color: type == 'ONE-TIME'
+            ? const Color.fromARGB(255, 88, 69, 147)
+            : const Color(0xff016B61),
+        fontWeight: FontWeight.w500,
       ),
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
     );
   }
 
@@ -634,15 +721,32 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb> {
         // Open detail sheet (matching pattern from other order detail screens)
         shadcn.openSheet(
           context: context,
-          builder: (sheetContext) => MFOrderDetailScreenWeb(
-            mfOrderData: orderDetail,
+          builder: (sheetContext) => Container(
+            width: 480,
+            decoration: BoxDecoration(
+              color: resolveThemeColor(
+                context,
+                dark: MyntColors.backgroundColorDark,
+                light: MyntColors.backgroundColor,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 5,
+                  offset: const Offset(-2, 0),
+                ),
+              ],
+            ),
+            child: MFOrderDetailScreenWeb(
+              mfOrderData: orderDetail,
+            ),
           ),
           position: shadcn.OverlayPosition.end,
+          barrierColor: Colors.transparent,
         );
       } else {
         // Show error message
-        ResponsiveSnackBar.showError(
-            context,
+        ResponsiveSnackBar.showError(context,
             'Failed to fetch order details: ${mforderbook.mforderdet?.stat ?? "Unknown error"}');
       }
     } catch (e) {

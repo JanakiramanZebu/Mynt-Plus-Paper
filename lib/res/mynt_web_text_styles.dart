@@ -65,9 +65,17 @@ TextStyle _text(
             )
           : scheme.foreground);
 
+  double width = MediaQuery.of(context).size.width;
+  double scaleFactor = 1.0;
+  if (width < 1000) {
+    scaleFactor = 0.8;
+  } else if (width < 1300) {
+    scaleFactor = 0.9;
+  }
+
   return TextStyle(
     fontFamily: MyntFonts.fontFamily,
-    fontSize: size,
+    fontSize: size * scaleFactor,
     fontWeight: weight,
     color: resolvedColor,
     height: height,
@@ -88,9 +96,17 @@ TextStyle webText(
 }) {
   final scheme = shadcn.Theme.of(context).colorScheme;
 
+  double width = MediaQuery.of(context).size.width;
+  double scaleFactor = 1.0;
+  if (width < 1000) {
+    scaleFactor = 0.8;
+  } else if (width < 1300) {
+    scaleFactor = 0.9;
+  }
+
   return TextStyle(
     fontFamily: MyntFonts.fontFamily,
-    fontSize: size,
+    fontSize: (size ?? MyntFonts.body) * scaleFactor,
     fontWeight: weight,
     height: height,
     color: color ??
