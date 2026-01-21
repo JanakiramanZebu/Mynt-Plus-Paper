@@ -22,8 +22,25 @@ class ProfileProvider extends DefaultChangeNotifier {
   final Ref ref;
   ProfileProvider(this.ref);
 
-  late ProfileAllDetails _clientAllDetails;
-  ProfileAllDetails get clientAllDetails => _clientAllDetails;
+  ProfileAllDetails? _clientAllDetails;
+  ProfileAllDetails get clientAllDetails => _clientAllDetails!;
+  ProfileAllDetails? get clientAllDetailsSafe => _clientAllDetails;
+
+  bool _isLoading = false;
+  bool get isLoading => _isLoading;
+
+  Future fetchClientProfileAllDetails() async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      _clientAllDetails = await api.getClientProfileAllDetailsApi();
+    } catch (e) {
+      debugPrint("Error fetching client details: $e");
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
 
   final allDetailsSectionList = [
     'Personal Info',
@@ -322,12 +339,7 @@ class ProfileProvider extends DefaultChangeNotifier {
     }
   }
 
-  Future fetchClientProfileAllDetails() async {
-    try {
-      _clientAllDetails = await api.getClientProfileAllDetailsApi();
-    } catch (e) {}
-    notifyListeners();
-  }
+
 
   Future emaileotpfun(String newEmail, String oldEmail, String clientName,
       String dpcode) async {

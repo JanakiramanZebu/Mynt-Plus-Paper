@@ -244,18 +244,14 @@ class PortfolioProvider extends DefaultChangeNotifier {
   changeTabIndex(int index) {
     _selectedTab = index;
     print("selectedTab: $index");
-    
-    // Animate the TabController to the new index
+
+    // Animate the TabController to the new index if initialized
     try {
-      // Check if portTab is initialized before using it
-      if (portTab.animation != null) {
-        portTab.animateTo(index);
-      }
+      portTab.animateTo(index);
     } catch (e) {
-      // Silently handle TabController errors - it may not be initialized yet
-      // This is expected during app startup
+      // Silently handle if portTab is not yet initialized
     }
-    
+
     notifyListeners();
   }
 

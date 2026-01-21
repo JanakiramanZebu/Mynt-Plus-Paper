@@ -14,7 +14,7 @@ import 'package:mynt_plus/screens/web/market_watch/watchlist_screen_web.dart';
 import 'package:mynt_plus/screens/web/ordersbook/order_book_screen_web.dart';
 import 'package:mynt_plus/screens/web/position/position_screen_web.dart';
 import 'package:mynt_plus/screens/web/profile/Reports/reports_screen_web.dart';
-import 'package:mynt_plus/screens/web/profile/settings_web.dart';
+// import 'package:mynt_plus/screens/web/profile/settings_web.dart';
 import 'package:mynt_plus/screens/web/trade_action_screen_web.dart';
 import 'package:mynt_plus/sharedWidget/splash_loader.dart';
 import 'package:mynt_plus/screens/Mobile/bonds/bonds_main_screen.dart';
@@ -126,7 +126,7 @@ class PanelContentBuilder {
       case ScreenType.reports:
         return const ReportsScreenWeb();
       case ScreenType.settings:
-        return const SettingsScreenWeb();
+        // return const SettingsScreenWeb();
       case ScreenType.tradeAction:
         final tabIndex = tradeActionTabIndex;
         return TradeActionScreenWeb(

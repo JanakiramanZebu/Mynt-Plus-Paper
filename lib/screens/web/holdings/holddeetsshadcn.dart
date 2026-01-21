@@ -1,54 +1,85 @@
+import 'package:flutter/foundation.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 
-class SelectExample1 extends StatefulWidget {
-  const SelectExample1({super.key});
+/// Dropdown menu anchored to a button.
+///
+/// Uses [showDropdown] to present a [DropdownMenu] overlay with labels,
+/// dividers, buttons, and a nested submenu.
+class DropdownMenuExample1 extends StatelessWidget {
+  const DropdownMenuExample1({super.key});
 
-  @override
-  State<SelectExample1> createState() => _SelectExample1State();
-}
-
-class _SelectExample1State extends State<SelectExample1> {
-  String? selectedValue;
   @override
   Widget build(BuildContext context) {
-    return Select<String>(
-      // How to render each selected item as text in the field.
-      itemBuilder: (context, item) {
-        return Text(item);
-      },
-      // Limit the popup size so it doesn't grow too large in the docs view.
-      popupConstraints: const BoxConstraints(
-        maxHeight: 300,
-        maxWidth: 200,
-      ),
-      onChanged: (value) {
-        setState(() {
-          // Save the currently selected value (or null to clear).
-          selectedValue = value;
+    return OutlineButton(
+      onPressed: () {
+        // Show the dropdown relative to the button.
+        showDropdown(
+          context: context,
+          builder: (context) {
+            return const DropdownMenu(
+              children: [
+                MenuLabel(child: Text('My Account')),
+                MenuDivider(),
+                MenuButton(
+                  child: Text('Profile'),
+                ),
+                MenuButton(
+                  child: Text('Billing'),
+                ),
+                MenuButton(
+                  child: Text('Settings'),
+                ),
+                MenuButton(
+                  child: Text('Keyboard shortcuts'),
+                ),
+                MenuDivider(),
+                MenuButton(
+                  child: Text('Team'),
+                ),
+                MenuButton(
+                  // Demonstrates a nested submenu.
+                  subMenu: [
+                    MenuButton(
+                      child: Text('Email'),
+                    ),
+                    MenuButton(
+                      child: Text('Message'),
+                    ),
+                    MenuDivider(),
+                    MenuButton(
+                      child: Text('More...'),
+                    ),
+                  ],
+                  child: Text('Invite users'),
+                ),
+                MenuButton(
+                  child: Text('New Team'),
+                ),
+                MenuDivider(),
+                MenuButton(
+                  child: Text('GitHub'),
+                ),
+                MenuButton(
+                  child: Text('Support'),
+                ),
+                MenuButton(
+                  enabled: false,
+                  child: Text('API'),
+                ),
+                MenuButton(
+                  child: Text('Log out'),
+                ),
+              ],
+            );
+          },
+        ).future.then((_) {
+          // Called when the dropdown is closed.
+          if (kDebugMode) {
+            print('Closed');
+          }
         });
       },
-      // The current selection bound to this field.
-      value: selectedValue,
-      placeholder: const Text('Select a fruit'),
-      popup: const SelectPopup(
-        items: SelectItemList(
-          children: [
-            // A simple static list of options.
-            SelectItemButton(
-              value: 'Apple',
-              child: Text('Apple'),
-            ),
-            SelectItemButton(
-              value: 'Banana',
-              child: Text('Banana'),
-            ),
-            SelectItemButton(
-              value: 'Cherry',
-              child: Text('Cherry'),
-            ),
-          ],
-        ),
-      ),
+      child: const Text('Open'),
     );
   }
 }

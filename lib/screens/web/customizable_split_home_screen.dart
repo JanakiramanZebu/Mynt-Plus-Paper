@@ -8,11 +8,14 @@ import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/models/marketwatch_model/market_watch_scrip_model.dart';
 import 'package:mynt_plus/provider/auth_provider.dart';
 import 'package:mynt_plus/provider/bonds_provider.dart';
+import 'package:mynt_plus/screens/web/holdings/holddeetsshadcn.dart';
 
 import 'package:mynt_plus/screens/web/market_watch/tv_chart/webview_chart.dart';
 import 'package:mynt_plus/screens/web/chart/web_chart_overlay.dart';
 import 'package:mynt_plus/screens/web/ordersbook/order_book_screen_web.dart';
 import 'package:mynt_plus/screens/web/funds/secure_fund_web.dart';
+import 'package:mynt_plus/screens/web/profile/profile_main_screen.dart';
+import 'package:mynt_plus/sharedWidget/splash_loader.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../locator/constant.dart';
 import '../../../provider/index_list_provider.dart';
@@ -35,10 +38,10 @@ import '../../../res/res.dart';
 import '../../../res/mynt_web_color_styles.dart';
 
 import '../../../sharedWidget/internet_widget.dart';
-import '../../../sharedWidget/splash_loader.dart';
+// import 'package:mynt_plus/sharedWidget/splash_loader.dart';
 import 'profile/Reports/reports_screen_web.dart';
-import 'profile/profile_main_screen_web.dart';
-import 'profile/settings_web.dart';
+import 'profile/profile_main_screen.dart';
+// import 'profile/settings_web.dart';
 import 'splitter_widget.dart';
 // import '../Mobile/market_watch/tv_chart/webview_chart.dart';
 import 'market_watch/watchlist_screen_web.dart';
@@ -340,7 +343,7 @@ class _CustomizableSplitHomeScreenState
   }
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) async {
+  void didChangeAppLifecycleState(AppLifecycleState state) {
     // Helper function to check if portfolio screens are active
     bool hasPortfolioScreen() {
       for (var panel in _panels) {
@@ -1377,9 +1380,34 @@ class _CustomizableSplitHomeScreenState
         return _ProfileDropdown(
           isDarkMode: isDarkMode,
           clientId: clientId,
+          onNavigateToScreen: (screenType) {
+            _navigateToScreen(screenType);
+          },
         );
       },
     );
+  }
+
+  // Navigate to a specific screen type in the main panel
+  void _navigateToScreen(ScreenType screenType) {
+    // Find the active panel (not watchlist) and switch to the new screen
+    int targetPanelIndex = 0;
+    for (int i = 0; i < _panels.length; i++) {
+      if (_panels[i].screenType != ScreenType.watchlist &&
+          !(_panels[i].screens.isNotEmpty &&
+              _panels[i].screens.contains(ScreenType.watchlist))) {
+        targetPanelIndex = i;
+        break;
+      }
+    }
+
+    setState(() {
+      _panels[targetPanelIndex].screenType = screenType;
+      _panels[targetPanelIndex].screens = [screenType];
+      _panels[targetPanelIndex].activeScreenIndex = 0;
+    });
+    _saveLayout();
+    _handleScreenTypeChange(screenType);
   }
 
   // Build index slots for app bar
@@ -1544,7 +1572,7 @@ class _CustomizableSplitHomeScreenState
       case ScreenType.reports:
         return const ReportsScreenWeb();
       case ScreenType.settings:
-        return const SettingsScreenWeb();
+        return const ProfileMainScreen(initialIndex: 3);
       case ScreenType.tradeAction:
         // Get tab index from stored state or use null for default
         final tabIndex = _tradeActionTabIndex;
@@ -3323,10 +3351,12 @@ class _CustomizableSplitHomeScreenState
 class _ProfileDropdown extends StatefulWidget {
   final bool isDarkMode;
   final String clientId;
+  final Function(ScreenType)? onNavigateToScreen;
 
   const _ProfileDropdown({
     required this.isDarkMode,
     required this.clientId,
+    this.onNavigateToScreen,
   });
 
   @override
@@ -3360,6 +3390,10 @@ class _ProfileDropdownState extends State<_ProfileDropdown> {
         clientId: widget.clientId,
         onClose: () {
           _removeOverlay();
+        },
+        onNavigateToScreen: (screenType) {
+          _removeOverlay();
+          widget.onNavigateToScreen?.call(screenType);
         },
       ),
     );
@@ -3429,35 +3463,48 @@ class _ProfileDropdownState extends State<_ProfileDropdown> {
   }
 }
 
-// InheritedWidget to provide close callback to UserAccountScreen
+// InheritedWidget to provide close and navigate callbacks to ProfileMainScreen
 class _ProfileCloseCallback extends InheritedWidget {
   final VoidCallback onClose;
+  final Function(ScreenType)? onNavigateToScreen;
 
   const _ProfileCloseCallback({
     required this.onClose,
+    this.onNavigateToScreen,
     required super.child,
   });
 
+  static _ProfileCloseCallback? of(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<_ProfileCloseCallback>();
+  }
+
   @override
   bool updateShouldNotify(_ProfileCloseCallback oldWidget) {
-    return onClose != oldWidget.onClose;
+    return onClose != oldWidget.onClose || onNavigateToScreen != oldWidget.onNavigateToScreen;
   }
 }
 
 // Wrapper widget that provides close callback to UserAccountScreen via InheritedWidget
 class ProfileMenuContentWrapper extends StatelessWidget {
   final VoidCallback onNavigate;
+  final Function(ScreenType)? onNavigateToScreen;
 
   const ProfileMenuContentWrapper({
     super.key,
     required this.onNavigate,
+    this.onNavigateToScreen,
   });
 
   @override
   Widget build(BuildContext context) {
     return _ProfileCloseCallback(
       onClose: onNavigate,
-      child: const UserAccountScreenWeb(),
+      onNavigateToScreen: onNavigateToScreen,
+      child: ProfileNavigationCallback(
+        onClose: onNavigate,
+        onNavigateToScreen: onNavigateToScreen,
+        child: const ProfileMainScreen(),
+      ),
     );
   }
 }
@@ -3467,11 +3514,13 @@ class _ProfileDropdownOverlay extends StatelessWidget {
   final bool isDarkMode;
   final String clientId;
   final VoidCallback onClose;
+  final Function(ScreenType)? onNavigateToScreen;
 
   const _ProfileDropdownOverlay({
     required this.isDarkMode,
     required this.clientId,
     required this.onClose,
+    this.onNavigateToScreen,
   });
 
   @override
@@ -3512,8 +3561,8 @@ class _ProfileDropdownOverlay extends StatelessWidget {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(8),
                     child: ProfileMenuContentWrapper(
-                      onNavigate:
-                          onClose, // Pass callback to close on any navigation
+                      onNavigate: onClose,
+                      onNavigateToScreen: onNavigateToScreen,
                     ),
                   ),
                 ),

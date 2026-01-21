@@ -4,20 +4,20 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_swipe_action_cell/flutter_swipe_action_cell.dart';
 import '../../../../models/marketwatch_model/get_quotes.dart';
 import '../../../../models/marketwatch_model/opt_chain_model.dart';
 import '../../../../models/order_book_model/order_book_model.dart';
 import '../../../../provider/market_watch_provider.dart';
 import '../../../../provider/order_provider.dart';
-import '../../../../provider/thems.dart';
 import '../../../../provider/websocket_provider.dart';
+import '../../../../res/res.dart';
 import '../../../../res/mynt_web_text_styles.dart';
 import '../../../../res/mynt_web_color_styles.dart';
 import '../../../../sharedWidget/snack_bar.dart';
 import '../../../../utils/responsive_navigation.dart';
 import '../../../../utils/responsive_snackbar.dart';
+import '../../../../sharedWidget/hover_actions_web.dart';
 
 /// Data class representing a single strike price row
 class StrikeRowData {
@@ -74,8 +74,6 @@ class _OptionChainRowWebState extends ConsumerState<OptionChainRowWeb> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = ref.read(themeProvider);
-
     // PERFORMANCE FIX: Each row watches ONLY its own token with .select()
     // When token A updates, only row A rebuilds - NOT all 200+ rows!
     // This replaces the 500ms timer that caused 100% CPU with 120 full rebuilds/min
@@ -108,14 +106,14 @@ class _OptionChainRowWebState extends ConsumerState<OptionChainRowWeb> {
             // CALL cell (flex: 6)
             Expanded(
               flex: 6,
-              child: _buildCallCell(callSocketData, theme),
+              child: _buildCallCell(callSocketData),
             ),
             // STRIKE price cell (fixed width: 150)
-            _buildStrikeCell(theme),
+            _buildStrikeCell(),
             // PUT cell (flex: 6)
             Expanded(
               flex: 6,
-              child: _buildPutCell(putSocketData, theme),
+              child: _buildPutCell(putSocketData),
             ),
           ],
         ),
@@ -123,11 +121,10 @@ class _OptionChainRowWebState extends ConsumerState<OptionChainRowWeb> {
     );
   }
 
-  Widget _buildCallCell(
-      Map<String, dynamic>? socketData, ThemesProvider theme) {
+  Widget _buildCallCell(Map<String, dynamic>? socketData) {
     final option = widget.rowData.callOption;
     if (option == null) {
-      return const SizedBox.shrink();
+      return const SizedBox.shrink(); 
     }
 
     // Calculate values from websocket data (with fallbacks)
@@ -182,8 +179,10 @@ class _OptionChainRowWebState extends ConsumerState<OptionChainRowWeb> {
                       .withOpacity(0.15)
                   : Colors.transparent,
               child: Stack(
+                alignment: Alignment.center,
                 children: [
                   // Data row - CALLS: OI% | OI | CH% | LTP
+                  // PERFORMANCE: Keep data visible while showing actions
                   Row(
                     children: [
                       // OI% column
@@ -258,63 +257,32 @@ class _OptionChainRowWebState extends ConsumerState<OptionChainRowWeb> {
                       ),
                     ],
                   ),
-                  // Hover buttons - positioned at right
-                  if (isHovered)
-                    Positioned(
-                      top: 0,
-                      bottom: 0,
-                      right: 0,
-                      child: Center(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            _buildHoverButton(
-                              label: 'B',
-                              color: Colors.white,
-                              backgroundColor: resolveThemeColor(context,
-                                  dark: MyntColors.primaryDark,
-                                  light: MyntColors.primary),
-                              onPressed: () => _placeOrder(option, true),
-                              theme: theme,
-                            ),
-                            const SizedBox(width: 4),
-                            _buildHoverButton(
-                              label: 'S',
-                              color: Colors.white,
-                              backgroundColor: resolveThemeColor(context,
-                                  dark: MyntColors.tertiary,
-                                  light: MyntColors.tertiary),
-                              onPressed: () => _placeOrder(option, false),
-                              theme: theme,
-                            ),
-                            const SizedBox(width: 4),
-                            _buildHoverButton(
-                              icon: Icons.bar_chart,
-                              color: Colors.black,
-                              backgroundColor: Colors.white,
-                              onPressed: () => _handleChartTap(option),
-                              theme: theme,
-                            ),
-                            const SizedBox(width: 4),
-                            _buildHoverButton(
-                              icon: isInWatchlist
-                                  ? Icons.bookmark
-                                  : Icons.bookmark_border,
-                              color: isInWatchlist
-                                  ? resolveThemeColor(context,
-                                      dark: MyntColors.primaryDark,
-                                      light: MyntColors.primary)
-                                  : resolveThemeColor(context,
-                                      dark: MyntColors.textSecondaryDark,
-                                      light: MyntColors.textSecondary),
-                              backgroundColor: Colors.white,
-                              onPressed: () => _handleSaveToWatchlist(option),
-                              theme: theme,
-                            ),
-                          ],
-                        ),
+                  // Hover buttons
+                  HoverActionsContainer(
+                    isVisible: isHovered,
+                    actions: [
+                      HoverActionButton.buy(
+                        context: context,
+                        onPressed: () => _placeOrder(option, true),
                       ),
-                    ),
+                      HoverActionButton.sell(
+                        context: context,
+                        onPressed: () => _placeOrder(option, false),
+                      ),
+                      HoverActionButton.icon(
+                        context: context,
+                        iconAsset: isInWatchlist
+                            ? assets.bookmarkIcon
+                            : assets.bookmarkLineIcon,
+                        iconColor: isInWatchlist
+                            ? resolveThemeColor(context,
+                                dark: MyntColors.primaryDark,
+                                light: MyntColors.primary)
+                            : null,
+                        onPressed: () => _handleSaveToWatchlist(option),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             );
@@ -324,7 +292,7 @@ class _OptionChainRowWebState extends ConsumerState<OptionChainRowWeb> {
     );
   }
 
-  Widget _buildStrikeCell(ThemesProvider theme) {
+  Widget _buildStrikeCell() {
     final isATM = widget.rowData.isATM;
 
     return SizedBox(
@@ -362,7 +330,7 @@ class _OptionChainRowWebState extends ConsumerState<OptionChainRowWeb> {
     );
   }
 
-  Widget _buildPutCell(Map<String, dynamic>? socketData, ThemesProvider theme) {
+  Widget _buildPutCell(Map<String, dynamic>? socketData) {
     final option = widget.rowData.putOption;
     if (option == null) {
       return const SizedBox.shrink();
@@ -420,192 +388,114 @@ class _OptionChainRowWebState extends ConsumerState<OptionChainRowWeb> {
                       .withOpacity(0.15)
                   : Colors.transparent,
               child: Stack(
+                alignment: Alignment.center,
                 children: [
                   // Data row - PUTS: LTP | CH% | OI | OI%
+                  // PERFORMANCE: Keep data visible while showing actions
                   Row(
                     children: [
-                      // LTP column
-                      Expanded(
-                        child: Text(
-                          lp,
-                          textAlign: TextAlign.center,
-                          style: MyntWebTextStyles.body(
-                            context,
-                            fontWeight: FontWeight.w500,
-                            color: (lp == "0.00" || lp == "0.0")
-                                ? resolveThemeColor(context,
-                                    dark: MyntColors.textSecondaryDark,
-                                    light: MyntColors.textSecondary)
-                                : resolveThemeColor(context,
-                                    dark: MyntColors.textPrimaryDark,
-                                    light: MyntColors.textPrimary),
+                        // LTP column
+                        Expanded(
+                          child: Text(
+                            lp,
+                            textAlign: TextAlign.center,
+                            style: MyntWebTextStyles.body(
+                              context,
+                              fontWeight: FontWeight.w500,
+                              color: (lp == "0.00" || lp == "0.0")
+                                  ? resolveThemeColor(context,
+                                      dark: MyntColors.textSecondaryDark,
+                                      light: MyntColors.textSecondary)
+                                  : resolveThemeColor(context,
+                                      dark: MyntColors.textPrimaryDark,
+                                      light: MyntColors.textPrimary),
+                            ),
                           ),
                         ),
+                        // CH% column
+                        Expanded(
+                          child: Text(
+                            "$perChange%",
+                            textAlign: TextAlign.center,
+                            style: MyntWebTextStyles.body(
+                              context,
+                              fontWeight: FontWeight.w500,
+                              color: changeColor,
+                            ),
+                          ),
+                        ),
+                        // OI column
+                        Expanded(
+                          child: Text(
+                            oiLack,
+                            textAlign: TextAlign.center,
+                            style: MyntWebTextStyles.body(
+                              context,
+                              fontWeight: FontWeight.w500,
+                              color: (oiLack == "0.00" || oiLack == "0.0")
+                                  ? resolveThemeColor(context,
+                                      dark: MyntColors.textSecondaryDark,
+                                      light: MyntColors.textSecondary)
+                                  : resolveThemeColor(context,
+                                      dark: MyntColors.textPrimaryDark,
+                                      light: MyntColors.textPrimary),
+                            ),
+                          ),
+                        ),
+                        // OI% column
+                        Expanded(
+                          child: Text(
+                            "${oiPerChng == "NaN" ? "0.00" : oiPerChng}%",
+                            textAlign: TextAlign.center,
+                            style: MyntWebTextStyles.body(
+                              context,
+                              fontWeight: FontWeight.w500,
+                              color: (oiPerChng == "0.00" || oiPerChng == "0.0")
+                                  ? resolveThemeColor(context,
+                                      dark: MyntColors.textSecondaryDark,
+                                      light: MyntColors.textSecondary)
+                                  : (oiPerChng.startsWith("-"))
+                                      ? resolveThemeColor(context,
+                                          dark: MyntColors.lossDark,
+                                          light: MyntColors.loss)
+                                      : resolveThemeColor(context,
+                                          dark: MyntColors.profitDark,
+                                          light: MyntColors.profit),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  // Hover buttons
+                  HoverActionsContainer(
+                    isVisible: isHovered,
+                    actions: [
+                      HoverActionButton.sell(
+                        context: context,
+                        onPressed: () => _placeOrder(option, false),
                       ),
-                      // CH% column
-                      Expanded(
-                        child: Text(
-                          "$perChange%",
-                          textAlign: TextAlign.center,
-                          style: MyntWebTextStyles.body(
-                            context,
-                            fontWeight: FontWeight.w500,
-                            color: changeColor,
-                          ),
-                        ),
+                      HoverActionButton.buy(
+                        context: context,
+                        onPressed: () => _placeOrder(option, true),
                       ),
-                      // OI column
-                      Expanded(
-                        child: Text(
-                          oiLack,
-                          textAlign: TextAlign.center,
-                          style: MyntWebTextStyles.body(
-                            context,
-                            fontWeight: FontWeight.w500,
-                            color: (oiLack == "0.00" || oiLack == "0.0")
-                                ? resolveThemeColor(context,
-                                    dark: MyntColors.textSecondaryDark,
-                                    light: MyntColors.textSecondary)
-                                : resolveThemeColor(context,
-                                    dark: MyntColors.textPrimaryDark,
-                                    light: MyntColors.textPrimary),
-                          ),
-                        ),
-                      ),
-                      // OI% column
-                      Expanded(
-                        child: Text(
-                          "${oiPerChng == "NaN" ? "0.00" : oiPerChng}%",
-                          textAlign: TextAlign.center,
-                          style: MyntWebTextStyles.body(
-                            context,
-                            fontWeight: FontWeight.w500,
-                            color: (oiPerChng == "0.00" || oiPerChng == "0.0")
-                                ? resolveThemeColor(context,
-                                    dark: MyntColors.textSecondaryDark,
-                                    light: MyntColors.textSecondary)
-                                : (oiPerChng.startsWith("-"))
-                                    ? resolveThemeColor(context,
-                                        dark: MyntColors.lossDark,
-                                        light: MyntColors.loss)
-                                    : resolveThemeColor(context,
-                                        dark: MyntColors.profitDark,
-                                        light: MyntColors.profit),
-                          ),
-                        ),
+                      HoverActionButton.icon(
+                        context: context,
+                        iconAsset: isInWatchlist
+                            ? assets.bookmarkIcon
+                            : assets.bookmarkLineIcon,
+                        iconColor: isInWatchlist
+                            ? resolveThemeColor(context,
+                                dark: MyntColors.primaryDark,
+                                light: MyntColors.primary)
+                            : null,
+                        onPressed: () => _handleSaveToWatchlist(option),
                       ),
                     ],
                   ),
-                  // Hover buttons - positioned at left (for PUT side)
-                  if (isHovered)
-                    Positioned(
-                      top: 0,
-                      bottom: 0,
-                      left: 0,
-                      child: Center(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            _buildHoverButton(
-                              label: 'S',
-                              color: Colors.white,
-                              backgroundColor: resolveThemeColor(context,
-                                  dark: MyntColors.tertiary,
-                                  light: MyntColors.tertiary),
-                              onPressed: () => _placeOrder(option, false),
-                              theme: theme,
-                            ),
-                            const SizedBox(width: 4),
-                            _buildHoverButton(
-                              label: 'B',
-                              color: Colors.white,
-                              backgroundColor: resolveThemeColor(context,
-                                  dark: MyntColors.primaryDark,
-                                  light: MyntColors.primary),
-                              onPressed: () => _placeOrder(option, true),
-                              theme: theme,
-                            ),
-                            const SizedBox(width: 4),
-                            _buildHoverButton(
-                              icon: Icons.bar_chart,
-                              color: Colors.black,
-                              backgroundColor: Colors.white,
-                              onPressed: () => _handleChartTap(option),
-                              theme: theme,
-                            ),
-                            const SizedBox(width: 4),
-                            _buildHoverButton(
-                              icon: isInWatchlist
-                                  ? Icons.bookmark
-                                  : Icons.bookmark_border,
-                              color: isInWatchlist
-                                  ? resolveThemeColor(context,
-                                      dark: MyntColors.primaryDark,
-                                      light: MyntColors.primary)
-                                  : resolveThemeColor(context,
-                                      dark: MyntColors.iconDark,
-                                      light: MyntColors.icon),
-                              backgroundColor: Colors.white,
-                              onPressed: () => _handleSaveToWatchlist(option),
-                              theme: theme,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
                 ],
               ),
             );
           },
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHoverButton({
-    String? label,
-    IconData? icon,
-    String? svgIcon,
-    required Color color,
-    Color? backgroundColor,
-    required VoidCallback? onPressed,
-    required ThemesProvider theme,
-  }) {
-    return SizedBox(
-      width: 32,
-      height: 40,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(5.0),
-          splashColor: color.withOpacity(0.15),
-          highlightColor: color.withOpacity(0.08),
-          onTap: onPressed,
-          child: Container(
-            decoration: BoxDecoration(
-              color: backgroundColor ?? Colors.transparent,
-              borderRadius: BorderRadius.circular(5.0),
-            ),
-            child: Center(
-              child: svgIcon != null
-                  ? SvgPicture.asset(
-                      svgIcon,
-                      height: 20,
-                      width: 20,
-                      color: color,
-                    )
-                  : icon != null
-                      ? Icon(icon, size: 20, color: color)
-                      : Text(
-                          label ?? "",
-                          style: MyntWebTextStyles.caption(
-                            context,
-                            fontWeight: FontWeight.bold,
-                            color: color,
-                          ),
-                        ),
-            ),
-          ),
         ),
       ),
     );
@@ -726,29 +616,6 @@ class _OptionChainRowWebState extends ConsumerState<OptionChainRowWeb> {
     );
   }
 
-  Future<void> _handleChartTap(OptionValues option) async {
-    final scripData = ref.read(marketWatchProvider);
-
-    await scripData.fetchScripQuoteIndex(
-      "${option.token}",
-      "${option.exch}",
-      context,
-    );
-    final quots = scripData.getQuotes;
-    if (quots != null) {
-      DepthInputArgs depthArgs = DepthInputArgs(
-        exch: quots.exch.toString(),
-        token: quots.token.toString(),
-        tsym: quots.tsym.toString(),
-        instname: quots.instname.toString(),
-        symbol: quots.symbol.toString(),
-        expDate: quots.expDate.toString(),
-        option: quots.option.toString(),
-      );
-      scripData.scripdepthsize(false);
-      await scripData.calldepthApis(context, depthArgs, "");
-    }
-  }
 
   Future<void> _handleSaveToWatchlist(OptionValues option) async {
     final scripData = ref.read(marketWatchProvider);

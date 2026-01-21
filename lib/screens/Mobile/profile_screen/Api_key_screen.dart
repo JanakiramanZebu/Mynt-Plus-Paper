@@ -1,16 +1,19 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:crypto/crypto.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:mynt_plus/provider/api_key_provider.dart';
+import 'package:mynt_plus/provider/thems.dart';
+import 'package:mynt_plus/res/global_state_text.dart';
+import 'package:mynt_plus/res/res.dart';
+import 'package:mynt_plus/sharedWidget/functions.dart';
+import 'package:mynt_plus/sharedWidget/list_divider.dart';
 import 'package:mynt_plus/sharedWidget/snack_bar.dart';
 import 'package:share_plus/share_plus.dart';
 
-import '../../../provider/api_key_provider.dart';
-import '../../../provider/thems.dart';
-import '../../../res/global_state_text.dart';
-import '../../../res/res.dart';
-import '../../../sharedWidget/functions.dart';
 
 class ApiKeyScreen extends ConsumerStatefulWidget {
   const ApiKeyScreen({
@@ -146,7 +149,7 @@ class _TotpScreenState extends ConsumerState<ApiKeyScreen> {
                                         await ref
                                             .read(apikeyprovider)
                                             .fetchgenerateapikey(
-                                                context, "1 year");
+                                                context, "1 year", apikeys.apikeyres!.apistatus ?? "");
                                         await ref
                                             .read(apikeyprovider)
                                             .fetchapikey(context);
@@ -182,7 +185,7 @@ class _TotpScreenState extends ConsumerState<ApiKeyScreen> {
                             ),
                           ],
                         )
-                      : const SizedBox(),
+                      : SizedBox(),
               
                   apikeys.apikeyres!.apistatus != "NOT_PRESENT"
                       ? Column(
@@ -238,7 +241,7 @@ class _TotpScreenState extends ConsumerState<ApiKeyScreen> {
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 20.0),
+                            SizedBox(height: 20.0),
                             Container(
                               decoration: BoxDecoration(
                                 color: theme.isDarkMode
@@ -316,7 +319,7 @@ class _TotpScreenState extends ConsumerState<ApiKeyScreen> {
                                             "API Key\n${apikeys.apikeyres!.apikey}",
                                           );
                                         },
-                                        child: SizedBox(
+                                        child: Container(
                                           height: 32,
                                           width: 32,
                                           child: Center(
@@ -354,7 +357,7 @@ class _TotpScreenState extends ConsumerState<ApiKeyScreen> {
               
                                           Navigator.pop(context);
                                         },
-                                        child: SizedBox(
+                                        child: Container(
                                           height: 32,
                                           width: 32,
                                           child: Center(
@@ -369,10 +372,10 @@ class _TotpScreenState extends ConsumerState<ApiKeyScreen> {
                             ),
                           ],
                         )
-                      : const SizedBox(),
-                  const SizedBox(height: 18.0),
+                      : SizedBox(),
+                  SizedBox(height: 18.0),
                   apikeys.apikeyres!.apistatus != "NOT_PRESENT" &&
-                          apikeys.apikeyres!.apistatus != "VALID"
+                          apikeys.apikeyres!.apistatus != "VALID" || apikeys.apikeyres!.apistatus == "EXPIRED"
                       ? Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 8.0),
                           child: SizedBox(
@@ -381,15 +384,18 @@ class _TotpScreenState extends ConsumerState<ApiKeyScreen> {
                               onPressed: () async {
                                 await ref
                                     .read(apikeyprovider)
-                                    .fetchgenerateapikey(context, "1 year");
+                                    .fetchgenerateapikey(context, "1 year", apikeys.apikeyres!.apistatus ?? "");
                                 await ref
                                     .read(apikeyprovider)
                                     .fetchapikey(context);
+                                     await Future.delayed(Duration(milliseconds: 50));
                                 Navigator.pop(context);
+                                if (apikeys.apikeyres?.apikey != null){
                                 Clipboard.setData(ClipboardData(
                                     text: "${apikeys.apikeyres!.apikey}"));
                                     successMessage(context,
                                         'API Key has been ${apikeys.generateApikey?.status} and copied');
+                                }
                               },
                               style: ElevatedButton.styleFrom(
                                 elevation: 0,
@@ -409,11 +415,11 @@ class _TotpScreenState extends ConsumerState<ApiKeyScreen> {
                             ),
                           ),
                         )
-                      : const SizedBox(),
+                      : SizedBox(),
                 ],
               ),
             ),
-            const SizedBox(height: 30.0)
+            SizedBox(height: 30.0)
           ],
         ),
       ),
