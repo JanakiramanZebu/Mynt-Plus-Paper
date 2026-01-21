@@ -10,6 +10,7 @@ import 'package:mynt_plus/provider/auth_provider.dart';
 import 'package:mynt_plus/provider/bonds_provider.dart';
 
 import 'package:mynt_plus/screens/web/market_watch/tv_chart/webview_chart.dart';
+import 'package:mynt_plus/screens/web/chart/web_chart_overlay.dart';
 import 'package:mynt_plus/screens/web/ordersbook/order_book_screen_web.dart';
 import 'package:mynt_plus/screens/web/funds/secure_fund_web.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -521,7 +522,7 @@ class _CustomizableSplitHomeScreenState
         body: Stack(
           children: [
             _buildMainScaffold(),
-            _buildChartOverlay(),
+            const WebChartOverlay(), // New simplified chart overlay
           ],
         ),
       ),
@@ -1498,7 +1499,7 @@ highlightColor: resolveThemeColor(
               // Watching entire marketWatchProvider causes unnecessary rebuilds
               final quotes = ref.watch(marketWatchProvider.select((p) => p.getQuotes));
               final fallback =
-                  ChartArgs(exch: 'ABC', tsym: 'ABCD', token: '0123');
+                  ChartArgs(exch: 'NSE', tsym: 'Nifty 50', token: '26000');
               return ChartWithDepthWeb(
                 wlValue: DepthInputArgs(
                   exch: quotes?.exch ?? fallback.exch,
@@ -2485,6 +2486,9 @@ highlightColor: resolveThemeColor(
             "NSE", "NSEALL", "mostActive", "mostActive");
       }
 
+      // Fetch holdings for dashboard stats with "Refresh" to trigger websocket subscription
+      await portfolio.fetchHoldings(context, "Refresh");
+
       // Update subscription manager AFTER data is fetched
       // This ensures tokens are available for subscription
       if (mounted) {
@@ -3154,42 +3158,6 @@ highlightColor: resolveThemeColor(
     }
   }
 
-  Widget _buildChartOverlay() {
-    return Consumer(
-      builder: (context, ref, _) {
-        final showChart = ref.watch(userProfileProvider
-            .select((userProfile) => userProfile.showchartof));
-        final webViewKey = ref.watch(userProfileProvider
-            .select((userProfile) => userProfile.webViewKey));
-        return Positioned(
-          key: webViewKey,
-          bottom: showChart ? 0 : (MediaQuery.of(context).size.height + 100),
-          child: AnimatedContainer(
-            alignment: Alignment.center,
-            duration: const Duration(milliseconds: 100),
-            curve: Curves.fastLinearToSlowEaseIn,
-            decoration: BoxDecoration(
-              color: shadcn.Theme.of(context).colorScheme.background,
-            ),
-            height: MediaQuery.of(context).size.height,
-            width: MediaQuery.of(context).size.width,
-            child: SafeArea(
-              bottom: false,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  ChartScreenWebViews(
-                      chartArgs:
-                          ChartArgs(exch: 'ABC', tsym: 'ABCD', token: '0123')),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
   void _handleReconnectionSuccess() {
     if (!mounted) return;
     setState(() {});
@@ -3207,7 +3175,7 @@ highlightColor: resolveThemeColor(
       mktwth.singlePageloader(false);
 
       if (mounted) setState(() {});
-      ref.read(marketWatchProvider).setChartScript('ABC', '0123', 'ABCD');
+      ref.read(marketWatchProvider).setChartScript('NSE', '26000', 'Nifty 50');
       return false;
     } else {
       return await showDialog(

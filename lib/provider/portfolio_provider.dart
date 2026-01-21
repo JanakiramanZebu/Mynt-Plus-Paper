@@ -658,8 +658,7 @@ changeHoldingsTabIndex(int index) {
                     // int.parse("${element.npoadt1qty ?? 0}") +
                     max(int.parse("${element.dpQty ?? 0}"), int.parse("${element.npoadqty ?? 0}"))+
                     int.parse("${element.npoadt1qty ?? 0}") +
-                    int.parse("${element.holdqty ?? 0}") +
-                    int.parse("${element.btstqty ?? 0}")) -
+                    int.parse("${element.holdqty ?? 0}") + (int.parse("${element.npoadt1qty ?? 0}") > 0 ? 0 : int.parse("${element.btstqty ?? 0}"))) -
                 int.parse("${element.trdqty ?? 0}");
             element.currentQty = qty;
             ref

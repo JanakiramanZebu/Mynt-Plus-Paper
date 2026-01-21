@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:mynt_plus/screens/web/chart/web_chart_manager.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -1498,18 +1499,18 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
    void setChartScript(String exch, String token, String tsym) async {
     // Unsubscribe from old depth and reset depth loaded state when changing scrip
-    // Note: We don't pass context here as it might not be available, 
+    // Note: We don't pass context here as it might not be available,
     // unsubscribe will happen on next depth panel open if needed
     resetDepthLoadedState();
-    
+
     if (kIsWeb) {
-      // On Flutter Web, JS injection into a cross-origin iframe is blocked.
-      // Reload the chart with the desired symbol via URL parameters instead.
-      final isDark = ref.read(themeProvider).isDarkMode;
-      final url =
-          "https://mynt.zebuetrade.com/tv?src=app&symbol=$tsym&user=${pref.clientId}&usession=${pref.clientSession}&token=$token&exch=$exch&dark=$isDark";
-      await ConstantName.chartwebViewController?.loadUrl(
-        urlRequest: URLRequest(url: WebUri(url)),
+      // On Flutter Web, use WebChartManager to change symbol via postMessage
+      final isDarkMode = ref.read(themeProvider).isDarkMode;
+      webChartManager.changeSymbol(
+        exch: exch,
+        token: token,
+        tsym: tsym,
+        isDarkMode: isDarkMode,
       );
     } else {
       await ConstantName.chartwebViewController!.evaluateJavascript(

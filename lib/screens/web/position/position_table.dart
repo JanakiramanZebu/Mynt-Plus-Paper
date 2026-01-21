@@ -950,17 +950,20 @@ class _PositionTableState extends ConsumerState<PositionTable> {
           );
         }
       case 'P&L':
+        // For closed positions, use rpnl (realized P&L)
+        // For open positions, use profitNloss (unrealized P&L)
+        final pnlValue = isClosed
+            ? (position.rpnl ?? position.profitNloss ?? '0.00')
+            : (position.profitNloss ?? '0.00');
+
         if (position.token == null || position.token!.isEmpty) {
           return Align(
             alignment: alignment,
             child: Text(
-              position.profitNloss ?? '0.00',
+              pnlValue,
               style: _getTextStyle(context,
-                  color: isClosed
-                      ? textColor
-                      : _getCellColor(
-                          double.tryParse(position.profitNloss ?? '0') ?? 0.0,
-                          context)),
+                  color: _getCellColor(
+                      double.tryParse(pnlValue) ?? 0.0, context)),
             ),
           );
         } else {
@@ -972,7 +975,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
               token: position.token!,
               qty: qty,
               avgPrice: avgPrice,
-              initialValue: position.profitNloss ?? '0.00',
+              initialValue: pnlValue,
               isClosed: isClosed,
             ),
           );
@@ -1587,6 +1590,12 @@ class _PnLCellState extends ConsumerState<_PnLCell> {
     super.initState();
     pnl = widget.initialValue;
 
+    // For closed positions (qty = 0), don't subscribe to updates
+    // Just show the realized P&L from initialValue
+    if (widget.isClosed || widget.qty == 0) {
+      return;
+    }
+
     _subscription = ref.read(websocketProvider).socketDataStream.listen((data) {
       if (!mounted || !data.containsKey(widget.token)) return;
 
@@ -1628,11 +1637,8 @@ class _PnLCellState extends ConsumerState<_PnLCell> {
       pnl,
       style: MyntWebTextStyles.tableCell(
         context,
-        color: widget.isClosed
-            ? resolveThemeColor(context,
-                dark: MyntColors.textSecondaryDark,
-                light: MyntColors.textSecondary)
-            : _getCellColor(pnl, context),
+        // Show profit/loss colors for both open and closed positions
+        color: _getCellColor(pnl, context),
       ),
     );
   }

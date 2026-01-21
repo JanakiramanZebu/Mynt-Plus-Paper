@@ -102,9 +102,9 @@ class PanelContentBuilder {
             if (args == null) {
               return ChartWithDepthWeb(
                 wlValue: DepthInputArgs(
-                  exch: 'ABC',
-                  token: '0123',
-                  tsym: 'ABCD',
+                  exch: 'NSE',
+                  token: '26000',
+                  tsym: 'Nifty 50',
                   instname: '',
                   symbol: '',
                   expDate: '',
