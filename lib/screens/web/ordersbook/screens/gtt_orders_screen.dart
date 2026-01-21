@@ -55,7 +55,8 @@ import 'package:flutter/material.dart'
         Offset,
         FontWeight,
         Radius,
-        RawScrollbar;
+        RawScrollbar,
+        MediaQuery;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn
     hide Colors, Tooltip;
@@ -988,29 +989,34 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
   }
 
   void _showGttOrderDetail(GttOrderBookModel gttOrder) {
+    // Responsive width calculation
     shadcn.openSheet(
       context: context,
-      builder: (sheetContext) => Container(
-        width: 480,
-        decoration: BoxDecoration(
-          color: resolveThemeColor(
-            context,
-            dark: MyntColors.backgroundColorDark,
-            light: MyntColors.backgroundColor,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 5,
-              offset: const Offset(-2, 0),
+      builder: (sheetContext) {
+        final screenWidth = MediaQuery.of(sheetContext).size.width;
+        final sheetWidth = screenWidth < 1300 ? screenWidth * 0.3 : 480.0;
+        return Container(
+          width: sheetWidth,
+          decoration: BoxDecoration(
+            color: resolveThemeColor(
+              context,
+              dark: MyntColors.backgroundColorDark,
+              light: MyntColors.backgroundColor,
             ),
-          ],
-        ),
-        child: GttOrderBookDetailScreenWeb(
-          gttOrder: gttOrder,
-          parentContext: context,
-        ),
-      ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 5,
+                offset: const Offset(-2, 0),
+              ),
+            ],
+          ),
+          child: GttOrderBookDetailScreenWeb(
+            gttOrder: gttOrder,
+            parentContext: context,
+          ),
+        );
+      },
       position: shadcn.OverlayPosition.end,
       barrierColor: Colors.transparent,
     );

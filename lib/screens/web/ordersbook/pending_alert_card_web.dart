@@ -942,24 +942,28 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
     if (alert is! BrokerMessage) {
       shadcn.openSheet(
         context: context,
-        builder: (sheetContext) => Container(
-          width: 480,
-          decoration: BoxDecoration(
-            color: resolveThemeColor(
-              context,
-              dark: styles.MyntColors.backgroundColorDark,
-              light: styles.MyntColors.backgroundColor,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 5,
-                offset: const Offset(-2, 0),
+        builder: (sheetContext) {
+          final screenWidth = MediaQuery.of(sheetContext).size.width;
+          final sheetWidth = screenWidth < 1300 ? screenWidth * 0.3 : 480.0;
+          return Container(
+            width: sheetWidth,
+            decoration: BoxDecoration(
+              color: resolveThemeColor(
+                context,
+                dark: styles.MyntColors.backgroundColorDark,
+                light: styles.MyntColors.backgroundColor,
               ),
-            ],
-          ),
-          child: PendingAlertDetailScreenWeb(alert: alert),
-        ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 5,
+                  offset: const Offset(-2, 0),
+                ),
+              ],
+            ),
+            child: PendingAlertDetailScreenWeb(alert: alert),
+          );
+        },
         position: shadcn.OverlayPosition.end,
         barrierColor: Colors.transparent,
       );
@@ -1373,24 +1377,28 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
       // Open modify alert sheet
       shadcn.openSheet(
         context: context,
-        builder: (sheetContext) => Container(
-          width: 480,
-          decoration: BoxDecoration(
-            color: resolveThemeColor(
-              context,
-              dark: styles.MyntColors.backgroundColorDark,
-              light: styles.MyntColors.backgroundColor,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 5,
-                offset: const Offset(-2, 0),
+        builder: (sheetContext) {
+          final screenWidth = MediaQuery.of(sheetContext).size.width;
+          final sheetWidth = screenWidth < 1300 ? screenWidth * 0.3 : 480.0;
+          return Container(
+            width: sheetWidth,
+            decoration: BoxDecoration(
+              color: resolveThemeColor(
+                context,
+                dark: styles.MyntColors.backgroundColorDark,
+                light: styles.MyntColors.backgroundColor,
               ),
-            ],
-          ),
-          child: PendingAlertDetailScreenWeb(alert: alert),
-        ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 5,
+                  offset: const Offset(-2, 0),
+                ),
+              ],
+            ),
+            child: PendingAlertDetailScreenWeb(alert: alert),
+          );
+        },
         position: shadcn.OverlayPosition.end,
         barrierColor: Colors.transparent,
       );

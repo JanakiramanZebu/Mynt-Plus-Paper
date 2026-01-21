@@ -792,27 +792,31 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
   void _showTradeDetail(TradeBookModel trade) {
     shadcn.openSheet(
       context: context,
-      builder: (sheetContext) => Container(
-        width: 480,
-        decoration: BoxDecoration(
-          color: resolveThemeColor(
-            context,
-            dark: MyntColors.backgroundColorDark,
-            light: MyntColors.backgroundColor,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 5,
-              offset: const Offset(-2, 0),
+      builder: (sheetContext) {
+        final screenWidth = MediaQuery.of(sheetContext).size.width;
+        final sheetWidth = screenWidth < 1500 ? screenWidth * 0.3 : 480.0;
+        return Container(
+          width: sheetWidth,
+          decoration: BoxDecoration(
+            color: resolveThemeColor(
+              context,
+              dark: MyntColors.backgroundColorDark,
+              light: MyntColors.backgroundColor,
             ),
-          ],
-        ),
-        child: TradeDetailScreenWeb(
-          trade: trade,
-          parentContext: context,
-        ),
-      ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 5,
+                offset: const Offset(-2, 0),
+              ),
+            ],
+          ),
+          child: TradeDetailScreenWeb(
+            trade: trade,
+            parentContext: context,
+          ),
+        );
+      },
       position: shadcn.OverlayPosition.end,
       barrierColor: Colors.transparent,
     );

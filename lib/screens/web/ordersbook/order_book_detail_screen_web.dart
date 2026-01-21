@@ -540,25 +540,33 @@ class _OrderBookDetailScreenWebState
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            title1,
-            style: MyntWebTextStyles.body(
-              context,
-              color: resolveThemeColor(context,
-                  dark: MyntColors
-                      .textPrimaryDark, // Changed to Primary as per image usually labels are dark/visible
-                  light: MyntColors.textPrimary),
-              fontWeight: MyntFonts.medium,
+          Flexible(
+            child: Text(
+              title1,
+              style: MyntWebTextStyles.body(
+                context,
+                color: resolveThemeColor(context,
+                    dark: MyntColors
+                        .textPrimaryDark, // Changed to Primary as per image usually labels are dark/visible
+                    light: MyntColors.textPrimary),
+                fontWeight: MyntFonts.medium,
+              ),
+              overflow: TextOverflow.ellipsis,
             ),
           ),
-          Text(
-            value1,
-            style: MyntWebTextStyles.body(
-              context,
-              color: resolveThemeColor(context,
-                  dark: MyntColors.textPrimaryDark,
-                  light: MyntColors.textPrimary),
-              fontWeight: MyntFonts.medium,
+          const SizedBox(width: 8),
+          Flexible(
+            child: Text(
+              value1,
+              textAlign: TextAlign.end,
+              style: MyntWebTextStyles.body(
+                context,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.textPrimaryDark,
+                    light: MyntColors.textPrimary),
+                fontWeight: MyntFonts.medium,
+              ),
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],
@@ -585,28 +593,36 @@ class _OrderBookDetailScreenWebState
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            title,
-            style: MyntWebTextStyles.body(
-              context,
-              color: resolveThemeColor(context,
-                  dark: MyntColors.textPrimaryDark,
-                  light: MyntColors.textPrimary),
-              fontWeight: MyntFonts.medium,
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: valueColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(4),
-            ),
+          Flexible(
             child: Text(
-              value,
+              title,
               style: MyntWebTextStyles.body(
                 context,
-                color: valueColor,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.textPrimaryDark,
+                    light: MyntColors.textPrimary),
                 fontWeight: MyntFonts.medium,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: valueColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                value,
+                textAlign: TextAlign.end,
+                style: MyntWebTextStyles.body(
+                  context,
+                  color: valueColor,
+                  fontWeight: MyntFonts.medium,
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ),

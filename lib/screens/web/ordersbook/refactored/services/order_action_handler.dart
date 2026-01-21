@@ -35,27 +35,31 @@ class OrderActionHandler {
     final parentCtx = context; // Capture the parent context
     shadcn.openSheet(
       context: context,
-      builder: (sheetContext) => Container(
-        width: 480,
-        decoration: BoxDecoration(
-          color: resolveThemeColor(
-            context,
-            dark: NewColors.MyntColors.backgroundColorDark,
-            light: NewColors.MyntColors.backgroundColor,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 5,
-              offset: const Offset(-2, 0),
+      builder: (sheetContext) {
+        final screenWidth = MediaQuery.of(sheetContext).size.width;
+        final sheetWidth = screenWidth < 1300 ? screenWidth * 0.3 : 480.0;
+        return Container(
+          width: sheetWidth,
+          decoration: BoxDecoration(
+            color: resolveThemeColor(
+              context,
+              dark: NewColors.MyntColors.backgroundColorDark,
+              light: NewColors.MyntColors.backgroundColor,
             ),
-          ],
-        ),
-        child: OrderBookDetailScreenWeb(
-          orderBookData: order,
-          parentContext: parentCtx, // Pass the parent context
-        ),
-      ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 5,
+                offset: const Offset(-2, 0),
+              ),
+            ],
+          ),
+          child: OrderBookDetailScreenWeb(
+            orderBookData: order,
+            parentContext: parentCtx, // Pass the parent context
+          ),
+        );
+      },
       position: shadcn.OverlayPosition.end,
       barrierColor: Colors.transparent,
     );
@@ -65,24 +69,28 @@ class OrderActionHandler {
   void openTradeDetail(dynamic trade) {
     shadcn.openSheet(
       context: context,
-      builder: (context) => Container(
-        width: 480,
-        decoration: BoxDecoration(
-          color: resolveThemeColor(
-            context,
-            dark: NewColors.MyntColors.backgroundColorDark,
-            light: NewColors.MyntColors.backgroundColor,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 5,
-              offset: const Offset(-2, 0),
+      builder: (sheetContext) {
+        final screenWidth = MediaQuery.of(sheetContext).size.width;
+        final sheetWidth = screenWidth < 500 ? screenWidth * 0.3 : 480.0;
+        return Container(
+          width: sheetWidth,
+          decoration: BoxDecoration(
+            color: resolveThemeColor(
+              context,
+              dark: NewColors.MyntColors.backgroundColorDark,
+              light: NewColors.MyntColors.backgroundColor,
             ),
-          ],
-        ),
-        child: TradeBookDetailScreenWeb(tradeData: trade),
-      ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 5,
+                offset: const Offset(-2, 0),
+              ),
+            ],
+          ),
+          child: TradeBookDetailScreenWeb(tradeData: trade),
+        );
+      },
       position: shadcn.OverlayPosition.end,
       barrierColor: Colors.transparent,
     );

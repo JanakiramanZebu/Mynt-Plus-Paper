@@ -423,28 +423,36 @@ class _PendingAlertDetailScreenWebState
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: MyntWebTextStyles.bodySmall(
-              context,
-              color: resolveThemeColor(context,
-                  dark: MyntColors.textSecondaryDark,
-                  light: MyntColors.textSecondary),
-              fontWeight: MyntFonts.regular,
+          Flexible(
+            child: Text(
+              label,
+              style: MyntWebTextStyles.bodySmall(
+                context,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.textSecondaryDark,
+                    light: MyntColors.textSecondary),
+                fontWeight: MyntFonts.regular,
+              ),
+              overflow: TextOverflow.ellipsis,
             ),
           ),
-          value is Widget
-              ? value
-              : Text(
-                  value.toString(),
-                  style: MyntWebTextStyles.bodySmall(
-                    context,
-                    color: resolveThemeColor(context,
-                        dark: MyntColors.textPrimaryDark,
-                        light: MyntColors.textPrimary),
-                    fontWeight: MyntFonts.medium,
+          const SizedBox(width: 8),
+          Flexible(
+            child: value is Widget
+                ? value
+                : Text(
+                    value.toString(),
+                    textAlign: TextAlign.end,
+                    style: MyntWebTextStyles.bodySmall(
+                      context,
+                      color: resolveThemeColor(context,
+                          dark: MyntColors.textPrimaryDark,
+                          light: MyntColors.textPrimary),
+                      fontWeight: MyntFonts.medium,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
+          ),
         ],
       ),
     );
